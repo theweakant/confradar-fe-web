@@ -23,10 +23,10 @@ export default function HeroSection() {
           {/* Search Bar */}
           <div className="max-w-2xl mx-auto mb-8">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-black h-5 w-5" />
               <Input
                 placeholder="Tìm hội thảo theo chủ đề, địa điểm..."
-                className="pl-12 py-4 text-lg bg-background/95 backdrop-blur"
+                className="pl-12 py-6 text-lg bg-background/95 backdrop-blur"
               />
               <Button className="absolute right-2 top-1/2 transform -translate-y-1/2">Tìm kiếm</Button>
             </div>

@@ -22,14 +22,14 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
-              Tính năng
-            </Link>
             <Link href="#events" className="text-muted-foreground hover:text-foreground transition-colors">
               Sự kiện
             </Link>
             <Link href="#organizers" className="text-muted-foreground hover:text-foreground transition-colors">
-              Tổ chức
+              Đội ngũ
+            </Link>
+            <Link href="#contact" className="text-muted-foreground hover:text-foreground transition-colors">
+              Chính sách
             </Link>
             <Link href="#contact" className="text-muted-foreground hover:text-foreground transition-colors">
               Liên hệ
