@@ -41,10 +41,10 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
     const roleSpecificItems: Record<string, any[]> = {
       admin: [
         { href: `/workspace/admin`, icon: Shield, label: "Tổng quan" },
-        { href: `/workspace/admin/user`, icon: Users, label: "Quản lý người dùng" },
-        { href: `/workspace/admin/conferences`, icon: Calendar, label: "Quản lý hội nghị" },
+        { href: `/workspace/admin/manage-user`, icon: Users, label: "Quản lý người dùng" },
+        { href: `/workspace/admin/manage-conference`, icon: Calendar, label: "Quản lý hội nghị" },
         { href: `/workspace/admin/report`, icon: FileText, label: "Báo cáo" },
-        { href: `/workspace/admin/settings`, icon: Settings, label: "Cài đặt hệ thống" },
+        { href: `/workspace/admin/system-setting`, icon: Settings, label: "Cài đặt hệ thống" },
       ],
       organizer: [
         { href: `/workspace/organizer`, icon: LayoutDashboard, label: "Tổng quan" },

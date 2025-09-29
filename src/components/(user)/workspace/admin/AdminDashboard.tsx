@@ -21,15 +21,15 @@ export default function AdminDashboard() {
       bgColor: "bg-green-50",
     },
     {
-      title: "Bài nộp mới",
-      value: "324",
+      title: "Hội nghị đang diễn ra",
+      value: "7",
       change: "+15.3%",
       icon: Calendar,
       color: "bg-purple-500",
       bgColor: "bg-purple-50",
     },
     {
-      title: "Hội nghị đang diễn ra",
+      title: "Hội thảo đang diễn ra",
       value: "12",
       change: "+23.1%",
       icon: TrendingUp,
@@ -94,8 +94,7 @@ export default function AdminDashboard() {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard Quản Trị</h1>
-        <p className="mt-2 text-gray-600">Chào mừng quay trở lại! Đây là tổng quan hệ thống của bạn.</p>
+        <h1 className="text-3xl font-bold text-gray-900">Quản Trị Hệ Thống</h1>
       </div>
 
       {/* Stats Grid */}

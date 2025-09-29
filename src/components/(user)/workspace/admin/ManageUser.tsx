@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  Search, 
+import {  
   Plus, 
   Pencil, 
   Trash2, 
@@ -27,217 +26,16 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-// ============================================
-// TYPES & INTERFACES
-// ============================================
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: "admin" | "organizer" | "attendee";
-  status: "active" | "inactive";
-  registeredConferences: number;
-  joinedDate: string;
-}
+import { Button } from "@/components/atoms/Button";
+import { StatusBadge } from "@/components/atoms/StatusBadge";
+
+import { SearchBar } from "@/components/molecules/SearchBar";
+import { FormInput } from "@/components/molecules/FormInput";
+import { Modal } from "@/components/molecules/Modal";
+
 
 type UserFormData = Omit<User, "id" | "registeredConferences" | "joinedDate">;
 
-// ============================================
-// 🔄 REUSABLE: SearchBar Component
-// Có thể tái sử dụng cho ManageConference, ManageRegistration
-// ============================================
-interface SearchBarProps {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-}
-
-function SearchBar({ value, onChange, placeholder = "Tìm kiếm..." }: SearchBarProps) {
-  return (
-    <div className="relative flex-1 max-w-md">
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-      <input
-        type="text"
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-    </div>
-  );
-}
-
-// ============================================
-// 🔄 REUSABLE: StatusBadge Component
-// Có thể tái sử dụng cho status của conference, registration
-// ============================================
-interface StatusBadgeProps {
-  status: string;
-  variant?: "success" | "danger" | "warning" | "info";
-}
-
-function StatusBadge({ status, variant = "success" }: StatusBadgeProps) {
-  const variants = {
-    success: "bg-green-100 text-green-700 border-green-200",
-    danger: "bg-red-100 text-red-700 border-red-200",
-    warning: "bg-yellow-100 text-yellow-700 border-yellow-200",
-    info: "bg-blue-100 text-blue-700 border-blue-200"
-  };
-
-  return (
-    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${variants[variant]}`}>
-      {status}
-    </span>
-  );
-}
-
-// ============================================
-// 🔄 REUSABLE: ActionButton Component
-// Có thể tái sử dụng cho các action buttons khác
-// ============================================
-interface ActionButtonProps {
-  onClick: () => void;
-  icon: React.ReactNode;
-  variant?: "primary" | "danger" | "secondary";
-  tooltip?: string;
-}
-
-function ActionButton({ onClick, icon, variant = "secondary", tooltip }: ActionButtonProps) {
-  const variants = {
-    primary: "text-blue-600 hover:bg-blue-50",
-    danger: "text-red-600 hover:bg-red-50",
-    secondary: "text-gray-600 hover:bg-gray-50"
-  };
-
-  return (
-    <button
-      onClick={onClick}
-      className={`p-2 rounded-lg transition-colors ${variants[variant]}`}
-      title={tooltip}
-    >
-      {icon}
-    </button>
-  );
-}
-
-// ============================================
-// 🔄 REUSABLE: Modal Component
-// Có thể tái sử dụng cho các form khác
-// ============================================
-interface ModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title: string;
-  children: React.ReactNode;
-  size?: "sm" | "md" | "lg";
-}
-
-function Modal({ isOpen, onClose, title, children, size = "md" }: ModalProps) {
-  if (!isOpen) return null;
-
-  const sizes = {
-    sm: "max-w-md",
-    md: "max-w-2xl",
-    lg: "max-w-4xl"
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className={`bg-white rounded-xl shadow-2xl w-full ${sizes[size]} max-h-[90vh] overflow-hidden m-4`}>
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
-          >
-            ×
-          </button>
-        </div>
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ============================================
-// 🔄 REUSABLE: FormInput Component
-// Có thể tái sử dụng cho các form khác
-// ============================================
-interface FormInputProps {
-  label: string;
-  name: string;
-  value: string;
-  onChange: (value: string) => void;
-  type?: "text" | "email" | "password" | "date";
-  required?: boolean;
-  error?: string;
-}
-
-interface FormInputProps {
-  label: string;
-  name: string;
-  value: string;
-  onChange: (value: string) => void;
-  type?: "text" | "email" | "password" | "date";
-  required?: boolean;
-  error?: string;
-  onBlur?: () => void;
-  success?: boolean;
-}
-
-function FormInput({ 
-  label, 
-  name, 
-  value, 
-  onChange, 
-  type = "text", 
-  required = false, 
-  error,
-  onBlur,
-  success
-}: FormInputProps) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-      <div className="relative">
-        <input
-          type={type}
-          name={name}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onBlur={onBlur}
-          className={`
-            w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 
-            ${error ? "border-red-500 focus:ring-red-200" : 
-              success ? "border-green-500 focus:ring-green-200" : 
-              "border-gray-300 focus:ring-blue-200"}
-            ${error ? "bg-red-50" : success ? "bg-green-50" : "bg-white"}
-            transition-all duration-200
-          `}
-        />
-        {success && !error && (
-          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-            <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-        )}
-      </div>
-      {error && (
-        <div className="mt-1 text-sm text-red-500 flex items-center gap-1">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span>{error}</span>
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ============================================
 // 🔄 REUSABLE: FormSelect Component
@@ -757,13 +555,13 @@ export default function ManageUser() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-2">
-                          <ActionButton
+                          <Button
                             onClick={() => handleEdit(user)}
                             icon={<Pencil className="w-4 h-4" />}
                             variant="primary"
                             tooltip="Chỉnh sửa"
                           />
-                          <ActionButton
+                          <Button
                             onClick={() => handleDelete(user.id)}
                             icon={<Trash2 className="w-4 h-4" />}
                             variant="danger"
