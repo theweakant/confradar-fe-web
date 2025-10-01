@@ -26,7 +26,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-import { Button } from "@/components/atoms/Button";
+import { ActionButton } from "@/components/atoms/ActionButton";
 import { StatusBadge } from "@/components/atoms/StatusBadge";
 
 import { SearchBar } from "@/components/molecules/SearchBar";
@@ -555,13 +555,13 @@ export default function ManageUser() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-2">
-                          <Button
+                          <ActionButton
                             onClick={() => handleEdit(user)}
                             icon={<Pencil className="w-4 h-4" />}
                             variant="primary"
                             tooltip="Chỉnh sửa"
                           />
-                          <Button
+                          <ActionButton
                             onClick={() => handleDelete(user.id)}
                             icon={<Trash2 className="w-4 h-4" />}
                             variant="danger"
