@@ -1,4 +1,4 @@
-    "use client"
+"use client"
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -9,73 +9,99 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
-    <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b border-border">
+    <header className="bg-black sticky top-0 z-50 w-full">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">C</span>
+            <div className="h-8 w-8 rounded-lg bg-orange-600 flex items-center justify-center">
+              <span className="text-white font-bold text-lg">N</span>
             </div>
-            <span className="font-bold text-xl text-foreground">ConfRadar</span>
+            <span className="font-bold text-base text-white uppercase tracking-wide">ConfRadar</span>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href="#events" className="text-muted-foreground hover:text-foreground transition-colors">
+            <Link
+              href="#events"
+              className="text-white hover:text-orange-600 transition-colors text-sm font-medium uppercase tracking-wide"
+            >
               Sự kiện
             </Link>
-            <Link href="#organizers" className="text-muted-foreground hover:text-foreground transition-colors">
-              Đội ngũ
+            <Link
+              href="#speakers"
+              className="text-white hover:text-orange-600 transition-colors text-sm font-medium uppercase tracking-wide"
+            >
+              Diễn giả
             </Link>
-            <Link href="#contact" className="text-muted-foreground hover:text-foreground transition-colors">
-              Chính sách
+            <Link
+              href="#networking"
+              className="text-white hover:text-orange-600 transition-colors text-sm font-medium uppercase tracking-wide"
+            >
+              Báo cáo
             </Link>
-            <Link href="#contact" className="text-muted-foreground hover:text-foreground transition-colors">
+            <Link
+              href="#contact"
+              className="text-white hover:text-orange-600 transition-colors text-sm font-medium uppercase tracking-wide"
+            >
               Liên hệ
             </Link>
           </nav>
 
           {/* Desktop CTA */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center">
             <Link href="/auth/login">
-              <Button variant="ghost">Đăng nhập</Button>
-            </Link>
-            <Link href="/auth/register">
-              <Button>Bắt đầu khám phá</Button>
+              <Button
+                variant="outline"
+                className="border-white text-white hover:bg-white hover:text-black uppercase tracking-wide bg-transparent"
+              >
+                Đăng nhập
+              </Button>
             </Link>
           </div>
 
           {/* Mobile menu button */}
-          <button className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          <button className="md:hidden text-white" onClick={() => setIsMenuOpen(!isMenuOpen)}>
             {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border">
+          <div className="md:hidden py-4 border-t border-white/10">
             <nav className="flex flex-col space-y-4">
-              <Link href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
-                Tính năng
+              <Link
+                href="#events"
+                className="text-white hover:text-orange-600 transition-colors text-sm font-medium uppercase tracking-wide"
+              >
+                Events
               </Link>
-              <Link href="#events" className="text-muted-foreground hover:text-foreground transition-colors">
-                Sự kiện
+              <Link
+                href="#speakers"
+                className="text-white hover:text-orange-600 transition-colors text-sm font-medium uppercase tracking-wide"
+              >
+                Speakers
               </Link>
-              <Link href="#organizers" className="text-muted-foreground hover:text-foreground transition-colors">
-                Tổ chức
+              <Link
+                href="#networking"
+                className="text-white hover:text-orange-600 transition-colors text-sm font-medium uppercase tracking-wide"
+              >
+                Networking
               </Link>
-              <Link href="#contact" className="text-muted-foreground hover:text-foreground transition-colors">
-                Liên hệ
+              <Link
+                href="#contact"
+                className="text-white hover:text-orange-600 transition-colors text-sm font-medium uppercase tracking-wide"
+              >
+                Contact Us
               </Link>
-              <div className="flex flex-col space-y-2 pt-4">
-                <Link href="/auth/login">
-                  <Button variant="ghost" className="w-full">
-                    Đăng nhập
+              <div className="pt-4">
+                <Link href="/save-spot">
+                  <Button
+                    variant="outline"
+                    className="w-full border-white text-white hover:bg-white hover:text-black uppercase tracking-wide bg-transparent"
+                  >
+                    Save My Spot
                   </Button>
-                </Link>
-                <Link href="/auth/register">
-                  <Button className="w-full">Bắt đầu khám phá</Button>
                 </Link>
               </div>
             </nav>

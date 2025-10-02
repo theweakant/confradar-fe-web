@@ -130,19 +130,21 @@ export default function ManageConference() {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Quản lý Hội thảo</h1>
-          <p className="text-gray-600">Quản lý thông tin các hội thảo trên ConfRadar</p>
-                      <Button
-              onClick={handleCreate}
-              className="flex items-center gap-2 whitespace-nowrap"
-            >
-              <Plus className="w-5 h-5" />
-              Thêm hội thảo
-            </Button>
+      <div className="mb-8">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-gray-900">Quản lý Hội thảo</h1>
+          <Button
+            onClick={handleCreate}
+            className="flex items-center gap-2 whitespace-nowrap mt-6"
+          >
+            <Plus className="w-5 h-5" />
+            Thêm hội thảo
+          </Button>
         </div>
-
-
+        <p className="text-gray-600 mt-2">
+          Quản lý thông tin các hội thảo trên ConfRadar
+        </p>
+      </div>
         <SearchFilter
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}

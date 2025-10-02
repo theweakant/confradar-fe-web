@@ -1,6 +1,6 @@
 // src/lib/validationConfRules.ts
 
-import { ConferenceFormData } from "@/components/(user)/workspace/admin/ManageConference/ManageConference"; // 👈 chúng ta sẽ tạo file type riêng
+import { ConferenceFormData } from "@/types/conference.type"; 
 
 export type ValidationRule = {
   validate: (value: string | number) => boolean;

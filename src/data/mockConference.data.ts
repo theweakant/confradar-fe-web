@@ -1,3 +1,4 @@
+import { Conference } from "@/types/conference.type";
 export const mockConferences: Conference[] = [
   {
     id: "1",
