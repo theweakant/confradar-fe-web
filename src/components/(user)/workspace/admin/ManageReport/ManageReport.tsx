@@ -1,10 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { 
-  Search, 
-  Filter, 
-  Eye, 
+  Eye,
   CheckCircle, 
   XCircle, 
   AlertTriangle,
@@ -18,8 +16,6 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
   Select,
@@ -38,8 +34,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { SearchFilter } from '@/components/molecules/SearchFilter';
 
-// 🔄 REUSABLE: Report status badge component - có thể tái sử dụng
+// Report status badge component
 const ReportStatusBadge = ({ status }: { status: string }) => {
   const statusConfig = {
     pending: { color: 'bg-yellow-100 text-yellow-800', label: 'Chờ xử lý' },
@@ -56,7 +53,7 @@ const ReportStatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-// 🔄 REUSABLE: Report type badge - có thể tái sử dụng cho các loại report
+// Report type badge
 const ReportTypeBadge = ({ type }: { type: string }) => {
   const typeConfig = {
     spam: { icon: AlertTriangle, color: 'text-orange-600', label: 'Spam' },
@@ -75,29 +72,6 @@ const ReportTypeBadge = ({ type }: { type: string }) => {
     </div>
   );
 };
-
-// 🔄 REUSABLE: Stats card component - có thể dùng cho dashboard
-const StatsCard = ({ 
-  icon: Icon, 
-  label, 
-  value, 
-  color 
-}: { 
-  icon: React.ElementType; 
-  label: string; 
-  value: number; 
-  color: string;
-}) => (
-  <Card className="p-4 border-l-4" style={{ borderLeftColor: color }}>
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-sm text-gray-600">{label}</p>
-        <p className="text-2xl font-bold mt-1">{value}</p>
-      </div>
-      <Icon className="w-8 h-8" style={{ color }} />
-    </div>
-  </Card>
-);
 
 // Mock data
 interface Report {
@@ -150,19 +124,47 @@ const mockReports: Report[] = [
     createdAt: '2025-09-26T09:15:00',
     updatedAt: '2025-09-28T14:30:00'
   },
+  {
+    id: 'RPT004',
+    type: 'spam',
+    status: 'rejected',
+    reportedBy: 'user789@email.com',
+    reportedUser: 'normal@email.com',
+    conference: 'CVPR 2025 - Computer Vision and Pattern Recognition',
+    reason: 'Báo cáo sai',
+    description: 'Báo cáo không có căn cứ',
+    createdAt: '2025-09-25T11:00:00',
+    updatedAt: '2025-09-27T16:45:00'
+  },
 ];
 
 export default function ManageReport() {
   const [reports, setReports] = useState<Report[]>(mockReports);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterType, setFilterType] = useState('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterType, setFilterType] = useState("all");
+  
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [showResolveDialog, setShowResolveDialog] = useState(false);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [showSuspendDialog, setShowSuspendDialog] = useState(false);
   const [expandedReport, setExpandedReport] = useState<string | null>(null);
   const [actionNote, setActionNote] = useState('');
+
+  const statusOptions = [
+    { value: "all", label: "Tất cả trạng thái" },
+    { value: "pending", label: "Chờ xử lý" },
+    { value: "resolved", label: "Đã xử lý" },
+    { value: "rejected", label: "Từ chối" }
+  ];
+
+  const typeOptions = [
+    { value: "all", label: "Tất cả loại" },
+    { value: "spam", label: "Spam" },
+    { value: "inappropriate", label: "Không phù hợp" },
+    { value: "fake", label: "Giả mạo" },
+    { value: "other", label: "Khác" }
+  ];
 
   // Stats calculation
   const stats = {
@@ -174,18 +176,17 @@ export default function ManageReport() {
 
   // Filter reports
   const filteredReports = reports.filter(report => {
-    const matchSearch = 
-      report.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      report.reportedUser.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      report.conference.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = 
+      report.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      report.reportedUser.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      report.conference.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchStatus = filterStatus === 'all' || report.status === filterStatus;
-    const matchType = filterType === 'all' || report.type === filterType;
+    const matchesStatus = filterStatus === "all" || report.status === filterStatus;
+    const matchesType = filterType === "all" || report.type === filterType;
     
-    return matchSearch && matchStatus && matchType;
+    return matchesSearch && matchesStatus && matchesType;
   });
 
-  // 🔄 REUSABLE: Handle actions - logic có thể tái sử dụng
   const handleResolveReport = () => {
     if (selectedReport) {
       setReports(reports.map(r => 
@@ -213,7 +214,6 @@ export default function ManageReport() {
   };
 
   const handleSuspendUser = () => {
-    // Logic suspend user
     setShowSuspendDialog(false);
     setSelectedReport(null);
     setActionNote('');
@@ -232,104 +232,96 @@ export default function ManageReport() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Quản lý Báo cáo</h1>
-            <p className="text-gray-600 mt-1">Xử lý các báo cáo spam và vi phạm từ người dùng</p>
-          </div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Quản lý Báo cáo</h1>
+          <p className="text-gray-600 mt-2">
+            Xử lý các báo cáo spam và vi phạm từ người dùng
+          </p>
         </div>
 
-        {/* 🔄 REUSABLE: Stats cards - có thể dùng cho các dashboard khác */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <StatsCard 
-            icon={FileText} 
-            label="Tổng báo cáo" 
-            value={stats.total} 
-            color="#3b82f6" 
-          />
-          <StatsCard 
-            icon={Clock} 
-            label="Chờ xử lý" 
-            value={stats.pending} 
-            color="#f59e0b" 
-          />
-          <StatsCard 
-            icon={CheckCircle} 
-            label="Đã xử lý" 
-            value={stats.resolved} 
-            color="#10b981" 
-          />
-          <StatsCard 
-            icon={XCircle} 
-            label="Từ chối" 
-            value={stats.rejected} 
-            color="#ef4444" 
-          />
-        </div>
+        {/* SearchFilter Component */}
+        <SearchFilter
+          searchValue={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder="Tìm theo ID, user, conference..."
+          filters={[
+            {
+              value: filterStatus,
+              onValueChange: setFilterStatus,
+              options: statusOptions,
+            },
+            {
+              value: filterType,
+              onValueChange: setFilterType,
+              options: typeOptions,
+            },
+          ]}
+        />
 
-        {/* 🔄 REUSABLE: Filters section - pattern có thể dùng cho các page khác */}
-        <Card className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="md:col-span-2">
-              <Label htmlFor="search">Tìm kiếm</Label>
-              <div className="relative mt-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input
-                  id="search"
-                  placeholder="Tìm theo ID, user, conference..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Tổng báo cáo</p>
+                <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
               </div>
-            </div>
-            
-            <div>
-              <Label htmlFor="status">Trạng thái</Label>
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger id="status" className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tất cả</SelectItem>
-                  <SelectItem value="pending">Chờ xử lý</SelectItem>
-                  <SelectItem value="resolved">Đã xử lý</SelectItem>
-                  <SelectItem value="rejected">Từ chối</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="type">Loại báo cáo</Label>
-              <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger id="type" className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tất cả</SelectItem>
-                  <SelectItem value="spam">Spam</SelectItem>
-                  <SelectItem value="inappropriate">Không phù hợp</SelectItem>
-                  <SelectItem value="fake">Giả mạo</SelectItem>
-                  <SelectItem value="other">Khác</SelectItem>
-                </SelectContent>
-              </Select>
+              <FileText className="w-10 h-10 text-blue-500" />
             </div>
           </div>
-        </Card>
+
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Chờ xử lý</p>
+                <p className="text-3xl font-bold text-yellow-600">
+                  {stats.pending}
+                </p>
+              </div>
+              <Clock className="w-10 h-10 text-yellow-500" />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Đã xử lý</p>
+                <p className="text-3xl font-bold text-green-600">
+                  {stats.resolved}
+                </p>
+              </div>
+              <CheckCircle className="w-10 h-10 text-green-500" />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Từ chối</p>
+                <p className="text-3xl font-bold text-red-600">
+                  {stats.rejected}
+                </p>
+              </div>
+              <XCircle className="w-10 h-10 text-red-500" />
+            </div>
+          </div>
+        </div>
 
         {/* Reports List */}
         <div className="space-y-4">
           {filteredReports.length === 0 ? (
-            <Alert>
-              <AlertDescription>
-                Không tìm thấy báo cáo nào phù hợp với điều kiện lọc.
-              </AlertDescription>
-            </Alert>
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <Alert>
+                <AlertDescription>
+                  Không tìm thấy báo cáo nào phù hợp với điều kiện lọc.
+                </AlertDescription>
+              </Alert>
+            </div>
           ) : (
             filteredReports.map((report) => (
-              <Card key={report.id} className="p-4 hover:shadow-md transition-shadow">
+              <div key={report.id} className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
                 <div className="space-y-4">
                   {/* Report Header */}
                   <div className="flex items-start justify-between">
@@ -433,148 +425,148 @@ export default function ManageReport() {
                     </div>
                   )}
                 </div>
-              </Card>
+              </div>
             ))
           )}
         </div>
-
-        {/* 🔄 REUSABLE: Resolve Dialog - pattern có thể dùng cho các action khác */}
-        <AlertDialog open={showResolveDialog} onOpenChange={setShowResolveDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Xác nhận xử lý báo cáo</AlertDialogTitle>
-              <AlertDialogDescription>
-                Bạn có chắc chắn muốn đánh dấu báo cáo <strong>{selectedReport?.id}</strong> là đã xử lý?
-                Hành động này sẽ xác nhận rằng vấn đề đã được giải quyết.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            
-            <div className="py-4">
-              <Label htmlFor="resolve-note">Ghi chú xử lý (tùy chọn)</Label>
-              <textarea
-                id="resolve-note"
-                className="w-full mt-2 p-2 border rounded-md"
-                rows={3}
-                placeholder="Nhập ghi chú về cách xử lý..."
-                value={actionNote}
-                onChange={(e) => setActionNote(e.target.value)}
-              />
-            </div>
-
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => {
-                setActionNote('');
-                setSelectedReport(null);
-              }}>
-                Hủy
-              </AlertDialogCancel>
-              <AlertDialogAction 
-                onClick={handleResolveReport}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                Xác nhận
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-
-        {/* Reject Dialog */}
-        <AlertDialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Từ chối báo cáo</AlertDialogTitle>
-              <AlertDialogDescription>
-                Bạn có chắc chắn muốn từ chối báo cáo <strong>{selectedReport?.id}</strong>?
-                Hành động này sẽ đánh dấu báo cáo là không hợp lệ.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            
-            <div className="py-4">
-              <Label htmlFor="reject-note">Lý do từ chối</Label>
-              <textarea
-                id="reject-note"
-                className="w-full mt-2 p-2 border rounded-md"
-                rows={3}
-                placeholder="Nhập lý do từ chối báo cáo..."
-                value={actionNote}
-                onChange={(e) => setActionNote(e.target.value)}
-              />
-            </div>
-
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => {
-                setActionNote('');
-                setSelectedReport(null);
-              }}>
-                Hủy
-              </AlertDialogCancel>
-              <AlertDialogAction 
-                onClick={handleRejectReport}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                Từ chối
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-
-        {/* Suspend User Dialog */}
-        <AlertDialog open={showSuspendDialog} onOpenChange={setShowSuspendDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-red-600">Suspend tài khoản người dùng</AlertDialogTitle>
-              <AlertDialogDescription>
-                Bạn có chắc chắn muốn suspend tài khoản <strong>{selectedReport?.reportedUser}</strong>?
-                Đây là hành động nghiêm trọng và người dùng sẽ không thể truy cập hệ thống.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            
-            <div className="py-4 space-y-4">
-              <div>
-                <Label htmlFor="suspend-duration">Thời gian suspend</Label>
-                <Select>
-                  <SelectTrigger id="suspend-duration" className="mt-1">
-                    <SelectValue placeholder="Chọn thời gian" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="7days">7 ngày</SelectItem>
-                    <SelectItem value="30days">30 ngày</SelectItem>
-                    <SelectItem value="90days">90 ngày</SelectItem>
-                    <SelectItem value="permanent">Vĩnh viễn</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="suspend-reason">Lý do suspend</Label>
-                <textarea
-                  id="suspend-reason"
-                  className="w-full mt-2 p-2 border rounded-md"
-                  rows={3}
-                  placeholder="Nhập lý do suspend tài khoản..."
-                  value={actionNote}
-                  onChange={(e) => setActionNote(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => {
-                setActionNote('');
-                setSelectedReport(null);
-              }}>
-                Hủy
-              </AlertDialogCancel>
-              <AlertDialogAction 
-                onClick={handleSuspendUser}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                Suspend User
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </div>
+
+      {/* Resolve Dialog */}
+      <AlertDialog open={showResolveDialog} onOpenChange={setShowResolveDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận xử lý báo cáo</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc chắn muốn đánh dấu báo cáo <strong>{selectedReport?.id}</strong> là đã xử lý?
+              Hành động này sẽ xác nhận rằng vấn đề đã được giải quyết.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <div className="py-4">
+            <Label htmlFor="resolve-note">Ghi chú xử lý (tùy chọn)</Label>
+            <textarea
+              id="resolve-note"
+              className="w-full mt-2 p-2 border rounded-md"
+              rows={3}
+              placeholder="Nhập ghi chú về cách xử lý..."
+              value={actionNote}
+              onChange={(e) => setActionNote(e.target.value)}
+            />
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setActionNote('');
+              setSelectedReport(null);
+            }}>
+              Hủy
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleResolveReport}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              Xác nhận
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Reject Dialog */}
+      <AlertDialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Từ chối báo cáo</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc chắn muốn từ chối báo cáo <strong>{selectedReport?.id}</strong>?
+              Hành động này sẽ đánh dấu báo cáo là không hợp lệ.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <div className="py-4">
+            <Label htmlFor="reject-note">Lý do từ chối</Label>
+            <textarea
+              id="reject-note"
+              className="w-full mt-2 p-2 border rounded-md"
+              rows={3}
+              placeholder="Nhập lý do từ chối báo cáo..."
+              value={actionNote}
+              onChange={(e) => setActionNote(e.target.value)}
+            />
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setActionNote('');
+              setSelectedReport(null);
+            }}>
+              Hủy
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleRejectReport}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Từ chối
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Suspend User Dialog */}
+      <AlertDialog open={showSuspendDialog} onOpenChange={setShowSuspendDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-red-600">Suspend tài khoản người dùng</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc chắn muốn suspend tài khoản <strong>{selectedReport?.reportedUser}</strong>?
+              Đây là hành động nghiêm trọng và người dùng sẽ không thể truy cập hệ thống.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <div className="py-4 space-y-4">
+            <div>
+              <Label htmlFor="suspend-duration">Thời gian suspend</Label>
+              <Select>
+                <SelectTrigger id="suspend-duration" className="mt-1">
+                  <SelectValue placeholder="Chọn thời gian" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7days">7 ngày</SelectItem>
+                  <SelectItem value="30days">30 ngày</SelectItem>
+                  <SelectItem value="90days">90 ngày</SelectItem>
+                  <SelectItem value="permanent">Vĩnh viễn</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="suspend-reason">Lý do suspend</Label>
+              <textarea
+                id="suspend-reason"
+                className="w-full mt-2 p-2 border rounded-md"
+                rows={3}
+                placeholder="Nhập lý do suspend tài khoản..."
+                value={actionNote}
+                onChange={(e) => setActionNote(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setActionNote('');
+              setSelectedReport(null);
+            }}>
+              Hủy
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleSuspendUser}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Suspend User
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

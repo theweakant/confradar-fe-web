@@ -36,141 +36,160 @@ export default function HeroSection() {
             </div>
 
             {/* Booking Card */}
-            <Link
+           <Link
               href="#ticket"
-              className="group relative overflow-hidden rounded-3xl border border-zinc-800/50 hover:border-zinc-700/50 transition-all p-5 lg:p-6 min-h-[350px] lg:min-h-[480px]"
+              className="group relative overflow-hidden rounded-3xl border border-zinc-800/50 hover:border-zinc-700/50 transition-all p-6 lg:p-8 min-h-[350px] lg:min-h-[480px]"
               style={{
                 background: "rgba(0, 0, 0, 0.4)",
                 backdropFilter: "blur(10px)",
               }}
             >
-              <p className="text-2xl text-[#D1D5DB]">Đặt vé</p>
+              <p className="text-3xl lg:text-4xl text-[#D1D5DB]">Đặt vé</p>
               <div className="flex h-full flex-col justify-end">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-2xl lg:text-3xl font-semibold text-white">
-                    Nhận <br /> Vé Online Ngay
+                  <h2 className="text-3xl lg:text-4xl xl:text-5xl font-semibold text-white py-8 leading-tight">
+                    Nhận <br /> Vé Online
                   </h2>
-                  <div className="w-11 h-11 rounded-full bg-zinc-700/50 flex items-center justify-center group-hover:bg-zinc-600/50 transition flex-shrink-0">
-                    <ArrowUpRight className="w-5 h-5 text-[#D1D5DB]" />
+                  <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-zinc-700/50 flex items-center justify-center group-hover:bg-zinc-600/50 transition flex-shrink-0">
+                    <ArrowUpRight className="w-6 h-6 lg:w-7 lg:h-7 text-[#D1D5DB]" />
                   </div>
                 </div>
               </div>
             </Link>
 
             <div className="flex flex-col gap-4 lg:gap-6">
-              <Link
-                href="#tech-conference"
-                className="group relative overflow-hidden rounded-3xl border transition-all p-4 lg:p-5 flex-1 min-h-[165px] lg:min-h-[230px]"
-                style={{
-                  background: "rgba(0, 0, 0, 0.4)",
-                  backdropFilter: "blur(10px)",
-                  borderColor: "rgba(59, 130, 246, 0.2)",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(59, 130, 246, 0.3)")}
-                onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(59, 130, 246, 0.2)")}
+          <Link
+            href="#tech-conference"
+            className="group relative overflow-hidden rounded-3xl border transition-all 
+                      p-6 lg:p-7 flex-1 min-h-[200px] lg:min-h-[260px] flex flex-col justify-between"
+            style={{
+              background: "rgba(0, 0, 0, 0.5)",
+              backdropFilter: "blur(12px)",
+              borderColor: "rgba(59, 130, 246, 0.2)",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.borderColor = "rgba(59, 130, 246, 0.4)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.borderColor = "rgba(59, 130, 246, 0.2)")
+            }
+          >
+            <p className="text-sm md:text-base text-[#D1D5DB] mb-3">
+              Hội thảo công nghệ
+            </p>
+            <div className="flex items-end justify-between">
+              <h2 className="text-xl md:text-2xl font-bold text-white leading-snug">
+                Khám Phá <br /> công nghệ
+              </h2>
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center transition flex-shrink-0"
+                style={{ backgroundColor: "rgba(59, 130, 246, 0.15)" }}
               >
-                <p className="text-xs text-[#D1D5DB] mb-2">Hội thảo công nghệ</p>
-                <div className="flex items-end justify-between">
-                  <h2 className="text-lg lg:text-xl font-semibold text-white leading-tight">
-                    Khám Phá <br /> công nghệ
-                  </h2>
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center transition flex-shrink-0"
-                    style={{ backgroundColor: "rgba(59, 130, 246, 0.1)" }}
-                  >
-                    <ArrowUpRight className="w-4 h-4 text-[#3B82F6]" />
-                  </div>
-                </div>
-              </Link>
+                <ArrowUpRight className="w-5 h-5 text-[#3B82F6]" />
+              </div>
+            </div>
+          </Link>
 
-
-              <Link
-                href="#research-conference"
-                className="group relative overflow-hidden rounded-3xl border transition-all p-4 lg:p-5 flex-1 min-h-[165px] lg:min-h-[230px]"
-                style={{
-                  background: "rgba(0, 0, 0, 0.4)",
-                  backdropFilter: "blur(10px)",
-                  borderColor: "rgba(139, 92, 246, 0.2)",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(139, 92, 246, 0.3)")}
-                onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(139, 92, 246, 0.2)")}
+          <Link
+            href="#research-conference"
+            className="group relative overflow-hidden rounded-3xl border transition-all 
+                      p-6 lg:p-7 flex-1 min-h-[200px] lg:min-h-[260px] flex flex-col justify-between"
+            style={{
+              background: "rgba(0, 0, 0, 0.5)",
+              backdropFilter: "blur(12px)",
+              borderColor: "rgba(139, 92, 246, 0.2)",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.borderColor = "rgba(139, 92, 246, 0.4)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.borderColor = "rgba(139, 92, 246, 0.2)")
+            }
+          >
+            <p className="text-sm md:text-base text-[#D1D5DB] mb-3">
+              Hội nghị nghiên cứu
+            </p>
+            <div className="flex items-end justify-between">
+              <h2 className="text-xl md:text-2xl font-bold text-white leading-snug">
+                Nghiên cứu <br /> khoa học
+              </h2>
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center transition flex-shrink-0"
+                style={{ backgroundColor: "rgba(139, 92, 246, 0.15)" }}
               >
-                <p className="text-xs text-[#D1D5DB] mb-2">Hội nghị nghiên cứu</p>
-                <div className="flex items-end justify-between">
-                  <h2 className="text-lg lg:text-xl font-semibold text-white leading-tight">
-                    Nghiên cứu <br /> khoa học
-                  </h2>
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center transition flex-shrink-0"
-                    style={{ backgroundColor: "rgba(139, 92, 246, 0.1)" }}
-                  >
-                    <ArrowUpRight className="w-4 h-4 text-[#8B5CF6]" />
-                  </div>
-                </div>
-              </Link>
+                <ArrowUpRight className="w-5 h-5 text-[#8B5CF6]" />
+              </div>
+            </div>
+          </Link>
+
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
             {/* Leadership Card */}
-            <Link
-              href="/leadership"
-              className="group relative overflow-hidden rounded-3xl border border-zinc-800/50 hover:border-zinc-700/50 transition-all p-4 lg:p-5 min-h-[160px] lg:min-h-[190px]"
-              style={{
-                background: "rgba(0, 0, 0, 0.4)",
-                backdropFilter: "blur(10px)",
-              }}
-            >
-              <p className="text-xs text-[#D1D5DB] mb-2">Lãnh đạo</p>
-              <div className="flex items-start justify-between gap-3">
-                <h2 className="text-lg lg:text-xl font-semibold text-white leading-tight">
-                  Nhìn Thấy <br /> Tương Lai
-                </h2>
-                <p className="text-[11px] leading-tight text-[#6B7280] max-w-[130px]">
-                  Học hỏi từ các nhà lãnh đạo toàn cầu và định hình tương lai.
-                </p>
-              </div>
-            </Link>
+{/* Leadership Card */}
+<Link
+  href="/leadership"
+  className="group relative overflow-hidden rounded-3xl border border-zinc-800/50 
+             hover:border-zinc-600/50 transition-all p-5 lg:p-6 min-h-[180px] lg:min-h-[210px]"
+  style={{
+    background: "rgba(0, 0, 0, 0.45)",
+    backdropFilter: "blur(10px)",
+  }}
+>
+  <p className="text-sm text-[#D1D5DB] mb-3">Lãnh đạo</p>
+  <div className="flex items-start justify-between gap-4">
+    <h2 className="text-xl lg:text-2xl font-semibold text-white leading-snug">
+      Nhìn Thấy <br /> Tương Lai
+    </h2>
+    <p className="text-xs lg:text-sm text-[#9CA3AF] leading-snug max-w-[160px]">
+      Học hỏi từ các nhà lãnh đạo toàn cầu và định hình tương lai.
+    </p>
+  </div>
+</Link>
 
-            {/* Workshops Card */}
-            <Link
-              href="/workshops"
-              className="group relative overflow-hidden rounded-3xl border border-zinc-800/50 hover:border-zinc-700/50 transition-all p-4 lg:p-5 min-h-[160px] lg:min-h-[190px]"
-              style={{
-                background: "rgba(0, 0, 0, 0.4)",
-                backdropFilter: "blur(10px)",
-              }}
-            >
-              <p className="text-xs text-[#D1D5DB] mb-2">Hội thảo</p>
-              <div className="flex items-start justify-between gap-3">
-                <h2 className="text-lg lg:text-xl font-semibold text-white leading-tight">
-                  Thực Hành <br /> Trực Tiếp
-                </h2>
-                <p className="text-[11px] leading-tight text-[#6B7280] max-w-[130px]">
-                  Khám phá các hội thảo do chuyên gia hàng đầu dẫn dắt.
-                </p>
-              </div>
-            </Link>
+{/* Workshops Card */}
+<Link
+  href="/workshops"
+  className="group relative overflow-hidden rounded-3xl border border-zinc-800/50 
+             hover:border-zinc-600/50 transition-all p-5 lg:p-6 min-h-[180px] lg:min-h-[210px]"
+  style={{
+    background: "rgba(0, 0, 0, 0.45)",
+    backdropFilter: "blur(10px)",
+  }}
+>
+  <p className="text-sm text-[#D1D5DB] mb-3">Hội thảo</p>
+  <div className="flex items-start justify-between gap-4">
+    <h2 className="text-xl lg:text-2xl font-semibold text-white leading-snug">
+      Thực Hành <br /> Trực Tiếp
+    </h2>
+    <p className="text-xs lg:text-sm text-[#9CA3AF] leading-snug max-w-[160px]">
+      Khám phá các hội thảo do chuyên gia hàng đầu dẫn dắt.
+    </p>
+  </div>
+</Link>
 
-            {/* Afterparty Card */}
-            <Link
-              href="/afterparty"
-              className="group relative overflow-hidden rounded-3xl border border-zinc-800/50 hover:border-zinc-700/50 transition-all p-4 lg:p-5 min-h-[160px] lg:min-h-[190px]"
-              style={{
-                background: "rgba(0, 0, 0, 0.4)",
-                backdropFilter: "blur(10px)",
-              }}
-            >
-              <p className="text-xs text-[#6B7280] mb-2">Tiệc sau sự kiện</p>
-              <div className="flex items-start justify-between gap-3">
-                <h2 className="text-lg lg:text-xl font-semibold text-white leading-tight">
-                  Ăn Mừng <br /> Cùng Nhau
-                </h2>
-                <p className="text-[11px] leading-tight text-[#6B7280] max-w-[130px]">
-                  Tham gia cùng chúng tôi trong một đêm tiệc khó quên.
-                </p>
-              </div>
-            </Link>
+{/* Afterparty Card */}
+<Link
+  href="/afterparty"
+  className="group relative overflow-hidden rounded-3xl border border-zinc-800/50 
+             hover:border-zinc-600/50 transition-all p-5 lg:p-6 min-h-[180px] lg:min-h-[210px]"
+  style={{
+    background: "rgba(0, 0, 0, 0.45)",
+    backdropFilter: "blur(10px)",
+  }}
+>
+  <p className="text-sm text-[#D1D5DB] mb-3">Tiệc sau sự kiện</p>
+  <div className="flex items-start justify-between gap-4">
+    <h2 className="text-xl lg:text-2xl font-semibold text-white leading-snug">
+      Ăn Mừng <br /> Cùng Nhau
+    </h2>
+    <p className="text-xs lg:text-sm text-[#9CA3AF] leading-snug max-w-[160px]">
+      Tham gia cùng chúng tôi trong một đêm tiệc khó quên.
+    </p>
+  </div>
+</Link>
+
           </div>
         </div>
       </div>

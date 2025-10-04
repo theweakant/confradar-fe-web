@@ -6,3 +6,9 @@ export default function ReviewerPage() {
     </div>
   );
 }
+
+// import AdminDashboard from "@/components/(user)/workspace/admin/AdminDashboard/AdminDashboard";
+
+// export default function ReviewerPage() {
+//   return <ReviewerDashboard />;
+// }

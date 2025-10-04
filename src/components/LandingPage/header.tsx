@@ -26,7 +26,7 @@ export default function Header() {
               href="#events"
               className="text-white hover:text-orange-600 transition-colors text-sm font-medium uppercase tracking-wide"
             >
-              Sự kiện
+              Radar
             </Link>
             <Link
               href="#speakers"

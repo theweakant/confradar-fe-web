@@ -55,7 +55,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
       ],
       reviewer: [
         { href: `/workspace/reviewer`, icon: LayoutDashboard, label: "Tổng quan" },
-        { href: `/workspace/reviewer/assignments`, icon: FileText, label: "Bài cần đánh giá" },
+        { href: `/workspace/reviewer/manage-paper`, icon: FileText, label: "Bài cần đánh giá" },
         { href: `/workspace/reviewer/completed`, icon: FileText, label: "Đã hoàn thành" },
         { href: `/workspace/reviewer/calendar`, icon: Calendar, label: "Lịch trình" },
         { href: `/workspace/reviewer/settings`, icon: Settings, label: "Cài đặt" },

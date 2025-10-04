@@ -12,6 +12,20 @@ export function formatCurrency(amount: number | undefined): string {
   }).format(amount || 0)
 }
 
+export const truncateContent = (content: string, maxLength: number = 40): string => {
+  if (content.length <= maxLength) return content // Trả về nguyên nội dung nếu nó ngắn hơn maxLength
+
+  const words = content.split(' ')
+  let truncated = ''
+
+  for (const word of words) {
+    if ((truncated + word).length > maxLength) break
+    truncated += (truncated ? ' ' : '') + word
+  }
+
+  return truncated.trim() + '...'
+}
+
 //date
 export const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString("vi-VN", {
@@ -34,17 +48,5 @@ export function convertDuration(duration: string) {
 }
 
 
-export const truncateContent = (content: string, maxLength: number = 40): string => {
-  if (content.length <= maxLength) return content // Trả về nguyên nội dung nếu nó ngắn hơn maxLength
 
-  const words = content.split(' ')
-  let truncated = ''
-
-  for (const word of words) {
-    if ((truncated + word).length > maxLength) break
-    truncated += (truncated ? ' ' : '') + word
-  }
-
-  return truncated.trim() + '...'
-}
 
