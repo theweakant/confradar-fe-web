@@ -14,8 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
-
+import Link from "next/link"
 
 import { SearchFilter } from "@/components/molecules/SearchFilter";
 import { PaperTable } from "@/components/(user)/workspace/reviewer/ManagePaper/PaperTable/index";
@@ -25,7 +24,6 @@ import { mockPaperData } from "@/data/mockPaper.data";
 
 
 export default function ReviewerManagePage() {
-const navigate = useNavigate();
 
 
   const [papers, setPapers] = useState<Paper[]>(mockPaperData);
@@ -125,23 +123,12 @@ const navigate = useNavigate();
                 Quản lý bài báo và đánh giá trên ConfRadar
               </p>
             </div>
-            <Button
-              onClick={() => {
-                        navigate("/workspace/reviewer/manage-paper/assigned-papper-list")
-
-              }}
-              className="flex items-center gap-2 whitespace-nowrap"
-            >
-              <ScanEye  className="w-5 h-5" />
-              Xem danh sách bài báo đang chờ 
-            </Button>
-
-                <Button
-      onClick={() =>
-        navigate("/workspace/reviewer/manage-paper/assigned-papper-list")
-      }
-      className="flex items-center gap-2 whitespace-nowrap"
-    ></Button>
+            <Link href="/workspace/reviewer/manage-paper/assigned-papper-list">
+              <Button className="flex items-center gap-2 whitespace-nowrap">
+                <ScanEye className="w-5 h-5" />
+                Xem danh sách bài báo đang chờ 
+              </Button>
+            </Link>
           </div>
         </div>
 
