@@ -12,9 +12,10 @@ import { Loader2, User, Mail, Lock, Phone, Calendar, Users } from "lucide-react"
 export default function Register() {
   const router = useRouter()
   const [formData, setFormData] = useState({
-    fullName: "",
+    userName: "",
     email: "",
     password: "",
+    confirmPassword: "",
     phoneNumber: "",
     gender: "",
     birthDay: "",
@@ -45,19 +46,19 @@ export default function Register() {
 
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-3">
-              {/* Full Name */}
+              {/* User Name */}
               <div className="space-y-1">
-                <Label htmlFor="fullName" className="text-xs font-medium">
-                  Họ và Tên <span className="text-destructive">*</span>
+                <Label htmlFor="userName" className="text-xs font-medium">
+                  Tên đăng nhập <span className="text-destructive">*</span>
                 </Label>
                 <div className="relative">
                   <User className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-muted-foreground w-3.5 h-3.5" />
                   <Input
-                    id="fullName"
+                    id="userName"
                     type="text"
-                    placeholder="Nhập họ và tên"
-                    value={formData.fullName}
-                    onChange={(e) => handleInputChange("fullName", e.target.value)}
+                    placeholder="Tên đăng nhập"
+                    value={formData.userName}
+                    onChange={(e) => handleInputChange("userName", e.target.value)}
                     disabled={isLoading}
                     className="pl-9 h-9 text-sm"
                     required
@@ -98,6 +99,26 @@ export default function Register() {
                     placeholder="Tạo mật khẩu"
                     value={formData.password}
                     onChange={(e) => handleInputChange("password", e.target.value)}
+                    disabled={isLoading}
+                    className="pl-9 h-9 text-sm"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Confirm Password */}
+              <div className="space-y-1">
+                <Label htmlFor="confirmPassword" className="text-xs font-medium">
+                  Nhập lại mật khẩu <span className="text-destructive">*</span>
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-muted-foreground w-3.5 h-3.5" />
+                  <Input
+                    id="confirmPassword"
+                    type="confirmPassword"
+                    placeholder="Nhập lại mật khẩu"
+                    value={formData.confirmPassword}
+                    onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
                     disabled={isLoading}
                     className="pl-9 h-9 text-sm"
                     required

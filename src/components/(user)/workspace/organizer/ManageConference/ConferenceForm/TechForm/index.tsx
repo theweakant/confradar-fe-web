@@ -4,8 +4,7 @@ import { FormInput } from "@/components/molecules/FormInput";
 import { FormSelect } from "@/components/molecules/FormSelect";
 import { FormTextArea } from "@/components/molecules/FormTextArea";
 import { validationConfRules } from "@/lib/utils/validationConfRules";
-import type { 
-  Conference, 
+import type {    
   ConferenceFormData, 
   ConferenceFormProps 
 } from "@/types/conference.type";
@@ -13,47 +12,64 @@ import type {
 export function TechConferenceForm({ 
   conference, 
   onSave, 
-  onCancel 
+  onCancel
 }: ConferenceFormProps) {
   const [formData, setFormData] = useState<ConferenceFormData>({
-    title: conference?.title || "",
+    conferenceName: conference?.conferenceName || "",
     description: conference?.description || "",
     startDate: conference?.startDate || "",
     endDate: conference?.endDate || "",
-    location: conference?.location || "",
-    venue: conference?.venue || "",
-    category: conference?.category || "technology",
-    status: conference?.status || "upcoming",
-    registrationDeadline: conference?.registrationDeadline || "",
-    maxAttendees: conference?.maxAttendees || 0,
-    registrationFee: conference?.registrationFee || 0,
-    organizerName: conference?.organizerName || "",
-    organizerEmail: conference?.organizerEmail || "",
-    website: conference?.website || "",
-    tags: conference?.tags || []
+    capacity: conference?.capacity || 0,
+    address: conference?.address || "",
+    bannerImageUrl: conference?.bannerImageUrl || "",
+    isInternalHosted: conference?.isInternalHosted ?? true,
+    conferenceRanking: conference?.conferenceRanking || "",
+    userId: conference?.userId || "",
+    city: conference?.city || "",
+    country: conference?.country || "",
+    conferenceCategoryId: conference?.conferenceCategoryId || "",
+    conferenceTypeId: conference?.conferenceTypeId || "tech",
+    globalStatus: conference?.globalStatus || "draft",
+    isActive: conference?.isActive ?? true,
+    createdAt: conference?.createdAt || ""
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof ConferenceFormData, string>>>({});
   const [touched, setTouched] = useState<Set<keyof ConferenceFormData>>(new Set());
-  const [tagInput, setTagInput] = useState("");
+  
+  const [tickets, setTickets] = useState<Array<{
+    id: string;
+    ticketName: string;
+    ticketDescription: string;
+    ticketPrice: number;
+    actualPrice: number;
+    availableQuantity: number;
+  }>>([]);
+  
+  const [isAddingTicket, setIsAddingTicket] = useState(false);
+  const [newTicket, setNewTicket] = useState({
+    ticketName: "",
+    ticketDescription: "",
+    ticketPrice: 0,
+    actualPrice: 0,
+    availableQuantity: 0
+  });
 
   const handleChange = (
     field: keyof ConferenceFormData, 
-    value: string | number | string[]
+    value: string | number | boolean
   ) => {
     setFormData((prev: ConferenceFormData) => ({ ...prev, [field]: value }));
     
-    if (field !== "tags") {
-      validateField(field, value);
-      setTouched((prev: Set<keyof ConferenceFormData>) => new Set(prev).add(field));
-    }
+    validateField(field, value);
+    setTouched((prev: Set<keyof ConferenceFormData>) => new Set(prev).add(field));
   };
 
   const validateField = (
     field: keyof ConferenceFormData, 
-    value: string | number | string[]
+    value: string | number | boolean
   ): boolean => {
-    if (Array.isArray(value)) return true;
+    if (typeof value === "boolean") return true;
 
     if (typeof field !== "string") return true;
     const fieldRules = validationConfRules[field];
@@ -81,7 +97,7 @@ export function TechConferenceForm({
     const allFields = Object.keys(formData) as Array<keyof ConferenceFormData>;
     
     allFields.forEach((field: keyof ConferenceFormData) => {
-      if (field === "tags" || field === "website") return;
+      if (field === "bannerImageUrl" || field === "userId" || field === "isInternalHosted" || field === "isActive" || field === "createdAt") return;
       
       const fieldValue = formData[field];
       const fieldIsValid = validateField(field, fieldValue);
@@ -92,19 +108,10 @@ export function TechConferenceForm({
       }
     });
 
-    // Date validations
     if (new Date(formData.endDate) < new Date(formData.startDate)) {
       setErrors((prev: Partial<Record<keyof ConferenceFormData, string>>) => ({ 
         ...prev, 
         endDate: "Ngày kết thúc phải sau ngày bắt đầu" 
-      }));
-      isValid = false;
-    }
-
-    if (new Date(formData.registrationDeadline) > new Date(formData.startDate)) {
-      setErrors((prev: Partial<Record<keyof ConferenceFormData, string>>) => ({ 
-        ...prev, 
-        registrationDeadline: "Hạn đăng ký phải trước ngày bắt đầu" 
       }));
       isValid = false;
     }
@@ -114,54 +121,114 @@ export function TechConferenceForm({
 
   const handleSubmit = () => {
     if (validate()) {
-      onSave(formData);
+      const submitData = {
+        ...formData,
+        createdAt: conference?.createdAt || new Date().toISOString(),
+        tickets: tickets // Gửi kèm danh sách vé
+      };
+      onSave(submitData);
     }
   };
 
-  const handleAddTag = () => {
-    const trimmedTag = tagInput.trim();
-    if (trimmedTag && !formData.tags.includes(trimmedTag)) {
-      handleChange("tags", [...formData.tags, trimmedTag]);
-      setTagInput("");
+  const handleAddTicket = () => {
+    if (!newTicket.ticketName || !newTicket.ticketPrice || !newTicket.availableQuantity) {
+      alert("Vui lòng điền đầy đủ thông tin vé");
+      return;
     }
+    
+    const ticket = {
+      id: `ticket-${Date.now()}`,
+      ...newTicket,
+      actualPrice: newTicket.actualPrice || newTicket.ticketPrice
+    };
+    
+    setTickets([...tickets, ticket]);
+    setNewTicket({
+      ticketName: "",
+      ticketDescription: "",
+      ticketPrice: 0,
+      actualPrice: 0,
+      availableQuantity: 0
+    });
+    setIsAddingTicket(false);
   };
 
-  const handleRemoveTag = (tag: string) => {
-    handleChange("tags", formData.tags.filter((t: string) => t !== tag));
+  const handleRemoveTicket = (id: string) => {
+    setTickets(tickets.filter(t => t.id !== id));
+  };
+
+  const handleEditTicket = (id: string) => {
+    const ticket = tickets.find(t => t.id === id);
+    if (ticket) {
+      setNewTicket({
+        ticketName: ticket.ticketName,
+        ticketDescription: ticket.ticketDescription,
+        ticketPrice: ticket.ticketPrice,
+        actualPrice: ticket.actualPrice,
+        availableQuantity: ticket.availableQuantity
+      });
+      handleRemoveTicket(id);
+      setIsAddingTicket(true);
+    }
   };
 
   const categoryOptions = [
-    { value: "technology", label: "Công nghệ" },
-    { value: "research", label: "Nghiên cứu" },
-    { value: "business", label: "Kinh doanh" },
-    { value: "education", label: "Giáo dục" }
+    { value: "ai-ml", label: "AI & Machine Learning" },
+    { value: "web-dev", label: "Web Development" },
+    { value: "cloud", label: "Cloud Computing" },
+    { value: "cybersecurity", label: "Cybersecurity" },
+    { value: "data-science", label: "Data Science" },
+    { value: "mobile", label: "Mobile Development" }
   ];
 
-  const statusOptions = [
-    { value: "upcoming", label: "Sắp diễn ra" },
+  const rankingOptions = [
+    { value: "ieee", label: "IEEE" },
+    { value: "acm", label: "ACM" },
+    { value: "springer", label: "Springer" },
+    { value: "elsevier", label: "Elsevier" },
+    { value: "scopus", label: "Scopus" },
+    { value: "other", label: "Khác" }
+  ];
+
+  const globalStatusOptions = [
+    { value: "draft", label: "Nháp" },
+    { value: "published", label: "Đã xuất bản" },
+    { value: "open", label: "Đang mở đăng ký" },
+    { value: "closed", label: "Đã đóng đăng ký" },
     { value: "ongoing", label: "Đang diễn ra" },
     { value: "completed", label: "Đã kết thúc" },
     { value: "cancelled", label: "Đã hủy" }
   ];
 
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="md:col-span-2">
-          <FormInput
-            label="Tiêu đề hội thảo"
-            name="title"
-            value={formData.title}
-            onChange={(value: string) => handleChange("title", value)}
-            onBlur={() => validateField("title", formData.title)}
-            required
-            error={touched.has("title") ? errors.title : undefined}
-            success={touched.has("title") && !errors.title}
-            placeholder="VD: Hội thảo AI và Machine Learning 2025"
-          />
-        </div>
+  const countryOptions = [
+    { value: "VN", label: "Việt Nam" },
+    { value: "US", label: "United States" },
+    { value: "UK", label: "United Kingdom" },
+    { value: "SG", label: "Singapore" },
+    { value: "JP", label: "Japan" },
+    { value: "KR", label: "South Korea" }
+  ];
 
-        <div className="md:col-span-2">
+  return (
+    <div className="space-y-8 max-w-5xl mx-auto">
+      {/* THÔNG TIN CƠ BẢN */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">
+          Thông tin cơ bản
+        </h3>
+        <div className="space-y-4">
+          <FormInput
+            label="Tên hội thảo"
+            name="conferenceName"
+            value={formData.conferenceName}
+            onChange={(value: string) => handleChange("conferenceName", value)}
+            onBlur={() => validateField("conferenceName", formData.conferenceName)}
+            required
+            error={touched.has("conferenceName") ? errors.conferenceName : undefined}
+            success={touched.has("conferenceName") && !errors.conferenceName}
+            placeholder="VD: International Conference on AI and Machine Learning 2025"
+          />
+
           <FormTextArea
             label="Mô tả"
             name="description"
@@ -172,204 +239,339 @@ export function TechConferenceForm({
             placeholder="Mô tả chi tiết về hội thảo..."
             rows={4}
           />
-        </div>
 
-        <FormInput
-          label="Ngày bắt đầu"
-          name="startDate"
-          type="date"
-          value={formData.startDate}
-          onChange={(value: string) => handleChange("startDate", value)}
-          onBlur={() => validateField("startDate", formData.startDate)}
-          required
-          error={touched.has("startDate") ? errors.startDate : undefined}
-          success={touched.has("startDate") && !errors.startDate}
-        />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormInput
+              label="Ngày bắt đầu"
+              name="startDate"
+              type="date"
+              value={formData.startDate}
+              onChange={(value: string) => handleChange("startDate", value)}
+              onBlur={() => validateField("startDate", formData.startDate)}
+              required
+              error={touched.has("startDate") ? errors.startDate : undefined}
+              success={touched.has("startDate") && !errors.startDate}
+            />
 
-        <FormInput
-          label="Ngày kết thúc"
-          name="endDate"
-          type="date"
-          value={formData.endDate}
-          onChange={(value: string) => handleChange("endDate", value)}
-          onBlur={() => validateField("endDate", formData.endDate)}
-          required
-          error={touched.has("endDate") ? errors.endDate : undefined}
-          success={touched.has("endDate") && !errors.endDate}
-        />
+            <FormInput
+              label="Ngày kết thúc"
+              name="endDate"
+              type="date"
+              value={formData.endDate}
+              onChange={(value: string) => handleChange("endDate", value)}
+              onBlur={() => validateField("endDate", formData.endDate)}
+              required
+              error={touched.has("endDate") ? errors.endDate : undefined}
+              success={touched.has("endDate") && !errors.endDate}
+            />
+          </div>
 
-        <FormInput
-          label="Địa điểm"
-          name="location"
-          value={formData.location}
-          onChange={(value: string) => handleChange("location", value)}
-          onBlur={() => validateField("location", formData.location)}
-          required
-          error={touched.has("location") ? errors.location : undefined}
-          success={touched.has("location") && !errors.location}
-          placeholder="VD: Hồ Chí Minh"
-        />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormSelect
+              label="Danh mục"
+              name="conferenceCategoryId"
+              value={formData.conferenceCategoryId}
+              onChange={(value: string) => handleChange("conferenceCategoryId", value)}
+              options={categoryOptions}
+              required
+              error={errors.conferenceCategoryId}
+            />
 
-        <FormInput
-          label="Địa chỉ cụ thể"
-          name="venue"
-          value={formData.venue}
-          onChange={(value: string) => handleChange("venue", value)}
-          onBlur={() => validateField("venue", formData.venue)}
-          required
-          error={touched.has("venue") ? errors.venue : undefined}
-          success={touched.has("venue") && !errors.venue}
-          placeholder="VD: Trung tâm Hội nghị Quốc gia"
-        />
+            <FormSelect
+              label="Xếp hạng hội thảo"
+              name="conferenceRanking"
+              value={formData.conferenceRanking}
+              onChange={(value: string) => handleChange("conferenceRanking", value)}
+              options={rankingOptions}
+              required
+              error={errors.conferenceRanking}
+            />
+          </div>
 
-        <FormSelect
-          label="Danh mục"
-          name="category"
-          value={formData.category}
-          onChange={(value: string) => handleChange("category", value)}
-          options={categoryOptions}
-          required
-          error={errors.category}
-        />
-
-        <FormSelect
-          label="Trạng thái"
-          name="status"
-          value={formData.status}
-          onChange={(value: string) => handleChange("status", value)}
-          options={statusOptions}
-          required
-          error={errors.status}
-        />
-
-        <FormInput
-          label="Hạn đăng ký"
-          name="registrationDeadline"
-          type="date"
-          value={formData.registrationDeadline}
-          onChange={(value: string) => handleChange("registrationDeadline", value)}
-          onBlur={() => validateField("registrationDeadline", formData.registrationDeadline)}
-          required
-          error={touched.has("registrationDeadline") ? errors.registrationDeadline : undefined}
-          success={touched.has("registrationDeadline") && !errors.registrationDeadline}
-        />
-
-        <FormInput
-          label="Số lượng tối đa"
-          name="maxAttendees"
-          type="number"
-          value={formData.maxAttendees}
-          onChange={(value: string) => handleChange("maxAttendees", Number(value))}
-          onBlur={() => validateField("maxAttendees", formData.maxAttendees)}
-          required
-          error={touched.has("maxAttendees") ? errors.maxAttendees : undefined}
-          success={touched.has("maxAttendees") && !errors.maxAttendees}
-          placeholder="VD: 500"
-        />
-
-        <FormInput
-          label="Phí đăng ký (VNĐ)"
-          name="registrationFee"
-          type="number"
-          value={formData.registrationFee}
-          onChange={(value: string) => handleChange("registrationFee", Number(value))}
-          placeholder="VD: 500000"
-        />
-
-        <FormInput
-          label="Tên người tổ chức"
-          name="organizerName"
-          value={formData.organizerName}
-          onChange={(value: string) => handleChange("organizerName", value)}
-          onBlur={() => validateField("organizerName", formData.organizerName)}
-          required
-          error={touched.has("organizerName") ? errors.organizerName : undefined}
-          success={touched.has("organizerName") && !errors.organizerName}
-          placeholder="VD: Nguyễn Văn A"
-        />
-
-        <FormInput
-          label="Email người tổ chức"
-          name="organizerEmail"
-          type="email"
-          value={formData.organizerEmail}
-          onChange={(value: string) => handleChange("organizerEmail", value)}
-          onBlur={() => validateField("organizerEmail", formData.organizerEmail)}
-          required
-          error={touched.has("organizerEmail") ? errors.organizerEmail : undefined}
-          success={touched.has("organizerEmail") && !errors.organizerEmail}
-          placeholder="VD: organizer@example.com"
-        />
-
-        <div className="md:col-span-2">
           <FormInput
-            label="Website (tùy chọn)"
-            name="website"
+            label="Banner Image URL (tùy chọn)"
+            name="bannerImageUrl"
             type="url"
-            value={formData.website || ""}
-            onChange={(value: string) => handleChange("website", value)}
-            placeholder="https://conference-website.com"
+            value={formData.bannerImageUrl || ""}
+            onChange={(value: string) => handleChange("bannerImageUrl", value)}
+            placeholder="https://example.com/banner.jpg"
           />
         </div>
+      </div>
 
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Tags
-          </label>
-          <div className="flex gap-2 mb-3">
-            <input
-              type="text"
-              value={tagInput}
-              onChange={(e) => setTagInput(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleAddTag();
-                }
-              }}
-              placeholder="Nhập tag và nhấn Enter"
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      {/* ĐỊA ĐIỂM */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">
+          Địa điểm
+        </h3>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormSelect
+              label="Quốc gia"
+              name="country"
+              value={formData.country}
+              onChange={(value: string) => handleChange("country", value)}
+              options={countryOptions}
+              required
+              error={errors.country}
             />
-            <Button
-              type="button"
-              onClick={handleAddTag}
-              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-            >
-              Thêm
-            </Button>
+
+            <FormInput
+              label="Thành phố"
+              name="city"
+              value={formData.city}
+              onChange={(value: string) => handleChange("city", value)}
+              onBlur={() => validateField("city", formData.city)}
+              required
+              error={touched.has("city") ? errors.city : undefined}
+              success={touched.has("city") && !errors.city}
+              placeholder="VD: Hồ Chí Minh"
+            />
           </div>
-          <div className="flex flex-wrap gap-2">
-            {formData.tags.map((tag: string) => (
-              <span
-                key={tag}
-                className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm flex items-center gap-2"
+
+          <FormInput
+            label="Địa chỉ cụ thể"
+            name="address"
+            value={formData.address}
+            onChange={(value: string) => handleChange("address", value)}
+            onBlur={() => validateField("address", formData.address)}
+            required
+            error={touched.has("address") ? errors.address : undefined}
+            success={touched.has("address") && !errors.address}
+            placeholder="VD: 227 Nguyễn Văn Cừ, Quận 5"
+          />
+        </div>
+      </div>
+
+      {/* SỨC CHỨA & VÉ */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">
+          Sức chứa & Vé
+        </h3>
+        <div className="space-y-6">
+          <FormInput
+            label="Sức chứa tối đa"
+            name="capacity"
+            type="number"
+            value={formData.capacity}
+            onChange={(value: string) => handleChange("capacity", Number(value))}
+            onBlur={() => validateField("capacity", formData.capacity)}
+            required
+            error={touched.has("capacity") ? errors.capacity : undefined}
+            success={touched.has("capacity") && !errors.capacity}
+            placeholder="VD: 500"
+          />
+
+          {/* Ticket List */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-sm font-medium text-gray-700">
+                Danh sách vé ({tickets.length})
+              </label>
+              <button
+                type="button"
+                onClick={() => setIsAddingTicket(true)}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
               >
-                {tag}
-                <button
-                  type="button"
-                  onClick={() => handleRemoveTag(tag)}
-                  className="hover:text-blue-900 text-lg leading-none"
-                >
-                  ×
-                </button>
-              </span>
-            ))}
+                <span>+</span> Thêm loại vé
+              </button>
+            </div>
+
+            {tickets.length > 0 && (
+              <div className="space-y-2 mb-4">
+                {tickets.map((ticket) => (
+                  <div
+                    key={ticket.id}
+                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"
+                  >
+                    <div className="flex-1">
+                      <h4 className="font-medium text-gray-900">{ticket.ticketName}</h4>
+                      <p className="text-sm text-gray-600 mt-1">{ticket.ticketDescription}</p>
+                      <div className="flex items-center gap-4 mt-2 text-sm">
+                        <span className="text-gray-700">
+                          Giá: <span className="font-semibold text-blue-600">{ticket.ticketPrice.toLocaleString('vi-VN')} VND</span>
+                        </span>
+                        {ticket.actualPrice !== ticket.ticketPrice && (
+                          <span className="text-gray-500 line-through">
+                            {ticket.actualPrice.toLocaleString('vi-VN')} VND
+                          </span>
+                        )}
+                        <span className="text-gray-700">
+                          Số lượng: <span className="font-semibold">{ticket.availableQuantity}</span>
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleEditTicket(ticket.id)}
+                        className="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded"
+                      >
+                        Sửa
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTicket(ticket.id)}
+                        className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded"
+                      >
+                        Xóa
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Add Ticket Form */}
+            {isAddingTicket && (
+              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200 space-y-4">
+                <h4 className="font-medium text-gray-900">Thêm loại vé mới</h4>
+                
+                <FormInput
+                  label="Tên loại vé"
+                  name="ticketName"
+                  value={newTicket.ticketName}
+                  onChange={(value: string) => setNewTicket({...newTicket, ticketName: value})}
+                  placeholder="VD: Vé Early Bird, Vé VIP..."
+                  required
+                />
+
+                <FormTextArea
+                  label="Mô tả vé"
+                  name="ticketDescription"
+                  value={newTicket.ticketDescription}
+                  onChange={(value: string) => setNewTicket({...newTicket, ticketDescription: value})}
+                  placeholder="Mô tả các quyền lợi của loại vé này..."
+                  rows={2}
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <FormInput
+                    label="Giá bán (VND)"
+                    name="ticketPrice"
+                    type="number"
+                    value={newTicket.ticketPrice}
+                    onChange={(value: string) => setNewTicket({...newTicket, ticketPrice: Number(value)})}
+                    placeholder="0"
+                    required
+                  />
+
+                  <FormInput
+                    label="Giá gốc (VND)"
+                    name="actualPrice"
+                    type="number"
+                    value={newTicket.actualPrice}
+                    onChange={(value: string) => setNewTicket({...newTicket, actualPrice: Number(value)})}
+                    placeholder="Để trống nếu không có"
+                  />
+
+                  <FormInput
+                    label="Số lượng"
+                    name="availableQuantity"
+                    type="number"
+                    value={newTicket.availableQuantity}
+                    onChange={(value: string) => setNewTicket({...newTicket, availableQuantity: Number(value)})}
+                    placeholder="0"
+                    required
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsAddingTicket(false);
+                      setNewTicket({
+                        ticketName: "",
+                        ticketDescription: "",
+                        ticketPrice: 0,
+                        actualPrice: 0,
+                        availableQuantity: 0
+                      });
+                    }}
+                    className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleAddTicket}
+                    className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  >
+                    Thêm vé
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {tickets.length === 0 && !isAddingTicket && (
+              <div className="text-center py-8 text-gray-500 text-sm bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                Chưa có loại vé nào. Nhấn "Thêm loại vé" để bắt đầu.
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="flex justify-end gap-3 pt-4 border-t">
+      {/* TRẠNG THÁI & CÀI ĐẶT */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">
+          Trạng thái & Cài đặt
+        </h3>
+        <div className="space-y-4">
+          <FormSelect
+            label="Trạng thái"
+            name="globalStatus"
+            value={formData.globalStatus}
+            onChange={(value: string) => handleChange("globalStatus", value)}
+            options={globalStatusOptions}
+            required
+            error={errors.globalStatus}
+          />
+
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+              <input
+                type="checkbox"
+                id="isActive"
+                checked={formData.isActive}
+                onChange={(e) => handleChange("isActive", e.target.checked)}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+              />
+              <label htmlFor="isActive" className="text-sm font-medium text-gray-700 cursor-pointer flex-1">
+                Kích hoạt hội thảo
+              </label>
+            </div>
+
+            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+              <input
+                type="checkbox"
+                id="isInternalHosted"
+                checked={formData.isInternalHosted}
+                onChange={(e) => handleChange("isInternalHosted", e.target.checked)}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+              />
+              <label htmlFor="isInternalHosted" className="text-sm font-medium text-gray-700 cursor-pointer flex-1">
+                Tổ chức nội bộ
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* BUTTONS */}
+      <div className="flex justify-end gap-3 pt-4 border-t bg-white p-6 rounded-lg sticky bottom-0 shadow-lg">
         <Button
           type="button"
           onClick={onCancel}
-          className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
         >
           Hủy
         </Button>
         <Button
           type="button"
           onClick={handleSubmit}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm"
         >
           {conference ? "Cập nhật" : "Thêm mới"}
         </Button>

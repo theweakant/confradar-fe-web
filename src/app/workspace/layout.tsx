@@ -43,6 +43,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
         { href: `/workspace/admin`, icon: Shield, label: "Tổng quan" },
         { href: `/workspace/admin/manage-user`, icon: Users, label: "Quản lý người dùng" },
         { href: `/workspace/admin/manage-conference`, icon: Calendar, label: "Quản lý hội nghị" },
+        { href: `/workspace/admin/manage-accommodation`, icon: Home, label: "Quản lý địa điểm" },
         { href: `/workspace/admin/report`, icon: FileText, label: "Báo cáo" },
         { href: `/workspace/admin/system-setting`, icon: Settings, label: "Cài đặt hệ thống" },
       ],
