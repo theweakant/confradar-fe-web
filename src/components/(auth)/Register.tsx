@@ -1,5 +1,6 @@
 "use client"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -115,7 +116,7 @@ export default function Register() {
                   <Lock className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-muted-foreground w-3.5 h-3.5" />
                   <Input
                     id="confirmPassword"
-                    type="confirmPassword"
+                    type="password"
                     placeholder="Nhập lại mật khẩu"
                     value={formData.confirmPassword}
                     onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
@@ -224,10 +225,12 @@ export default function Register() {
 
       {/* Right side - Image (60%) */}
       <div className="hidden lg:block lg:w-3/5 relative bg-gradient-to-br from-blue-50 to-purple-50">
-        <img
+        <Image
           src="/professional-conference-seminar-business-meeting-p.jpg"
           alt="Conference and seminar"
-          className="absolute inset-0 w-full h-full object-cover"
+          fill
+          className="object-cover"
+          priority
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-12 text-white">

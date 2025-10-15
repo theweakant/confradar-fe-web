@@ -1,6 +1,6 @@
 "use client";
 
-import { Users, Calendar, FileText, TrendingUp, Activity, DollarSign } from "lucide-react";
+import { Users, Calendar, FileText, TrendingUp, Activity } from "lucide-react";
 
 export default function AdminDashboard() {
   const stats = [

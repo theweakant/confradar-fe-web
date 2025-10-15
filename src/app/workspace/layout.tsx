@@ -16,10 +16,23 @@ import {
   Shield,
   Building2,
   GraduationCap,
-  UserCircle,
   Home
 } from "lucide-react";
 import { useState } from "react";
+import { LucideIcon } from "lucide-react";
+
+// Define types for menu items and role info
+interface MenuItem {
+  href: string;
+  icon: LucideIcon;
+  label: string;
+}
+
+interface RoleInfo {
+  name: string;
+  icon: LucideIcon;
+  color: string;
+}
 
 export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -31,14 +44,8 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
   if (role === "user") role = "guest"; // gộp user thành guest
   
   // Cấu hình menu theo từng role
-  const getMenuItems = () => {
-    const commonItems = [
-      { href: `/workspace/${role}`, icon: Home, label: "Trang chủ" },
-      { href: `/workspace/${role}/profile`, icon: UserCircle, label: "Hồ sơ" },
-      { href: `/workspace/${role}/settings`, icon: Settings, label: "Cài đặt" },
-    ];
-
-    const roleSpecificItems: Record<string, any[]> = {
+  const getMenuItems = (): MenuItem[] => {
+    const roleSpecificItems: Record<string, MenuItem[]> = {
       admin: [
         { href: `/workspace/admin`, icon: Shield, label: "Tổng quan" },
         { href: `/workspace/admin/manage-user`, icon: Users, label: "Quản lý người dùng" },
@@ -80,8 +87,8 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
     return roleSpecificItems[role] || roleSpecificItems.guest;
   };
 
-  const getRoleInfo = () => {
-    const roleInfo: Record<string, { name: string; icon: any; color: string }> = {
+  const getRoleInfo = (): RoleInfo => {
+    const roleInfo: Record<string, RoleInfo> = {
       admin: { name: "Quản trị viên", icon: Shield, color: "bg-red-500" },
       organizer: { name: "Tổ chức", icon: Building2, color: "bg-purple-500" },
       reviewer: { name: "Đánh giá viên", icon: GraduationCap, color: "bg-orange-500" },

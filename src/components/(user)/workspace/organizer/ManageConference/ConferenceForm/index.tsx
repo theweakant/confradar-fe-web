@@ -5,7 +5,6 @@ import { FormSelect } from "@/components/molecules/FormSelect";
 import { FormTextArea } from "@/components/molecules/FormTextArea";
 import { validationConfRules } from "@/lib/utils/validationConfRules";
 import type { 
-  Conference, 
   ConferenceFormData, 
   ConferenceFormProps 
 } from "@/types/conference.type";
@@ -16,7 +15,7 @@ export function ConferenceForm({
   onCancel 
 }: ConferenceFormProps) {
   const [formData, setFormData] = useState<ConferenceFormData>({
-    title: conference?.title || "",
+    conferenceName: conference?.conferenceName || "",
     description: conference?.description || "",
     startDate: conference?.startDate || "",
     endDate: conference?.endDate || "",
@@ -150,13 +149,13 @@ export function ConferenceForm({
         <div className="md:col-span-2">
           <FormInput
             label="Tiêu đề hội thảo"
-            name="title"
-            value={formData.title}
-            onChange={(value: string) => handleChange("title", value)}
-            onBlur={() => validateField("title", formData.title)}
+            name="conferenceName"
+            value={formData.conferenceName}
+            onChange={(value: string) => handleChange("conferenceName", value)}
+            onBlur={() => validateField("conferenceName", formData.conferenceName)}
             required
-            error={touched.has("title") ? errors.title : undefined}
-            success={touched.has("title") && !errors.title}
+            error={touched.has("conferenceName") ? errors.conferenceName : undefined}
+            success={touched.has("conferenceName") && !errors.conferenceName}
             placeholder="VD: Hội thảo AI và Machine Learning 2025"
           />
         </div>

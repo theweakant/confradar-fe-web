@@ -5,7 +5,6 @@ import { FormSelect } from "@/components/molecules/FormSelect";
 import { FormTextArea } from "@/components/molecules/FormTextArea";
 import { validationConfRules } from "@/lib/utils/validationConfRules";
 import type { 
-  Conference, 
   ConferenceFormData, 
   ConferenceFormProps 
 } from "@/types/conference.type";

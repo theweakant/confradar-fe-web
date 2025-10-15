@@ -6,9 +6,8 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2, Mail, Lock, UserCheck, Users, Building2, Shield, Handshake, GraduationCap } from "lucide-react"
+import { Loader2, Mail, Lock, Users, Building2, Shield, Handshake, GraduationCap } from "lucide-react"
 
 export function Login() {
   const router = useRouter()
@@ -62,6 +61,7 @@ export function Login() {
 
   const handleQuickLogin = async (roleValue: string) => {
     setIsLoading(true)
+    setRole(roleValue) // Set the role when quick login is used
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
     const routes = {

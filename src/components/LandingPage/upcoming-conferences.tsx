@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { ConferenceRevealCard } from "@/components/molecules/LandingPage/RevealCard"
 import { Button } from "@/components/ui/button"
 
@@ -75,10 +76,12 @@ export default function UpcomingConferences() {
       <div className="relative min-h-[calc(100vh-200px)]">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0">
-          <img
+          <Image
             src={selectedConference.imageSrc || "/placeholder.svg"}
             alt={selectedConference.title}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            priority
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/90" />
         </div>

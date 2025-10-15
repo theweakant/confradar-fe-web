@@ -1,9 +1,11 @@
 // src/types/user.type.ts
 
 export interface User {
-  id: string;
-  name: string;
+  userId: string;
+  fullName: string;
   email: string;
+  phoneNumber:string;
+  address:string
   role: "admin" | "organizer" | "attendee";
   status: "active" | "inactive";
   registeredConferences: number;

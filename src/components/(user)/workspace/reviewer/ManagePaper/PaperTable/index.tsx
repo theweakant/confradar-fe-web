@@ -1,19 +1,13 @@
 import React from "react";
 import { 
-  Pencil, 
-  Trash2, 
-  Eye,
   Calendar,
-  FileText,
   Users,
   MapPin,
-  Star,
 } from "lucide-react";
 
 import { DataTable, Column } from "@/components/molecules/DataTable";
 import { formatDate } from "@/helper/format";
 import { StatusBadge } from "@/components/atoms/StatusBadge";
-import { ActionButton } from "@/components/atoms/ActionButton";
 import { Paper } from "@/types/paper.type";
 
 import { truncateContent } from "@/helper/format";
@@ -21,16 +15,13 @@ import { truncateContent } from "@/helper/format";
 
 interface PaperTableProps {
   papers: Paper[];
-  onView: (paper: Paper) => void;
-  onEdit: (paper: Paper) => void;
-  onDelete: (id: string) => void;
+  onView?: (paper: Paper) => void;
+  onEdit?: (paper: Paper) => void;
+  onDelete?: (id: string) => void;
 }
 
 export function PaperTable({ 
-  papers, 
-  onView, 
-  onEdit, 
-  onDelete 
+  papers,
 }: PaperTableProps) {
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {

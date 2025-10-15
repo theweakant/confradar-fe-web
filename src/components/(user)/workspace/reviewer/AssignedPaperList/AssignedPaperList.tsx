@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeft, FileText, Calendar, User, Tag } from "lucide-react";
+import {  FileText, Calendar, User, Tag } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 

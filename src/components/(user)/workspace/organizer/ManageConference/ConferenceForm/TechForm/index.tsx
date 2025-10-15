@@ -506,7 +506,7 @@ export function TechConferenceForm({
 
             {tickets.length === 0 && !isAddingTicket && (
               <div className="text-center py-8 text-gray-500 text-sm bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                Chưa có loại vé nào. Nhấn "Thêm loại vé" để bắt đầu.
+                Chưa có loại vé nào. Nhấn &quot;Thêm loại vé&quot; để bắt đầu.
               </div>
             )}
           </div>
