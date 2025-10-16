@@ -5,13 +5,19 @@ import {
   Eye,
   Calendar,
   FileText,
+  MoreVertical,
 } from "lucide-react";
 
 import { DataTable, Column } from "@/components/molecules/DataTable";
 import { formatDate } from "@/helper/format";
 import { StatusBadge } from "@/components/atoms/StatusBadge";
-import { ActionButton } from "@/components/atoms/ActionButton";
 import { User } from "@/types/user.type";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface UserTableProps {
   users: User[];
@@ -118,25 +124,37 @@ export function UserTable({
       header: "Thao tác",
       className: "text-right",
       render: (user) => (
-        <div className="flex items-center justify-end gap-2">
-          <ActionButton
-            onClick={() => onView(user)}
-            icon={<Eye className="w-4 h-4" />}
-            variant="success"
-            tooltip="Xem chi tiết"
-          />
-          <ActionButton
-            onClick={() => onEdit(user)}
-            icon={<Pencil className="w-4 h-4" />}
-            variant="primary"
-            tooltip="Chỉnh sửa"
-          />
-          <ActionButton
-            onClick={() => onDelete(user.id)}
-            icon={<Trash2 className="w-4 h-4" />}
-            variant="danger"
-            tooltip="Xóa"
-          />
+        <div className="flex items-center justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                <MoreVertical className="w-5 h-5 text-gray-600" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem
+                onClick={() => onView(user)}
+                className="cursor-pointer"
+              >
+                <Eye className="w-4 h-4 mr-2 text-green-600" />
+                <span>Xem chi tiết</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onEdit(user)}
+                className="cursor-pointer"
+              >
+                <Pencil className="w-4 h-4 mr-2 text-blue-600" />
+                <span>Chỉnh sửa</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onDelete(user.id)}
+                className="cursor-pointer text-red-600 focus:text-red-600"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                <span>Xóa</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       ),
     },

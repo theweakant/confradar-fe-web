@@ -1,4 +1,3 @@
-import { ReactNode } from "react";
 import { SearchBar } from "./SearchBar";
 import { SelectSection } from "./SelectSection";
 

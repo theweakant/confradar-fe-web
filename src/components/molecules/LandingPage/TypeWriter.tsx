@@ -23,7 +23,6 @@ export function TypewriterHeadline({
 }: TypewriterHeadlineProps) {
   const [currentKeywordIndex, setCurrentKeywordIndex] = useState(0)
   const [displayedText, setDisplayedText] = useState("")
-  const [isTyping, setIsTyping] = useState(true)
   const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
@@ -38,7 +37,7 @@ export function TypewriterHeadline({
 
     const currentKeyword = keywords[currentKeywordIndex]
 
-    if (isTyping && !isDeleting) {
+    if (!isDeleting) {
       // Typing forward
       if (displayedText.length < currentKeyword.length) {
         const timeout = setTimeout(() => {
@@ -52,7 +51,7 @@ export function TypewriterHeadline({
         }, pauseDuration)
         return () => clearTimeout(timeout)
       }
-    } else if (isDeleting) {
+    } else {
       // Deleting backward
       if (displayedText.length > 0) {
         const timeout = setTimeout(() => {
@@ -65,7 +64,7 @@ export function TypewriterHeadline({
         setCurrentKeywordIndex((prev) => (prev + 1) % keywords.length)
       }
     }
-  }, [displayedText, isTyping, isDeleting, currentKeywordIndex, keywords, typingSpeed, pauseDuration])
+  }, [displayedText, isDeleting, currentKeywordIndex, keywords, typingSpeed, pauseDuration])
 
   return (
     <h1 className={className}>

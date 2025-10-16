@@ -1,3 +1,4 @@
+import Image from "next/image"
 import { Marquee } from "@/components/molecules/Marquee"
 import { Button } from "@/components/ui/button"
 
@@ -6,12 +7,14 @@ export default function HomePage() {
     <main className="min-h-screen bg-black">
       {/* Hero Image Section */}
       <section className="relative w-full">
-        <div className="w-full h-[50vh] md:h-[60vh] overflow-hidden">
-        <img
-          src="/images/LandingPage/conf_img/speaker_img.png"
-          alt="Conference speakers and attendees"
-          className="w-full h-full object-cover object-center"
-        />
+        <div className="relative w-full h-[50vh] md:h-[60vh] overflow-hidden">
+          <Image
+            src="/images/LandingPage/conf_img/speaker_img.png"
+            alt="Conference speakers and attendees"
+            fill
+            className="object-cover object-center"
+            priority
+          />
         </div>
       </section>
 

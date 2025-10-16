@@ -16,10 +16,23 @@ import {
   Shield,
   Building2,
   GraduationCap,
-  UserCircle,
   Home
 } from "lucide-react";
 import { useState } from "react";
+import { LucideIcon } from "lucide-react";
+
+// Define types for menu items and role info
+interface MenuItem {
+  href: string;
+  icon: LucideIcon;
+  label: string;
+}
+
+interface RoleInfo {
+  name: string;
+  icon: LucideIcon;
+  color: string;
+}
 
 export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -31,32 +44,26 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
   if (role === "user") role = "guest"; // gộp user thành guest
 
   // Cấu hình menu theo từng role
-  const getMenuItems = () => {
-    const commonItems = [
-      { href: `/workspace/${role}`, icon: Home, label: "Trang chủ" },
-      { href: `/workspace/${role}/profile`, icon: UserCircle, label: "Hồ sơ" },
-      { href: `/workspace/${role}/settings`, icon: Settings, label: "Cài đặt" },
-    ];
-
-    const roleSpecificItems: Record<string, any[]> = {
+  const getMenuItems = (): MenuItem[] => {
+    const roleSpecificItems: Record<string, MenuItem[]> = {
       admin: [
         { href: `/workspace/admin`, icon: Shield, label: "Tổng quan" },
         { href: `/workspace/admin/manage-user`, icon: Users, label: "Quản lý người dùng" },
         { href: `/workspace/admin/manage-conference`, icon: Calendar, label: "Quản lý hội nghị" },
+        { href: `/workspace/admin/manage-accommodation`, icon: Home, label: "Quản lý địa điểm" },
         { href: `/workspace/admin/report`, icon: FileText, label: "Báo cáo" },
         { href: `/workspace/admin/system-setting`, icon: Settings, label: "Cài đặt hệ thống" },
       ],
       organizer: [
         { href: `/workspace/organizer`, icon: LayoutDashboard, label: "Tổng quan" },
-        { href: `/workspace/organizer/conferences`, icon: Calendar, label: "Hội nghị của tôi" },
-        { href: `/workspace/organizer/submissions`, icon: FileText, label: "Bài nộp" },
-        { href: `/workspace/organizer/participants`, icon: Users, label: "Người tham gia" },
-        { href: `/workspace/organizer/settings`, icon: Settings, label: "Cài đặt" },
+        { href: `/workspace/organizer/manage-conference`, icon: Calendar, label: "Quản lí hội nghị" },
+        { href: `/workspace/organizer/manage-paper`, icon: FileText, label: "Abstract chờ duyệt" },
+        { href: `/workspace/organizer/manage-user`, icon: Users, label: "Người tham gia" },
+        // { href: `/workspace/organizer/settings`, icon: Settings, label: "Cài đặt" },
       ],
       reviewer: [
         { href: `/workspace/reviewer`, icon: LayoutDashboard, label: "Tổng quan" },
         { href: `/workspace/reviewer/manage-paper`, icon: FileText, label: "Bài cần đánh giá" },
-        // { href: `/workspace/reviewer/manage-paper/assigned-papper-list`, icon: FileText, label: "Bài cần đánh giá" },
         { href: `/workspace/reviewer/completed`, icon: FileText, label: "Đã hoàn thành" },
         { href: `/workspace/reviewer/calendar`, icon: Calendar, label: "Lịch trình" },
         { href: `/workspace/reviewer/settings`, icon: Settings, label: "Cài đặt" },
@@ -80,8 +87,8 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
     return roleSpecificItems[role] || roleSpecificItems.guest;
   };
 
-  const getRoleInfo = () => {
-    const roleInfo: Record<string, { name: string; icon: any; color: string }> = {
+  const getRoleInfo = (): RoleInfo => {
+    const roleInfo: Record<string, RoleInfo> = {
       admin: { name: "Quản trị viên", icon: Shield, color: "bg-red-500" },
       organizer: { name: "Tổ chức", icon: Building2, color: "bg-purple-500" },
       reviewer: { name: "Đánh giá viên", icon: GraduationCap, color: "bg-orange-500" },

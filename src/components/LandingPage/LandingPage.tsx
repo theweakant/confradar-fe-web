@@ -3,7 +3,6 @@ import HeroSection from "@/components/LandingPage/hero-section"
 import FeaturesSection from "@/components/LandingPage/feature-section"
 import WhatWeOffer from "@/components/LandingPage/what-we-offer"
 import UpcomingConferences from "@/components/LandingPage/upcoming-conferences"
-import OrganizersSection from "@/components/LandingPage/organizer-section"
 import TrustedByCollaborator from "@/components/LandingPage/trust-section"
 import ExploreConferences from "@/components/LandingPage/explore-section"
 
@@ -18,7 +17,6 @@ export default function LandingPage() {
         <FeaturesSection />
         <WhatWeOffer />
         <UpcomingConferences />
-        {/* <OrganizersSection /> */}
         <TrustedByCollaborator />
         <ExploreConferences/>
       </main>
