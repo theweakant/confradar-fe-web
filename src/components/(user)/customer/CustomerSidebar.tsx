@@ -42,7 +42,7 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
     // { id: 'search', label: 'Tìm kiếm', icon: Search, href: '/customer/search' },
     { id: 'discovery', label: 'Khám phá', icon: Compass, href: '/customer/discovery' },
     { id: 'ticket', label: 'Vé tham dự hội nghị', icon: Ticket, href: '/customer/tickets' },
-    { id: 'attendedconferences', label: 'Hội nghị đã tham dự', icon: History, href: '/customer/conferences' },
+    { id: 'historyconferences', label: 'Hội nghị đã tham dự', icon: History, href: '/customer/history-conferences' },
     // { id: 'messages', label: 'Tin nhắn', icon: MessageCircle, href: '/customer/messages' },
     { id: 'notifications', label: 'Thông báo', icon: Bell, href: '/customer/notifications' },
     // { id: 'create', label: 'Tạo', icon: PlusSquare, href: '/customer/create' },
@@ -50,8 +50,8 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
   ];
 
   const moreItems = [
-    { id: 'bookmarks', label: 'Đã lưu', icon: Bookmark, href: '/customer/bookmarks' },
-    { id: 'history', label: 'Lịch sử', icon: Clock, href: '/customer/history' },
+    { id: 'favoriteconferences', label: 'Hội nghị yêu thích', icon: Bookmark, href: '/customer/favorite-conferences' },
+    // { id: 'history', label: 'Lịch sử', icon: Clock, href: '/customer/history' },
     { id: 'settings', label: 'Cài đặt', icon: Settings, href: '/customer/settings' },
   ];
 
