@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { 
-  LayoutDashboard, 
-  Users, 
-  FileText, 
-  Calendar, 
-  Settings, 
+import {
+  LayoutDashboard,
+  Users,
+  FileText,
+  Calendar,
+  Settings,
   LogOut,
   Bell,
   Search,
@@ -29,7 +29,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
   // Xác định role từ pathname
   let role = pathname.split("/")[2] || "guest";
   if (role === "user") role = "guest"; // gộp user thành guest
-  
+
   // Cấu hình menu theo từng role
   const getMenuItems = () => {
     const commonItems = [
@@ -103,9 +103,8 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
       <aside
-        className={`${
-          isSidebarOpen ? "w-64" : "w-20"
-        } bg-white border-r border-gray-200 transition-all duration-300 flex flex-col`}
+        className={`${isSidebarOpen ? "w-64" : "w-20"
+          } bg-white border-r border-gray-200 transition-all duration-300 flex flex-col`}
       >
         {/* Logo & Toggle */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
@@ -146,16 +145,15 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
             {menuItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
-              
+
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                    isActive
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive
                       ? "bg-blue-50 text-blue-600 font-medium"
                       : "text-gray-700 hover:bg-gray-100"
-                  }`}
+                    }`}
                 >
                   <Icon size={20} />
                   {isSidebarOpen && <span>{item.label}</span>}
