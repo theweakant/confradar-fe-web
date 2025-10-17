@@ -1,11 +1,11 @@
 "use client"
 
-import React, { Fragment, useState } from 'react'
+import React, { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogPanel, Transition } from '@headlessui/react'
+import { Dialog, DialogPanel, } from '@headlessui/react'
 import { User } from '@/types/user.type'
 import { Edit, Mail, Phone, MapPin, Calendar, Users, X } from 'lucide-react'
 
@@ -15,7 +15,7 @@ const mockUser: User = {
   email: "denis.mendoza@email.com",
   phoneNumber: "+1 (555) 203 923",
   address: "134 Baker Street, San Diego, CA 92093, USA",
-  role: "attendee",
+  role: "reviewer",
   status: "active",
   registeredConferences: 5,
   joinedDate: "17 Aug 2019"

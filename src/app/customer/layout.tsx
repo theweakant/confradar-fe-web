@@ -2,7 +2,6 @@
 
 import Header from "@/components/LandingPage/header";
 import CustomerSidebar from "@/components/(user)/customer/CustomerSidebar";
-import Link from "next/link";
 import { redirect, usePathname } from "next/navigation";
 import { useState } from "react";
 
