@@ -46,29 +46,31 @@ export default function ManageConference() {
 
   const categoryOptions = [
     { value: "all", label: "Tất cả danh mục" },
-    { value: "technology", label: "Công nghệ" },
-    { value: "research", label: "Nghiên cứu" },
-    { value: "business", label: "Kinh doanh" },
-    { value: "education", label: "Giáo dục" },
+    { value: "category-1", label: "Công nghệ" },
+    { value: "category-2", label: "Nghiên cứu" },
+    { value: "category-3", label: "Kinh doanh" },
+    { value: "category-4", label: "Giáo dục" },
   ];
 
   const statusOptions = [
     { value: "all", label: "Tất cả trạng thái" },
-    { value: "upcoming", label: "Sắp diễn ra" },
+    { value: "draft", label: "Nháp" },
+    { value: "published", label: "Đã xuất bản" },
+    { value: "open", label: "Đang mở đăng ký" },
+    { value: "closed", label: "Đã đóng đăng ký" },
     { value: "ongoing", label: "Đang diễn ra" },
     { value: "completed", label: "Đã kết thúc" },
     { value: "cancelled", label: "Đã hủy" },
   ];
 
-
   const filteredConferences = conferences.filter(conf => {
     const matchesSearch = 
-      conf.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      conf.conferenceName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       conf.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      conf.location.toLowerCase().includes(searchQuery.toLowerCase());
+      conf.address.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesCategory = filterCategory === "all" || conf.category === filterCategory;
-    const matchesStatus = filterStatus === "all" || conf.status === filterStatus;
+    const matchesCategory = filterCategory === "all" || conf.conferenceCategoryId === filterCategory;
+    const matchesStatus = filterStatus === "all" || conf.globalStatusId === filterStatus;
 
     return matchesSearch && matchesCategory && matchesStatus;
   });
@@ -91,7 +93,7 @@ export default function ManageConference() {
   const handleSave = (data: ConferenceFormData) => {
     if (editingConference) {
       setConferences(prev => prev.map(c => 
-        c.id === editingConference.id 
+        c.conferenceId === editingConference.conferenceId 
           ? { ...c, ...data }
           : c
       ));
@@ -99,8 +101,7 @@ export default function ManageConference() {
     } else {
       const newConference: Conference = {
         ...data,
-        id: Date.now().toString(),
-        currentAttendees: 0
+        conferenceId: Date.now().toString(),
       };
       setConferences(prev => [...prev, newConference]);
       toast.success("Thêm hội thảo thành công!");
@@ -115,35 +116,36 @@ export default function ManageConference() {
 
   const confirmDelete = () => {
     if (deleteConferenceId) {
-      setConferences(prev => prev.filter(c => c.id !== deleteConferenceId));
+      setConferences(prev => prev.filter(c => c.conferenceId !== deleteConferenceId));
       toast.success("Xóa hội thảo thành công!");
       setDeleteConferenceId(null);
     }
   };
 
   const totalConferences = conferences.length;
-  const upcomingConferences = conferences.filter(c => c.status === "upcoming").length;
-  const ongoingConferences = conferences.filter(c => c.status === "ongoing").length;
-  const completedConferences = conferences.filter(c => c.status === "completed").length;
+  const upcomingConferences = conferences.filter(c => c.globalStatusId === "open").length;
+  const ongoingConferences = conferences.filter(c => c.globalStatusId === "ongoing").length;
+  const completedConferences = conferences.filter(c => c.globalStatusId === "completed").length;
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900">Quản lý Hội thảo</h1>
-          <Button
-            onClick={handleCreate}
-            className="flex items-center gap-2 whitespace-nowrap mt-6"
-          >
-            <Plus className="w-5 h-5" />
-            Thêm hội thảo
-          </Button>
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold text-gray-900">Quản lý Hội thảo</h1>
+            <Button
+              onClick={handleCreate}
+              className="flex items-center gap-2 whitespace-nowrap mt-6"
+            >
+              <Plus className="w-5 h-5" />
+              Thêm hội thảo
+            </Button>
+          </div>
+          <p className="text-gray-600 mt-2">
+            Quản lý thông tin các hội thảo trên ConfRadar
+          </p>
         </div>
-        <p className="text-gray-600 mt-2">
-          Quản lý thông tin các hội thảo trên ConfRadar
-        </p>
-      </div>
+        
         <SearchFilter
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
@@ -160,9 +162,7 @@ export default function ManageConference() {
               options: statusOptions,
             },
           ]}
-          
         />
-        
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <StatCard
@@ -172,7 +172,7 @@ export default function ManageConference() {
             color="blue"
           />
           <StatCard
-            title="Sắp diễn ra"
+            title="Đang mở đăng ký"
             value={upcomingConferences}
             icon={<Clock className="w-10 h-10" />}
             color="purple"

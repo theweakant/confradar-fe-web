@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils/utils"
 
 interface ConferenceRevealCardProps {
   imageSrc: string

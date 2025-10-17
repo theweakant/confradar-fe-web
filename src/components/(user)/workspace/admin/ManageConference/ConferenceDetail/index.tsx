@@ -4,10 +4,10 @@ import {
   Users,
   Clock,
   FileText,
-  Link as LinkIcon,
   Award,
   Building2
 } from "lucide-react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/atoms/StatusBadge";
 import { formatDate } from "@/helper/format";
@@ -62,11 +62,12 @@ export function ConferenceDetail({ conference, onClose }: ConferenceDetailProps)
       </div>
 
       {conference.bannerImageUrl && (
-        <div className="rounded-lg overflow-hidden">
-          <img 
+        <div className="rounded-lg overflow-hidden relative h-64 w-full">
+          <Image 
             src={conference.bannerImageUrl} 
             alt={conference.conferenceName}
-            className="w-full h-64 object-cover"
+            fill
+            className="object-cover"
           />
         </div>
       )}
@@ -91,9 +92,7 @@ export function ConferenceDetail({ conference, onClose }: ConferenceDetailProps)
             <div>
               <p className="text-sm font-medium text-gray-700">Địa điểm</p>
               <p className="text-gray-900">{conference.address}</p>
-              <p className="text-gray-600 text-sm">
-                {conference.locationId.city}, {conference.locationId.country}
-              </p>
+              <p className="text-gray-600 text-sm">Location ID: {conference.locationId}</p>
             </div>
           </div>
 
@@ -112,21 +111,8 @@ export function ConferenceDetail({ conference, onClose }: ConferenceDetailProps)
             <div>
               <p className="text-sm font-medium text-gray-700">Ranking</p>
               <p className="text-gray-900 font-semibold">
-                {conference.conferenceRankingId.name}
+                {conference.conferenceRankingId}
               </p>
-              <p className="text-gray-600 text-sm">
-                {conference.conferenceRankingId.rankingCategoryId.rankName} - {conference.conferenceRankingId.rankingCategoryId.rankDescription}
-              </p>
-              {conference.conferenceRankingId.referenceUrl && (
-                <a
-                  href={conference.conferenceRankingId.referenceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline text-sm"
-                >
-                  Xem chi tiết
-                </a>
-              )}
             </div>
           </div>
 
@@ -135,8 +121,16 @@ export function ConferenceDetail({ conference, onClose }: ConferenceDetailProps)
             <div>
               <p className="text-sm font-medium text-gray-700">Loại hội thảo</p>
               <p className="text-gray-900">
-                {conference.conferenceTypeId.conferenceTypeName}
+                {conference.conferenceTypeId}
               </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3">
+            <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-gray-700">Danh mục</p>
+              <p className="text-gray-900">{conference.conferenceCategoryId}</p>
             </div>
           </div>
 

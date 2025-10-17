@@ -1,95 +1,19 @@
-// // utils/validation.ts
-// export const createValidationRule = (
-//   validate: (value: string | number) => boolean,
-//   message: string
-// ): ValidationRule => ({ validate, message });
+import type { LoginFormData, FormErrors } from "@/types/auth.type";
 
-// // Validation rules library
-// export const ValidationRules = {
-//   required: (fieldName: string) => createValidationRule(
-//     (value) => String(value).trim().length > 0,
-//     `${fieldName} là bắt buộc`
-//   ),
-  
-//   minLength: (length: number, fieldName: string) => createValidationRule(
-//     (value) => String(value).trim().length >= length,
-//     `${fieldName} phải có ít nhất ${length} ký tự`
-//   ),
-  
-//   email: () => createValidationRule(
-//     (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value)),
-//     "Email không hợp lệ"
-//   ),
-  
-//   min: (min: number, fieldName: string) => createValidationRule(
-//     (value) => Number(value) >= min,
-//     `${fieldName} phải lớn hơn hoặc bằng ${min}`
-//   ),
-  
-//   dateAfter: (compareDate: string, message: string) => createValidationRule(
-//     (value) => new Date(String(value)) > new Date(compareDate),
-//     message
-//   ),
-  
-//   dateBefore: (compareDate: string, message: string) => createValidationRule(
-//     (value) => new Date(String(value)) < new Date(compareDate),
-//     message
-//   ),
-// };
+export const validateLoginForm = (data: LoginFormData): FormErrors => {
+  const errors: FormErrors = {};
 
-// // Hook để validate form
-// export const useFormValidation = <T extends Record<string, any>>(
-//   validationRules: Partial<Record<keyof T, ValidationRule[]>>
-// ) => {
-//   const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({});
-//   const [touched, setTouched] = useState<Set<keyof T>>(new Set());
+  if (!data.email) {
+    errors.email = "Email là bắt buộc";
+  } else if (!/\S+@\S+\.\S+/.test(data.email)) {
+    errors.email = "Vui lòng nhập email hợp lệ";
+  }
 
-//   const validateField = (field: keyof T, value: any): boolean => {
-//     const rules = validationRules[field];
-//     if (!rules) return true;
+  if (!data.password) {
+    errors.password = "Mật khẩu là bắt buộc";
+  } else if (data.password.length < 6) {
+    errors.password = "Mật khẩu phải có ít nhất 6 ký tự";
+  }
 
-//     for (const rule of rules) {
-//       if (!rule.validate(value)) {
-//         setErrors(prev => ({ ...prev, [field]: rule.message }));
-//         return false;
-//       }
-//     }
-
-//     setErrors(prev => ({ ...prev, [field]: "" }));
-//     return true;
-//   };
-
-//   const validateAll = (formData: T): boolean => {
-//     let isValid = true;
-//     const newTouched = new Set<keyof T>();
-
-//     Object.keys(validationRules).forEach((field) => {
-//       const key = field as keyof T;
-//       newTouched.add(key);
-//       if (!validateField(key, formData[key])) {
-//         isValid = false;
-//       }
-//     });
-
-//     setTouched(newTouched);
-//     return isValid;
-//   };
-
-//   const setFieldTouched = (field: keyof T) => {
-//     setTouched(prev => new Set(prev).add(field));
-//   };
-
-//   const resetValidation = () => {
-//     setErrors({});
-//     setTouched(new Set());
-//   };
-
-//   return {
-//     errors,
-//     touched,
-//     validateField,
-//     validateAll,
-//     setFieldTouched,
-//     resetValidation,
-//   };
-// };
+  return errors;
+};

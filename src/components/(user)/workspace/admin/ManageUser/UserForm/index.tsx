@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/molecules/FormInput";
 import { FormSelect } from "@/components/molecules/FormSelect";
-import { validationUserRules } from "@/lib/utils/validationUserRules";
+import { validationUserRules } from "@/utils/validationUserRules";
 import type { User, UserFormData } from "@/types/user.type";
 
 interface UserFormProps {
@@ -14,12 +14,13 @@ interface UserFormProps {
 }
 
 export function UserForm({ user, onSave, onCancel }: UserFormProps) {
-  const [formData, setFormData] = useState<UserFormData>({
-    name: user?.name || "",
-    email: user?.email || "",
-    role: user?.role || "attendee",
-    status: user?.status || "active"
-  });
+const [formData, setFormData] = useState<UserFormData>({
+  fullName: user?.fullName || "",
+  email: user?.email || "",
+  phoneNumber: user?.phoneNumber || "",
+  address: user?.address || "",
+  role: user?.role || "guest"  
+});
 
   const [errors, setErrors] = useState<Partial<Record<keyof UserFormData, string>>>({});
   const [touched, setTouched] = useState<Set<keyof UserFormData>>(new Set());
@@ -87,10 +88,6 @@ export function UserForm({ user, onSave, onCancel }: UserFormProps) {
     { value: "attendee", label: "Người tham dự" }
   ];
 
-  const statusOptions = [
-    { value: "active", label: "Hoạt động" },
-    { value: "inactive", label: "Không hoạt động" }
-  ];
 
   return (
     <div className="space-y-6">
@@ -98,13 +95,13 @@ export function UserForm({ user, onSave, onCancel }: UserFormProps) {
         <div className="md:col-span-2">
           <FormInput
             label="Tên người dùng"
-            name="name"
-            value={formData.name}
-            onChange={(value: string) => handleChange("name", value)}
-            onBlur={() => validateField("name", formData.name)}
+            name="fullName"
+            value={formData.fullName}
+            onChange={(value: string) => handleChange("fullName", value)}
+            onBlur={() => validateField("fullName", formData.fullName)}
             required
-            error={touched.has("name") ? errors.name : undefined}
-            success={touched.has("name") && !errors.name}
+            error={touched.has("fullName") ? errors.fullName : undefined}
+            success={touched.has("fullName") && !errors.fullName}
             placeholder="VD: Nguyễn Văn A"
           />
         </div>
@@ -132,16 +129,6 @@ export function UserForm({ user, onSave, onCancel }: UserFormProps) {
           options={roleOptions}
           required
           error={errors.role}
-        />
-
-        <FormSelect
-          label="Trạng thái"
-          name="status"
-          value={formData.status}
-          onChange={(value: string) => handleChange("status", value)}
-          options={statusOptions}
-          required
-          error={errors.status}
         />
       </div>
 

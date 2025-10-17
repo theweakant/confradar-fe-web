@@ -3,63 +3,93 @@ import {
   MapPin,
   Users,
   Clock,
-  DollarSign,
   FileText,
-  Link as LinkIcon,
+  Award,
+  Building2,
   Tag
 } from "lucide-react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/atoms/StatusBadge";
-import { formatCurrency, formatDate } from "@/helper/format";
+import { formatDate } from "@/helper/format";
 import { ConferenceDetailProps } from "@/types/conference.type";
 
 export function ConferenceDetail({ conference, onClose }: ConferenceDetailProps) {
-  const getCategoryLabel = (category: string) => {
+  const getStatusLabel = (statusId: string) => {
     const labels: Record<string, string> = {
-      technology: "Công nghệ",
-      research: "Nghiên cứu",
-      business: "Kinh doanh",
-      education: "Giáo dục"
-    };
-    return labels[category] || category;
-  };
-
-  const getStatusLabel = (status: string) => {
-    const labels: Record<string, string> = {
-      upcoming: "Sắp diễn ra",
+      draft: "Nháp",
+      published: "Đã xuất bản",
+      open: "Đang mở đăng ký",
+      closed: "Đã đóng đăng ký",
       ongoing: "Đang diễn ra",
       completed: "Đã kết thúc",
       cancelled: "Đã hủy"
     };
-    return labels[status] || status;
+    return labels[statusId] || statusId;
   };
 
-  const getStatusVariant = (status: string): "success" | "danger" | "warning" | "info" => {
+  const getStatusVariant = (statusId: string): "success" | "danger" | "warning" | "info" => {
     const variants: Record<string, "success" | "danger" | "warning" | "info"> = {
-      upcoming: "info",
+      draft: "warning",
+      published: "info",
+      open: "success",
+      closed: "warning",
       ongoing: "success",
-      completed: "warning",
+      completed: "info",
       cancelled: "danger"
     };
-    return variants[status] || "info";
+    return variants[statusId] || "info";
+  };
+
+  const getCategoryLabel = (categoryId: string) => {
+    const labels: Record<string, string> = {
+      "category-1": "Công nghệ",
+      "category-2": "Nghiên cứu",
+      "category-3": "Kinh doanh",
+      "category-4": "Giáo dục"
+    };
+    return labels[categoryId] || categoryId;
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">{conference.title}</h3>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">
+            {conference.conferenceName}
+          </h3>
           <div className="flex items-center gap-3 mb-4">
             <StatusBadge
-              status={getStatusLabel(conference.status)}
-              variant={getStatusVariant(conference.status)}
+              status={getStatusLabel(conference.globalStatusId)}
+              variant={getStatusVariant(conference.globalStatusId)}
             />
             <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
-              {getCategoryLabel(conference.category)}
+              {getCategoryLabel(conference.conferenceCategoryId)}
             </span>
+            {conference.isInternalHosted && (
+              <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                Nội bộ
+              </span>
+            )}
+            {!conference.isActive && (
+              <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
+                Ngưng hoạt động
+              </span>
+            )}
           </div>
         </div>
       </div>
+
+      {conference.bannerImageUrl && (
+        <div className="rounded-lg overflow-hidden relative h-64 w-full">
+          <Image 
+            src={conference.bannerImageUrl} 
+            alt={conference.conferenceName}
+            fill
+            className="object-cover"
+          />
+        </div>
+      )}
 
       <div className="prose max-w-none">
         <p className="text-gray-700 leading-relaxed">{conference.description}</p>
@@ -80,46 +110,54 @@ export function ConferenceDetail({ conference, onClose }: ConferenceDetailProps)
             <MapPin className="w-5 h-5 text-blue-600 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-gray-700">Địa điểm</p>
-              <p className="text-gray-900">{conference.location}</p>
-              <p className="text-gray-600 text-sm">{conference.venue}</p>
+              <p className="text-gray-900">{conference.address}</p>
+              <p className="text-gray-600 text-sm">Location ID: {conference.locationId}</p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3">
+            <Users className="w-5 h-5 text-blue-600 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-gray-700">Sức chứa</p>
+              <p className="text-gray-900">{conference.capacity} người</p>
             </div>
           </div>
 
           <div className="flex items-start gap-3">
             <Clock className="w-5 h-5 text-blue-600 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-gray-700">Hạn đăng ký</p>
-              <p className="text-gray-900">{formatDate(conference.registrationDeadline)}</p>
+              <p className="text-sm font-medium text-gray-700">Ngày tạo</p>
+              <p className="text-gray-900">{formatDate(conference.createdAt)}</p>
             </div>
           </div>
         </div>
 
         <div className="space-y-4">
           <div className="flex items-start gap-3">
-            <Users className="w-5 h-5 text-blue-600 mt-0.5" />
+            <Award className="w-5 h-5 text-blue-600 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-gray-700">Số lượng</p>
-              <p className="text-gray-900">
-                {conference.currentAttendees} / {conference.maxAttendees} người
+              <p className="text-sm font-medium text-gray-700">Ranking</p>
+              <p className="text-gray-900 font-semibold">
+                {conference.conferenceRankingId}
               </p>
-              <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-blue-600 h-2 rounded-full transition-all"
-                  style={{
-                    width: `${(conference.currentAttendees / conference.maxAttendees) * 100}%`
-                  }}
-                />
-              </div>
             </div>
           </div>
 
           <div className="flex items-start gap-3">
-            <DollarSign className="w-5 h-5 text-blue-600 mt-0.5" />
+            <Building2 className="w-5 h-5 text-blue-600 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-gray-700">Phí đăng ký</p>
-              <p className="text-gray-900 font-semibold">
-                {conference.registrationFee === 0 ? "Miễn phí" : formatCurrency(conference.registrationFee)}
+              <p className="text-sm font-medium text-gray-700">Loại hội thảo</p>
+              <p className="text-gray-900">
+                {conference.conferenceTypeId}
               </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3">
+            <Tag className="w-5 h-5 text-blue-600 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-gray-700">Danh mục</p>
+              <p className="text-gray-900">{getCategoryLabel(conference.conferenceCategoryId)}</p>
             </div>
           </div>
 
@@ -127,48 +165,11 @@ export function ConferenceDetail({ conference, onClose }: ConferenceDetailProps)
             <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-gray-700">Người tổ chức</p>
-              <p className="text-gray-900">{conference.organizerName}</p>
-              <p className="text-gray-600 text-sm">{conference.organizerEmail}</p>
+              <p className="text-gray-900">User ID: {conference.userId}</p>
             </div>
           </div>
-
-          {conference.website && (
-            <div className="flex items-start gap-3">
-              <LinkIcon className="w-5 h-5 text-blue-600 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-gray-700">Website</p>
-                <a
-                  href={conference.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline text-sm"
-                >
-                  {conference.website}
-                </a>
-              </div>
-            </div>
-          )}
         </div>
       </div>
-
-      {conference.tags.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <Tag className="w-5 h-5 text-gray-600" />
-            <p className="text-sm font-medium text-gray-700">Tags</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {conference.tags.map((tag) => (
-              <span
-                key={tag}
-                className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
 
       <div className="flex justify-end pt-4 border-t">
         <Button

@@ -55,7 +55,7 @@ export default function ManageUser() {
   ];
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesSearch = user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole = filterRole === "all" || user.role === filterRole;
     const matchesStatus = filterStatus === "all" || user.status === filterStatus;
@@ -81,7 +81,7 @@ export default function ManageUser() {
   const handleSave = (data: UserFormData) => {
     if (editingUser) {
       setUsers(prev => prev.map(u => 
-        u.id === editingUser.id 
+        u.userId === editingUser.userId 
           ? { ...u, ...data }
           : u
       ));
@@ -89,7 +89,8 @@ export default function ManageUser() {
     } else {
       const newUser: User = {
         ...data,
-        id: Date.now().toString(),
+        userId: Date.now().toString(),
+        status: "active",
         registeredConferences: 0,
         joinedDate: new Date().toISOString().split('T')[0]
       };
@@ -107,7 +108,7 @@ export default function ManageUser() {
 
   const confirmDelete = () => {
     if (deleteUserId) {
-      setUsers(prev => prev.filter(u => u.id !== deleteUserId));
+      setUsers(prev => prev.filter(u => u.userId !== deleteUserId));
       toast.success("Xóa người dùng thành công!");
 
       setDeleteUserId(null);

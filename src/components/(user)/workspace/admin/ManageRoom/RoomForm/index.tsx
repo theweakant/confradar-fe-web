@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/molecules/FormInput";
 import { FormSelect } from "@/components/molecules/FormSelect";
-import { validationRoomRules } from "@/lib/utils/validationRoomRules";
+import { validationRoomRules } from "@/utils/validationRoomRules";
 import type { Room, RoomFormData } from "@/types/room.type";
 
 interface RoomFormProps {
