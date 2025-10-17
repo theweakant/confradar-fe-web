@@ -1,14 +1,23 @@
 // redux/slices/auth.slice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 import { setTokens, clearTokens } from "../utils/token"
-import { AuthState } from "@/types/auth.type"
 import {User} from "@/types/user.type"
+
+export interface AuthState {
+  user: User | null
+  accessToken: string | null
+  refreshToken: string | null
+  loading: boolean
+  isRegistered: boolean 
+}
 
  const initialState: AuthState = {
   user: null,
   accessToken: null,
   refreshToken: null,
   loading: false,
+  isRegistered: false, 
+
 }
 
 const authSlice = createSlice({
@@ -38,6 +47,15 @@ const authSlice = createSlice({
       state.refreshToken = null
       clearTokens()
       state.loading = false
+    },
+
+    registerSuccess: (state) => {
+      state.isRegistered = true
+      state.loading = false
+    },
+
+    resetRegisterState: (state) => {
+      state.isRegistered = false
     },
   },
 })
