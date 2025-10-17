@@ -12,6 +12,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface Conference {
   id: string;
@@ -229,7 +230,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
     return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1)
       .toString().padStart(2, '0')}/${d.getFullYear()}`;
   };
-  const formatPrice = (price: number) => `${price.toLocaleString()} VND`;
+  // const formatPrice = (price: number) => `${price.toLocaleString()} VND`;
 
   const DropdownSelect = ({
     value,
@@ -374,7 +375,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
               {/* <div className="aspect-video bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center"> */}
               <div className="relative aspect-video overflow-hidden">
                 {/* <Calendar size={48} className="text-white opacity-60" /> */}
-                <img
+                <Image
                   src={conference.image}
                   alt={conference.title}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:brightness-110"

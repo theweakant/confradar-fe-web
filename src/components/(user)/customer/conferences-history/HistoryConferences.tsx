@@ -29,7 +29,7 @@ export default function HistoryConferences() {
       image: "/images/tech-summit.jpg",
     },
     {
-      id: "2", 
+      id: "2",
       title: "Hội thảo Digital Marketing Việt Nam 2023",
       date: "Đã tham gia: 20 - 21 tháng 9, 2023",
       location: "Hà Nội, Việt Nam",
@@ -45,7 +45,7 @@ export default function HistoryConferences() {
       id: "3",
       title: "Vietnam Fintech Conference 2023",
       date: "Đã tham gia: 05 - 06 tháng 8, 2023",
-      location: "Đà Nẵng, Việt Nam", 
+      location: "Đà Nẵng, Việt Nam",
       category: "Tài chính",
       status: "Đã hoàn thành",
       rating: 4,
@@ -60,7 +60,7 @@ export default function HistoryConferences() {
       date: "Đã tham gia: 12 - 14 tháng 6, 2023",
       location: "Cần Thơ, Việt Nam",
       category: "Khởi nghiệp",
-      status: "Đã hoàn thành", 
+      status: "Đã hoàn thành",
       rating: 5,
       attendees: 725,
       certificate: true,
@@ -75,11 +75,10 @@ export default function HistoryConferences() {
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
-            className={`h-4 w-4 ${
-              star <= rating 
-                ? "text-yellow-400 fill-current" 
+            className={`h-4 w-4 ${star <= rating
+                ? "text-yellow-400 fill-current"
                 : "text-gray-300"
-            }`}
+              }`}
           />
         ))}
       </div>
@@ -109,11 +108,10 @@ export default function HistoryConferences() {
               <Button
                 key={option.id}
                 variant={option.active ? "default" : "outline"}
-                className={`whitespace-nowrap ${
-                  option.active 
-                    ? "bg-black text-white hover:bg-gray-800" 
+                className={`whitespace-nowrap ${option.active
+                    ? "bg-black text-white hover:bg-gray-800"
                     : "bg-white text-gray-700 hover:bg-gray-50"
-                }`}
+                  }`}
               >
                 {option.label}
               </Button>
@@ -175,7 +173,8 @@ export default function HistoryConferences() {
                       {/* Feedback */}
                       <div className="bg-gray-50 p-3 rounded-lg">
                         <p className="text-sm text-gray-700 italic">
-                          "{conference.feedback}"
+                          {/* "{conference.feedback}" */}
+                          &quot;{conference.feedback}&quot;
                         </p>
                       </div>
 

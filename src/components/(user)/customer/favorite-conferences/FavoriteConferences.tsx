@@ -1,7 +1,7 @@
 "use client";
 
 import { Heart, MapPin, Calendar, Users, ExternalLink } from "lucide-react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -27,7 +27,7 @@ export default function FavoriteConferences() {
       isLiked: true,
     },
     {
-      id: "2", 
+      id: "2",
       title: "Vietnam Blockchain Summit 2024",
       date: "Chủ nhật, 20 - 22 tháng 10, 2024",
       location: "Hà Nội, Việt Nam",
@@ -41,7 +41,7 @@ export default function FavoriteConferences() {
       id: "3",
       title: "Hội nghị Đổi mới Giáo dục Số",
       date: "Thứ 6, 05 - 06 tháng 12, 2024",
-      location: "Đà Nẵng, Việt Nam", 
+      location: "Đà Nẵng, Việt Nam",
       price: "Từ 300,000đ",
       attendees: 89,
       category: "Giáo dục",
@@ -53,7 +53,7 @@ export default function FavoriteConferences() {
       title: "Vietnam Startup Ecosystem Conference",
       date: "Thứ 4, 25 - 26 tháng 9, 2024",
       location: "Cần Thơ, Việt Nam",
-      price: "Từ 450,000đ", 
+      price: "Từ 450,000đ",
       attendees: 267,
       category: "Khởi nghiệp",
       image: "/images/startup-conference.jpg",
@@ -84,11 +84,10 @@ export default function FavoriteConferences() {
               <Button
                 key={option.id}
                 variant={option.active ? "default" : "outline"}
-                className={`whitespace-nowrap ${
-                  option.active 
-                    ? "bg-black text-white hover:bg-gray-800" 
+                className={`whitespace-nowrap ${option.active
+                    ? "bg-black text-white hover:bg-gray-800"
                     : "bg-white text-gray-700 hover:bg-gray-50"
-                }`}
+                  }`}
               >
                 {option.label}
               </Button>

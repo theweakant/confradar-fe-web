@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useParams } from 'next/navigation';
+// import { useParams } from 'next/navigation';
 import Image from 'next/image';
-import { X, ChevronLeft, ChevronRight, MapPin, Clock, Calendar, Star } from 'lucide-react';
+import { X, MapPin, Clock, Calendar, Star } from 'lucide-react';
 
 interface ImageModalProps {
   image: string;
@@ -83,7 +83,7 @@ const mockConferenceDetail = {
 };
 
 const ConferenceDetail = () => {
-  const params = useParams();
+  // const params = useParams();
   const [activeTab, setActiveTab] = useState('info');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [newFeedback, setNewFeedback] = useState({ name: '', rating: 5, comment: '' });

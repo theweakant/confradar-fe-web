@@ -2,24 +2,12 @@
 
 import React, { useState } from 'react';
 import {
-  Home,
-  Search,
   Compass,
-  Video,
-  MessageCircle,
-  Heart,
-  PlusSquare,
-  User,
   Menu,
   Settings,
   Bookmark,
-  Clock,
   Ticket,
   UserCircle,
-  CalendarCheck,
-  ListChecks,
-  Users,
-  ClipboardList,
   History,
   Bell
 } from 'lucide-react';
@@ -34,7 +22,7 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
   const pathname = usePathname();
 
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [activeItem, setActiveItem] = useState('home');
+  // const [activeItem, setActiveItem] = useState('home');
 
   const menuItems = [
     // { id: '/', label: 'Trang chủ', icon: Home, href: '/customer' },
