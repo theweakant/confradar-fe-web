@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/molecules/FormInput";
 import { FormSelect } from "@/components/molecules/FormSelect";
 import { FormTextArea } from "@/components/molecules/FormTextArea";
-import { validationConfRules } from "@/lib/utils/validationConfRules";
+import { validationConfRules } from "@/utils/validationConfRules";
 import type {    
   ConferenceFormData, 
   ConferenceFormProps 
@@ -15,6 +15,7 @@ export function TechConferenceForm({
   onCancel
 }: ConferenceFormProps) {
   const [formData, setFormData] = useState<ConferenceFormData>({
+    conferenceId: conference?.conferenceId || "",
     conferenceName: conference?.conferenceName || "",
     description: conference?.description || "",
     startDate: conference?.startDate || "",
@@ -23,13 +24,12 @@ export function TechConferenceForm({
     address: conference?.address || "",
     bannerImageUrl: conference?.bannerImageUrl || "",
     isInternalHosted: conference?.isInternalHosted ?? true,
-    conferenceRanking: conference?.conferenceRanking || "",
+    conferenceRankingId: conference?.conferenceRankingId || "",
     userId: conference?.userId || "",
-    city: conference?.city || "",
-    country: conference?.country || "",
+    locationId: conference?.locationId || "",
     conferenceCategoryId: conference?.conferenceCategoryId || "",
     conferenceTypeId: conference?.conferenceTypeId || "tech",
-    globalStatus: conference?.globalStatus || "draft",
+    globalStatusId: conference?.globalStatusId || "draft",
     isActive: conference?.isActive ?? true,
     createdAt: conference?.createdAt || ""
   });
@@ -181,32 +181,33 @@ export function TechConferenceForm({
     { value: "mobile", label: "Mobile Development" }
   ];
 
+  // Options cho các dropdown - Trong thực tế nên load từ API
   const rankingOptions = [
-    { value: "ieee", label: "IEEE" },
-    { value: "acm", label: "ACM" },
-    { value: "springer", label: "Springer" },
-    { value: "elsevier", label: "Elsevier" },
-    { value: "scopus", label: "Scopus" },
-    { value: "other", label: "Khác" }
+    { value: "ranking-1", label: "IEEE" },
+    { value: "ranking-2", label: "ACM" },
+    { value: "ranking-3", label: "Springer" },
+    { value: "ranking-4", label: "Elsevier" },
+    { value: "ranking-5", label: "Scopus" },
+    { value: "ranking-6", label: "Khác" }
   ];
 
   const globalStatusOptions = [
-    { value: "draft", label: "Nháp" },
-    { value: "published", label: "Đã xuất bản" },
-    { value: "open", label: "Đang mở đăng ký" },
-    { value: "closed", label: "Đã đóng đăng ký" },
-    { value: "ongoing", label: "Đang diễn ra" },
-    { value: "completed", label: "Đã kết thúc" },
-    { value: "cancelled", label: "Đã hủy" }
+    { value: "status-1", label: "Nháp" },
+    { value: "status-2", label: "Đã xuất bản" },
+    { value: "status-3", label: "Đang mở đăng ký" },
+    { value: "status-4", label: "Đã đóng đăng ký" },
+    { value: "status-5", label: "Đang diễn ra" },
+    { value: "status-6", label: "Đã kết thúc" },
+    { value: "status-7", label: "Đã hủy" }
   ];
 
-  const countryOptions = [
-    { value: "VN", label: "Việt Nam" },
-    { value: "US", label: "United States" },
-    { value: "UK", label: "United Kingdom" },
-    { value: "SG", label: "Singapore" },
-    { value: "JP", label: "Japan" },
-    { value: "KR", label: "South Korea" }
+  const locationOptions = [
+    { value: "location-1", label: "Hồ Chí Minh, Việt Nam" },
+    { value: "location-2", label: "Hà Nội, Việt Nam" },
+    { value: "location-3", label: "New York, USA" },
+    { value: "location-4", label: "London, UK" },
+    { value: "location-5", label: "Singapore" },
+    { value: "location-6", label: "Tokyo, Japan" }
   ];
 
   return (
@@ -279,12 +280,12 @@ export function TechConferenceForm({
 
             <FormSelect
               label="Xếp hạng hội thảo"
-              name="conferenceRanking"
-              value={formData.conferenceRanking}
-              onChange={(value: string) => handleChange("conferenceRanking", value)}
+              name="conferenceRankingId"
+              value={formData.conferenceRankingId}
+              onChange={(value: string) => handleChange("conferenceRankingId", value)}
               options={rankingOptions}
               required
-              error={errors.conferenceRanking}
+              error={errors.conferenceRankingId}
             />
           </div>
 
@@ -305,29 +306,15 @@ export function TechConferenceForm({
           Địa điểm
         </h3>
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormSelect
-              label="Quốc gia"
-              name="country"
-              value={formData.country}
-              onChange={(value: string) => handleChange("country", value)}
-              options={countryOptions}
-              required
-              error={errors.country}
-            />
-
-            <FormInput
-              label="Thành phố"
-              name="city"
-              value={formData.city}
-              onChange={(value: string) => handleChange("city", value)}
-              onBlur={() => validateField("city", formData.city)}
-              required
-              error={touched.has("city") ? errors.city : undefined}
-              success={touched.has("city") && !errors.city}
-              placeholder="VD: Hồ Chí Minh"
-            />
-          </div>
+          <FormSelect
+            label="Địa điểm"
+            name="locationId"
+            value={formData.locationId}
+            onChange={(value: string) => handleChange("locationId", value)}
+            options={locationOptions}
+            required
+            error={errors.locationId}
+          />
 
           <FormInput
             label="Địa chỉ cụ thể"
@@ -521,12 +508,12 @@ export function TechConferenceForm({
         <div className="space-y-4">
           <FormSelect
             label="Trạng thái"
-            name="globalStatus"
-            value={formData.globalStatus}
-            onChange={(value: string) => handleChange("globalStatus", value)}
+            name="globalStatusId"
+            value={formData.globalStatusId}
+            onChange={(value: string) => handleChange("globalStatusId", value)}
             options={globalStatusOptions}
             required
-            error={errors.globalStatus}
+            error={errors.globalStatusId}
           />
 
           <div className="space-y-3 pt-2">

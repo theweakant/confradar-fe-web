@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 
 import { DataTable, Column } from "@/components/molecules/DataTable";
-import { formatCurrency } from "@/helper/format";
 import { StatusBadge } from "@/components/atoms/StatusBadge";
 import { ActionButton } from "@/components/atoms/ActionButton";
 import { Conference } from "@/types/conference.type";
@@ -27,44 +26,17 @@ export function ConferenceTable({
   onEdit, 
   onDelete 
 }: ConferenceTableProps) {
-  const getCategoryLabel = (category: string) => {
-    const labels: Record<string, string> = {
-      technology: "Công nghệ",
-      research: "Nghiên cứu",
-      business: "Kinh doanh",
-      education: "Giáo dục"
-    };
-    return labels[category] || category;
-  };
-
-  const getStatusLabel = (status: string) => {
-    const labels: Record<string, string> = {
-      upcoming: "Sắp diễn ra",
-      ongoing: "Đang diễn ra",
-      completed: "Đã kết thúc",
-      cancelled: "Đã hủy"
-    };
-    return labels[status] || status;
-  };
-
-  const getStatusVariant = (status: string): "success" | "danger" | "warning" | "info" => {
-    const variants: Record<string, "success" | "danger" | "warning" | "info"> = {
-      upcoming: "info",
-      ongoing: "success",
-      completed: "warning",
-      cancelled: "danger"
-    };
-    return variants[status] || "info";
-  };
 
   const columns: Column<Conference>[] = [
     {
-      key: "title",
+      key: "conferenceName",
       header: "Hội thảo",
       render: (conference) => (
         <div className="max-w-xs">
-          <p className="font-medium text-gray-900 truncate">{conference.title}</p>
-          <p className="text-sm text-gray-500 truncate">{conference.organizerName}</p>
+          <p className="font-medium text-gray-900 truncate">{conference.conferenceName}</p>
+          <p className="text-sm text-gray-500 truncate">
+            {conference.isInternalHosted ? "Nội bộ" : "Bên ngoài"}
+          </p>
         </div>
       ),
     },
@@ -86,53 +58,42 @@ export function ConferenceTable({
       ),
     },
     {
-      key: "location",
+      key: "address",
       header: "Địa điểm",
       render: (conference) => (
         <div className="flex items-center gap-2 text-gray-600">
           <MapPin className="w-4 h-4" />
-          <span className="text-sm">{conference.location}</span>
+          <span className="text-sm">{conference.address}</span>
         </div>
       ),
     },
     {
-      key: "category",
+      key: "conferenceCategoryId",
       header: "Danh mục",
       render: (conference) => (
         <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
-          {getCategoryLabel(conference.category)}
+          {conference.conferenceCategoryId}
         </span>
       ),
     },
     {
-      key: "status",
+      key: "globalStatusId",
       header: "Trạng thái",
       render: (conference) => (
         <StatusBadge
-          status={getStatusLabel(conference.status)}
-          variant={getStatusVariant(conference.status)}
+          status={conference.globalStatusId}
+          variant="info"
         />
       ),
     },
     {
-      key: "attendees",
-      header: "Số lượng",
+      key: "capacity",
+      header: "Sức chứa",
       render: (conference) => (
         <div className="flex items-center gap-2">
           <Users className="w-4 h-4 text-gray-400" />
-          <span className="text-sm text-gray-900">
-            {conference.currentAttendees}/{conference.maxAttendees}
-          </span>
+          <span className="text-sm text-gray-900">{conference.capacity}</span>
         </div>
-      ),
-    },
-    {
-      key: "fee",
-      header: "Phí",
-      render: (conference) => (
-        <span className="text-sm font-medium text-gray-900">
-          {conference.registrationFee === 0 ? "Miễn phí" : formatCurrency(conference.registrationFee)}
-        </span>
       ),
     },
     {
@@ -154,7 +115,7 @@ export function ConferenceTable({
             tooltip="Chỉnh sửa"
           />
           <ActionButton
-            onClick={() => onDelete(conference.id)}
+            onClick={() => onDelete(conference.conferenceId)}
             icon={<Trash2 className="w-4 h-4" />}
             variant="danger"
             tooltip="Xóa"
@@ -168,7 +129,7 @@ export function ConferenceTable({
     <DataTable
       columns={columns}
       data={conferences}
-      keyExtractor={(conference) => conference.id}
+      keyExtractor={(conference) => conference.conferenceId}
       emptyMessage="Không tìm thấy hội thảo nào"
     />
   );

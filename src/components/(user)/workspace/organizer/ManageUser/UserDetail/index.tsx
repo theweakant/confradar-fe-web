@@ -52,7 +52,7 @@ export function UserDetail({ user, onClose }: UserDetailProps) {
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">{user.name}</h3>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">{user.fullName}</h3>
           <div className="flex items-center gap-3 mb-4">
             <StatusBadge
               status={getRoleLabel(user.role)}
@@ -72,7 +72,7 @@ export function UserDetail({ user, onClose }: UserDetailProps) {
             <UserIcon className="w-5 h-5 text-blue-600 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-gray-700">Tên người dùng</p>
-              <p className="text-gray-900">{user.name}</p>
+              <p className="text-gray-900">{user.fullName}</p>
             </div>
           </div>
 

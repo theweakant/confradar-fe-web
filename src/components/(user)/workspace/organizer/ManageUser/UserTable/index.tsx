@@ -62,11 +62,11 @@ export function UserTable({
 
   const columns: Column<User>[] = [
     {
-      key: "name",
+      key: "fullName",
       header: "Tên người dùng",
       render: (user) => (
         <div className="max-w-xs">
-          <p className="font-medium text-gray-900 truncate">{user.name}</p>
+          <p className="font-medium text-gray-900 truncate">{user.fullName}</p>
           <p className="text-sm text-gray-500 truncate">{user.email}</p>
         </div>
       ),
@@ -132,7 +132,7 @@ export function UserTable({
             tooltip="Chỉnh sửa"
           />
           <ActionButton
-            onClick={() => onDelete(user.id)}
+            onClick={() => onDelete(user.userId)}
             icon={<Trash2 className="w-4 h-4" />}
             variant="danger"
             tooltip="Xóa"
@@ -146,7 +146,7 @@ export function UserTable({
     <DataTable
       columns={columns}
       data={users}
-      keyExtractor={(user) => user.id}
+      keyExtractor={(user) => user.userId}
       emptyMessage="Không tìm thấy người dùng nào"
     />
   );

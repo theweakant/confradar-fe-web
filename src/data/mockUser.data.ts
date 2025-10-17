@@ -1,39 +1,48 @@
 import { User } from "@/types/user.type";
+
 export const mockUsers: User[] = [
-    {
-      id: "1",
-      name: "Nguyễn Văn An",
-      email: "an.nguyen@example.com",
-      role: "admin",
-      status: "active",
-      registeredConferences: 5,
-      joinedDate: "2024-01-15"
-    },
-    {
-      id: "2",
-      name: "Trần Thị Bình",
-      email: "binh.tran@example.com",
-      role: "organizer",
-      status: "active",
-      registeredConferences: 12,
-      joinedDate: "2024-02-20"
-    },
-    {
-      id: "3",
-      name: "Lê Hoàng Cường",
-      email: "cuong.le@example.com",
-      role: "attendee",
-      status: "active",
-      registeredConferences: 8,
-      joinedDate: "2024-03-10"
-    },
-    {
-      id: "4",
-      name: "Phạm Thị Dung",
-      email: "dung.pham@example.com",
-      role: "attendee",
-      status: "inactive",
-      registeredConferences: 2,
-      joinedDate: "2024-04-05"
-    }
+  {
+    userId: "1",
+    fullName: "Nguyễn Văn An",
+    email: "an.nguyen@example.com",
+    phoneNumber: "0901234567",
+    address: "123 Nguyễn Trãi, Hà Nội",
+    role: "admin",
+    status: "active",
+    registeredConferences: 5,
+    joinedDate: "2024-01-15",
+  },
+  {
+    userId: "2",
+    fullName: "Trần Thị Bình",
+    email: "binh.tran@example.com",
+    phoneNumber: "0912345678",
+    address: "45 Lê Lợi, TP. Hồ Chí Minh",
+    role: "organizer",
+    status: "active",
+    registeredConferences: 12,
+    joinedDate: "2024-02-20",
+  },
+  {
+    userId: "3",
+    fullName: "Lê Hoàng Cường",
+    email: "cuong.le@example.com",
+    phoneNumber: "0923456789",
+    address: "78 Trần Phú, Đà Nẵng",
+    role: "guest",
+    status: "active",
+    registeredConferences: 8,
+    joinedDate: "2024-03-10",
+  },
+  {
+    userId: "4",
+    fullName: "Phạm Thị Dung",
+    email: "dung.pham@example.com",
+    phoneNumber: "0934567890",
+    address: "12 Nguyễn Huệ, Huế",
+    role: "guest",
+    status: "inactive",
+    registeredConferences: 2,
+    joinedDate: "2024-04-05",
+  },
 ];

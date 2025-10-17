@@ -13,7 +13,7 @@ export function formatCurrency(amount: number | undefined): string {
 }
 
 export const truncateContent = (content: string, maxLength: number = 40): string => {
-  if (content.length <= maxLength) return content // Trả về nguyên nội dung nếu nó ngắn hơn maxLength
+  if (content.length <= maxLength) return content 
 
   const words = content.split(' ')
   let truncated = ''

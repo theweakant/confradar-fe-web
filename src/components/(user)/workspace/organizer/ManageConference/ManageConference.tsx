@@ -70,12 +70,12 @@ export default function ManageConference() {
 
   const filteredConferences = conferences.filter(conf => {
     const matchesSearch = 
-      conf.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      conf.conferenceName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       conf.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      conf.location.toLowerCase().includes(searchQuery.toLowerCase());
+      conf.locationId.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesCategory = filterCategory === "all" || conf.category === filterCategory;
-    const matchesStatus = filterStatus === "all" || conf.status === filterStatus;
+    const matchesCategory = filterCategory === "all" || conf.conferenceCategoryId === filterCategory;
+    const matchesStatus = filterStatus === "all" || conf.globalStatusId === filterStatus;
 
     return matchesSearch && matchesCategory && matchesStatus;
   });
@@ -100,7 +100,7 @@ export default function ManageConference() {
   const handleSave = (data: ConferenceFormData) => {
     if (editingConference) {
       setConferences(prev => prev.map(c => 
-        c.id === editingConference.id 
+        c.conferenceId === editingConference.conferenceId 
           ? { ...c, ...data }
           : c
       ));
@@ -108,8 +108,7 @@ export default function ManageConference() {
     } else {
       const newConference: Conference = {
         ...data,
-        id: Date.now().toString(),
-        currentAttendees: 0
+        conferenceId: Date.now().toString(),
       };
       setConferences(prev => [...prev, newConference]);
       toast.success("Thêm hội thảo thành công!");
@@ -125,7 +124,7 @@ export default function ManageConference() {
 
   const confirmDelete = () => {
     if (deleteConferenceId) {
-      setConferences(prev => prev.filter(c => c.id !== deleteConferenceId));
+      setConferences(prev => prev.filter(c => c.conferenceId !== deleteConferenceId));
       toast.success("Xóa hội thảo thành công!");
       setDeleteConferenceId(null);
     }
@@ -136,9 +135,9 @@ export default function ManageConference() {
   };
 
   const totalConferences = conferences.length;
-  const upcomingConferences = conferences.filter(c => c.status === "upcoming").length;
-  const ongoingConferences = conferences.filter(c => c.status === "ongoing").length;
-  const completedConferences = conferences.filter(c => c.status === "completed").length;
+  const upcomingConferences = conferences.filter(c => c.globalStatusId === "upcoming").length;
+  const ongoingConferences = conferences.filter(c => c.globalStatusId === "ongoing").length;
+  const completedConferences = conferences.filter(c => c.globalStatusId === "completed").length;
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
