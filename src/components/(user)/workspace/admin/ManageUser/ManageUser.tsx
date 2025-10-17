@@ -43,11 +43,14 @@ export default function ManageUser() {
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
 
   const roleOptions = [
-    { value: "all", label: "Tất cả danh mục" },
+    { value: "all", label: "Tất cả vai trò" },
     { value: "admin", label: "Quản trị viên" },
     { value: "organizer", label: "Người tổ chức" },
-    { value: "attendee", label: "Người tham dự" }
+    { value: "reviewer", label: "Người đánh giá" },
+    { value: "collaborator", label: "Cộng tác viên" },
+    { value: "guest", label: "Khách" }
   ];
+  
   const statusOptions = [
     { value: "all", label: "Tất cả trạng thái" },
     { value: "active", label: "Hoạt động" },
@@ -55,13 +58,13 @@ export default function ManageUser() {
   ];
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         user.phoneNumber.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole = filterRole === "all" || user.role === filterRole;
     const matchesStatus = filterStatus === "all" || user.status === filterStatus;
     return matchesSearch && matchesRole && matchesStatus;
   });
-
 
   const handleCreate = () => {
     setEditingUser(null);
@@ -78,28 +81,28 @@ export default function ManageUser() {
     setIsFormModalOpen(true);
   };
 
-  const handleSave = (data: UserFormData) => {
-    if (editingUser) {
-      setUsers(prev => prev.map(u => 
-        u.id === editingUser.id 
-          ? { ...u, ...data }
-          : u
-      ));
-      toast.success("Cập nhật người dùng thành công!");
-    } else {
-      const newUser: User = {
-        ...data,
-        id: Date.now().toString(),
-        registeredConferences: 0,
-        joinedDate: new Date().toISOString().split('T')[0]
-      };
-      setUsers(prev => [...prev, newUser]);
-      toast.success("Thêm người dùng thành công!");
-
-    }
-    setIsFormModalOpen(false);
-    setEditingUser(null);
-  };
+const handleSave = (data: UserFormData) => {
+  if (editingUser) {
+    setUsers(prev => prev.map(u => 
+      u.userId === editingUser.userId 
+        ? { ...u, ...data }
+        : u
+    ));
+    toast.success("Cập nhật người dùng thành công!");
+  } else {
+    const newUser: User = {
+      ...data,
+      userId: Date.now().toString(),
+      status: "active",
+      registeredConferences: 0,
+      joinedDate: new Date().toISOString().split('T')[0]
+    };
+    setUsers(prev => [...prev, newUser]);
+    toast.success("Thêm người dùng thành công!");
+  }
+  setIsFormModalOpen(false);
+  setEditingUser(null);
+};
 
   const handleDelete = (id: string) => {
     setDeleteUserId(id);
@@ -107,9 +110,8 @@ export default function ManageUser() {
 
   const confirmDelete = () => {
     if (deleteUserId) {
-      setUsers(prev => prev.filter(u => u.id !== deleteUserId));
+      setUsers(prev => prev.filter(u => u.userId !== deleteUserId));
       toast.success("Xóa người dùng thành công!");
-
       setDeleteUserId(null);
     }
   };
@@ -117,40 +119,40 @@ export default function ManageUser() {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900">Quản lý Người dùng</h1>
-          <Button
-            onClick={handleCreate}
-            className="flex items-center gap-2 whitespace-nowrap mt-6"
-          >
-            <Plus className="w-5 h-5" />
-            Thêm người dùng
-          </Button>
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold text-gray-900">Quản lý Người dùng</h1>
+            <Button
+              onClick={handleCreate}
+              className="flex items-center gap-2 whitespace-nowrap mt-6"
+            >
+              <Plus className="w-5 h-5" />
+              Thêm người dùng
+            </Button>
+          </div>
+          <p className="text-gray-600 mt-2">
+            Quản lý thông tin người dùng trên ConfRadar
+          </p>
         </div>
-        <p className="text-gray-600 mt-2">
-          Quản lý thông tin người dùng trên ConfRadar
-        </p>
-      </div>
 
-                <SearchFilter
-                  searchValue={searchQuery}
-                  onSearchChange={setSearchQuery}
-                  searchPlaceholder="Tìm kiếm..."
-                  filters={[
-                    {
-                      value: filterRole,
-                      onValueChange: setFilterRole,
-                      options: roleOptions,
-                    },
-                    {
-                      value: filterStatus,
-                      onValueChange: setFilterStatus,
-                      options: statusOptions,
-                    },
-                  ]}
-                  
-                />
+        <SearchFilter
+          searchValue={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder="Tìm kiếm..."
+          filters={[
+            {
+              value: filterRole,
+              onValueChange: setFilterRole,
+              options: roleOptions,
+            },
+            {
+              value: filterStatus,
+              onValueChange: setFilterStatus,
+              options: statusOptions,
+            },
+          ]}
+        />
+        
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center justify-between">

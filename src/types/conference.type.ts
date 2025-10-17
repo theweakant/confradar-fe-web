@@ -1,6 +1,6 @@
 // // src/types/conference.type.ts
 
-import { User } from "./user.type";
+// import { User } from "./user.type";
 
 
 export interface Conference {
@@ -16,11 +16,11 @@ export interface Conference {
   isInternalHosted: boolean;
 
   // Foreign Keys
-  conferenceRankingId: ConferenceRanking;     
+  conferenceRankingId: string;     
   userId: string;                 
-  locationId: Location;              
+  locationId: string;              
   conferenceCategoryId: string;    
-  conferenceTypeId: ConferenceType;        
+  conferenceTypeId: string;        
   globalStatusId: string;          
 
   isActive: boolean;

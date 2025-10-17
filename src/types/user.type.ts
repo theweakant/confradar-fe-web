@@ -6,13 +6,13 @@ export interface User {
   email: string;
   phoneNumber:string;
   address:string
-  role: "admin" | "organizer" | "attendee";
+  role: "admin" | "organizer" | "reviewer" | "collaborator" | "guest";
   status: "active" | "inactive";
   registeredConferences: number;
   joinedDate: string;
 }
 
-export type UserFormData = Omit<User, "id" | "registeredConferences" | "joinedDate">;
+export type UserFormData = Omit<User, "userId" | "status" | "registeredConferences" | "joinedDate">;
 
 export interface UserFormProps {
   user?: User | null;
