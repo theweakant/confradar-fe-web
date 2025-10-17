@@ -1,7 +1,7 @@
 "use client"
+
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,18 +9,26 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, User, Mail, Lock, Phone, Calendar, Users } from "lucide-react"
+import { useRegisterMutation } from "@/redux/services/auth.service"
+import { toast } from "sonner"
+
+
 
 export default function Register() {
   const router = useRouter()
+  const [registerUser] = useRegisterMutation()
+
   const [formData, setFormData] = useState({
-    userName: "",
+    fullName: "",
     email: "",
     password: "",
     confirmPassword: "",
     phoneNumber: "",
     gender: "",
-    birthDay: "",
+    birthday: "",
+    bioDescription: "",
   })
+
   const [isLoading, setIsLoading] = useState(false)
 
   const handleInputChange = (field: string, value: string) => {
@@ -29,10 +37,36 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsLoading(false)
-    router.push("/auth/login")
+
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Mật khẩu xác nhận không khớp")
+      return
+    }
+
+    try {
+      setIsLoading(true)
+
+      const body = new FormData()
+      body.append("fullName", formData.fullName)
+      body.append("email", formData.email)
+      body.append("password", formData.password)
+      body.append("confirmPassword", formData.confirmPassword)
+      body.append("phoneNumber", formData.phoneNumber)
+      body.append("gender", formData.gender || "Other")
+      body.append("birthday", formData.birthday || "2000-01-01")
+      body.append("bioDescription", formData.bioDescription)
+      body.append("avatarFile", "") // chưa upload ảnh
+
+      await registerUser(body).unwrap()
+
+      toast.success("Đăng ký thành công! Vui lòng đăng nhập.")
+      router.push("/auth/login")
+    } catch (error) {
+      console.error("Register error:", error)
+      toast.error("Đăng ký thất bại. Vui lòng thử lại.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -47,19 +81,19 @@ export default function Register() {
 
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-3">
-              {/* User Name */}
+              {/* Full Name */}
               <div className="space-y-1">
-                <Label htmlFor="userName" className="text-xs font-medium">
-                  Tên đăng nhập <span className="text-destructive">*</span>
+                <Label htmlFor="fullName" className="text-xs font-medium">
+                  Họ và tên <span className="text-destructive">*</span>
                 </Label>
                 <div className="relative">
                   <User className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-muted-foreground w-3.5 h-3.5" />
                   <Input
-                    id="userName"
+                    id="fullName"
                     type="text"
-                    placeholder="Tên đăng nhập"
-                    value={formData.userName}
-                    onChange={(e) => handleInputChange("userName", e.target.value)}
+                    placeholder="Nhập họ tên"
+                    value={formData.fullName}
+                    onChange={(e) => handleInputChange("fullName", e.target.value)}
                     disabled={isLoading}
                     className="pl-9 h-9 text-sm"
                     required
@@ -127,7 +161,7 @@ export default function Register() {
                 </div>
               </div>
 
-              {/* Gender and Birthday in one row */}
+              {/* Gender & Birthday */}
               <div className="grid grid-cols-2 gap-2.5">
                 <div className="space-y-1">
                   <Label htmlFor="gender" className="text-xs font-medium">
@@ -142,24 +176,24 @@ export default function Register() {
                       <SelectValue placeholder="Chọn" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="male">Nam</SelectItem>
-                      <SelectItem value="female">Nữ</SelectItem>
-                      <SelectItem value="other">Khác</SelectItem>
+                      <SelectItem value="Male">Nam</SelectItem>
+                      <SelectItem value="Female">Nữ</SelectItem>
+                      <SelectItem value="Other">Khác</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-1">
-                  <Label htmlFor="birthDay" className="text-xs font-medium">
+                  <Label htmlFor="birthday" className="text-xs font-medium">
                     Ngày Sinh
                   </Label>
                   <div className="relative">
                     <Calendar className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-muted-foreground w-3.5 h-3.5 pointer-events-none" />
                     <Input
-                      id="birthDay"
+                      id="birthday"
                       type="date"
-                      value={formData.birthDay}
-                      onChange={(e) => handleInputChange("birthDay", e.target.value)}
+                      value={formData.birthday}
+                      onChange={(e) => handleInputChange("birthday", e.target.value)}
                       disabled={isLoading}
                       className="pl-9 h-9 text-sm"
                     />
@@ -186,6 +220,7 @@ export default function Register() {
                 </div>
               </div>
 
+              {/* Submit button */}
               <Button
                 type="submit"
                 size="lg"
@@ -236,8 +271,7 @@ export default function Register() {
         <div className="absolute bottom-0 left-0 right-0 p-12 text-white">
           <h2 className="text-4xl font-bold mb-4 text-balance">Kết Nối Với Các Chuyên Gia Hàng Đầu</h2>
           <p className="text-lg text-white/90 max-w-2xl text-pretty">
-            Tham gia cộng đồng ConfRadar để khám phá và đăng ký các hội nghị, hội thảo chuyên nghiệp trong lĩnh vực của
-            bạn.
+            Tham gia cộng đồng ConfRadar để khám phá và đăng ký các hội nghị, hội thảo chuyên nghiệp trong lĩnh vực của bạn.
           </p>
         </div>
       </div>
