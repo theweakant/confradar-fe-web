@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { FormInput } from "./FormInput";
 import { SocialLoginButtons } from "./SocialLoginButtons";
 import { LoginHeader } from "./LoginHeader";
-import { useLoginForm } from "@/utils/useLoginForm";
+import { useLoginForm } from "@/hooks/useLoginForm";
 
 export const LoginForm = () => {
   const {

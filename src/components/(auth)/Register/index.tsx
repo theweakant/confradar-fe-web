@@ -8,11 +8,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2, User, Mail, Lock, Phone, Calendar, Users } from "lucide-react"
+import { Loader2, User, Mail, Lock, Phone, Calendar, Users, Upload, X } from "lucide-react"
 import { useRegisterMutation } from "@/redux/services/auth.service"
 import { toast } from "sonner"
-
-
 
 export default function Register() {
   const router = useRouter()
@@ -29,10 +27,43 @@ export default function Register() {
     bioDescription: "",
   })
 
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [avatarPreview, setAvatarPreview] = useState<string>("")
   const [isLoading, setIsLoading] = useState(false)
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        toast.error("Vui lòng chọn file ảnh")
+        return
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Kích thước ảnh không được vượt quá 5MB")
+        return
+      }
+
+      setAvatarFile(file)
+      
+      // Create preview
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const removeAvatar = () => {
+    setAvatarFile(null)
+    setAvatarPreview("")
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,15 +86,21 @@ export default function Register() {
       body.append("gender", formData.gender || "Other")
       body.append("birthday", formData.birthday || "2000-01-01")
       body.append("bioDescription", formData.bioDescription)
-      body.append("avatarFile", "") // chưa upload ảnh
+      
+      // Append avatar file if exists
+      if (avatarFile) {
+        body.append("avatarFile", avatarFile)
+      } else {
+        body.append("avatarFile", "")
+      }
 
       await registerUser(body).unwrap()
 
-      toast.success("Đăng ký thành công! Vui lòng đăng nhập.")
+      toast.success("Đăng ký thành công. Vui lòng kiểm tra Mail của bạn!")
       router.push("/auth/login")
     } catch (error) {
       console.error("Register error:", error)
-      toast.error("Đăng ký thất bại. Vui lòng thử lại.")
+      toast.error("Đăng ký thất bại. Vui lòng thử lại!")
     } finally {
       setIsLoading(false)
     }
@@ -81,6 +118,59 @@ export default function Register() {
 
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-3">
+              {/* Avatar Upload */}
+              <div className="space-y-1">
+                <Label className="text-xs font-medium">Ảnh đại diện</Label>
+                <div className="flex items-center gap-4">
+                  {/* Avatar Preview */}
+                  <div className="relative">
+                    {avatarPreview ? (
+                      <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-primary">
+                        <Image
+                          src={avatarPreview}
+                          alt="Avatar preview"
+                          fill
+                          className="object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={removeAvatar}
+                          className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center border-2 border-dashed border-muted-foreground/25">
+                        <User className="w-8 h-8 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Upload Button */}
+                  <div className="flex-1">
+                    <Input
+                      id="avatarFile"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarChange}
+                      disabled={isLoading}
+                      className="hidden"
+                    />
+                    <Label
+                      htmlFor="avatarFile"
+                      className="cursor-pointer inline-flex items-center justify-center h-9 px-4 py-2 text-sm font-medium rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      {avatarPreview ? "Thay đổi ảnh" : "Chọn ảnh"}
+                    </Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      PNG, JPG (max 5MB)
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               {/* Full Name */}
               <div className="space-y-1">
                 <Label htmlFor="fullName" className="text-xs font-medium">

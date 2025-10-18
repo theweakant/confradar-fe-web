@@ -4,6 +4,7 @@ export const endpoint = {
     LOGIN: "/Auth/login",
     REGISTER: "/Auth/register",
     REFRESH: "/Auth/refresh-token",
+    GOOGLE: "Auth/firebase-login"
 
   },
   //USER: {

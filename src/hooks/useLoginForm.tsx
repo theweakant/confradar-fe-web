@@ -2,7 +2,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/redux/hooks/useAuth"
 import { validateLoginForm } from "@/helper/validation"
-// import { getRouteByRole } from "@/utils/routeGuard"
+import { getRouteByRole } from "@/constants/roles"
 import type { LoginFormData, FormErrors } from "@/types/auth.type"
 
 export const useLoginForm = () => {
@@ -32,26 +32,17 @@ export const useLoginForm = () => {
     }
 
     try {
-      // ✅ USE YOUR EXISTING useAuth login method
-      const success = await login({
+      const {success, user} = await login({
         email: formData.email,
         password: formData.password,
       })
-      
-      if (success) {
-        // ✅ Get user from Redux state after successful login
-        // Note: You might need to pass user from login response
-        // For now, redirect to default workspace
-        router.push("/workspace")
-        
-        // TODO: When BE returns role, update to:
-        // const redirectUrl = getRouteByRole(user.role)
-        // router.push(redirectUrl)
+    
+      if (success && user) {
+        const redirectUrl = getRouteByRole(user.role ?? "")
+        router.push(redirectUrl)
       } else {
-        setErrors({ 
-          email: "Email hoặc mật khẩu không đúng" 
-        })
-      }
+        setErrors({ email: "Email hoặc mật khẩu không đúng" })
+      } 
       
     } catch (error) {
       const errorMessage = 

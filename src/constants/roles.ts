@@ -1,21 +1,23 @@
-export const USER_ROLES = {
-  ADMIN: 'admin',
-  ORGANIZER: 'organizer',
-  COLLABORATOR: 'collaborator',
-  REVIEWER: 'reviewer',
-  GUEST: 'guest',
-} as const
-
-export type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES]
-
+// constants/roles.ts
 
 export const ROLE_ROUTES: Record<string, string> = {
-  admin: '/workspace/admin',
-  organizer: '/workspace/organizer',
-  collaborator: '/workspace/collaborator',
-  reviewer: '/workspace/reviewer',
-  guest: '/workspace/guest',
+  customer: "/customer",
+  conferenceorganizer: "/workspace/organizer",
+  collaborator: "/workspace/collaborator",
+
+  localreviewer: "/workspace/local-reviewer",
+  headreviewer: "/workspace/head-reviewer",
+  
+  admin: "/workspace/admin",
 }
 
+export const DEFAULT_ROUTE = "/"
 
-export const DEFAULT_ROUTE = '/'
+export const getRouteByRole = (role?: string): string => {
+  if (!role) return DEFAULT_ROUTE
+  return ROLE_ROUTES[role.toLowerCase()] || DEFAULT_ROUTE
+}
+
+export const canAccessRoute = (userRole: string, requiredRoles: string[]): boolean => {
+  return requiredRoles.map(r => r.toLowerCase()).includes(userRole.toLowerCase())
+}

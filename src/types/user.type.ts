@@ -1,12 +1,17 @@
 // src/types/user.type.ts
 
+export interface AuthUser {
+  email: string
+  role: string | null
+}
+
 export interface User {
   userId: string;
   fullName: string;
   email: string;
   phoneNumber:string;
   address:string
-  role: "admin" | "organizer" | "reviewer" | "collaborator" | "guest";
+  role: string;
   status: "active" | "inactive";
   registeredConferences: number;
   joinedDate: string;

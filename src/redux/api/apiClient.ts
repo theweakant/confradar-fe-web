@@ -11,7 +11,7 @@ const rawBaseQuery = fetchBaseQuery({
   prepareHeaders: (headers) => {
     const token = getAccessToken()
     if (token) headers.set("Authorization", `Bearer ${token}`)
-    headers.set("Content-Type", "application/json")
+    // headers.set("Content-Type", "application/json")
     return headers
   },
 })
@@ -24,7 +24,7 @@ export const apiClient: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryE
 ) => {
   let result = await rawBaseQuery(args, api, extraOptions)
 
-  // nếu token hết hạn
+  //token hết hạn
   if (result.error && result.error.status === 401) {
     const refreshToken = getRefreshToken()
     if (!refreshToken) {
@@ -33,7 +33,7 @@ export const apiClient: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryE
       return result
     }
 
-    // gọi API refresh token
+    //API refresh token
     const refreshResult = await rawBaseQuery(
       {
         url: endpoint.AUTH.REFRESH,
