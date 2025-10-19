@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/redux/hooks/useAuth"
+import { useFirebaseLogin } from "@/hooks/useFirebaseLogin"
 import { validateLoginForm } from "@/helper/validation"
 import { getRouteByRole } from "@/constants/roles"
 import type { LoginFormData, FormErrors } from "@/types/auth.type"
@@ -8,6 +9,7 @@ import type { LoginFormData, FormErrors } from "@/types/auth.type"
 export const useLoginForm = () => {
   const router = useRouter()
   const { login, loading } = useAuth()
+  const { handleGoogleLogin } = useFirebaseLogin()
   
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
@@ -57,7 +59,27 @@ export const useLoginForm = () => {
   }
 
   const handleSocialLogin = async (provider: 'google' | 'orcid') => {
-    console.log(`${provider} login - will implement later`)
+    if (provider === 'google') {
+      try {
+        const { success, user } = await handleGoogleLogin()
+        
+        if (success && user) {
+          const redirectUrl = getRouteByRole(user.role ?? "")
+          router.push(redirectUrl)
+        } else {
+          setErrors({ email: "Đăng nhập Google thất bại" })
+        }
+      } catch (error) {
+        const errorMessage = 
+          error instanceof Error 
+            ? error.message 
+            : "Đăng nhập Google thất bại"
+        
+        setErrors({ email: errorMessage })
+      }
+    } else if (provider === 'orcid') {
+      console.log('ORCID login - will implement later')
+    }
   }
 
   return {
