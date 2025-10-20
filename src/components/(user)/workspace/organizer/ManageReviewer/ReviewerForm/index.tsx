@@ -53,7 +53,10 @@ export function ReviewerForm({ user, onSave, onCancel }: ReviewerFormProps) {
   const [errors, setErrors] = useState<Partial<Record<keyof ReviewerFormData, string>>>({});
   const [touched, setTouched] = useState<Set<keyof ReviewerFormData>>(new Set());
 
-  const handleChange = (field: keyof ReviewerFormData, value: any) => {
+  const handleChange = (
+    field: keyof ReviewerFormData, 
+    value: string | boolean | File | null | string[]
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (typeof value === 'string') {
       validateField(field, value);
