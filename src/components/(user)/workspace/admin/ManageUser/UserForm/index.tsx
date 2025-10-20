@@ -19,7 +19,7 @@ const [formData, setFormData] = useState<UserFormData>({
   email: user?.email || "",
   phoneNumber: user?.phoneNumber || "",
   address: user?.address || "",
-  role: user?.role || "guest"  
+  role: user?.role || "customer"  
 });
 
   const [errors, setErrors] = useState<Partial<Record<keyof UserFormData, string>>>({});
@@ -82,11 +82,14 @@ const [formData, setFormData] = useState<UserFormData>({
     }
   };
 
-  const roleOptions = [
-    { value: "admin", label: "Quản trị viên" },
-    { value: "organizer", label: "Người tổ chức" },
-    { value: "attendee", label: "Người tham dự" }
-  ];
+const roleOptions = [
+    { value: "customer", label: "Khách hàng" },
+    // { value: "conferenceorganizer", label: "Người tổ chức hội nghị" },
+    { value: "collaborator", label: "Cộng tác viên" },
+    { value: "localreviewer", label: "Phản biện nội bộ" },
+    { value: "externalreviewer", label: "Phản biện bên ngoài" },
+    // { value: "admin", label: "Quản trị viên" }
+  ]; 
 
 
   return (

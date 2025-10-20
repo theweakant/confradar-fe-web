@@ -93,9 +93,9 @@ export default function AssignedPaperList() {
                   </div>
                 </div>
                 
-                <Link href="/workspace/reviewer/manage-paper/assigned-papper-list/review-paper">
+                <Link href="/workspace/orgainzer/manage-paper/assigned-papper-list/review-paper">
                   <Button className="ml-4">
-                    Bắt đầu đánh giá
+                    Chấp nhận 
                   </Button>
                 </Link>
               </div>

@@ -43,6 +43,8 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
       { label: "Hội nghị", href: "/workspace/organizer/manage-conference", icon: Calendar },
       { label: "Bài chờ duyệt", href: "/workspace/organizer/manage-paper", icon: FileText },
       { label: "Người tham gia", href: "/workspace/organizer/manage-user", icon: Users },
+      { label: "Quản lí phản biện", href: "/workspace/organizer/manage-reviewer", icon: Users },
+
     ],
     collaborator: [
       { label: "Tổng quan", href: "/workspace/collaborator", icon: LayoutDashboard },
@@ -51,12 +53,17 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
       { label: "Phân tích", href: "/workspace/collaborator/analytics", icon: FileText },
       { label: "Cài đặt", href: "/workspace/collaborator/settings", icon: Settings },
     ],
-    reviewer: [
-      { label: "Tổng quan", href: "/workspace/reviewer", icon: LayoutDashboard },
-      { label: "Bài cần đánh giá", href: "/workspace/reviewer/manage-paper", icon: FileText },
-      { label: "Đã hoàn thành", href: "/workspace/reviewer/completed", icon: FileText },
+
+    "local-reviewer": [
+      { label: "Tổng quan", href: "/workspace/local-reviewer", icon: LayoutDashboard },
+      { label: "Bài cần đánh giá", href: "/workspace/local-reviewer/manage-paper", icon: FileText },
+      { label: "Đã hoàn thành", href: "/workspace/local-reviewer/completed", icon: FileText },
     ],
-    "reviewer-outsource": [
+
+    "external-reviewer": [
+      { label: "Tổng quan", href: "/workspace/external-reviewer", icon: LayoutDashboard },
+      { label: "Bài cần đánh giá", href: "/workspace/external-reviewer/manage-paper", icon: FileText },
+      { label: "Đã hoàn thành", href: "/workspace/external-reviewer/completed", icon: FileText },
       { label: "Bài đánh giá ngoài", href: "/workspace/reviewer-outsource", icon: GraduationCap },
       { label: "Lịch trình", href: "/workspace/reviewer-outsource/schedule", icon: Calendar },
     ],
@@ -70,8 +77,9 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
     admin: { name: "Quản trị viên", color: "bg-red-500", icon: Shield },
     organizer: { name: "Tổ chức", color: "bg-purple-500", icon: Building2 },
     collaborator: { name: "Đối tác", color: "bg-green-500", icon: Building2 },
-    reviewer: { name: "Đánh giá viên", color: "bg-orange-500", icon: GraduationCap },
-    "reviewer-outsource": { name: "Đánh giá ngoài", color: "bg-yellow-500", icon: GraduationCap },
+    // reviewer: { name: "Đánh giá viên", color: "bg-orange-500", icon: GraduationCap },
+    "local-reviewer": { name: "Đánh giá nội bộ", color: "bg-yellow-500", icon: GraduationCap },
+    "external-reviewer": { name: "Đánh giá ngoài", color: "bg-yellow-500", icon: GraduationCap },
     guest: { name: "Khách", color: "bg-gray-500", icon: Users },
   }
 
