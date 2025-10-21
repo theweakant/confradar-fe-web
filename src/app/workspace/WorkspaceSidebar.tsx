@@ -35,6 +35,7 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
       { label: "Người dùng", href: "/workspace/admin/manage-user", icon: Users },
       { label: "Hội nghị", href: "/workspace/admin/manage-conference", icon: Calendar },
       { label: "Địa điểm", href: "/workspace/admin/manage-accommodation", icon: Home },
+      { label: "Danh mục", href: "/workspace/admin/manage-category", icon: FileText },
       { label: "Báo cáo", href: "/workspace/admin/report", icon: FileText },
       { label: "Cài đặt", href: "/workspace/admin/system-setting", icon: Settings },
     ],
@@ -44,12 +45,13 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
       { label: "Bài chờ duyệt", href: "/workspace/organizer/manage-paper", icon: FileText },
       { label: "Người tham gia", href: "/workspace/organizer/manage-user", icon: Users },
       { label: "Quản lí phản biện", href: "/workspace/organizer/manage-reviewer", icon: Users },
+      { label: "Yêu cầu", href: "/workspace/organizer/manage-request", icon: Building2 },
 
     ],
     collaborator: [
       { label: "Tổng quan", href: "/workspace/collaborator", icon: LayoutDashboard },
       { label: "Tài trợ", href: "/workspace/collaborator/sponsorships", icon: Building2 },
-      { label: "Sự kiện", href: "/workspace/collaborator/events", icon: Calendar },
+      { label: "Hội thảo", href: "/workspace/collaborator/manage-conference", icon: Calendar },
       { label: "Phân tích", href: "/workspace/collaborator/analytics", icon: FileText },
       { label: "Cài đặt", href: "/workspace/collaborator/settings", icon: Settings },
     ],
@@ -67,10 +69,10 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
       { label: "Bài đánh giá ngoài", href: "/workspace/reviewer-outsource", icon: GraduationCap },
       { label: "Lịch trình", href: "/workspace/reviewer-outsource/schedule", icon: Calendar },
     ],
-    guest: [
-      { label: "Tổng quan", href: "/workspace/guest", icon: LayoutDashboard },
-      { label: "Hội nghị", href: "/workspace/guest/conferences", icon: Calendar },
-    ],
+    // guest: [
+    //   { label: "Tổng quan", href: "/workspace/guest", icon: LayoutDashboard },
+    //   { label: "Hội nghị", href: "/workspace/guest/conferences", icon: Calendar },
+    // ],
   }
 
   const roleInfo: Record<string, { name: string; color: string; icon: ElementType }> = {

@@ -18,12 +18,14 @@ import Link from "next/link"
 
 import { SearchFilter } from "@/components/molecules/SearchFilter";
 import { PaperTable } from "@/components/(user)/workspace/reviewer/ManagePaper/PaperTable/index";
+import { PaperDeadlineDetail } from "@/components/(user)/workspace/reviewer/ManagePaper/PaperDetail/index";
+
 import { Paper } from "@/types/paper.type";
 import { mockPaperData } from "@/data/mockPaper.data";
 
 
 
-export default function ReviewerManagePage() {
+export default function ReviewerManagePaperPage() {
 
 
   const [papers, setPapers] = useState<Paper[]>(mockPaperData);
@@ -32,7 +34,8 @@ export default function ReviewerManagePage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [conferenceFilter, setConferenceFilter] = useState("all");
   const [paperTypeFilter, setPaperTypeFilter] = useState("all");
-  
+  const [selectedPaper, setSelectedPaper] = useState<Paper | null>(null);
+
   const [deletePaperId, setDeletePaperId] = useState<string | null>(null);
 
   const statusOptions = [
@@ -77,15 +80,7 @@ export default function ReviewerManagePage() {
   });
 
   const handleView = (paper: Paper) => {
-    // TODO: Implement view detail
-    console.log("View paper:", paper);
-    toast.info(`Xem chi tiết: ${paper.title}`);
-  };
-
-  const handleEdit = (paper: Paper) => {
-    // TODO: Implement edit
-    console.log("Edit paper:", paper);
-    toast.info(`Chỉnh sửa: ${paper.title}`);
+    setSelectedPaper(paper);
   };
 
   const handleDelete = (id: string) => {
@@ -257,8 +252,6 @@ export default function ReviewerManagePage() {
           <PaperTable
             papers={filteredPapers}
             onView={handleView}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
           />
         </div>
 
@@ -282,6 +275,18 @@ export default function ReviewerManagePage() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
+
+      {/* Modal hiển thị Paper Detail - ĐÃ DI CHUYỂN RA NGOÀI */}
+      {selectedPaper && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-6">
+          <div className="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-auto p-6">
+            <PaperDeadlineDetail
+              paper={selectedPaper}
+              onClose={() => setSelectedPaper(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

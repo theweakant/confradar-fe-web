@@ -1,27 +1,34 @@
+"use client";
+
 import React from "react";
 import { 
   Calendar,
   Users,
   MapPin,
+  Eye,
+  UserPlus,
+  Trash2,
 } from "lucide-react";
 
 import { DataTable, Column } from "@/components/molecules/DataTable";
 import { formatDate } from "@/helper/format";
 import { StatusBadge } from "@/components/atoms/StatusBadge";
+import { ActionButton } from "@/components/atoms/ActionButton";
 import { Paper } from "@/types/paper.type";
-
 import { truncateContent } from "@/helper/format";
-
 
 interface PaperTableProps {
   papers: Paper[];
   onView?: (paper: Paper) => void;
-  onEdit?: (paper: Paper) => void;
+  onAssignReviewer?: (paper: Paper) => void;
   onDelete?: (id: string) => void;
 }
 
 export function PaperTable({ 
   papers,
+  onView,
+  onAssignReviewer,
+  onDelete,
 }: PaperTableProps) {
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
@@ -64,7 +71,7 @@ export function PaperTable({
       render: (paper) => (
         <div className="max-w-md">
           <p className="font-medium text-gray-900 line-clamp-2">
-          {truncateContent(paper.title, 30)}
+            {truncateContent(paper.title, 30)}
           </p>
           <div className="flex items-center gap-2 mt-1">
             <Users className="w-3 h-3 text-gray-400" />
@@ -88,8 +95,7 @@ export function PaperTable({
           <div className="flex items-center gap-2 mb-1">
             <MapPin className="w-4 h-4 text-gray-400" />
             <span className="text-sm font-medium text-gray-900 truncate">
-                {truncateContent(paper.conferenceName, 30)}
-
+              {truncateContent(paper.conferenceName, 30)}
             </span>
           </div>
           <p className="text-xs text-gray-500 ml-6 truncate">
@@ -152,7 +158,40 @@ export function PaperTable({
           )}
         </div>
       ),
-    }
+    },
+    {
+      key: "actions",
+      header: "Thao tác",
+      className: "text-right",
+      render: (paper) => (
+        <div className="flex items-center justify-end gap-2">
+          {onView && (
+            <ActionButton
+              onClick={() => onView(paper)}
+              icon={<Eye className="w-4 h-4" />}
+              variant="info"
+              tooltip="Xem chi tiết"
+            />
+          )}
+          {onAssignReviewer && (
+            <ActionButton
+              onClick={() => onAssignReviewer(paper)}
+              icon={<UserPlus className="w-4 h-4" />}
+              variant="success"
+              tooltip="Giao reviewer"
+            />
+          )}
+          {onDelete && (
+            <ActionButton
+              onClick={() => onDelete(paper.id)}
+              icon={<Trash2 className="w-4 h-4" />}
+              variant="danger"
+              tooltip="Xóa"
+            />
+          )}
+        </div>
+      ),
+    },
   ];
 
   return (

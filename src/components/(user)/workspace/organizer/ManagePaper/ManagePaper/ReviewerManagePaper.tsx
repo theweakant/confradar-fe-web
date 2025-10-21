@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {  FileText, Clock, CheckCircle, XCircle, AlertCircle, Edit3, ScanEye } from "lucide-react";
+import {  FileText, Clock, CheckCircle, XCircle, AlertCircle, Edit3, ScanEye, UserPlus } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,12 +12,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import Link from "next/link"
 
 import { SearchFilter } from "@/components/molecules/SearchFilter";
-import { PaperTable } from "@/components/(user)/workspace/reviewer/ManagePaper/PaperTable/index";
+import { PaperTable } from "@/components/(user)/workspace/organizer//ManagePaper/ManagePaper/PaperTable/index";
+import { PaperDetail } from "@/components/(user)/workspace/organizer//ManagePaper/ManagePaper/PaperDetail/index";
+import { PaperForm } from "@/components/(user)/workspace/organizer//ManagePaper/ManagePaper/PaperForm/index";
 import { Paper } from "@/types/paper.type";
 import { mockPaperData } from "@/data/mockPaper.data";
 
@@ -34,6 +42,52 @@ export default function ReviewerManagePage() {
   const [paperTypeFilter, setPaperTypeFilter] = useState("all");
   
   const [deletePaperId, setDeletePaperId] = useState<string | null>(null);
+  const [viewPaper, setViewPaper] = useState<Paper | null>(null);
+  const [assignPaper, setAssignPaper] = useState<Paper | null>(null);
+
+  // Mock reviewer data
+  const mockReviewers = [
+    {
+      id: "REV001",
+      name: "Dr. Nguyễn Văn A",
+      email: "nguyenvana@university.edu",
+      expertise: ["AI", "Machine Learning", "Deep Learning"],
+      assignedPapers: 3,
+      maxPapers: 5,
+    },
+    {
+      id: "REV002",
+      name: "Dr. Trần Thị B",
+      email: "tranthib@university.edu",
+      expertise: ["Computer Vision", "Image Processing"],
+      assignedPapers: 4,
+      maxPapers: 5,
+    },
+    {
+      id: "REV003",
+      name: "Dr. Lê Văn C",
+      email: "levanc@university.edu",
+      expertise: ["NLP", "Text Mining"],
+      assignedPapers: 2,
+      maxPapers: 6,
+    },
+    {
+      id: "REV004",
+      name: "Dr. Phạm Thị D",
+      email: "phamthid@university.edu",
+      expertise: ["Quantum Computing", "Cryptography"],
+      assignedPapers: 1,
+      maxPapers: 4,
+    },
+    {
+      id: "REV005",
+      name: "Dr. Hoàng Văn E",
+      email: "hoangvane@university.edu",
+      expertise: ["Blockchain", "FinTech", "Security"],
+      assignedPapers: 5,
+      maxPapers: 5,
+    },
+  ];
 
   const statusOptions = [
     { value: "all", label: "Tất cả trạng thái" },
@@ -77,15 +131,11 @@ export default function ReviewerManagePage() {
   });
 
   const handleView = (paper: Paper) => {
-    // TODO: Implement view detail
-    console.log("View paper:", paper);
-    toast.info(`Xem chi tiết: ${paper.title}`);
+    setViewPaper(paper);
   };
 
   const handleEdit = (paper: Paper) => {
-    // TODO: Implement edit
-    console.log("Edit paper:", paper);
-    toast.info(`Chỉnh sửa: ${paper.title}`);
+    setAssignPaper(paper);
   };
 
   const handleDelete = (id: string) => {
@@ -99,6 +149,22 @@ export default function ReviewerManagePage() {
       toast.success(`Xóa bài báo "${paper?.title}" thành công!`);
       setDeletePaperId(null);
     }
+  };
+
+  const handleAssignReviewer = (data: any) => {
+    // Update paper with new reviewers
+    setPapers(prev => prev.map(paper => {
+      if (paper.id === data.paperId) {
+        return {
+          ...paper,
+          reviewers: [...new Set([...paper.reviewers, ...data.reviewerIds])],
+        };
+      }
+      return paper;
+    }));
+    
+    toast.success(`Đã giao ${data.reviewerIds.length} reviewer cho bài báo!`);
+    setAssignPaper(null);
   };
 
   // Statistics calculations
@@ -118,17 +184,32 @@ export default function ReviewerManagePage() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Quản lý Bài báo - Reviewer</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Quản lý Bài báo</h1>
               <p className="text-gray-600 mt-2">
                 Quản lý bài báo và đánh giá trên ConfRadar
               </p>
             </div>
-            <Link href="/workspace/organizer/manage-paper/assigned-papper-list">
-              <Button className="flex items-center gap-2 whitespace-nowrap">
-                <ScanEye className="w-5 h-5" />
-                Xem danh sách bài báo đang chờ 
+            <div className="flex items-center gap-3">
+              <Link href="/workspace/organizer/manage-paper/assigned-papper-list">
+                <Button className="flex items-center gap-2 whitespace-nowrap" variant="outline">
+                  <ScanEye className="w-5 h-5" />
+                  Xem danh sách bài báo đang chờ 
+                </Button>
+              </Link>
+              <Button 
+                className="flex items-center gap-2 whitespace-nowrap"
+                onClick={() => {
+                  if (papers.length > 0) {
+                    setAssignPaper(papers[0]);
+                  } else {
+                    toast.info("Không có bài báo nào để giao reviewer");
+                  }
+                }}
+              >
+                <UserPlus className="w-5 h-5" />
+                Giao Reviewer
               </Button>
-            </Link>
+            </div>
           </div>
         </div>
 
@@ -281,6 +362,41 @@ export default function ReviewerManagePage() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* View Paper Detail Dialog */}
+        <Dialog open={!!viewPaper} onOpenChange={() => setViewPaper(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Chi tiết bài báo</DialogTitle>
+            </DialogHeader>
+            {viewPaper && (
+              <PaperDetail 
+                paper={viewPaper} 
+                onClose={() => setViewPaper(null)} 
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Assign Reviewer Dialog */}
+        <Dialog open={!!assignPaper} onOpenChange={() => setAssignPaper(null)}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <UserPlus className="w-5 h-5" />
+                Giao reviewer cho bài báo
+              </DialogTitle>
+            </DialogHeader>
+            {assignPaper && (
+              <PaperForm
+                paper={assignPaper}
+                availableReviewers={mockReviewers}
+                onSave={handleAssignReviewer}
+                onCancel={() => setAssignPaper(null)}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

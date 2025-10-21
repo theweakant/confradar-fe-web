@@ -45,7 +45,7 @@ export default function AssignedPaperList() {
         <div className="mb-8">
           
           <h1 className="text-3xl font-bold text-gray-900">
-            Danh sách bài báo được phân công
+            Danh sách bài báo đang chờ
           </h1>
         </div>
 
@@ -93,7 +93,7 @@ export default function AssignedPaperList() {
                   </div>
                 </div>
                 
-                <Link href="/workspace/orgainzer/manage-paper/assigned-papper-list/review-paper">
+                <Link href="/workspace/local-reviewer/manage-paper/assigned-papper-list/review-paper">
                   <Button className="ml-4">
                     Chấp nhận 
                   </Button>

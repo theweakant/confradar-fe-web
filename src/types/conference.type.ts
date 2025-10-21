@@ -23,6 +23,7 @@ export interface Conference {
   conferenceTypeId: string;        
   globalStatusId: string;          
 
+  progressStatus: string;
   isActive: boolean;
 }
 

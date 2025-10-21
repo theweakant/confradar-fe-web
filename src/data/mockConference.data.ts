@@ -20,6 +20,7 @@ export const mockConferences: Conference[] = [
     conferenceTypeId: "type-1",
     globalStatusId: "open",
     isActive: true,
+    progressStatus: "Approved",
   },
   {
     conferenceId: "2",
@@ -40,6 +41,7 @@ export const mockConferences: Conference[] = [
     conferenceTypeId: "type-2",
     globalStatusId: "ongoing",
     isActive: true,
+    progressStatus: "Published",
   },
   {
     conferenceId: "3",
@@ -60,6 +62,7 @@ export const mockConferences: Conference[] = [
     conferenceTypeId: "type-3",
     globalStatusId: "completed",
     isActive: true,
+    progressStatus: "Rejected",
   },
   {
     conferenceId: "4",
@@ -80,5 +83,6 @@ export const mockConferences: Conference[] = [
     conferenceTypeId: "type-4",
     globalStatusId: "open",
     isActive: true,
+    progressStatus: "Pending",
   },
 ];
