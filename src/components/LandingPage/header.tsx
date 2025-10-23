@@ -23,22 +23,22 @@ export default function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <Link
-              href="#events"
+              href="/customer"
               className="text-white hover:text-orange-600 transition-colors text-sm font-medium uppercase tracking-wide"
             >
-              Radar
+              Discovery
             </Link>
             <Link
               href="#speakers"
               className="text-white hover:text-orange-600 transition-colors text-sm font-medium uppercase tracking-wide"
             >
-              Diễn giả
+              Về chúng tôi
             </Link>
             <Link
               href="#networking"
               className="text-white hover:text-orange-600 transition-colors text-sm font-medium uppercase tracking-wide"
             >
-              Báo cáo
+              Chính sách
             </Link>
             <Link
               href="#contact"
