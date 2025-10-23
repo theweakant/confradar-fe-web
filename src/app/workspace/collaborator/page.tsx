@@ -1,4 +1,4 @@
-export default function GuestPage() {
+export default function CollaboratorPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold">Guest Dashboard</h1>

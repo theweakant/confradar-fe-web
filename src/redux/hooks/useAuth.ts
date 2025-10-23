@@ -1,7 +1,10 @@
-// redux/hooks/useAuth.ts
+// // redux/hooks/useAuth.ts
+
+
 import { useLoginMutation } from "../services/auth.service"
 import { useAppDispatch, useAppSelector } from "./hooks"
 import { setCredentials, logout, startLoading, stopLoading } from "../slices/auth.slice"
+import { decodeToken, getRoleFromToken } from "../utils/token"
 
 export const useAuth = () => {
   const dispatch = useAppDispatch()
@@ -12,9 +15,18 @@ export const useAuth = () => {
     try {
       dispatch(startLoading())
       const res = await loginMutation(credentials).unwrap()
-      const { accessToken, refreshToken, user } = res.data
-      dispatch(setCredentials({ user, accessToken, refreshToken }))
-      return { success: true, user }
+      const { accessToken, refreshToken } = res.data || {}
+
+      if (!accessToken) throw new Error("Access token missing")
+
+      const decoded = decodeToken(accessToken)
+      const role = getRoleFromToken(accessToken)
+      const email = decoded?.email || credentials.email
+
+      const userInfo = { email, role }
+
+      dispatch(setCredentials({ user: userInfo, accessToken, refreshToken }))
+      return { success: true, user: userInfo }
     } catch (error) {
       console.error("Login failed:", error)
       return { success: false, user: null }
@@ -26,10 +38,10 @@ export const useAuth = () => {
   const signout = () => dispatch(logout())
 
   return {
-    user:  user,
+    user,
     token: accessToken,
     loading,
-    isAuthenticated: !!accessToken, 
+    isAuthenticated: !!accessToken,
     login,
     signout,
   }

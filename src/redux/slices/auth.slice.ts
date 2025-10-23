@@ -1,14 +1,23 @@
 // redux/slices/auth.slice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
-import { setTokens, clearTokens } from "../utils/token"
-import { AuthState } from "@/types/auth.type"
-import {User} from "@/types/user.type"
+import { setTokens, clearTokens, getRoleFromToken } from "../utils/token"
+import {User, AuthUser} from "@/types/user.type"
 
+export interface AuthState {
+  user: User | AuthUser | null
+  accessToken: string | null
+  refreshToken: string | null
+  role: string | null
+  loading: boolean
+  isRegistered: boolean 
+}
  const initialState: AuthState = {
   user: null,
   accessToken: null,
   refreshToken: null,
+  role: null,
   loading: false,
+  isRegistered: false, 
 }
 
 const authSlice = createSlice({
@@ -23,12 +32,15 @@ const authSlice = createSlice({
     },
     setCredentials: (
       state,
-      action: PayloadAction<{ user: User; accessToken: string; refreshToken: string }>
+      action: PayloadAction<{ user: User | AuthUser; accessToken: string; refreshToken: string }>
     ) => {
       const { user, accessToken, refreshToken } = action.payload
+      // const role = getRoleFromToken(accessToken)
+      // console.log("🟢 Decoded role:", role)
       state.user = user
       state.accessToken = accessToken
       state.refreshToken = refreshToken
+      state.role = getRoleFromToken(accessToken) || null
       setTokens(accessToken, refreshToken)
       state.loading = false
     },
@@ -36,8 +48,18 @@ const authSlice = createSlice({
       state.user = null
       state.accessToken = null
       state.refreshToken = null
+      state.role = null
       clearTokens()
       state.loading = false
+    },
+
+    registerSuccess: (state) => {
+      state.isRegistered = true
+      state.loading = false
+    },
+
+    resetRegisterState: (state) => {
+      state.isRegistered = false
     },
   },
 })

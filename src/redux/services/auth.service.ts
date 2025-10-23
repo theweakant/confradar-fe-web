@@ -21,8 +21,15 @@ export const authApi = createApi({
         body,
       }),
     }),
+    firebaseLogin: builder.mutation({
+      query: (token) => ({
+        url: endpoint.AUTH.GOOGLE,
+        method: "POST",
+        body: { token },
+      }),
+    }),
 
   }),
 })
 
-export const { useLoginMutation, useRegisterMutation } = authApi
+export const { useLoginMutation, useRegisterMutation, useFirebaseLoginMutation } = authApi

@@ -68,16 +68,6 @@ export function RoomTable({
       ),
     },
     {
-      key: "status",
-      header: "Trạng thái",
-      render: (room) => (
-        <StatusBadge
-          status={getStatusLabel(room.status)}
-          variant={getStatusVariant(room.status)}
-        />
-      ),
-    },
-    {
       key: "createdAt",
       header: "Ngày tạo",
       render: () => (

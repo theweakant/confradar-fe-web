@@ -24,8 +24,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-import { mockConferences } from "@/data/mockConference.data";
-
 import { Modal } from "@/components/molecules/Modal";
 import { StatCard } from "@/components/molecules/StatCard";
 import { SearchFilter } from "@/components/molecules/SearchFilter";
@@ -34,17 +32,16 @@ import { ConferenceDetail } from "@/components/(user)/workspace/admin/ManageConf
 import { ConferenceTable } from "@/components/(user)/workspace/admin/ManageConference/ConferenceTable";
 import { Conference, ConferenceFormData } from "@/types/conference.type";
 
-import {TechConferenceForm} from "@/components/(user)/workspace/organizer/ManageConference/ConferenceForm/TechForm";
-import {ResearchConferenceForm} from "@/components/(user)/workspace/organizer/ManageConference/ConferenceForm/ResearchForm";
+import {ConferenceStepForm} from "@/components/(user)/workspace/organizer/ManageConference/ConferenceForm/TechForm";
+// import {ResearchConferenceForm} from "@/components/(user)/workspace/organizer/ManageConference/ConferenceForm/ResearchForm";
 
-type ConferenceType = "tech" | "research" | null;
+type ConferenceType = boolean | null; // true = research, false = tech, null = not selected
 
 export default function ManageConference() {
-  const [conferences, setConferences] = useState<Conference[]>(mockConferences);
+  const [conferences, setConferences] = useState<Conference[]>([]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
-  const [filterStatus, setFilterStatus] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [editingConference, setEditingConference] = useState<Conference | null>(null);
@@ -60,24 +57,15 @@ export default function ManageConference() {
     { value: "education", label: "Giáo dục" },
   ];
 
-  const statusOptions = [
-    { value: "all", label: "Tất cả trạng thái" },
-    { value: "upcoming", label: "Sắp diễn ra" },
-    { value: "ongoing", label: "Đang diễn ra" },
-    { value: "completed", label: "Đã kết thúc" },
-    { value: "cancelled", label: "Đã hủy" },
-  ];
-
   const filteredConferences = conferences.filter(conf => {
     const matchesSearch = 
       conf.conferenceName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       conf.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       conf.locationId.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesCategory = filterCategory === "all" || conf.conferenceCategoryId === filterCategory;
-    const matchesStatus = filterStatus === "all" || conf.globalStatusId === filterStatus;
+    const matchesCategory = filterCategory === "all" || conf.categoryId === filterCategory;
 
-    return matchesSearch && matchesCategory && matchesStatus;
+    return matchesSearch && matchesCategory;
   });
 
   const handleCreate = () => {
@@ -88,7 +76,7 @@ export default function ManageConference() {
 
   const handleEdit = (conference: Conference) => {
     setEditingConference(conference);
-    setSelectedConferenceType("tech"); // Default to tech for editing, adjust based on your logic
+    setSelectedConferenceType(conference.isResearchConference); 
     setIsModalOpen(true);
   };
 
@@ -109,6 +97,8 @@ export default function ManageConference() {
       const newConference: Conference = {
         ...data,
         conferenceId: Date.now().toString(),
+        createdAt: new Date().toISOString(),
+        isActive: true,
       };
       setConferences(prev => [...prev, newConference]);
       toast.success("Thêm hội thảo thành công!");
@@ -135,9 +125,6 @@ export default function ManageConference() {
   };
 
   const totalConferences = conferences.length;
-  const upcomingConferences = conferences.filter(c => c.globalStatusId === "upcoming").length;
-  const ongoingConferences = conferences.filter(c => c.globalStatusId === "ongoing").length;
-  const completedConferences = conferences.filter(c => c.globalStatusId === "completed").length;
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -168,11 +155,6 @@ export default function ManageConference() {
               onValueChange: setFilterCategory,
               options: categoryOptions,
             },
-            {
-              value: filterStatus,
-              onValueChange: setFilterStatus,
-              options: statusOptions,
-            },
           ]}
         />
 
@@ -182,24 +164,6 @@ export default function ManageConference() {
             value={totalConferences}
             icon={<Calendar className="w-10 h-10" />}
             color="blue"
-          />
-          <StatCard
-            title="Sắp diễn ra"
-            value={upcomingConferences}
-            icon={<Clock className="w-10 h-10" />}
-            color="purple"
-          />
-          <StatCard
-            title="Đang diễn ra"
-            value={ongoingConferences}
-            icon={<Users className="w-10 h-10" />}
-            color="green"
-          />
-          <StatCard
-            title="Đã kết thúc"
-            value={completedConferences}
-            icon={<FileText className="w-10 h-10" />}
-            color="orange"
           />
         </div>
 
@@ -233,13 +197,13 @@ export default function ManageConference() {
         title={
           editingConference 
             ? "Chỉnh sửa hội thảo" 
-            : selectedConferenceType 
-              ? "Thêm hội thảo mới"
+            : selectedConferenceType !== null
+              ? "Thêm hội thảo/ hội nghị mới"
               : "Chọn loại hội thảo"
         }
         size="lg"
       >
-        {!editingConference && !selectedConferenceType ? (
+        {!editingConference && selectedConferenceType === null ? (
           // Conference Type Selection Screen
           <div className="py-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-6 text-center">
@@ -247,7 +211,7 @@ export default function ManageConference() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <button
-                onClick={() => handleSelectConferenceType("tech")}
+                onClick={() => handleSelectConferenceType(false)}
                 className="group relative overflow-hidden rounded-xl border-2 border-gray-200 bg-white p-8 transition-all hover:border-blue-500 hover:shadow-lg"
               >
                 <div className="flex flex-col items-center gap-4">
@@ -264,7 +228,7 @@ export default function ManageConference() {
               </button>
 
               <button
-                onClick={() => handleSelectConferenceType("research")}
+                onClick={() => handleSelectConferenceType(true)}
                 className="group relative overflow-hidden rounded-xl border-2 border-gray-200 bg-white p-8 transition-all hover:border-green-500 hover:shadow-lg"
               >
                 <div className="flex flex-col items-center gap-4">
@@ -281,8 +245,9 @@ export default function ManageConference() {
               </button>
             </div>
           </div>
-        ) : selectedConferenceType === "tech" ? (
-          <TechConferenceForm
+        ) : selectedConferenceType === false ? (
+          // Tech Conference Form
+          <ConferenceStepForm
             conference={editingConference}
             onSave={handleSave}
             onCancel={() => {
@@ -291,16 +256,36 @@ export default function ManageConference() {
               setSelectedConferenceType(null);
             }}
           />
-        ) : selectedConferenceType === "research" ? (
-          <ResearchConferenceForm
-            conference={editingConference}
-            onSave={handleSave}
-            onCancel={() => {
-              setIsModalOpen(false);
-              setEditingConference(null);
-              setSelectedConferenceType(null);
-            }}
-          />
+        ) : selectedConferenceType === true ? (
+          // Research Conference Form - Commented out until API is ready
+          <div className="py-8 text-center">
+            <Microscope className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Research Conference Form
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Form cho hội thảo nghiên cứu đang được phát triển và chưa có API hỗ trợ.
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsModalOpen(false);
+                setEditingConference(null);
+                setSelectedConferenceType(null);
+              }}
+            >
+              Quay lại
+            </Button>
+          </div>
+          // <ResearchConferenceForm
+          //   conference={editingConference}
+          //   onSave={handleSave}
+          //   onCancel={() => {
+          //     setIsModalOpen(false);
+          //     setEditingConference(null);
+          //     setSelectedConferenceType(null);
+          //   }}
+          // />
         ) : null}
       </Modal>
 

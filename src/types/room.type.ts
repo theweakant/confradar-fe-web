@@ -1,28 +1,22 @@
-export type Destination = {
-  destinationId: string;
-  name: string;
-  city: string;
-  district: string;
-  street: string;
-};
 
 export type Room = {
   roomId: string;
   number: string;
   displayName: string;
   destinationId: string; 
-  status: string;
 };
 
-export type RoomFormData = {
+export type RoomFormData = Omit<Room, "roomId">
+
+export interface CreateDestinationPayload {
   number: string;
   displayName: string;
   destinationId: string; 
-  status: string;
-
-};
+}
 
 export interface RoomDetailProps {
   room: Room;
   onClose: () => void;
 }
+
+

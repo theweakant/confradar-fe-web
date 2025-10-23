@@ -3,11 +3,11 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/redux/hooks/useAuth'
-import { getRouteByRole } from '@/utils/routeGuard'
+import { getRouteByRole } from '@/constants/roles' 
 
 interface ProtectedRouteProps {
   children: React.ReactNode
-  allowedRoles?: string[]  // If not provided, any authenticated user can access
+  allowedRoles?: string[]
 }
 
 export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
@@ -15,14 +15,12 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   const { user, isAuthenticated, loading } = useAuth()
 
   useEffect(() => {
-  
     if (!loading && !isAuthenticated) {
       router.push('/auth/login')
       return
     }
 
-    // Authenticated but wrong role -> redirect to their correct page
-    if (!loading && isAuthenticated && allowedRoles && user) {
+    if (!loading && isAuthenticated && allowedRoles && user?.role) {
       if (!allowedRoles.includes(user.role)) {
         const correctRoute = getRouteByRole(user.role)
         router.push(correctRoute)
@@ -41,13 +39,9 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
     )
   }
 
-  if (!isAuthenticated) {
-    return null
-  }
+  if (!isAuthenticated) return null
 
-  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-    return null
-  }
+  if (allowedRoles && user?.role && !allowedRoles.includes(user.role)) return null
 
   return <>{children}</>
 }

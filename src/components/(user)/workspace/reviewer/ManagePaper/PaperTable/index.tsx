@@ -1,27 +1,25 @@
 import React from "react";
-import { 
+import {
   Calendar,
   Users,
   MapPin,
+  Eye
 } from "lucide-react";
 
 import { DataTable, Column } from "@/components/molecules/DataTable";
-import { formatDate } from "@/helper/format";
+import { formatDate, truncateContent } from "@/helper/format";
 import { StatusBadge } from "@/components/atoms/StatusBadge";
 import { Paper } from "@/types/paper.type";
-
-import { truncateContent } from "@/helper/format";
-
+import { Button } from "@/components/ui/button";
 
 interface PaperTableProps {
   papers: Paper[];
   onView?: (paper: Paper) => void;
-  onEdit?: (paper: Paper) => void;
-  onDelete?: (id: string) => void;
 }
 
-export function PaperTable({ 
+export function PaperTable({
   papers,
+  onView,
 }: PaperTableProps) {
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
@@ -64,7 +62,7 @@ export function PaperTable({
       render: (paper) => (
         <div className="max-w-md">
           <p className="font-medium text-gray-900 line-clamp-2">
-          {truncateContent(paper.title, 30)}
+            {truncateContent(paper.title, 30)}
           </p>
           <div className="flex items-center gap-2 mt-1">
             <Users className="w-3 h-3 text-gray-400" />
@@ -88,13 +86,10 @@ export function PaperTable({
           <div className="flex items-center gap-2 mb-1">
             <MapPin className="w-4 h-4 text-gray-400" />
             <span className="text-sm font-medium text-gray-900 truncate">
-                {truncateContent(paper.conferenceName, 30)}
-
+              {truncateContent(paper.conferenceName, 30)}
             </span>
           </div>
-          <p className="text-xs text-gray-500 ml-6 truncate">
-            {paper.trackName}
-          </p>
+          <p className="text-xs text-gray-500 ml-6 truncate">{paper.trackName}</p>
         </div>
       ),
     },
@@ -127,12 +122,8 @@ export function PaperTable({
       header: "Người nộp",
       render: (paper) => (
         <div className="min-w-[150px]">
-          <p className="text-sm font-medium text-gray-900">
-            {paper.submitterName}
-          </p>
-          <p className="text-xs text-gray-500 truncate">
-            {paper.submitterEmail}
-          </p>
+          <p className="text-sm font-medium text-gray-900">{paper.submitterName}</p>
+          <p className="text-xs text-gray-500 truncate">{paper.submitterEmail}</p>
         </div>
       ),
     },
@@ -152,7 +143,22 @@ export function PaperTable({
           )}
         </div>
       ),
-    }
+    },
+    {
+      key: "actions",
+      header: "Hành động",
+      render: (paper) => (
+        <Button
+          size="sm"
+          variant="outline"
+          className="flex items-center gap-1 text-blue-600 border-blue-200 hover:bg-blue-50"
+          onClick={() => onView?.(paper)}
+        >
+          <Eye className="w-4 h-4" />
+          Chi tiết
+        </Button>
+      ),
+    },
   ];
 
   return (

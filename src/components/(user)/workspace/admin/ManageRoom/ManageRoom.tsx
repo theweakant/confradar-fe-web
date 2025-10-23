@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Home, CheckCircle, XCircle, Building } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, Home } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,12 +20,24 @@ import { Modal } from "@/components/molecules/Modal";
 import { RoomDetail } from "@/components/(user)/workspace/admin/ManageRoom/RoomDetail/index";
 import { RoomForm } from "@/components/(user)/workspace/admin/ManageRoom/RoomForm/index";
 import { RoomTable } from "@/components/(user)/workspace/admin/ManageRoom/RoomTable/index";
+import { DestinationForm } from "@/components/(user)/workspace/admin/ManageRoom/DestinationForm/index";
 
-import { mockRooms } from "@/data/mockRoom.data";
-import { Room, RoomFormData } from "@/types/room.type";
+import { useDestinationForm } from "@/redux/hooks/destination/useDestinationForm";
+import { useGetAllRoomsQuery, useCreateRoomMutation, useUpdateRoomMutation, useDeleteRoomMutation } from "@/redux/services/room.service";
+import { useGetAllDestinationsQuery } from "@/redux/services/destination.service";
+
+import type { Room, RoomFormData } from "@/types/room.type";
 
 export default function ManageRoom() {
-  const [rooms, setRooms] = useState<Room[]>(mockRooms);
+  const { data: roomsResponse, isLoading: roomsLoading, refetch: refetchRooms } = useGetAllRoomsQuery();
+  const { data: destinationsResponse, isLoading: destinationsLoading } = useGetAllDestinationsQuery();
+  
+  const [createRoom, { isLoading: isCreating }] = useCreateRoomMutation();
+  const [updateRoom, { isLoading: isUpdating }] = useUpdateRoomMutation();
+  const [deleteRoom, { isLoading: isDeleting }] = useDeleteRoomMutation();
+
+  const rooms = roomsResponse?.data || [];
+  const destinations = destinationsResponse?.data || [];
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -36,6 +48,9 @@ export default function ManageRoom() {
   const [viewingRoom, setViewingRoom] = useState<Room | null>(null);
   const [deleteRoomId, setDeleteRoomId] = useState<string | null>(null);
 
+  const [isDestinationModalOpen, setIsDestinationModalOpen] = useState(false);
+  const { handleSave: handleSaveDestination } = useDestinationForm();
+
   const statusOptions = [
     { value: "all", label: "Tất cả trạng thái" },
     { value: "available", label: "Có sẵn" },
@@ -43,11 +58,11 @@ export default function ManageRoom() {
     { value: "maintenance", label: "Bảo trì" },
   ];
 
-  const filteredRooms = rooms.filter((room) => {
+  const filteredRooms = rooms.filter((room: Room) => {
     const matchesSearch =
       room.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       room.number.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = filterStatus === "all" || room.status === filterStatus;
+    const matchesStatus = filterStatus === "all";
     return matchesSearch && matchesStatus;
   });
 
@@ -66,35 +81,42 @@ export default function ManageRoom() {
     setIsFormModalOpen(true);
   };
 
-  const handleSave = (data: RoomFormData) => {
-    if (editingRoom) {
-      setRooms((prev) =>
-        prev.map((r) =>
-          r.roomId === editingRoom.roomId ? { ...r, ...data } : r
-        )
-      );
-      toast.success("Cập nhật thông tin phòng thành công!");
-    } else {
-      const newRoom: Room = {
-        ...data,
-        roomId: Date.now().toString(),
-      };
-      setRooms((prev) => [...prev, newRoom]);
-      toast.success("Thêm phòng mới thành công!");
+  const handleSave = async (data: RoomFormData) => {
+    try {
+      if (editingRoom) {
+        const result = await updateRoom({ 
+          id: editingRoom.roomId, 
+          data 
+        }).unwrap();
+        
+        toast.success(result.message || "Cập nhật thông tin phòng thành công!");
+      } else {
+        const result = await createRoom(data).unwrap();
+        toast.success(result.message || "Thêm phòng mới thành công!");
+      }
+      
+      setIsFormModalOpen(false);
+      setEditingRoom(null);
+      refetchRooms();
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Có lỗi xảy ra, vui lòng thử lại!");
     }
-    setIsFormModalOpen(false);
-    setEditingRoom(null);
   };
 
   const handleDelete = (id: string) => {
     setDeleteRoomId(id);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (deleteRoomId) {
-      setRooms((prev) => prev.filter((r) => r.roomId !== deleteRoomId));
-      toast.success("Xóa phòng thành công!");
-      setDeleteRoomId(null);
+      try {
+        const result = await deleteRoom(deleteRoomId).unwrap();
+        toast.success(result.message || "Xóa phòng thành công!");
+        setDeleteRoomId(null);
+        refetchRooms();
+      } catch (error: any) {
+        toast.error(error?.data?.message || "Có lỗi xảy ra khi xóa phòng!");
+      }
     }
   };
 
@@ -105,13 +127,24 @@ export default function ManageRoom() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold text-gray-900">Quản lý Phòng</h1>
-            <Button
-              onClick={handleCreate}
-              className="flex items-center gap-2 whitespace-nowrap mt-6"
-            >
-              <Plus className="w-5 h-5" />
-              Thêm phòng mới
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                onClick={handleCreate}
+                className="flex items-center gap-2 whitespace-nowrap"
+                disabled={isCreating || isUpdating}
+              >
+                <Plus className="w-5 h-5" />
+                Thêm phòng mới
+              </Button>
+
+              <Button
+                onClick={() => setIsDestinationModalOpen(true)}
+                className="flex items-center gap-2 whitespace-nowrap bg-green-600 hover:bg-green-700"
+              >
+                <Plus className="w-5 h-5" />
+                Thêm địa điểm
+              </Button>
+            </div>
           </div>
           <p className="text-gray-600 mt-2">
             Quản lý thông tin các phòng trong hệ thống
@@ -138,57 +171,29 @@ export default function ManageRoom() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Tổng số phòng</p>
-                <p className="text-3xl font-bold text-gray-900">{rooms.length}</p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {roomsLoading ? "..." : rooms.length}
+                </p>
               </div>
               <Home className="w-10 h-10 text-blue-500" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Phòng có sẵn</p>
-                <p className="text-3xl font-bold text-green-600">
-                  {rooms.filter((r) => r.status === "available").length}
-                </p>
-              </div>
-              <CheckCircle className="w-10 h-10 text-green-500" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Đang bảo trì</p>
-                <p className="text-3xl font-bold text-yellow-600">
-                  {rooms.filter((r) => r.status === "maintenance").length}
-                </p>
-              </div>
-              <Building className="w-10 h-10 text-yellow-500" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Đã đặt</p>
-                <p className="text-3xl font-bold text-red-600">
-                  {rooms.filter((r) => r.status === "booked").length}
-                </p>
-              </div>
-              <XCircle className="w-10 h-10 text-red-500" />
             </div>
           </div>
         </div>
 
         {/* Table */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          <RoomTable
-            rooms={filteredRooms}
-            onView={handleView}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
+          {roomsLoading ? (
+            <div className="p-8 text-center text-gray-500">
+              Đang tải dữ liệu...
+            </div>
+          ) : (
+            <RoomTable
+              rooms={filteredRooms}
+              onView={handleView}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          )}
         </div>
       </div>
 
@@ -203,6 +208,8 @@ export default function ManageRoom() {
       >
         <RoomForm
           room={editingRoom}
+          destinations={destinations}
+          isLoading={isCreating || isUpdating}
           onSave={handleSave}
           onCancel={() => {
             setIsFormModalOpen(false);
@@ -231,6 +238,22 @@ export default function ManageRoom() {
         )}
       </Modal>
 
+      {/* Destination Modal */}
+      <Modal
+        isOpen={isDestinationModalOpen}
+        onClose={() => setIsDestinationModalOpen(false)}
+        title="Thêm địa điểm mới"
+      >
+        <DestinationForm
+          destination={null}
+          onSave={(data) => {
+            handleSaveDestination(data);
+            setIsDestinationModalOpen(false);
+          }}
+          onCancel={() => setIsDestinationModalOpen(false)}
+        />
+      </Modal>
+
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteRoomId} onOpenChange={() => setDeleteRoomId(null)}>
         <AlertDialogContent>
@@ -241,12 +264,13 @@ export default function ManageRoom() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               className="bg-red-600 hover:bg-red-700"
+              disabled={isDeleting}
             >
-              Xóa
+              {isDeleting ? "Đang xóa..." : "Xóa"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

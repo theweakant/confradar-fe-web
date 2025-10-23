@@ -23,9 +23,9 @@ import { mockUsers } from "@/data/mockUser.data";
 
 import { SearchFilter } from "@/components/molecules/SearchFilter";
 import { Modal } from "@/components/molecules/Modal";
-import { UserDetail } from "@/components/(user)/workspace/admin/ManageUser/UserDetail/index";
-import { UserForm } from "@/components/(user)/workspace/admin/ManageUser/UserForm/index";
-import { UserTable } from "@/components/(user)/workspace/admin/ManageUser/UserTable/index";
+import { UserDetail } from "@/components/(user)/workspace/organizer/ManageUser/UserDetail/index";
+import { UserForm } from "@/components/(user)/workspace/organizer/ManageUser/UserForm/index";
+import { UserTable } from "@/components/(user)/workspace/organizer/ManageUser/UserTable/index";
 import { User, UserFormData } from "@/types/user.type";
 
 
