@@ -98,7 +98,7 @@ export interface ConferencePolicyData {
 
 // Media Step
 export interface Media {
-  mediaFile: string;    // URL hoặc file path
+  mediaFile: string | File | null;    // URL hoặc file path
 }
 
 export interface ConferenceMediaData {
@@ -108,7 +108,7 @@ export interface ConferenceMediaData {
 // Sponsors Step
 export interface Sponsor {
   name: string;
-  imageFile: string;  // URL hoặc file path của logo
+  imageFile: string | File | null;  // URL hoặc file path của logo
 }
 
 export interface ConferenceSponsorData {

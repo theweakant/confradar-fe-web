@@ -4,7 +4,6 @@ import React from "react";
 import { Eye, Pencil, Trash2, FolderOpen, MoreVertical } from "lucide-react";
 
 import { DataTable, Column } from "@/components/molecules/DataTable";
-import { StatusBadge } from "@/components/atoms/StatusBadge";
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -33,7 +33,7 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
     admin: [
       { label: "Tổng quan", href: "/workspace/admin", icon: LayoutDashboard },
       { label: "Người dùng", href: "/workspace/admin/manage-user", icon: Users },
-      { label: "Hội nghị", href: "/workspace/admin/manage-conference", icon: Calendar },
+      // { label: "Hội nghị", href: "/workspace/admin/manage-conference", icon: Calendar },
       { label: "Địa điểm", href: "/workspace/admin/manage-accommodation", icon: Home },
       { label: "Danh mục", href: "/workspace/admin/manage-category", icon: FileText },
       { label: "Báo cáo", href: "/workspace/admin/report", icon: FileText },

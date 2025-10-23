@@ -83,10 +83,6 @@ export default function ReviewerManagePaperPage() {
     setSelectedPaper(paper);
   };
 
-  const handleDelete = (id: string) => {
-    setDeletePaperId(id);
-  };
-
   const confirmDelete = () => {
     if (deletePaperId) {
       const paper = papers.find(p => p.id === deletePaperId);

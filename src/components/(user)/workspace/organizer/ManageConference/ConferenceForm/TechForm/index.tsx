@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/molecules/FormInput";
+import { FormSelect } from "@/components/molecules/FormSelect";
 import { FormTextArea } from "@/components/molecules/FormTextArea";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks/hooks";
 import {
@@ -11,6 +12,9 @@ import {
   useCreateConferenceMediaMutation,
   useCreateConferenceSponsorsMutation,
 } from "@/redux/services/conferenceStep.service";
+import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
+import { useGetAllRoomsQuery } from "@/redux/services/room.service";
+
 import {
   nextStep,
   prevStep,
@@ -62,6 +66,20 @@ export function ConferenceStepForm({ conference, onSave, onCancel }: ConferenceS
     useCreateConferenceMediaMutation();
   const [createSponsors, { isLoading: isCreatingSponsors }] =
     useCreateConferenceSponsorsMutation();
+
+  const { data: categoriesData, isLoading: isCategoriesLoading } = useGetAllCategoriesQuery();
+  const { data: roomsData, isLoading: isRoomsLoading } = useGetAllRoomsQuery();
+
+  const categoryOptions = categoriesData?.data?.map(category => ({
+    value: category.categoryId, 
+    label: category.conferenceCategoryName 
+  })) || [];
+
+  const roomOptions = roomsData?.data?.map(room => ({
+    value: room.roomId,
+    label: `${room.number} - ${room.displayName} - ${room.destinationId}`
+  })) || [];
+
 
   // Step 1: Basic Info
   const [basicForm, setBasicForm] = useState<ConferenceBasicForm>({
@@ -155,23 +173,9 @@ export function ConferenceStepForm({ conference, onSave, onCancel }: ConferenceS
   };
 
   // Handle Step 3 Submit
-  // const handleSessionSubmit = async () => {
-  //   if (!conferenceId) return;
-  //   try {
-  //     await createSessions({
-  //       conferenceId,
-  //       data: { sessions },
-  //     }).unwrap();
-  //     dispatch(nextStep());
-  //   } catch (error) {
-  //     console.error("Failed to create sessions:", error);
-  //   }
-  // };
-
   const handleSessionSubmit = async () => {
   if (!conferenceId) return;
   try {
-    // ✅ FIX: Convert datetime to ISO format
     const formattedSessions = sessions.map(s => ({
       ...s,
       startTime: new Date(s.startTime).toISOString(),
@@ -332,43 +336,17 @@ export function ConferenceStepForm({ conference, onSave, onCancel }: ConferenceS
               value={basicForm.address}
               onChange={(val) => setBasicForm({ ...basicForm, address: val })}
             />
-            <FormInput
+            <FormSelect
               label="Danh mục"
-              name="categoryName"
-              value={basicForm.categoryName}
+              name="categoryId"
+              value={basicForm.categoryName} 
               onChange={(val) =>
-                setBasicForm({ ...basicForm, categoryName: val })
+                setBasicForm({ ...basicForm, categoryName: val }) 
               }
+              options={categoryOptions}
               required
+              disabled={isCategoriesLoading}
             />
-            <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={basicForm.isInternalHosted}
-                  onChange={(e) =>
-                    setBasicForm({
-                      ...basicForm,
-                      isInternalHosted: e.target.checked,
-                    })
-                  }
-                />
-                <span>Tổ chức nội bộ</span>
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={basicForm.isResearchConference}
-                  onChange={(e) =>
-                    setBasicForm({
-                      ...basicForm,
-                      isResearchConference: e.target.checked,
-                    })
-                  }
-                />
-                <span>Hội nghị nghiên cứu</span>
-              </label>
-            </div>
             <div>
               <label className="block text-sm font-medium mb-2">Banner Image</label>
               <input
@@ -389,17 +367,84 @@ export function ConferenceStepForm({ conference, onSave, onCancel }: ConferenceS
         return (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Giá vé</h3>
-            
+            {/* Prices List */}
+            <div className="border p-4 rounded">
+              <h4 className="font-medium mb-3">Danh sách vé ({prices.length})</h4>
+              {/* {prices.map((p, idx) => (
+                <div key={idx} className="p-3 bg-gray-50 rounded mb-2">
+                  <div className="font-medium">{p.ticketName}</div>
+                  <div className="text-sm text-gray-600">
+                    {p.ticketPrice.toLocaleString()} VND
+                  </div>
+                </div>
+              ))} */}
+                      {prices.map((p, idx) => (
+          <div key={idx} className="p-3 bg-gray-50 rounded mb-2 flex justify-between items-center">
+            <div>
+              <div className="font-medium">{p.ticketName}</div>
+              <div className="text-sm text-gray-600">
+                {p.ticketPrice.toLocaleString()} VND
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setNewPrice(p);
+                  setPrices(prices.filter((_, i) => i !== idx));
+                }}
+              >
+                Sửa
+              </Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => setPrices(prices.filter((_, i) => i !== idx))}
+              >
+                Xóa
+              </Button>
+            </div>
+          </div>
+        ))}
+
+              {/* Add Price Form */}
+              <div className="mt-4 space-y-3 border-t pt-3">
+                <FormInput
+                  label="Tên vé"
+                  name="ticketName"
+                  value={newPrice.ticketName}
+                  onChange={(val) => setNewPrice({ ...newPrice, ticketName: val })}
+                />
+                <FormInput
+                  label="Mô tả"
+                  name="ticketDescription"
+                  value={newPrice.ticketDescription}
+                  onChange={(val) =>
+                    setNewPrice({ ...newPrice, ticketDescription: val })
+                  }
+                />
+                <div className="grid grid-cols-2 gap-3">
+                  <FormInput
+                    label="Giá bán"
+                    name="ticketPrice"
+                    type="number"
+                    value={newPrice.ticketPrice}
+                    onChange={(val) =>
+                      setNewPrice({ ...newPrice, ticketPrice: Number(val) })
+                    }
+                  />
+                </div>
+                <Button onClick={handleAddPrice}>Thêm vé</Button>
+              </div>
+            </div>
+
+
             {/* Price Phase */}
             <div className="border p-4 rounded">
               <h4 className="font-medium mb-3">Giai đoạn giá</h4>
               <div className="space-y-3">
-                <FormInput
-                  label="Tên giai đoạn"
-                  name="name"
-                  value={pricePhase.name}
-                  onChange={(val) => setPricePhase({ ...pricePhase, name: val })}
-                />
+ 
                 <div className="grid grid-cols-2 gap-3">
                   <FormInput
                     label="Early bird kết thúc"
@@ -452,57 +497,7 @@ export function ConferenceStepForm({ conference, onSave, onCancel }: ConferenceS
               </div>
             </div>
 
-            {/* Prices List */}
-            <div className="border p-4 rounded">
-              <h4 className="font-medium mb-3">Danh sách vé ({prices.length})</h4>
-              {prices.map((p, idx) => (
-                <div key={idx} className="p-3 bg-gray-50 rounded mb-2">
-                  <div className="font-medium">{p.ticketName}</div>
-                  <div className="text-sm text-gray-600">
-                    {p.ticketPrice.toLocaleString()} VND
-                  </div>
-                </div>
-              ))}
 
-              {/* Add Price Form */}
-              <div className="mt-4 space-y-3 border-t pt-3">
-                <FormInput
-                  label="Tên vé"
-                  name="ticketName"
-                  value={newPrice.ticketName}
-                  onChange={(val) => setNewPrice({ ...newPrice, ticketName: val })}
-                />
-                <FormInput
-                  label="Mô tả"
-                  name="ticketDescription"
-                  value={newPrice.ticketDescription}
-                  onChange={(val) =>
-                    setNewPrice({ ...newPrice, ticketDescription: val })
-                  }
-                />
-                <div className="grid grid-cols-2 gap-3">
-                  <FormInput
-                    label="Giá bán"
-                    name="ticketPrice"
-                    type="number"
-                    value={newPrice.ticketPrice}
-                    onChange={(val) =>
-                      setNewPrice({ ...newPrice, ticketPrice: Number(val) })
-                    }
-                  />
-                  <FormInput
-                    label="Giá gốc"
-                    name="actualPrice"
-                    type="number"
-                    value={newPrice.actualPrice}
-                    onChange={(val) =>
-                      setNewPrice({ ...newPrice, actualPrice: Number(val) })
-                    }
-                  />
-                </div>
-                <Button onClick={handleAddPrice}>Thêm vé</Button>
-              </div>
-            </div>
           </div>
         );
 
@@ -513,14 +508,35 @@ export function ConferenceStepForm({ conference, onSave, onCancel }: ConferenceS
             
             {/* Sessions List */}
             <div className="space-y-2">
-              {sessions.map((s, idx) => (
-                <div key={idx} className="p-3 bg-gray-50 rounded">
+            {sessions.map((s, idx) => (
+              <div key={idx} className="p-3 bg-gray-50 rounded flex justify-between items-center">
+                <div>
                   <div className="font-medium">{s.title}</div>
                   <div className="text-sm text-gray-600">
                     Diễn giả: {s.speaker.name}
                   </div>
                 </div>
-              ))}
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setNewSession(s);
+                      setSessions(sessions.filter((_, i) => i !== idx));
+                    }}
+                  >
+                    Sửa
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => setSessions(sessions.filter((_, i) => i !== idx))}
+                  >
+                    Xóa
+                  </Button>
+                </div>
+              </div>
+            ))}
             </div>
 
             {/* Add Session Form */}
@@ -561,11 +577,14 @@ export function ConferenceStepForm({ conference, onSave, onCancel }: ConferenceS
                   }
                 />
               </div>
-              <FormInput
-                label="Room ID"
+              <FormSelect
+                label="Phòng"
                 name="roomId"
                 value={newSession.roomId}
                 onChange={(val) => setNewSession({ ...newSession, roomId: val })}
+                options={roomOptions}
+                required
+                disabled={isRoomsLoading}
               />
               <div className="border-t pt-3">
                 <h5 className="font-medium mb-2">Diễn giả</h5>
@@ -604,12 +623,33 @@ export function ConferenceStepForm({ conference, onSave, onCancel }: ConferenceS
             
             {/* Policies List */}
             <div className="space-y-2">
-              {policies.map((p, idx) => (
-                <div key={idx} className="p-3 bg-gray-50 rounded">
+            {policies.map((p, idx) => (
+              <div key={idx} className="p-3 bg-gray-50 rounded flex justify-between items-center">
+                <div>
                   <div className="font-medium">{p.policyName}</div>
                   <div className="text-sm text-gray-600">{p.description}</div>
                 </div>
-              ))}
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setNewPolicy(p);
+                      setPolicies(policies.filter((_, i) => i !== idx));
+                    }}
+                  >
+                    Sửa
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => setPolicies(policies.filter((_, i) => i !== idx))}
+                  >
+                    Xóa
+                  </Button>
+                </div>
+              </div>
+            ))}
             </div>
 
             {/* Add Policy Form */}
@@ -645,7 +685,14 @@ export function ConferenceStepForm({ conference, onSave, onCancel }: ConferenceS
             <div className="space-y-2">
               {mediaList.map((m, idx) => (
                 <div key={idx} className="p-3 bg-gray-50 rounded">
-                  <div className="text-sm">{m.mediaFile}</div>
+                  {/* <div className="text-sm">{m.mediaFile}</div> */}
+                  <div className="text-sm">
+                    {typeof m.mediaFile === 'string' 
+                      ? m.mediaFile 
+                      : m.mediaFile instanceof File
+                        ? m.mediaFile.name
+                        : 'No file'}
+                  </div>
                 </div>
               ))}
             </div>
@@ -653,12 +700,22 @@ export function ConferenceStepForm({ conference, onSave, onCancel }: ConferenceS
             {/* Add Media Form */}
             <div className="border p-4 rounded space-y-3">
               <h4 className="font-medium">Thêm media</h4>
-              <FormInput
-                label="Media File URL"
-                name="mediaFile"
-                value={newMedia.mediaFile}
-                onChange={(val) => setNewMedia({ ...newMedia, mediaFile: val })}
-              />
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Media File <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="file"
+                  onChange={(e) =>
+                    setNewMedia({
+                      ...newMedia,
+                      mediaFile: e.target.files?.[0] || null,
+                    })
+                  }
+                  accept="image/*,video/*"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
    
               <Button onClick={handleAddMedia}>Thêm media</Button>
             </div>
@@ -675,7 +732,14 @@ export function ConferenceStepForm({ conference, onSave, onCancel }: ConferenceS
               {sponsors.map((s, idx) => (
                 <div key={idx} className="p-3 bg-gray-50 rounded">
                   <div className="font-medium">{s.name}</div>
-                  <div className="text-sm text-gray-600">{s.imageFile}</div>
+                  {/* <div className="text-sm text-gray-600">{s.imageFile}</div> */}
+                  <div className="text-sm text-gray-600">
+                    {typeof s.imageFile === 'string' 
+                      ? s.imageFile 
+                      : s.imageFile instanceof File
+                        ? s.imageFile.name
+                        : 'No image'}
+                  </div>
                 </div>
               ))}
             </div>
@@ -689,14 +753,22 @@ export function ConferenceStepForm({ conference, onSave, onCancel }: ConferenceS
                 value={newSponsor.name}
                 onChange={(val) => setNewSponsor({ ...newSponsor, name: val })}
               />
-              <FormInput
-                label="Image File URL"
-                name="imageFile"
-                value={newSponsor.imageFile}
-                onChange={(val) =>
-                  setNewSponsor({ ...newSponsor, imageFile: val })
-                }
-              />
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Logo Nhà tài trợ <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="file"
+                  onChange={(e) =>
+                    setNewSponsor({
+                      ...newSponsor,
+                      imageFile: e.target.files?.[0] || null,
+                    })
+                  }
+                  accept="image/*"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
               <Button onClick={handleAddSponsor}>Thêm nhà tài trợ</Button>
             </div>
           </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Eye, Trash2, Calendar, FileText, User } from "lucide-react";
+import { Eye, Trash2, Calendar, User } from "lucide-react";
 
 import { DataTable, Column } from "@/components/molecules/DataTable";
 import { StatusBadge } from "@/components/atoms/StatusBadge";

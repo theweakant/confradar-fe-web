@@ -1,16 +1,18 @@
+"use client";
+
 import React from "react";
 import { 
+  Eye, 
   Pencil, 
   Trash2, 
-  Calendar,
-  MapPin,
-  Users,
-  Eye,
+  Calendar, 
+  MapPin, 
+  Users, 
+  MoreVertical 
 } from "lucide-react";
 
 import { DataTable, Column } from "@/components/molecules/DataTable";
-import { StatusBadge } from "@/components/atoms/StatusBadge";
-import { ActionButton } from "@/components/atoms/ActionButton";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Conference } from "@/types/conference.type";
 
 interface ConferenceTableProps {
@@ -20,13 +22,7 @@ interface ConferenceTableProps {
   onDelete: (id: string) => void;
 }
 
-export function ConferenceTable({ 
-  conferences, 
-  onView, 
-  onEdit, 
-  onDelete 
-}: ConferenceTableProps) {
-
+export function ConferenceTable({ conferences, onView, onEdit, onDelete }: ConferenceTableProps) {
   const columns: Column<Conference>[] = [
     {
       key: "conferenceName",
@@ -62,28 +58,9 @@ export function ConferenceTable({
       header: "Địa điểm",
       render: (conference) => (
         <div className="flex items-center gap-2 text-gray-600">
-          <MapPin className="w-4 h-4" />
+          <MapPin className="w-4 h-4 text-blue-600" />
           <span className="text-sm">{conference.address}</span>
         </div>
-      ),
-    },
-    {
-      key: "conferenceCategoryId",
-      header: "Danh mục",
-      render: (conference) => (
-        <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
-          {conference.conferenceCategoryId}
-        </span>
-      ),
-    },
-    {
-      key: "globalStatusId",
-      header: "Trạng thái",
-      render: (conference) => (
-        <StatusBadge
-          status={conference.globalStatusId}
-          variant="info"
-        />
       ),
     },
     {
@@ -101,25 +78,37 @@ export function ConferenceTable({
       header: "Thao tác",
       className: "text-right",
       render: (conference) => (
-        <div className="flex items-center justify-end gap-2">
-          <ActionButton
-            onClick={() => onView(conference)}
-            icon={<Eye className="w-4 h-4" />}
-            variant="success"
-            tooltip="Xem chi tiết"
-          />
-          <ActionButton
-            onClick={() => onEdit(conference)}
-            icon={<Pencil className="w-4 h-4" />}
-            variant="primary"
-            tooltip="Chỉnh sửa"
-          />
-          <ActionButton
-            onClick={() => onDelete(conference.conferenceId)}
-            icon={<Trash2 className="w-4 h-4" />}
-            variant="danger"
-            tooltip="Xóa"
-          />
+        <div className="flex items-center justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                <MoreVertical className="w-5 h-5 text-gray-600" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem
+                onClick={() => onView(conference)}
+                className="cursor-pointer"
+              >
+                <Eye className="w-4 h-4 mr-2 text-green-600" />
+                <span>Xem chi tiết</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onEdit(conference)}
+                className="cursor-pointer"
+              >
+                <Pencil className="w-4 h-4 mr-2 text-blue-600" />
+                <span>Chỉnh sửa</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onDelete(conference.conferenceId)}
+                className="cursor-pointer text-red-600 focus:text-red-600"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                <span>Xóa</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       ),
     },

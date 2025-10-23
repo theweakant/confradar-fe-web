@@ -28,23 +28,7 @@ export function RoomTable({
   onEdit,
   onDelete,
 }: RoomTableProps) {
-  const getStatusLabel = (status: string) => {
-    const labels: Record<string, string> = {
-      available: "Có sẵn",
-      booked: "Đã đặt",
-      maintenance: "Bảo trì",
-    };
-    return labels[status] || status;
-  };
-
-  const getStatusVariant = (status: string): "success" | "danger" | "warning" | "info" => {
-    const variants: Record<string, "success" | "danger" | "warning" | "info"> = {
-      available: "success",
-      booked: "danger",
-      maintenance: "warning",
-    };
-    return variants[status] || "info";
-  };
+  
 
   const columns: Column<Room>[] = [
     {

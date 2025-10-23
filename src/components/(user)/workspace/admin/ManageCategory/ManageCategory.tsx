@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, FolderOpen, CheckCircle, XCircle } from "lucide-react";
+import { Plus, FolderOpen} from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -89,9 +89,13 @@ export default function ManageCategory() {
       setIsFormModalOpen(false);
       setEditingCategory(null);
       refetchCategories();
-    } catch (error: any) {
-      toast.error(error?.data?.message || "Có lỗi xảy ra, vui lòng thử lại!");
-    }
+    } catch (error: unknown) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Có lỗi xảy ra, vui lòng thử lại!";
+        toast.error(message);
+      }
   };
 
   const handleDelete = (id: string) => {
@@ -105,8 +109,12 @@ export default function ManageCategory() {
         toast.success(result.message || "Xóa danh mục thành công!");
         setDeleteCategoryId(null);
         refetchCategories();
-      } catch (error: any) {
-        toast.error(error?.data?.message || "Có lỗi xảy ra khi xóa danh mục!");
+      } catch (error: unknown) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Có lỗi xảy ra, vui lòng thử lại!";
+        toast.error(message);
       }
     }
   };
