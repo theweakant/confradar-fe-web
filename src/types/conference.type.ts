@@ -48,7 +48,7 @@ export interface ConferenceBasicForm {
 //price step
 export interface PricePhase {
   name: string;
-  earlierBirdEndInterval: string; // YYYY-MM-DD
+  earlierBirdEndInterval: string; 
   percentForEarly: number;
   standardEndInterval: string;
   lateEndInterval: string;

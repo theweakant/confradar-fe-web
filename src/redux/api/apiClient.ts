@@ -136,7 +136,7 @@
 
 import { fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from "@reduxjs/toolkit/query"
-import { getAccessToken, getRefreshToken, setTokens, clearTokens } from "../utils/token"
+import { getAccessToken, getRefreshToken, setTokens, clearTokens, isTokenExpired } from "../utils/token"
 import { endpoint } from "./endpoint"
 import type { ApiResponse } from "@/types/api.type"
 
@@ -165,18 +165,17 @@ export const apiClient: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryE
     const refreshToken = getRefreshToken()
     const accessToken = getAccessToken()
     
-    console.log("📋 [Auth] Current tokens:", {
-      hasAccessToken: !!accessToken,
-      hasRefreshToken: !!refreshToken,
-      accessTokenPreview: accessToken?.substring(0, 20) + "...",
-    })
-    
-    // Kiểm tra có đủ token không
+    // ✅ CHECK: Token có hợp lệ không
     if (!refreshToken || !accessToken) {
       console.log("❌ [Auth] Missing tokens, redirecting to login")
       clearTokens()
       window.location.href = "/auth/login"
       return result
+    }
+
+    // ✅ CHECK: Access token có hết hạn quá lâu không (refresh token cũng có thể hết hạn)
+    if (isTokenExpired(accessToken)) {
+      console.log("⚠️ [Auth] Access token expired, checking refresh token validity...")
     }
 
     console.log("🔄 [Auth] Calling refresh token API...")
@@ -200,37 +199,32 @@ export const apiClient: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryE
       error: refreshResult.error,
     })
 
-    // Xử lý response với ApiResponse type
     if (refreshResult.data) {
       const response = refreshResult.data as ApiResponse<{
         accessToken: string
         refreshToken: string
       }>
       
-      console.log("✅ [Auth] Refresh response:", {
-        success: response.success,
-        message: response.message,
-        hasNewTokens: !!(response.data?.accessToken && response.data?.refreshToken),
-      })
-      
       // Lưu token mới và retry request ban đầu
       if (response.success && response.data) {
+        console.log("✅ [Auth] Tokens refreshed successfully")
         setTokens(response.data.accessToken, response.data.refreshToken)
-        console.log("💾 [Auth] New tokens saved, retrying original request...")
         
+        // Retry request ban đầu
         result = await rawBaseQuery(args, api, extraOptions)
-        
-        console.log("🎉 [Auth] Original request retry result:", {
-          success: !result.error,
-          status: result.error ? (result.error as any).status : "OK",
-        })
+        console.log("🎉 [Auth] Original request retried:", !result.error ? "SUCCESS" : "FAILED")
       } else {
-        console.log("❌ [Auth] Refresh failed, redirecting to login")
+        console.log("❌ [Auth] Refresh response invalid, redirecting to login")
         clearTokens()
         window.location.href = "/auth/login"
       }
     } else {
-      console.log("❌ [Auth] No data in refresh response, redirecting to login")
+      // ✅ QUAN TRỌNG: Nếu refresh-token cũng bị 401 → Refresh token đã hết hạn
+      if (refreshResult.error?.status === 401) {
+        console.log("🚨 [Auth] Refresh token expired, forcing re-login")
+      } else {
+        console.log("❌ [Auth] Refresh API failed:", refreshResult.error)
+      }
       clearTokens()
       window.location.href = "/auth/login"
     }

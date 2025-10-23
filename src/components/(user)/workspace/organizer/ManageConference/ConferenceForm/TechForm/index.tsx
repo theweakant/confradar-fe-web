@@ -155,18 +155,38 @@ export function ConferenceStepForm({ conference, onSave, onCancel }: ConferenceS
   };
 
   // Handle Step 3 Submit
+  // const handleSessionSubmit = async () => {
+  //   if (!conferenceId) return;
+  //   try {
+  //     await createSessions({
+  //       conferenceId,
+  //       data: { sessions },
+  //     }).unwrap();
+  //     dispatch(nextStep());
+  //   } catch (error) {
+  //     console.error("Failed to create sessions:", error);
+  //   }
+  // };
+
   const handleSessionSubmit = async () => {
-    if (!conferenceId) return;
-    try {
-      await createSessions({
-        conferenceId,
-        data: { sessions },
-      }).unwrap();
-      dispatch(nextStep());
-    } catch (error) {
-      console.error("Failed to create sessions:", error);
-    }
-  };
+  if (!conferenceId) return;
+  try {
+    // ✅ FIX: Convert datetime to ISO format
+    const formattedSessions = sessions.map(s => ({
+      ...s,
+      startTime: new Date(s.startTime).toISOString(),
+      endTime: new Date(s.endTime).toISOString(),
+    }));
+
+    await createSessions({
+      conferenceId,
+      data: { sessions: formattedSessions },
+    }).unwrap();
+    dispatch(nextStep());
+  } catch (error) {
+    console.error("Failed to create sessions:", error);
+  }
+};
 
   // Handle Step 4 Submit
   const handlePolicySubmit = async () => {
