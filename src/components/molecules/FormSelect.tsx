@@ -6,9 +6,19 @@ interface FormSelectProps {
   options: { value: string; label: string }[];
   required?: boolean;
   error?: string;
+  disabled?: boolean;
 }
 
-export function FormSelect({ label, name, value, onChange, options, required = false, error }: FormSelectProps) {
+export function FormSelect({ 
+  label, 
+  name, 
+  value, 
+  onChange, 
+  options, 
+  required = false, 
+  error,
+  disabled = false 
+}: FormSelectProps) {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -18,9 +28,10 @@ export function FormSelect({ label, name, value, onChange, options, required = f
         name={name}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
         className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
           error ? "border-red-500" : "border-gray-300"
-        }`}
+        } ${disabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
       >
         <option value="">Chọn {label.toLowerCase()}</option>
         {options.map((option) => (
@@ -33,5 +44,3 @@ export function FormSelect({ label, name, value, onChange, options, required = f
     </div>
   );
 }
-
-

@@ -6,19 +6,21 @@ import { FormInput } from "@/components/molecules/FormInput";
 import { FormSelect } from "@/components/molecules/FormSelect";
 import { validationRoomRules } from "@/utils/validationRoomRules";
 import type { Room, RoomFormData } from "@/types/room.type";
+import type { Destination } from "@/types/destination.type";
 
 interface RoomFormProps {
   room?: Room | null;
+  destinations: Destination[];
+  isLoading?: boolean;
   onSave: (data: RoomFormData) => void;
   onCancel: () => void;
 }
 
-export function RoomForm({ room, onSave, onCancel }: RoomFormProps) {
+export function RoomForm({ room, destinations, isLoading, onSave, onCancel }: RoomFormProps) {
   const [formData, setFormData] = useState<RoomFormData>({
     displayName: room?.displayName || "",
     number: room?.number || "",
     destinationId: room?.destinationId || "",
-    status: room?.status || "available"
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof RoomFormData, string>>>({});
@@ -67,10 +69,10 @@ export function RoomForm({ room, onSave, onCancel }: RoomFormProps) {
     }
   };
 
-  const statusOptions = [
-    { value: "available", label: "Có sẵn" },
-    { value: "unavailable", label: "Không có sẵn" }
-  ];
+  const destinationOptions = destinations.map((dest) => ({
+    value: dest.destinationId,
+    label: dest.name,
+  }));
 
   return (
     <div className="space-y-6">
@@ -86,6 +88,7 @@ export function RoomForm({ room, onSave, onCancel }: RoomFormProps) {
             error={touched.has("displayName") ? errors.displayName : undefined}
             success={touched.has("displayName") && !errors.displayName}
             placeholder="VD: Phòng Deluxe hướng biển"
+            disabled={isLoading}
           />
         </div>
 
@@ -99,28 +102,18 @@ export function RoomForm({ room, onSave, onCancel }: RoomFormProps) {
           error={touched.has("number") ? errors.number : undefined}
           success={touched.has("number") && !errors.number}
           placeholder="VD: A101"
-        />
-
-        <FormInput
-          label="Mã điểm đến"
-          name="destinationId"
-          value={formData.destinationId}
-          onChange={(value) => handleChange("destinationId", value)}
-          onBlur={() => validateField("destinationId", formData.destinationId)}
-          required
-          error={touched.has("destinationId") ? errors.destinationId : undefined}
-          success={touched.has("destinationId") && !errors.destinationId}
-          placeholder="VD: DEST12345"
+          disabled={isLoading}
         />
 
         <FormSelect
-          label="Trạng thái"
-          name="status"
-          value={formData.status}
-          onChange={(value) => handleChange("status", value)}
-          options={statusOptions}
+          label="Địa điểm"
+          name="destinationId"
+          value={formData.destinationId}
+          onChange={(value) => handleChange("destinationId", value)}
+          options={destinationOptions}
           required
-          error={errors.status}
+          error={touched.has("destinationId") ? errors.destinationId : undefined}
+          disabled={isLoading}
         />
       </div>
 
@@ -129,6 +122,7 @@ export function RoomForm({ room, onSave, onCancel }: RoomFormProps) {
           type="button"
           onClick={onCancel}
           className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          disabled={isLoading}
         >
           Hủy
         </Button>
@@ -136,8 +130,9 @@ export function RoomForm({ room, onSave, onCancel }: RoomFormProps) {
           type="button"
           onClick={handleSubmit}
           className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          disabled={isLoading}
         >
-          {room ? "Cập nhật" : "Thêm mới"}
+          {isLoading ? "Đang xử lý..." : room ? "Cập nhật" : "Thêm mới"}
         </Button>
       </div>
     </div>

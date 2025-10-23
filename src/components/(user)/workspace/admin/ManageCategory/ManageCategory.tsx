@@ -21,11 +21,23 @@ import { CategoryDetail } from "@/components/(user)/workspace/admin/ManageCatego
 import { CategoryForm } from "@/components/(user)/workspace/admin/ManageCategory/CategoryForm/index";
 import { CategoryTable } from "@/components/(user)/workspace/admin/ManageCategory/CategoryTable/index";
 
-import { mockCategories } from "@/data/mockCategory.data";
-import { Category, CreateCategoryDto } from "@/types/category.type";
+import {
+  useGetAllCategoriesQuery,
+  useCreateCategoryMutation,
+  useUpdateCategoryMutation,
+  useDeleteCategoryMutation,
+} from "@/redux/services/category.service";
+
+import type { Category, CategoryFormData } from "@/types/category.type";
 
 export default function ManageCategory() {
-  const [categories, setCategories] = useState<Category[]>(mockCategories);
+  const { data: categoriesResponse, isLoading: categoriesLoading, refetch: refetchCategories } = useGetAllCategoriesQuery();
+  
+  const [createCategory, { isLoading: isCreating }] = useCreateCategoryMutation();
+  const [updateCategory, { isLoading: isUpdating }] = useUpdateCategoryMutation();
+  const [deleteCategory, { isLoading: isDeleting }] = useDeleteCategoryMutation();
+
+  const categories: Category[] = categoriesResponse?.data || [];
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -38,19 +50,12 @@ export default function ManageCategory() {
 
   const statusOptions = [
     { value: "all", label: "Tất cả trạng thái" },
-    { value: "active", label: "Đang hoạt động" },
-    { value: "inactive", label: "Không hoạt động" },
   ];
 
-  const filteredCategories = categories.filter((category) => {
+  const filteredCategories = categories.filter((category: Category) => {
     const matchesSearch =
-      category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      category.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      filterStatus === "all" ||
-      (filterStatus === "active" && category.isActive) ||
-      (filterStatus === "inactive" && !category.isActive);
-    return matchesSearch && matchesStatus;
+      category.conferenceCategoryName.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesSearch;
   });
 
   const handleCreate = () => {
@@ -68,52 +73,42 @@ export default function ManageCategory() {
     setIsFormModalOpen(true);
   };
 
-  const handleSave = (data: CreateCategoryDto) => {
-    if (editingCategory) {
-      setCategories((prev) =>
-        prev.map((c) =>
-          c.id === editingCategory.id
-            ? { ...c, ...data, updatedAt: new Date() }
-            : c
-        )
-      );
-      toast.success("Cập nhật danh mục thành công!");
-    } else {
-      const newCategory: Category = {
-        ...data,
-        id: `cat-${Date.now()}`,
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      setCategories((prev) => [...prev, newCategory]);
-      toast.success("Thêm danh mục mới thành công!");
+  const handleSave = async (data: CategoryFormData) => {
+    try {
+      if (editingCategory) {
+        const result = await updateCategory({
+          id: editingCategory.categoryId,
+          data,
+        }).unwrap();
+        toast.success(result.message || "Cập nhật danh mục thành công!");
+      } else {
+        const result = await createCategory(data).unwrap();
+        toast.success(result.message || "Thêm danh mục mới thành công!");
+      }
+      
+      setIsFormModalOpen(false);
+      setEditingCategory(null);
+      refetchCategories();
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Có lỗi xảy ra, vui lòng thử lại!");
     }
-    setIsFormModalOpen(false);
-    setEditingCategory(null);
   };
 
   const handleDelete = (id: string) => {
     setDeleteCategoryId(id);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (deleteCategoryId) {
-      setCategories((prev) => prev.filter((c) => c.id !== deleteCategoryId));
-      toast.success("Xóa danh mục thành công!");
-      setDeleteCategoryId(null);
+      try {
+        const result = await deleteCategory(deleteCategoryId).unwrap();
+        toast.success(result.message || "Xóa danh mục thành công!");
+        setDeleteCategoryId(null);
+        refetchCategories();
+      } catch (error: any) {
+        toast.error(error?.data?.message || "Có lỗi xảy ra khi xóa danh mục!");
+      }
     }
-  };
-
-  const handleToggleStatus = (id: string) => {
-    setCategories((prev) =>
-      prev.map((c) =>
-        c.id === id
-          ? { ...c, isActive: !c.isActive, updatedAt: new Date() }
-          : c
-      )
-    );
-    toast.success("Cập nhật trạng thái thành công!");
   };
 
   return (
@@ -128,6 +123,7 @@ export default function ManageCategory() {
             <Button
               onClick={handleCreate}
               className="flex items-center gap-2 whitespace-nowrap"
+              disabled={isCreating || isUpdating}
             >
               <Plus className="w-5 h-5" />
               Thêm danh mục mới
@@ -159,47 +155,28 @@ export default function ManageCategory() {
               <div>
                 <p className="text-sm text-gray-600 mb-1">Tổng danh mục</p>
                 <p className="text-3xl font-bold text-gray-900">
-                  {categories.length}
+                  {categoriesLoading ? "..." : categories.length}
                 </p>
               </div>
               <FolderOpen className="w-10 h-10 text-blue-500" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Đang hoạt động</p>
-                <p className="text-3xl font-bold text-green-600">
-                  {categories.filter((c) => c.isActive).length}
-                </p>
-              </div>
-              <CheckCircle className="w-10 h-10 text-green-500" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Không hoạt động</p>
-                <p className="text-3xl font-bold text-red-600">
-                  {categories.filter((c) => !c.isActive).length}
-                </p>
-              </div>
-              <XCircle className="w-10 h-10 text-red-500" />
             </div>
           </div>
         </div>
 
         {/* Table */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          <CategoryTable
-            categories={filteredCategories}
-            onView={handleView}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onToggleStatus={handleToggleStatus}
-          />
+          {categoriesLoading ? (
+            <div className="p-8 text-center text-gray-500">
+              Đang tải dữ liệu...
+            </div>
+          ) : (
+            <CategoryTable
+              categories={filteredCategories}
+              onView={handleView}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          )}
         </div>
       </div>
 
@@ -214,6 +191,7 @@ export default function ManageCategory() {
       >
         <CategoryForm
           category={editingCategory}
+          isLoading={isCreating || isUpdating}
           onSave={handleSave}
           onCancel={() => {
             setIsFormModalOpen(false);
@@ -256,12 +234,13 @@ export default function ManageCategory() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               className="bg-red-600 hover:bg-red-700"
+              disabled={isDeleting}
             >
-              Xóa
+              {isDeleting ? "Đang xóa..." : "Xóa"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

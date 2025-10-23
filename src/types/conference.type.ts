@@ -1,30 +1,125 @@
 // // src/types/conference.type.ts
 
-// import { User } from "./user.type";
-
 
 export interface Conference {
-  conferenceId: string;            
+  conferenceId: string;
   conferenceName: string;
   description: string;
-  startDate: string;             
-  endDate: string;                
+  startDate: string;              // ISO date
+  endDate: string;                // ISO date
   capacity: number;
   address: string;
   bannerImageUrl?: string;
   createdAt: string;
   isInternalHosted: boolean;
-
-  // Foreign Keys
-  conferenceRankingId: string;     
-  userId: string;                 
-  locationId: string;              
-  conferenceCategoryId: string;    
-  conferenceTypeId: string;        
-  globalStatusId: string;          
-
-  progressStatus: string;
+  isResearchConference: boolean;  // ✅ added
   isActive: boolean;
+
+  userId: string;
+  locationId: string;
+  categoryId: string;          
+
+  policies?: string | null;
+  media?: string | null;
+  sponsors?: string | null;
+  prices?: string | null;
+  sessions?: string | null;
+}
+
+export type ConferenceFormData = Omit<
+  Conference,
+  "conferenceId" | "createdAt" | "isActive"
+>;
+
+//basic step
+export interface ConferenceBasicForm {
+  conferenceName: string;          
+  description?: string;
+  startDate: string;                
+  endDate: string;                  
+  capacity?: number;
+  address?: string;
+  bannerImageFile?: File | null;   
+  isInternalHosted: boolean;
+  isResearchConference: boolean;
+  categoryName: string;            
+}
+
+//price step
+export interface PricePhase {
+  name: string;
+  earlierBirdEndInterval: string; // YYYY-MM-DD
+  percentForEarly: number;
+  standardEndInterval: string;
+  lateEndInterval: string;
+  percentForEnd: number;
+}
+
+export interface Price {
+  ticketPrice: number;
+  ticketName: string;
+  ticketDescription: string;
+  actualPrice: number;
+}
+
+export interface ConferencePriceData {
+  pricePhase: PricePhase;
+  prices: Price[];
+}
+
+//session step
+export interface Speaker {
+  name: string;
+  description: string;
+}
+
+export interface Session {
+  title: string;
+  description: string;
+  startTime: string; // ISO string format
+  endTime: string;   // ISO string format
+  roomId: string;
+  speaker: Speaker;
+}
+
+export interface ConferenceSessionData {
+  sessions: Session[];
+}
+
+// Policies Step
+export interface Policy {
+  policyName: string;
+  description: string;
+}
+
+export interface ConferencePolicyData {
+  policies: Policy[];
+}
+
+// Media Step
+export interface Media {
+  mediaFile: string;    // URL hoặc file path
+}
+
+export interface ConferenceMediaData {
+  media: Media[];
+}
+
+// Sponsors Step
+export interface Sponsor {
+  name: string;
+  imageFile: string;  // URL hoặc file path của logo
+}
+
+export interface ConferenceSponsorData {
+  sponsors: Sponsor[];
+}
+
+export interface ConferenceStepFormProps {
+  conference?: Conference | null;
+  onSave?: (data: ConferenceFormData) => void;
+  onCancel?: () => void;
+  mode?: 'create' | 'edit'; 
 }
 
 export interface TechConferenceDetail {
@@ -116,7 +211,6 @@ export interface RankingCategory {
 }
 
 
-export type ConferenceFormData = Omit<Conference, "id" | "maxAttendees">;
 
 export interface ConferenceFormProps {
   conference?: Conference | null;

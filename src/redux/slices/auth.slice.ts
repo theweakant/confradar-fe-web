@@ -35,8 +35,8 @@ const authSlice = createSlice({
       action: PayloadAction<{ user: User | AuthUser; accessToken: string; refreshToken: string }>
     ) => {
       const { user, accessToken, refreshToken } = action.payload
-      const role = getRoleFromToken(accessToken)
-      console.log("🟢 Decoded role:", role)
+      // const role = getRoleFromToken(accessToken)
+      // console.log("🟢 Decoded role:", role)
       state.user = user
       state.accessToken = accessToken
       state.refreshToken = refreshToken

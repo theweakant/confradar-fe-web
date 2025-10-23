@@ -1,19 +1,16 @@
 export interface Category {
-  id: string;
-  name: string;
-  description: string;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  categoryId: string;
+  conferenceCategoryName: string;
+  // conferenceCount?:number;
 }
 
-export interface CreateCategoryDto {
-  name: string;
-  description: string;
-}
 
-export interface UpdateCategoryDto {
-  name?: string;
-  description?: string;
-  isActive?: boolean;
+export type CategoryFormData = Omit<
+  Category,
+  "categoryId"
+>;
+
+export interface CategoryDetailProps {
+  category: Category;
+  onClose: () => void;
 }

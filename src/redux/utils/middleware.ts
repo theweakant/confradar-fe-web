@@ -1,11 +1,20 @@
 import { Middleware } from "@reduxjs/toolkit"
 import { authApi } from "@/redux/services/auth.service"
-// sau này thêm các service khác ở đây
-// import { userApi } from "@/redux/services/user.service"
-// import { courseApi } from "@/redux/services/course.service"
+import { destinationApi } from "@/redux/services/destination.service"
+import { roomApi } from "@/redux/services/room.service"
+import { conferenceApi } from "@/redux/services/conference.service"
+import { conferenceStepApi } from "@/redux/services/conferenceStep.service"
+import { categoryApi } from "@/redux/services/category.service"
+
+
 
 export const apiMiddlewares: Middleware[] = [
   authApi.middleware,
-  // userApi.middleware,
-  // courseApi.middleware,
+  destinationApi.middleware,
+  roomApi.middleware,
+  categoryApi.middleware,
+  conferenceApi.middleware,
+  conferenceStepApi.middleware,
+  
+  
 ]

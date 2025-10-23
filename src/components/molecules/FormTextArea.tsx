@@ -1,6 +1,6 @@
 interface FormTextAreaProps {
   label: string;
-  name: string;
+  name?: string;
   value: string;
   onChange: (value: string) => void;
   required?: boolean;

@@ -3,7 +3,7 @@ interface FormInputProps {
   name: string;
   value: string | number | undefined;
   onChange: (value: string) => void;
-  type?: "text" | "email" | "password" | "date" | "number" | "url" | "tel";
+  type?: "text" | "email" | "password" | "date" | "number" | "url" | "tel" | "datetime-local";
   required?: boolean;
   error?: string;
   onBlur?: () => void;

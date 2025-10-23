@@ -29,3 +29,16 @@ export const validationRoomRules: Record<
     }
   ]
 };
+
+export const validationDestinationRules: Record<
+  string,
+  { validate: (value: string) => boolean; message: string }[]
+> = {
+  name: [
+    { validate: (v) => !!v.trim(), message: "Tên địa điểm không được để trống" },
+    { validate: (v) => v.length <= 100, message: "Tên địa điểm quá dài" },
+  ],
+  city: [{ validate: (v) => !!v.trim(), message: "Vui lòng nhập thành phố" }],
+  district: [{ validate: (v) => !!v.trim(), message: "Vui lòng nhập quận / huyện" }],
+  street: [{ validate: (v) => !!v.trim(), message: "Vui lòng nhập tên đường" }],
+}

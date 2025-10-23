@@ -1,566 +1,776 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/molecules/FormInput";
-import { FormSelect } from "@/components/molecules/FormSelect";
 import { FormTextArea } from "@/components/molecules/FormTextArea";
-import { validationConfRules } from "@/utils/validationConfRules";
-import type {    
-  ConferenceFormData, 
-  ConferenceFormProps 
+import { useAppDispatch, useAppSelector } from "@/redux/hooks/hooks";
+import {
+  useCreateBasicConferenceMutation,
+  useCreateConferencePriceMutation,
+  useCreateConferenceSessionsMutation,
+  useCreateConferencePoliciesMutation,
+  useCreateConferenceMediaMutation,
+  useCreateConferenceSponsorsMutation,
+} from "@/redux/services/conferenceStep.service";
+import {
+  nextStep,
+  prevStep,
+  setConferenceId,
+  resetWizard,
+} from "@/redux/slices/conferenceStep.slice";
+import type {
+  ConferenceBasicForm,
+  PricePhase,
+  Price,
+  Session,
+  Speaker,
+  Policy,
+  Media,
+  Sponsor,
 } from "@/types/conference.type";
 
-export function TechConferenceForm({ 
-  conference, 
-  onSave, 
-  onCancel
-}: ConferenceFormProps) {
-  const [formData, setFormData] = useState<ConferenceFormData>({
-    conferenceId: conference?.conferenceId || "",
-    conferenceName: conference?.conferenceName || "",
-    description: conference?.description || "",
-    startDate: conference?.startDate || "",
-    endDate: conference?.endDate || "",
-    capacity: conference?.capacity || 0,
-    address: conference?.address || "",
-    bannerImageUrl: conference?.bannerImageUrl || "",
-    isInternalHosted: conference?.isInternalHosted ?? true,
-    conferenceRankingId: conference?.conferenceRankingId || "",
-    userId: conference?.userId || "",
-    locationId: conference?.locationId || "",
-    conferenceCategoryId: conference?.conferenceCategoryId || "",
-    conferenceTypeId: conference?.conferenceTypeId || "tech",
-    globalStatusId: conference?.globalStatusId || "draft",
-    isActive: conference?.isActive ?? true,
-    createdAt: conference?.createdAt || ""
+const STEPS = [
+  { id: 1, title: "Thông tin cơ bản" },
+  { id: 2, title: "Giá vé" },
+  { id: 3, title: "Phiên họp" },
+  { id: 4, title: "Chính sách" },
+  { id: 5, title: "Media" },
+  { id: 6, title: "Nhà tài trợ" },
+];
+
+interface ConferenceStepFormProps {
+  conference?: any | null; 
+  onSave?: (data: any) => void; 
+  onCancel?: () => void;
+}
+
+export function ConferenceStepForm({ conference, onSave, onCancel }: ConferenceStepFormProps) {
+  const dispatch = useAppDispatch();
+  const { currentStep, conferenceId } = useAppSelector(
+    (state) => state.conferenceStep
+  );
+
+  // API Mutations
+  const [createBasic, { isLoading: isCreatingBasic }] =
+    useCreateBasicConferenceMutation();
+  const [createPrice, { isLoading: isCreatingPrice }] =
+    useCreateConferencePriceMutation();
+  const [createSessions, { isLoading: isCreatingSessions }] =
+    useCreateConferenceSessionsMutation();
+  const [createPolicies, { isLoading: isCreatingPolicies }] =
+    useCreateConferencePoliciesMutation();
+  const [createMedia, { isLoading: isCreatingMedia }] =
+    useCreateConferenceMediaMutation();
+  const [createSponsors, { isLoading: isCreatingSponsors }] =
+    useCreateConferenceSponsorsMutation();
+
+  // Step 1: Basic Info
+  const [basicForm, setBasicForm] = useState<ConferenceBasicForm>({
+    conferenceName: "",
+    description: "",
+    startDate: "",
+    endDate: "",
+    capacity: 0,
+    address: "",
+    bannerImageFile: null,
+    isInternalHosted: true,
+    isResearchConference: false,
+    categoryName: "",
   });
 
-  const [errors, setErrors] = useState<Partial<Record<keyof ConferenceFormData, string>>>({});
-  const [touched, setTouched] = useState<Set<keyof ConferenceFormData>>(new Set());
-  
-  const [tickets, setTickets] = useState<Array<{
-    id: string;
-    ticketName: string;
-    ticketDescription: string;
-    ticketPrice: number;
-    actualPrice: number;
-    availableQuantity: number;
-  }>>([]);
-  
-  const [isAddingTicket, setIsAddingTicket] = useState(false);
-  const [newTicket, setNewTicket] = useState({
+  // Step 2: Price
+  const [pricePhase, setPricePhase] = useState<PricePhase>({
+    name: "",
+    earlierBirdEndInterval: "",
+    percentForEarly: 0,
+    standardEndInterval: "",
+    lateEndInterval: "",
+    percentForEnd: 0,
+  });
+  const [prices, setPrices] = useState<Price[]>([]);
+  const [newPrice, setNewPrice] = useState<Price>({
+    ticketPrice: 0,
     ticketName: "",
     ticketDescription: "",
-    ticketPrice: 0,
     actualPrice: 0,
-    availableQuantity: 0
   });
 
-  const handleChange = (
-    field: keyof ConferenceFormData, 
-    value: string | number | boolean
-  ) => {
-    setFormData((prev: ConferenceFormData) => ({ ...prev, [field]: value }));
-    
-    validateField(field, value);
-    setTouched((prev: Set<keyof ConferenceFormData>) => new Set(prev).add(field));
-  };
+  // Step 3: Sessions
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [newSession, setNewSession] = useState<Session>({
+    title: "",
+    description: "",
+    startTime: "",
+    endTime: "",
+    roomId: "",
+    speaker: {
+      name: "",
+      description: "",
+    },
+  });
 
-  const validateField = (
-    field: keyof ConferenceFormData, 
-    value: string | number | boolean
-  ): boolean => {
-    if (typeof value === "boolean") return true;
+  // Step 4: Policies
+  const [policies, setPolicies] = useState<Policy[]>([]);
+  const [newPolicy, setNewPolicy] = useState<Policy>({
+    policyName: "",
+    description: "",
+  });
 
-    if (typeof field !== "string") return true;
-    const fieldRules = validationConfRules[field];
-    if (!fieldRules) return true;
+  // Step 5: Media
+  const [mediaList, setMediaList] = useState<Media[]>([]);
+  const [newMedia, setNewMedia] = useState<Media>({
+    mediaFile: "",
+  });
 
-    for (const rule of fieldRules) {
-      if (!rule.validate(value)) {
-        setErrors((prev: Partial<Record<keyof ConferenceFormData, string>>) => ({ 
-          ...prev, 
-          [field]: rule.message 
-        }));
-        return false;
-      }
-    }
+  // Step 6: Sponsors
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [newSponsor, setNewSponsor] = useState<Sponsor>({
+    name: "",
+    imageFile: "",
+  });
 
-    setErrors((prev: Partial<Record<keyof ConferenceFormData, string>>) => ({ 
-      ...prev, 
-      [field]: "" 
-    }));
-    return true;
-  };
-
-  const validate = (): boolean => {
-    let isValid = true;
-    const allFields = Object.keys(formData) as Array<keyof ConferenceFormData>;
-    
-    allFields.forEach((field: keyof ConferenceFormData) => {
-      if (field === "bannerImageUrl" || field === "userId" || field === "isInternalHosted" || field === "isActive" || field === "createdAt") return;
-      
-      const fieldValue = formData[field];
-      const fieldIsValid = validateField(field, fieldValue);
-      
-      if (!fieldIsValid) {
-        isValid = false;
-        setTouched((prev: Set<keyof ConferenceFormData>) => new Set(prev).add(field));
-      }
-    });
-
-    if (new Date(formData.endDate) < new Date(formData.startDate)) {
-      setErrors((prev: Partial<Record<keyof ConferenceFormData, string>>) => ({ 
-        ...prev, 
-        endDate: "Ngày kết thúc phải sau ngày bắt đầu" 
-      }));
-      isValid = false;
-    }
-
-    return isValid;
-  };
-
-  const handleSubmit = () => {
-    if (validate()) {
-      const submitData = {
-        ...formData,
-        createdAt: conference?.createdAt || new Date().toISOString(),
-        tickets: tickets // Gửi kèm danh sách vé
-      };
-      onSave(submitData);
+  // Handle Step 1 Submit
+  const handleBasicSubmit = async () => {
+    try {
+      const result = await createBasic(basicForm).unwrap();
+      const confId = result.data.conferenceId;
+      dispatch(setConferenceId(confId));
+      dispatch(nextStep());
+    } catch (error) {
+      console.error("Failed to create basic info:", error);
     }
   };
 
-  const handleAddTicket = () => {
-    if (!newTicket.ticketName || !newTicket.ticketPrice || !newTicket.availableQuantity) {
-      alert("Vui lòng điền đầy đủ thông tin vé");
-      return;
+  // Handle Step 2 Submit
+  const handlePriceSubmit = async () => {
+    if (!conferenceId) return;
+    try {
+      await createPrice({
+        conferenceId,
+        data: { pricePhase, prices },
+      }).unwrap();
+      dispatch(nextStep());
+    } catch (error) {
+      console.error("Failed to create price:", error);
     }
-    
-    const ticket = {
-      id: `ticket-${Date.now()}`,
-      ...newTicket,
-      actualPrice: newTicket.actualPrice || newTicket.ticketPrice
-    };
-    
-    setTickets([...tickets, ticket]);
-    setNewTicket({
+  };
+
+  // Handle Step 3 Submit
+  const handleSessionSubmit = async () => {
+    if (!conferenceId) return;
+    try {
+      await createSessions({
+        conferenceId,
+        data: { sessions },
+      }).unwrap();
+      dispatch(nextStep());
+    } catch (error) {
+      console.error("Failed to create sessions:", error);
+    }
+  };
+
+  // Handle Step 4 Submit
+  const handlePolicySubmit = async () => {
+    if (!conferenceId) return;
+    try {
+      await createPolicies({
+        conferenceId,
+        data: { policies },
+      }).unwrap();
+      dispatch(nextStep());
+    } catch (error) {
+      console.error("Failed to create policies:", error);
+    }
+  };
+
+  // Handle Step 5 Submit
+  const handleMediaSubmit = async () => {
+    if (!conferenceId) return;
+    try {
+      await createMedia({
+        conferenceId,
+        data: { media: mediaList },
+      }).unwrap();
+      dispatch(nextStep());
+    } catch (error) {
+      console.error("Failed to create media:", error);
+    }
+  };
+
+  // Handle Step 6 Submit (Final)
+  const handleSponsorSubmit = async () => {
+    if (!conferenceId) return;
+    try {
+      await createSponsors({
+        conferenceId,
+        data: { sponsors },
+      }).unwrap();
+      alert("Tạo hội thảo thành công!");
+      dispatch(resetWizard());
+    } catch (error) {
+      console.error("Failed to create sponsors:", error);
+    }
+  };
+
+  // Add handlers
+  const handleAddPrice = () => {
+    if (!newPrice.ticketName || !newPrice.ticketPrice) return;
+    setPrices([...prices, newPrice]);
+    setNewPrice({
+      ticketPrice: 0,
       ticketName: "",
       ticketDescription: "",
-      ticketPrice: 0,
       actualPrice: 0,
-      availableQuantity: 0
     });
-    setIsAddingTicket(false);
   };
 
-  const handleRemoveTicket = (id: string) => {
-    setTickets(tickets.filter(t => t.id !== id));
+  const handleAddSession = () => {
+    if (!newSession.title || !newSession.speaker.name) return;
+    setSessions([...sessions, newSession]);
+    setNewSession({
+      title: "",
+      description: "",
+      startTime: "",
+      endTime: "",
+      roomId: "",
+      speaker: { name: "", description: "" },
+    });
   };
 
-  const handleEditTicket = (id: string) => {
-    const ticket = tickets.find(t => t.id === id);
-    if (ticket) {
-      setNewTicket({
-        ticketName: ticket.ticketName,
-        ticketDescription: ticket.ticketDescription,
-        ticketPrice: ticket.ticketPrice,
-        actualPrice: ticket.actualPrice,
-        availableQuantity: ticket.availableQuantity
-      });
-      handleRemoveTicket(id);
-      setIsAddingTicket(true);
+  const handleAddPolicy = () => {
+    if (!newPolicy.policyName) return;
+    setPolicies([...policies, newPolicy]);
+    setNewPolicy({ policyName: "", description: "" });
+  };
+
+  const handleAddMedia = () => {
+    if (!newMedia.mediaFile) return;
+    setMediaList([...mediaList, newMedia]);
+    setNewMedia({ mediaFile: ""});
+  };
+
+  const handleAddSponsor = () => {
+    if (!newSponsor.name) return;
+    setSponsors([...sponsors, newSponsor]);
+    setNewSponsor({ name: "", imageFile: "" });
+  };
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Thông tin cơ bản</h3>
+            <FormInput
+              label="Tên hội thảo"
+              name="conferenceName"
+              value={basicForm.conferenceName}
+              onChange={(val) =>
+                setBasicForm({ ...basicForm, conferenceName: val })
+              }
+              required
+            />
+            <FormTextArea
+              label="Mô tả"
+              value={basicForm.description ?? ""}
+              onChange={(val) =>
+                setBasicForm({ ...basicForm, description: val })
+              }
+              rows={3}
+            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormInput
+                label="Ngày bắt đầu"
+                name="startDate"
+                type="date"
+                value={basicForm.startDate}
+                onChange={(val) =>
+                  setBasicForm({ ...basicForm, startDate: val })
+                }
+                required
+              />
+              <FormInput
+                label="Ngày kết thúc"
+                name="endDate"
+                type="date"
+                value={basicForm.endDate}
+                onChange={(val) => setBasicForm({ ...basicForm, endDate: val })}
+                required
+              />
+            </div>
+            <FormInput
+              label="Sức chứa"
+              name="capacity"
+              type="number"
+              value={basicForm.capacity}
+              onChange={(val) =>
+                setBasicForm({ ...basicForm, capacity: Number(val) })
+              }
+            />
+            <FormInput
+              label="Địa chỉ"
+              name="address"
+              value={basicForm.address}
+              onChange={(val) => setBasicForm({ ...basicForm, address: val })}
+            />
+            <FormInput
+              label="Danh mục"
+              name="categoryName"
+              value={basicForm.categoryName}
+              onChange={(val) =>
+                setBasicForm({ ...basicForm, categoryName: val })
+              }
+              required
+            />
+            <div className="flex items-center gap-4">
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={basicForm.isInternalHosted}
+                  onChange={(e) =>
+                    setBasicForm({
+                      ...basicForm,
+                      isInternalHosted: e.target.checked,
+                    })
+                  }
+                />
+                <span>Tổ chức nội bộ</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={basicForm.isResearchConference}
+                  onChange={(e) =>
+                    setBasicForm({
+                      ...basicForm,
+                      isResearchConference: e.target.checked,
+                    })
+                  }
+                />
+                <span>Hội nghị nghiên cứu</span>
+              </label>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Banner Image</label>
+              <input
+                type="file"
+                onChange={(e) =>
+                  setBasicForm({
+                    ...basicForm,
+                    bannerImageFile: e.target.files?.[0] || null,
+                  })
+                }
+                accept="image/*"
+              />
+            </div>
+          </div>
+        );
+
+      case 2:
+        return (
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Giá vé</h3>
+            
+            {/* Price Phase */}
+            <div className="border p-4 rounded">
+              <h4 className="font-medium mb-3">Giai đoạn giá</h4>
+              <div className="space-y-3">
+                <FormInput
+                  label="Tên giai đoạn"
+                  name="name"
+                  value={pricePhase.name}
+                  onChange={(val) => setPricePhase({ ...pricePhase, name: val })}
+                />
+                <div className="grid grid-cols-2 gap-3">
+                  <FormInput
+                    label="Early bird kết thúc"
+                    name="earlierBirdEndInterval"
+                    type="date"
+                    value={pricePhase.earlierBirdEndInterval}
+                    onChange={(val) =>
+                      setPricePhase({ ...pricePhase, earlierBirdEndInterval: val })
+                    }
+                  />
+                  <FormInput
+                    label="% giảm early"
+                    name="percentForEarly"
+                    type="number"
+                    value={pricePhase.percentForEarly}
+                    onChange={(val) =>
+                      setPricePhase({ ...pricePhase, percentForEarly: Number(val) })
+                    }
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <FormInput
+                    label="Standard kết thúc"
+                    name="standardEndInterval"
+                    type="date"
+                    value={pricePhase.standardEndInterval}
+                    onChange={(val) =>
+                      setPricePhase({ ...pricePhase, standardEndInterval: val })
+                    }
+                  />
+                  <FormInput
+                    label="Late kết thúc"
+                    name="lateEndInterval"
+                    type="date"
+                    value={pricePhase.lateEndInterval}
+                    onChange={(val) =>
+                      setPricePhase({ ...pricePhase, lateEndInterval: val })
+                    }
+                  />
+                </div>
+                <FormInput
+                  label="% tăng late"
+                  name="percentForEnd"
+                  type="number"
+                  value={pricePhase.percentForEnd}
+                  onChange={(val) =>
+                    setPricePhase({ ...pricePhase, percentForEnd: Number(val) })
+                  }
+                />
+              </div>
+            </div>
+
+            {/* Prices List */}
+            <div className="border p-4 rounded">
+              <h4 className="font-medium mb-3">Danh sách vé ({prices.length})</h4>
+              {prices.map((p, idx) => (
+                <div key={idx} className="p-3 bg-gray-50 rounded mb-2">
+                  <div className="font-medium">{p.ticketName}</div>
+                  <div className="text-sm text-gray-600">
+                    {p.ticketPrice.toLocaleString()} VND
+                  </div>
+                </div>
+              ))}
+
+              {/* Add Price Form */}
+              <div className="mt-4 space-y-3 border-t pt-3">
+                <FormInput
+                  label="Tên vé"
+                  name="ticketName"
+                  value={newPrice.ticketName}
+                  onChange={(val) => setNewPrice({ ...newPrice, ticketName: val })}
+                />
+                <FormInput
+                  label="Mô tả"
+                  name="ticketDescription"
+                  value={newPrice.ticketDescription}
+                  onChange={(val) =>
+                    setNewPrice({ ...newPrice, ticketDescription: val })
+                  }
+                />
+                <div className="grid grid-cols-2 gap-3">
+                  <FormInput
+                    label="Giá bán"
+                    name="ticketPrice"
+                    type="number"
+                    value={newPrice.ticketPrice}
+                    onChange={(val) =>
+                      setNewPrice({ ...newPrice, ticketPrice: Number(val) })
+                    }
+                  />
+                  <FormInput
+                    label="Giá gốc"
+                    name="actualPrice"
+                    type="number"
+                    value={newPrice.actualPrice}
+                    onChange={(val) =>
+                      setNewPrice({ ...newPrice, actualPrice: Number(val) })
+                    }
+                  />
+                </div>
+                <Button onClick={handleAddPrice}>Thêm vé</Button>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 3:
+        return (
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Phiên họp</h3>
+            
+            {/* Sessions List */}
+            <div className="space-y-2">
+              {sessions.map((s, idx) => (
+                <div key={idx} className="p-3 bg-gray-50 rounded">
+                  <div className="font-medium">{s.title}</div>
+                  <div className="text-sm text-gray-600">
+                    Diễn giả: {s.speaker.name}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Add Session Form */}
+            <div className="border p-4 rounded space-y-3">
+              <h4 className="font-medium">Thêm phiên mới</h4>
+              <FormInput
+                label="Tiêu đề"
+                name="title"
+                value={newSession.title}
+                onChange={(val) => setNewSession({ ...newSession, title: val })}
+              />
+              <FormTextArea
+                label="Mô tả"
+                name="description"
+                value={newSession.description}
+                onChange={(val) =>
+                  setNewSession({ ...newSession, description: val })
+                }
+                rows={2}
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <FormInput
+                  label="Thời gian bắt đầu"
+                  name="startTime"
+                  type="datetime-local"
+                  value={newSession.startTime}
+                  onChange={(val) =>
+                    setNewSession({ ...newSession, startTime: val })
+                  }
+                />
+                <FormInput
+                  label="Thời gian kết thúc"
+                  name="endTime"
+                  type="datetime-local"
+                  value={newSession.endTime}
+                  onChange={(val) =>
+                    setNewSession({ ...newSession, endTime: val })
+                  }
+                />
+              </div>
+              <FormInput
+                label="Room ID"
+                name="roomId"
+                value={newSession.roomId}
+                onChange={(val) => setNewSession({ ...newSession, roomId: val })}
+              />
+              <div className="border-t pt-3">
+                <h5 className="font-medium mb-2">Diễn giả</h5>
+                <FormInput
+                  label="Tên"
+                  name="speakerName"
+                  value={newSession.speaker.name}
+                  onChange={(val) =>
+                    setNewSession({
+                      ...newSession,
+                      speaker: { ...newSession.speaker, name: val },
+                    })
+                  }
+                />
+                <FormTextArea
+                  label="Mô tả"
+                  value={newSession.speaker.description}
+                  onChange={(val) =>
+                    setNewSession({
+                      ...newSession,
+                      speaker: { ...newSession.speaker, description: val },
+                    })
+                  }
+                  rows={2}
+                />
+              </div>
+              <Button onClick={handleAddSession}>Thêm phiên</Button>
+            </div>
+          </div>
+        );
+
+      case 4:
+        return (
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Chính sách</h3>
+            
+            {/* Policies List */}
+            <div className="space-y-2">
+              {policies.map((p, idx) => (
+                <div key={idx} className="p-3 bg-gray-50 rounded">
+                  <div className="font-medium">{p.policyName}</div>
+                  <div className="text-sm text-gray-600">{p.description}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Add Policy Form */}
+            <div className="border p-4 rounded space-y-3">
+              <h4 className="font-medium">Thêm chính sách</h4>
+              <FormInput
+                label="Tên chính sách"
+                name="policyName"
+                value={newPolicy.policyName}
+                onChange={(val) =>
+                  setNewPolicy({ ...newPolicy, policyName: val })
+                }
+              />
+              <FormTextArea
+                label="Mô tả"
+                value={newPolicy.description}
+                onChange={(val) =>
+                  setNewPolicy({ ...newPolicy, description: val })
+                }
+                rows={3}
+              />
+              <Button onClick={handleAddPolicy}>Thêm chính sách</Button>
+            </div>
+          </div>
+        );
+
+      case 5:
+        return (
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Media</h3>
+            
+            {/* Media List */}
+            <div className="space-y-2">
+              {mediaList.map((m, idx) => (
+                <div key={idx} className="p-3 bg-gray-50 rounded">
+                  <div className="text-sm">{m.mediaFile}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Add Media Form */}
+            <div className="border p-4 rounded space-y-3">
+              <h4 className="font-medium">Thêm media</h4>
+              <FormInput
+                label="Media File URL"
+                name="mediaFile"
+                value={newMedia.mediaFile}
+                onChange={(val) => setNewMedia({ ...newMedia, mediaFile: val })}
+              />
+   
+              <Button onClick={handleAddMedia}>Thêm media</Button>
+            </div>
+          </div>
+        );
+
+      case 6:
+        return (
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Nhà tài trợ</h3>
+            
+            {/* Sponsors List */}
+            <div className="space-y-2">
+              {sponsors.map((s, idx) => (
+                <div key={idx} className="p-3 bg-gray-50 rounded">
+                  <div className="font-medium">{s.name}</div>
+                  <div className="text-sm text-gray-600">{s.imageFile}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Add Sponsor Form */}
+            <div className="border p-4 rounded space-y-3">
+              <h4 className="font-medium">Thêm nhà tài trợ</h4>
+              <FormInput
+                label="Tên"
+                name="name"
+                value={newSponsor.name}
+                onChange={(val) => setNewSponsor({ ...newSponsor, name: val })}
+              />
+              <FormInput
+                label="Image File URL"
+                name="imageFile"
+                value={newSponsor.imageFile}
+                onChange={(val) =>
+                  setNewSponsor({ ...newSponsor, imageFile: val })
+                }
+              />
+              <Button onClick={handleAddSponsor}>Thêm nhà tài trợ</Button>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
     }
   };
 
-  const categoryOptions = [
-    { value: "ai-ml", label: "AI & Machine Learning" },
-    { value: "web-dev", label: "Web Development" },
-    { value: "cloud", label: "Cloud Computing" },
-    { value: "cybersecurity", label: "Cybersecurity" },
-    { value: "data-science", label: "Data Science" },
-    { value: "mobile", label: "Mobile Development" }
-  ];
+  const handleNext = () => {
+    switch (currentStep) {
+      case 1:
+        handleBasicSubmit();
+        break;
+      case 2:
+        handlePriceSubmit();
+        break;
+      case 3:
+        handleSessionSubmit();
+        break;
+      case 4:
+        handlePolicySubmit();
+        break;
+      case 5:
+        handleMediaSubmit();
+        break;
+      case 6:
+        handleSponsorSubmit();
+        break;
+    }
+  };
 
-  // Options cho các dropdown - Trong thực tế nên load từ API
-  const rankingOptions = [
-    { value: "ranking-1", label: "IEEE" },
-    { value: "ranking-2", label: "ACM" },
-    { value: "ranking-3", label: "Springer" },
-    { value: "ranking-4", label: "Elsevier" },
-    { value: "ranking-5", label: "Scopus" },
-    { value: "ranking-6", label: "Khác" }
-  ];
-
-  const globalStatusOptions = [
-    { value: "status-1", label: "Nháp" },
-    { value: "status-2", label: "Đã xuất bản" },
-    { value: "status-3", label: "Đang mở đăng ký" },
-    { value: "status-4", label: "Đã đóng đăng ký" },
-    { value: "status-5", label: "Đang diễn ra" },
-    { value: "status-6", label: "Đã kết thúc" },
-    { value: "status-7", label: "Đã hủy" }
-  ];
-
-  const locationOptions = [
-    { value: "location-1", label: "Hồ Chí Minh, Việt Nam" },
-    { value: "location-2", label: "Hà Nội, Việt Nam" },
-    { value: "location-3", label: "New York, USA" },
-    { value: "location-4", label: "London, UK" },
-    { value: "location-5", label: "Singapore" },
-    { value: "location-6", label: "Tokyo, Japan" }
-  ];
+  const isLoading =
+    isCreatingBasic ||
+    isCreatingPrice ||
+    isCreatingSessions ||
+    isCreatingPolicies ||
+    isCreatingMedia ||
+    isCreatingSponsors;
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
-      {/* THÔNG TIN CƠ BẢN */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">
-          Thông tin cơ bản
-        </h3>
-        <div className="space-y-4">
-          <FormInput
-            label="Tên hội thảo"
-            name="conferenceName"
-            value={formData.conferenceName}
-            onChange={(value: string) => handleChange("conferenceName", value)}
-            onBlur={() => validateField("conferenceName", formData.conferenceName)}
-            required
-            error={touched.has("conferenceName") ? errors.conferenceName : undefined}
-            success={touched.has("conferenceName") && !errors.conferenceName}
-            placeholder="VD: International Conference on AI and Machine Learning 2025"
-          />
-
-          <FormTextArea
-            label="Mô tả"
-            name="description"
-            value={formData.description}
-            onChange={(value: string) => handleChange("description", value)}
-            required
-            error={errors.description}
-            placeholder="Mô tả chi tiết về hội thảo..."
-            rows={4}
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormInput
-              label="Ngày bắt đầu"
-              name="startDate"
-              type="date"
-              value={formData.startDate}
-              onChange={(value: string) => handleChange("startDate", value)}
-              onBlur={() => validateField("startDate", formData.startDate)}
-              required
-              error={touched.has("startDate") ? errors.startDate : undefined}
-              success={touched.has("startDate") && !errors.startDate}
-            />
-
-            <FormInput
-              label="Ngày kết thúc"
-              name="endDate"
-              type="date"
-              value={formData.endDate}
-              onChange={(value: string) => handleChange("endDate", value)}
-              onBlur={() => validateField("endDate", formData.endDate)}
-              required
-              error={touched.has("endDate") ? errors.endDate : undefined}
-              success={touched.has("endDate") && !errors.endDate}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormSelect
-              label="Danh mục"
-              name="conferenceCategoryId"
-              value={formData.conferenceCategoryId}
-              onChange={(value: string) => handleChange("conferenceCategoryId", value)}
-              options={categoryOptions}
-              required
-              error={errors.conferenceCategoryId}
-            />
-
-            <FormSelect
-              label="Xếp hạng hội thảo"
-              name="conferenceRankingId"
-              value={formData.conferenceRankingId}
-              onChange={(value: string) => handleChange("conferenceRankingId", value)}
-              options={rankingOptions}
-              required
-              error={errors.conferenceRankingId}
-            />
-          </div>
-
-          <FormInput
-            label="Banner Image URL (tùy chọn)"
-            name="bannerImageUrl"
-            type="url"
-            value={formData.bannerImageUrl || ""}
-            onChange={(value: string) => handleChange("bannerImageUrl", value)}
-            placeholder="https://example.com/banner.jpg"
-          />
-        </div>
-      </div>
-
-      {/* ĐỊA ĐIỂM */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">
-          Địa điểm
-        </h3>
-        <div className="space-y-4">
-          <FormSelect
-            label="Địa điểm"
-            name="locationId"
-            value={formData.locationId}
-            onChange={(value: string) => handleChange("locationId", value)}
-            options={locationOptions}
-            required
-            error={errors.locationId}
-          />
-
-          <FormInput
-            label="Địa chỉ cụ thể"
-            name="address"
-            value={formData.address}
-            onChange={(value: string) => handleChange("address", value)}
-            onBlur={() => validateField("address", formData.address)}
-            required
-            error={touched.has("address") ? errors.address : undefined}
-            success={touched.has("address") && !errors.address}
-            placeholder="VD: 227 Nguyễn Văn Cừ, Quận 5"
-          />
-        </div>
-      </div>
-
-      {/* SỨC CHỨA & VÉ */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">
-          Sức chứa & Vé
-        </h3>
-        <div className="space-y-6">
-          <FormInput
-            label="Sức chứa tối đa"
-            name="capacity"
-            type="number"
-            value={formData.capacity}
-            onChange={(value: string) => handleChange("capacity", Number(value))}
-            onBlur={() => validateField("capacity", formData.capacity)}
-            required
-            error={touched.has("capacity") ? errors.capacity : undefined}
-            success={touched.has("capacity") && !errors.capacity}
-            placeholder="VD: 500"
-          />
-
-          {/* Ticket List */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-medium text-gray-700">
-                Danh sách vé ({tickets.length})
-              </label>
-              <button
-                type="button"
-                onClick={() => setIsAddingTicket(true)}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+    <div className="max-w-4xl mx-auto p-6">
+      {/* Step Indicator */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between">
+          {STEPS.map((step) => (
+            <div
+              key={step.id}
+              className={`flex-1 text-center ${
+                step.id === currentStep
+                  ? "text-blue-600 font-semibold"
+                  : "text-gray-400"
+              }`}
+            >
+              <div
+                className={`w-8 h-8 mx-auto rounded-full flex items-center justify-center mb-2 ${
+                  step.id === currentStep
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200"
+                }`}
               >
-                <span>+</span> Thêm loại vé
-              </button>
+                {step.id}
+              </div>
+              <div className="text-sm">{step.title}</div>
             </div>
-
-            {tickets.length > 0 && (
-              <div className="space-y-2 mb-4">
-                {tickets.map((ticket) => (
-                  <div
-                    key={ticket.id}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"
-                  >
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">{ticket.ticketName}</h4>
-                      <p className="text-sm text-gray-600 mt-1">{ticket.ticketDescription}</p>
-                      <div className="flex items-center gap-4 mt-2 text-sm">
-                        <span className="text-gray-700">
-                          Giá: <span className="font-semibold text-blue-600">{ticket.ticketPrice.toLocaleString('vi-VN')} VND</span>
-                        </span>
-                        {ticket.actualPrice !== ticket.ticketPrice && (
-                          <span className="text-gray-500 line-through">
-                            {ticket.actualPrice.toLocaleString('vi-VN')} VND
-                          </span>
-                        )}
-                        <span className="text-gray-700">
-                          Số lượng: <span className="font-semibold">{ticket.availableQuantity}</span>
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleEditTicket(ticket.id)}
-                        className="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded"
-                      >
-                        Sửa
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveTicket(ticket.id)}
-                        className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded"
-                      >
-                        Xóa
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Add Ticket Form */}
-            {isAddingTicket && (
-              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200 space-y-4">
-                <h4 className="font-medium text-gray-900">Thêm loại vé mới</h4>
-                
-                <FormInput
-                  label="Tên loại vé"
-                  name="ticketName"
-                  value={newTicket.ticketName}
-                  onChange={(value: string) => setNewTicket({...newTicket, ticketName: value})}
-                  placeholder="VD: Vé Early Bird, Vé VIP..."
-                  required
-                />
-
-                <FormTextArea
-                  label="Mô tả vé"
-                  name="ticketDescription"
-                  value={newTicket.ticketDescription}
-                  onChange={(value: string) => setNewTicket({...newTicket, ticketDescription: value})}
-                  placeholder="Mô tả các quyền lợi của loại vé này..."
-                  rows={2}
-                />
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <FormInput
-                    label="Giá bán (VND)"
-                    name="ticketPrice"
-                    type="number"
-                    value={newTicket.ticketPrice}
-                    onChange={(value: string) => setNewTicket({...newTicket, ticketPrice: Number(value)})}
-                    placeholder="0"
-                    required
-                  />
-
-                  <FormInput
-                    label="Giá gốc (VND)"
-                    name="actualPrice"
-                    type="number"
-                    value={newTicket.actualPrice}
-                    onChange={(value: string) => setNewTicket({...newTicket, actualPrice: Number(value)})}
-                    placeholder="Để trống nếu không có"
-                  />
-
-                  <FormInput
-                    label="Số lượng"
-                    name="availableQuantity"
-                    type="number"
-                    value={newTicket.availableQuantity}
-                    onChange={(value: string) => setNewTicket({...newTicket, availableQuantity: Number(value)})}
-                    placeholder="0"
-                    required
-                  />
-                </div>
-
-                <div className="flex justify-end gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsAddingTicket(false);
-                      setNewTicket({
-                        ticketName: "",
-                        ticketDescription: "",
-                        ticketPrice: 0,
-                        actualPrice: 0,
-                        availableQuantity: 0
-                      });
-                    }}
-                    className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
-                  >
-                    Hủy
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleAddTicket}
-                    className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                  >
-                    Thêm vé
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {tickets.length === 0 && !isAddingTicket && (
-              <div className="text-center py-8 text-gray-500 text-sm bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                Chưa có loại vé nào. Nhấn &quot;Thêm loại vé&quot; để bắt đầu.
-              </div>
-            )}
-          </div>
+          ))}
         </div>
       </div>
 
-      {/* TRẠNG THÁI & CÀI ĐẶT */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">
-          Trạng thái & Cài đặt
-        </h3>
-        <div className="space-y-4">
-          <FormSelect
-            label="Trạng thái"
-            name="globalStatusId"
-            value={formData.globalStatusId}
-            onChange={(value: string) => handleChange("globalStatusId", value)}
-            options={globalStatusOptions}
-            required
-            error={errors.globalStatusId}
-          />
-
-          <div className="space-y-3 pt-2">
-            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-              <input
-                type="checkbox"
-                id="isActive"
-                checked={formData.isActive}
-                onChange={(e) => handleChange("isActive", e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-              />
-              <label htmlFor="isActive" className="text-sm font-medium text-gray-700 cursor-pointer flex-1">
-                Kích hoạt hội thảo
-              </label>
-            </div>
-
-            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-              <input
-                type="checkbox"
-                id="isInternalHosted"
-                checked={formData.isInternalHosted}
-                onChange={(e) => handleChange("isInternalHosted", e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-              />
-              <label htmlFor="isInternalHosted" className="text-sm font-medium text-gray-700 cursor-pointer flex-1">
-                Tổ chức nội bộ
-              </label>
-            </div>
-          </div>
-        </div>
+      {/* Step Content */}
+      <div className="bg-white border rounded-lg p-6 mb-6">
+        {renderStepContent()}
       </div>
 
-      {/* BUTTONS */}
-      <div className="flex justify-end gap-3 pt-4 border-t bg-white p-6 rounded-lg sticky bottom-0 shadow-lg">
+      {/* Navigation Buttons */}
+      <div className="flex justify-between">
         <Button
-          type="button"
-          onClick={onCancel}
-          className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+          onClick={() => dispatch(prevStep())}
+          disabled={currentStep === 1}
+          className="px-6"
         >
-          Hủy
+          Quay lại
         </Button>
         <Button
-          type="button"
-          onClick={handleSubmit}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm"
+          onClick={handleNext}
+          disabled={isLoading}
+          className="px-6 bg-blue-600 text-white"
         >
-          {conference ? "Cập nhật" : "Thêm mới"}
+          {isLoading
+            ? "Đang xử lý..."
+            : currentStep === 6
+            ? "Hoàn thành"
+            : "Tiếp theo"}
         </Button>
       </div>
     </div>

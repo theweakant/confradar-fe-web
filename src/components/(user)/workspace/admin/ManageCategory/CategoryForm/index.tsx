@@ -3,50 +3,39 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/molecules/FormInput";
-import { FormTextArea } from "@/components/molecules/FormTextArea";
-import type { Category, CreateCategoryDto } from "@/types/category.type";
+import type { Category, CategoryFormData } from "@/types/category.type";
 
 interface CategoryFormProps {
   category?: Category | null;
-  onSave: (data: CreateCategoryDto) => void;
+  isLoading?: boolean;
+  onSave: (data: CategoryFormData) => void;
   onCancel: () => void;
 }
 
-export function CategoryForm({ category, onSave, onCancel }: CategoryFormProps) {
-  const [formData, setFormData] = useState<CreateCategoryDto>({
-    name: category?.name || "",
-    description: category?.description || "",
+export function CategoryForm({ category, isLoading, onSave, onCancel }: CategoryFormProps) {
+  const [formData, setFormData] = useState<CategoryFormData>({
+    conferenceCategoryName: category?.conferenceCategoryName || "",
   });
 
-  const [errors, setErrors] = useState<Partial<Record<keyof CreateCategoryDto, string>>>({});
-  const [touched, setTouched] = useState<Set<keyof CreateCategoryDto>>(new Set());
+  const [errors, setErrors] = useState<Partial<Record<keyof CategoryFormData, string>>>({});
+  const [touched, setTouched] = useState<Set<keyof CategoryFormData>>(new Set());
 
-  const handleChange = (field: keyof CreateCategoryDto, value: string) => {
+  const handleChange = (field: keyof CategoryFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     validateField(field, value);
     setTouched((prev) => new Set(prev).add(field));
   };
 
-  const validateField = (field: keyof CreateCategoryDto, value: string): boolean => {
+  const validateField = (field: keyof CategoryFormData, value: string): boolean => {
     let errorMessage = "";
 
-    if (field === "name") {
+    if (field === "conferenceCategoryName") {
       if (!value.trim()) {
         errorMessage = "Tên danh mục không được để trống";
       } else if (value.trim().length < 2) {
         errorMessage = "Tên danh mục phải có ít nhất 2 ký tự";
       } else if (value.trim().length > 100) {
-        errorMessage = "Tên danh mục không được vượt quá 100 ký tự";
-      }
-    }
-
-    if (field === "description") {
-      if (!value.trim()) {
-        errorMessage = "Mô tả không được để trống";
-      } else if (value.trim().length < 10) {
-        errorMessage = "Mô tả phải có ít nhất 10 ký tự";
-      } else if (value.trim().length > 500) {
-        errorMessage = "Mô tả không được vượt quá 500 ký tự";
+        errorMessage = "Tên danh mục không được vượt quá 50 ký tự";
       }
     }
 
@@ -56,7 +45,7 @@ export function CategoryForm({ category, onSave, onCancel }: CategoryFormProps) 
 
   const validate = (): boolean => {
     let isValid = true;
-    const allFields = Object.keys(formData) as Array<keyof CreateCategoryDto>;
+    const allFields = Object.keys(formData) as Array<keyof CategoryFormData>;
 
     allFields.forEach((field) => {
       const fieldValue = formData[field];
@@ -81,25 +70,15 @@ export function CategoryForm({ category, onSave, onCancel }: CategoryFormProps) 
       <div className="space-y-4">
         <FormInput
           label="Tên danh mục"
-          name="name"
-          value={formData.name}
-          onChange={(value) => handleChange("name", value)}
-          onBlur={() => validateField("name", formData.name)}
+          name="conferenceCategoryName"
+          value={formData.conferenceCategoryName}
+          onChange={(value) => handleChange("conferenceCategoryName", value)}
+          onBlur={() => validateField("conferenceCategoryName", formData.conferenceCategoryName)}
           required
-          error={touched.has("name") ? errors.name : undefined}
-          success={touched.has("name") && !errors.name}
+          error={touched.has("conferenceCategoryName") ? errors.conferenceCategoryName : undefined}
+          success={touched.has("conferenceCategoryName") && !errors.conferenceCategoryName}
           placeholder="VD: Technology, Business, Science..."
-        />
-
-        <FormTextArea
-          label="Mô tả"
-          name="description"
-          value={formData.description}
-          onChange={(value) => handleChange("description", value)}
-          required
-          error={touched.has("description") ? errors.description : undefined}
-          placeholder="Mô tả chi tiết về danh mục này..."
-          rows={4}
+          disabled={isLoading}
         />
       </div>
 
@@ -108,6 +87,7 @@ export function CategoryForm({ category, onSave, onCancel }: CategoryFormProps) 
           type="button"
           onClick={onCancel}
           className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          disabled={isLoading}
         >
           Hủy
         </Button>
@@ -115,8 +95,9 @@ export function CategoryForm({ category, onSave, onCancel }: CategoryFormProps) 
           type="button"
           onClick={handleSubmit}
           className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          disabled={isLoading}
         >
-          {category ? "Cập nhật" : "Thêm mới"}
+          {isLoading ? "Đang xử lý..." : category ? "Cập nhật" : "Thêm mới"}
         </Button>
       </div>
     </div>
