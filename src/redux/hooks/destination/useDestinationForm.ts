@@ -4,6 +4,8 @@ import {
   useUpdateDestinationMutation,
 } from "@/redux/services/destination.service";
 import type { DestinationFormData, Destination } from "@/types/destination.type";
+import { toast } from "sonner";
+
 
 export const useDestinationForm = (destination?: Destination | null) => {
   const [createDestination] = useCreateDestinationMutation();
@@ -25,11 +27,17 @@ export const useDestinationForm = (destination?: Destination | null) => {
       }
 
       setSuccess(true);
-    } catch (err: any) {
-      setError(err.message || "Có lỗi xảy ra khi lưu địa điểm");
-    } finally {
+    }    catch (error: unknown) {
+            const message =
+              error instanceof Error
+                ? error.message
+                : "Có lỗi xảy ra, vui lòng thử lại!";
+            toast.error(message);
+      } finally {
       setLoading(false);
     }
+
+ 
   };
 
   return { handleSave, loading, success, error };

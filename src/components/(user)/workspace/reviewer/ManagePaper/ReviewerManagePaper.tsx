@@ -117,7 +117,7 @@ export default function ReviewerManagePaperPage() {
             <Link href="/workspace/local-reviewer/manage-paper/assigned-papper-list">
               <Button className="flex items-center gap-2 whitespace-nowrap">
                 <ScanEye className="w-5 h-5" />
-                Xem danh sách bài báo đang chờ 
+                Danh sách bài báo đang chờ đánh giá 
               </Button>
             </Link>
           </div>

@@ -4,7 +4,6 @@ import React from "react";
 import { Eye, Pencil, Trash2, Building, MoreVertical, Calendar } from "lucide-react";
 
 import { DataTable, Column } from "@/components/molecules/DataTable";
-import { StatusBadge } from "@/components/atoms/StatusBadge";
 import { formatDate } from "@/helper/format";
 import {
   DropdownMenu,

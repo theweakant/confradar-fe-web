@@ -7,7 +7,6 @@ interface SocialLoginButtonsProps {
 }
 
 export const SocialLoginButtons = ({ 
-  onGoogleLogin, 
   onOrcidLogin, 
   isLoading 
 }: SocialLoginButtonsProps) => {

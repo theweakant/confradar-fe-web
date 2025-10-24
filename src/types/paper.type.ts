@@ -41,6 +41,11 @@ export interface Paper {
   decisionNotes?: string;
 }
 
+export interface AssignReviewerData {
+  paperId: string | number;
+  reviewerIds: string[];
+}
+
 export interface PaperFormData {
   title: string;
   authors: string[];

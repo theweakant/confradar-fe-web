@@ -26,7 +26,7 @@ import type {
   PricePhase,
   Price,
   Session,
-  Speaker,
+  // Speaker,
   Policy,
   Media,
   Sponsor,
@@ -47,7 +47,11 @@ interface ConferenceStepFormProps {
   onCancel?: () => void;
 }
 
-export function ConferenceStepForm({ conference, onSave, onCancel }: ConferenceStepFormProps) {
+export function ConferenceStepForm({ 
+  conference: _conference, //use later
+  onSave: _onSave, //use later
+  onCancel: _onCancel, //use later
+}: ConferenceStepFormProps) {
   const dispatch = useAppDispatch();
   const { currentStep, conferenceId } = useAppSelector(
     (state) => state.conferenceStep

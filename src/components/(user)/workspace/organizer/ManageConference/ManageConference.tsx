@@ -93,7 +93,7 @@ export default function ManageConference() {
     setIsDetailOpen(true);
   };
 
-  const handleSave = (data: ConferenceFormData) => {
+  const handleSave = (_data: ConferenceFormData) => {
     // Note: Create/Update logic should be handled in ConferenceStepForm
     // using useCreateConferenceMutation or useUpdateConferenceMutation
     setIsModalOpen(false);
