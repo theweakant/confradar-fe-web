@@ -5,6 +5,8 @@ import { roomApi } from "@/redux/services/room.service"
 import { conferenceApi } from "@/redux/services/conference.service"
 import { conferenceStepApi } from "@/redux/services/conferenceStep.service"
 import { categoryApi } from "@/redux/services/category.service"
+import { transactionApi } from "../services/transaction.service"
+import { ticketApi } from "../services/ticket.service"
 
 
 
@@ -15,6 +17,6 @@ export const apiMiddlewares: Middleware[] = [
   categoryApi.middleware,
   conferenceApi.middleware,
   conferenceStepApi.middleware,
-  
-  
+  transactionApi.middleware,
+  ticketApi.middleware,
 ]

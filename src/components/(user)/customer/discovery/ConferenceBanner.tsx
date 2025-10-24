@@ -87,7 +87,7 @@ const ConferenceBanner: React.FC<BannerFilterProps> = ({
             Hội nghị Công nghệ
           </button>
 
-          <button
+          {/* <button
             onClick={() => handleFilterClick('research')}
             className={`
               px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105
@@ -98,7 +98,7 @@ const ConferenceBanner: React.FC<BannerFilterProps> = ({
             `}
           >
             Hội nghị Nghiên cứu
-          </button>
+          </button> */}
         </div>
       </div>
 

@@ -4,6 +4,8 @@ import Header from "@/components/LandingPage/header";
 import CustomerSidebar from "@/components/(user)/customer/CustomerSidebar";
 import { redirect, usePathname } from "next/navigation";
 import { useState } from "react";
+import { RootState } from "@/redux/store";
+import { useSelector } from "react-redux";
 
 interface CustomerLayoutProps {
     children: React.ReactNode;
@@ -26,6 +28,7 @@ const protectedRoutes = [
 const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
     const pathname = usePathname();
     const [isAuthen, setIsAuthen] = useState(true);
+    const { accessToken } = useSelector((state: RootState) => state.auth)
 
     if (protectedRoutes.includes(pathname) && !isAuthen) {
         redirect("/auth/login");
@@ -33,12 +36,12 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
 
     return (
         <div className="flex h-screen bg-customer-bg">
-            {isAuthen && (
+            {accessToken && (
                 <CustomerSidebar />
             )}
 
             <div className="flex-1 flex flex-col overflow-hidden">
-                {!isAuthen && (
+                {!accessToken && (
                     <Header />
                 )}
 

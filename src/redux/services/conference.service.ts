@@ -1,7 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { apiClient } from "../api/apiClient";
 import { endpoint } from "../api/endpoint";
-import type { Conference, ConferenceFormData } from "@/types/conference.type";
+import type { Conference, ConferenceFormData, ConferenceResponse } from "@/types/conference.type";
 import type { ApiResponse } from "@/types/api.type";
 
 export const conferenceApi = createApi({
@@ -10,21 +10,46 @@ export const conferenceApi = createApi({
   tagTypes: ["Conference"],
 
   endpoints: (builder) => ({
-    getAllConferences: builder.query<ApiResponse<Conference[]>, void>({
+    //get all conf for customer
+    getAllConferences: builder.query<ApiResponse<ConferenceResponse[]>, void>({
       query: () => ({
         url: endpoint.CONFERENCE.LIST,
-        method: "GET",
+        method: 'GET',
       }),
-      providesTags: ["Conference"],
+      providesTags: (result) =>
+        result?.data
+          ? [
+            ...result.data.map(({ conferenceId }) => ({
+              type: 'Conference' as const,
+              id: conferenceId,
+            })),
+            { type: 'Conference', id: 'LIST' },
+          ]
+          : [{ type: 'Conference', id: 'LIST' }],
     }),
+    // getAllConferences: builder.query<ApiResponse<Conference[]>, void>({
+    //   query: () => ({
+    //     url: endpoint.CONFERENCE.LIST,
+    //     method: "GET",
+    //   }),
+    //   providesTags: ["Conference"],
+    // }),
 
-    getConferenceById: builder.query<ApiResponse<Conference>, string>({
+    //view conf detail for customer
+    getConferenceById: builder.query<ApiResponse<ConferenceResponse>, string>({
       query: (id) => ({
         url: `${endpoint.CONFERENCE.DETAIL}/${id}`,
-        method: "GET",
+        method: 'GET',
       }),
-      providesTags: ["Conference"],
+      providesTags: (result, error, id) => [{ type: 'Conference', id }],
     }),
+    // getConferenceById: builder.query<ApiResponse<Conference>, string>({
+    //   query: (id) => ({
+    //     url: `${endpoint.CONFERENCE.DETAIL}/${id}`,
+    //     method: "GET",
+    //   }),
+    //   providesTags: ["Conference"],
+    // }),
 
     createConference: builder.mutation<ApiResponse<string>, ConferenceFormData>({
       query: (body) => ({
@@ -44,7 +69,7 @@ export const conferenceApi = createApi({
       invalidatesTags: ["Conference"],
     }),
 
-  
+
     deleteConference: builder.mutation<ApiResponse<string>, string>({
       query: (id) => ({
         url: `${endpoint.CONFERENCE.DELETE}/${id}`,
@@ -58,6 +83,8 @@ export const conferenceApi = createApi({
 export const {
   useGetAllConferencesQuery,
   useGetConferenceByIdQuery,
+  useLazyGetAllConferencesQuery,
+  useLazyGetConferenceByIdQuery,
   useCreateConferenceMutation,
   useUpdateConferenceMutation,
   useDeleteConferenceMutation,
