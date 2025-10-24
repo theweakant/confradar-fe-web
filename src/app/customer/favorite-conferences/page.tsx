@@ -1,6 +1,5 @@
 "use client"
 
-import FavoriteConferences from "@/components/(user)/customer/favorite-conferences/FavoriteConferences";
 import ReportManagementScreen from "@/components/(user)/customer/ReportManagementScreen";
 
 export default function FavoriteConferencesPage() {

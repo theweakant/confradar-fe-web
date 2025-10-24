@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { X, MapPin, Clock, Calendar, Star } from 'lucide-react';
 import { Dialog, DialogPanel, DialogTitle, Button } from "@headlessui/react";
 import { useConference } from '@/redux/hooks/conference/useConference';
-import { ConferenceResponse } from '@/types/conference.type';
+import { ConferencePriceResponse, ConferenceResponse } from '@/types/conference.type';
 import { useParams, useRouter } from 'next/navigation';
 import { useTransaction } from '@/redux/hooks/transaction/useTransaction';
 import { useSelector } from 'react-redux';
@@ -31,25 +31,22 @@ const ConferenceDetail = () => {
 
   const [activeTab, setActiveTab] = useState('info');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [newFeedback, setNewFeedback] = useState({ name: '', rating: 5, comment: '' });
-  const [feedbacks, setFeedbacks] = useState<any[]>([]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedTicket, setSelectedTicket] = useState<any>(null);
+  // const [newFeedback, setNewFeedback] = useState({ name: '', rating: 5, comment: '' });
+  // const [feedbacks, setFeedbacks] = useState<any[]>([]);
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const [selectedTicket, setSelectedTicket] = useState<ConferencePriceResponse | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [conference, setConference] = useState<ConferenceResponse | null>(null);
 
-  // API calls
   const { fetchConference, loading, error } = useConference();
 
-  // Fetch conference data when component mounts
   useEffect(() => {
     const loadConference = async () => {
       try {
         const response = await fetchConference(conferenceId);
         console.log('ddang fetch', response);
         setConference(response.data);
-        // Initialize feedbacks with empty array for now
-        setFeedbacks([]);
+        // setFeedbacks([]);
       } catch (err) {
         console.error('Failed to load conference:', err);
       }
@@ -82,19 +79,19 @@ const ConferenceDetail = () => {
     }
   }
 
-  const handleAddFeedback = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (newFeedback.name && newFeedback.comment) {
-      const feedback = {
-        id: feedbacks.length + 1,
-        ...newFeedback,
-        date: new Date().toLocaleDateString('vi-VN'),
-        avatar: "/images/LandingPage/conf_img/speaker_img.png"
-      };
-      setFeedbacks([feedback, ...feedbacks]);
-      setNewFeedback({ name: '', rating: 5, comment: '' });
-    }
-  };
+  // const handleAddFeedback = (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   if (newFeedback.name && newFeedback.comment) {
+  //     const feedback = {
+  //       id: feedbacks.length + 1,
+  //       ...newFeedback,
+  //       date: new Date().toLocaleDateString('vi-VN'),
+  //       avatar: "/images/LandingPage/conf_img/speaker_img.png"
+  //     };
+  //     setFeedbacks([feedback, ...feedbacks]);
+  //     setNewFeedback({ name: '', rating: 5, comment: '' });
+  //   }
+  // };
 
   const ImageModal: React.FC<ImageModalProps> = ({ image, onClose }) => (
     <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4" onClick={onClose}>
@@ -119,7 +116,6 @@ const ConferenceDetail = () => {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black flex items-center justify-center">
@@ -131,7 +127,6 @@ const ConferenceDetail = () => {
     );
   }
 
-  // No conference data
   if (!conference) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black flex items-center justify-center">
@@ -550,11 +545,10 @@ const ConferenceDetail = () => {
                 )}
 
                 {/* Feedback Tab */}
-                {activeTab === 'feedback' && (
+                {/* {activeTab === 'feedback' && (
                   <div>
                     <h2 className="text-2xl font-bold text-white mb-6">Đánh giá từ khách hàng</h2>
 
-                    {/* Add Feedback Form */}
                     <div className="bg-white/20 backdrop-blur-md rounded-xl p-6 mb-6 text-white">
                       <h3 className="text-lg font-semibold mb-4">Thêm đánh giá của bạn</h3>
                       <form onSubmit={handleAddFeedback} className="space-y-4">
@@ -606,7 +600,6 @@ const ConferenceDetail = () => {
                       </form>
                     </div>
 
-                    {/* Feedback List */}
                     <div className="space-y-4">
                       {feedbacks.map((feedback) => (
                         <div key={feedback.id} className="bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-6 text-white">
@@ -639,7 +632,7 @@ const ConferenceDetail = () => {
                       ))}
                     </div>
                   </div>
-                )}
+                )} */}
               </div>
             </div>
           </div>

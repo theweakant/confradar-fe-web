@@ -1,4 +1,7 @@
 import { useGetOwnPaidTicketsQuery, useLazyGetOwnPaidTicketsQuery } from '@/redux/services/ticket.service';
+import { ApiResponse } from '@/types/api.type';
+import { SerializedError } from '@reduxjs/toolkit';
+import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { useEffect } from 'react';
 
 
@@ -20,21 +23,32 @@ export const useTicket = () => {
     //     { isLoading: ticketByIdLoading, error: ticketByIdRawError }
     // ] = useLazyGetTicketByIdQuery();
 
-    // Parse error function
-    const parseError = (error: any): string => {
-        if (error?.data?.Message) {
-            return error.data.Message;
+    const parseError = (error: FetchBaseQueryError | SerializedError | undefined): string => {
+        if (!error) return 'Có lỗi xảy ra. Vui lòng thử lại.';
+
+        if ('data' in error) {
+            const data = error.data as ApiResponse<null>;
+            if (data?.message) return data.message;
+            if (typeof data === 'string') return data;
         }
-        if (error?.data?.message) {
-            return error.data.message;
-        }
-        if (typeof error?.data === 'string') {
-            return error.data;
-        }
+
+        if ('message' in error && error.message) return error.message;
+
         return 'Có lỗi xảy ra. Vui lòng thử lại.';
     };
+    // const parseError = (error: any): string => {
+    //     if (error?.data?.Message) {
+    //         return error.data.Message;
+    //     }
+    //     if (error?.data?.message) {
+    //         return error.data.message;
+    //     }
+    //     if (typeof error?.data === 'string') {
+    //         return error.data;
+    //     }
+    //     return 'Có lỗi xảy ra. Vui lòng thử lại.';
+    // };
 
-    // Parse errors
     const ticketsError = ticketsRawError ? parseError(ticketsRawError) : null;
     const lazyTicketsError = lazyTicketsRawError ? parseError(lazyTicketsRawError) : null;
     // const ticketByIdError = ticketByIdRawError ? parseError(ticketByIdRawError) : null;

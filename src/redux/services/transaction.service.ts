@@ -17,12 +17,10 @@ export const transactionApi = createApi({
             async onQueryStarted(arg, { queryFulfilled, dispatch }) {
                 try {
                     const { data } = await queryFulfilled;
-                    // Payment URL returned, can be used to redirect user
                     if (data.data) {
-                        // Optionally handle payment URL
                         console.log('Payment URL:', data.data);
                     }
-                } catch (err: any) {
+                } catch (err) {
                 } finally {
                 }
             },

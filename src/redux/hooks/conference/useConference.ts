@@ -1,15 +1,34 @@
 import { useGetAllConferencesQuery, useGetConferenceByIdQuery, useLazyGetAllConferencesQuery, useLazyGetConferenceByIdQuery } from '@/redux/services/conference.service';
 import { ApiResponse } from '@/types/api.type';
 import { ConferenceResponse } from '@/types/conference.type';
+import { SerializedError } from '@reduxjs/toolkit';
+import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { useCallback } from 'react';
 
+// type ApiError<T = null> = FetchBaseQueryError & {
+//     data?: ApiResponse<T>;
+// };
+
 export const useConference = () => {
-    const parseError = (error: any): string => {
-        if (error?.data?.Message) return error.data.Message;
-        if (error?.data?.message) return error.data.message;
-        if (typeof error?.data === 'string') return error.data;
+    const parseError = (error: FetchBaseQueryError | SerializedError | undefined): string => {
+        if (!error) return 'Có lỗi xảy ra khi tải thông tin hội nghị.';
+
+        if ('data' in error) {
+            const data = error.data as ApiResponse<null>;
+            if (data?.message) return data.message;
+            if (typeof data === 'string') return data;
+        }
+
+        if ('message' in error && error.message) return error.message;
+
         return 'Có lỗi xảy ra khi tải thông tin hội nghị.';
     };
+    // const parseError = (error: any): string => {
+    //     if (error?.data?.Message) return error.data.Message;
+    //     if (error?.data?.message) return error.data.message;
+    //     if (typeof error?.data === 'string') return error.data;
+    //     return 'Có lỗi xảy ra khi tải thông tin hội nghị.';
+    // };
 
     const {
         data: conferencesData,
