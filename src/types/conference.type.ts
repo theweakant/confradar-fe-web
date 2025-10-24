@@ -17,7 +17,7 @@ export interface Conference {
 
   userId: string;
   locationId: string;
-  categoryId: string;          
+  categoryId: string;
 
   policies?: string | null;
   media?: string | null;
@@ -33,16 +33,16 @@ export type ConferenceFormData = Omit<
 
 //basic step
 export interface ConferenceBasicForm {
-  conferenceName: string;          
+  conferenceName: string;
   description?: string;
-  startDate: string;                
-  endDate: string;                  
+  startDate: string;
+  endDate: string;
   capacity?: number;
   address?: string;
-  bannerImageFile?: File | null;   
+  bannerImageFile?: File | null;
   isInternalHosted: boolean;
   isResearchConference: boolean;
-  categoryName: string;            
+  categoryName: string;
 }
 
 //price step
@@ -119,21 +119,21 @@ export interface ConferenceStepFormProps {
   conference?: Conference | null;
   onSave?: (data: ConferenceFormData) => void;
   onCancel?: () => void;
-  mode?: 'create' | 'edit'; 
+  mode?: 'create' | 'edit';
 }
 
 export interface TechConferenceDetail {
-  conferenceId: Conference; 
+  conferenceId: Conference;
   targetAudience: string;
 }
 
 export interface ResearchConferenceDetail {
-  conferenceId: Conference; 
+  conferenceId: Conference;
   name: string;
-  registrationDeadline: string; 
-  reviewDeadline: string; 
-  cameraReadyDeadline: string; 
-  coAuthorSaleDeadline: string; 
+  registrationDeadline: string;
+  reviewDeadline: string;
+  cameraReadyDeadline: string;
+  coAuthorSaleDeadline: string;
   paperTopic: string;
   paperFormat: string;
   numberPaperAccepted: number;
@@ -165,7 +165,7 @@ export type ConferenceTicketType = {
   actualPrice: number;
   ticketPhaseId: string;
   conferenceSessionId?: string | null;
-  conferenceId: Conference; 
+  conferenceId: Conference;
 };
 
 export type TicketPhase = {
@@ -185,13 +185,13 @@ export interface Location {
 }
 
 export interface ConferenceType {
-  conferenceTypeId: string;    
-  conferenceTypeName: string;      
+  conferenceTypeId: string;
+  conferenceTypeName: string;
 }
 
 export interface ConferenceCategory {
-  conferenceCategoryId: string;    
-  conferenceCategoryName: string;      
+  conferenceCategoryId: string;
+  conferenceCategoryName: string;
 }
 
 export interface ConferenceRanking {
@@ -201,7 +201,7 @@ export interface ConferenceRanking {
   referenceUrl?: string;
   fileUrl?: string;
 
-  rankingCategoryId: RankingCategory;       
+  rankingCategoryId: RankingCategory;
 }
 
 export interface RankingCategory {
@@ -281,3 +281,80 @@ export const COUNTRY_OPTIONS: CategoryOption[] = [
   { value: "JP", label: "Japan" },
   { value: "KR", label: "South Korea" }
 ];
+
+export interface ConferenceResponse {
+  conferenceId: string;
+  conferenceName: string;
+  description?: string;
+  startDate?: string;
+  endDate?: string;
+  capacity?: number;
+  address?: string;
+  bannerImageUrl?: string;
+  createdAt?: string;
+  isInternalHosted?: boolean;
+  isResearchConference?: boolean;
+  isActive?: boolean;
+  userId?: string;
+  locationId?: string;
+  categoryId?: string;
+  policies?: ConferencePolicyResponse[];
+  media?: ConferenceMediaResponse[];
+  sponsors?: SponsorResponse[];
+  prices?: ConferencePriceResponse[];
+  sessions?: ConferenceSessionResponse[];
+}
+
+export interface ConferencePolicyResponse {
+  policyId: string;
+  policyName?: string;
+  description?: string;
+}
+
+export interface ConferenceMediaResponse {
+  mediaId: string;
+  mediaUrl?: string;
+  mediaTypeId?: string;
+}
+
+export interface SponsorResponse {
+  sponsorId: string;
+  name?: string;
+  imageUrl?: string;
+}
+
+export interface ConferencePriceResponse {
+  priceId: string;
+  ticketPrice?: number;
+  ticketName?: string;
+  ticketDescription?: string;
+  actualPrice?: number;
+  currentPhase?: string;
+  pricePhaseId?: string;
+}
+
+export interface ConferenceSessionResponse {
+  sessionId: string;
+  title: string;
+  description?: string;
+  startTime?: string;
+  endTime?: string;
+  date?: string;
+  conferenceId?: string;
+  statusId?: string;
+  roomId?: string;
+  room?: RoomInfoResponse;
+  speaker?: SpeakerResponse;
+}
+
+export interface RoomInfoResponse {
+  roomId: string;
+  number?: string;
+  displayName?: string;
+  destinationId?: string;
+}
+
+export interface SpeakerResponse {
+  name: string;
+  description?: string;
+}

@@ -4,8 +4,12 @@ import { Ticket, MapPin, Calendar, Users, ExternalLink, QrCode, Download, Clock 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useTicket } from "@/redux/hooks/ticket/useTicket";
+import { useEffect } from "react";
 
 export default function TicketConferences() {
+  const { tickets, loading, ticketsError, refetchTickets } = useTicket();
+
   const filterOptions = [
     { id: "upcoming", label: "Sắp diễn ra", active: true },
     { id: "today", label: "Hôm nay", active: false },
@@ -14,113 +18,79 @@ export default function TicketConferences() {
     { id: "all", label: "Tất cả", active: false },
   ];
 
-  const ticketConferences = [
-    {
-      id: "1",
-      title: "Vietnam AI & Data Science Conference 2024",
-      date: "Thứ 7, 23 - 25 tháng 11, 2024",
-      location: "TP. Hồ Chí Minh, Việt Nam",
-      ticketType: "VIP Pass",
-      ticketPrice: "1,500,000đ",
-      purchaseDate: "Đã mua: 15 tháng 10, 2024",
-      status: "confirmed",
-      category: "Công nghệ",
-      attendees: 892,
-      venue: "Trung tâm Hội nghị Quốc gia",
-      timeLeft: "Còn 12 ngày",
-      qrCode: "VN-AI-2024-VIP-001234",
-      image: "/images/ai-data-conference.jpg",
-    },
-    {
-      id: "2", 
-      title: "Hội nghị Blockchain & Cryptocurrency Việt Nam",
-      date: "Chủ nhật, 01 - 02 tháng 12, 2024",
-      location: "Hà Nội, Việt Nam",
-      ticketType: "Standard Pass",
-      ticketPrice: "750,000đ",
-      purchaseDate: "Đã mua: 20 tháng 10, 2024",
-      status: "confirmed",
-      category: "Fintech",
-      attendees: 445,
-      venue: "Trung tâm Hội nghị FLC",
-      timeLeft: "Còn 20 ngày",
-      qrCode: "VN-CRYPTO-2024-STD-005678",
-      image: "/images/blockchain-event.jpg",
-    },
-    {
-      id: "3",
-      title: "Vietnam Startup Pitch Competition 2024",
-      date: "Thứ 5, 14 - 15 tháng 12, 2024",
-      location: "Đà Nẵng, Việt Nam", 
-      ticketType: "Investor Pass",
-      ticketPrice: "2,000,000đ",
-      purchaseDate: "Đã mua: 05 tháng 11, 2024",
-      status: "confirmed",
-      category: "Khởi nghiệp",
-      attendees: 234,
-      venue: "Ariyana Convention Centre",
-      timeLeft: "Còn 33 ngày",
-      qrCode: "VN-PITCH-2024-INV-009876",
-      image: "/images/startup-pitch.jpg",
-    },
-    {
-      id: "4",
-      title: "Hội thảo Digital Transformation 2024",
-      date: "Thứ 2, 28 - 29 tháng 10, 2024",
-      location: "Cần Thơ, Việt Nam",
-      ticketType: "Early Bird",
-      ticketPrice: "450,000đ",
-      purchaseDate: "Đã mua: 12 tháng 9, 2024",
-      status: "expired", 
-      category: "Chuyển đổi số",
-      attendees: 567,
-      venue: "Đại học Cần Thơ",
-      timeLeft: "Đã kết thúc",
-      qrCode: "VN-DX-2024-EB-012345",
-      image: "/images/digital-transformation.jpg",
-    },
-  ];
+  useEffect(() => {
+    refetchTickets();
+  }, []);
 
-  const getStatusBadge = (status: string) => {
-    switch(status) {
-      case "confirmed":
-        return <Badge className="bg-green-100 text-green-700">Đã xác nhận</Badge>;
-      case "pending":
-        return <Badge className="bg-yellow-100 text-yellow-700">Chờ xác nhận</Badge>;
-      case "expired":
-        return <Badge className="bg-gray-100 text-gray-700">Đã hết hạn</Badge>;
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
+  const getStatusBadge = (isRefunded?: boolean) => {
+    if (isRefunded) {
+      return <Badge className="bg-gray-800 text-gray-200 border-gray-600">Đã hoàn tiền</Badge>;
     }
+    return <Badge className="bg-green-800 text-green-200 border-green-600">Đã xác nhận</Badge>;
   };
 
-  const getTicketTypeBadge = (type: string) => {
-    const colors = {
-      "VIP Pass": "bg-purple-100 text-purple-700",
-      "Standard Pass": "bg-blue-100 text-blue-700", 
-      "Investor Pass": "bg-gold-100 text-yellow-700",
-      "Early Bird": "bg-green-100 text-green-700"
-    };
-    
-    return (
-      <Badge className={colors[type as keyof typeof colors] || "bg-gray-100 text-gray-700"}>
-        {type}
-      </Badge>
-    );
+  const formatPrice = (price?: number) => {
+    if (!price) return "Miễn phí";
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(price);
   };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "Chưa xác định";
+    return new Intl.DateTimeFormat('vi-VN', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long', 
+      day: 'numeric'
+    }).format(new Date(dateString));
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 p-4 sm:p-6 lg:p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-16">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-400 mx-auto mb-4"></div>
+            <p className="text-gray-400">Đang tải vé của bạn...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (ticketsError) {
+    return (
+      <div className="min-h-screen bg-gray-900 p-4 sm:p-6 lg:p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-16">
+            <div className="text-red-400 mb-4">Có lỗi xảy ra khi tải dữ liệu</div>
+            <p className="text-gray-400">{ticketsError}</p>
+            <Button 
+              onClick={() => refetchTickets()} 
+              className="mt-4 bg-purple-600 hover:bg-purple-700"
+            >
+              Thử lại
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-gray-900 p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Page Title */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <Ticket className="h-8 w-8 text-purple-600" />
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
+            <Ticket className="h-8 w-8 text-purple-400" />
+            <h1 className="text-3xl sm:text-4xl font-bold text-white">
               Vé sự kiện của tôi
             </h1>
           </div>
-          <p className="text-gray-600 text-sm sm:text-base">
+          <p className="text-gray-400 text-sm sm:text-base">
             Quản lý và theo dõi các vé hội nghị bạn đã mua
           </p>
         </div>
@@ -134,8 +104,8 @@ export default function TicketConferences() {
                 variant={option.active ? "default" : "outline"}
                 className={`whitespace-nowrap ${
                   option.active 
-                    ? "bg-black text-white hover:bg-gray-800" 
-                    : "bg-white text-gray-700 hover:bg-gray-50"
+                    ? "bg-purple-600 text-white hover:bg-purple-700 border-purple-600" 
+                    : "bg-gray-800 text-gray-300 hover:bg-gray-700 border-gray-600"
                 }`}
               >
                 {option.label}
@@ -146,8 +116,8 @@ export default function TicketConferences() {
 
         {/* Ticket List */}
         <div className="space-y-6">
-          {ticketConferences.map((ticket) => (
-            <Card key={ticket.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+          {tickets.map((ticket) => (
+            <Card key={ticket.ticketId} className="bg-gray-800 border-gray-700 overflow-hidden hover:shadow-lg hover:shadow-purple-500/10 transition-shadow">
               <div className="flex flex-col lg:flex-row">
                 {/* Content */}
                 <CardContent className="flex-1 p-6">
@@ -155,69 +125,58 @@ export default function TicketConferences() {
                     <div className="flex-1 space-y-3">
                       {/* Date & Status */}
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <div className="flex items-center gap-2 text-sm text-gray-400">
                           <Calendar className="h-4 w-4" />
-                          {ticket.date}
+                          {formatDate(ticket.registeredDate)}
                         </div>
                         <div className="flex items-center gap-2">
-                          {getStatusBadge(ticket.status)}
-                          <Badge variant="secondary" className="w-fit">
-                            {ticket.category}
-                          </Badge>
+                          {getStatusBadge(ticket.isRefunded)}
                         </div>
                       </div>
 
                       {/* Title */}
-                      <h2 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">
-                        {ticket.title}
+                      <h2 className="text-xl sm:text-2xl font-bold text-white leading-tight">
+                        Vé hội nghị #{ticket.ticketId.slice(-8)}
                       </h2>
 
-                      {/* Location & Venue */}
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <MapPin className="h-4 w-4" />
-                          <span className="text-sm">{ticket.location}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-600 ml-6">
-                          <span className="text-sm">{ticket.venue}</span>
-                        </div>
-                      </div>
-
                       {/* Ticket Info */}
-                      <div className="bg-purple-50 p-4 rounded-lg space-y-2">
+                      <div className="bg-gray-700 border border-gray-600 p-4 rounded-lg space-y-2">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                           <div className="flex items-center gap-2">
-                            {getTicketTypeBadge(ticket.ticketType)}
-                            <span className="text-lg font-bold text-purple-700">
-                              {ticket.ticketPrice}
+                            <Badge className="bg-purple-800 text-purple-200 border-purple-600">
+                              Vé tham dự
+                            </Badge>
+                            <span className="text-lg font-bold text-purple-400">
+                              {formatPrice(ticket.actualPrice)}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <div className="flex items-center gap-2 text-sm text-gray-400">
                             <Clock className="h-4 w-4" />
-                            {ticket.timeLeft}
+                            {formatDate(ticket.registeredDate)}
                           </div>
                         </div>
-                        <div className="text-sm text-gray-600">
-                          {ticket.purchaseDate}
+                        <div className="text-sm text-gray-400">
+                          Ngày đăng ký: {formatDate(ticket.registeredDate)}
                         </div>
                         <div className="text-xs text-gray-500 font-mono">
-                          Mã vé: {ticket.qrCode}
+                          Mã vé: {ticket.ticketId}
                         </div>
+                        {ticket.transactionId && (
+                          <div className="text-xs text-gray-500 font-mono">
+                            Mã giao dịch: {ticket.transactionId}
+                          </div>
+                        )}
                       </div>
 
-                      {/* Attendees & Actions */}
+                      {/* Actions */}
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Users className="h-4 w-4" />
-                          <span>{ticket.attendees} người tham gia</span>
-                        </div>
                         <div className="flex gap-2">
-                          {ticket.status === "confirmed" && (
+                          {!ticket.isRefunded && (
                             <>
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="flex items-center gap-2 text-purple-600 border-purple-600 hover:bg-purple-50"
+                                className="flex items-center gap-2 text-purple-400 border-purple-600 hover:bg-purple-900/50 bg-gray-800"
                               >
                                 <QrCode className="h-4 w-4" />
                                 QR Code
@@ -225,7 +184,7 @@ export default function TicketConferences() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="flex items-center gap-2"
+                                className="flex items-center gap-2 text-gray-300 border-gray-600 hover:bg-gray-700 bg-gray-800"
                               >
                                 <Download className="h-4 w-4" />
                                 Tải vé
@@ -235,7 +194,7 @@ export default function TicketConferences() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-2 text-gray-300 border-gray-600 hover:bg-gray-700 bg-gray-800"
                           >
                             Chi tiết
                             <ExternalLink className="h-4 w-4" />
@@ -248,7 +207,7 @@ export default function TicketConferences() {
 
                 {/* Image */}
                 <div className="lg:w-80 lg:flex-shrink-0">
-                  <div className="h-48 lg:h-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
+                  <div className="h-48 lg:h-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
                     <Ticket className="h-16 w-16 text-white/70" />
                   </div>
                 </div>
@@ -258,13 +217,13 @@ export default function TicketConferences() {
         </div>
 
         {/* Empty State */}
-        {ticketConferences.length === 0 && (
+        {tickets.length === 0 && (
           <div className="text-center py-16">
-            <Ticket className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-500 mb-2">
+            <Ticket className="h-16 w-16 text-gray-600 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-400 mb-2">
               Chưa có vé nào
             </h3>
-            <p className="text-gray-400">
+            <p className="text-gray-500">
               Mua vé cho hội nghị đầu tiên của bạn
             </p>
           </div>

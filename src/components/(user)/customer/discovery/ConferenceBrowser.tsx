@@ -13,22 +13,10 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-
-interface Conference {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  date: string;
-  location: string;
-  price: number;
-  rating: number;
-  reviewCount: number;
-  attendees: number;
-  image: string;
-  organizer: string;
-  status: 'upcoming' | 'ongoing' | 'completed';
-}
+import { useConference } from '@/redux/hooks/conference/useConference';
+import { useGetAllCategoriesQuery } from '@/redux/services/category.service';
+import { ConferenceResponse } from '@/types/conference.type';
+import { Category } from '@/types/category.type';
 
 interface SearchSortFilterConferenceProps {
   bannerFilter?: 'technical' | 'research' | 'all';
@@ -51,81 +39,21 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
 
   const itemsPerPage = 12;
 
+  // API calls
+  const { conferences, loading: conferencesLoading, error: conferencesError } = useConference();
+  const { data: categoriesData, isLoading: categoriesLoading, error: categoriesError } = useGetAllCategoriesQuery();
+
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, selectedCategory, selectedLocation, selectedPrice, selectedRating, sortBy, bannerFilter]);
 
-  const mockConferences: Conference[] = [
-    {
-      id: '1',
-      title: 'Hội nghị Công nghệ AI 2024',
-      description: 'Khám phá xu hướng AI và Machine Learning mới nhất',
-      category: 'technical',
-      date: '2024-03-15',
-      location: 'Hà Nội',
-      price: 1500000,
-      rating: 4.8,
-      reviewCount: 156,
-      attendees: 500,
-      image: '/images/customer_route/confbannerbg2.jpg',
-      organizer: 'Tech Vietnam',
-      status: 'upcoming'
-    },
-    {
-      id: '2',
-      title: 'Hội thảo Khởi nghiệp Đổi mới',
-      description: 'Chia sẻ kinh nghiệm và xu hướng khởi nghiệp trong lĩnh vực AI',
-      category: 'technical',
-      date: '2024-04-20',
-      location: 'TP.HCM',
-      price: 800000,
-      rating: 4.6,
-      reviewCount: 89,
-      attendees: 300,
-      image: '/images/customer_route/confbannerbg2.jpg',
-      organizer: 'Startup Hub',
-      status: 'upcoming'
-    },
-    {
-      id: '3',
-      title: 'Hội nghị Y học Hiện đại',
-      description: 'Cập nhật các phương pháp điều trị mới',
-      category: 'research',
-      date: '2024-05-10',
-      location: 'Đà Nẵng',
-      price: 2000000,
-      rating: 4.9,
-      reviewCount: 234,
-      attendees: 400,
-      image: '/images/customer_route/confbannerbg2.jpg',
-      organizer: 'Medical Association',
-      status: 'upcoming'
-    },
-    ...Array.from({ length: 30 }, (_, i) => ({
-      id: `${i + 4}`,
-      title: `Hội nghị Mẫu ${i + 4}`,
-      description: `Mô tả hội nghị mẫu số ${i + 4}`,
-      // category: ['technology', 'business', 'healthcare', 'education'][i % 4],
-      category: ['technical', 'research',][i % 2],
-      date: `2024-0${(i % 9) + 1}-${10 + (i % 20)}`,
-      location: ['Hà Nội', 'TP.HCM', 'Đà Nẵng', 'Cần Thơ'][i % 4],
-      price: (i + 1) * 500000,
-      rating: 4.0 + (i % 10) * 0.1,
-      reviewCount: 50 + (i * 10),
-      attendees: 200 + (i * 20),
-      image: '/images/customer_route/confbannerbg2.jpg',
-      organizer: `Organizer ${i + 4}`,
-      status: 'upcoming' as const
-    }))
-  ];
-
+  // Build categories options from API
   const categories = [
     { value: 'all', label: 'Tất cả danh mục' },
-    { value: 'technical', label: 'Công nghệ' },
-    // { value: 'business', label: 'Kinh doanh' },
-    // { value: 'healthcare', label: 'Y tế' },
-    // { value: 'education', label: 'Giáo dục' },
-    { value: 'research', label: 'Nghiên cứu' }
+    ...(categoriesData?.data?.map((cat: Category) => ({
+      value: cat.categoryId,
+      label: cat.conferenceCategoryName
+    })) || [])
   ];
 
   const locations = [
@@ -160,22 +88,23 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
   ];
 
   // Filter và sort logic
-  const filteredConferences = mockConferences.filter(conf => {
-    const matchesSearch = conf.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      conf.description.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredConferences = conferences.filter((conf: ConferenceResponse) => {
+    const matchesSearch = (conf.conferenceName?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+      (conf.description?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
 
-    const matchesBannerFilter = bannerFilter === 'all' || conf.category === bannerFilter;
+    // Determine category type based on isResearchConference flag
+    const confCategory = conf.isResearchConference ? 'research' : 'technical';
+    const matchesBannerFilter = bannerFilter === 'all' || confCategory === bannerFilter;
 
     const matchesCategory = bannerFilter !== 'all'
       ? true
-      : (selectedCategory === 'all' || conf.category === selectedCategory);
+      : (selectedCategory === 'all' || conf.categoryId === selectedCategory);
 
     const matchesLocation = selectedLocation === 'all' ||
-      conf.location.toLowerCase().includes(locations.find(l => l.value === selectedLocation)?.label.toLowerCase() || '');
-    const matchesRating = selectedRating === 'all' ||
-      (selectedRating === '4plus' && conf.rating >= 4) ||
-      (selectedRating === '4.5plus' && conf.rating >= 4.5) ||
-      (selectedRating === '4.8plus' && conf.rating >= 4.8);
+      (conf.address?.toLowerCase().includes(locations.find(l => l.value === selectedLocation)?.label.toLowerCase() || '') || false);
+
+    // Since API doesn't have rating, we'll skip rating filter for now
+    const matchesRating = selectedRating === 'all';
 
     return matchesSearch && matchesBannerFilter && matchesCategory && matchesLocation && matchesRating;
   });
@@ -196,12 +125,20 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
 
   const sortedConferences = [...filteredConferences].sort((a, b) => {
     switch (sortBy) {
-      case 'price-low': return a.price - b.price;
-      case 'price-high': return b.price - a.price;
-      case 'rating': return b.rating - a.rating;
-      case 'attendees': return b.attendees - a.attendees;
+      case 'price-low': 
+        // Since API doesn't have direct price, we'll sort by capacity as alternative
+        return (a.capacity || 0) - (b.capacity || 0);
+      case 'price-high': 
+        return (b.capacity || 0) - (a.capacity || 0);
+      case 'rating': 
+        // Sort by name as alternative since no rating in API
+        return (a.conferenceName || '').localeCompare(b.conferenceName || '');
+      case 'attendees': 
+        // Sort by capacity as closest to attendees
+        return (b.capacity || 0) - (a.capacity || 0);
       case 'date':
-      default: return new Date(a.date).getTime() - new Date(b.date).getTime();
+      default: 
+        return new Date(a.startDate || '').getTime() - new Date(b.startDate || '').getTime();
     }
   });
 
@@ -351,44 +288,59 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
           <h2 className="text-xl font-semibold text-white">
             Kết quả ({sortedConferences.length} hội nghị)
           </h2>
+          {conferencesLoading && (
+            <div className="text-sm text-blue-400">Đang tải...</div>
+          )}
           <div className="text-sm text-gray-400">
             Trang {currentPage} / {totalPages}
           </div>
         </div>
 
+        {/* Loading State */}
+        {conferencesLoading && (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {conferencesError && (
+          <div className="flex justify-center items-center py-12">
+            <div className="text-red-400 text-center">
+              <p>Có lỗi xảy ra khi tải dữ liệu hội nghị</p>
+              <p className="text-sm mt-2">{conferencesError}</p>
+            </div>
+          </div>
+        )}
+
         {/* Conference Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-          {paginatedConferences.map((conference) => (
-            <div key={conference.id}
-              onClick={() => router.push(`/customer/discovery/conference-detail/${conference.id}`)}
-              className="group relative bg-gray-800/80 rounded-xl border border-gray-700 overflow-hidden 
-             cursor-pointer transition-all duration-500 
+          {paginatedConferences.map((conference: ConferenceResponse) => (
+            <div key={conference.conferenceId}
+              onClick={() => router.push(`/customer/discovery/conference-detail/${conference.conferenceId}`)}
+              className="group relative bg-gray-800/80 rounded-xl border border-gray-700 overflow-hidden
+             cursor-pointer transition-all duration-500
              hover:scale-[1.03] hover:border-blue-500 hover:shadow-[0_12px_30px_rgba(59,130,246,0.4)]"
-            // className="bg-gray-800/80 rounded-xl border border-gray-700 overflow-hidden hover:border-blue-400 hover:shadow-[0_8px_20px_rgba(59,130,246,0.3)] transition-all duration-300 hover:scale-[1.02]"
-            // className="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden hover:border-blue-500 transition-colors"
             >
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-blue-500/10 via-transparent to-blue-500/10 blur-xl"></div>
               </div>
 
               {/* Conference Image */}
-              {/* <div className="aspect-video bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center"> */}
               <div className="relative aspect-video overflow-hidden">
-                {/* <Calendar size={48} className="text-white opacity-60" /> */}
                 <Image
-                  src={conference.image}
-                  alt={conference.title}
+                  src={conference.bannerImageUrl || '/images/customer_route/confbannerbg2.jpg'}
+                  alt={conference.conferenceName || 'Conference'}
+                  fill
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:brightness-110"
-                // className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent"></div>
               </div>
 
               {/* Conference Info */}
               <div className="p-4">
-                {/* <h3 className="font-semibold text-white mb-2 line-clamp-2">{conference.title}</h3> */}
                 <h3 className="font-semibold text-white mb-2 line-clamp-2 group-hover:text-blue-400 transition-colors duration-300">
-                  {conference.title}
+                  {conference.conferenceName}
                 </h3>
                 <p className="text-sm text-gray-400 mb-3 line-clamp-2">{conference.description}</p>
 
@@ -396,34 +348,29 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
                 <div className="flex items-center gap-4 mb-3 text-xs text-gray-400">
                   <div className="flex items-center gap-1">
                     <Calendar size={12} />
-                    <span>{formatDate(conference.date)}</span>
+                    <span>{formatDate(conference.startDate || '')}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <MapPin size={12} />
-                    <span>{conference.location}</span>
+                    <span>{conference.address}</span>
                   </div>
                 </div>
 
-                {/* Rating & Attendees */}
+                {/* Capacity & Type */}
                 <div className="flex items-center justify-between mb-3">
-                  {/* <div className="flex items-center gap-1">
-                    <Star size={12} className="text-yellow-400 fill-current" />
-                    <span className="text-sm text-white">{conference.rating}</span>
-                    <span className="text-xs text-gray-400">({conference.reviewCount})</span>
-                  </div> */}
                   <div className="flex items-center gap-1 text-xs text-gray-400">
                     <Users size={12} />
-                    <span>{conference.attendees}</span>
+                    <span>{conference.capacity}</span>
+                  </div>
+                  <div className="text-xs text-blue-400">
+                    {conference.isResearchConference ? 'Nghiên cứu' : 'Công nghệ'}
                   </div>
                 </div>
 
-                {/* Price & Organizer */}
+                {/* Date range */}
                 <div className="flex items-center justify-between">
-                  {/* <div className="text-lg font-semibold text-blue-400">
-                    {formatPrice(conference.price)}
-                  </div> */}
                   <div className="text-xs text-gray-400">
-                    {conference.organizer}
+                    {conference.endDate && formatDate(conference.endDate)}
                   </div>
                 </div>
               </div>
@@ -479,3 +426,334 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
 };
 
 export default ConferenceBrowser;
+
+
+//version chụp report 3
+// "use client";
+
+// import React, { useEffect, useState } from "react";
+// import {
+//   Search,
+//   Filter,
+//   Calendar,
+//   MapPin,
+//   Users,
+//   ChevronDown,
+//   ChevronLeft,
+//   ChevronRight,
+// } from "lucide-react";
+// import { useRouter } from "next/navigation";
+// import Image from "next/image";
+
+// interface Conference {
+//   id: string;
+//   title: string;
+//   description: string;
+//   category: string;
+//   date: string;
+//   location: string;
+//   price: number;
+//   rating: number;
+//   reviewCount: number;
+//   attendees: number;
+//   image: string;
+//   organizer: string;
+//   status: "upcoming" | "ongoing" | "completed";
+// }
+
+// interface SearchSortFilterConferenceProps {
+//   bannerFilter?: "technical" | "research" | "all";
+// }
+
+// const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
+//   bannerFilter = "all",
+// }) => {
+//   const router = useRouter();
+//   const [searchQuery, setSearchQuery] = useState("");
+//   const [selectedCategory, setSelectedCategory] = useState("all");
+//   const [selectedLocation, setSelectedLocation] = useState("all");
+//   const [selectedPrice, setSelectedPrice] = useState("all");
+//   const [selectedRating, setSelectedRating] = useState("all");
+//   const [sortBy, setSortBy] = useState("date");
+//   const [currentPage, setCurrentPage] = useState(1);
+//   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+
+//   const itemsPerPage = 12;
+
+//   useEffect(() => {
+//     setCurrentPage(1);
+//   }, [
+//     searchQuery,
+//     selectedCategory,
+//     selectedLocation,
+//     selectedPrice,
+//     selectedRating,
+//     sortBy,
+//     bannerFilter,
+//   ]);
+
+//   const mockConferences: Conference[] = Array.from({ length: 12 }, (_, i) => ({
+//     id: `${i + 1}`,
+//     title: `Hội nghị Mẫu ${i + 1}`,
+//     description: `Mô tả hội nghị ngắn gọn số ${i + 1}`,
+//     category: i % 2 === 0 ? "technical" : "research",
+//     date: `2025-0${(i % 9) + 1}-${10 + (i % 20)}`,
+//     location: ["Hà Nội", "TP.HCM", "Đà Nẵng", "Cần Thơ"][i % 4],
+//     price: (i + 1) * 500000,
+//     rating: 4.2,
+//     reviewCount: 100,
+//     attendees: 300 + i * 10,
+//     image: "https://placehold.co/600x400?text=Conference+Image",
+//     organizer: `Organizer ${i + 1}`,
+//     status: "upcoming",
+//   }));
+
+//   const categories = [
+//     { value: "all", label: "Tất cả danh mục" },
+//     { value: "technical", label: "Công nghệ" },
+//     { value: "research", label: "Nghiên cứu" },
+//   ];
+
+//   const locations = [
+//     { value: "all", label: "Tất cả địa điểm" },
+//     { value: "hanoi", label: "Hà Nội" },
+//     { value: "hcm", label: "TP.HCM" },
+//     { value: "danang", label: "Đà Nẵng" },
+//     { value: "cantho", label: "Cần Thơ" },
+//   ];
+
+//   const ratings = [
+//     { value: "all", label: "Tất cả đánh giá" },
+//     { value: "4plus", label: "4+ sao" },
+//     { value: "4.5plus", label: "4.5+ sao" },
+//   ];
+
+//   const sortOptions = [
+//     { value: "date", label: "Ngày diễn ra" },
+//     { value: "price-low", label: "Giá thấp đến cao" },
+//     { value: "price-high", label: "Giá cao đến thấp" },
+//   ];
+
+//   const filtered = mockConferences.filter((conf) => {
+//     const matchesSearch =
+//       conf.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+//       conf.description.toLowerCase().includes(searchQuery.toLowerCase());
+//     const matchesCategory =
+//       selectedCategory === "all" || conf.category === selectedCategory;
+//     const matchesLocation =
+//       selectedLocation === "all" ||
+//       conf.location
+//         .toLowerCase()
+//         .includes(
+//           locations.find((l) => l.value === selectedLocation)?.label.toLowerCase() ||
+//           ""
+//         );
+//     const matchesRating =
+//       selectedRating === "all" ||
+//       (selectedRating === "4plus" && conf.rating >= 4) ||
+//       (selectedRating === "4.5plus" && conf.rating >= 4.5);
+//     return matchesSearch && matchesCategory && matchesLocation && matchesRating;
+//   });
+
+//   const sorted = [...filtered].sort((a, b) => {
+//     switch (sortBy) {
+//       case "price-low":
+//         return a.price - b.price;
+//       case "price-high":
+//         return b.price - a.price;
+//       default:
+//         return new Date(a.date).getTime() - new Date(b.date).getTime();
+//     }
+//   });
+
+//   const totalPages = Math.ceil(sorted.length / itemsPerPage);
+//   const startIndex = (currentPage - 1) * itemsPerPage;
+//   const paginated = sorted.slice(startIndex, startIndex + itemsPerPage);
+
+//   const formatDate = (dateString: string) => {
+//     const d = new Date(dateString);
+//     return `${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1)
+//       .toString()
+//       .padStart(2, "0")}/${d.getFullYear()}`;
+//   };
+
+//   const DropdownSelect = ({
+//     id,
+//     value,
+//     options,
+//     onChange,
+//     placeholder,
+//   }: {
+//     id: string;
+//     value: string;
+//     options: { value: string; label: string }[];
+//     onChange: (v: string) => void;
+//     placeholder: string;
+//   }) => (
+//     <div className="relative">
+//       <button
+//         onClick={() => setOpenDropdown(openDropdown === id ? null : id)}
+//         className="w-full flex items-center justify-between px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-700 hover:border-gray-400"
+//       >
+//         <span className="text-sm">
+//           {options.find((opt) => opt.value === value)?.label || placeholder}
+//         </span>
+//         <ChevronDown size={16} />
+//       </button>
+
+//       {openDropdown === id && (
+//         <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-sm max-h-56 overflow-y-auto">
+//           {options.map((opt) => (
+//             <button
+//               key={opt.value}
+//               onClick={() => {
+//                 onChange(opt.value);
+//                 setOpenDropdown(null);
+//               }}
+//               className="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+//             >
+//               {opt.label}
+//             </button>
+//           ))}
+//         </div>
+//       )}
+//     </div>
+//   );
+
+//   return (
+//     <div className="bg-white text-gray-800 min-h-screen p-6">
+//       <div className="max-w-6xl mx-auto">
+//         {/* Search */}
+//         <div className="mb-6">
+//           <div className="relative max-w-xl mx-auto">
+//             <Search
+//               className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+//               size={18}
+//             />
+//             <input
+//               type="text"
+//               placeholder="Tìm kiếm hội nghị..."
+//               value={searchQuery}
+//               onChange={(e) => setSearchQuery(e.target.value)}
+//               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-400 focus:border-blue-400 text-sm"
+//             />
+//           </div>
+//         </div>
+
+//         {/* Filters */}
+//         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-8">
+//           <div className="flex items-center gap-2 mb-4 text-gray-700">
+//             <Filter size={18} />
+//             <h3 className="font-medium text-base">Bộ lọc</h3>
+//           </div>
+//           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+//             <DropdownSelect
+//               id="category"
+//               value={selectedCategory}
+//               options={categories}
+//               onChange={setSelectedCategory}
+//               placeholder="Danh mục"
+//             />
+//             <DropdownSelect
+//               id="location"
+//               value={selectedLocation}
+//               options={locations}
+//               onChange={setSelectedLocation}
+//               placeholder="Địa điểm"
+//             />
+//             <DropdownSelect
+//               id="rating"
+//               value={selectedRating}
+//               options={ratings}
+//               onChange={setSelectedRating}
+//               placeholder="Đánh giá"
+//             />
+//             <DropdownSelect
+//               id="sort"
+//               value={sortBy}
+//               options={sortOptions}
+//               onChange={setSortBy}
+//               placeholder="Sắp xếp"
+//             />
+//           </div>
+//         </div>
+
+//         {/* Results */}
+//         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+//           {paginated.map((conf) => (
+//             <div
+//               key={conf.id}
+//               onClick={() =>
+//                 router.push(`/customer/discovery/conference-detail/${conf.id}`)
+//               }
+//               className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition cursor-pointer"
+//             >
+//               <div className="relative aspect-video">
+//                 <Image
+//                   src={conf.image}
+//                   alt={conf.title}
+//                   fill
+//                   className="object-cover"
+//                 />
+//               </div>
+//               <div className="p-3">
+//                 <h3 className="font-semibold text-gray-800 text-sm mb-1 line-clamp-2">
+//                   {conf.title}
+//                 </h3>
+//                 <p className="text-xs text-gray-500 mb-2 line-clamp-2">
+//                   {conf.description}
+//                 </p>
+
+//                 <div className="flex items-center justify-between text-xs text-gray-500">
+//                   <div className="flex items-center gap-1">
+//                     <Calendar size={12} />
+//                     <span>{formatDate(conf.date)}</span>
+//                   </div>
+//                   <div className="flex items-center gap-1">
+//                     <MapPin size={12} />
+//                     <span>{conf.location}</span>
+//                   </div>
+//                 </div>
+
+//                 <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
+//                   <div className="flex items-center gap-1">
+//                     <Users size={12} />
+//                     <span>{conf.attendees}</span>
+//                   </div>
+//                   <span className="text-gray-400">{conf.organizer}</span>
+//                 </div>
+//               </div>
+//             </div>
+//           ))}
+//         </div>
+
+//         {/* Pagination */}
+//         {totalPages > 1 && (
+//           <div className="flex justify-center items-center gap-2 mt-8">
+//             <button
+//               onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+//               disabled={currentPage === 1}
+//               className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-100 disabled:opacity-50"
+//             >
+//               <ChevronLeft size={14} className="inline mr-1" />
+//               Trước
+//             </button>
+//             <span className="text-sm text-gray-500">
+//               Trang {currentPage} / {totalPages}
+//             </span>
+//             <button
+//               onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+//               disabled={currentPage === totalPages}
+//               className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-100 disabled:opacity-50"
+//             >
+//               Sau
+//               <ChevronRight size={14} className="inline ml-1" />
+//             </button>
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default ConferenceBrowser;
