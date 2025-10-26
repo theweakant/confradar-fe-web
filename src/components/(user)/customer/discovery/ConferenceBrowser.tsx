@@ -33,6 +33,8 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
   const [selectedLocation, setSelectedLocation] = useState('all');
   const [selectedPrice, setSelectedPrice] = useState('all');
   const [selectedRating, setSelectedRating] = useState('all');
+  const [startDateFilter, setStartDateFilter] = useState<string | null>(null);
+  const [endDateFilter, setEndDateFilter] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState('date');
   const [currentPage, setCurrentPage] = useState(1);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -92,7 +94,6 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
     const matchesSearch = (conf.conferenceName?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
       (conf.description?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
 
-    // Determine category type based on isResearchConference flag
     const confCategory = conf.isResearchConference ? 'research' : 'technical';
     const matchesBannerFilter = bannerFilter === 'all' || confCategory === bannerFilter;
 
@@ -103,10 +104,20 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
     const matchesLocation = selectedLocation === 'all' ||
       (conf.address?.toLowerCase().includes(locations.find(l => l.value === selectedLocation)?.label.toLowerCase() || '') || false);
 
-    // Since API doesn't have rating, we'll skip rating filter for now
     const matchesRating = selectedRating === 'all';
 
-    return matchesSearch && matchesBannerFilter && matchesCategory && matchesLocation && matchesRating;
+    const confStartTime = new Date(conf.startDate || '');
+    const confEndTime = new Date(conf.endDate || '');
+    let matchesDate = true;
+
+    if (startDateFilter) {
+      matchesDate = matchesDate && confEndTime >= new Date(startDateFilter);
+    }
+    if (endDateFilter) {
+      matchesDate = matchesDate && confStartTime <= new Date(endDateFilter);
+    }
+
+    return matchesSearch && matchesBannerFilter && matchesCategory && matchesLocation && matchesRating && matchesDate;
   });
 
   // const filteredConferences = mockConferences.filter(conf => {
@@ -125,19 +136,19 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
 
   const sortedConferences = [...filteredConferences].sort((a, b) => {
     switch (sortBy) {
-      case 'price-low': 
+      case 'price-low':
         // Since API doesn't have direct price, we'll sort by capacity as alternative
         return (a.capacity || 0) - (b.capacity || 0);
-      case 'price-high': 
+      case 'price-high':
         return (b.capacity || 0) - (a.capacity || 0);
-      case 'rating': 
+      case 'rating':
         // Sort by name as alternative since no rating in API
         return (a.conferenceName || '').localeCompare(b.conferenceName || '');
-      case 'attendees': 
+      case 'attendees':
         // Sort by capacity as closest to attendees
         return (b.capacity || 0) - (a.capacity || 0);
       case 'date':
-      default: 
+      default:
         return new Date(a.startDate || '').getTime() - new Date(b.startDate || '').getTime();
     }
   });
@@ -245,34 +256,66 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            <DropdownSelect
-              id="category"
-              value={selectedCategory}
-              options={categories}
-              onChange={setSelectedCategory}
-              placeholder="Danh mục"
-            />
-            <DropdownSelect
+            <div className="flex flex-col w-full">
+              <label className="text-xs text-gray-300 mb-1">Danh mục</label>
+              <DropdownSelect
+                id="category"
+                value={selectedCategory}
+                options={categories}
+                onChange={setSelectedCategory}
+                placeholder="Danh mục"
+              />
+            </div>
+
+            {/* Start Date */}
+            <div className="flex flex-col w-full">
+              <label className="text-xs text-gray-300 mb-1">Ngày bắt đầu</label>
+              <input
+                type="date"
+                value={startDateFilter || ''}
+                onChange={(e) => setStartDateFilter(e.target.value)}
+                className="w-full px-4 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg shadow-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* End Date */}
+            <div className="flex flex-col w-full">
+              <label className="text-xs text-gray-300 mb-1">Ngày kết thúc</label>
+              <input
+                type="date"
+                value={endDateFilter || ''}
+                onChange={(e) => setEndDateFilter(e.target.value)}
+                className="w-full px-4 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg shadow-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* <DropdownSelect
               id="location"
               value={selectedLocation}
               options={locations}
               onChange={setSelectedLocation}
               placeholder="Địa điểm"
-            />
-            <DropdownSelect
-              id="price"
-              value={selectedPrice}
-              options={priceRanges}
-              onChange={setSelectedPrice}
-              placeholder="Mức giá"
-            />
-            <DropdownSelect
-              id="rating"
-              value={selectedRating}
-              options={ratings}
-              onChange={setSelectedRating}
-              placeholder="Đánh giá"
-            />
+            /> */}
+            <div className="flex flex-col w-full">
+              <label className="text-xs text-gray-300 mb-1">Mức giá</label>
+              <DropdownSelect
+                id="price"
+                value={selectedPrice}
+                options={priceRanges}
+                onChange={setSelectedPrice}
+                placeholder="Chọn mức giá"
+              />
+            </div>
+            <div className="flex flex-col w-full">
+              <label className="text-xs text-gray-300 mb-1">Đánh giá</label>
+              <DropdownSelect
+                id="rating"
+                value={selectedRating}
+                options={ratings}
+                onChange={setSelectedRating}
+                placeholder="Chọn đánh giá"
+              />
+            </div>
             <DropdownSelect
               id="sort"
               value={sortBy}
