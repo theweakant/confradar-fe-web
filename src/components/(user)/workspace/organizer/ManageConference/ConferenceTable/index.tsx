@@ -13,17 +13,17 @@ import {
 
 import { DataTable, Column } from "@/components/molecules/DataTable";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Conference } from "@/types/conference.type";
+import { ConferenceResponse } from "@/types/conference.type";
 
 interface ConferenceTableProps {
-  conferences: Conference[];
-  onView: (conference: Conference) => void;
-  onEdit: (conference: Conference) => void;
+  conferences: ConferenceResponse[];
+  onView: (conference: ConferenceResponse) => void;
+  onEdit: (conference: ConferenceResponse) => void;
   onDelete: (id: string) => void;
 }
 
 export function ConferenceTable({ conferences, onView, onEdit, onDelete }: ConferenceTableProps) {
-  const columns: Column<Conference>[] = [
+  const columns: Column<ConferenceResponse>[] = [
     {
       key: "conferenceName",
       header: "Hội thảo",
@@ -44,10 +44,14 @@ export function ConferenceTable({ conferences, onView, onEdit, onDelete }: Confe
           <Calendar className="w-4 h-4" />
           <div>
             <p className="text-sm whitespace-nowrap">
-              {new Date(conference.startDate).toLocaleDateString("vi-VN")}
+              {conference.startDate
+                ? new Date(conference.startDate).toLocaleDateString("vi-VN")
+                : "Chưa xác định"}
             </p>
             <p className="text-xs text-gray-500">
-              đến {new Date(conference.endDate).toLocaleDateString("vi-VN")}
+              {conference.endDate
+                ? `đến ${new Date(conference.endDate).toLocaleDateString("vi-VN")}`
+                : ""}
             </p>
           </div>
         </div>

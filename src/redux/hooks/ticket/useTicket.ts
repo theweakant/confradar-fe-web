@@ -2,7 +2,7 @@ import { useGetOwnPaidTicketsQuery, useLazyGetOwnPaidTicketsQuery } from '@/redu
 import { ApiResponse } from '@/types/api.type';
 import { SerializedError } from '@reduxjs/toolkit';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
-import { useEffect } from 'react';
+// import { useEffect } from 'react';
 
 
 export const useTicket = () => {

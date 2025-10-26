@@ -5,6 +5,8 @@ import { useFirebaseLogin } from "@/hooks/useFirebaseLogin"
 import { validateLoginForm } from "@/helper/validation"
 import { getRouteByRole } from "@/constants/roles"
 import type { LoginFormData, FormErrors } from "@/types/auth.type"
+import { toast } from "sonner"
+  
 
 export const useLoginForm = () => {
   const router = useRouter()
@@ -40,6 +42,10 @@ export const useLoginForm = () => {
       })
     
       if (success && user) {
+
+        toast.success("Đăng nhập thành công!", {
+          description: `Chào mừng ${user.email}`,
+        })
         const redirectUrl = getRouteByRole(user.role ?? "")
         router.push(redirectUrl)
       } else {

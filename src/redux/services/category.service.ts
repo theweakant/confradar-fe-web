@@ -17,7 +17,6 @@ export const categoryApi = createApi({
       providesTags: ["Category"],
     }),
 
-
     getCategoryById: builder.query<ApiResponse<Category>, string>({
       query: (id) => ({
         url: `${endpoint.CATEGORY.DETAIL}/${id}`,
@@ -25,6 +24,7 @@ export const categoryApi = createApi({
       }),
       providesTags: ["Category"],
     }),
+
 
  
     createCategory: builder.mutation<ApiResponse<string>, CategoryFormData>({

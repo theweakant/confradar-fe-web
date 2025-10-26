@@ -6,7 +6,7 @@ export const endpoint = {
     REFRESH: "/Auth/refresh-token",
     GOOGLE: "Auth/firebase-login",
     FORGET_PASSWORD: "/Auth/forget-password",
-    VERIFY_FORGET_PASSWORD: "verify-forget-password"
+    VERIFY_FORGET_PASSWORD: "/Auth/verify-forget-password"
   },
   DESTINATION: {
     LIST: "/Destination",
@@ -35,6 +35,7 @@ export const endpoint = {
     CREATE: "/Conference",
     UPDATE: "/Conference",
     DELETE: "/Conference",
+    VIEW_REGISTERED_USERS: "/Conference/view-registered-users-for-conference",
   },
 
   CONFERENCE_STEP: {
@@ -46,12 +47,14 @@ export const endpoint = {
     CREATE_SPONSOR: (conferenceId: string) => `/ConferenceStep/${conferenceId}/sponsors`,
 
     UPDATE_BASIC: (conferenceId: string) => `/ConferenceStep/${conferenceId}/basic`,
-    UPDATE_PRICE: (conferenceId: string) => `/ConferenceStep/${conferenceId}/prices`,
-    UPDATE_SESSION: (conferenceId: string) => `/ConferenceStep/${conferenceId}/sessions`,
-    UPDATE_POLICY: (conferenceId: string) => `/ConferenceStep/${conferenceId}/policies`,
-    UPDATE_MEDIA: (conferenceId: string) => `/ConferenceStep/${conferenceId}/media`,
-    UPDATE_SPONSOR: (conferenceId: string) => `/ConferenceStep/${conferenceId}/sponsors`,
+    UPDATE_PRICE: (priceId: string) => `/ConferenceStep/prices/${priceId}`,
+    UPDATE_SESSION: (sessionId: string) => `/ConferenceStep/sessions/${sessionId}`,
+    UPDATE_SPEAKER: (sessionId: string) => `/ConferenceStep/sessions/${sessionId}/speaker`,
+    UPDATE_POLICY: (policyId: string) => `/ConferenceStep/policies/${policyId}`,
+    UPDATE_MEDIA: (mediaId: string) => `/ConferenceStep/media/${mediaId}`,
+    UPDATE_SPONSOR: (sponsorId: string) => `/ConferenceStep/sponsors/${sponsorId}`,
 
+    GET_BASIC: (conferenceId: string) => `/ConferenceStep/${conferenceId}/basic`,
   },
 
 

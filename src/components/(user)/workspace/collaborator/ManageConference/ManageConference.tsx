@@ -69,10 +69,8 @@ export default function ManageConference() {
       conf.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       conf.address.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesCategory = filterCategory === "all" || conf.conferenceCategoryId === filterCategory;
-    const matchesStatus = filterStatus === "all" || conf.globalStatusId === filterStatus;
 
-    return matchesSearch && matchesCategory && matchesStatus;
+    return matchesSearch;
   });
 
   const handleCreate = () => {
@@ -123,9 +121,9 @@ export default function ManageConference() {
   };
 
   const totalConferences = conferences.length;
-  const upcomingConferences = conferences.filter(c => c.globalStatusId === "open").length;
-  const ongoingConferences = conferences.filter(c => c.globalStatusId === "ongoing").length;
-  const completedConferences = conferences.filter(c => c.globalStatusId === "completed").length;
+  // const upcomingConferences = conferences.filter(c => c.globalStatusId === "open").length;
+  // const ongoingConferences = conferences.filter(c => c.globalStatusId === "ongoing").length;
+  // const completedConferences = conferences.filter(c => c.globalStatusId === "completed").length;
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -170,24 +168,6 @@ export default function ManageConference() {
             value={totalConferences}
             icon={<Calendar className="w-10 h-10" />}
             color="blue"
-          />
-          <StatCard
-            title="Đang mở đăng ký"
-            value={upcomingConferences}
-            icon={<Clock className="w-10 h-10" />}
-            color="purple"
-          />
-          <StatCard
-            title="Đang diễn ra"
-            value={ongoingConferences}
-            icon={<Users className="w-10 h-10" />}
-            color="green"
-          />
-          <StatCard
-            title="Đã kết thúc"
-            value={completedConferences}
-            icon={<FileText className="w-10 h-10" />}
-            color="orange"
           />
         </div>
 

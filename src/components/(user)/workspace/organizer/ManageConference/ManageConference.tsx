@@ -2,12 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { 
-  Plus,  
-  Calendar,
-  Microscope,
-  Cpu,
-} from "lucide-react";
+import { Plus, Calendar, Microscope, Cpu } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,20 +22,20 @@ import { SearchFilter } from "@/components/molecules/SearchFilter";
 
 import { ConferenceDetail } from "@/components/(user)/workspace/organizer/ManageConference/ConferenceDetail/index";
 import { ConferenceTable } from "@/components/(user)/workspace/organizer/ManageConference/ConferenceTable/index";
-import { Conference, ConferenceFormData } from "@/types/conference.type";
+import { ConferenceFormData, ConferenceResponse } from "@/types/conference.type";
 
 import { ConferenceStepForm } from "@/components/(user)/workspace/organizer/ManageConference/ConferenceForm/TechForm";
 
 // Import API hooks
 import {
   useGetAllConferencesQuery,
-  useDeleteConferenceMutation,
+  useGetConferenceByIdQuery,
+  useDeleteConferenceMutation
 } from "@/redux/services/conference.service";
 
-type ConferenceType = boolean | null; 
+type ConferenceType = boolean | null;
 
 export default function ManageConference() {
-
   // API Hooks
   const { data: conferencesData, isLoading, isError } = useGetAllConferencesQuery();
   const [deleteConferenceMutation, { isLoading: isDeleting }] = useDeleteConferenceMutation();
@@ -49,10 +44,29 @@ export default function ManageConference() {
   const [filterCategory, setFilterCategory] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [editingConference, setEditingConference] = useState<Conference | null>(null);
-  const [viewingConference, setViewingConference] = useState<Conference | null>(null);
+  const [editingConference, setEditingConference] = useState<ConferenceResponse | null>(null);
+  const [viewingConferenceId, setViewingConferenceId] = useState<string | null>(null);
   const [deleteConferenceId, setDeleteConferenceId] = useState<string | null>(null);
   const [selectedConferenceType, setSelectedConferenceType] = useState<ConferenceType>(null);
+
+  // Fetch conference detail when viewing
+  const {
+    data: conferenceDetailData,
+    isLoading: isDetailLoading,
+    isError: isDetailError,
+  } = useGetConferenceByIdQuery(viewingConferenceId!, {
+    skip: !viewingConferenceId,
+  });
+
+  // Fetch conference detail for editing
+const conferenceId = editingConference?.conferenceId;
+
+const {
+  data: editConferenceData,
+  isLoading: isEditLoading,
+} = useGetConferenceByIdQuery(conferenceId ?? "", {
+  skip: !conferenceId,
+});
 
   const categoryOptions = [
     { value: "all", label: "Tất cả danh mục" },
@@ -65,11 +79,10 @@ export default function ManageConference() {
   // Get conferences from API
   const conferences = conferencesData?.data || [];
 
-  const filteredConferences = conferences.filter(conf => {
-    const matchesSearch = 
-      conf.conferenceName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      conf.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      conf.locationId.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredConferences = conferences.filter((conf) => {
+    const matchesSearch = conf.conferenceName
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
 
     const matchesCategory = filterCategory === "all" || conf.categoryId === filterCategory;
 
@@ -82,20 +95,18 @@ export default function ManageConference() {
     setIsModalOpen(true);
   };
 
-  const handleEdit = (conference: Conference) => {
+  const handleEdit = (conference: ConferenceResponse) => {
     setEditingConference(conference);
-    setSelectedConferenceType(conference.isResearchConference); 
+    setSelectedConferenceType(conference.isResearchConference ?? false);
     setIsModalOpen(true);
   };
 
-  const handleView = (conference: Conference) => {
-    setViewingConference(conference);
+  const handleView = (conference: ConferenceResponse) => {
+    setViewingConferenceId(conference.conferenceId);
     setIsDetailOpen(true);
   };
 
   const handleSave = (_data: ConferenceFormData) => {
-    // Note: Create/Update logic should be handled in ConferenceStepForm
-    // using useCreateConferenceMutation or useUpdateConferenceMutation
     setIsModalOpen(false);
     setEditingConference(null);
     setSelectedConferenceType(null);
@@ -122,6 +133,17 @@ export default function ManageConference() {
     setSelectedConferenceType(type);
   };
 
+  const handleCloseDetail = () => {
+    setIsDetailOpen(false);
+    setViewingConferenceId(null);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsModalOpen(false);
+    setEditingConference(null);
+    setSelectedConferenceType(null);
+  };
+
   const totalConferences = conferences.length;
 
   // Loading state
@@ -142,9 +164,7 @@ export default function ManageConference() {
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4">Không thể tải dữ liệu hội thảo</p>
-          <Button onClick={() => window.location.reload()}>
-            Thử lại
-          </Button>
+          <Button onClick={() => window.location.reload()}>Thử lại</Button>
         </div>
       </div>
     );
@@ -164,9 +184,7 @@ export default function ManageConference() {
               Thêm hội thảo
             </Button>
           </div>
-          <p className="text-gray-600 mt-2">
-            Quản lý thông tin các hội thảo trên ConfRadar
-          </p>
+          <p className="text-gray-600 mt-2">Quản lý thông tin các hội thảo trên ConfRadar</p>
         </div>
 
         <SearchFilter
@@ -193,8 +211,8 @@ export default function ManageConference() {
 
         <div className="flex justify-end mb-4">
           <Link href="/workspace/organizer/manage-conference/pending-conference">
-            <Button 
-              variant="link" 
+            <Button
+              variant="link"
               className="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1.5"
             >
               Xem hội nghị đang chờ duyệt
@@ -213,17 +231,13 @@ export default function ManageConference() {
       {/* Modal for Creating/Editing Conference */}
       <Modal
         isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setEditingConference(null);
-          setSelectedConferenceType(null);
-        }}
+        onClose={handleCloseEditModal}
         title={
-          editingConference 
-            ? "Chỉnh sửa hội thảo" 
+          editingConference
+            ? "Chỉnh sửa hội thảo"
             : selectedConferenceType !== null
-              ? "Thêm hội thảo/ hội nghị mới"
-              : "Chọn loại hội thảo"
+            ? "Thêm hội thảo/ hội nghị mới"
+            : "Chọn loại hội thảo"
         }
         size="lg"
       >
@@ -271,33 +285,29 @@ export default function ManageConference() {
           </div>
         ) : selectedConferenceType === false ? (
           // Tech Conference Form
-          <ConferenceStepForm
-            conference={editingConference}
-            onSave={handleSave}
-            onCancel={() => {
-              setIsModalOpen(false);
-              setEditingConference(null);
-              setSelectedConferenceType(null);
-            }}
-          />
+          editingConference && isEditLoading ? (
+            <div className="py-12 flex items-center justify-center">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Đang tải dữ liệu hội thảo...</p>
+              </div>
+            </div>
+          ) : (
+            <ConferenceStepForm
+              conference={editingConference ? editConferenceData?.data : null}
+              onSave={handleSave}
+              onCancel={handleCloseEditModal}
+            />
+          )
         ) : selectedConferenceType === true ? (
-          // Research Conference Form - Commented out until API is ready
+          // Research Conference Form - Not implemented yet
           <div className="py-8 text-center">
             <Microscope className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Research Conference Form
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Research Conference Form</h3>
             <p className="text-sm text-gray-600 mb-6">
               Form cho hội thảo nghiên cứu đang được phát triển và chưa có API hỗ trợ.
             </p>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsModalOpen(false);
-                setEditingConference(null);
-                setSelectedConferenceType(null);
-              }}
-            >
+            <Button variant="outline" onClick={handleCloseEditModal}>
               Quay lại
             </Button>
           </div>
@@ -305,24 +315,28 @@ export default function ManageConference() {
       </Modal>
 
       {/* Modal for Viewing Conference Details */}
-      <Modal
-        isOpen={isDetailOpen}
-        onClose={() => {
-          setIsDetailOpen(false);
-          setViewingConference(null);
-        }}
-        title="Chi tiết hội thảo"
-        size="lg"
-      >
-        {viewingConference && (
-          <ConferenceDetail
-            conference={viewingConference}
-            onClose={() => {
-              setIsDetailOpen(false);
-              setViewingConference(null);
-            }}
+      <Modal isOpen={isDetailOpen} onClose={handleCloseDetail} title="Chi tiết hội thảo" size="lg">
+        {isDetailLoading ? (
+          <div className="py-12 flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Đang tải chi tiết hội thảo...</p>
+            </div>
+          </div>
+        ) : isDetailError ? (
+          <div className="py-12 text-center">
+            <p className="text-red-600 mb-4">Không thể tải chi tiết hội thảo</p>
+            <Button onClick={handleCloseDetail} variant="outline">
+              Đóng
+            </Button>
+          </div>
+        ) : conferenceDetailData?.data ? (
+          <ConferenceDetail 
+            conference={conferenceDetailData.data} 
+            onClose={handleCloseDetail}
+            conferenceId={viewingConferenceId!} 
           />
-        )}
+        ) : null}
       </Modal>
 
       {/* Delete Confirmation Dialog */}
@@ -331,13 +345,14 @@ export default function ManageConference() {
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa hội thảo này? Hành động này không thể hoàn tác và sẽ xóa tất cả các đăng ký liên quan.
+              Bạn có chắc chắn muốn xóa hội thảo này? Hành động này không thể hoàn tác và sẽ xóa
+              tất cả các đăng ký liên quan.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmDelete} 
+            <AlertDialogAction
+              onClick={confirmDelete}
               className="bg-red-600 hover:bg-red-700"
               disabled={isDeleting}
             >

@@ -42,7 +42,7 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
     organizer: [
       { label: "Tổng quan", href: "/workspace/organizer", icon: LayoutDashboard },
       { label: "Hội nghị", href: "/workspace/organizer/manage-conference", icon: Calendar },
-      { label: "Bài chờ duyệt", href: "/workspace/organizer/manage-paper", icon: FileText },
+      { label: "Bài báo", href: "/workspace/organizer/manage-paper", icon: FileText },
       { label: "Người tham gia", href: "/workspace/organizer/manage-user", icon: Users },
       { label: "Quản lí phản biện", href: "/workspace/organizer/manage-reviewer", icon: Users },
       { label: "Yêu cầu", href: "/workspace/organizer/manage-request", icon: Building2 },

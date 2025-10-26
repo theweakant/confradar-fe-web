@@ -572,7 +572,7 @@ import React, { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogPanel } from '@headlessui/react'
 import { User } from '@/types/user.type'
 import { Edit, Mail, Phone, MapPin, Calendar, Users, X } from 'lucide-react'
