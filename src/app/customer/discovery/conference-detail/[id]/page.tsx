@@ -1,6 +1,6 @@
 "use client"
 
-import ConferenceDetail from "@/components/(user)/customer/discovery/ConferenceDetail";
+import ConferenceDetail from "@/components/(user)/customer/discovery/conference-detail/ConferenceDetail";
 
 
 export default function DiscoveryPage() {
