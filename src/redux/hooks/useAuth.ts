@@ -5,6 +5,9 @@ import { useLoginMutation } from "../services/auth.service"
 import { useAppDispatch, useAppSelector } from "./hooks"
 import { setCredentials, logout, startLoading, stopLoading } from "../slices/auth.slice"
 import { decodeToken, getRoleFromToken } from "../utils/token"
+import {toast} from "sonner"
+import { ApiResponse } from "@/types/api.type"
+
 
 
 type LoginResult = {
@@ -34,16 +37,20 @@ export const useAuth = () => {
     dispatch(setCredentials({ user: userInfo, accessToken, refreshToken }))
 
     return { success: true, user: userInfo, message: "Đăng nhập thành công!" }
-  } catch (error: any) {
-    const message =
-      error?.data?.message ||
-      error?.error ||
-      error?.message ||
-      "Đăng nhập thất bại, vui lòng thử lại."
+  } catch (error: unknown) {
+      const err = error as ApiResponse | Error
 
-    console.error("Login failed:", error)
-    return { success: false, user: null, message }
-  } finally {
+      const message =
+        err instanceof Error
+          ? err.message
+          : err?.message ||
+            err?.errors?.message ||
+            "Đăng nhập thất bại, vui lòng thử lại."
+
+      console.error("Login failed:", error)
+      toast.error(message)
+      return { success: false, user: null, message }
+    } finally {
     dispatch(stopLoading())
   }
 }

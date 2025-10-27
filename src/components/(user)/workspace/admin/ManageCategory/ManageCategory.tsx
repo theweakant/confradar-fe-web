@@ -77,7 +77,7 @@ export default function ManageCategory() {
     try {
       if (editingCategory) {
         const result = await updateCategory({
-          id: editingCategory.categoryId,
+          id: editingCategory.conferenceCategoryId,
           data,
         }).unwrap();
         toast.success(result.message || "Cập nhật danh mục thành công!");

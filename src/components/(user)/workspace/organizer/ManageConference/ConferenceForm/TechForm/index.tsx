@@ -2395,52 +2395,16 @@ import type {
   ConferenceBasicForm,
   PricePhase,
   ConferenceResponse,
+
+  Price,
+  Session,
+  Policy,
+  Media,
+  Sponsor,
+  RoomInfoResponse
 } from "@/types/conference.type";
 import { toast } from "sonner";
 
-// ============================================
-// UPDATED TYPES WITH IDs
-// ============================================
-interface Price {
-  priceId?: string;
-  ticketPrice: number;
-  ticketName: string;
-  ticketDescription: string;
-  actualPrice: number;
-  currentPhase?: string;
-  pricePhaseId?: string;
-}
-
-interface Session {
-  sessionId?: string;
-  title: string;
-  description: string;
-  startTime: string;
-  endTime: string;
-  roomId: string;
-  room?: any;
-  speaker?: {
-    name: string;
-    description: string;
-  };
-}
-
-interface Policy {
-  policyId?: string; // ⬅️ ADDED
-  policyName: string;
-  description: string;
-}
-
-interface Media {
-  mediaId?: string; // ⬅️ ADDED
-  mediaFile: string | File | null;
-}
-
-interface Sponsor {
-  sponsorId?: string; // ⬅️ ADDED
-  name: string;
-  imageFile: string | File | null;
-}
 
 const STEPS = [
   { id: 1, title: "Thông tin cơ bản" },
@@ -2492,7 +2456,7 @@ export function ConferenceStepForm({
 
   const categoryOptions =
     categoriesData?.data?.map((category) => ({
-      value: category.categoryId,
+      value: category.conferenceCategoryId,
       label: category.conferenceCategoryName,
     })) || [];
 
@@ -2823,10 +2787,15 @@ export function ConferenceStepForm({
       try {
         await updateBasic({ conferenceId, data: basicForm }).unwrap();
         toast.success("✅ Basic info updated!");
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "❌ Failed to update basic info";
+
         console.error("Failed to update basic:", error);
-        toast.error("❌ Failed to update basic info");
-      } finally {
+        toast.error(message);
+      }finally {
         setStepLoadings((prev) => ({ ...prev, basic: false }));
       }
 
@@ -3830,7 +3799,7 @@ export function ConferenceStepForm({
                   <li>✓ Số nhà tài trợ: {sponsors.length}</li>
                 </ul>
                 <p className="text-xs text-blue-600 mt-3">
-                  Nhấn "Lưu tất cả thay đổi" để cập nhật toàn bộ thông tin
+                  Nhấn &quot;Lưu tất cả thay đổi&quot; để cập nhật toàn bộ thông tin
                 </p>
               </div>
             )}
@@ -3858,9 +3827,10 @@ export function ConferenceStepForm({
     <div className="max-w-4xl mx-auto p-6">
       {isEditMode && (
         <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-sm text-blue-800 font-medium">
-            🔧 Chế độ chỉnh sửa - Thay đổi sẽ được lưu khi bạn nhấn "Lưu tất cả thay đổi" ở bước cuối
-          </p>
+        <p className="text-sm text-blue-800 font-medium">
+          🔧 Chế độ chỉnh sửa - Thay đổi sẽ được lưu khi bạn nhấn &quot;Lưu tất cả thay đổi&quot; ở bước cuối
+        </p>
+
         </div>
       )}
 

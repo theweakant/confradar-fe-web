@@ -3,10 +3,7 @@
 import { useState } from "react";
 import { 
   Plus,  
-  Calendar,
-  Users,
-  Clock,
-  FileText,
+  Calendar
 } from "lucide-react";
 import {
   AlertDialog,
@@ -27,10 +24,10 @@ import { Modal } from "@/components/molecules/Modal";
 import { StatCard } from "@/components/molecules/StatCard";
 import { SearchFilter } from "@/components/molecules/SearchFilter";
 
-import { ConferenceForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceForm";
+// import { ConferenceForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceForm";
 import { ConferenceDetail } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceDetail";
 import { ConferenceTable } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceTable";
-import { Conference, ConferenceFormData } from "@/types/conference.type";
+import { Conference, ConferenceFormData, ConferenceResponse  } from "@/types/conference.type";
 
 export default function ManageConference() {
   const [conferences, setConferences] = useState<Conference[]>(mockConferences);
@@ -41,7 +38,7 @@ export default function ManageConference() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [editingConference, setEditingConference] = useState<Conference | null>(null);
-  const [viewingConference, setViewingConference] = useState<Conference | null>(null);
+  const [viewingConference, setViewingConference] = useState<ConferenceResponse  | null>(null);
   const [deleteConferenceId, setDeleteConferenceId] = useState<string | null>(null);
 
   const categoryOptions = [
@@ -83,30 +80,31 @@ export default function ManageConference() {
     setIsModalOpen(true);
   };
 
-  const handleView = (conference: Conference) => {
-    setViewingConference(conference);
-    setIsDetailOpen(true);
-  };
+const handleView = (conference: Conference) => {
+  // ép kiểu tạm sang ConferenceResponse để mở detail
+  setViewingConference(conference as unknown as ConferenceResponse);
+  setIsDetailOpen(true);
+};
 
-  const handleSave = (data: ConferenceFormData) => {
-    if (editingConference) {
-      setConferences(prev => prev.map(c => 
-        c.conferenceId === editingConference.conferenceId 
-          ? { ...c, ...data }
-          : c
-      ));
-      toast.success("Cập nhật hội thảo thành công!");
-    } else {
-      const newConference: Conference = {
-        ...data,
-        conferenceId: Date.now().toString(),
-      };
-      setConferences(prev => [...prev, newConference]);
-      toast.success("Thêm hội thảo thành công!");
-    }
-    setIsModalOpen(false);
-    setEditingConference(null);
-  };
+  // const handleSave = (data: ConferenceFormData) => {
+  //   if (editingConference) {
+  //     setConferences(prev => prev.map(c => 
+  //       c.conferenceId === editingConference.conferenceId 
+  //         ? { ...c, ...data }
+  //         : c
+  //     ));
+  //     toast.success("Cập nhật hội thảo thành công!");
+  //   } else {
+  //     const newConference: Conference = {
+  //       ...data,
+  //       conferenceId: Date.now().toString(),
+  //     };
+  //     setConferences(prev => [...prev, newConference]);
+  //     toast.success("Thêm hội thảo thành công!");
+  //   }
+  //   setIsModalOpen(false);
+  //   setEditingConference(null);
+  // };
 
   const handleDelete = (id: string) => {
     setDeleteConferenceId(id);
@@ -188,14 +186,15 @@ export default function ManageConference() {
         title={editingConference ? "Chỉnh sửa hội thảo công nghệ" : "Thêm hội thảo công nghệ mới"}
         size="lg"
       >
-        <ConferenceForm
+        <></>
+        {/* <ConferenceForm
           conference={editingConference}
-          onSave={handleSave}
+          // onSave={handleSave}
           onCancel={() => {
             setIsModalOpen(false);
             setEditingConference(null);
           }}
-        />
+        /> */}
       </Modal>
 
       <Modal
@@ -209,6 +208,7 @@ export default function ManageConference() {
       >
         {viewingConference && (
           <ConferenceDetail
+            conferenceId={viewingConference.conferenceId}
             conference={viewingConference}
             onClose={() => {
               setIsDetailOpen(false);

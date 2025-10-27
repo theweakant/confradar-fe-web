@@ -1,6 +1,6 @@
 "use client";
 
-import { Ticket, MapPin, Calendar, Users, ExternalLink, QrCode, Download, Clock } from "lucide-react";
+import { Ticket, Calendar, ExternalLink, QrCode, Download, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

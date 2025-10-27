@@ -7,6 +7,7 @@ interface SocialLoginButtonsProps {
 }
 
 export const SocialLoginButtons = ({ 
+  onGoogleLogin,
   onOrcidLogin, 
   isLoading 
 }: SocialLoginButtonsProps) => {
@@ -24,7 +25,7 @@ export const SocialLoginButtons = ({
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        {/* <Button
+        <Button
           type="button"
           variant="outline"
           onClick={onGoogleLogin}
@@ -50,7 +51,7 @@ export const SocialLoginButtons = ({
             />
           </svg>
           <span className="truncate">Google</span>
-        </Button> */}
+        </Button>
 
         <Button
           type="button"

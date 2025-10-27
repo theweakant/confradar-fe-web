@@ -7,7 +7,7 @@ export interface Category {
 
 export type CategoryFormData = Omit<
   Category,
-  "categoryId"
+  "conferenceCategoryId"
 >;
 
 export interface CategoryDetailProps {

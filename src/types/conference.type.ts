@@ -100,6 +100,7 @@ export interface ConferenceSpeakerData {
 }
 // Policies Step
 export interface Policy {
+  policyId?:string;
   policyName: string;
   description: string;
 }
@@ -110,6 +111,7 @@ export interface ConferencePolicyData {
 
 // Media Step
 export interface Media {
+  mediaId?:string;
   mediaFile: string | File | null;    
 }
 
@@ -119,6 +121,7 @@ export interface ConferenceMediaData {
 
 // Sponsors Step
 export interface Sponsor {
+  sponsorId?:string
   name: string;
   imageFile: string | File | null;  
 }
@@ -150,22 +153,17 @@ export interface ConferenceDetailProps {
 
 //-----------------------------------
 
-
+export interface Category {
+  conferenceCategoryId: string;
+  conferenceCategoryName: string;
+  // conferenceCount?:number;
+}
 // Category options type
 export interface CategoryOption {
   value: string;
   label: string;
 }
 
-// Conference categories
-export const CONFERENCE_CATEGORIES: CategoryOption[] = [
-  { value: "ai-ml", label: "AI & Machine Learning" },
-  { value: "web-dev", label: "Web Development" },
-  { value: "cloud", label: "Cloud Computing" },
-  { value: "cybersecurity", label: "Cybersecurity" },
-  { value: "data-science", label: "Data Science" },
-  { value: "mobile", label: "Mobile Development" }
-];
 
 // Conference rankings
 export const CONFERENCE_RANKINGS: CategoryOption[] = [
