@@ -8,13 +8,14 @@ import {
 import { useRouter } from 'next/navigation';
 import { useConference } from '@/redux/hooks/conference/useConference';
 import { useGetAllCategoriesQuery } from '@/redux/services/category.service';
-import { ConferenceResponse } from '@/types/conference.type';
+import { CategoryOption, ConferenceResponse } from '@/types/conference.type';
 import { Category } from '@/types/category.type';
 
 import "react-day-picker/style.css";
 import SearchFilter from './SearchFilter';
 import ConferenceList from './ConferenceList';
 import Pagination from './Pagination';
+import { SortOption } from '@/types/ui-type/conference-browser.type';
 
 
 interface SearchSortFilterConferenceProps {
@@ -91,7 +92,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
     }
   }, [absoluteMaxPrice]);
 
-  const categories = [
+  const categories: CategoryOption[] = [
     { value: 'all', label: 'Tất cả danh mục' },
     ...(categoriesData?.data?.map((cat: Category) => ({
       value: cat.conferenceCategoryId,
@@ -107,7 +108,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
   //   { value: 'cantho', label: 'Cần Thơ' }
   // ];
 
-  const sortOptions = [
+  const sortOptions: SortOption[] = [
     { value: 'date', label: 'Ngày diễn ra' },
     { value: 'price-low', label: 'Giá thấp đến cao' },
     { value: 'price-high', label: 'Giá cao đến thấp' },
@@ -243,49 +244,49 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
   };
   // const formatPrice = (price: number) => `${price.toLocaleString()} VND`;
 
-  const DropdownSelect = ({
-    value,
-    options,
-    onChange,
-    placeholder,
-    id
-  }: {
-    value: string;
-    options: { value: string; label: string }[];
-    onChange: (value: string) => void;
-    placeholder: string;
-    id: string;
-  }) => (
-    <div className="relative">
-      <button
-        onClick={() => setOpenDropdown(openDropdown === id ? null : id)}
-        className="w-full flex items-center justify-between px-4 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg hover:bg-gray-700 hover:border-gray-500 transition-all shadow-md"
-      // className="w-full flex items-center justify-between px-4 py-2 bg-gray-800 text-white border border-gray-700 rounded-4xl hover:bg-gray-700 transition-colors"
-      >
-        <span className="text-sm">
-          {options.find(opt => opt.value === value)?.label || placeholder}
-        </span>
-        <ChevronDown size={16} className={`transition-transform ${openDropdown === id ? 'rotate-180' : ''}`} />
-      </button>
+  // const DropdownSelect = ({
+  //   value,
+  //   options,
+  //   onChange,
+  //   placeholder,
+  //   id
+  // }: {
+  //   value: string;
+  //   options: { value: string; label: string }[];
+  //   onChange: (value: string) => void;
+  //   placeholder: string;
+  //   id: string;
+  // }) => (
+  //   <div className="relative">
+  //     <button
+  //       onClick={() => setOpenDropdown(openDropdown === id ? null : id)}
+  //       className="w-full flex items-center justify-between px-4 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg hover:bg-gray-700 hover:border-gray-500 transition-all shadow-md"
+  //     // className="w-full flex items-center justify-between px-4 py-2 bg-gray-800 text-white border border-gray-700 rounded-4xl hover:bg-gray-700 transition-colors"
+  //     >
+  //       <span className="text-sm">
+  //         {options.find(opt => opt.value === value)?.label || placeholder}
+  //       </span>
+  //       <ChevronDown size={16} className={`transition-transform ${openDropdown === id ? 'rotate-180' : ''}`} />
+  //     </button>
 
-      {openDropdown === id && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-10 max-h-60 overflow-y-auto">
-          {options.map((option) => (
-            <button
-              key={option.value}
-              onClick={() => {
-                onChange(option.value);
-                setOpenDropdown(null);
-              }}
-              className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors"
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+  //     {openDropdown === id && (
+  //       <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-10 max-h-60 overflow-y-auto">
+  //         {options.map((option) => (
+  //           <button
+  //             key={option.value}
+  //             onClick={() => {
+  //               onChange(option.value);
+  //               setOpenDropdown(null);
+  //             }}
+  //             className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors"
+  //           >
+  //             {option.label}
+  //           </button>
+  //         ))}
+  //       </div>
+  //     )}
+  //   </div>
+  // );
 
   return (
     <div className="text-white p-4 pb-12">
@@ -310,7 +311,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
           sortOptions={sortOptions}
           openDropdown={openDropdown}
           setOpenDropdown={setOpenDropdown}
-          DropdownSelect={DropdownSelect}
+        // DropdownSelect={DropdownSelect}
         />
 
         <div className="flex justify-between items-center mb-6">
