@@ -4,6 +4,9 @@ import { Popover, Transition } from '@headlessui/react';
 import { DayPicker } from "react-day-picker";
 import { Slider } from "@/components/ui/slider";
 import "react-day-picker/style.css";
+import { CategoryOption } from '@/types/conference.type';
+import { SortOption } from '@/types/ui-type/conference-browser.type';
+import DropdownSelect from './DropdownSelect';
 
 interface SearchFilterProps {
     searchQuery: string;
@@ -18,13 +21,13 @@ interface SearchFilterProps {
     setPriceRange: (range: [number, number]) => void;
     sortBy: string;
     setSortBy: (sort: string) => void;
-    categories: any[];
+    categories: CategoryOption[];
     absoluteMaxPrice: number;
     allPrices: number[];
-    sortOptions: any[];
+    sortOptions: SortOption[];
     openDropdown: string | null;
     setOpenDropdown: (dropdown: string | null) => void;
-    DropdownSelect: any;
+    // DropdownSelect: any;
 }
 
 const SearchFilter: React.FC<SearchFilterProps> = ({
@@ -46,7 +49,7 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
     sortOptions,
     openDropdown,
     setOpenDropdown,
-    DropdownSelect
+    // DropdownSelect
 }) => {
     return (
         <>

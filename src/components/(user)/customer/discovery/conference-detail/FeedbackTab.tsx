@@ -7,7 +7,7 @@ interface FeedbackTabProps {
     conference: ConferenceResponse;
     newFeedback: { name: string; rating: number; comment: string };
     setNewFeedback: (feedback: { name: string; rating: number; comment: string }) => void;
-    feedbacks: any[];
+    // feedbacks: any[];
     handleAddFeedback: (e: React.FormEvent<HTMLFormElement>) => void;
 }
 
@@ -15,7 +15,7 @@ const FeedbackTab: React.FC<FeedbackTabProps> = ({
     conference,
     newFeedback,
     setNewFeedback,
-    feedbacks,
+    // feedbacks,
     handleAddFeedback
 }) => {
     return (
@@ -72,7 +72,7 @@ const FeedbackTab: React.FC<FeedbackTabProps> = ({
                 </form>
             </div>
             <div className="space-y-4">
-                {feedbacks.map((feedback) => (
+                {/* {feedbacks.map((feedback) => (
                     <div key={feedback.id} className="bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-6 text-white">
                         <div className="flex items-start gap-4">
                             <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
@@ -100,7 +100,7 @@ const FeedbackTab: React.FC<FeedbackTabProps> = ({
                             </div>
                         </div>
                     </div>
-                ))}
+                ))} */}
             </div>
         </div>
     );
