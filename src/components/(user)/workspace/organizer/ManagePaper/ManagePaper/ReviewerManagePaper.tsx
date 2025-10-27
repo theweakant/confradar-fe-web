@@ -28,6 +28,7 @@ import { PaperDetail } from "@/components/(user)/workspace/organizer//ManagePape
 import { PaperForm } from "@/components/(user)/workspace/organizer//ManagePaper/ManagePaper/PaperForm/index";
 import { Paper } from "@/types/paper.type";
 import { mockPaperData } from "@/data/mockPaper.data";
+import {AssignReviewerData} from "@/types/paper.type"
 
 
 
@@ -151,7 +152,7 @@ export default function ReviewerManagePage() {
     }
   };
 
-  const handleAssignReviewer = (data: any) => {
+  const handleAssignReviewer = (data: AssignReviewerData) => {
     // Update paper with new reviewers
     setPapers(prev => prev.map(paper => {
       if (paper.id === data.paperId) {

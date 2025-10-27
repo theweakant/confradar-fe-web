@@ -94,7 +94,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
   const categories = [
     { value: 'all', label: 'Tất cả danh mục' },
     ...(categoriesData?.data?.map((cat: Category) => ({
-      value: cat.categoryId,
+      value: cat.conferenceCategoryId,
       label: cat.conferenceCategoryName
     })) || [])
   ];

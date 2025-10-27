@@ -18,6 +18,10 @@ import {
   Home
 } from "lucide-react"
 import type { ElementType } from "react"
+import { useDispatch } from "react-redux"
+import { logout } from "@/redux/slices/auth.slice"
+import { persistor } from "@/redux/store" 
+import { toast } from "sonner"
 
 
 interface WorkspaceSidebarProps {
@@ -28,12 +32,14 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
   const pathname = usePathname()
   const router = useRouter()
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const dispatch = useDispatch()
+
 
   const roleMenus: Record<string, { label: string; href: string; icon: ElementType }[]> = {
     admin: [
       { label: "Tổng quan", href: "/workspace/admin", icon: LayoutDashboard },
       { label: "Người dùng", href: "/workspace/admin/manage-user", icon: Users },
-      { label: "Hội nghị", href: "/workspace/admin/manage-conference", icon: Calendar },
+      // { label: "Hội nghị", href: "/workspace/admin/manage-conference", icon: Calendar },
       { label: "Địa điểm", href: "/workspace/admin/manage-accommodation", icon: Home },
       { label: "Danh mục", href: "/workspace/admin/manage-category", icon: FileText },
       { label: "Báo cáo", href: "/workspace/admin/report", icon: FileText },
@@ -42,7 +48,7 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
     organizer: [
       { label: "Tổng quan", href: "/workspace/organizer", icon: LayoutDashboard },
       { label: "Hội nghị", href: "/workspace/organizer/manage-conference", icon: Calendar },
-      { label: "Bài chờ duyệt", href: "/workspace/organizer/manage-paper", icon: FileText },
+      { label: "Bài báo", href: "/workspace/organizer/manage-paper", icon: FileText },
       { label: "Người tham gia", href: "/workspace/organizer/manage-user", icon: Users },
       { label: "Quản lí phản biện", href: "/workspace/organizer/manage-reviewer", icon: Users },
       { label: "Yêu cầu", href: "/workspace/organizer/manage-request", icon: Building2 },
@@ -69,10 +75,6 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
       { label: "Bài đánh giá ngoài", href: "/workspace/reviewer-outsource", icon: GraduationCap },
       { label: "Lịch trình", href: "/workspace/reviewer-outsource/schedule", icon: Calendar },
     ],
-    // guest: [
-    //   { label: "Tổng quan", href: "/workspace/guest", icon: LayoutDashboard },
-    //   { label: "Hội nghị", href: "/workspace/guest/conferences", icon: Calendar },
-    // ],
   }
 
   const roleInfo: Record<string, { name: string; color: string; icon: ElementType }> = {
@@ -89,9 +91,28 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
   const info = roleInfo[role] || roleInfo.guest
   const RoleIcon = info.icon
 
-  const handleLogout = () => {
+const handleLogout = async () => {
+  try {
+    // 1. Dispatch logout
+    dispatch(logout())
+    
+    // 2. Purge Redux Persist
+    await persistor.purge()
+    
+    // 3. Show success toast
+    toast.success("Đăng xuất thành công!")
+    
+    // 4. Redirect
+    setTimeout(() => {
+      router.push("/auth/login")
+    }, 300)
+    
+  } catch (error) {
+    console.error("Logout error:", error)
+    toast.error("Có lỗi xảy ra khi đăng xuất")
     router.push("/auth/login")
   }
+}
 
   return (
     <aside

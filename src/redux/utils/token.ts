@@ -41,3 +41,14 @@ export const getRoleFromToken = (token: string): string | null => {
   if (!decoded) return null
   return decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]
 }
+
+
+export const isTokenExpired = (token: string): boolean => {
+  try {
+    const decoded = jwtDecode<{ exp: number }>(token)
+    const now = Math.floor(Date.now() / 1000)
+    return decoded.exp < now
+  } catch {
+    return true
+  }
+}

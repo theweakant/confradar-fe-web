@@ -5,6 +5,8 @@ import { useFirebaseLogin } from "@/hooks/useFirebaseLogin"
 import { validateLoginForm } from "@/helper/validation"
 import { getRouteByRole } from "@/constants/roles"
 import type { LoginFormData, FormErrors } from "@/types/auth.type"
+import { toast } from "sonner"
+  
 
 export const useLoginForm = () => {
   const router = useRouter()
@@ -24,39 +26,34 @@ export const useLoginForm = () => {
     }
   }
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    const validationErrors = validateLoginForm(formData)
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors)
-      return
-    }
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault()
 
-    try {
-      const {success, user} = await login({
-        email: formData.email,
-        password: formData.password,
-      })
-    
-      if (success && user) {
-        const redirectUrl = getRouteByRole(user.role ?? "")
-        router.push(redirectUrl)
-      } else {
-        setErrors({ email: "Email hoặc mật khẩu không đúng" })
-      } 
-      
-    } catch (error) {
-      const errorMessage = 
-        error instanceof Error 
-          ? error.message 
-          : (error as { data?: { message?: string }; message?: string })?.data?.message ||
-            (error as { data?: { message?: string }; message?: string })?.message ||
-            "Đăng nhập thất bại"
-      
-      setErrors({ email: errorMessage })
-    }
+  const validationErrors = validateLoginForm(formData)
+  if (Object.keys(validationErrors).length > 0) {
+    setErrors(validationErrors)
+    return
   }
+
+  const { success, user, message } = await login({
+    email: formData.email,
+    password: formData.password,
+  })
+
+  if (success && user) {
+    toast.success("Đăng nhập thành công!", {
+      description: `Chào mừng ${user.email}`,
+    })
+    const redirectUrl = getRouteByRole(user.role ?? "")
+    router.push(redirectUrl)
+  } else {
+    toast.error("Đăng nhập thất bại!", {
+      description: message || "Email hoặc mật khẩu không đúng",
+    })
+    setErrors({ email: message })
+  }
+}
+
 
   const handleSocialLogin = async (provider: 'google' | 'orcid') => {
     if (provider === 'google') {

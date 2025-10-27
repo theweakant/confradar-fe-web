@@ -11,54 +11,53 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { StatusBadge } from "@/components/atoms/StatusBadge";
 import { formatDate } from "@/helper/format";
 import { ConferenceDetailProps } from "@/types/conference.type";
 
 export function ConferenceDetail({ conference, onClose }: ConferenceDetailProps) {
-  const getStatusLabel = (statusId: string) => {
-    const labels: Record<string, string> = {
-      draft: "Nháp",
-      published: "Đã xuất bản",
-      open: "Đang mở đăng ký",
-      closed: "Đã đóng đăng ký",
-      ongoing: "Đang diễn ra",
-      completed: "Đã kết thúc",
-      cancelled: "Đã hủy",
-    };
-    return labels[statusId] || statusId;
-  };
+  // const getStatusLabel = (statusId: string) => {
+  //   const labels: Record<string, string> = {
+  //     draft: "Nháp",
+  //     published: "Đã xuất bản",
+  //     open: "Đang mở đăng ký",
+  //     closed: "Đã đóng đăng ký",
+  //     ongoing: "Đang diễn ra",
+  //     completed: "Đã kết thúc",
+  //     cancelled: "Đã hủy",
+  //   };
+  //   return labels[statusId] || statusId;
+  // };
 
-  const getStatusVariant = (
-    statusId: string
-  ): "success" | "danger" | "warning" | "info" => {
-    const variants: Record<string, "success" | "danger" | "warning" | "info"> = {
-      draft: "warning",
-      published: "info",
-      open: "success",
-      closed: "warning",
-      ongoing: "success",
-      completed: "info",
-      cancelled: "danger",
-    };
-    return variants[statusId] || "info";
-  };
+  // const getStatusVariant = (
+  //   statusId: string
+  // ): "success" | "danger" | "warning" | "info" => {
+  //   const variants: Record<string, "success" | "danger" | "warning" | "info"> = {
+  //     draft: "warning",
+  //     published: "info",
+  //     open: "success",
+  //     closed: "warning",
+  //     ongoing: "success",
+  //     completed: "info",
+  //     cancelled: "danger",
+  //   };
+  //   return variants[statusId] || "info";
+  // };
 
-  // Helper: Lấy % tiến độ dựa trên progressStatus
-  const getProgressPercentage = (status: string) => {
-    switch (status) {
-      case "Pending":
-        return 33.33;
-      case "Approved":
-        return 66.66;
-      case "Published":
-        return 100;
-      default:
-        return 0;
-    }
-  };
+  // // Helper: Lấy % tiến độ dựa trên progressStatus
+  // const getProgressPercentage = (status: string) => {
+  //   switch (status) {
+  //     case "Pending":
+  //       return 33.33;
+  //     case "Approved":
+  //       return 66.66;
+  //     case "Published":
+  //       return 100;
+  //     default:
+  //       return 0;
+  //   }
+  // };
 
-  const progress = getProgressPercentage(conference.progressStatus);
+  // const progress = getProgressPercentage(conference.progressStatus);
 
   return (
     <div className="space-y-6">
@@ -69,10 +68,10 @@ export function ConferenceDetail({ conference, onClose }: ConferenceDetailProps)
             {conference.conferenceName}
           </h3>
           <div className="flex items-center gap-3 mb-4">
-            <StatusBadge
+            {/* <StatusBadge
               status={getStatusLabel(conference.globalStatusId)}
               variant={getStatusVariant(conference.globalStatusId)}
-            />
+            /> */}
             {conference.isInternalHosted && (
               <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
                 Nội bộ
@@ -137,7 +136,7 @@ export function ConferenceDetail({ conference, onClose }: ConferenceDetailProps)
             <Clock className="w-5 h-5 text-blue-600 mt-0.5" />
             <div className="w-full">
               <p className="text-sm font-medium text-gray-700">Trạng thái xử lý</p>
-
+{/* 
               {conference.progressStatus === "Rejected" ? (
                 <span className="inline-block mt-1 px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
                   Rejected
@@ -160,7 +159,7 @@ export function ConferenceDetail({ conference, onClose }: ConferenceDetailProps)
                     {conference.progressStatus}
                   </p>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
         </div>
@@ -171,9 +170,9 @@ export function ConferenceDetail({ conference, onClose }: ConferenceDetailProps)
             <Award className="w-5 h-5 text-blue-600 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-gray-700">Ranking</p>
-              <p className="text-gray-900 font-semibold">
+              {/* <p className="text-gray-900 font-semibold">
                 {conference.conferenceRankingId}
-              </p>
+              </p> */}
             </div>
           </div>
 
@@ -181,7 +180,7 @@ export function ConferenceDetail({ conference, onClose }: ConferenceDetailProps)
             <Building2 className="w-5 h-5 text-blue-600 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-gray-700">Loại hội thảo</p>
-              <p className="text-gray-900">{conference.conferenceTypeId}</p>
+              {/* <p className="text-gray-900">{conference.conferenceTypeId}</p> */}
             </div>
           </div>
 
@@ -189,7 +188,7 @@ export function ConferenceDetail({ conference, onClose }: ConferenceDetailProps)
             <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-gray-700">Danh mục</p>
-              <p className="text-gray-900">{conference.conferenceCategoryId}</p>
+              {/* <p className="text-gray-900">{conference.conferenceCategoryId}</p> */}
             </div>
           </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Plus, Home } from "lucide-react";
 import {
   AlertDialog,
@@ -98,9 +98,13 @@ export default function ManageRoom() {
       setIsFormModalOpen(false);
       setEditingRoom(null);
       refetchRooms();
-    } catch (error: any) {
-      toast.error(error?.data?.message || "Có lỗi xảy ra, vui lòng thử lại!");
-    }
+    } catch (error: unknown) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Có lỗi xảy ra, vui lòng thử lại!";
+        toast.error(message);
+      }
   };
 
   const handleDelete = (id: string) => {
@@ -114,8 +118,12 @@ export default function ManageRoom() {
         toast.success(result.message || "Xóa phòng thành công!");
         setDeleteRoomId(null);
         refetchRooms();
-      } catch (error: any) {
-        toast.error(error?.data?.message || "Có lỗi xảy ra khi xóa phòng!");
+      } catch (error: unknown) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Có lỗi xảy ra, vui lòng thử lại!";
+        toast.error(message);
       }
     }
   };

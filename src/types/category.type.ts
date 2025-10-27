@@ -1,5 +1,5 @@
 export interface Category {
-  categoryId: string;
+  conferenceCategoryId: string;
   conferenceCategoryName: string;
   // conferenceCount?:number;
 }
@@ -7,7 +7,7 @@ export interface Category {
 
 export type CategoryFormData = Omit<
   Category,
-  "categoryId"
+  "conferenceCategoryId"
 >;
 
 export interface CategoryDetailProps {

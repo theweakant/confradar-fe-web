@@ -27,13 +27,16 @@ export const truncateContent = (content: string, maxLength: number = 40): string
 }
 
 //date
-export const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString("vi-VN", {
-      year: "numeric",
-      month: "long",
-      day: "numeric"
-    });
-  };
+export const formatDate = (date?: string) => {
+  if (!date) return "-"; // hoặc "—" nếu bạn muốn gọn hơn
+
+  return new Date(date).toLocaleDateString("vi-VN", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
 
  
 //date time

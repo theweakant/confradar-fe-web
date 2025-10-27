@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import{toast} from 'sonner'
 import { X, MapPin, Clock, Calendar, Star } from 'lucide-react';
 import { Dialog, DialogPanel, DialogTitle, Button } from "@headlessui/react";
 import { useConference } from '@/redux/hooks/conference/useConference';
@@ -76,8 +77,12 @@ const ConferenceDetail = () => {
       } else {
         alert("Không nhận được đường dẫn thanh toán.");
       }
-    } catch (err: any) {
-      alert(`Lỗi khi tạo thanh toán: ${err?.data?.message || err?.message || "Không rõ lỗi"}`);
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Có lỗi xảy ra, vui lòng thử lại!"
+      toast.error(message)
     } finally {
       setIsDialogOpen(false);
     }

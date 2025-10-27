@@ -20,6 +20,8 @@ import { truncateContent } from "@/helper/format";
 interface PaperTableProps {
   papers: Paper[];
   onView?: (paper: Paper) => void;
+  onEdit?: (paper: Paper) => void; 
+
   onAssignReviewer?: (paper: Paper) => void;
   onDelete?: (id: string) => void;
 }
@@ -169,7 +171,7 @@ export function PaperTable({
             <ActionButton
               onClick={() => onView(paper)}
               icon={<Eye className="w-4 h-4" />}
-              variant="info"
+              variant="primary"
               tooltip="Xem chi tiết"
             />
           )}

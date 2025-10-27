@@ -1,5 +1,5 @@
 import { ApiResponse } from "@/types/api.type";
-import { CreateTechPaymentRequest } from "@/types/transaction.type";
+// import { CreateTechPaymentRequest } from "@/types/transaction.type";
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { apiClient } from "../api/apiClient";
 import { Ticket } from "@/types/ticket.type";

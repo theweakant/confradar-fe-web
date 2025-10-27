@@ -14,7 +14,7 @@ export const transactionApi = createApi({
                 method: 'POST',
                 body: request,
             }),
-            async onQueryStarted(arg, { queryFulfilled, dispatch }) {
+            async onQueryStarted(arg, { queryFulfilled }) {
                 try {
                     const { data } = await queryFulfilled;
                     if (data.data) {

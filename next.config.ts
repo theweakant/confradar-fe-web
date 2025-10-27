@@ -8,11 +8,9 @@ const nextConfig: NextConfig = {
         hostname: "placehold.co",
       },
     ],
-  },
-  /* config options here */
-    images: {
     unoptimized: true, // Tạm thời disable optimization
   },
+  /* config options khác nếu có */
 };
 
 export default nextConfig;

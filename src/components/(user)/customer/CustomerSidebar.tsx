@@ -8,7 +8,6 @@ import {
   Bookmark,
   Ticket,
   UserCircle,
-  History,
   Bell
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';

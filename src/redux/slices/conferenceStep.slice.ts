@@ -7,7 +7,7 @@ interface ConferenceStepState {
   completedSteps: number[];
   loading: boolean;
   error: string | null;
-  mode: 'create' | 'edit'; // ✅ Thêm mode
+  mode: 'create' | 'edit';
 }
 
 const initialState: ConferenceStepState = {
@@ -16,19 +16,19 @@ const initialState: ConferenceStepState = {
   completedSteps: [],
   loading: false,
   error: null,
-  mode: 'create', // ✅ Default mode
+  mode: 'create',
 };
 
 const conferenceStepSlice = createSlice({
   name: "conferenceStep",
   initialState,
   reducers: {
-    // ✅ Set conference ID sau khi tạo basic step
+    // Set conference ID sau khi tạo basic step
     setConferenceId: (state, action: PayloadAction<string>) => {
       state.conferenceId = action.payload;
     },
 
-    // ✅ NEW: Load existing conference for edit
+    // Load existing conference for edit
     loadExistingConference: (state, action: PayloadAction<string>) => {
       state.conferenceId = action.payload;
       state.mode = 'edit';
@@ -36,12 +36,22 @@ const conferenceStepSlice = createSlice({
       state.completedSteps = [];
     },
 
-    // ✅ NEW: Set mode
+    // Set mode - QUAN TRỌNG: Reset về step 1 khi chuyển mode
     setMode: (state, action: PayloadAction<'create' | 'edit'>) => {
-      state.mode = action.payload;
+      const newMode = action.payload;
+      
+      // Nếu chuyển từ edit sang create, reset về step 1
+      if (state.mode === 'edit' && newMode === 'create') {
+        state.currentStep = 1;
+        state.conferenceId = null;
+        state.completedSteps = [];
+        state.error = null;
+      }
+      
+      state.mode = newMode;
     },
 
-    // ✅ Chuyển sang step tiếp theo
+    // Chuyển sang step tiếp theo
     nextStep: (state) => {
       if (state.currentStep < 6) {
         if (!state.completedSteps.includes(state.currentStep)) {
@@ -51,22 +61,23 @@ const conferenceStepSlice = createSlice({
       }
     },
 
-    // ✅ Quay lại step trước
+    // Quay lại step trước
     prevStep: (state) => {
       if (state.currentStep > 1) {
         state.currentStep -= 1;
       }
     },
 
-    // ✅ Chuyển đến step cụ thể
+    // Chuyển đến step cụ thể (chỉ cho edit mode)
     goToStep: (state, action: PayloadAction<number>) => {
       const targetStep = action.payload;
-      if (targetStep >= 1 && targetStep <= 6) {
+      // Chỉ cho phép nhảy step trong edit mode
+      if (state.mode === 'edit' && targetStep >= 1 && targetStep <= 6) {
         state.currentStep = targetStep;
       }
     },
 
-    // ✅ Đánh dấu step đã hoàn thành
+    // Đánh dấu step đã hoàn thành
     markStepCompleted: (state, action: PayloadAction<number>) => {
       const step = action.payload;
       if (!state.completedSteps.includes(step)) {
@@ -74,16 +85,12 @@ const conferenceStepSlice = createSlice({
       }
     },
 
-    // ✅ Reset toàn bộ wizard
+    // Reset toàn bộ wizard về trạng thái ban đầu
     resetWizard: (state) => {
-      state.currentStep = 1;
-      state.conferenceId = null;
-      state.completedSteps = [];
-      state.error = null;
-      state.mode = 'create'; // ✅ Reset về create mode
+      Object.assign(state, initialState);
     },
 
-    // ✅ Set loading
+    // Set loading
     startLoading: (state) => {
       state.loading = true;
       state.error = null;
@@ -92,7 +99,7 @@ const conferenceStepSlice = createSlice({
       state.loading = false;
     },
 
-    // ✅ Set error
+    // Set error
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
       state.loading = false;
@@ -102,8 +109,8 @@ const conferenceStepSlice = createSlice({
 
 export const {
   setConferenceId,
-  loadExistingConference, // ✅ Export new action
-  setMode, // ✅ Export new action
+  loadExistingConference,
+  setMode,
   nextStep,
   prevStep,
   goToStep,

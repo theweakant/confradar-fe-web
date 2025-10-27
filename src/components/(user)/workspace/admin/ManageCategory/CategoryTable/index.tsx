@@ -4,7 +4,6 @@ import React from "react";
 import { Eye, Pencil, Trash2, FolderOpen, MoreVertical } from "lucide-react";
 
 import { DataTable, Column } from "@/components/molecules/DataTable";
-import { StatusBadge } from "@/components/atoms/StatusBadge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,7 +32,7 @@ export function CategoryTable({
       header: "ID",
       render: (category) => (
         <div className="max-w-xs">
-          <p className="text-sm text-gray-600 font-mono truncate">{category.categoryId}</p>
+          <p className="text-sm text-gray-600 font-mono truncate">{category.conferenceCategoryId}</p>
         </div>
       ),
     },
@@ -82,7 +81,7 @@ export function CategoryTable({
                 <span>Chỉnh sửa</span>
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => onDelete(category.categoryId)}
+                onClick={() => onDelete(category.conferenceCategoryId)}
                 className="cursor-pointer text-red-600 focus:text-red-600"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
@@ -99,7 +98,7 @@ export function CategoryTable({
     <DataTable
       columns={columns}
       data={categories}
-      keyExtractor={(category) => category.categoryId}
+      keyExtractor={(category) => category.conferenceCategoryId}
       emptyMessage="Không tìm thấy danh mục nào"
     />
   );

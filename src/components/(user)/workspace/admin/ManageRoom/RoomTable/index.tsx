@@ -4,7 +4,6 @@ import React from "react";
 import { Eye, Pencil, Trash2, Building, MoreVertical, Calendar } from "lucide-react";
 
 import { DataTable, Column } from "@/components/molecules/DataTable";
-import { StatusBadge } from "@/components/atoms/StatusBadge";
 import { formatDate } from "@/helper/format";
 import {
   DropdownMenu,
@@ -28,23 +27,7 @@ export function RoomTable({
   onEdit,
   onDelete,
 }: RoomTableProps) {
-  const getStatusLabel = (status: string) => {
-    const labels: Record<string, string> = {
-      available: "Có sẵn",
-      booked: "Đã đặt",
-      maintenance: "Bảo trì",
-    };
-    return labels[status] || status;
-  };
-
-  const getStatusVariant = (status: string): "success" | "danger" | "warning" | "info" => {
-    const variants: Record<string, "success" | "danger" | "warning" | "info"> = {
-      available: "success",
-      booked: "danger",
-      maintenance: "warning",
-    };
-    return variants[status] || "info";
-  };
+  
 
   const columns: Column<Room>[] = [
     {

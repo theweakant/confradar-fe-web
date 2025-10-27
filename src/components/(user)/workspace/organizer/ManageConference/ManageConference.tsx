@@ -1,16 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { 
-  Plus,  
-  Calendar,
-  Users,
-  Clock,
-  FileText,
-  Microscope,
-  Cpu,
-} from "lucide-react";
+import { useState, useMemo } from "react";
+import { Plus, Calendar, Microscope, Cpu } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,40 +20,79 @@ import { Modal } from "@/components/molecules/Modal";
 import { StatCard } from "@/components/molecules/StatCard";
 import { SearchFilter } from "@/components/molecules/SearchFilter";
 
-import { ConferenceDetail } from "@/components/(user)/workspace/admin/ManageConference/ConferenceDetail";
-import { ConferenceTable } from "@/components/(user)/workspace/admin/ManageConference/ConferenceTable";
-import { Conference, ConferenceFormData } from "@/types/conference.type";
+import { ConferenceDetail } from "@/components/(user)/workspace/organizer/ManageConference/ConferenceDetail/index";
+import { ConferenceTable } from "@/components/(user)/workspace/organizer/ManageConference/ConferenceTable/index";
+import { ConferenceFormData, ConferenceResponse } from "@/types/conference.type";
 
-import {ConferenceStepForm} from "@/components/(user)/workspace/organizer/ManageConference/ConferenceForm/TechForm";
-// import {ResearchConferenceForm} from "@/components/(user)/workspace/organizer/ManageConference/ConferenceForm/ResearchForm";
+import { ConferenceStepForm } from "@/components/(user)/workspace/organizer/ManageConference/ConferenceForm/TechForm";
 
-type ConferenceType = boolean | null; // true = research, false = tech, null = not selected
+// Import API hooks
+import {
+  useGetAllConferencesQuery,
+  useGetConferenceByIdQuery,
+  useDeleteConferenceMutation
+} from "@/redux/services/conference.service";
+import { useGetAllCategoriesQuery } from "@/redux/services/category.service"; // Thêm import này
+
+type ConferenceType = boolean | null;
 
 export default function ManageConference() {
-  const [conferences, setConferences] = useState<Conference[]>([]);
+  // API Hooks
+  const { data: conferencesData, isLoading, isError } = useGetAllConferencesQuery();
+  const { data: categoriesData, isLoading: isCategoriesLoading } = useGetAllCategoriesQuery(); // Thêm hook này
+  const [deleteConferenceMutation, { isLoading: isDeleting }] = useDeleteConferenceMutation();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [editingConference, setEditingConference] = useState<Conference | null>(null);
-  const [viewingConference, setViewingConference] = useState<Conference | null>(null);
+  const [editingConference, setEditingConference] = useState<ConferenceResponse | null>(null);
+  const [viewingConferenceId, setViewingConferenceId] = useState<string | null>(null);
   const [deleteConferenceId, setDeleteConferenceId] = useState<string | null>(null);
   const [selectedConferenceType, setSelectedConferenceType] = useState<ConferenceType>(null);
 
-  const categoryOptions = [
-    { value: "all", label: "Tất cả danh mục" },
-    { value: "technology", label: "Công nghệ" },
-    { value: "research", label: "Nghiên cứu" },
-    { value: "business", label: "Kinh doanh" },
-    { value: "education", label: "Giáo dục" },
-  ];
+  // Fetch conference detail when viewing
+  const {
+    data: conferenceDetailData,
+    isLoading: isDetailLoading,
+    isError: isDetailError,
+  } = useGetConferenceByIdQuery(viewingConferenceId!, {
+    skip: !viewingConferenceId,
+  });
 
-  const filteredConferences = conferences.filter(conf => {
-    const matchesSearch = 
-      conf.conferenceName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      conf.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      conf.locationId.toLowerCase().includes(searchQuery.toLowerCase());
+  // Fetch conference detail for editing
+  const conferenceId = editingConference?.conferenceId;
+
+  const {
+    data: editConferenceData,
+    isLoading: isEditLoading,
+  } = useGetConferenceByIdQuery(conferenceId ?? "", {
+    skip: !conferenceId,
+  });
+
+  // Tạo categoryOptions từ API data
+  const categoryOptions = useMemo(() => {
+    const allOption = { value: "all", label: "Tất cả danh mục" };
+    
+    if (!categoriesData?.data) {
+      return [allOption];
+    }
+
+    const apiCategories = categoriesData.data.map((category) => ({
+      value: category.conferenceCategoryId,
+      label: category.conferenceCategoryName,
+    }));
+
+    return [allOption, ...apiCategories];
+  }, [categoriesData]);
+
+  // Get conferences from API
+  const conferences = conferencesData?.data || [];
+
+  const filteredConferences = conferences.filter((conf) => {
+    const matchesSearch = conf.conferenceName
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
 
     const matchesCategory = filterCategory === "all" || conf.categoryId === filterCategory;
 
@@ -74,35 +105,18 @@ export default function ManageConference() {
     setIsModalOpen(true);
   };
 
-  const handleEdit = (conference: Conference) => {
+  const handleEdit = (conference: ConferenceResponse) => {
     setEditingConference(conference);
-    setSelectedConferenceType(conference.isResearchConference); 
+    setSelectedConferenceType(conference.isResearchConference ?? false);
     setIsModalOpen(true);
   };
 
-  const handleView = (conference: Conference) => {
-    setViewingConference(conference);
+  const handleView = (conference: ConferenceResponse) => {
+    setViewingConferenceId(conference.conferenceId);
     setIsDetailOpen(true);
   };
 
-  const handleSave = (data: ConferenceFormData) => {
-    if (editingConference) {
-      setConferences(prev => prev.map(c => 
-        c.conferenceId === editingConference.conferenceId 
-          ? { ...c, ...data }
-          : c
-      ));
-      toast.success("Cập nhật hội thảo thành công!");
-    } else {
-      const newConference: Conference = {
-        ...data,
-        conferenceId: Date.now().toString(),
-        createdAt: new Date().toISOString(),
-        isActive: true,
-      };
-      setConferences(prev => [...prev, newConference]);
-      toast.success("Thêm hội thảo thành công!");
-    }
+  const handleSave = (_data: ConferenceFormData) => {
     setIsModalOpen(false);
     setEditingConference(null);
     setSelectedConferenceType(null);
@@ -112,11 +126,16 @@ export default function ManageConference() {
     setDeleteConferenceId(id);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (deleteConferenceId) {
-      setConferences(prev => prev.filter(c => c.conferenceId !== deleteConferenceId));
-      toast.success("Xóa hội thảo thành công!");
-      setDeleteConferenceId(null);
+      try {
+        await deleteConferenceMutation(deleteConferenceId).unwrap();
+        toast.success("Xóa hội thảo thành công!");
+        setDeleteConferenceId(null);
+      } catch (error) {
+        toast.error("Xóa hội thảo thất bại. Vui lòng thử lại!");
+        console.error("Delete error:", error);
+      }
     }
   };
 
@@ -124,7 +143,42 @@ export default function ManageConference() {
     setSelectedConferenceType(type);
   };
 
+  const handleCloseDetail = () => {
+    setIsDetailOpen(false);
+    setViewingConferenceId(null);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsModalOpen(false);
+    setEditingConference(null);
+    setSelectedConferenceType(null);
+  };
+
   const totalConferences = conferences.length;
+
+  // Loading state
+  if (isLoading || isCategoriesLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Đang tải dữ liệu...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Không thể tải dữ liệu hội thảo</p>
+          <Button onClick={() => window.location.reload()}>Thử lại</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -140,9 +194,7 @@ export default function ManageConference() {
               Thêm hội thảo
             </Button>
           </div>
-          <p className="text-gray-600 mt-2">
-            Quản lý thông tin các hội thảo trên ConfRadar
-          </p>
+          <p className="text-gray-600 mt-2">Quản lý thông tin các hội thảo trên ConfRadar</p>
         </div>
 
         <SearchFilter
@@ -169,8 +221,8 @@ export default function ManageConference() {
 
         <div className="flex justify-end mb-4">
           <Link href="/workspace/organizer/manage-conference/pending-conference">
-            <Button 
-              variant="link" 
+            <Button
+              variant="link"
               className="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1.5"
             >
               Xem hội nghị đang chờ duyệt
@@ -189,17 +241,13 @@ export default function ManageConference() {
       {/* Modal for Creating/Editing Conference */}
       <Modal
         isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setEditingConference(null);
-          setSelectedConferenceType(null);
-        }}
+        onClose={handleCloseEditModal}
         title={
-          editingConference 
-            ? "Chỉnh sửa hội thảo" 
+          editingConference
+            ? "Chỉnh sửa hội thảo"
             : selectedConferenceType !== null
-              ? "Thêm hội thảo/ hội nghị mới"
-              : "Chọn loại hội thảo"
+            ? "Thêm hội thảo/ hội nghị mới"
+            : "Chọn loại hội thảo"
         }
         size="lg"
       >
@@ -247,67 +295,58 @@ export default function ManageConference() {
           </div>
         ) : selectedConferenceType === false ? (
           // Tech Conference Form
-          <ConferenceStepForm
-            conference={editingConference}
-            onSave={handleSave}
-            onCancel={() => {
-              setIsModalOpen(false);
-              setEditingConference(null);
-              setSelectedConferenceType(null);
-            }}
-          />
+          editingConference && isEditLoading ? (
+            <div className="py-12 flex items-center justify-center">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Đang tải dữ liệu hội thảo...</p>
+              </div>
+            </div>
+          ) : (
+            <ConferenceStepForm
+              conference={editingConference ? editConferenceData?.data : null}
+              onSave={handleSave}
+              onCancel={handleCloseEditModal}
+            />
+          )
         ) : selectedConferenceType === true ? (
-          // Research Conference Form - Commented out until API is ready
+          // Research Conference Form - Not implemented yet
           <div className="py-8 text-center">
             <Microscope className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Research Conference Form
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Research Conference Form</h3>
             <p className="text-sm text-gray-600 mb-6">
               Form cho hội thảo nghiên cứu đang được phát triển và chưa có API hỗ trợ.
             </p>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsModalOpen(false);
-                setEditingConference(null);
-                setSelectedConferenceType(null);
-              }}
-            >
+            <Button variant="outline" onClick={handleCloseEditModal}>
               Quay lại
             </Button>
           </div>
-          // <ResearchConferenceForm
-          //   conference={editingConference}
-          //   onSave={handleSave}
-          //   onCancel={() => {
-          //     setIsModalOpen(false);
-          //     setEditingConference(null);
-          //     setSelectedConferenceType(null);
-          //   }}
-          // />
         ) : null}
       </Modal>
 
       {/* Modal for Viewing Conference Details */}
-      <Modal
-        isOpen={isDetailOpen}
-        onClose={() => {
-          setIsDetailOpen(false);
-          setViewingConference(null);
-        }}
-        title="Chi tiết hội thảo"
-        size="lg"
-      >
-        {viewingConference && (
-          <ConferenceDetail
-            conference={viewingConference}
-            onClose={() => {
-              setIsDetailOpen(false);
-              setViewingConference(null);
-            }}
+      <Modal isOpen={isDetailOpen} onClose={handleCloseDetail} title="Chi tiết hội thảo" size="lg">
+        {isDetailLoading ? (
+          <div className="py-12 flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Đang tải chi tiết hội thảo...</p>
+            </div>
+          </div>
+        ) : isDetailError ? (
+          <div className="py-12 text-center">
+            <p className="text-red-600 mb-4">Không thể tải chi tiết hội thảo</p>
+            <Button onClick={handleCloseDetail} variant="outline">
+              Đóng
+            </Button>
+          </div>
+        ) : conferenceDetailData?.data ? (
+          <ConferenceDetail 
+            conference={conferenceDetailData.data} 
+            onClose={handleCloseDetail}
+            conferenceId={viewingConferenceId!} 
           />
-        )}
+        ) : null}
       </Modal>
 
       {/* Delete Confirmation Dialog */}
@@ -316,13 +355,18 @@ export default function ManageConference() {
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa hội thảo này? Hành động này không thể hoàn tác và sẽ xóa tất cả các đăng ký liên quan.
+              Bạn có chắc chắn muốn xóa hội thảo này? Hành động này không thể hoàn tác và sẽ xóa
+              tất cả các đăng ký liên quan.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
-              Xóa
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Đang xóa..." : "Xóa"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

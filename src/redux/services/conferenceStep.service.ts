@@ -1,128 +1,3 @@
-// // conferenceStepApi.ts
-// import { createApi } from "@reduxjs/toolkit/query/react";
-// import { apiClient } from "../api/apiClient";
-// import { endpoint } from "../api/endpoint";
-// import type { ApiResponse } from "@/types/api.type";
-// import type {
-//   ConferenceBasicForm,
-//   ConferencePriceData,
-//   ConferenceSessionData,
-//   ConferencePolicyData,
-//   ConferenceMediaData,
-//   ConferenceSponsorData,
-// } from "@/types/conference.type";
-
-// export const conferenceStepApi = createApi({
-//   reducerPath: "conferenceStepApi",
-//   baseQuery: apiClient,
-//   tagTypes: ["ConferenceStep"],
-
-//   endpoints: (builder) => ({
-//     // 🧱 Step 1: Create Basic Info
-//     createBasicConference: builder.mutation<
-//       ApiResponse<{ conferenceId: string }>,
-//       ConferenceBasicForm
-//     >({
-//       query: (body) => {
-//         const formData = new FormData();
-//         formData.append("conferenceName", body.conferenceName);
-//         formData.append("startDate", body.startDate);
-//         formData.append("endDate", body.endDate);
-//         formData.append("isInternalHosted", String(body.isInternalHosted));
-//         formData.append("isResearchConference", String(body.isResearchConference));
-//         formData.append("categoryName", body.categoryName);
-
-//         if (body.description) formData.append("description", body.description);
-//         if (body.capacity) formData.append("capacity", String(body.capacity));
-//         if (body.address) formData.append("address", body.address);
-//         if (body.bannerImageFile)
-//           formData.append("bannerImageFile", body.bannerImageFile);
-
-//         return {
-//           url: endpoint.CONFERENCE_STEP.CREATE_BASIC,
-//           method: "POST",
-//           body: formData,
-//         };
-//       },
-//       invalidatesTags: ["ConferenceStep"],
-//     }),
-
-//     //Step 2: Create Price
-//     createConferencePrice: builder.mutation<
-//       ApiResponse<string>,
-//       { conferenceId: string; data: ConferencePriceData }
-//     >({
-//       query: ({ conferenceId, data }) => ({
-//         url: endpoint.CONFERENCE_STEP.CREATE_PRICE(conferenceId),
-//         method: "POST",
-//         body: data,
-//       }),
-//       invalidatesTags: ["ConferenceStep"],
-//     }),
-
-//     //Step 3: Create Sessions
-//     createConferenceSessions: builder.mutation<
-//       ApiResponse<string>,
-//       { conferenceId: string; data: ConferenceSessionData }
-//     >({
-//       query: ({ conferenceId, data }) => ({
-//         url: endpoint.CONFERENCE_STEP.CREATE_SESSION(conferenceId),
-//         method: "POST",
-//         body: data,
-//       }),
-//       invalidatesTags: ["ConferenceStep"],
-//     }),
-
-//     //Step 4: Create Policies
-//     createConferencePolicies: builder.mutation<
-//       ApiResponse<string>,
-//       { conferenceId: string; data: ConferencePolicyData }
-//     >({
-//       query: ({ conferenceId, data }) => ({
-//         url: endpoint.CONFERENCE_STEP.CREATE_POLICY(conferenceId),
-//         method: "POST",
-//         body: data,
-//       }),
-//       invalidatesTags: ["ConferenceStep"],
-//     }),
-
-//     //Step 5: Create Media
-//     createConferenceMedia: builder.mutation<
-//       ApiResponse<string>,
-//       { conferenceId: string; data: ConferenceMediaData }
-//     >({
-//       query: ({ conferenceId, data }) => ({
-//         url: endpoint.CONFERENCE_STEP.CREATE_MEDIA(conferenceId),
-//         method: "POST",
-//         body: data,
-//       }),
-//       invalidatesTags: ["ConferenceStep"],
-//     }),
-
-//     //Step 6: Create Sponsors
-//     createConferenceSponsors: builder.mutation<
-//       ApiResponse<string>,
-//       { conferenceId: string; data: ConferenceSponsorData }
-//     >({
-//       query: ({ conferenceId, data }) => ({
-//         url: endpoint.CONFERENCE_STEP.CREATE_SPONSOR(conferenceId),
-//         method: "POST",
-//         body: data,
-//       }),
-//       invalidatesTags: ["ConferenceStep"],
-//     }),
-//   }),
-// });
-
-// export const {
-//   useCreateBasicConferenceMutation,
-//   useCreateConferencePriceMutation,
-//   useCreateConferenceSessionsMutation,
-//   useCreateConferencePoliciesMutation,
-//   useCreateConferenceMediaMutation,
-//   useCreateConferenceSponsorsMutation,
-// } = conferenceStepApi;
-
 // conferenceStepApi.ts
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { apiClient } from "../api/apiClient";
@@ -135,6 +10,14 @@ import type {
   ConferencePolicyData,
   ConferenceMediaData,
   ConferenceSponsorData,
+
+  ConferenceBasicResponse,
+  Price,
+  Session,
+  Speaker,
+  Policy,
+  
+
 } from "@/types/conference.type";
 
 export const conferenceStepApi = createApi({
@@ -143,7 +26,7 @@ export const conferenceStepApi = createApi({
   tagTypes: ["ConferenceStep"],
 
   endpoints: (builder) => ({
-    // 🧱 Step 1: Create Basic Info
+    //Step 1: Create Basic Info
     createBasicConference: builder.mutation<
       ApiResponse<{ conferenceId: string }>,
       ConferenceBasicForm
@@ -172,7 +55,7 @@ export const conferenceStepApi = createApi({
       invalidatesTags: ["ConferenceStep"],
     }),
 
-    // ✅ NEW: Update Basic Info
+    // UPDATE Basic Info
     updateBasicConference: builder.mutation<
       ApiResponse<{ conferenceId: string }>,
       { conferenceId: string; data: ConferenceBasicForm }
@@ -206,21 +89,23 @@ export const conferenceStepApi = createApi({
       ApiResponse<string>,
       { conferenceId: string; data: ConferencePriceData }
     >({
-      query: ({ conferenceId, data }) => ({
-        url: endpoint.CONFERENCE_STEP.CREATE_PRICE(conferenceId),
-        method: "POST",
-        body: data,
-      }),
+      query: ({ conferenceId, data }) => {
+        return {
+          url: endpoint.CONFERENCE_STEP.CREATE_PRICE(conferenceId),
+          method: "POST",
+          body: data,
+        };
+      },
       invalidatesTags: ["ConferenceStep"],
     }),
 
-    // ✅ NEW: Update Price
+    //Update Price
     updateConferencePrice: builder.mutation<
-      ApiResponse<string>,
-      { conferenceId: string; data: ConferencePriceData }
+      ApiResponse<Price>,
+      { priceId: string; data: Omit<Price, "priceId" | "currentPhase"> }
     >({
-      query: ({ conferenceId, data }) => ({
-        url: endpoint.CONFERENCE_STEP.UPDATE_PRICE(conferenceId),
+      query: ({ priceId, data }) => ({
+        url: endpoint.CONFERENCE_STEP.UPDATE_PRICE(priceId),
         method: "PUT",
         body: data,
       }),
@@ -232,118 +117,182 @@ export const conferenceStepApi = createApi({
       ApiResponse<string>,
       { conferenceId: string; data: ConferenceSessionData }
     >({
-      query: ({ conferenceId, data }) => ({
-        url: endpoint.CONFERENCE_STEP.CREATE_SESSION(conferenceId),
-        method: "POST",
-        body: data,
+      query: ({ conferenceId, data }) => {
+
+        return {
+          url: endpoint.CONFERENCE_STEP.CREATE_SESSION(conferenceId),
+          method: "POST",
+          body: data,
+        };
+      },
+      invalidatesTags: ["ConferenceStep"],
+    }),
+
+    //Update Sessions
+    updateConferenceSession: builder.mutation<
+      ApiResponse<Session>, 
+      { sessionId: string; data: Omit<Session, "sessionId" | "conferenceId" | "room" | "speaker"> }
+    >({
+      query: ({ sessionId, data }) => ({
+        url: endpoint.CONFERENCE_STEP.UPDATE_SESSION(sessionId),
+        method: "PUT",
+        body: data, 
       }),
       invalidatesTags: ["ConferenceStep"],
     }),
 
-    // ✅ NEW: Update Sessions
-    updateConferenceSessions: builder.mutation<
-      ApiResponse<string>,
-      { conferenceId: string; data: ConferenceSessionData }
+
+    //Update Speaker
+    updateConferenceSpeaker: builder.mutation<
+      ApiResponse<Speaker>,
+      { sessionId: string; data: Speaker }
     >({
-      query: ({ conferenceId, data }) => ({
-        url: endpoint.CONFERENCE_STEP.UPDATE_SESSION(conferenceId),
+      query: ({ sessionId, data }) => ({
+        url: endpoint.CONFERENCE_STEP.UPDATE_SPEAKER(sessionId),
         method: "PUT",
         body: data,
       }),
       invalidatesTags: ["ConferenceStep"],
     }),
 
-    // Step 4: Create Policies
+
+
+    //Create Policies
     createConferencePolicies: builder.mutation<
       ApiResponse<string>,
       { conferenceId: string; data: ConferencePolicyData }
     >({
-      query: ({ conferenceId, data }) => ({
-        url: endpoint.CONFERENCE_STEP.CREATE_POLICY(conferenceId),
-        method: "POST",
-        body: data,
-      }),
+      query: ({ conferenceId, data }) => {
+
+
+        return {
+          url: endpoint.CONFERENCE_STEP.CREATE_POLICY(conferenceId),
+          method: "POST",
+          body: data,
+        };
+      },
       invalidatesTags: ["ConferenceStep"],
     }),
 
-    // ✅ NEW: Update Policies
-    updateConferencePolicies: builder.mutation<
-      ApiResponse<string>,
-      { conferenceId: string; data: ConferencePolicyData }
+    //Update Policies
+    updateConferencePolicy: builder.mutation<
+      ApiResponse<Policy>,
+      { policyId: string; data: Omit<Policy, "policyId"> }
     >({
-      query: ({ conferenceId, data }) => ({
-        url: endpoint.CONFERENCE_STEP.UPDATE_POLICY(conferenceId),
+      query: ({ policyId, data }) => ({
+        url: endpoint.CONFERENCE_STEP.UPDATE_POLICY(policyId),
         method: "PUT",
-        body: data,
+        body: data, 
       }),
       invalidatesTags: ["ConferenceStep"],
     }),
 
-    // Step 5: Create Media
+    //Create Media
     createConferenceMedia: builder.mutation<
       ApiResponse<string>,
       { conferenceId: string; data: ConferenceMediaData }
     >({
-      query: ({ conferenceId, data }) => ({
-        url: endpoint.CONFERENCE_STEP.CREATE_MEDIA(conferenceId),
-        method: "POST",
-        body: data,
-      }),
+      query: ({ conferenceId, data }) => {
+
+
+        return {
+          url: endpoint.CONFERENCE_STEP.CREATE_MEDIA(conferenceId),
+          method: "POST",
+          body: data,
+        };
+      },
       invalidatesTags: ["ConferenceStep"],
     }),
 
-    // ✅ NEW: Update Media
+    //Update Media
     updateConferenceMedia: builder.mutation<
-      ApiResponse<string>,
-      { conferenceId: string; data: ConferenceMediaData }
+      ApiResponse<{
+        mediaId: string;
+        mediaUrl: string;
+        mediaTypeId: string;
+      }>,
+      { mediaId: string; mediaFile: File }
     >({
-      query: ({ conferenceId, data }) => ({
-        url: endpoint.CONFERENCE_STEP.UPDATE_MEDIA(conferenceId),
-        method: "PUT",
-        body: data,
-      }),
+      query: ({ mediaId, mediaFile }) => {
+        const formData = new FormData();
+        formData.append("mediaFile", mediaFile);
+
+        return {
+          url: endpoint.CONFERENCE_STEP.UPDATE_MEDIA(mediaId),
+          method: "PUT",
+          body: formData,
+        };
+      },
       invalidatesTags: ["ConferenceStep"],
     }),
 
-    // Step 6: Create Sponsors
+
+    //Create Sponsors
     createConferenceSponsors: builder.mutation<
       ApiResponse<string>,
       { conferenceId: string; data: ConferenceSponsorData }
     >({
-      query: ({ conferenceId, data }) => ({
-        url: endpoint.CONFERENCE_STEP.CREATE_SPONSOR(conferenceId),
-        method: "POST",
-        body: data,
-      }),
+      query: ({ conferenceId, data }) => {
+        return {
+          url: endpoint.CONFERENCE_STEP.CREATE_SPONSOR(conferenceId),
+          method: "POST",
+          body: data,
+        };
+      },
       invalidatesTags: ["ConferenceStep"],
     }),
 
-    // ✅ NEW: Update Sponsors
-    updateConferenceSponsors: builder.mutation<
-      ApiResponse<string>,
-      { conferenceId: string; data: ConferenceSponsorData }
+    //Update Sponsors
+    updateConferenceSponsor: builder.mutation<
+      ApiResponse<{
+        sponsorId: string;
+        name: string;
+        imageUrl: string;
+      }>,
+      { sponsorId: string; name: string; imageFile: File }
     >({
-      query: ({ conferenceId, data }) => ({
-        url: endpoint.CONFERENCE_STEP.UPDATE_SPONSOR(conferenceId),
-        method: "PUT",
-        body: data,
-      }),
+      query: ({ sponsorId, name, imageFile }) => {
+        const formData = new FormData();
+        formData.append("name", name);
+        formData.append("imageFile", imageFile);
+
+        return {
+          url: endpoint.CONFERENCE_STEP.UPDATE_SPONSOR(sponsorId),
+          method: "PUT",
+          body: formData,
+        };
+      },
       invalidatesTags: ["ConferenceStep"],
     }),
+
+
+    //GET
+    //GET BASIC
+    getBasicStepById: builder.query<ApiResponse<ConferenceBasicResponse>, string>({
+      query: (conferenceId) => ({
+        url: endpoint.CONFERENCE_STEP.GET_BASIC(conferenceId),
+        method: "GET",
+      }),
+      providesTags: ["ConferenceStep"],
+    }),
+
   }),
 });
 
 export const {
   useCreateBasicConferenceMutation,
-  useUpdateBasicConferenceMutation, // ✅ Export
+  useUpdateBasicConferenceMutation,
   useCreateConferencePriceMutation,
-  useUpdateConferencePriceMutation, // ✅ Export
+  useUpdateConferencePriceMutation,
   useCreateConferenceSessionsMutation,
-  useUpdateConferenceSessionsMutation, // ✅ Export
+  useUpdateConferenceSessionMutation,
+  useUpdateConferenceSpeakerMutation,
   useCreateConferencePoliciesMutation,
-  useUpdateConferencePoliciesMutation, // ✅ Export
+  useUpdateConferencePolicyMutation,
   useCreateConferenceMediaMutation,
-  useUpdateConferenceMediaMutation, // ✅ Export
+  useUpdateConferenceMediaMutation,
   useCreateConferenceSponsorsMutation,
-  useUpdateConferenceSponsorsMutation, // ✅ Export
+  useUpdateConferenceSponsorMutation,
+
+  useGetBasicStepByIdQuery
 } = conferenceStepApi;

@@ -21,13 +21,6 @@ export function RoomDetail({ room, onClose }: RoomDetailProps) {
           <h3 className="text-2xl font-bold text-gray-900 mb-2">
             {room.displayName}
           </h3>
-          <div className="flex items-center gap-3 mb-4">
-            <StatusBadge status="Phòng" variant="info" />
-            <StatusBadge
-              status={room.status === "available" ? "Có sẵn" : "Không có sẵn"}
-              variant={room.status === "available" ? "success" : "warning"}
-            />
-          </div>
         </div>
       </div>
 

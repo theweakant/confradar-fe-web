@@ -1,7 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { apiClient } from "../api/apiClient";
 import { endpoint } from "../api/endpoint";
-import type { Conference, ConferenceFormData, ConferenceResponse } from "@/types/conference.type";
+import type { ConferenceFormData, ConferenceResponse, RegisteredUserInConference } from "@/types/conference.type";
 import type { ApiResponse } from "@/types/api.type";
 
 export const conferenceApi = createApi({
@@ -77,6 +77,18 @@ export const conferenceApi = createApi({
       }),
       invalidatesTags: ["Conference"],
     }),
+
+    viewRegisteredUsersForConference: builder.query<
+      ApiResponse<RegisteredUserInConference[]>,
+      string
+    >({
+      query: (conferenceId) => ({
+        url: `${endpoint.CONFERENCE.VIEW_REGISTERED_USERS}?conferenceId=${conferenceId}`,
+        method: "GET",
+      }),
+      providesTags: ["Conference"],
+    }),
+      
   }),
 });
 
@@ -88,4 +100,5 @@ export const {
   useCreateConferenceMutation,
   useUpdateConferenceMutation,
   useDeleteConferenceMutation,
+  useViewRegisteredUsersForConferenceQuery
 } = conferenceApi;

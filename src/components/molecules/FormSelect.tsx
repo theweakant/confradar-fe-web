@@ -34,8 +34,8 @@ export function FormSelect({
         } ${disabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
       >
         <option value="">Chọn {label.toLowerCase()}</option>
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
+        {options.map((option, index) => (
+          <option key={`${option.value}-${index}`} value={option.value}>
             {option.label}
           </option>
         ))}

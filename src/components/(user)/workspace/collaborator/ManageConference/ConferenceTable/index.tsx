@@ -10,8 +10,7 @@ import {
 } from "lucide-react";
 
 import { DataTable, Column } from "@/components/molecules/DataTable";
-import { StatusBadge } from "@/components/atoms/StatusBadge";
-import { Conference } from "@/types/conference.type";
+import { Conference, Category } from "@/types/conference.type";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,31 +31,7 @@ export function ConferenceTable({
   onEdit, 
   onDelete 
 }: ConferenceTableProps) {
-  const getStatusLabel = (statusId: string) => {
-    const labels: Record<string, string> = {
-      draft: "Nháp",
-      published: "Đã xuất bản",
-      open: "Đang mở đăng ký",
-      closed: "Đã đóng đăng ký",
-      ongoing: "Đang diễn ra",
-      completed: "Đã kết thúc",
-      cancelled: "Đã hủy"
-    };
-    return labels[statusId] || statusId;
-  };
-
-  const getStatusVariant = (statusId: string): "success" | "danger" | "warning" | "info" => {
-    const variants: Record<string, "success" | "danger" | "warning" | "info"> = {
-      draft: "warning",
-      published: "info",
-      open: "success",
-      closed: "warning",
-      ongoing: "success",
-      completed: "info",
-      cancelled: "danger"
-    };
-    return variants[statusId] || "info";
-  };
+  
 
   const columns: Column<Conference>[] = [
     {
@@ -101,18 +76,8 @@ export function ConferenceTable({
       header: "Danh mục",
       render: (conference) => (
         <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
-          {conference.conferenceCategoryId}
+          {conference.categoryId}
         </span>
-      ),
-    },
-    {
-      key: "globalStatusId",
-      header: "Trạng thái",
-      render: (conference) => (
-        <StatusBadge
-          status={getStatusLabel(conference.globalStatusId)}
-          variant={getStatusVariant(conference.globalStatusId)}
-        />
       ),
     },
     {
@@ -125,15 +90,6 @@ export function ConferenceTable({
             {conference.capacity}
           </span>
         </div>
-      ),
-    },
-    {
-      key: "conferenceRankingId",
-      header: "Ranking",
-      render: (conference) => (
-        <span className="text-sm font-medium text-gray-900">
-          {conference.conferenceRankingId}
-        </span>
       ),
     },
     {
