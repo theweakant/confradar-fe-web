@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Fragment } from 'react';
 import {
   Search,
   Filter,
-  Calendar,
+  Calendar as CalendarIcon,
   MapPin,
   Users,
   ChevronDown,
@@ -17,6 +17,12 @@ import { useConference } from '@/redux/hooks/conference/useConference';
 import { useGetAllCategoriesQuery } from '@/redux/services/category.service';
 import { ConferenceResponse } from '@/types/conference.type';
 import { Category } from '@/types/category.type';
+import { Slider } from "@/components/ui/slider";
+
+import { Popover, Transition } from '@headlessui/react';
+import { DayPicker } from "react-day-picker";
+import "react-day-picker/style.css";
+
 
 interface SearchSortFilterConferenceProps {
   bannerFilter?: 'technical' | 'research' | 'all';
@@ -33,23 +39,64 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
   const [selectedLocation, setSelectedLocation] = useState('all');
   const [selectedPrice, setSelectedPrice] = useState('all');
   const [selectedRating, setSelectedRating] = useState('all');
-  const [startDateFilter, setStartDateFilter] = useState<string | null>(null);
-  const [endDateFilter, setEndDateFilter] = useState<string | null>(null);
+  // const [startDateFilter, setStartDateFilter] = useState<string | null>(null);
+  // const [endDateFilter, setEndDateFilter] = useState<string | null>(null);
+  const [startDateFilter, setStartDateFilter] = useState<Date | null>(null);
+  const [endDateFilter, setEndDateFilter] = useState<Date | null>(null);
+
+  // const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  // const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
+
+  // const startDateFilter = dateRange[0];
+  // const endDateFilter = dateRange[1];
+
   const [sortBy, setSortBy] = useState('date');
   const [currentPage, setCurrentPage] = useState(1);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   const itemsPerPage = 12;
 
-  // API calls
   const { conferences, loading: conferencesLoading, error: conferencesError } = useConference();
   const { data: categoriesData, isLoading: categoriesLoading, error: categoriesError } = useGetAllCategoriesQuery();
+
+  // const allPrices = conferences.flatMap(
+  //   conf => conf.prices?.map(p => p.actualPrice ?? p.ticketPrice ?? 0) ?? []
+  // );
+
+  const allPrices = conferences.flatMap(conf =>
+    (conf?.prices ?? [])
+      .map(p => p?.actualPrice ?? p?.ticketPrice ?? 0)
+      .filter(price => typeof price === 'number' && price > 0)
+  );
+
+  const absoluteMaxPrice = allPrices.length ? Math.max(...allPrices) : 0;
+
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, absoluteMaxPrice]);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, selectedCategory, selectedLocation, selectedPrice, selectedRating, sortBy, bannerFilter]);
 
-  // Build categories options from API
+  //   useEffect(() => {
+  //   if (absoluteMaxPrice > 0) {
+  //     setPriceRange(prev => {
+  //       const prevIsDefault = prev[1] === 0 || prev[1] === 5000000;
+  //       return prevIsDefault
+  //         ? [0, absoluteMaxPrice]
+  //         : [
+  //             Math.min(prev[0], absoluteMaxPrice),
+  //             Math.min(prev[1], absoluteMaxPrice),
+  //           ];
+  //     });
+  //   }
+  // }, [absoluteMaxPrice]);
+
+  useEffect(() => {
+    if (absoluteMaxPrice > 0) {
+      setPriceRange([0, absoluteMaxPrice]);
+    }
+  }, [absoluteMaxPrice]);
+
   const categories = [
     { value: 'all', label: 'Tất cả danh mục' },
     ...(categoriesData?.data?.map((cat: Category) => ({
@@ -58,38 +105,32 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
     })) || [])
   ];
 
-  const locations = [
-    { value: 'all', label: 'Tất cả địa điểm' },
-    { value: 'hanoi', label: 'Hà Nội' },
-    { value: 'hcm', label: 'TP.HCM' },
-    { value: 'danang', label: 'Đà Nẵng' },
-    { value: 'cantho', label: 'Cần Thơ' }
-  ];
-
-  const priceRanges = [
-    { value: 'all', label: 'Tất cả mức giá' },
-    { value: 'free', label: 'Miễn phí' },
-    { value: 'under1m', label: 'Dưới 1 triệu' },
-    { value: '1m-2m', label: '1-2 triệu' },
-    { value: 'above2m', label: 'Trên 2 triệu' }
-  ];
-
-  const ratings = [
-    { value: 'all', label: 'Tất cả đánh giá' },
-    { value: '4plus', label: '4+ sao' },
-    { value: '4.5plus', label: '4.5+ sao' },
-    { value: '4.8plus', label: '4.8+ sao' }
-  ];
+  // const locations = [
+  //   { value: 'all', label: 'Tất cả địa điểm' },
+  //   { value: 'hanoi', label: 'Hà Nội' },
+  //   { value: 'hcm', label: 'TP.HCM' },
+  //   { value: 'danang', label: 'Đà Nẵng' },
+  //   { value: 'cantho', label: 'Cần Thơ' }
+  // ];
 
   const sortOptions = [
     { value: 'date', label: 'Ngày diễn ra' },
     { value: 'price-low', label: 'Giá thấp đến cao' },
     { value: 'price-high', label: 'Giá cao đến thấp' },
-    { value: 'rating', label: 'Đánh giá cao nhất' },
-    { value: 'attendees', label: 'Nhiều người tham gia' }
+    { value: 'attendees-low', label: 'Số người tham gia thấp → cao' },
+    { value: 'attendees-high', label: 'Số người tham gia cao → thấp' },
   ];
 
-  // Filter và sort logic
+  const getMinPrice = (conf: ConferenceResponse) => {
+    if (!conf.prices || conf.prices.length === 0) return null;
+    return Math.min(...conf.prices.map(p => p.ticketPrice ?? Infinity));
+  };
+
+  const getMaxPrice = (conf: ConferenceResponse) => {
+    if (!conf.prices || conf.prices.length === 0) return null;
+    return Math.max(...conf.prices.map(p => p.ticketPrice ?? 0));
+  };
+
   const filteredConferences = conferences.filter((conf: ConferenceResponse) => {
     const matchesSearch = (conf.conferenceName?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
       (conf.description?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
@@ -101,8 +142,8 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
       ? true
       : (selectedCategory === 'all' || conf.categoryId === selectedCategory);
 
-    const matchesLocation = selectedLocation === 'all' ||
-      (conf.address?.toLowerCase().includes(locations.find(l => l.value === selectedLocation)?.label.toLowerCase() || '') || false);
+    // const matchesLocation = selectedLocation === 'all' ||
+    //   (conf.address?.toLowerCase().includes(locations.find(l => l.value === selectedLocation)?.label.toLowerCase() || '') || false);
 
     const matchesRating = selectedRating === 'all';
 
@@ -110,14 +151,40 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
     const confEndTime = new Date(conf.endDate || '');
     let matchesDate = true;
 
-    if (startDateFilter) {
-      matchesDate = matchesDate && confEndTime >= new Date(startDateFilter);
-    }
-    if (endDateFilter) {
-      matchesDate = matchesDate && confStartTime <= new Date(endDateFilter);
+    if (startDateFilter && endDateFilter) {
+      const filterStart = new Date(startDateFilter);
+      const filterEnd = new Date(endDateFilter);
+      matchesDate = confStartTime <= filterEnd && confEndTime >= filterStart;
+    } else if (startDateFilter) {
+      const filterStart = new Date(startDateFilter);
+      matchesDate = confEndTime >= filterStart;
+    } else if (endDateFilter) {
+      const filterEnd = new Date(endDateFilter);
+      matchesDate = confStartTime <= filterEnd;
     }
 
-    return matchesSearch && matchesBannerFilter && matchesCategory && matchesLocation && matchesRating && matchesDate;
+    // if (startDateFilter) {
+    //   matchesDate = matchesDate && confEndTime >= new Date(startDateFilter);
+    // }
+    // if (endDateFilter) {
+    //   matchesDate = matchesDate && confStartTime <= new Date(endDateFilter);
+    // }
+
+    if (absoluteMaxPrice === 0) {
+      return matchesSearch && matchesBannerFilter && matchesCategory && matchesRating && matchesDate;
+    }
+
+    const minPrice = getMinPrice(conf);
+    const maxPrice = getMaxPrice(conf);
+
+    if (minPrice === null || maxPrice === null) {
+      return matchesSearch && matchesBannerFilter && matchesCategory && matchesRating && matchesDate;
+    }
+
+    const matchesPrice =
+      (minPrice <= priceRange[1]) && (maxPrice >= priceRange[0]);
+
+    return matchesSearch && matchesBannerFilter && matchesCategory && matchesRating && matchesDate && matchesPrice;
   });
 
   // const filteredConferences = mockConferences.filter(conf => {
@@ -136,24 +203,26 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
 
   const sortedConferences = [...filteredConferences].sort((a, b) => {
     switch (sortBy) {
-      case 'price-low':
-        // Since API doesn't have direct price, we'll sort by capacity as alternative
-        return (a.capacity || 0) - (b.capacity || 0);
-      case 'price-high':
-        return (b.capacity || 0) - (a.capacity || 0);
-      case 'rating':
-        // Sort by name as alternative since no rating in API
-        return (a.conferenceName || '').localeCompare(b.conferenceName || '');
-      case 'attendees':
-        // Sort by capacity as closest to attendees
-        return (b.capacity || 0) - (a.capacity || 0);
+      case 'price-low': {
+        const aMin = getMinPrice(a) ?? Infinity;
+        const bMin = getMinPrice(b) ?? Infinity;
+        return aMin - bMin;
+      }
+      case 'price-high': {
+        const aMin = getMinPrice(a) ?? 0;
+        const bMin = getMinPrice(b) ?? 0;
+        return bMin - aMin;
+      }
+      case 'attendees-low':
+        return (a.capacity ?? 0) - (b.capacity ?? 0);
+      case 'attendees-high':
+        return (b.capacity ?? 0) - (a.capacity ?? 0);
       case 'date':
       default:
         return new Date(a.startDate || '').getTime() - new Date(b.startDate || '').getTime();
     }
   });
 
-  // Pagination
   const totalPages = Math.ceil(sortedConferences.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedConferences = sortedConferences.slice(startIndex, startIndex + itemsPerPage);
@@ -267,8 +336,107 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
               />
             </div>
 
-            {/* Start Date */}
             <div className="flex flex-col w-full">
+              <label className="text-xs text-gray-300 mb-1">Ngày bắt đầu</label>
+              <Popover className="relative w-full">
+                {({ open }) => (
+                  <>
+                    <Popover.Button
+                      className="w-full px-4 py-2 text-left bg-gray-800 text-white border border-gray-600 rounded-lg flex justify-between items-center hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      {startDateFilter ? startDateFilter.toLocaleDateString() : 'Chọn ngày'}
+                      <ChevronDown className={`ml-2 transition-transform ${open ? 'rotate-180' : ''}`} />
+                    </Popover.Button>
+                    <Transition
+                      as={Fragment}
+                      enter="transition ease-out duration-200"
+                      enterFrom="opacity-0 translate-y-1"
+                      enterTo="opacity-100 translate-y-0"
+                      leave="transition ease-in duration-150"
+                      leaveFrom="opacity-100 translate-y-0"
+                      leaveTo="opacity-0 translate-y-1"
+                    >
+                      <Popover.Panel className="absolute z-10 mt-2 bg-gray-800 border border-gray-600 rounded-lg p-2 shadow-lg w-72">
+                        <DayPicker
+                          mode="single"
+                          selected={startDateFilter || undefined}
+                          onSelect={(date) => setStartDateFilter(date ?? null)}
+                          required={false}
+                        // className="rounded-lg bg-gray-700 text-white"
+                        />
+
+                        <div className="flex justify-between mt-2 gap-2">
+                          <button
+                            onClick={() => setStartDateFilter(null)}
+                            className="px-3 py-1 text-xs bg-gray-700 hover:bg-gray-600 rounded"
+                          >
+                            Clear
+                          </button>
+                          <button
+                            onClick={() => setStartDateFilter(new Date())}
+                            className="px-3 py-1 text-xs bg-gray-700 hover:bg-gray-600 rounded"
+                          >
+                            Today
+                          </button>
+                        </div>
+                      </Popover.Panel>
+                    </Transition>
+                  </>
+                )}
+              </Popover>
+            </div>
+
+            <div className="flex flex-col w-full">
+              <label className="text-xs text-gray-300 mb-1">Ngày kết thúc</label>
+              <Popover className="relative w-full">
+                {({ open }) => (
+                  <>
+                    <Popover.Button
+                      className="w-full px-4 py-2 text-left bg-gray-800 text-white border border-gray-600 rounded-lg flex justify-between items-center hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      {endDateFilter ? endDateFilter.toLocaleDateString() : 'Chọn ngày'}
+                      <ChevronDown className={`ml-2 transition-transform ${open ? 'rotate-180' : ''}`} />
+                    </Popover.Button>
+                    <Transition
+                      as={Fragment}
+                      enter="transition ease-out duration-200"
+                      enterFrom="opacity-0 translate-y-1"
+                      enterTo="opacity-100 translate-y-0"
+                      leave="transition ease-in duration-150"
+                      leaveFrom="opacity-100 translate-y-0"
+                      leaveTo="opacity-0 translate-y-1"
+                    >
+                      <Popover.Panel className="absolute z-10 mt-2 bg-gray-800 border border-gray-600 rounded-lg p-2 shadow-lg w-72">
+                        <DayPicker
+                          mode="single"
+                          selected={endDateFilter || undefined}
+                          onSelect={(date) => setEndDateFilter(date ?? null)}
+                          required={false}
+                        // className="rounded-lg bg-gray-700 text-white"
+                        />
+                        <div className="flex justify-between mt-2 gap-2">
+                          <button
+                            onClick={() => setEndDateFilter(null)}
+                            className="px-3 py-1 text-xs bg-gray-700 hover:bg-gray-600 rounded"
+                          >
+                            Clear
+                          </button>
+                          <button
+                            onClick={() => setEndDateFilter(new Date())}
+                            className="px-3 py-1 text-xs bg-gray-700 hover:bg-gray-600 rounded"
+                          >
+                            Today
+                          </button>
+                        </div>
+                      </Popover.Panel>
+                    </Transition>
+                  </>
+                )}
+              </Popover>
+            </div>
+
+
+            {/* <div className="flex flex-col w-full">
               <label className="text-xs text-gray-300 mb-1">Ngày bắt đầu</label>
               <input
                 type="date"
@@ -278,7 +446,6 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
               />
             </div>
 
-            {/* End Date */}
             <div className="flex flex-col w-full">
               <label className="text-xs text-gray-300 mb-1">Ngày kết thúc</label>
               <input
@@ -287,7 +454,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
                 onChange={(e) => setEndDateFilter(e.target.value)}
                 className="w-full px-4 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg shadow-md focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
-            </div>
+            </div> */}
 
             {/* <DropdownSelect
               id="location"
@@ -296,37 +463,56 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
               onChange={setSelectedLocation}
               placeholder="Địa điểm"
             /> */}
-            <div className="flex flex-col w-full">
-              <label className="text-xs text-gray-300 mb-1">Mức giá</label>
-              <DropdownSelect
-                id="price"
-                value={selectedPrice}
-                options={priceRanges}
-                onChange={setSelectedPrice}
-                placeholder="Chọn mức giá"
+
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium">Khoảng giá (VND)</label>
+              <Slider
+                min={0}
+                max={absoluteMaxPrice}
+                step={50000}
+                value={priceRange}
+                disabled={!allPrices.length}
+                onValueChange={(value) => setPriceRange(value as [number, number])}
               />
+              {!allPrices.length && (
+                <p className="text-xs text-red-400 italic">
+                  Bộ lọc giá hiện không khả dụng
+                </p>
+              )}
+
+              {allPrices.length > 0 && (
+                <div className="flex justify-between text-xs text-gray-400">
+                  <span>{priceRange[0].toLocaleString()}đ</span>
+                  <span>{priceRange[1].toLocaleString()}đ</span>
+                </div>
+              )}
+              {/* <div className="flex justify-between text-xs text-gray-600">
+                <span>{priceRange[0].toLocaleString()}đ</span>
+                <span>{priceRange[1].toLocaleString()}đ</span>
+              </div>
+ */}
+
             </div>
             <div className="flex flex-col w-full">
-              <label className="text-xs text-gray-300 mb-1">Đánh giá</label>
+              <label className="text-xs text-gray-300 mb-1">Sắp xếp theo:</label>
               <DropdownSelect
-                id="rating"
-                value={selectedRating}
-                options={ratings}
-                onChange={setSelectedRating}
-                placeholder="Chọn đánh giá"
+                id="sort"
+                value={sortBy}
+                options={sortOptions}
+                onChange={setSortBy}
+                placeholder="Sắp xếp"
               />
             </div>
-            <DropdownSelect
+            {/* <DropdownSelect
               id="sort"
               value={sortBy}
               options={sortOptions}
               onChange={setSortBy}
               placeholder="Sắp xếp"
-            />
+            /> */}
           </div>
         </div>
 
-        {/* Results Header */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-white">
             Kết quả ({sortedConferences.length} hội nghị)
@@ -339,14 +525,12 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
           </div>
         </div>
 
-        {/* Loading State */}
         {conferencesLoading && (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
         )}
 
-        {/* Error State */}
         {conferencesError && (
           <div className="flex justify-center items-center py-12">
             <div className="text-red-400 text-center">
@@ -356,72 +540,78 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
           </div>
         )}
 
-        {/* Conference Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-          {paginatedConferences.map((conference: ConferenceResponse) => (
-            <div key={conference.conferenceId}
-              onClick={() => router.push(`/customer/discovery/conference-detail/${conference.conferenceId}`)}
-              className="group relative bg-gray-800/80 rounded-xl border border-gray-700 overflow-hidden
-             cursor-pointer transition-all duration-500
-             hover:scale-[1.03] hover:border-blue-500 hover:shadow-[0_12px_30px_rgba(59,130,246,0.4)]"
-            >
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-blue-500/10 via-transparent to-blue-500/10 blur-xl"></div>
-              </div>
+          {paginatedConferences.map((conference: ConferenceResponse) => {
+            const minPrice = getMinPrice(conference);
+            const maxPrice = getMaxPrice(conference);
 
-              {/* Conference Image */}
-              <div className="relative aspect-video overflow-hidden">
-                <Image
-                  src={conference.bannerImageUrl || '/images/customer_route/confbannerbg2.jpg'}
-                  alt={conference.conferenceName || 'Conference'}
-                  fill
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:brightness-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent"></div>
-              </div>
+            const displayPrice =
+              minPrice !== null && maxPrice !== null
+                ? minPrice === maxPrice
+                  ? `${minPrice.toLocaleString()}đ`
+                  : `${minPrice.toLocaleString()}đ - ${maxPrice.toLocaleString()}đ`
+                : 'Chưa cập nhật';
 
-              {/* Conference Info */}
-              <div className="p-4">
-                <h3 className="font-semibold text-white mb-2 line-clamp-2 group-hover:text-blue-400 transition-colors duration-300">
-                  {conference.conferenceName}
-                </h3>
-                <p className="text-sm text-gray-400 mb-3 line-clamp-2">{conference.description}</p>
+            return (
+              <div
+                key={conference.conferenceId}
+                onClick={() => router.push(`/customer/discovery/conference-detail/${conference.conferenceId}`)}
+                className="group relative bg-gray-800/80 rounded-xl border border-gray-700 overflow-hidden
+          cursor-pointer transition-all duration-500
+          hover:scale-[1.03] hover:border-blue-500 hover:shadow-[0_12px_30px_rgba(59,130,246,0.4)]"
+              >
+                <div className="relative aspect-video overflow-hidden">
+                  <Image
+                    src={conference.bannerImageUrl || '/images/customer_route/confbannerbg2.jpg'}
+                    alt={conference.conferenceName || 'Conference'}
+                    fill
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:brightness-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent"></div>
+                </div>
 
-                {/* Date & Location */}
-                <div className="flex items-center gap-4 mb-3 text-xs text-gray-400">
-                  <div className="flex items-center gap-1">
-                    <Calendar size={12} />
-                    <span>{formatDate(conference.startDate || '')}</span>
+                <div className="p-4">
+                  <h3 className="font-semibold text-white mb-2 line-clamp-2 group-hover:text-blue-400 transition-colors duration-300">
+                    {conference.conferenceName || 'Chưa có tên'}
+                  </h3>
+                  <p className="text-sm text-gray-400 mb-3 line-clamp-2">
+                    {conference.description || 'Chưa có mô tả'}
+                  </p>
+
+                  <div className="flex items-center gap-2 mb-2 text-xs text-gray-400">
+                    <CalendarIcon size={12} />
+                    <span>
+                      {conference.startDate ? formatDate(conference.startDate) : '...'} →{' '}
+                      {conference.endDate ? formatDate(conference.endDate) : '...'}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-1">
+
+                  <div className="flex items-center gap-2 mb-2 text-xs text-gray-400">
                     <MapPin size={12} />
-                    <span>{conference.address}</span>
+                    <span>{conference.address || 'Địa điểm chưa xác định'}</span>
                   </div>
-                </div>
 
-                {/* Capacity & Type */}
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-1 text-xs text-gray-400">
-                    <Users size={12} />
-                    <span>{conference.capacity}</span>
-                  </div>
-                  <div className="text-xs text-blue-400">
-                    {conference.isResearchConference ? 'Nghiên cứu' : 'Công nghệ'}
-                  </div>
-                </div>
+                  <div className="text-xs text-gray-400 mb-2">Giá: {displayPrice}</div>
 
-                {/* Date range */}
-                <div className="flex items-center justify-between">
-                  <div className="text-xs text-gray-400">
-                    {conference.endDate && formatDate(conference.endDate)}
+                  <div className="flex items-center justify-between text-xs text-gray-400">
+                    <div className="flex items-center gap-1">
+                      <Users size={12} />
+                      <span>{conference.capacity || 0}</span>
+                    </div>
+                    <div className="text-xs text-blue-400">
+                      {conference.isResearchConference !== undefined
+                        ? conference.isResearchConference
+                          ? 'Nghiên cứu'
+                          : 'Công nghệ'
+                        : 'Chưa xác định'}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-2">
             <button
