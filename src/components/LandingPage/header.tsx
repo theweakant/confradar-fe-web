@@ -4,9 +4,12 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
 import { useState } from "react"
+import { useAppSelector } from "@/redux/hooks/hooks"
+import { RootState } from "@/redux/store"
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const accessToken = useAppSelector((state: RootState) => state.auth.accessToken)
 
   return (
     <header className="bg-black sticky top-0 z-50 w-full">
@@ -50,6 +53,27 @@ export default function Header() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center">
+            {accessToken ? (
+              <Link href="/customer">
+                <Button
+                  variant="outline"
+                  className="border-white text-white hover:bg-white hover:text-black uppercase tracking-wide bg-transparent"
+                >
+                  {"Profile"}
+                </Button>
+              </Link>
+            ) : (
+              <Link href="/auth/login">
+                <Button
+                  variant="outline"
+                  className="border-white text-white hover:bg-white hover:text-black uppercase tracking-wide bg-transparent"
+                >
+                  Đăng nhập
+                </Button>
+              </Link>
+            )}
+          </div>
+          {/* <div className="hidden md:flex items-center">
             <Link href="/auth/login">
               <Button
                 variant="outline"
@@ -58,7 +82,7 @@ export default function Header() {
                 Đăng nhập
               </Button>
             </Link>
-          </div>
+          </div> */}
 
           {/* Mobile menu button */}
           <button className="md:hidden text-white" onClick={() => setIsMenuOpen(!isMenuOpen)}>

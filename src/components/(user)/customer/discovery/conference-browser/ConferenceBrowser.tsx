@@ -1,26 +1,26 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Fragment } from 'react';
 import {
-  Search,
-  Filter,
-  Calendar,
-  MapPin,
-  Users,
+  Calendar as CalendarIcon,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { useConference } from '@/redux/hooks/conference/useConference';
 import { useGetAllCategoriesQuery } from '@/redux/services/category.service';
 import { ConferenceResponse } from '@/types/conference.type';
 import { Category } from '@/types/category.type';
 
+import "react-day-picker/style.css";
+import SearchFilter from './SearchFilter';
+import ConferenceList from './ConferenceList';
+import Pagination from './Pagination';
+
+
 interface SearchSortFilterConferenceProps {
   bannerFilter?: 'technical' | 'research' | 'all';
 }
+
 
 // const SearchSortFilterConference: React.FC = () => {
 const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
@@ -33,21 +33,64 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
   const [selectedLocation, setSelectedLocation] = useState('all');
   const [selectedPrice, setSelectedPrice] = useState('all');
   const [selectedRating, setSelectedRating] = useState('all');
+  // const [startDateFilter, setStartDateFilter] = useState<string | null>(null);
+  // const [endDateFilter, setEndDateFilter] = useState<string | null>(null);
+  const [startDateFilter, setStartDateFilter] = useState<Date | null>(null);
+  const [endDateFilter, setEndDateFilter] = useState<Date | null>(null);
+
+  // const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  // const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
+
+  // const startDateFilter = dateRange[0];
+  // const endDateFilter = dateRange[1];
+
   const [sortBy, setSortBy] = useState('date');
   const [currentPage, setCurrentPage] = useState(1);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   const itemsPerPage = 12;
 
-  // API calls
   const { conferences, loading: conferencesLoading, error: conferencesError } = useConference();
   const { data: categoriesData, isLoading: categoriesLoading, error: categoriesError } = useGetAllCategoriesQuery();
+
+  // const allPrices = conferences.flatMap(
+  //   conf => conf.prices?.map(p => p.actualPrice ?? p.ticketPrice ?? 0) ?? []
+  // );
+
+  const allPrices = conferences.flatMap(conf =>
+    (conf?.prices ?? [])
+      .map(p => p?.actualPrice ?? p?.ticketPrice ?? 0)
+      .filter(price => typeof price === 'number' && price > 0)
+  );
+
+  const absoluteMaxPrice = allPrices.length ? Math.max(...allPrices) : 0;
+
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, absoluteMaxPrice]);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, selectedCategory, selectedLocation, selectedPrice, selectedRating, sortBy, bannerFilter]);
 
-  // Build categories options from API
+  //   useEffect(() => {
+  //   if (absoluteMaxPrice > 0) {
+  //     setPriceRange(prev => {
+  //       const prevIsDefault = prev[1] === 0 || prev[1] === 5000000;
+  //       return prevIsDefault
+  //         ? [0, absoluteMaxPrice]
+  //         : [
+  //             Math.min(prev[0], absoluteMaxPrice),
+  //             Math.min(prev[1], absoluteMaxPrice),
+  //           ];
+  //     });
+  //   }
+  // }, [absoluteMaxPrice]);
+
+  useEffect(() => {
+    if (absoluteMaxPrice > 0) {
+      setPriceRange([0, absoluteMaxPrice]);
+    }
+  }, [absoluteMaxPrice]);
+
   const categories = [
     { value: 'all', label: 'Tất cả danh mục' },
     ...(categoriesData?.data?.map((cat: Category) => ({
@@ -56,43 +99,36 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
     })) || [])
   ];
 
-  const locations = [
-    { value: 'all', label: 'Tất cả địa điểm' },
-    { value: 'hanoi', label: 'Hà Nội' },
-    { value: 'hcm', label: 'TP.HCM' },
-    { value: 'danang', label: 'Đà Nẵng' },
-    { value: 'cantho', label: 'Cần Thơ' }
-  ];
-
-  const priceRanges = [
-    { value: 'all', label: 'Tất cả mức giá' },
-    { value: 'free', label: 'Miễn phí' },
-    { value: 'under1m', label: 'Dưới 1 triệu' },
-    { value: '1m-2m', label: '1-2 triệu' },
-    { value: 'above2m', label: 'Trên 2 triệu' }
-  ];
-
-  const ratings = [
-    { value: 'all', label: 'Tất cả đánh giá' },
-    { value: '4plus', label: '4+ sao' },
-    { value: '4.5plus', label: '4.5+ sao' },
-    { value: '4.8plus', label: '4.8+ sao' }
-  ];
+  // const locations = [
+  //   { value: 'all', label: 'Tất cả địa điểm' },
+  //   { value: 'hanoi', label: 'Hà Nội' },
+  //   { value: 'hcm', label: 'TP.HCM' },
+  //   { value: 'danang', label: 'Đà Nẵng' },
+  //   { value: 'cantho', label: 'Cần Thơ' }
+  // ];
 
   const sortOptions = [
     { value: 'date', label: 'Ngày diễn ra' },
     { value: 'price-low', label: 'Giá thấp đến cao' },
     { value: 'price-high', label: 'Giá cao đến thấp' },
-    { value: 'rating', label: 'Đánh giá cao nhất' },
-    { value: 'attendees', label: 'Nhiều người tham gia' }
+    { value: 'attendees-low', label: 'Số người tham gia thấp → cao' },
+    { value: 'attendees-high', label: 'Số người tham gia cao → thấp' },
   ];
 
-  // Filter và sort logic
+  const getMinPrice = (conf: ConferenceResponse) => {
+    if (!conf.prices || conf.prices.length === 0) return null;
+    return Math.min(...conf.prices.map(p => p.ticketPrice ?? Infinity));
+  };
+
+  const getMaxPrice = (conf: ConferenceResponse) => {
+    if (!conf.prices || conf.prices.length === 0) return null;
+    return Math.max(...conf.prices.map(p => p.ticketPrice ?? 0));
+  };
+
   const filteredConferences = conferences.filter((conf: ConferenceResponse) => {
     const matchesSearch = (conf.conferenceName?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
       (conf.description?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
 
-    // Determine category type based on isResearchConference flag
     const confCategory = conf.isResearchConference ? 'research' : 'technical';
     const matchesBannerFilter = bannerFilter === 'all' || confCategory === bannerFilter;
 
@@ -100,13 +136,49 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
       ? true
       : (selectedCategory === 'all' || conf.categoryId === selectedCategory);
 
-    const matchesLocation = selectedLocation === 'all' ||
-      (conf.address?.toLowerCase().includes(locations.find(l => l.value === selectedLocation)?.label.toLowerCase() || '') || false);
+    // const matchesLocation = selectedLocation === 'all' ||
+    //   (conf.address?.toLowerCase().includes(locations.find(l => l.value === selectedLocation)?.label.toLowerCase() || '') || false);
 
-    // Since API doesn't have rating, we'll skip rating filter for now
     const matchesRating = selectedRating === 'all';
 
-    return matchesSearch && matchesBannerFilter && matchesCategory && matchesLocation && matchesRating;
+    const confStartTime = new Date(conf.startDate || '');
+    const confEndTime = new Date(conf.endDate || '');
+    let matchesDate = true;
+
+    if (startDateFilter && endDateFilter) {
+      const filterStart = new Date(startDateFilter);
+      const filterEnd = new Date(endDateFilter);
+      matchesDate = confStartTime <= filterEnd && confEndTime >= filterStart;
+    } else if (startDateFilter) {
+      const filterStart = new Date(startDateFilter);
+      matchesDate = confEndTime >= filterStart;
+    } else if (endDateFilter) {
+      const filterEnd = new Date(endDateFilter);
+      matchesDate = confStartTime <= filterEnd;
+    }
+
+    // if (startDateFilter) {
+    //   matchesDate = matchesDate && confEndTime >= new Date(startDateFilter);
+    // }
+    // if (endDateFilter) {
+    //   matchesDate = matchesDate && confStartTime <= new Date(endDateFilter);
+    // }
+
+    if (absoluteMaxPrice === 0) {
+      return matchesSearch && matchesBannerFilter && matchesCategory && matchesRating && matchesDate;
+    }
+
+    const minPrice = getMinPrice(conf);
+    const maxPrice = getMaxPrice(conf);
+
+    if (minPrice === null || maxPrice === null) {
+      return matchesSearch && matchesBannerFilter && matchesCategory && matchesRating && matchesDate;
+    }
+
+    const matchesPrice =
+      (minPrice <= priceRange[1]) && (maxPrice >= priceRange[0]);
+
+    return matchesSearch && matchesBannerFilter && matchesCategory && matchesRating && matchesDate && matchesPrice;
   });
 
   // const filteredConferences = mockConferences.filter(conf => {
@@ -125,24 +197,26 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
 
   const sortedConferences = [...filteredConferences].sort((a, b) => {
     switch (sortBy) {
-      case 'price-low': 
-        // Since API doesn't have direct price, we'll sort by capacity as alternative
-        return (a.capacity || 0) - (b.capacity || 0);
-      case 'price-high': 
-        return (b.capacity || 0) - (a.capacity || 0);
-      case 'rating': 
-        // Sort by name as alternative since no rating in API
-        return (a.conferenceName || '').localeCompare(b.conferenceName || '');
-      case 'attendees': 
-        // Sort by capacity as closest to attendees
-        return (b.capacity || 0) - (a.capacity || 0);
+      case 'price-low': {
+        const aMin = getMinPrice(a) ?? Infinity;
+        const bMin = getMinPrice(b) ?? Infinity;
+        return aMin - bMin;
+      }
+      case 'price-high': {
+        const aMin = getMinPrice(a) ?? 0;
+        const bMin = getMinPrice(b) ?? 0;
+        return bMin - aMin;
+      }
+      case 'attendees-low':
+        return (a.capacity ?? 0) - (b.capacity ?? 0);
+      case 'attendees-high':
+        return (b.capacity ?? 0) - (a.capacity ?? 0);
       case 'date':
-      default: 
+      default:
         return new Date(a.startDate || '').getTime() - new Date(b.startDate || '').getTime();
     }
   });
 
-  // Pagination
   const totalPages = Math.ceil(sortedConferences.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedConferences = sortedConferences.slice(startIndex, startIndex + itemsPerPage);
@@ -214,76 +288,31 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
   );
 
   return (
-    // <div className="min-h-screen bg-black text-white p-4">
     <div className="text-white p-4 pb-12">
-      {/* <div className="max-w-7xl mx-auto"> */}
-      {/* <div className="max-w-6xl mx-auto bg-gray-900/80 backdrop-blur-sm border border-gray-700 rounded-2xl p-6 mt-8 shadow-2xl"> */}
       <div className="max-w-6xl mx-auto bg-gray-900/90 backdrop-blur-sm border border-gray-600/50 rounded-2xl p-6 mt-8 shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
 
-        {/* Search Bar */}
-        <div className="mb-6">
-          <div className="relative max-w-2xl mx-auto">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-            <input
-              type="text"
-              placeholder="Tìm kiếm hội nghị..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-md"
-            // className="w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-        </div>
+        <SearchFilter
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          startDateFilter={startDateFilter}
+          setStartDateFilter={setStartDateFilter}
+          endDateFilter={endDateFilter}
+          setEndDateFilter={setEndDateFilter}
+          priceRange={priceRange}
+          setPriceRange={setPriceRange}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          categories={categories}
+          absoluteMaxPrice={absoluteMaxPrice}
+          allPrices={allPrices}
+          sortOptions={sortOptions}
+          openDropdown={openDropdown}
+          setOpenDropdown={setOpenDropdown}
+          DropdownSelect={DropdownSelect}
+        />
 
-        {/* Filters */}
-        {/* <div className="mb-8 p-6 bg-gray-900 rounded-lg border border-gray-800"> */}
-        {/* <div className="mb-8 p-6 rounded-lg"> */}
-        <div className="mb-8 p-6 rounded-lg bg-gray-800/50 border border-gray-700/50 shadow-lg">
-          <div className="flex items-center gap-4 mb-4">
-            <Filter size={20} className="text-blue-400" />
-            <h3 className="text-lg font-semibold text-white">Bộ lọc</h3>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            <DropdownSelect
-              id="category"
-              value={selectedCategory}
-              options={categories}
-              onChange={setSelectedCategory}
-              placeholder="Danh mục"
-            />
-            <DropdownSelect
-              id="location"
-              value={selectedLocation}
-              options={locations}
-              onChange={setSelectedLocation}
-              placeholder="Địa điểm"
-            />
-            <DropdownSelect
-              id="price"
-              value={selectedPrice}
-              options={priceRanges}
-              onChange={setSelectedPrice}
-              placeholder="Mức giá"
-            />
-            <DropdownSelect
-              id="rating"
-              value={selectedRating}
-              options={ratings}
-              onChange={setSelectedRating}
-              placeholder="Đánh giá"
-            />
-            <DropdownSelect
-              id="sort"
-              value={sortBy}
-              options={sortOptions}
-              onChange={setSortBy}
-              placeholder="Sắp xếp"
-            />
-          </div>
-        </div>
-
-        {/* Results Header */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-white">
             Kết quả ({sortedConferences.length} hội nghị)
@@ -296,14 +325,12 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
           </div>
         </div>
 
-        {/* Loading State */}
         {conferencesLoading && (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
         )}
 
-        {/* Error State */}
         {conferencesError && (
           <div className="flex justify-center items-center py-12">
             <div className="text-red-400 text-center">
@@ -313,113 +340,19 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
           </div>
         )}
 
-        {/* Conference Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-          {paginatedConferences.map((conference: ConferenceResponse) => (
-            <div key={conference.conferenceId}
-              onClick={() => router.push(`/customer/discovery/conference-detail/${conference.conferenceId}`)}
-              className="group relative bg-gray-800/80 rounded-xl border border-gray-700 overflow-hidden
-             cursor-pointer transition-all duration-500
-             hover:scale-[1.03] hover:border-blue-500 hover:shadow-[0_12px_30px_rgba(59,130,246,0.4)]"
-            >
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-blue-500/10 via-transparent to-blue-500/10 blur-xl"></div>
-              </div>
+        <ConferenceList
+          paginatedConferences={paginatedConferences}
+          getMinPrice={getMinPrice}
+          getMaxPrice={getMaxPrice}
+          formatDate={formatDate}
+          onCardClick={(conferenceId) => router.push(`/customer/discovery/conference-detail/${conferenceId}`)}
+        />
 
-              {/* Conference Image */}
-              <div className="relative aspect-video overflow-hidden">
-                <Image
-                  src={conference.bannerImageUrl || '/images/customer_route/confbannerbg2.jpg'}
-                  alt={conference.conferenceName || 'Conference'}
-                  fill
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:brightness-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent"></div>
-              </div>
-
-              {/* Conference Info */}
-              <div className="p-4">
-                <h3 className="font-semibold text-white mb-2 line-clamp-2 group-hover:text-blue-400 transition-colors duration-300">
-                  {conference.conferenceName}
-                </h3>
-                <p className="text-sm text-gray-400 mb-3 line-clamp-2">{conference.description}</p>
-
-                {/* Date & Location */}
-                <div className="flex items-center gap-4 mb-3 text-xs text-gray-400">
-                  <div className="flex items-center gap-1">
-                    <Calendar size={12} />
-                    <span>{formatDate(conference.startDate || '')}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <MapPin size={12} />
-                    <span>{conference.address}</span>
-                  </div>
-                </div>
-
-                {/* Capacity & Type */}
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-1 text-xs text-gray-400">
-                    <Users size={12} />
-                    <span>{conference.capacity}</span>
-                  </div>
-                  <div className="text-xs text-blue-400">
-                    {conference.isResearchConference ? 'Nghiên cứu' : 'Công nghệ'}
-                  </div>
-                </div>
-
-                {/* Date range */}
-                <div className="flex items-center justify-between">
-                  <div className="text-xs text-gray-400">
-                    {conference.endDate && formatDate(conference.endDate)}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2">
-            <button
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className="flex items-center gap-1 px-3 py-2 bg-gray-800 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-700 transition-colors border border-gray-700 shadow-md"
-            // className="flex items-center gap-1 px-3 py-2 bg-gray-800 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-700 transition-colors"
-            >
-              <ChevronLeft size={16} />
-              Trước
-            </button>
-
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const pageNum = Math.max(1, currentPage - 2) + i;
-              if (pageNum > totalPages) return null;
-
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => setCurrentPage(pageNum)}
-                  className={`px-3 py-2 rounded-lg transition-colors ${currentPage === pageNum
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-800 text-white hover:bg-gray-700'
-                    }`}
-                >
-                  {pageNum}
-                </button>
-              );
-            })}
-
-            <button
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className="flex items-center gap-1 px-3 py-2 bg-gray-800 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-700 transition-colors border border-gray-700 shadow-md"
-            // className="flex items-center gap-1 px-3 py-2 bg-gray-800 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-700 transition-colors"
-            >
-              Sau
-              <ChevronRight size={16} />
-            </button>
-          </div>
-        )}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          setCurrentPage={setCurrentPage}
+        />
       </div>
     </div>
   );

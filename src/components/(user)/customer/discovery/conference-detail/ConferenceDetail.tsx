@@ -11,6 +11,10 @@ import { useParams, useRouter } from 'next/navigation';
 import { useTransaction } from '@/redux/hooks/transaction/useTransaction';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
+import ConferenceHeader from './ConferenceHeader';
+import InformationTab from './InformationTab';
+import SessionsTab from './SessionsTab';
+import FeedbackTab from './FeedbackTab';
 
 interface ImageModalProps {
   image: string;
@@ -181,13 +185,23 @@ const ConferenceDetail = () => {
             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-transparent" /> */}
 
             {/* Floating Content Cards */}
-            <div className="relative max-w-6xl mx-auto px-4 py-8 md:py-16">
+            <ConferenceHeader
+              conference={conference}
+              isFavorite={isFavorite}
+              setIsFavorite={setIsFavorite}
+              isDialogOpen={isDialogOpen}
+              setIsDialogOpen={setIsDialogOpen}
+              selectedTicket={selectedTicket}
+              setSelectedTicket={setSelectedTicket}
+              paymentLoading={paymentLoading}
+              handlePurchaseTickt={handlePurchaseTickt}
+              accessToken={accessToken}
+              formatDate={formatDate}
+            />
+            {/* <div className="relative max-w-6xl mx-auto px-4 py-8 md:py-16">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-32 md:mt-48">
-                {/* Title Card */}
-                {/* <div className="lg:col-span-2 bg-white rounded-2xl shadow-2xl p-6 md:p-8"> */}
                 <div className="lg:col-span-2 bg-white/30 backdrop-blur-md rounded-2xl shadow-lg p-6 md:p-8 text-white">
                   <div className="flex items-start gap-3 mb-4">
-                    {/* <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex-1"> */}
                     <h1 className="text-2xl md:text-3xl font-bold flex-1
                bg-gradient-to-r from-black to-blue-950
                bg-clip-text text-transparent drop-shadow-lg">
@@ -214,12 +228,6 @@ const ConferenceDetail = () => {
                       <Calendar className="w-5 h-5 text-white" />
                       <span>{formatDate(conference.startDate)}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-5 h-5 text-white" />
-                      <span>
-                        {formatTime(conference.startDate)} - {formatTime(conference.endDate)}
-                      </span>
-                    </div>
                     <div className="flex items-start gap-2 md:col-span-2">
                       <MapPin className="w-5 h-5 text-white" />
                       <span>{conference.address}</span>
@@ -232,8 +240,6 @@ const ConferenceDetail = () => {
                   </div>
                 </div>
 
-                {/* Subscribe Card */}
-                {/* <div className="bg-white rounded-2xl shadow-2xl p-6"> */}
                 <div className="bg-white/30 backdrop-blur-md rounded-2xl shadow-lg p-6 text-white">
                   <h3 className="text-xl font-bold mb-3 bg-gradient-to-r from-black to-blue-950
     bg-clip-text text-transparent drop-shadow-lg">Đăng ký ngay</h3>
@@ -248,7 +254,6 @@ const ConferenceDetail = () => {
                   </button>
                 </div>
 
-                {/* Ticket Selection Dialog */}
                 <Dialog
                   open={isDialogOpen}
                   as="div"
@@ -346,19 +351,8 @@ const ConferenceDetail = () => {
                     </DialogPanel>
                   </div>
                 </Dialog>
-                {/* <div className="bg-white/30 backdrop-blur-md rounded-2xl shadow-lg p-6 text-white">
-                  <h3 className="text-xl font-bold mb-3 bg-gradient-to-r from-black to-blue-950
-               bg-clip-text text-transparent drop-shadow-lg">Đăng ký ngay</h3>
-                  <p className="text-white text-sm mb-4">
-                    Nhấn để thêm vào lịch của bạn
-                  </p>
-                  <button className="w-full bg-coral-500 hover:bg-coral-600 text-white px-6 py-3 rounded-lg font-medium transition-colors">
-                    Thêm vào lịch
-                  </button>
-                </div> */}
               </div>
 
-              {/* Description Card */}
               <div className="mt-4 bg-white/20 backdrop-blur-md rounded-2xl shadow-lg p-6 md:p-8 text-white">
                 <p className="text-white leading-relaxed mb-3">{conference.description}</p>
                 {conference.policies && conference.policies.length > 0 && (
@@ -374,7 +368,7 @@ const ConferenceDetail = () => {
                   </div>
                 )}
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Tabs Section */}
@@ -415,10 +409,15 @@ const ConferenceDetail = () => {
               <div className="p-6 md:p-8">
                 {/* Info Tab */}
                 {activeTab === 'info' && (
+                  <InformationTab
+                    conference={conference}
+                    setSelectedImage={setSelectedImage}
+                  />
+                )}
+                {/* {activeTab === 'info' && (
                   <div>
                     <h2 className="text-2xl font-bold text-white mb-6">Thông tin chi tiết</h2>
 
-                    {/* Media Section */}
                     {conference.media && conference.media.length > 0 && (
                       <div className="mb-8">
                         <h3 className="text-xl font-semibold text-white mb-4">Hình ảnh & Media</h3>
@@ -443,7 +442,6 @@ const ConferenceDetail = () => {
                       </div>
                     )}
 
-                    {/* Sponsors Section */}
                     {conference.sponsors && conference.sponsors.length > 0 && (
                       <div className="mb-8">
                         <h3 className="text-xl font-semibold text-white mb-4">Nhà tài trợ</h3>
@@ -468,7 +466,6 @@ const ConferenceDetail = () => {
                       </div>
                     )}
 
-                    {/* Policies Section */}
                     {conference.policies && conference.policies.length > 0 && (
                       <div>
                         <h3 className="text-xl font-semibold text-white mb-4">Chính sách & Quy định</h3>
@@ -483,10 +480,17 @@ const ConferenceDetail = () => {
                       </div>
                     )}
                   </div>
-                )}
+                )} */}
 
                 {/* Sessions Tab */}
                 {activeTab === 'sessions' && (
+                  <SessionsTab
+                    conference={conference}
+                    formatDate={formatDate}
+                    formatTime={formatTime}
+                  />
+                )}
+                {/* {activeTab === 'sessions' && (
                   <div>
                     <h2 className="text-2xl font-bold text-white mb-6">Lịch trình Sessions</h2>
 
@@ -547,9 +551,18 @@ const ConferenceDetail = () => {
                       )}
                     </div>
                   </div>
-                )}
+                )} */}
 
                 {/* Feedback Tab */}
+                {/* {activeTab === 'feedback' && (
+  <FeedbackTab
+    conference={conference}
+    newFeedback={newFeedback}
+    setNewFeedback={setNewFeedback}
+    feedbacks={feedbacks}
+    handleAddFeedback={handleAddFeedback}
+  />
+)} */}
                 {/* {activeTab === 'feedback' && (
                   <div>
                     <h2 className="text-2xl font-bold text-white mb-6">Đánh giá từ khách hàng</h2>

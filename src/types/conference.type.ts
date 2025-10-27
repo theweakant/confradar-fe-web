@@ -244,6 +244,7 @@ export interface ConferencePriceResponse {
   ticketPrice?: number;
   ticketName?: string;
   ticketDescription?: string;
+  isAuthot?: boolean;
   actualPrice?: number;
   currentPhase?: string;
   pricePhaseId?: string;

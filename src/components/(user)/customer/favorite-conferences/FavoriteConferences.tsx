@@ -62,17 +62,17 @@ export default function FavoriteConferences() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-gray-900 p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Page Title */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <Heart className="h-8 w-8 text-red-500 fill-current" />
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
+            <Heart className="h-8 w-8 text-red-400 fill-current" />
+            <h1 className="text-3xl sm:text-4xl font-bold text-white">
               Hội nghị yêu thích
             </h1>
           </div>
-          <p className="text-gray-600 text-sm sm:text-base">
+          <p className="text-gray-400 text-sm sm:text-base">
             Danh sách các hội nghị bạn đã đánh dấu yêu thích
           </p>
         </div>
@@ -85,8 +85,8 @@ export default function FavoriteConferences() {
                 key={option.id}
                 variant={option.active ? "default" : "outline"}
                 className={`whitespace-nowrap ${option.active
-                    ? "bg-black text-white hover:bg-gray-800"
-                    : "bg-white text-gray-700 hover:bg-gray-50"
+                    ? "bg-red-600 text-white hover:bg-red-700 border-red-600"
+                    : "bg-gray-800 text-gray-300 hover:bg-gray-700 border-gray-600"
                   }`}
               >
                 {option.label}
@@ -98,7 +98,7 @@ export default function FavoriteConferences() {
         {/* Conference List */}
         <div className="space-y-6">
           {favoriteConferences.map((conference) => (
-            <Card key={conference.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+            <Card key={conference.id} className="overflow-hidden hover:shadow-lg transition-shadow bg-gray-800 border-gray-700">
               <div className="flex flex-col lg:flex-row">
                 {/* Content */}
                 <CardContent className="flex-1 p-6">
@@ -106,34 +106,34 @@ export default function FavoriteConferences() {
                     <div className="flex-1 space-y-3">
                       {/* Date & Category */}
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <div className="flex items-center gap-2 text-sm text-gray-400">
                           <Calendar className="h-4 w-4" />
                           {conference.date}
                         </div>
-                        <Badge variant="secondary" className="w-fit">
+                        <Badge variant="secondary" className="w-fit bg-gray-700 text-gray-300">
                           {conference.category}
                         </Badge>
                       </div>
 
                       {/* Title */}
-                      <h2 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">
+                      <h2 className="text-xl sm:text-2xl font-bold text-white leading-tight">
                         {conference.title}
                       </h2>
 
                       {/* Location */}
-                      <div className="flex items-center gap-2 text-gray-600">
+                      <div className="flex items-center gap-2 text-gray-400">
                         <MapPin className="h-4 w-4" />
                         <span className="text-sm">{conference.location}</span>
                       </div>
 
                       {/* Price */}
-                      <div className="text-lg font-semibold text-blue-600">
+                      <div className="text-lg font-semibold text-red-400">
                         {conference.price}
                       </div>
 
                       {/* Attendees & Actions */}
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <div className="flex items-center gap-2 text-sm text-gray-400">
                           <Users className="h-4 w-4" />
                           <span>{conference.attendees} người quan tâm</span>
                         </div>
@@ -141,14 +141,14 @@ export default function FavoriteConferences() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                            className="text-red-400 hover:text-red-300 hover:bg-gray-700"
                           >
                             <Heart className="h-4 w-4 fill-current" />
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-2 border-gray-600 text-gray-300 hover:bg-gray-700"
                           >
                             Xem chi tiết
                             <ExternalLink className="h-4 w-4" />
@@ -173,11 +173,11 @@ export default function FavoriteConferences() {
         {/* Empty State */}
         {favoriteConferences.length === 0 && (
           <div className="text-center py-16">
-            <Heart className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-500 mb-2">
+            <Heart className="h-16 w-16 text-gray-600 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-400 mb-2">
               Chưa có hội nghị yêu thích
             </h3>
-            <p className="text-gray-400">
+            <p className="text-gray-500">
               Khám phá và đánh dấu những hội nghị bạn quan tâm
             </p>
           </div>
