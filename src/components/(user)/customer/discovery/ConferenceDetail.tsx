@@ -209,12 +209,12 @@ const ConferenceDetail = () => {
                       <Calendar className="w-5 h-5 text-white" />
                       <span>{formatDate(conference.startDate)}</span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    {/* <div className="flex items-center gap-2">
                       <Clock className="w-5 h-5 text-white" />
                       <span>
                         {formatTime(conference.startDate)} - {formatTime(conference.endDate)}
                       </span>
-                    </div>
+                    </div> */}
                     <div className="flex items-start gap-2 md:col-span-2">
                       <MapPin className="w-5 h-5 text-white" />
                       <span>{conference.address}</span>

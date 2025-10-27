@@ -2,25 +2,15 @@
 
 import React, { useEffect, useState, Fragment } from 'react';
 import {
-  Search,
-  Filter,
   Calendar as CalendarIcon,
-  MapPin,
-  Users,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { useConference } from '@/redux/hooks/conference/useConference';
 import { useGetAllCategoriesQuery } from '@/redux/services/category.service';
 import { ConferenceResponse } from '@/types/conference.type';
 import { Category } from '@/types/category.type';
-import { Slider } from "@/components/ui/slider";
 
-import { Popover, Transition } from '@headlessui/react';
-import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
 import SearchFilter from './SearchFilter';
 import ConferenceList from './ConferenceList';
