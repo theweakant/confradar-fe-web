@@ -1,7 +1,7 @@
 "use client"
 
 import ConferenceBanner from "@/components/(user)/customer/discovery/ConferenceBanner";
-import ConferenceBrowser from "@/components/(user)/customer/discovery/ConferenceBrowser";
+import ConferenceBrowser from "@/components/(user)/customer/discovery/conference-browser/ConferenceBrowser";
 import { useState } from "react";
 
 export default function DiscoveryPage() {
