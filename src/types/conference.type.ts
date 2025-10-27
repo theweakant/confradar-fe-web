@@ -1,8 +1,5 @@
 // // src/types/conference.type.ts
 
-import { Room } from "./room.type";
-
-
 export interface Conference {
   conferenceId: string;
   conferenceName: string;
@@ -152,109 +149,7 @@ export interface ConferenceDetailProps {
 }
 
 //-----------------------------------
-// xài mấy type ở trên nha SƠN, phần này bỏ
 
-// export interface TechConferenceDetail {
-//   conferenceId: Conference;
-//   targetAudience: string;
-// }
-
-// export interface ResearchConferenceDetail {
-//   conferenceId: Conference;
-//   name: string;
-//   registrationDeadline: string;
-//   reviewDeadline: string;
-//   cameraReadyDeadline: string;
-//   coAuthorSaleDeadline: string;
-//   paperTopic: string;
-//   paperFormat: string;
-//   numberPaperAccepted: number;
-//   revisionAttemptAllowed: number;
-// }
-
-// export type ConferenceSession = {
-//   id: string;
-//   title: string;
-//   description: string;
-//   startTime: string; // ISO datetime 
-//   endTime: string;
-//   date: string; // ISO date
-//   statusId: string;
-//   // conferenceDayId: string;
-//   roomId: string;
-// };
-
-
-
-// export type ConferenceTicketType = {
-//   ticketId: string;
-//   ticketPrice: number;
-//   ticketName: string;
-//   ticketDescription: string;
-//   actualPrice: number;
-//   ticketPhaseId: string;
-//   conferenceSessionId?: string | null;
-//   conferenceId: Conference;
-// };
-
-// export type TicketPhase = {
-//   id: string;
-//   name: string;
-//   earlierBirdEndInterval: number;
-//   percentForEarly: number;
-//   standardEndInterval: number;
-//   lateEndInterval: number;
-//   percentForEnd: number;
-// };
-
-
-// export interface Location {
-//   city: string;
-//   country: string;
-// }
-
-// export interface ConferenceType {
-//   conferenceTypeId: string;
-//   conferenceTypeName: string;
-// }
-
-// export interface ConferenceCategory {
-//   conferenceCategoryId: string;
-//   conferenceCategoryName: string;
-// }
-
-// export interface ConferenceRanking {
-//   conferenceRankingId: string;    // PK
-//   name: string;
-//   description?: string;
-//   referenceUrl?: string;
-//   fileUrl?: string;
-
-//   rankingCategoryId: RankingCategory;
-// }
-
-// export interface RankingCategory {
-//   rankingCategoryId: string;   // PK
-//   rankName: string;
-//   rankDescription?: string;
-// }
-
-
-
-
-
-
-
-
-// // Type cho validation rules
-// export interface ValidationRule {
-//   validate: (value: string | number | boolean) => boolean;
-//   message: string;
-// }
-
-// export type FieldValidation = {
-//   [K in keyof ConferenceFormData]?: ValidationRule[];
-// };
 
 // Category options type
 export interface CategoryOption {

@@ -1,5 +1,5 @@
 export interface Category {
-  categoryId: string;
+  conferenceCategoryId: string;
   conferenceCategoryName: string;
   // conferenceCount?:number;
 }

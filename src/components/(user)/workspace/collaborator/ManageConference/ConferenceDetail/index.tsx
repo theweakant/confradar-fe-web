@@ -11,52 +11,51 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { StatusBadge } from "@/components/atoms/StatusBadge";
 import { formatDate } from "@/helper/format";
 import { ConferenceDetailProps } from "@/types/conference.type";
 
 export function ConferenceDetail({ conference, onClose }: ConferenceDetailProps) {
-  const getStatusLabel = (statusId: string) => {
-    const labels: Record<string, string> = {
-      draft: "Nháp",
-      published: "Đã xuất bản",
-      open: "Đang mở đăng ký",
-      closed: "Đã đóng đăng ký",
-      ongoing: "Đang diễn ra",
-      completed: "Đã kết thúc",
-      cancelled: "Đã hủy",
-    };
-    return labels[statusId] || statusId;
-  };
+  // const getStatusLabel = (statusId: string) => {
+  //   const labels: Record<string, string> = {
+  //     draft: "Nháp",
+  //     published: "Đã xuất bản",
+  //     open: "Đang mở đăng ký",
+  //     closed: "Đã đóng đăng ký",
+  //     ongoing: "Đang diễn ra",
+  //     completed: "Đã kết thúc",
+  //     cancelled: "Đã hủy",
+  //   };
+  //   return labels[statusId] || statusId;
+  // };
 
-  const getStatusVariant = (
-    statusId: string
-  ): "success" | "danger" | "warning" | "info" => {
-    const variants: Record<string, "success" | "danger" | "warning" | "info"> = {
-      draft: "warning",
-      published: "info",
-      open: "success",
-      closed: "warning",
-      ongoing: "success",
-      completed: "info",
-      cancelled: "danger",
-    };
-    return variants[statusId] || "info";
-  };
+  // const getStatusVariant = (
+  //   statusId: string
+  // ): "success" | "danger" | "warning" | "info" => {
+  //   const variants: Record<string, "success" | "danger" | "warning" | "info"> = {
+  //     draft: "warning",
+  //     published: "info",
+  //     open: "success",
+  //     closed: "warning",
+  //     ongoing: "success",
+  //     completed: "info",
+  //     cancelled: "danger",
+  //   };
+  //   return variants[statusId] || "info";
+  // };
 
-  // Helper: Lấy % tiến độ dựa trên progressStatus
-  const getProgressPercentage = (status: string) => {
-    switch (status) {
-      case "Pending":
-        return 33.33;
-      case "Approved":
-        return 66.66;
-      case "Published":
-        return 100;
-      default:
-        return 0;
-    }
-  };
+  // // Helper: Lấy % tiến độ dựa trên progressStatus
+  // const getProgressPercentage = (status: string) => {
+  //   switch (status) {
+  //     case "Pending":
+  //       return 33.33;
+  //     case "Approved":
+  //       return 66.66;
+  //     case "Published":
+  //       return 100;
+  //     default:
+  //       return 0;
+  //   }
+  // };
 
   // const progress = getProgressPercentage(conference.progressStatus);
 

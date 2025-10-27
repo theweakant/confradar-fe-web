@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Plus, Calendar, Microscope, Cpu } from "lucide-react";
 import {
   AlertDialog,
@@ -32,12 +32,14 @@ import {
   useGetConferenceByIdQuery,
   useDeleteConferenceMutation
 } from "@/redux/services/conference.service";
+import { useGetAllCategoriesQuery } from "@/redux/services/category.service"; // Thêm import này
 
 type ConferenceType = boolean | null;
 
 export default function ManageConference() {
   // API Hooks
   const { data: conferencesData, isLoading, isError } = useGetAllConferencesQuery();
+  const { data: categoriesData, isLoading: isCategoriesLoading } = useGetAllCategoriesQuery(); // Thêm hook này
   const [deleteConferenceMutation, { isLoading: isDeleting }] = useDeleteConferenceMutation();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -59,22 +61,30 @@ export default function ManageConference() {
   });
 
   // Fetch conference detail for editing
-const conferenceId = editingConference?.conferenceId;
+  const conferenceId = editingConference?.conferenceId;
 
-const {
-  data: editConferenceData,
-  isLoading: isEditLoading,
-} = useGetConferenceByIdQuery(conferenceId ?? "", {
-  skip: !conferenceId,
-});
+  const {
+    data: editConferenceData,
+    isLoading: isEditLoading,
+  } = useGetConferenceByIdQuery(conferenceId ?? "", {
+    skip: !conferenceId,
+  });
 
-  const categoryOptions = [
-    { value: "all", label: "Tất cả danh mục" },
-    { value: "technology", label: "Công nghệ" },
-    { value: "research", label: "Nghiên cứu" },
-    { value: "business", label: "Kinh doanh" },
-    { value: "education", label: "Giáo dục" },
-  ];
+  // Tạo categoryOptions từ API data
+  const categoryOptions = useMemo(() => {
+    const allOption = { value: "all", label: "Tất cả danh mục" };
+    
+    if (!categoriesData?.data) {
+      return [allOption];
+    }
+
+    const apiCategories = categoriesData.data.map((category) => ({
+      value: category.conferenceCategoryId,
+      label: category.conferenceCategoryName,
+    }));
+
+    return [allOption, ...apiCategories];
+  }, [categoriesData]);
 
   // Get conferences from API
   const conferences = conferencesData?.data || [];
@@ -147,7 +157,7 @@ const {
   const totalConferences = conferences.length;
 
   // Loading state
-  if (isLoading) {
+  if (isLoading || isCategoriesLoading) {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
         <div className="text-center">
