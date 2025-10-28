@@ -53,18 +53,18 @@ export interface ConferenceBasicForm {
 //price step
 
 export interface Ticket {
-  ticketId?:string;
+  ticketId?: string;
   ticketPrice: number;
-  ticketName: string; 
+  ticketName: string;
   ticketDescription: number;
   isAuthor: boolean;
   totalSlot: number;
 }
 
 export interface Phase {
-  pricePhaseId?:string
+  pricePhaseId?: string
   phaseName: string;
-  applyPercent: number; 
+  applyPercent: number;
   startDate: string;
   endDate: string;
   totalslot: number;
@@ -91,7 +91,7 @@ export interface Session {
 }
 
 export interface Speaker {
-  speakerId?:string
+  speakerId?: string
   name: string;
   description: string;
   imageUrl: string;
@@ -229,6 +229,32 @@ export interface ConferenceResponse {
   cityId?: string;
   conferenceCategoryId?: string;
   conferenceStatusId?: string;
+  policies?: ConferencePolicyResponse[];
+  media?: ConferenceMediaResponse[];
+  sponsors?: SponsorResponse[];
+  conferencePrices?: ConferencePriceResponse[];
+  sessions?: ConferenceSessionResponse[];
+}
+
+export interface TechnicalConferenceDetailResponse {
+  conferenceId: string;
+  conferenceName?: string;
+  description?: string;
+  startDate?: string;
+  endDate?: string;
+  totalSlot?: number;
+  availableSlot?: number;
+  address?: string;
+  bannerImageUrl?: string;
+  createdAt?: string;
+  ticketSaleStart?: string;
+  ticketSaleEnd?: string;
+  isInternalHosted?: boolean;
+  isResearchConference?: boolean;
+  cityId?: string;
+  conferenceCategoryId?: string;
+  conferenceStatusId?: string;
+  targetAudience?: string;
   policies?: ConferencePolicyResponse[];
   media?: ConferenceMediaResponse[];
   sponsors?: SponsorResponse[];

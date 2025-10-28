@@ -9,7 +9,7 @@ export const endpoint = {
     VERIFY_FORGET_PASSWORD: "/Auth/verify-forget-password",
 
     //user
-    PROFILE:"/Auth/view-profile-by-id"
+    PROFILE: "/Auth/view-profile-by-id"
   },
   DESTINATION: {
     LIST: "/Destination",
@@ -37,6 +37,7 @@ export const endpoint = {
     LIST_WITH_PRICES: "/Conference/conferences-with-prices",
     LIST_BY_STATUS: "/Conference/by-status",
     DETAIL: "/Conference",
+    TECHNICAL_DETAIL: "/Conference/technical-detail",
     CREATE: "/Conference",
     UPDATE: "/Conference",
     DELETE: "/Conference",
