@@ -13,6 +13,8 @@ interface SearchFilterProps {
     setSearchQuery: (query: string) => void;
     selectedCategory: string;
     setSelectedCategory: (category: string) => void;
+    selectedCity: string;
+    setSelectedCity: (city: string) => void;
     startDateFilter: Date | null;
     setStartDateFilter: (date: Date | null) => void;
     endDateFilter: Date | null;
@@ -22,6 +24,7 @@ interface SearchFilterProps {
     sortBy: string;
     setSortBy: (sort: string) => void;
     categories: CategoryOption[];
+    cities: { value: string; label: string }[];
     absoluteMaxPrice: number;
     allPrices: number[];
     sortOptions: SortOption[];
@@ -35,6 +38,8 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
     setSearchQuery,
     selectedCategory,
     setSelectedCategory,
+    selectedCity,
+    setSelectedCity,
     startDateFilter,
     setStartDateFilter,
     endDateFilter,
@@ -44,6 +49,7 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
     sortBy,
     setSortBy,
     categories,
+    cities,
     absoluteMaxPrice,
     allPrices,
     sortOptions,
@@ -74,7 +80,7 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
                     <h3 className="text-lg font-semibold text-white">Bộ lọc</h3>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                     <div className="flex flex-col w-full">
                         <label className="text-xs text-gray-300 mb-1">Danh mục</label>
                         <DropdownSelect
@@ -83,6 +89,17 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
                             options={categories}
                             onChange={setSelectedCategory}
                             placeholder="Danh mục"
+                        />
+                    </div>
+
+                    <div className="flex flex-col w-full">
+                        <label className="text-xs text-gray-300 mb-1">Thành phố</label>
+                        <DropdownSelect
+                            id="city"
+                            value={selectedCity}
+                            options={cities}
+                            onChange={setSelectedCity}
+                            placeholder="Thành phố"
                         />
                     </div>
 

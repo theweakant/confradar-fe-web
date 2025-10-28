@@ -7,6 +7,7 @@ import { conferenceStepApi } from "@/redux/services/conferenceStep.service"
 import { categoryApi } from "@/redux/services/category.service"
 import { transactionApi } from "../services/transaction.service"
 import { ticketApi } from "../services/ticket.service"
+import { cityApi } from "../services/city.service"
 
 
 
@@ -19,4 +20,5 @@ export const apiMiddlewares: Middleware[] = [
   conferenceStepApi.middleware,
   transactionApi.middleware,
   ticketApi.middleware,
+  cityApi.middleware,
 ]

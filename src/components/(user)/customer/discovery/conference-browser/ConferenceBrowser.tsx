@@ -8,8 +8,10 @@ import {
 import { useRouter } from 'next/navigation';
 import { useConference } from '@/redux/hooks/conference/useConference';
 import { useGetAllCategoriesQuery } from '@/redux/services/category.service';
+import { useGetAllCitiesQuery } from '@/redux/services/city.service';
 import { CategoryOption, ConferenceResponse } from '@/types/conference.type';
 import { Category } from '@/types/category.type';
+import { City } from '@/types/city.type';
 
 import "react-day-picker/style.css";
 import SearchFilter from './SearchFilter';
@@ -31,6 +33,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCity, setSelectedCity] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState('all');
   const [selectedPrice, setSelectedPrice] = useState('all');
   const [selectedRating, setSelectedRating] = useState('all');
@@ -53,6 +56,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
 
   const { conferences, loading: conferencesLoading, error: conferencesError } = useConference();
   const { data: categoriesData, isLoading: categoriesLoading, error: categoriesError } = useGetAllCategoriesQuery();
+  const { data: citiesData, isLoading: citiesLoading, error: citiesError } = useGetAllCitiesQuery();
 
   // const allPrices = conferences.flatMap(
   //   conf => conf.prices?.map(p => p.actualPrice ?? p.ticketPrice ?? 0) ?? []
@@ -70,7 +74,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedCategory, selectedLocation, selectedPrice, selectedRating, sortBy, bannerFilter]);
+  }, [searchQuery, selectedCategory, selectedCity, selectedLocation, selectedPrice, selectedRating, sortBy, bannerFilter]);
 
   //   useEffect(() => {
   //   if (absoluteMaxPrice > 0) {
@@ -97,6 +101,14 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
     ...(categoriesData?.data?.map((cat: Category) => ({
       value: cat.conferenceCategoryId,
       label: cat.conferenceCategoryName
+    })) || [])
+  ];
+
+  const cities: { value: string; label: string }[] = [
+    { value: 'all', label: 'Tất cả thành phố' },
+    ...(citiesData?.data?.map((city: City) => ({
+      value: city.cityId,
+      label: city.name
     })) || [])
   ];
 
@@ -137,7 +149,9 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
     //   ? true
     //   : (selectedCategory === 'all' || conf.categoryId === selectedCategory);
 
-    const matchesCategory = conf.categoryId === selectedCategory;
+    const matchesCategory = selectedCategory === 'all' || conf.categoryId === selectedCategory;
+
+    const matchesCity = selectedCity === 'all' || conf.cityId === selectedCity;
 
     // const matchesLocation = selectedLocation === 'all' ||
     //   (conf.address?.toLowerCase().includes(locations.find(l => l.value === selectedLocation)?.label.toLowerCase() || '') || false);
@@ -168,20 +182,20 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
     // }
 
     if (absoluteMaxPrice === 0) {
-      return matchesSearch && matchesBannerFilter && matchesCategory && matchesRating && matchesDate;
+      return matchesSearch && matchesBannerFilter && matchesCategory && matchesCity && matchesRating && matchesDate;
     }
 
     const minPrice = getMinPrice(conf);
     const maxPrice = getMaxPrice(conf);
 
     if (minPrice === null || maxPrice === null) {
-      return matchesSearch && matchesBannerFilter && matchesCategory && matchesRating && matchesDate;
+      return matchesSearch && matchesBannerFilter && matchesCategory && matchesCity && matchesRating && matchesDate;
     }
 
     const matchesPrice =
       (minPrice <= priceRange[1]) && (maxPrice >= priceRange[0]);
 
-    return matchesSearch && matchesBannerFilter && matchesCategory && matchesRating && matchesDate && matchesPrice;
+    return matchesSearch && matchesBannerFilter && matchesCategory && matchesCity && matchesRating && matchesDate && matchesPrice;
   });
 
   // const filteredConferences = mockConferences.filter(conf => {
@@ -299,6 +313,8 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
           setSearchQuery={setSearchQuery}
           selectedCategory={selectedCategory}
           setSelectedCategory={setSelectedCategory}
+          selectedCity={selectedCity}
+          setSelectedCity={setSelectedCity}
           startDateFilter={startDateFilter}
           setStartDateFilter={setStartDateFilter}
           endDateFilter={endDateFilter}
@@ -308,6 +324,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
           sortBy={sortBy}
           setSortBy={setSortBy}
           categories={categories}
+          cities={cities}
           absoluteMaxPrice={absoluteMaxPrice}
           allPrices={allPrices}
           sortOptions={sortOptions}

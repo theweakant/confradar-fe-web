@@ -20,6 +20,7 @@ import conferenceStepReducer from "@/redux/slices/conferenceStep.slice";
 import categoryReducer from "@/redux/slices/category.slice";
 import { transactionApi } from "./services/transaction.service";
 import { ticketApi } from "./services/ticket.service";
+import { cityApi } from "./services/city.service";
 
 
 // Cấu hình persist
@@ -57,6 +58,7 @@ const appReducer = combineReducers({
   [conferenceStepApi.reducerPath]: conferenceStepApi.reducer,
   [transactionApi.reducerPath]: transactionApi.reducer,
   [ticketApi.reducerPath]: ticketApi.reducer,
+  [cityApi.reducerPath]: cityApi.reducer,
 })
 
 // Wrap với persistReducer
