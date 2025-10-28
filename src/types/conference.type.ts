@@ -249,8 +249,7 @@ export interface ConferencePriceResponse {
   isAuthot?: boolean;
   totalSlot?: number;
   availableSlot?: number;
-  currentPhase?: string;
-  pricePhaseId?: string;
+  pricePhases?: ConferencePricePhaseResponse[];
 }
 
 export interface ConferencePricePhaseResponse {
