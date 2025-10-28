@@ -3,11 +3,26 @@
 import RouteGuard from "@/utils/routeGuard"
 import WorkspaceSidebar from "./WorkspaceSidebar"
 import { Bell, Search } from "lucide-react"
-import { usePathname } from "next/navigation"
+import { useAuth } from "@/redux/hooks/useAuth"
+import { useProfile } from "@/redux/hooks/user/useProfile"
 
 export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname()
-  const role = pathname.split("/")[2] || "guest"
+  const { user, role: userRole } = useAuth()
+  const { profile, isLoading } = useProfile()
+  
+  // Lấy role trực tiếp từ useAuth
+  const role = userRole || ""
+
+  // Ưu tiên fullName từ profile, fallback về email
+  const fullName = profile?.fullName || user?.email || "User"
+  
+  // Tạo initials từ fullName
+  const initials = fullName
+    .split(" ")
+    .map(word => word[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2)
 
   return (
     <RouteGuard
@@ -47,11 +62,13 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
 
               <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
                 <div className="text-right">
-                  <p className="text-sm font-medium text-gray-800">Admin User</p>
+                  <p className="text-sm font-medium text-gray-800">
+                    {isLoading ? "Đang tải..." : fullName}
+                  </p>
                   <p className="text-xs text-gray-500 capitalize">{role}</p>
                 </div>
                 <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-semibold">AU</span>
+                  <span className="text-white font-semibold text-sm">{initials}</span>
                 </div>
               </div>
             </div>

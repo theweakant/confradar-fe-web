@@ -22,6 +22,7 @@ import { useDispatch } from "react-redux"
 import { logout } from "@/redux/slices/auth.slice"
 import { persistor } from "@/redux/store" 
 import { toast } from "sonner"
+import { ROLES } from "@/constants/roles" 
 
 
 interface WorkspaceSidebarProps {
@@ -33,42 +34,39 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
   const router = useRouter()
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const dispatch = useDispatch()
+  const normalizedRole = role.toLowerCase().replace(/\s+/g, "")
 
-
+  // 👇 Sử dụng constants từ roles.ts
   const roleMenus: Record<string, { label: string; href: string; icon: ElementType }[]> = {
-    admin: [
+    [ROLES.ADMIN]: [
       { label: "Tổng quan", href: "/workspace/admin", icon: LayoutDashboard },
       { label: "Người dùng", href: "/workspace/admin/manage-user", icon: Users },
-      // { label: "Hội nghị", href: "/workspace/admin/manage-conference", icon: Calendar },
       { label: "Địa điểm", href: "/workspace/admin/manage-accommodation", icon: Home },
       { label: "Danh mục", href: "/workspace/admin/manage-category", icon: FileText },
       { label: "Báo cáo", href: "/workspace/admin/report", icon: FileText },
       { label: "Cài đặt", href: "/workspace/admin/system-setting", icon: Settings },
     ],
-    organizer: [
+    [ROLES.CONFERENCE_ORGANIZER]: [
       { label: "Tổng quan", href: "/workspace/organizer", icon: LayoutDashboard },
       { label: "Hội nghị", href: "/workspace/organizer/manage-conference", icon: Calendar },
       { label: "Bài báo", href: "/workspace/organizer/manage-paper", icon: FileText },
       { label: "Người tham gia", href: "/workspace/organizer/manage-user", icon: Users },
       { label: "Quản lí phản biện", href: "/workspace/organizer/manage-reviewer", icon: Users },
       { label: "Yêu cầu", href: "/workspace/organizer/manage-request", icon: Building2 },
-
     ],
-    collaborator: [
+    [ROLES.COLLABORATOR]: [
       { label: "Tổng quan", href: "/workspace/collaborator", icon: LayoutDashboard },
       { label: "Tài trợ", href: "/workspace/collaborator/sponsorships", icon: Building2 },
       { label: "Hội thảo", href: "/workspace/collaborator/manage-conference", icon: Calendar },
       { label: "Phân tích", href: "/workspace/collaborator/analytics", icon: FileText },
       { label: "Cài đặt", href: "/workspace/collaborator/settings", icon: Settings },
     ],
-
-    "local-reviewer": [
+    [ROLES.LOCAL_REVIEWER]: [
       { label: "Tổng quan", href: "/workspace/local-reviewer", icon: LayoutDashboard },
       { label: "Bài cần đánh giá", href: "/workspace/local-reviewer/manage-paper", icon: FileText },
       { label: "Đã hoàn thành", href: "/workspace/local-reviewer/completed", icon: FileText },
     ],
-
-    "external-reviewer": [
+    [ROLES.EXTERNAL_REVIEWER]: [
       { label: "Tổng quan", href: "/workspace/external-reviewer", icon: LayoutDashboard },
       { label: "Bài cần đánh giá", href: "/workspace/external-reviewer/manage-paper", icon: FileText },
       { label: "Đã hoàn thành", href: "/workspace/external-reviewer/completed", icon: FileText },
@@ -78,41 +76,32 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
   }
 
   const roleInfo: Record<string, { name: string; color: string; icon: ElementType }> = {
-    admin: { name: "Quản trị viên", color: "bg-red-500", icon: Shield },
-    organizer: { name: "Tổ chức", color: "bg-purple-500", icon: Building2 },
-    collaborator: { name: "Đối tác", color: "bg-green-500", icon: Building2 },
-    // reviewer: { name: "Đánh giá viên", color: "bg-orange-500", icon: GraduationCap },
-    "local-reviewer": { name: "Đánh giá nội bộ", color: "bg-yellow-500", icon: GraduationCap },
-    "external-reviewer": { name: "Đánh giá ngoài", color: "bg-yellow-500", icon: GraduationCap },
-    guest: { name: "Khách", color: "bg-gray-500", icon: Users },
+    [ROLES.ADMIN]: { name: "Quản trị viên", color: "bg-red-500", icon: Shield },
+    [ROLES.CONFERENCE_ORGANIZER]: { name: "Tổ chức", color: "bg-purple-500", icon: Building2 },
+    [ROLES.COLLABORATOR]: { name: "Đối tác", color: "bg-green-500", icon: Building2 },
+    [ROLES.LOCAL_REVIEWER]: { name: "Đánh giá nội bộ", color: "bg-yellow-500", icon: GraduationCap },
+    [ROLES.EXTERNAL_REVIEWER]: { name: "Đánh giá ngoài", color: "bg-orange-500", icon: GraduationCap },
   }
 
-  const roleMenu = roleMenus[role] || roleMenus.guest
-  const info = roleInfo[role] || roleInfo.guest
+  const roleMenu = roleMenus[normalizedRole]
+
+  const info = roleInfo[normalizedRole]
   const RoleIcon = info.icon
 
-const handleLogout = async () => {
-  try {
-    // 1. Dispatch logout
-    dispatch(logout())
-    
-    // 2. Purge Redux Persist
-    await persistor.purge()
-    
-    // 3. Show success toast
-    toast.success("Đăng xuất thành công!")
-    
-    // 4. Redirect
-    setTimeout(() => {
+  const handleLogout = async () => {
+    try {
+      dispatch(logout())
+      await persistor.purge()
+      toast.success("Đăng xuất thành công!")
+      setTimeout(() => {
+        router.push("/auth/login")
+      }, 300)
+    } catch (error) {
+      console.error("Logout error:", error)
+      toast.error("Có lỗi xảy ra khi đăng xuất")
       router.push("/auth/login")
-    }, 300)
-    
-  } catch (error) {
-    console.error("Logout error:", error)
-    toast.error("Có lỗi xảy ra khi đăng xuất")
-    router.push("/auth/login")
+    }
   }
-}
 
   return (
     <aside

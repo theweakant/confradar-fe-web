@@ -28,7 +28,7 @@ export const truncateContent = (content: string, maxLength: number = 40): string
 
 //date
 export const formatDate = (date?: string) => {
-  if (!date) return "-"; // hoặc "—" nếu bạn muốn gọn hơn
+  if (!date) return "-";
 
   return new Date(date).toLocaleDateString("vi-VN", {
     year: "numeric",
