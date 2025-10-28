@@ -18,9 +18,11 @@ import roomReducer from "@/redux/slices/room.slice";
 import conferenceReducer from "@/redux/slices/conference.slice";
 import conferenceStepReducer from "@/redux/slices/conferenceStep.slice";
 import categoryReducer from "@/redux/slices/category.slice";
+
 import { transactionApi } from "./services/transaction.service";
 import { ticketApi } from "./services/ticket.service";
 import { cityApi } from "./services/city.service";
+import {userApi} from "./services/user.service"
 
 
 // Cấu hình persist
@@ -34,7 +36,8 @@ const persistConfig = {
     roomApi.reducerPath,
     conferenceApi.reducerPath,
     conferenceStepApi.reducerPath,
-    categoryApi.reducerPath
+    categoryApi.reducerPath,
+    userApi.reducerPath
   ],
 }
 
@@ -59,6 +62,7 @@ const appReducer = combineReducers({
   [transactionApi.reducerPath]: transactionApi.reducer,
   [ticketApi.reducerPath]: ticketApi.reducer,
   [cityApi.reducerPath]: cityApi.reducer,
+  [userApi.reducerPath]: userApi.reducer,
 })
 
 // Wrap với persistReducer

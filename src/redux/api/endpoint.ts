@@ -6,7 +6,10 @@ export const endpoint = {
     REFRESH: "/Auth/refresh-token",
     GOOGLE: "/Auth/firebase-login",
     FORGET_PASSWORD: "/Auth/forget-password",
-    VERIFY_FORGET_PASSWORD: "/Auth/verify-forget-password"
+    VERIFY_FORGET_PASSWORD: "/Auth/verify-forget-password",
+
+    //user
+    PROFILE:"/Auth/view-profile-by-id"
   },
   DESTINATION: {
     LIST: "/Destination",
