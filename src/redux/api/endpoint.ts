@@ -38,6 +38,7 @@ export const endpoint = {
     LIST_BY_STATUS: "/Conference/by-status",
     DETAIL: "/Conference",
     TECHNICAL_DETAIL: "/Conference/technical-detail",
+    RESEARCH_DETAIL: "/Conference/research-detail",
     CREATE: "/Conference",
     UPDATE: "/Conference",
     DELETE: "/Conference",

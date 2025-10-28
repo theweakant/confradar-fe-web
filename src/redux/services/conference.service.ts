@@ -1,7 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { apiClient } from "../api/apiClient";
 import { endpoint } from "../api/endpoint";
-import type { ConferenceFormData, ConferenceResponse, RegisteredUserInConference, TechnicalConferenceDetailResponse } from "@/types/conference.type";
+import type { ConferenceFormData, ConferenceResponse, RegisteredUserInConference, ResearchConferenceDetailResponse, TechnicalConferenceDetailResponse } from "@/types/conference.type";
 import type { ApiResponse, ApiResponsePagination } from "@/types/api.type";
 
 export const conferenceApi = createApi({
@@ -66,6 +66,18 @@ export const conferenceApi = createApi({
     >({
       query: (conferenceId) => ({
         url: `${endpoint.CONFERENCE.TECHNICAL_DETAIL}/${conferenceId}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, conferenceId) => [{ type: "Conference", id: conferenceId }],
+    }),
+
+    //research detail endpoint
+    getResearchConferenceDetail: builder.query<
+      ApiResponse<ResearchConferenceDetailResponse>,
+      string
+    >({
+      query: (conferenceId) => ({
+        url: `${endpoint.CONFERENCE.RESEARCH_DETAIL}/${conferenceId}`,
         method: "GET",
       }),
       providesTags: (result, error, conferenceId) => [{ type: "Conference", id: conferenceId }],

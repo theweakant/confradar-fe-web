@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import{toast} from 'sonner'
+import { toast } from 'sonner'
 import { X, MapPin, Clock, Calendar, Star } from 'lucide-react';
 import { Dialog, DialogPanel, DialogTitle, Button } from "@headlessui/react";
 import { useConference } from '@/redux/hooks/conference/useConference';
-import { ConferencePriceResponse, ConferenceResponse } from '@/types/conference.type';
+import { ConferencePriceResponse, ConferenceResponse, TechnicalConferenceDetailResponse } from '@/types/conference.type';
 import { useParams, useRouter } from 'next/navigation';
 import { useTransaction } from '@/redux/hooks/transaction/useTransaction';
 import { useSelector } from 'react-redux';
@@ -21,10 +21,6 @@ interface ImageModalProps {
   onClose: () => void;
 }
 
-interface ConferenceDetailProps {
-  conferenceId: string;
-}
-
 const ConferenceDetail = () => {
   const params = useParams();
   const conferenceId = params?.id as string;
@@ -32,6 +28,13 @@ const ConferenceDetail = () => {
   const router = useRouter()
 
   const { accessToken } = useSelector((state: RootState) => state.auth)
+
+  const {
+    technicalConference,
+    technicalConferenceLoading: loading,
+    technicalConferenceError: error,
+    refetchTechnicalConference
+  } = useConference({ id: conferenceId });
   const { purchaseTicket, loading: paymentLoading, paymentError, paymentResponse } = useTransaction();
 
   const [activeTab, setActiveTab] = useState('info');
@@ -41,26 +44,33 @@ const ConferenceDetail = () => {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [selectedTicket, setSelectedTicket] = useState<ConferencePriceResponse | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
-  const [conference, setConference] = useState<ConferenceResponse | null>(null);
+  // const [conference, setConference] = useState<TechnicalConferenceDetailResponse | null>(null);
 
-  const { fetchConference, loading, error } = useConference();
+  const conference = technicalConference;
 
   useEffect(() => {
-    const loadConference = async () => {
-      try {
-        const response = await fetchConference(conferenceId);
-        console.log('ddang fetch', response);
-        setConference(response.data);
-        // setFeedbacks([]);
-      } catch (err) {
-        console.error('Failed to load conference:', err);
-      }
-    };
-    console.log('id ne', conferenceId);
-    if (conferenceId) {
-      loadConference();
+    if (paymentError) {
+      const message = typeof paymentError === 'string' ? paymentError : 'Có lỗi xảy ra khi thanh toán.';
+      toast.error(message);
     }
-  }, [conferenceId]);
+  }, [paymentError]);
+
+  // const { fetchConference, loading, error } = useConference();
+
+  // useEffect(() => {
+  //   const loadConference = async () => {
+  //     try {
+  //       const response = await fetchConference(conferenceId);
+  //       setConference(response.data);
+  //       // setFeedbacks([]);
+  //     } catch (err) {
+  //       console.error('Failed to load conference:', err);
+  //     }
+  //   };
+  //   if (conferenceId) {
+  //     loadConference();
+  //   }
+  // }, [conferenceId]);
 
   const handlePurchaseTickt = async () => {
     if (!accessToken) {
@@ -71,19 +81,21 @@ const ConferenceDetail = () => {
     if (!selectedTicket) return;
 
     try {
-      const response = await purchaseTicket({ conferencePriceId: selectedTicket.priceId });
+      const response = await purchaseTicket({ conferencePriceId: selectedTicket.conferencePriceId });
       if (response?.data) {
         window.location.href = response.data;
       } else {
         alert("Không nhận được đường dẫn thanh toán.");
       }
-    } catch (error: unknown) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Có lỗi xảy ra, vui lòng thử lại!"
-      toast.error(message)
-    } finally {
+    }
+    // catch (error: unknown) {
+    //   const message =
+    //     error instanceof Error
+    //       ? error.message
+    //       : "Có lỗi xảy ra, vui lòng thử lại!"
+    //   toast.error(message)
+    // }
+    finally {
       setIsDialogOpen(false);
     }
   }
@@ -130,7 +142,7 @@ const ConferenceDetail = () => {
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black flex items-center justify-center">
         <div className="text-center text-white">
           <p className="text-red-400 mb-4">Có lỗi xảy ra khi tải thông tin hội nghị</p>
-          <p className="text-sm">{error}</p>
+          <p className="text-sm">{error.data?.message}</p>
         </div>
       </div>
     );
