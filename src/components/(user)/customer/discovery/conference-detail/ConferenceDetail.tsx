@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 import { X, MapPin, Clock, Calendar, Star } from 'lucide-react';
 import { Dialog, DialogPanel, DialogTitle, Button } from "@headlessui/react";
 import { useConference } from '@/redux/hooks/conference/useConference';
-import { ConferencePriceResponse, ConferenceResponse, TechnicalConferenceDetailResponse } from '@/types/conference.type';
+import { ConferencePriceResponse, ConferenceResponse, TechnicalConferenceDetailResponse, ResearchConferenceDetailResponse } from '@/types/conference.type';
 import { useParams, useRouter } from 'next/navigation';
 import { useTransaction } from '@/redux/hooks/transaction/useTransaction';
 import { useSelector } from 'react-redux';
@@ -15,6 +15,7 @@ import ConferenceHeader from './ConferenceHeader';
 import InformationTab from './InformationTab';
 import SessionsTab from './SessionsTab';
 import FeedbackTab from './FeedbackTab';
+import ResearchPaperInformationTab from './ResearchPaperInformationTab';
 
 interface ImageModalProps {
   image: string;
@@ -34,9 +35,13 @@ const ConferenceDetail = () => {
 
   const {
     technicalConference,
-    technicalConferenceLoading: loading,
-    technicalConferenceError: error,
-    refetchTechnicalConference
+    technicalConferenceLoading,
+    technicalConferenceError,
+    refetchTechnicalConference,
+    researchConference,
+    researchConferenceLoading,
+    researchConferenceError,
+    refetchResearchConference
   } = useConference({ id: conferenceId });
   const { purchaseTicket, loading: paymentLoading, paymentError, paymentResponse } = useTransaction();
 
@@ -49,7 +54,10 @@ const ConferenceDetail = () => {
   const [isFavorite, setIsFavorite] = useState(false);
   // const [conference, setConference] = useState<TechnicalConferenceDetailResponse | null>(null);
 
-  const conference = technicalConference;
+  // Use the appropriate conference data based on type
+  const conference = isResearch ? researchConference : technicalConference;
+  const loading = isResearch ? researchConferenceLoading : technicalConferenceLoading;
+  const error = isResearch ? researchConferenceError : technicalConferenceError;
 
   useEffect(() => {
     if (paymentError) {
@@ -409,6 +417,17 @@ const ConferenceDetail = () => {
                 >
                   Lịch trình Sessions
                 </button>
+                {isResearch && (
+                  <button
+                    onClick={() => setActiveTab('research')}
+                    className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === 'research'
+                      ? 'text-blue-500 border-b-2 border-coral-500'
+                      : 'text-white/70 hover:text-white'
+                      }`}
+                  >
+                    Research Paper Information
+                  </button>
+                )}
                 <button
                   onClick={() => setActiveTab('feedback')}
                   className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === 'feedback'
@@ -501,6 +520,15 @@ const ConferenceDetail = () => {
                 {activeTab === 'sessions' && (
                   <SessionsTab
                     conference={conference}
+                    formatDate={formatDate}
+                    formatTime={formatTime}
+                  />
+                )}
+
+                {/* Research Paper Information Tab */}
+                {activeTab === 'research' && isResearch && researchConference && (
+                  <ResearchPaperInformationTab
+                    conference={researchConference}
                     formatDate={formatDate}
                     formatTime={formatTime}
                   />
