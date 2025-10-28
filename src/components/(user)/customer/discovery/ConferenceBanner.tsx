@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 
 interface BannerFilterProps {
-  onFilterChange?: (filter: 'technical' | 'research' | 'all') => void;
+  onFilterChange?: (filter: 'technical' | 'research') => void;
   className?: string;
 }
 

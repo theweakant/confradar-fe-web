@@ -12,6 +12,7 @@ import { useGetAllCitiesQuery } from '@/redux/services/city.service';
 import { CategoryOption, ConferenceResponse } from '@/types/conference.type';
 import { Category } from '@/types/category.type';
 import { City } from '@/types/city.type';
+import { mockStatusData } from '@/data/mockStatus.data';
 
 import "react-day-picker/style.css";
 import SearchFilter from './SearchFilter';
@@ -34,6 +35,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedCity, setSelectedCity] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState('all');
   const [selectedPrice, setSelectedPrice] = useState('all');
   const [selectedRating, setSelectedRating] = useState('all');
@@ -54,17 +56,39 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
 
   const itemsPerPage = 12;
 
-  const { conferences, loading: conferencesLoading, error: conferencesError } = useConference();
+  const {
+    defaultConferences,
+    lazyConferencesWithPrices,
+    statusConferences,
+    fetchDefaultConferences,
+    fetchConferencesWithPrices,
+    fetchConferencesByStatus,
+    defaultLoading,
+    lazyWithPricesLoading,
+    statusConferencesLoading,
+    defaultError,
+    lazyWithPricesError,
+    statusConferencesError
+  } = useConference();
+
   const { data: categoriesData, isLoading: categoriesLoading, error: categoriesError } = useGetAllCategoriesQuery();
   const { data: citiesData, isLoading: citiesLoading, error: citiesError } = useGetAllCitiesQuery();
 
-  // const allPrices = conferences.flatMap(
-  //   conf => conf.prices?.map(p => p.actualPrice ?? p.ticketPrice ?? 0) ?? []
-  // );
+  const getCurrentConferences = (): ConferenceResponse[] => {
+    if (selectedStatus !== 'all') {
+      return statusConferences?.items || [];
+    } else if (searchQuery || selectedCity !== 'all' || startDateFilter || endDateFilter) {
+      return lazyConferencesWithPrices?.items || [];
+    } else {
+      return defaultConferences?.items || [];
+    }
+  };
 
-  const allPrices = conferences.flatMap(conf =>
+  const currentConferences = getCurrentConferences();
+
+  const allPrices = currentConferences.flatMap(conf =>
     (conf?.prices ?? [])
-      .map(p => p?.actualPrice ?? p?.ticketPrice ?? 0)
+      .map(p => p?.ticketPrice ?? 0)
       .filter(price => typeof price === 'number' && price > 0)
   );
 
@@ -74,7 +98,36 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedCategory, selectedCity, selectedLocation, selectedPrice, selectedRating, sortBy, bannerFilter]);
+  }, [searchQuery, selectedCategory, selectedCity, selectedStatus, selectedLocation, selectedPrice, selectedRating, sortBy, bannerFilter]);
+
+  // API call logic
+  useEffect(() => {
+    const hasFilters = searchQuery || selectedCity !== 'all' || startDateFilter || endDateFilter;
+
+    if (selectedStatus !== 'all') {
+      const params = {
+        page: currentPage,
+        pageSize: itemsPerPage,
+        ...(searchQuery && { searchKeyword: searchQuery }),
+        ...(selectedCity !== 'all' && { cityId: selectedCity }),
+        ...(startDateFilter && { startDate: startDateFilter.toISOString().split('T')[0] }),
+        ...(endDateFilter && { endDate: endDateFilter.toISOString().split('T')[0] })
+      };
+      fetchConferencesByStatus(selectedStatus, params);
+    } else if (hasFilters) {
+      const params = {
+        page: currentPage,
+        pageSize: itemsPerPage,
+        ...(searchQuery && { searchKeyword: searchQuery }),
+        ...(selectedCity !== 'all' && { cityId: selectedCity }),
+        ...(startDateFilter && { startDate: startDateFilter.toISOString().split('T')[0] }),
+        ...(endDateFilter && { endDate: endDateFilter.toISOString().split('T')[0] })
+      };
+      fetchConferencesWithPrices(params);
+    } else {
+      fetchDefaultConferences({ page: currentPage, pageSize: itemsPerPage });
+    }
+  }, [currentPage, searchQuery, selectedCity, selectedStatus, startDateFilter, endDateFilter, fetchDefaultConferences, fetchConferencesWithPrices, fetchConferencesByStatus]);
 
   //   useEffect(() => {
   //   if (absoluteMaxPrice > 0) {
@@ -108,8 +161,16 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
     { value: 'all', label: 'Tất cả thành phố' },
     ...(citiesData?.data?.map((city: City) => ({
       value: city.cityId,
-      label: city.name
+      label: city.cityName ?? 'Thành phố không xác định'
     })) || [])
+  ];
+
+  const statuses: { value: string; label: string }[] = [
+    { value: 'all', label: 'Tất cả trạng thái' },
+    ...mockStatusData.map((status) => ({
+      value: status.statusId,
+      label: status.name
+    }))
   ];
 
   // const locations = [
@@ -138,64 +199,33 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
     return Math.max(...conf.prices.map(p => p.ticketPrice ?? 0));
   };
 
-  const filteredConferences = conferences.filter((conf: ConferenceResponse) => {
-    const matchesSearch = (conf.conferenceName?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
-      (conf.description?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
-
+  // Client-side filters (category, banner, rating, price) - server handles search, city, date, status
+  const filteredConferences = currentConferences.filter((conf: ConferenceResponse) => {
     const confType = conf.isResearchConference ? 'research' : 'technical';
     const matchesBannerFilter = confType === bannerFilter;
-
-    // const matchesCategory = bannerFilter !== 'technical'
-    //   ? true
-    //   : (selectedCategory === 'all' || conf.categoryId === selectedCategory);
+    // const matchesBannerFilter =
+    //   (bannerFilter === 'technical' && !conf.isResearchConference) ||
+    //   (bannerFilter === 'research' && conf.isResearchConference);
 
     const matchesCategory = selectedCategory === 'all' || conf.categoryId === selectedCategory;
 
-    const matchesCity = selectedCity === 'all' || conf.cityId === selectedCity;
-
-    // const matchesLocation = selectedLocation === 'all' ||
-    //   (conf.address?.toLowerCase().includes(locations.find(l => l.value === selectedLocation)?.label.toLowerCase() || '') || false);
-
     const matchesRating = selectedRating === 'all';
 
-    const confStartTime = new Date(conf.startDate || '');
-    const confEndTime = new Date(conf.endDate || '');
-    let matchesDate = true;
-
-    if (startDateFilter && endDateFilter) {
-      const filterStart = new Date(startDateFilter);
-      const filterEnd = new Date(endDateFilter);
-      matchesDate = confStartTime <= filterEnd && confEndTime >= filterStart;
-    } else if (startDateFilter) {
-      const filterStart = new Date(startDateFilter);
-      matchesDate = confEndTime >= filterStart;
-    } else if (endDateFilter) {
-      const filterEnd = new Date(endDateFilter);
-      matchesDate = confStartTime <= filterEnd;
-    }
-
-    // if (startDateFilter) {
-    //   matchesDate = matchesDate && confEndTime >= new Date(startDateFilter);
-    // }
-    // if (endDateFilter) {
-    //   matchesDate = matchesDate && confStartTime <= new Date(endDateFilter);
-    // }
-
     if (absoluteMaxPrice === 0) {
-      return matchesSearch && matchesBannerFilter && matchesCategory && matchesCity && matchesRating && matchesDate;
+      return matchesBannerFilter && matchesCategory && matchesRating;
     }
 
     const minPrice = getMinPrice(conf);
     const maxPrice = getMaxPrice(conf);
 
     if (minPrice === null || maxPrice === null) {
-      return matchesSearch && matchesBannerFilter && matchesCategory && matchesCity && matchesRating && matchesDate;
+      return matchesBannerFilter && matchesCategory && matchesRating;
     }
 
     const matchesPrice =
       (minPrice <= priceRange[1]) && (maxPrice >= priceRange[0]);
 
-    return matchesSearch && matchesBannerFilter && matchesCategory && matchesCity && matchesRating && matchesDate && matchesPrice;
+    return matchesBannerFilter && matchesCategory && matchesRating && matchesPrice;
   });
 
   // const filteredConferences = mockConferences.filter(conf => {
@@ -225,18 +255,61 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
         return bMin - aMin;
       }
       case 'attendees-low':
-        return (a.capacity ?? 0) - (b.capacity ?? 0);
+        return (a.totalSlot ?? 0) - (b.totalSlot ?? 0);
       case 'attendees-high':
-        return (b.capacity ?? 0) - (a.capacity ?? 0);
+        return (b.totalSlot ?? 0) - (a.totalSlot ?? 0);
       case 'date':
       default:
         return new Date(a.startDate || '').getTime() - new Date(b.startDate || '').getTime();
     }
   });
 
-  const totalPages = Math.ceil(sortedConferences.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedConferences = sortedConferences.slice(startIndex, startIndex + itemsPerPage);
+  const getPaginationData = () => {
+    if (selectedStatus !== 'all') {
+      const apiResponse = statusConferences;
+      if (apiResponse) {
+        return {
+          totalPages: apiResponse.totalPages || 1,
+          totalCount: apiResponse.totalCount || 0,
+          currentPage: apiResponse.page || 1,
+          pageSize: apiResponse.pageSize || itemsPerPage,
+          paginatedConferences: sortedConferences
+        };
+      }
+    } else if (searchQuery || selectedCity !== 'all' || startDateFilter || endDateFilter) {
+      const apiResponse = lazyConferencesWithPrices;
+      if (apiResponse) {
+        return {
+          totalPages: apiResponse.totalPages || 1,
+          totalCount: apiResponse.totalCount || 0,
+          currentPage: apiResponse.page || 1,
+          pageSize: apiResponse.pageSize || itemsPerPage,
+          paginatedConferences: sortedConferences
+        };
+      }
+    } else {
+      const apiResponse = defaultConferences;
+      if (apiResponse) {
+        return {
+          totalPages: apiResponse.totalPages || 1,
+          totalCount: apiResponse.totalCount || 0,
+          currentPage: apiResponse.page || 1,
+          pageSize: apiResponse.pageSize || itemsPerPage,
+          paginatedConferences: sortedConferences
+        };
+      }
+    }
+
+    return {
+      totalPages: Math.ceil(sortedConferences.length / itemsPerPage),
+      totalCount: sortedConferences.length,
+      currentPage: currentPage,
+      pageSize: itemsPerPage,
+      paginatedConferences: sortedConferences.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+    };
+  };
+
+  const { totalPages, totalCount, currentPage: serverCurrentPage, pageSize: serverPageSize, paginatedConferences } = getPaginationData();
 
   // const formatPrice = (price: number) => {
   //   if (price === 0) return 'Miễn phí';
@@ -315,6 +388,8 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
           setSelectedCategory={setSelectedCategory}
           selectedCity={selectedCity}
           setSelectedCity={setSelectedCity}
+          selectedStatus={selectedStatus}
+          setSelectedStatus={setSelectedStatus}
           startDateFilter={startDateFilter}
           setStartDateFilter={setStartDateFilter}
           endDateFilter={endDateFilter}
@@ -325,37 +400,48 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
           setSortBy={setSortBy}
           categories={categories}
           cities={cities}
+          statuses={statuses}
           absoluteMaxPrice={absoluteMaxPrice}
           allPrices={allPrices}
           sortOptions={sortOptions}
           openDropdown={openDropdown}
           setOpenDropdown={setOpenDropdown}
+          onClearFilters={() => {
+            setSearchQuery('');
+            setSelectedCategory('all');
+            setSelectedCity('all');
+            setSelectedStatus('all');
+            setStartDateFilter(null);
+            setEndDateFilter(null);
+            setPriceRange([0, absoluteMaxPrice]);
+            setSortBy('date');
+          }}
         // DropdownSelect={DropdownSelect}
         />
 
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-white">
-            Kết quả ({sortedConferences.length} hội nghị)
+            Kết quả ({totalCount} hội nghị)
           </h2>
-          {conferencesLoading && (
+          {(defaultLoading || lazyWithPricesLoading || statusConferencesLoading) && (
             <div className="text-sm text-blue-400">Đang tải...</div>
           )}
           <div className="text-sm text-gray-400">
-            Trang {currentPage} / {totalPages}
+            Trang {currentPage} / {totalPages} (Hiển thị {paginatedConferences.length} / {totalCount})
           </div>
         </div>
 
-        {conferencesLoading && (
+        {(defaultLoading || lazyWithPricesLoading || statusConferencesLoading) && (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
         )}
 
-        {conferencesError && (
+        {(defaultError || lazyWithPricesError || statusConferencesError) && (
           <div className="flex justify-center items-center py-12">
             <div className="text-red-400 text-center">
               <p>Có lỗi xảy ra khi tải dữ liệu hội nghị</p>
-              <p className="text-sm mt-2">{conferencesError}</p>
+              <p className="text-sm mt-2">{defaultError?.data?.message || lazyWithPricesError?.data?.message || statusConferencesError?.data?.message}</p>
             </div>
           </div>
         )}
@@ -371,6 +457,8 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
+          totalCount={totalCount}
+          pageSize={serverPageSize}
           setCurrentPage={setCurrentPage}
         />
       </div>

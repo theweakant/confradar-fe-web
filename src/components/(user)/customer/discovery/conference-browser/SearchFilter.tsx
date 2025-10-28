@@ -15,6 +15,8 @@ interface SearchFilterProps {
     setSelectedCategory: (category: string) => void;
     selectedCity: string;
     setSelectedCity: (city: string) => void;
+    selectedStatus: string;
+    setSelectedStatus: (status: string) => void;
     startDateFilter: Date | null;
     setStartDateFilter: (date: Date | null) => void;
     endDateFilter: Date | null;
@@ -25,11 +27,13 @@ interface SearchFilterProps {
     setSortBy: (sort: string) => void;
     categories: CategoryOption[];
     cities: { value: string; label: string }[];
+    statuses: { value: string; label: string }[];
     absoluteMaxPrice: number;
     allPrices: number[];
     sortOptions: SortOption[];
     openDropdown: string | null;
     setOpenDropdown: (dropdown: string | null) => void;
+    onClearFilters: () => void;
     // DropdownSelect: any;
 }
 
@@ -40,6 +44,8 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
     setSelectedCategory,
     selectedCity,
     setSelectedCity,
+    selectedStatus,
+    setSelectedStatus,
     startDateFilter,
     setStartDateFilter,
     endDateFilter,
@@ -50,11 +56,13 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
     setSortBy,
     categories,
     cities,
+    statuses,
     absoluteMaxPrice,
     allPrices,
     sortOptions,
     openDropdown,
     setOpenDropdown,
+    onClearFilters,
     // DropdownSelect
 }) => {
     return (
@@ -100,6 +108,17 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
                             options={cities}
                             onChange={setSelectedCity}
                             placeholder="Thành phố"
+                        />
+                    </div>
+
+                    <div className="flex flex-col w-full">
+                        <label className="text-xs text-gray-300 mb-1">Trạng thái</label>
+                        <DropdownSelect
+                            id="status"
+                            value={selectedStatus}
+                            options={statuses}
+                            onChange={setSelectedStatus}
+                            placeholder="Trạng thái"
                         />
                     </div>
 
@@ -233,6 +252,15 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
                             placeholder="Sắp xếp"
                         />
                     </div>
+                </div>
+
+                <div className="flex justify-end mt-4">
+                    <button
+                        onClick={onClearFilters}
+                        className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm font-medium"
+                    >
+                        Xóa tất cả bộ lọc
+                    </button>
                 </div>
             </div>
         </>

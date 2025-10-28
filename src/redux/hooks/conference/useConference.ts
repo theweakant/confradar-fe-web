@@ -1,5 +1,6 @@
 // import { useGetAllConferencesWithPricesPaginationQuery, useGetConferenceByIdQuery, useLazyGetAllConferencesWithPricesPaginationQuery, useLazyGetConferenceByIdQuery } from '@/redux/services/conference.service';
 import { useGetAllConferencesPaginationQuery, useLazyGetAllConferencesPaginationQuery, useLazyGetAllConferencesWithPricesPaginationQuery, useLazyGetConferencesByStatusQuery } from '@/redux/services/conference.service';
+import { parseApiError } from '@/redux/utils/api';
 import { ApiResponse } from '@/types/api.type';
 import { ConferenceResponse } from '@/types/conference.type';
 import { SerializedError } from '@reduxjs/toolkit';
@@ -48,24 +49,28 @@ export const useConference = () => {
 
     return {
         // Default paginated conferences
-        defaultConferences: defaultConferencesData?.data || [],
-        lazyDefaultConferences: lazyDefaultData?.data || [],
+        defaultConferences: defaultConferencesData?.data,
+        lazyDefaultConferences: lazyDefaultData?.data,
         fetchDefaultConferences,
         refetchDefaultConferences,
         defaultLoading: defaultConferencesLoading || defaultConferencesFetching || lazyDefaultLoading,
-        defaultError: defaultConferencesError || lazyDefaultError,
+        // defaultError: defaultConferencesError || lazyDefaultError,
 
         // Conferences with prices (filterable)
-        lazyConferencesWithPrices: lazyWithPricesData?.data || [],
+        lazyConferencesWithPrices: lazyWithPricesData?.data,
         fetchConferencesWithPrices,
         lazyWithPricesLoading,
-        lazyWithPricesError,
+        // lazyWithPricesError,
 
         // Conferences by status
-        statusConferences: statusConferencesData?.data || [],
+        statusConferences: statusConferencesData?.data,
         fetchConferencesByStatus,
         statusConferencesLoading,
-        statusConferencesError,
+        // statusConferencesError,
+
+        defaultError: parseApiError<ConferenceResponse[]>(defaultConferencesError || lazyDefaultError),
+        lazyWithPricesError: parseApiError<ConferenceResponse[]>(lazyWithPricesError),
+        statusConferencesError: parseApiError<ConferenceResponse[]>(statusConferencesError),
     };
 };
 

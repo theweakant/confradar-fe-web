@@ -1,3 +1,5 @@
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+
 export interface ApiResponse<T = unknown> {
   success: boolean;
   message: string;
@@ -19,3 +21,7 @@ export interface PaginationData<T = unknown> {
   pageSize: number;
   totalPages: number;
 }
+
+export type ApiQueryError<T = unknown> = FetchBaseQueryError & {
+  data?: ApiResponse<T>;
+};
