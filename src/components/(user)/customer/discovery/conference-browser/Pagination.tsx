@@ -4,12 +4,16 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 interface PaginationProps {
     currentPage: number;
     totalPages: number;
+    totalCount: number;
+    pageSize: number;
     setCurrentPage: (page: number | ((prev: number) => number)) => void;
 }
 
 const Pagination: React.FC<PaginationProps> = ({
     currentPage,
     totalPages,
+    totalCount,
+    pageSize,
     setCurrentPage
 }) => {
     if (totalPages <= 1) return null;

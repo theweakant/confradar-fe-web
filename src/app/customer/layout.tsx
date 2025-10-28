@@ -3,9 +3,10 @@
 import Header from "@/components/LandingPage/header";
 import CustomerSidebar from "@/components/(user)/customer/CustomerSidebar";
 import { redirect, usePathname } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
+import LoadingUI from "@/components/utility/Loading";
 
 interface CustomerLayoutProps {
     children: React.ReactNode;
@@ -44,8 +45,9 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                 {!accessToken && (
                     <Header />
                 )}
-
-                <main className="flex-1 overflow-y-auto">{children}</main>
+                <Suspense fallback={<LoadingUI />}>
+                    <main className="flex-1 overflow-y-auto">{children}</main>
+                </Suspense>
             </div>
         </div>
     );

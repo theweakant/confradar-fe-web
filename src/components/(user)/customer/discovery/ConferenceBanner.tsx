@@ -75,6 +75,19 @@ const ConferenceBanner: React.FC<BannerFilterProps> = ({
         {/* Filter Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
           <button
+            onClick={() => handleFilterClick('all')}
+            className={`
+      px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105
+      ${activeFilter === 'all'
+                ? 'bg-white text-gray-900 shadow-xl'
+                : 'bg-gray-900/80 text-white border-2 border-white/30 hover:bg-white hover:text-gray-900'
+              }
+    `}
+          >
+            Tất cả
+          </button>
+
+          <button
             onClick={() => handleFilterClick('technical')}
             className={`
               px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105
@@ -87,7 +100,7 @@ const ConferenceBanner: React.FC<BannerFilterProps> = ({
             Hội nghị Công nghệ
           </button>
 
-          {/* <button
+          <button
             onClick={() => handleFilterClick('research')}
             className={`
               px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105
@@ -98,7 +111,7 @@ const ConferenceBanner: React.FC<BannerFilterProps> = ({
             `}
           >
             Hội nghị Nghiên cứu
-          </button> */}
+          </button>
         </div>
       </div>
 

@@ -2,7 +2,7 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import { apiClient } from "../api/apiClient";
 import { endpoint } from "../api/endpoint";
 import type { ConferenceFormData, ConferenceResponse, RegisteredUserInConference } from "@/types/conference.type";
-import type { ApiResponse } from "@/types/api.type";
+import type { ApiResponse, ApiResponsePagination } from "@/types/api.type";
 
 export const conferenceApi = createApi({
   reducerPath: "conferenceApi",
@@ -11,15 +11,39 @@ export const conferenceApi = createApi({
 
   endpoints: (builder) => ({
     //get all conf for customer
-    getAllConferences: builder.query<ApiResponse<ConferenceResponse[]>, void>({
-      query: () => ({
-        url: endpoint.CONFERENCE.LIST,
+    getAllConferencesPagination: builder.query<ApiResponsePagination<ConferenceResponse[]>,
+      { page?: number; pageSize?: number; }
+    >({
+      query: ({ page = 1, pageSize = 12, }) => ({
+        url: endpoint.CONFERENCE.LIST_PAGINATED,
         method: 'GET',
+        params: { page, pageSize, },
       }),
       providesTags: (result) =>
-        result?.data
+        result?.data?.items
           ? [
-            ...result.data.map(({ conferenceId }) => ({
+            ...result.data?.items.map(({ conferenceId }) => ({
+              type: 'Conference' as const,
+              id: conferenceId,
+            })),
+            { type: 'Conference', id: 'LIST' },
+          ]
+          : [{ type: 'Conference', id: 'LIST' }],
+    }),
+
+    //get all conf for customer with prices
+    getAllConferencesWithPricesPagination: builder.query<ApiResponsePagination<ConferenceResponse[]>,
+      { page?: number; pageSize?: number; searchKeyword?: string; cityId?: string; startDate?: string; endDate?: string }
+    >({
+      query: ({ page = 1, pageSize = 12, searchKeyword, cityId, startDate, endDate }) => ({
+        url: endpoint.CONFERENCE.LIST_WITH_PRICES,
+        method: 'GET',
+        params: { page, pageSize, searchKeyword, cityId, startDate, endDate },
+      }),
+      providesTags: (result) =>
+        result?.data?.items
+          ? [
+            ...result.data?.items.map(({ conferenceId }) => ({
               type: 'Conference' as const,
               id: conferenceId,
             })),
@@ -35,14 +59,45 @@ export const conferenceApi = createApi({
     //   providesTags: ["Conference"],
     // }),
 
-    //view conf detail for customer
-    getConferenceById: builder.query<ApiResponse<ConferenceResponse>, string>({
-      query: (id) => ({
-        url: `${endpoint.CONFERENCE.DETAIL}/${id}`,
-        method: 'GET',
+    //tech detail endpoint
+    // getTechnicalConferenceDetail: builder.query<
+    //   ApiResponse<TechnicalConferenceDetailResponse>,
+    //   string
+    // >({
+    //   query: (conferenceId) => ({
+    //     url: `${endpoint.CONFERENCE.TECHNICAL_DETAIL}/${conferenceId}`,
+    //     method: "GET",
+    //   }),
+    //   providesTags: (result, error, conferenceId) => [{ type: "Conference", id: conferenceId }],
+    // }),
+
+    //conferences by status with pagination & start endDate filter
+    getConferencesByStatus: builder.query<
+      ApiResponsePagination<ConferenceResponse[]>,
+      { conferenceStatusId: string; page?: number; pageSize?: number; searchKeyword?: string; cityId?: string; startDate?: string; endDate?: string }
+    >({
+      query: ({ conferenceStatusId, page = 1, pageSize = 10, searchKeyword, cityId, startDate, endDate }) => ({
+        url: `${endpoint.CONFERENCE.LIST_BY_STATUS}/${conferenceStatusId}`,
+        method: "GET",
+        params: { page, pageSize, searchKeyword, cityId, startDate, endDate },
       }),
-      providesTags: (result, error, id) => [{ type: 'Conference', id }],
+      providesTags: (result) =>
+        result?.data?.items
+          ? [
+            ...result.data.items.map(({ conferenceId }) => ({ type: "Conference" as const, id: conferenceId })),
+            { type: "Conference", id: "LIST" },
+          ]
+          : [{ type: "Conference", id: "LIST" }],
     }),
+
+    //view conf detail for customer old version
+    // getConferenceById: builder.query<ApiResponse<ConferenceResponse>, string>({
+    //   query: (id) => ({
+    //     url: `${endpoint.CONFERENCE.DETAIL}/${id}`,
+    //     method: 'GET',
+    //   }),
+    //   providesTags: (result, error, id) => [{ type: 'Conference', id }],
+    // }),
     // getConferenceById: builder.query<ApiResponse<Conference>, string>({
     //   query: (id) => ({
     //     url: `${endpoint.CONFERENCE.DETAIL}/${id}`,
@@ -88,15 +143,19 @@ export const conferenceApi = createApi({
       }),
       providesTags: ["Conference"],
     }),
-      
+
   }),
 });
 
 export const {
-  useGetAllConferencesQuery,
-  useGetConferenceByIdQuery,
-  useLazyGetAllConferencesQuery,
-  useLazyGetConferenceByIdQuery,
+  useGetAllConferencesPaginationQuery,
+  useGetAllConferencesWithPricesPaginationQuery,
+  // useGetConferenceByIdQuery,
+  useGetConferencesByStatusQuery,
+  useLazyGetAllConferencesPaginationQuery,
+  useLazyGetAllConferencesWithPricesPaginationQuery,
+  // useLazyGetConferenceByIdQuery,
+  useLazyGetConferencesByStatusQuery,
   useCreateConferenceMutation,
   useUpdateConferenceMutation,
   useDeleteConferenceMutation,

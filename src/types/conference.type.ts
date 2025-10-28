@@ -11,7 +11,7 @@ export interface Conference {
   bannerImageUrl?: string;
   createdAt: string;
   isInternalHosted: boolean;
-  isResearchConference: boolean;  
+  isResearchConference: boolean;
   isActive: boolean;
 
   userId: string;
@@ -27,7 +27,7 @@ export interface Conference {
 
 export type ConferenceFormData = Omit<
   Conference,
-  "conferenceId" | "createdAt" | "isActive" | "priceId" | "sessionId" 
+  "conferenceId" | "createdAt" | "isActive" | "priceId" | "sessionId"
 >;
 
 //basic step
@@ -47,7 +47,7 @@ export interface ConferenceBasicForm {
 //price step
 export interface PricePhase {
   name: string;
-  earlierBirdEndInterval: string; 
+  earlierBirdEndInterval: string;
   percentForEarly: number;
   standardEndInterval: string;
   lateEndInterval: string;
@@ -55,13 +55,13 @@ export interface PricePhase {
 }
 
 export interface Price {
-  priceId?:string;
+  priceId?: string;
   ticketPrice: number;
   ticketName: string;
   ticketDescription: string;
   actualPrice: number;
-  currentPhase?:string;
-  pricePhaseId?:string
+  currentPhase?: string;
+  pricePhaseId?: string
 }
 
 export interface ConferencePriceData {
@@ -76,11 +76,11 @@ export interface Speaker {
 }
 
 export interface Session {
-  sessionId?:string,
+  sessionId?: string,
   title: string;
   description: string;
-  startTime: string; 
-  endTime: string;   
+  startTime: string;
+  endTime: string;
   roomId: string;
   room?: RoomInfoResponse
   speaker?: Speaker;
@@ -100,7 +100,7 @@ export interface ConferenceSpeakerData {
 }
 // Policies Step
 export interface Policy {
-  policyId?:string;
+  policyId?: string;
   policyName: string;
   description: string;
 }
@@ -111,8 +111,8 @@ export interface ConferencePolicyData {
 
 // Media Step
 export interface Media {
-  mediaId?:string;
-  mediaFile: string | File | null;    
+  mediaId?: string;
+  mediaFile: string | File | null;
 }
 
 export interface ConferenceMediaData {
@@ -121,9 +121,9 @@ export interface ConferenceMediaData {
 
 // Sponsors Step
 export interface Sponsor {
-  sponsorId?:string
+  sponsorId?: string
   name: string;
-  imageFile: string | File | null;  
+  imageFile: string | File | null;
 }
 
 export interface ConferenceSponsorData {
@@ -200,20 +200,22 @@ export const COUNTRY_OPTIONS: CategoryOption[] = [
 
 export interface ConferenceResponse {
   conferenceId: string;
-  conferenceName: string;
+  conferenceName?: string;
   description?: string;
   startDate?: string;
   endDate?: string;
-  capacity?: number;
+  totalSlot?: number;
+  availableSlot?: number;
   address?: string;
   bannerImageUrl?: string;
   createdAt?: string;
+  ticketSaleStart?: string;
+  ticketSaleEnd?: string;
   isInternalHosted?: boolean;
   isResearchConference?: boolean;
-  isActive?: boolean;
-  userId?: string;
-  locationId?: string;
+  cityId?: string;
   categoryId?: string;
+  conferenceStatusId?: string;
   policies?: ConferencePolicyResponse[];
   media?: ConferenceMediaResponse[];
   sponsors?: SponsorResponse[];
@@ -240,14 +242,25 @@ export interface SponsorResponse {
 }
 
 export interface ConferencePriceResponse {
-  priceId: string;
+  conferencePriceId: string;
   ticketPrice?: number;
   ticketName?: string;
   ticketDescription?: string;
   isAuthot?: boolean;
-  actualPrice?: number;
+  totalSlot?: number;
+  availableSlot?: number;
   currentPhase?: string;
   pricePhaseId?: string;
+}
+
+export interface ConferencePricePhaseResponse {
+  pricePhaseId: string;
+  phaseName?: string;
+  startDate?: string;
+  endDate?: string;
+  applyPercent?: number;
+  totalSlot?: number;
+  availableSlot?: number;
 }
 
 export interface ConferenceSessionResponse {
@@ -282,7 +295,7 @@ export interface RegisteredUserInConference {
   userName: string;
   avatarUrl: string;
   email: string;
-  registeredDate: string;   
+  registeredDate: string;
   conferenceId: string;
   conferenceName: string;
 }
