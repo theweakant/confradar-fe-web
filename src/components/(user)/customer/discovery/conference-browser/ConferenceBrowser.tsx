@@ -57,10 +57,10 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
   const itemsPerPage = 12;
 
   const {
-    defaultConferences,
+    // defaultConferences,
     lazyConferencesWithPrices,
     statusConferences,
-    fetchDefaultConferences,
+    // fetchDefaultConferences,
     fetchConferencesWithPrices,
     fetchConferencesByStatus,
     defaultLoading,
@@ -77,11 +77,15 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
   const getCurrentConferences = (): ConferenceResponse[] => {
     if (selectedStatus !== 'all') {
       return statusConferences?.items || [];
-    } else if (searchQuery || selectedCity !== 'all' || startDateFilter || endDateFilter) {
-      return lazyConferencesWithPrices?.items || [];
     } else {
-      return defaultConferences?.items || [];
+      return lazyConferencesWithPrices?.items || [];
     }
+    // else if (searchQuery || selectedCity !== 'all' || startDateFilter || endDateFilter) {
+    //   return lazyConferencesWithPrices?.items || [];
+    // } else return []
+    // else {
+    //   return defaultConferences?.items || [];
+    // }
   };
 
   const currentConferences = getCurrentConferences();
@@ -100,7 +104,6 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
     setCurrentPage(1);
   }, [searchQuery, selectedCategory, selectedCity, selectedStatus, selectedLocation, selectedPrice, selectedRating, sortBy]);
 
-  // API call logic with bannerFilter
   useEffect(() => {
     const hasFilters = searchQuery || selectedCity !== 'all' || startDateFilter || endDateFilter;
 
@@ -114,7 +117,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
         ...(endDateFilter && { endDate: endDateFilter.toISOString().split('T')[0] })
       };
       fetchConferencesByStatus(selectedStatus, params);
-    } else if (hasFilters) {
+    } else {
       const params = {
         page: currentPage,
         pageSize: itemsPerPage,
@@ -124,10 +127,22 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
         ...(endDateFilter && { endDate: endDateFilter.toISOString().split('T')[0] })
       };
       fetchConferencesWithPrices(params);
-    } else {
-      fetchDefaultConferences({ page: currentPage, pageSize: itemsPerPage });
     }
-  }, [currentPage, searchQuery, selectedCity, selectedStatus, startDateFilter, endDateFilter, fetchDefaultConferences, fetchConferencesWithPrices, fetchConferencesByStatus]);
+    // else if (hasFilters) {
+    //   const params = {
+    //     page: currentPage,
+    //     pageSize: itemsPerPage,
+    //     ...(searchQuery && { searchKeyword: searchQuery }),
+    //     ...(selectedCity !== 'all' && { cityId: selectedCity }),
+    //     ...(startDateFilter && { startDate: startDateFilter.toISOString().split('T')[0] }),
+    //     ...(endDateFilter && { endDate: endDateFilter.toISOString().split('T')[0] })
+    //   };
+    //   fetchConferencesWithPrices(params);
+    // }
+    // else {
+    //   fetchDefaultConferences({ page: currentPage, pageSize: itemsPerPage });
+    // }
+  }, [currentPage, searchQuery, selectedCity, selectedStatus, startDateFilter, endDateFilter, fetchConferencesWithPrices, fetchConferencesByStatus]);
 
   //   useEffect(() => {
   //   if (absoluteMaxPrice > 0) {
@@ -278,7 +293,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
           paginatedConferences: sortedConferences
         };
       }
-    } else if (searchQuery || selectedCity !== 'all' || startDateFilter || endDateFilter) {
+    } else {
       const apiResponse = lazyConferencesWithPrices;
       if (apiResponse) {
         return {
@@ -289,18 +304,30 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
           paginatedConferences: sortedConferences
         };
       }
-    } else {
-      const apiResponse = defaultConferences;
-      if (apiResponse) {
-        return {
-          totalPages: apiResponse.totalPages,
-          totalCount: filteredCount,
-          currentPage: currentPage,
-          pageSize: itemsPerPage,
-          paginatedConferences: sortedConferences
-        };
-      }
+      // else if (searchQuery || selectedCity !== 'all' || startDateFilter || endDateFilter) {
+      //   const apiResponse = lazyConferencesWithPrices;
+      //   if (apiResponse) {
+      //     return {
+      //       totalPages: apiResponse.totalPages,
+      //       totalCount: filteredCount,
+      //       currentPage: currentPage,
+      //       pageSize: itemsPerPage,
+      //       paginatedConferences: sortedConferences
+      //     };
+      //   }
     }
+    // else {
+    //   const apiResponse = defaultConferences;
+    //   if (apiResponse) {
+    //     return {
+    //       totalPages: apiResponse.totalPages,
+    //       totalCount: filteredCount,
+    //       currentPage: currentPage,
+    //       pageSize: itemsPerPage,
+    //       paginatedConferences: sortedConferences
+    //     };
+    //   }
+    // }
 
     return {
       // totalPages: Math.ceil(filteredCount / itemsPerPage),
