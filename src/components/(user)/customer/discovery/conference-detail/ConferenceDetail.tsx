@@ -24,6 +24,9 @@ interface ImageModalProps {
 const ConferenceDetail = () => {
   const params = useParams();
   const conferenceId = params?.id as string;
+  const type = params?.type as string;
+
+  const isResearch = type === 'research';
 
   const router = useRouter()
 

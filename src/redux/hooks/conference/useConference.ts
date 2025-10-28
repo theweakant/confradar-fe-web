@@ -1,5 +1,5 @@
 // import { useGetAllConferencesWithPricesPaginationQuery, useGetConferenceByIdQuery, useLazyGetAllConferencesWithPricesPaginationQuery, useLazyGetConferenceByIdQuery } from '@/redux/services/conference.service';
-import { useGetAllConferencesPaginationQuery, useGetTechnicalConferenceDetailQuery, useLazyGetAllConferencesPaginationQuery, useLazyGetAllConferencesWithPricesPaginationQuery, useLazyGetConferencesByStatusQuery } from '@/redux/services/conference.service';
+import { useGetAllConferencesPaginationQuery, useGetResearchConferenceDetailQuery, useGetTechnicalConferenceDetailQuery, useLazyGetAllConferencesPaginationQuery, useLazyGetAllConferencesWithPricesPaginationQuery, useLazyGetConferencesByStatusQuery } from '@/redux/services/conference.service';
 import { parseApiError } from '@/redux/utils/api';
 import { ApiResponse } from '@/types/api.type';
 import { ConferenceResponse } from '@/types/conference.type';
@@ -27,6 +27,14 @@ export const useConference = (params?: { page?: number; pageSize?: number; id?: 
         isFetching: technicalConferenceFetching,
         refetch: refetchTechnicalConference,
     } = useGetTechnicalConferenceDetailQuery(params?.id!, { skip: !params?.id });
+
+    const {
+        data: researchConferenceData,
+        error: researchConferenceError,
+        isLoading: researchConferenceLoading,
+        isFetching: researchConferenceFetching,
+        refetch: refetchResearchConference,
+    } = useGetResearchConferenceDetailQuery(params?.id!, { skip: !params?.id });
 
     // Lazy load default paginated list
     const [triggerGetAll, { data: lazyDefaultData, error: lazyDefaultError, isLoading: lazyDefaultLoading }] =
@@ -87,6 +95,12 @@ export const useConference = (params?: { page?: number; pageSize?: number; id?: 
         refetchTechnicalConference,
         technicalConferenceLoading: technicalConferenceLoading || technicalConferenceFetching,
         technicalConferenceError: parseApiError(technicalConferenceError),
+
+        // Research conference
+        researchConference: researchConferenceData?.data,
+        refetchResearchConference,
+        researchConferenceLoading: researchConferenceLoading || researchConferenceFetching,
+        researchConferenceError: parseApiError(researchConferenceError),
     };
 };
 

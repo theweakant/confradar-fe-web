@@ -162,6 +162,7 @@ export const conferenceApi = createApi({
 export const {
   useGetAllConferencesPaginationQuery,
   useGetTechnicalConferenceDetailQuery,
+  useGetResearchConferenceDetailQuery,
   useGetAllConferencesWithPricesPaginationQuery,
   // useGetConferenceByIdQuery,
   useGetConferencesByStatusQuery,

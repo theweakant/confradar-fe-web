@@ -7,7 +7,7 @@ interface ConferenceListProps {
     getMinPrice: (conf: ConferenceResponse) => number | null;
     getMaxPrice: (conf: ConferenceResponse) => number | null;
     formatDate: (dateString: string) => string;
-    onCardClick: (conferenceId: string) => void;
+    onCardClick: (conference: ConferenceResponse) => void;
 }
 
 const ConferenceList: React.FC<ConferenceListProps> = ({

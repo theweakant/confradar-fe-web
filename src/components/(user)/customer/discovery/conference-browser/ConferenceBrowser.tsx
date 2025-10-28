@@ -512,7 +512,11 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
             getMinPrice={getMinPrice}
             getMaxPrice={getMaxPrice}
             formatDate={formatDate}
-            onCardClick={(conferenceId) => router.push(`/customer/discovery/conference-detail/${conferenceId}`)}
+            // onCardClick={(conferenceId) => router.push(`/customer/discovery/conference-detail/${conferenceId}`)}
+            onCardClick={(conference) => {
+              const type = conference.isResearchConference ? 'research' : 'technical';
+              router.push(`/customer/discovery/conference-detail/${type}/${conference.conferenceId}`);
+            }}
           />
         )}
 
