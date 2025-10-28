@@ -19,13 +19,13 @@ import { SortOption } from '@/types/ui-type/conference-browser.type';
 
 
 interface SearchSortFilterConferenceProps {
-  bannerFilter?: 'technical' | 'research' | 'all';
+  bannerFilter?: 'technical' | 'research';
 }
 
 
 // const SearchSortFilterConference: React.FC = () => {
 const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
-  bannerFilter = 'all'
+  bannerFilter = 'technical'
 }) => {
   const router = useRouter();
 
@@ -130,12 +130,14 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
     const matchesSearch = (conf.conferenceName?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
       (conf.description?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
 
-    const confCategory = conf.isResearchConference ? 'research' : 'technical';
-    const matchesBannerFilter = bannerFilter === 'all' || confCategory === bannerFilter;
+    const confType = conf.isResearchConference ? 'research' : 'technical';
+    const matchesBannerFilter = confType === bannerFilter;
 
-    const matchesCategory = bannerFilter !== 'all'
-      ? true
-      : (selectedCategory === 'all' || conf.categoryId === selectedCategory);
+    // const matchesCategory = bannerFilter !== 'technical'
+    //   ? true
+    //   : (selectedCategory === 'all' || conf.categoryId === selectedCategory);
+
+    const matchesCategory = conf.categoryId === selectedCategory;
 
     // const matchesLocation = selectedLocation === 'all' ||
     //   (conf.address?.toLowerCase().includes(locations.find(l => l.value === selectedLocation)?.label.toLowerCase() || '') || false);

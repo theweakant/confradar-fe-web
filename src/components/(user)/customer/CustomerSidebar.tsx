@@ -8,10 +8,12 @@ import {
   Bookmark,
   Ticket,
   UserCircle,
-  Bell
+  Bell,
+  LogOut
 } from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from '@/redux/hooks/useAuth';
 
 interface SidebarProps {
   className?: string;
@@ -19,6 +21,9 @@ interface SidebarProps {
 
 const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
   const pathname = usePathname();
+
+  const router = useRouter();
+  const { signout } = useAuth();
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   // const [activeItem, setActiveItem] = useState('home');
@@ -42,6 +47,11 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
     // { id: 'history', label: 'Lịch sử', icon: Clock, href: '/customer/history' },
     { id: 'settings', label: 'Cài đặt', icon: Settings, href: '/customer/settings' },
   ];
+
+  const handleSignout = () => {
+    signout();
+    router.push('/');
+  };
 
   return (
     <aside className={`bg-black text-white border-r border-gray-800 transition-all duration-300 flex flex-col ${isCollapsed ? 'w-16' : 'w-64'} ${className}`}>
@@ -196,6 +206,20 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
           )}
         </div>
       </div> */}
+
+      <div className="border-t border-gray-800 p-4">
+        <button
+          onClick={handleSignout}
+          className={`
+            w-full flex items-center space-x-3 px-2 py-2 
+            text-gray-400 hover:text-white hover:bg-gray-900 rounded-lg transition-all
+            ${isCollapsed ? 'justify-center' : 'justify-start'}
+          `}
+        >
+          <LogOut size={22} />
+          {!isCollapsed && <span className="text-sm font-medium">Đăng xuất</span>}
+        </button>
+      </div>
     </aside>
   );
 };

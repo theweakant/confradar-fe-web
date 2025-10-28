@@ -22,14 +22,14 @@ export const endpoint = {
     DELETE: "/Room",
   },
 
-    CATEGORY: {
+  CATEGORY: {
     LIST: "/ConferenceCategory",
     DETAIL: "/ConferenceCategory",
     CREATE: "/ConferenceCategory",
     UPDATE: "/ConferenceCategory",
     DELETE: "/ConferenceCategory",
   },
-    CONFERENCE: {
+  CONFERENCE: {
     LIST: "/Conference",
     DETAIL: "/Conference",
     CREATE: "/Conference",
@@ -57,5 +57,7 @@ export const endpoint = {
     GET_BASIC: (conferenceId: string) => `/ConferenceStep/${conferenceId}/basic`,
   },
 
-
+  CITY: {
+    LIST: "/City/cities",
+  },
 }

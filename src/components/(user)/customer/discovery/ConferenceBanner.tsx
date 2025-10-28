@@ -11,9 +11,9 @@ const ConferenceBanner: React.FC<BannerFilterProps> = ({
   onFilterChange,
   className = ""
 }) => {
-  const [activeFilter, setActiveFilter] = useState<'technical' | 'research' | 'all'>('all');
+  const [activeFilter, setActiveFilter] = useState<'technical' | 'research'>('technical');
 
-  const handleFilterClick = (filter: 'technical' | 'research' | 'all') => {
+  const handleFilterClick = (filter: 'technical' | 'research') => {
     setActiveFilter(filter);
     onFilterChange?.(filter);
   };
@@ -38,7 +38,6 @@ const ConferenceBanner: React.FC<BannerFilterProps> = ({
         }}
       />
 
-
       <svg
         className="absolute inset-0 w-full h-full pointer-events-none"
         viewBox="0 0 1200 800"
@@ -56,10 +55,7 @@ const ConferenceBanner: React.FC<BannerFilterProps> = ({
         </g>
       </svg>
 
-      {/* Content Container */}
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4 sm:px-6 lg:px-8">
-
-        {/* Main Title */}
         <div className="mb-8 lg:mb-12">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-4 leading-tight">
             KHÁM PHÁ HỘI NGHỊ
@@ -72,7 +68,6 @@ const ConferenceBanner: React.FC<BannerFilterProps> = ({
           </p>
         </div>
 
-        {/* Filter Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
           <button
             onClick={() => handleFilterClick('technical')}
@@ -87,7 +82,7 @@ const ConferenceBanner: React.FC<BannerFilterProps> = ({
             Hội nghị Công nghệ
           </button>
 
-          {/* <button
+          <button
             onClick={() => handleFilterClick('research')}
             className={`
               px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105
@@ -98,11 +93,10 @@ const ConferenceBanner: React.FC<BannerFilterProps> = ({
             `}
           >
             Hội nghị Nghiên cứu
-          </button> */}
+          </button>
         </div>
       </div>
 
-      {/* Bottom Gradient Fade */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/30 to-transparent" />
     </div>
   );
