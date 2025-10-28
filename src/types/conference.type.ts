@@ -36,45 +36,49 @@ export interface ConferenceBasicForm {
   description?: string;
   startDate: string;
   endDate: string;
-  capacity?: number;
+  totalSlot: number;
   address?: string;
   bannerImageFile?: File | null;
   isInternalHosted: boolean;
   isResearchConference: boolean;
-  categoryName: string;
+  conferenceCategoryId: string;
+  cityId: string;
+  ticketSaleStart: string; //ISO
+  ticketSaleEnd: string; //ISO
+  createdby: string;
+  targetAudienceTechnicalConference: string;
+
 }
 
 //price step
-export interface PricePhase {
-  name: string;
-  earlierBirdEndInterval: string;
-  percentForEarly: number;
-  standardEndInterval: string;
-  lateEndInterval: string;
-  percentForEnd: number;
+
+export interface Ticket {
+  ticketId?:string;
+  ticketPrice: number;
+  ticketName: string; 
+  ticketDescription: number;
+  isAuthor: boolean;
+  totalSlot: number;
 }
 
-export interface Price {
-  priceId?: string;
-  ticketPrice: number;
-  ticketName: string;
-  ticketDescription: string;
-  actualPrice: number;
-  currentPhase?: string;
-  pricePhaseId?: string
+export interface Phase {
+  pricePhaseId?:string
+  phaseName: string;
+  applyPercent: number; 
+  startDate: string;
+  endDate: string;
+  totalslot: number;
 }
+
+//+++++++++++++
+
+
 
 export interface ConferencePriceData {
-  pricePhase: PricePhase;
-  prices: Price[];
+
 }
 
 //session step
-export interface Speaker {
-  name: string;
-  description: string;
-}
-
 export interface Session {
   sessionId?: string,
   title: string;
@@ -82,22 +86,30 @@ export interface Session {
   startTime: string;
   endTime: string;
   roomId: string;
-  room?: RoomInfoResponse
   speaker?: Speaker;
+  sessionMedias?: SessionMedia
+}
+
+export interface Speaker {
+  speakerId?:string
+  name: string;
+  description: string;
+  imageUrl: string;
+  image: string;
+}
+
+export interface SessionMedia {
+  sessionMediaId?: string
+  mediaFile: string;
+  mediaUrl: string;
+
 }
 
 export interface ConferenceSessionData {
   sessions: Session[];
 }
 
-export interface Speaker {
-  name: string;
-  description: string;
-}
 
-export interface ConferenceSpeakerData {
-  speaker: Speaker;
-}
 // Policies Step
 export interface Policy {
   policyId?: string;
@@ -130,6 +142,7 @@ export interface ConferenceSponsorData {
   sponsors: Sponsor[];
 }
 
+//+++
 export interface ConferenceStepFormProps {
   conference?: Conference | null;
   onSave?: (data: ConferenceFormData) => void;

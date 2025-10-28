@@ -1,10 +1,10 @@
 // redux/slices/auth.slice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 import { setTokens, clearTokens, getRoleFromToken } from "../utils/token"
-import {User, AuthUser} from "@/types/user.type"
+import {UserProfileResponse, AuthUser} from "@/types/user.type"
 
 export interface AuthState {
-  user: User | AuthUser | null
+  user: UserProfileResponse | AuthUser | null
   accessToken: string | null
   refreshToken: string | null
   role: string | null
@@ -32,7 +32,7 @@ const authSlice = createSlice({
     },
     setCredentials: (
       state,
-      action: PayloadAction<{ user: User | AuthUser; accessToken: string; refreshToken: string }>
+      action: PayloadAction<{ user: UserProfileResponse | AuthUser; accessToken: string; refreshToken: string }>
     ) => {
       const { user, accessToken, refreshToken } = action.payload
       // const role = getRoleFromToken(accessToken)

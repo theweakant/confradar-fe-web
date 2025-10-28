@@ -4,6 +4,8 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/redux/hooks/useAuth'
 import { getRouteByRole } from '@/constants/roles' 
+import { AuthUser } from "@/types/user.type"
+
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -13,6 +15,8 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   const router = useRouter()
   const { user, isAuthenticated, loading } = useAuth()
+  const role = (user as AuthUser)?.role
+
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -20,9 +24,9 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
       return
     }
 
-    if (!loading && isAuthenticated && allowedRoles && user?.role) {
-      if (!allowedRoles.includes(user.role)) {
-        const correctRoute = getRouteByRole(user.role)
+    if (!loading && isAuthenticated && allowedRoles && role) {
+      if (!allowedRoles.includes(role)) {
+        const correctRoute = getRouteByRole(role)
         router.push(correctRoute)
       }
     }
@@ -41,7 +45,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
 
   if (!isAuthenticated) return null
 
-  if (allowedRoles && user?.role && !allowedRoles.includes(user.role)) return null
+  if (allowedRoles && role && !allowedRoles.includes(role)) return null
 
   return <>{children}</>
 }

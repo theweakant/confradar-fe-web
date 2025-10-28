@@ -1,42 +1,46 @@
 // src/types/user.type.ts
 
 export interface AuthUser {
+  userId: string;
   email: string
   role: string | null
 }
-
-export interface User {
+ 
+export interface UserProfileResponse {
   userId: string;
-  fullName: string;
   email: string;
+  fullName: string;
+  birthDay: string;
   phoneNumber:string;
-  address:string
-  role: string;
-  status: "active" | "inactive";
-  registeredConferences: number;
-  joinedDate: string;
+  gender: string;
+  avatarUrl: string;
+  bioDescription: string;
+  createdAt: string;
 }
 
-export type UserFormData = Omit<User, "userId" | "status" | "registeredConferences" | "joinedDate">;
+export type UserFormData = Omit<UserProfileResponse, "userId" | "createdAt"  >;
 
 export interface UserFormProps {
-  user?: User | null;
+  user?: UserProfileResponse | null;
   onSave: (data: UserFormData) => void;
   onCancel: () => void;
 }
 
 export interface UserDetailProps {
-  user: User;
+  user: UserProfileResponse;
   onClose: () => void;
 }
 
 export interface UserTableProps {
-  users: User[];
-  onView: (user: User) => void;
-  onEdit: (user: User) => void;
+  users: UserProfileResponse[];
+  onView: (user: UserProfileResponse) => void;
+  onEdit: (user: UserProfileResponse) => void;
   onDelete: (id: string) => void;
 }
 
+
+
+//--------------------------------------------------------------
 
 // REVIEWER TYPES
 // ============================================
