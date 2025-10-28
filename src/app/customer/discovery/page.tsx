@@ -5,7 +5,7 @@ import ConferenceBrowser from "@/components/(user)/customer/discovery/conference
 import { useState } from "react";
 
 export default function DiscoveryPage() {
-    const [bannerFilter, setBannerFilter] = useState<'technical' | 'research'>('technical');
+    const [bannerFilter, setBannerFilter] = useState<'technical' | 'research' | 'all'>('all');
 
     return (
         // <div>

@@ -14,7 +14,7 @@ export const conferenceApi = createApi({
     getAllConferencesPagination: builder.query<ApiResponsePagination<ConferenceResponse[]>,
       { page?: number; pageSize?: number; }
     >({
-      query: ({ page = 1, pageSize = 10, }) => ({
+      query: ({ page = 1, pageSize = 12, }) => ({
         url: endpoint.CONFERENCE.LIST_PAGINATED,
         method: 'GET',
         params: { page, pageSize, },
@@ -35,7 +35,7 @@ export const conferenceApi = createApi({
     getAllConferencesWithPricesPagination: builder.query<ApiResponsePagination<ConferenceResponse[]>,
       { page?: number; pageSize?: number; searchKeyword?: string; cityId?: string; startDate?: string; endDate?: string }
     >({
-      query: ({ page = 1, pageSize = 10, searchKeyword, cityId, startDate, endDate }) => ({
+      query: ({ page = 1, pageSize = 12, searchKeyword, cityId, startDate, endDate }) => ({
         url: endpoint.CONFERENCE.LIST_WITH_PRICES,
         method: 'GET',
         params: { page, pageSize, searchKeyword, cityId, startDate, endDate },

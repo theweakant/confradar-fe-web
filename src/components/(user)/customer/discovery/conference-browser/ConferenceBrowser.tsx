@@ -22,13 +22,13 @@ import { SortOption } from '@/types/ui-type/conference-browser.type';
 
 
 interface SearchSortFilterConferenceProps {
-  bannerFilter?: 'technical' | 'research';
+  bannerFilter?: 'technical' | 'research' | 'all';
 }
 
 
 // const SearchSortFilterConference: React.FC = () => {
 const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
-  bannerFilter = 'technical'
+  bannerFilter = 'all'
 }) => {
   const router = useRouter();
 
@@ -69,7 +69,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
     defaultError,
     lazyWithPricesError,
     statusConferencesError
-  } = useConference();
+  } = useConference({ page: currentPage, pageSize: itemsPerPage });
 
   const { data: categoriesData, isLoading: categoriesLoading, error: categoriesError } = useGetAllCategoriesQuery();
   const { data: citiesData, isLoading: citiesLoading, error: citiesError } = useGetAllCitiesQuery();
@@ -98,9 +98,9 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedCategory, selectedCity, selectedStatus, selectedLocation, selectedPrice, selectedRating, sortBy, bannerFilter]);
+  }, [searchQuery, selectedCategory, selectedCity, selectedStatus, selectedLocation, selectedPrice, selectedRating, sortBy]);
 
-  // API call logic
+  // API call logic with bannerFilter
   useEffect(() => {
     const hasFilters = searchQuery || selectedCity !== 'all' || startDateFilter || endDateFilter;
 
@@ -202,30 +202,30 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
   // Client-side filters (category, banner, rating, price) - server handles search, city, date, status
   const filteredConferences = currentConferences.filter((conf: ConferenceResponse) => {
     const confType = conf.isResearchConference ? 'research' : 'technical';
-    const matchesBannerFilter = confType === bannerFilter;
+    const matchesBannerFilter = bannerFilter === 'all' || confType === bannerFilter;
     // const matchesBannerFilter =
     //   (bannerFilter === 'technical' && !conf.isResearchConference) ||
     //   (bannerFilter === 'research' && conf.isResearchConference);
 
     const matchesCategory = selectedCategory === 'all' || conf.categoryId === selectedCategory;
 
-    const matchesRating = selectedRating === 'all';
+    // const matchesRating = selectedRating === 'all';
 
     if (absoluteMaxPrice === 0) {
-      return matchesBannerFilter && matchesCategory && matchesRating;
+      return matchesBannerFilter && matchesCategory;
     }
 
     const minPrice = getMinPrice(conf);
     const maxPrice = getMaxPrice(conf);
 
     if (minPrice === null || maxPrice === null) {
-      return matchesBannerFilter && matchesCategory && matchesRating;
+      return matchesBannerFilter && matchesCategory;
     }
 
-    const matchesPrice =
-      (minPrice <= priceRange[1]) && (maxPrice >= priceRange[0]);
+    // const matchesPrice =
+    //   (minPrice <= priceRange[1]) && (maxPrice >= priceRange[0]);
 
-    return matchesBannerFilter && matchesCategory && matchesRating && matchesPrice;
+    return matchesBannerFilter && matchesCategory;
   });
 
   // const filteredConferences = mockConferences.filter(conf => {
@@ -265,14 +265,16 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
   });
 
   const getPaginationData = () => {
+    const filteredCount = sortedConferences.length;
+
     if (selectedStatus !== 'all') {
       const apiResponse = statusConferences;
       if (apiResponse) {
         return {
-          totalPages: apiResponse.totalPages || 1,
-          totalCount: apiResponse.totalCount || 0,
-          currentPage: apiResponse.page || 1,
-          pageSize: apiResponse.pageSize || itemsPerPage,
+          totalPages: apiResponse.totalPages,
+          totalCount: filteredCount,
+          currentPage: currentPage,
+          pageSize: itemsPerPage,
           paginatedConferences: sortedConferences
         };
       }
@@ -280,10 +282,10 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
       const apiResponse = lazyConferencesWithPrices;
       if (apiResponse) {
         return {
-          totalPages: apiResponse.totalPages || 1,
-          totalCount: apiResponse.totalCount || 0,
-          currentPage: apiResponse.page || 1,
-          pageSize: apiResponse.pageSize || itemsPerPage,
+          totalPages: apiResponse.totalPages,
+          totalCount: filteredCount,
+          currentPage: currentPage,
+          pageSize: itemsPerPage,
           paginatedConferences: sortedConferences
         };
       }
@@ -291,21 +293,22 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
       const apiResponse = defaultConferences;
       if (apiResponse) {
         return {
-          totalPages: apiResponse.totalPages || 1,
-          totalCount: apiResponse.totalCount || 0,
-          currentPage: apiResponse.page || 1,
-          pageSize: apiResponse.pageSize || itemsPerPage,
+          totalPages: apiResponse.totalPages,
+          totalCount: filteredCount,
+          currentPage: currentPage,
+          pageSize: itemsPerPage,
           paginatedConferences: sortedConferences
         };
       }
     }
 
     return {
-      totalPages: Math.ceil(sortedConferences.length / itemsPerPage),
-      totalCount: sortedConferences.length,
+      // totalPages: Math.ceil(filteredCount / itemsPerPage),
+      totalPages: 0,
+      totalCount: filteredCount,
       currentPage: currentPage,
       pageSize: itemsPerPage,
-      paginatedConferences: sortedConferences.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+      paginatedConferences: sortedConferences
     };
   };
 
@@ -421,7 +424,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
 
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-white">
-            Kết quả ({totalCount} hội nghị)
+            Kết quả hội nghị {bannerFilter === 'technical' ? 'Kỹ thuật' : 'Nghiên cứu'} ({totalCount} hội nghị)
           </h2>
           {(defaultLoading || lazyWithPricesLoading || statusConferencesLoading) && (
             <div className="text-sm text-blue-400">Đang tải...</div>
@@ -440,27 +443,42 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
         {(defaultError || lazyWithPricesError || statusConferencesError) && (
           <div className="flex justify-center items-center py-12">
             <div className="text-red-400 text-center">
-              <p>Có lỗi xảy ra khi tải dữ liệu hội nghị</p>
+              <p>Có lỗi xảy ra khi tải dữ liệu hội nghị {bannerFilter === 'technical' ? 'kỹ thuật' : 'nghiên cứu'}</p>
               <p className="text-sm mt-2">{defaultError?.data?.message || lazyWithPricesError?.data?.message || statusConferencesError?.data?.message}</p>
             </div>
           </div>
         )}
 
-        <ConferenceList
-          paginatedConferences={paginatedConferences}
-          getMinPrice={getMinPrice}
-          getMaxPrice={getMaxPrice}
-          formatDate={formatDate}
-          onCardClick={(conferenceId) => router.push(`/customer/discovery/conference-detail/${conferenceId}`)}
-        />
+        {!defaultLoading && !lazyWithPricesLoading && !statusConferencesLoading &&
+          !defaultError && !lazyWithPricesError && !statusConferencesError &&
+          totalCount === 0 && (
+            <div className="flex justify-center items-center py-12">
+              <div className="text-gray-400 text-center">
+                <p>Không tìm thấy hội nghị {bannerFilter === 'technical' ? 'kỹ thuật' : 'nghiên cứu'} nào</p>
+                <p className="text-sm mt-2">Hãy thử thay đổi bộ lọc hoặc tìm kiếm với từ khóa khác</p>
+              </div>
+            </div>
+          )}
 
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalCount={totalCount}
-          pageSize={serverPageSize}
-          setCurrentPage={setCurrentPage}
-        />
+        {totalCount > 0 && (
+          <ConferenceList
+            paginatedConferences={paginatedConferences}
+            getMinPrice={getMinPrice}
+            getMaxPrice={getMaxPrice}
+            formatDate={formatDate}
+            onCardClick={(conferenceId) => router.push(`/customer/discovery/conference-detail/${conferenceId}`)}
+          />
+        )}
+
+        {totalCount > 0 && totalPages > 1 && (
+          <Pagination
+            currentPage={serverCurrentPage}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            pageSize={itemsPerPage}
+            setCurrentPage={setCurrentPage}
+          />
+        )}
       </div>
     </div>
   );

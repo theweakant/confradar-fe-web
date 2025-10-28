@@ -7,7 +7,7 @@ import { SerializedError } from '@reduxjs/toolkit';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { useCallback } from 'react';
 
-export const useConference = () => {
+export const useConference = (params?: { page?: number; pageSize?: number }) => {
     // Auto-fetch default paginated list
     const {
         data: defaultConferencesData,
@@ -15,7 +15,10 @@ export const useConference = () => {
         isLoading: defaultConferencesLoading,
         isFetching: defaultConferencesFetching,
         refetch: refetchDefaultConferences,
-    } = useGetAllConferencesPaginationQuery({ page: 1, pageSize: 10 });
+    } = useGetAllConferencesPaginationQuery({
+        page: params?.page ?? 1,
+        pageSize: params?.pageSize ?? 12,
+    });
 
     // Lazy load default paginated list
     const [triggerGetAll, { data: lazyDefaultData, error: lazyDefaultError, isLoading: lazyDefaultLoading }] =
