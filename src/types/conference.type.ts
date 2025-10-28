@@ -214,12 +214,12 @@ export interface ConferenceResponse {
   isInternalHosted?: boolean;
   isResearchConference?: boolean;
   cityId?: string;
-  categoryId?: string;
+  conferenceCategoryId?: string;
   conferenceStatusId?: string;
   policies?: ConferencePolicyResponse[];
   media?: ConferenceMediaResponse[];
   sponsors?: SponsorResponse[];
-  prices?: ConferencePriceResponse[];
+  conferencePrices?: ConferencePriceResponse[];
   sessions?: ConferenceSessionResponse[];
 }
 
@@ -268,12 +268,13 @@ export interface ConferenceSessionResponse {
   description?: string;
   startTime?: string;
   endTime?: string;
-  date?: string;
+  sessionDate?: string;
   conferenceId?: string;
   statusId?: string;
   roomId?: string;
   room?: RoomInfoResponse;
-  speaker?: SpeakerResponse;
+  speakers?: SpeakerResponse[];
+  sessionMedia?: ConferenceSessionMediaResponse[];
 }
 
 export interface RoomInfoResponse {
@@ -284,8 +285,15 @@ export interface RoomInfoResponse {
 }
 
 export interface SpeakerResponse {
+  speakerId: string;
   name: string;
   description?: string;
+  image?: string;
+}
+
+export interface ConferenceSessionMediaResponse {
+  conferenceSessionMediaId: string;
+  conferenceSessionMediaUrl?: string;
 }
 
 export interface RegisteredUserInConference {

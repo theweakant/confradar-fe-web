@@ -2,7 +2,9 @@ import React, { Fragment } from 'react';
 import { Search, Filter, ChevronDown } from 'lucide-react';
 import { Popover, Transition } from '@headlessui/react';
 import { DayPicker } from "react-day-picker";
-import { Slider } from "@/components/ui/slider";
+// import { Slider } from "@/components/ui/slider";
+import Slider from 'rc-slider';
+import 'rc-slider/assets/index.css';
 import "react-day-picker/style.css";
 import { CategoryOption } from '@/types/conference.type';
 import { SortOption } from '@/types/ui-type/conference-browser.type';
@@ -33,6 +35,7 @@ interface SearchFilterProps {
     sortOptions: SortOption[];
     openDropdown: string | null;
     setOpenDropdown: (dropdown: string | null) => void;
+    onSearchSubmit: () => void;
     onClearFilters: () => void;
     // DropdownSelect: any;
 }
@@ -62,9 +65,17 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
     sortOptions,
     openDropdown,
     setOpenDropdown,
+    onSearchSubmit,
     onClearFilters,
     // DropdownSelect
 }) => {
+    const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            onSearchSubmit();
+        }
+    };
+
     return (
         <>
             {/* Search Bar */}
@@ -76,8 +87,16 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
                         placeholder="Tìm kiếm hội nghị..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={handleKeyPress}
                         className="w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-md"
                     />
+                    <button
+                        onClick={onSearchSubmit}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-blue-500/30 active:scale-95"
+                    >
+                        <Search size={16} className="text-white" />
+                        <span className="hidden sm:inline">Tìm kiếm</span>
+                    </button>
                 </div>
             </div>
 
@@ -220,13 +239,27 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
 
                     <div className="flex flex-col space-y-2">
                         <label className="text-sm font-medium">Khoảng giá (VND)</label>
-                        <Slider
+                        {/* <Slider
                             min={0}
                             max={absoluteMaxPrice}
                             step={50000}
                             value={priceRange}
                             disabled={!allPrices.length}
                             onValueChange={(value) => setPriceRange(value as [number, number])}
+                        /> */}
+                        <Slider
+                            range
+                            min={0}
+                            max={absoluteMaxPrice}
+                            step={50000}
+                            value={priceRange}
+                            onChange={(value) => setPriceRange(value as [number, number])}
+                            trackStyle={[{ backgroundColor: '#3b82f6' }]}
+                            handleStyle={[
+                                { borderColor: '#3b82f6', backgroundColor: '#fff' },
+                                { borderColor: '#3b82f6', backgroundColor: '#fff' },
+                            ]}
+                            railStyle={{ backgroundColor: '#374151' }}
                         />
                         {!allPrices.length && (
                             <p className="text-xs text-red-400 italic">

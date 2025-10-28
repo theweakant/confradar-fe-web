@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { useConference } from '@/redux/hooks/conference/useConference';
 import { useGetAllCategoriesQuery } from '@/redux/services/category.service';
 import { useGetAllCitiesQuery } from '@/redux/services/city.service';
-import { CategoryOption, ConferenceResponse } from '@/types/conference.type';
+import { CategoryOption, ConferencePriceResponse, ConferenceResponse } from '@/types/conference.type';
 import { Category } from '@/types/category.type';
 import { City } from '@/types/city.type';
 import { mockStatusData } from '@/data/mockStatus.data';
@@ -32,6 +32,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
 }) => {
   const router = useRouter();
 
+  const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedCity, setSelectedCity] = useState('all');
@@ -90,11 +91,47 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
 
   const currentConferences = getCurrentConferences();
 
+  const getCurrentPrice = (price: ConferencePriceResponse) => {
+    const basePrice = price.ticketPrice ?? 0;
+
+    if (!price.pricePhases || price.pricePhases.length === 0) {
+      return basePrice;
+    }
+
+    const now = new Date();
+    const currentPhase = price.pricePhases.find(phase => {
+      const startDate = new Date(phase.startDate || '');
+      const endDate = new Date(phase.endDate || '');
+      return now >= startDate && now <= endDate;
+    });
+
+    if (!currentPhase || !currentPhase.applyPercent) {
+      return basePrice;
+    }
+
+    const finalPrice = Math.round(basePrice * (currentPhase.applyPercent / 100));
+    return finalPrice;
+  };
+
+
   const allPrices = currentConferences.flatMap(conf =>
-    (conf?.prices ?? [])
-      .map(p => p?.ticketPrice ?? 0)
+    (conf?.conferencePrices ?? [])
+      .map(p => getCurrentPrice(p))
       .filter(price => typeof price === 'number' && price > 0)
   );
+  // const allPrices = React.useMemo(() => {
+  //   return currentConferences.flatMap(conf =>
+  //     (conf?.conferencePrices ?? [])
+  //       .map(p => getCurrentPrice(p))
+  //     // .filter(price => typeof price === 'number' && price > 0)
+  //   );
+  // }, [currentConferences]);
+
+  // const absoluteMaxPrice = React.useMemo(() => {
+  //   return allPrices.length ? Math.max(...allPrices) : 0;
+  // }, [allPrices]);
+
+  // const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
 
   const absoluteMaxPrice = allPrices.length ? Math.max(...allPrices) : 0;
 
@@ -102,7 +139,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedCategory, selectedCity, selectedStatus, selectedLocation, selectedPrice, selectedRating, sortBy]);
+  }, [searchQuery, selectedCity, selectedStatus, selectedLocation, selectedPrice, selectedRating, sortBy]);
 
   useEffect(() => {
     const hasFilters = searchQuery || selectedCity !== 'all' || startDateFilter || endDateFilter;
@@ -205,26 +242,20 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
   ];
 
   const getMinPrice = (conf: ConferenceResponse) => {
-    if (!conf.prices || conf.prices.length === 0) return null;
-    return Math.min(...conf.prices.map(p => p.ticketPrice ?? Infinity));
+    if (!conf.conferencePrices || conf.conferencePrices.length === 0) return null;
+    return Math.min(...conf.conferencePrices.map(p => getCurrentPrice(p)));
   };
 
   const getMaxPrice = (conf: ConferenceResponse) => {
-    if (!conf.prices || conf.prices.length === 0) return null;
-    return Math.max(...conf.prices.map(p => p.ticketPrice ?? 0));
+    if (!conf.conferencePrices || conf.conferencePrices.length === 0) return null;
+    return Math.max(...conf.conferencePrices.map(p => getCurrentPrice(p)));
   };
 
-  // Client-side filters (category, banner, rating, price) - server handles search, city, date, status
   const filteredConferences = currentConferences.filter((conf: ConferenceResponse) => {
     const confType = conf.isResearchConference ? 'research' : 'technical';
     const matchesBannerFilter = bannerFilter === 'all' || confType === bannerFilter;
-    // const matchesBannerFilter =
-    //   (bannerFilter === 'technical' && !conf.isResearchConference) ||
-    //   (bannerFilter === 'research' && conf.isResearchConference);
 
-    const matchesCategory = selectedCategory === 'all' || conf.categoryId === selectedCategory;
-
-    // const matchesRating = selectedRating === 'all';
+    const matchesCategory = selectedCategory === 'all' || conf.conferenceCategoryId === selectedCategory;
 
     if (absoluteMaxPrice === 0) {
       return matchesBannerFilter && matchesCategory;
@@ -237,10 +268,9 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
       return matchesBannerFilter && matchesCategory;
     }
 
-    // const matchesPrice =
-    //   (minPrice <= priceRange[1]) && (maxPrice >= priceRange[0]);
+    const matchesPrice = (minPrice <= priceRange[1]) && (maxPrice >= priceRange[0]);
 
-    return matchesBannerFilter && matchesCategory;
+    return matchesBannerFilter && matchesCategory && matchesPrice;
   });
 
   // const filteredConferences = mockConferences.filter(conf => {
@@ -265,9 +295,9 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
         return aMin - bMin;
       }
       case 'price-high': {
-        const aMin = getMinPrice(a) ?? 0;
-        const bMin = getMinPrice(b) ?? 0;
-        return bMin - aMin;
+        const aMax = getMaxPrice(a) ?? 0;
+        const bMax = getMaxPrice(b) ?? 0;
+        return bMax - aMax;
       }
       case 'attendees-low':
         return (a.totalSlot ?? 0) - (b.totalSlot ?? 0);
@@ -341,27 +371,11 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
 
   const { totalPages, totalCount, currentPage: serverCurrentPage, pageSize: serverPageSize, paginatedConferences } = getPaginationData();
 
-  // const formatPrice = (price: number) => {
-  //   if (price === 0) return 'Miễn phí';
-  //   return new Intl.NumberFormat('vi-VN', {
-  //     style: 'currency',
-  //     currency: 'VND'
-  //   }).format(price);
-  // };
-
-  // const formatDate = (dateString: string) => {
-  //   return new Date(dateString).toLocaleDateString('vi-VN', {
-  //     day: '2-digit',
-  //     month: '2-digit',
-  //     year: 'numeric'
-  //   });
-  // };
   const formatDate = (dateString: string) => {
     const d = new Date(dateString);
     return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1)
       .toString().padStart(2, '0')}/${d.getFullYear()}`;
   };
-  // const formatPrice = (price: number) => `${price.toLocaleString()} VND`;
 
   // const DropdownSelect = ({
   //   value,
@@ -412,8 +426,12 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
       <div className="max-w-6xl mx-auto bg-gray-900/90 backdrop-blur-sm border border-gray-600/50 rounded-2xl p-6 mt-8 shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
 
         <SearchFilter
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
+          searchQuery={searchInput}
+          setSearchQuery={setSearchInput}
+          onSearchSubmit={() => {
+            setSearchQuery(searchInput);
+            setCurrentPage(1);
+          }}
           selectedCategory={selectedCategory}
           setSelectedCategory={setSelectedCategory}
           selectedCity={selectedCity}
@@ -437,6 +455,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
           openDropdown={openDropdown}
           setOpenDropdown={setOpenDropdown}
           onClearFilters={() => {
+            setSearchInput('');
             setSearchQuery('');
             setSelectedCategory('all');
             setSelectedCity('all');
