@@ -16,7 +16,6 @@ export const userApi = createApi({
       }),
     }),
 
-    
     updateProfile: builder.mutation<ApiResponse<UserProfileResponse>, { userId: string; data: Partial<UserProfileResponse> }>({
       query: ({ userId, data }) => ({
         url: `${endpoint.AUTH.PROFILE}`,
@@ -27,7 +26,7 @@ export const userApi = createApi({
   }),
 })
 
-export const { 
+export const {
   useGetProfileByIdQuery,
-  useUpdateProfileMutation 
+  useUpdateProfileMutation
 } = userApi

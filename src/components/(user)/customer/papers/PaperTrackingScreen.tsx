@@ -1,8 +1,23 @@
 'use client';
+import React, { useState } from 'react';
 
-import React from 'react';
+import Slider from 'rc-slider';
+import 'rc-slider/assets/index.css';
+import AbstractPhase from './AbstractPhase';
+import FullPaperPhase from './FullPaperPhase';
+import RevisionPhase from './RevisionPhase';
+import CameraReadyPhase from './CameraReadyPhase';
 
 const PaperTrackingScreen = () => {
+  const [currentStage, setCurrentStage] = useState<number>(1);
+
+  const stages = [
+    { id: 1, label: 'Abstract' },
+    { id: 2, label: 'Full Paper' },
+    { id: 3, label: 'Revision' },
+    { id: 4, label: 'Camera Ready' },
+  ];
+
   const paperStatus = [
     { id: 1, step: 'Nộp bài báo', completed: true, date: '15/01/2025' },
     { id: 2, step: 'Xác nhận tiếp nhận', completed: true, date: '17/01/2025' },
@@ -45,7 +60,7 @@ const PaperTrackingScreen = () => {
 
       <div className="flex">
         {/* Sidebar */}
-        <aside className="w-64 bg-gray-800 border-r border-gray-700 min-h-screen">
+        {/* <aside className="w-64 bg-gray-800 border-r border-gray-700 min-h-screen">
           <nav className="p-4">
             <div className="space-y-2">
               <a href="#" className="flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg">
@@ -84,7 +99,7 @@ const PaperTrackingScreen = () => {
               </div>
             </div>
           </nav>
-        </aside>
+        </aside> */}
 
         {/* Main Content */}
         <main className="flex-1 p-6">
@@ -97,141 +112,50 @@ const PaperTrackingScreen = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Progress Section */}
-              <div className="lg:col-span-2">
-                <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
-                  <div className="flex items-center mb-6">
-                    <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
-                      3/6
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold">Tiến độ bài báo</h3>
-                      <p className="text-gray-400">Giai đoạn trước và sau chuyển đổi</p>
-                    </div>
-                  </div>
+            <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 mb-10">
+              <h3 className="text-lg font-semibold mb-4">Các giai đoạn bài báo</h3>
 
-                  {/* Paper Details Card */}
-                  <div className="bg-gray-700 rounded-lg p-4 mb-6">
-                    <h4 className="font-semibold mb-2">{paperDetails.title}</h4>
-                    <p className="text-sm text-gray-400 mb-1">Hội thảo: {paperDetails.conference}</p>
-                    <p className="text-sm text-gray-400">Deadline review: {paperDetails.reviewDeadline}</p>
-                    <div className="mt-3">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-900 text-yellow-300">
-                        {paperDetails.status}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Progress Steps */}
-                  <div className="space-y-4">
-                    {paperStatus.map((step, index) => (
-                      <div key={step.id} className="flex items-center">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-4 ${step.completed
-                            ? 'bg-blue-600 text-white'
-                            : index === 3
-                              ? 'bg-yellow-600 text-white'
-                              : 'bg-gray-600 text-gray-400'
-                          }`}>
-                          {step.completed ? '✓' : index + 1}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex justify-between items-center">
-                            <span className={`font-medium ${step.completed ? 'text-white' : 'text-gray-400'}`}>
-                              {step.step}
-                            </span>
-                            <span className="text-sm text-gray-400">{step.date}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Progress Bar */}
-                  <div className="mt-6">
-                    <div className="w-full bg-gray-700 rounded-full h-2">
-                      <div className="bg-blue-600 h-2 rounded-full" style={{ width: '50%' }}></div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Recommended Support */}
-                <div className="mt-8 bg-gray-800 rounded-xl p-6 border border-gray-700">
-                  <h3 className="text-lg font-bold mb-4">Hỗ trợ được đề xuất</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
-                      <div>
-                        <h4 className="font-medium">Hướng dẫn định dạng bài báo</h4>
-                        <p className="text-sm text-gray-400">Tài liệu</p>
-                      </div>
-                      <button className="text-blue-400 hover:text-blue-300 text-sm font-medium">
-                        Xem
-                      </button>
-                    </div>
-                    <div className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
-                      <div>
-                        <h4 className="font-medium">Template bài báo khoa học</h4>
-                        <p className="text-sm text-gray-400">Mẫu</p>
-                      </div>
-                      <button className="text-blue-400 hover:text-blue-300 text-sm font-medium">
-                        Tải về
-                      </button>
-                    </div>
-                    <div className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
-                      <div>
-                        <h4 className="font-medium">Hỗ trợ kỹ thuật</h4>
-                        <p className="text-sm text-gray-400">Liên hệ</p>
-                      </div>
-                      <button className="text-blue-400 hover:text-blue-300 text-sm font-medium">
-                        Chat
-                      </button>
-                    </div>
-                  </div>
-                </div>
+              <div className="px-6">
+                <Slider
+                  min={1}
+                  max={4}
+                  step={1}
+                  marks={{
+                    1: <span className="text-xs text-gray-300">Abstract</span>,
+                    2: <span className="text-xs text-gray-300">Full Paper</span>,
+                    3: <span className="text-xs text-gray-300">Revision</span>,
+                    4: <span className="text-xs text-gray-300">Camera Ready</span>,
+                  }}
+                  value={currentStage}
+                  // onChange={setCurrentStage}
+                  onChange={(value) => {
+                    if (typeof value === 'number') setCurrentStage(value);
+                  }}
+                  trackStyle={[{ backgroundColor: '#2563eb', height: 8 }]}
+                  handleStyle={{
+                    borderColor: '#3b82f6',
+                    height: 20,
+                    width: 20,
+                    marginTop: -9,
+                    backgroundColor: '#60a5fa',
+                  }}
+                  railStyle={{ backgroundColor: '#374151', height: 8 }}
+                />
               </div>
 
-              {/* Actions Panel */}
-              <div className="lg:col-span-1">
-                <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
-                  <h3 className="text-lg font-bold mb-4">Hành động</h3>
-                  <p className="text-sm text-gray-400 mb-6">
-                    Danh sách các hành động cần thực hiện
-                  </p>
-
-                  <div className="space-y-4">
-                    {actions.map((action, index) => (
-                      <div key={index} className="border-b border-gray-700 pb-4 last:border-b-0">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className={`w-3 h-3 rounded-full mr-3 ${action.status === 'completed'
-                              ? 'bg-green-500'
-                              : action.status === 'in-progress'
-                                ? 'bg-yellow-500'
-                                : 'bg-gray-500'
-                            }`}></div>
-                          <span className="text-sm flex-1">{action.name}</span>
-                        </div>
-                        <div className="ml-6">
-                          <div className="flex justify-between text-xs text-gray-400 mb-1">
-                            <span>{action.status === 'completed' ? 'Hoàn thành' : action.status === 'in-progress' ? 'Đang thực hiện' : 'Chờ thực hiện'}</span>
-                            <span>{action.progress}</span>
-                          </div>
-                          <div className="w-full bg-gray-700 rounded-full h-1">
-                            <div
-                              className={`h-1 rounded-full ${action.status === 'completed' ? 'bg-green-500' : 'bg-yellow-500'
-                                }`}
-                              style={{ width: action.progress }}
-                            ></div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <button className="w-full mt-6 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
-                    Bỏ qua
-                  </button>
-                </div>
+              <div className="mt-4 text-sm text-gray-400 text-center">
+                Giai đoạn hiện tại:{" "}
+                <span className="text-blue-400 font-semibold">
+                  {stages.find((s) => s.id === currentStage)?.label}
+                </span>
               </div>
+            </div>
+
+            <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 mt-8">
+              {currentStage === 1 && <AbstractPhase />}
+              {currentStage === 2 && <FullPaperPhase />}
+              {currentStage === 3 && <RevisionPhase />}
+              {currentStage === 4 && <CameraReadyPhase />}
             </div>
           </div>
         </main>
