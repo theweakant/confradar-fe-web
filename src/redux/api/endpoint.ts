@@ -9,7 +9,12 @@ export const endpoint = {
     VERIFY_FORGET_PASSWORD: "/Auth/verify-forget-password",
 
     //user
-    PROFILE: "/Auth/view-profile-by-id"
+    PROFILE: "/Auth/view-profile-by-id",
+    USERS_LIST:"/Auth/list-users",
+    CREATE_COLLABORATOR:"/Auth/create-collaborator-account",
+
+    SUSPEND: (userId: string) => `/Auth/suspend-account?userId=${userId}`,
+    ACTIVATE:(userId: string) => `/Auth/activate-account?userId=${userId}`, 
   },
   DESTINATION: {
     LIST: "/Destination",
@@ -36,13 +41,33 @@ export const endpoint = {
     LIST_PAGINATED: "/Conference/paginated-conferences",
     LIST_WITH_PRICES: "/Conference/conferences-with-prices",
     LIST_BY_STATUS: "/Conference/by-status",
+
+    VIEW_REGISTERED_USERS: "/Conference/view-registered-users-for-conference",
+
+
+    GET_TECH_BY_ID: (conferenceId: string) => `/Conference/technical-detail/${conferenceId}`,
+    GET_RESEARCH_BY_ID: (conferenceId: string) => `/Conference/research-detail/${conferenceId}`,
+
+    // ✅ Trạng thái & hoàn thành bước
+    STEP_COMPLETION_STATUS: "/Conference/step-completion-status",
+    RESEARCH_STEP_COMPLETION_STATUS: "/Conference/research-step-completion-status",
+    CHECK_TECH_STEP_COMPLETION: "/Conference/check-technical-step-completion",
+    CHECK_RESEARCH_STEP_COMPLETION: "/Conference/check-research-step-completion",
+
+    //pending & approve
+    PENDING_CONFERENCES: "/Conference/pending-conferences",
+    APPROVE_CONFERENCE: (conferenceId: string) => `/Conference/approve-conference/${conferenceId}`,
+
+
     DETAIL: "/Conference",
     TECHNICAL_DETAIL: "/Conference/technical-detail",
     RESEARCH_DETAIL: "/Conference/research-detail",
     CREATE: "/Conference",
     UPDATE: "/Conference",
     DELETE: "/Conference",
-    VIEW_REGISTERED_USERS: "/Conference/view-registered-users-for-conference",
+
+
+
   },
 
   CONFERENCE_STEP: {
@@ -73,4 +98,17 @@ export const endpoint = {
     CREATE_RESEARCH_PAPER_PAYMENT: "/payment/pay-research-paper-with-momo",
     GET_OWN_TRANSACTION: "/payment/get-own-transaction",
   },
+  
+  PAPER: {
+    SUBMIT: "/Conference/paginated-conferences",
+
+    //ABSTRACT
+    LIST_PENDING_ABSTRACT:"/Paper/list-pending-abstract",
+    DECIDE_ABSTRACT:"/Paper/decide-abstract-paper-status",
+    ASSIGN_PAPER_TO_REVIEWER:"/Paper/assign-reviewer-to-paper",
+
+
+  },
+
+
 }

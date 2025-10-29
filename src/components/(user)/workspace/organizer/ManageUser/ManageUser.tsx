@@ -19,139 +19,188 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { mockUsers } from "@/data/mockUser.data";
 
 import { SearchFilter } from "@/components/molecules/SearchFilter";
 import { Modal } from "@/components/molecules/Modal";
 import { UserDetail } from "@/components/(user)/workspace/organizer/ManageUser/UserDetail/index";
 import { UserForm } from "@/components/(user)/workspace/organizer/ManageUser/UserForm/index";
 import { UserTable } from "@/components/(user)/workspace/organizer/ManageUser/UserTable/index";
-import { User, UserFormData } from "@/types/user.type";
-
+import {  UserProfileResponse, CollaboratorRequest } from "@/types/user.type";
+import { 
+  useGetUsersListQuery, 
+  useGetProfileByIdQuery, 
+  useCreateCollaboratorMutation,
+  useSuspendAccountMutation,
+  useActivateAccountMutation
+} from "@/redux/services/user.service";
 
 export default function ManageUser() {
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  // API: Lấy danh sách users
+  const { 
+    data: usersListData, 
+    isLoading: isLoadingList, 
+    error: errorList, 
+    refetch 
+  } = useGetUsersListQuery();
+  
+  const users: UserProfileResponse[] = usersListData?.data?.users || [];
+
+  // API: Mutation tạo collaborator
+  const [createCollaborator, { isLoading: isCreating }] = useCreateCollaboratorMutation();
+  
+  // API: Mutation suspend và activate
+  const [suspendAccount, { isLoading: isSuspending }] = useSuspendAccountMutation();
+  const [activateAccount, { isLoading: isActivating }] = useActivateAccountMutation();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterRole, setFilterRole] = useState("all");
-  const [filterStatus, setFilterStatus] = useState("all");
 
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [viewingUser, setViewingUser] = useState<User | null>(null);
-  const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
+  const [viewingUserId, setViewingUserId] = useState<string | null>(null);
+  const [suspendUserId, setSuspendUserId] = useState<string | null>(null);
+  const [activateUserId, setActivateUserId] = useState<string | null>(null);
+
+  // API: Lấy chi tiết user
+  const { 
+    data: userProfileData, 
+    isLoading: isLoadingProfile 
+  } = useGetProfileByIdQuery(
+    viewingUserId || "",
+    { skip: !viewingUserId }
+  );
+
+  const viewingUserProfile: UserProfileResponse | undefined = userProfileData?.data;
 
   const roleOptions = [
     { value: "all", label: "Tất cả danh mục" },
-    { value: "admin", label: "Quản trị viên" },
-    { value: "organizer", label: "Người tổ chức" },
-    { value: "attendee", label: "Người tham dự" }
-  ];
-  const statusOptions = [
-    { value: "all", label: "Tất cả trạng thái" },
-    { value: "active", label: "Hoạt động" },
-    { value: "inactive", label: "Không hoạt động" }
+    { value: "Customer", label: "Khách hàng" },
+    { value: "Collaborator", label: "Cộng tác viên" },
+    { value: "Local Reviewer", label: "Người đánh giá địa phương" }
   ];
 
-  const filteredUsers = users.filter(user => {
+  const filteredUsers = users.filter((user: UserProfileResponse) => {
     const matchesSearch = user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRole = filterRole === "all" || user.role === filterRole;
-    const matchesStatus = filterStatus === "all" || user.status === filterStatus;
-    return matchesSearch && matchesRole && matchesStatus;
+    const matchesRole = filterRole === "all" || user.roles?.includes(filterRole);
+    return matchesSearch && matchesRole ;
   });
 
-
   const handleCreate = () => {
-    setEditingUser(null);
     setIsFormModalOpen(true);
   };
 
-  const handleView = (user: User) => {
-    setViewingUser(user);
+  const handleView = (user: UserProfileResponse) => {
+    setViewingUserId(user.userId);
     setIsDetailModalOpen(true);
   };
 
-  const handleEdit = (user: User) => {
-    setEditingUser(user);
-    setIsFormModalOpen(true);
-  };
-
-  const handleSave = (data: UserFormData) => {
-    if (editingUser) {
-      setUsers(prev => prev.map(u => 
-        u.userId === editingUser.userId 
-          ? { ...u, ...data }
-          : u
-      ));
-      toast.success("Cập nhật người dùng thành công!");
-    } else {
-      const newUser: User = {
-        ...data,
-        userId: Date.now().toString(),
-        status: "active",
-        registeredConferences: 0,
-        joinedDate: new Date().toISOString().split('T')[0]
-      };
-      setUsers(prev => [...prev, newUser]);
-      toast.success("Thêm người dùng thành công!");
-
-    }
-    setIsFormModalOpen(false);
-    setEditingUser(null);
-  };
-
-  const handleDelete = (id: string) => {
-    setDeleteUserId(id);
-  };
-
-  const confirmDelete = () => {
-    if (deleteUserId) {
-      setUsers(prev => prev.filter(u => u.userId !== deleteUserId));
-      toast.success("Xóa người dùng thành công!");
-
-      setDeleteUserId(null);
+  const handleSave = async (data: CollaboratorRequest) => {
+    try {
+      const response = await createCollaborator(data).unwrap();
+      toast.success(response.message || "Thêm collaborator thành công!");
+      
+      setIsFormModalOpen(false);
+      refetch(); // Refresh danh sách
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Thêm collaborator thất bại!");
     }
   };
+
+  const handleSuspend = (userId: string) => {
+    setSuspendUserId(userId);
+  };
+
+  const confirmSuspend = async () => {
+    if (suspendUserId) {
+      try {
+        const response = await suspendAccount(suspendUserId).unwrap();
+        toast.success(response.message || "Tạm ngưng tài khoản thành công!");
+        setSuspendUserId(null);
+        refetch();
+      } catch (error: any) {
+        toast.error(error?.data?.message || "Tạm ngưng tài khoản thất bại!");
+      }
+    }
+  };
+
+  const handleActivate = (userId: string) => {
+    setActivateUserId(userId);
+  };
+
+  const confirmActivate = async () => {
+    if (activateUserId) {
+      try {
+        const response = await activateAccount(activateUserId).unwrap();
+        toast.success(response.message || "Kích hoạt tài khoản thành công!");
+        setActivateUserId(null);
+        refetch();
+      } catch (error: any) {
+        toast.error(error?.data?.message || "Kích hoạt tài khoản thất bại!");
+      }
+    }
+  };
+
+  const countByRole = (role: string): number => {
+    return users.filter((u: UserProfileResponse) => u.roles?.includes(role)).length;
+  };
+
+
+  if (isLoadingList) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Đang tải danh sách người dùng...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (errorList) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Không thể tải danh sách người dùng</p>
+          <Button onClick={() => refetch()}>Thử lại</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900">Quản lý Người dùng</h1>
-          <Button
-            onClick={handleCreate}
-            className="flex items-center gap-2 whitespace-nowrap mt-6"
-          >
-            <Plus className="w-5 h-5" />
-            Thêm người dùng
-          </Button>
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold text-gray-900">Quản lý Người dùng</h1>
+            <Button
+              onClick={handleCreate}
+              className="flex items-center gap-2 whitespace-nowrap mt-6"
+              disabled={isCreating}
+            >
+              <Plus className="w-5 h-5" />
+              {isCreating ? "Đang thêm..." : "Thêm đối tác"}
+            </Button>
+          </div>
+          <p className="text-gray-600 mt-2">
+            Quản lý thông tin người dùng trên ConfRadar
+          </p>
         </div>
-        <p className="text-gray-600 mt-2">
-          Quản lý thông tin người dùng trên ConfRadar
-        </p>
-      </div>
 
-                <SearchFilter
-                  searchValue={searchQuery}
-                  onSearchChange={setSearchQuery}
-                  searchPlaceholder="Tìm kiếm..."
-                  filters={[
-                    {
-                      value: filterRole,
-                      onValueChange: setFilterRole,
-                      options: roleOptions,
-                    },
-                    {
-                      value: filterStatus,
-                      onValueChange: setFilterStatus,
-                      options: statusOptions,
-                    },
-                  ]}
-                  
-                />
+        <SearchFilter
+          searchValue={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder="Tìm kiếm theo tên, email..."
+          filters={[
+            {
+              value: filterRole,
+              onValueChange: setFilterRole,
+              options: roleOptions,
+            }
+          ]}
+        />
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center justify-between">
@@ -163,36 +212,13 @@ export default function ManageUser() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Đang hoạt động</p>
-                <p className="text-3xl font-bold text-green-600">
-                  {users.filter(u => u.status === "active").length}
-                </p>
-              </div>
-              <UserCheck className="w-10 h-10 text-green-500" />
-            </div>
-          </div>
 
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Không hoạt động</p>
-                <p className="text-3xl font-bold text-red-600">
-                  {users.filter(u => u.status === "inactive").length}
-                </p>
-              </div>
-              <UserX className="w-10 h-10 text-red-500" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Quản trị viên</p>
+                <p className="text-sm text-gray-600 mb-1">Cộng tác viên</p>
                 <p className="text-3xl font-bold text-purple-600">
-                  {users.filter(u => u.role === "admin").length}
+                  {countByRole("Collaborator")}
                 </p>
               </div>
               <Shield className="w-10 h-10 text-purple-500" />
@@ -204,8 +230,8 @@ export default function ManageUser() {
           <UserTable
             users={filteredUsers}
             onView={handleView}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
+            onSuspend={handleSuspend}
+            onActivate={handleActivate}
           />
         </div>
       </div>
@@ -213,19 +239,13 @@ export default function ManageUser() {
       {/* Form Modal */}
       <Modal
         isOpen={isFormModalOpen}
-        onClose={() => {
-          setIsFormModalOpen(false);
-          setEditingUser(null);
-        }}
-        title={editingUser ? "Chỉnh sửa người dùng" : "Thêm người dùng mới"}
+        onClose={() => setIsFormModalOpen(false)}
+        title="Thêm người dùng mới"
       >
         <UserForm
-          user={editingUser}
+          user={null}
           onSave={handleSave}
-          onCancel={() => {
-            setIsFormModalOpen(false);
-            setEditingUser(null);
-          }}
+          onCancel={() => setIsFormModalOpen(false)}
         />
       </Modal>
 
@@ -234,34 +254,67 @@ export default function ManageUser() {
         isOpen={isDetailModalOpen}
         onClose={() => {
           setIsDetailModalOpen(false);
-          setViewingUser(null);
+          setViewingUserId(null);
         }}
         title="Chi tiết người dùng"
       >
-        {viewingUser && (
+        {isLoadingProfile ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <p className="text-gray-600 ml-3">Đang tải thông tin chi tiết...</p>
+          </div>
+        ) : viewingUserProfile ? (
           <UserDetail
-            user={viewingUser}
+            user={viewingUserProfile}
             onClose={() => {
               setIsDetailModalOpen(false);
-              setViewingUser(null);
+              setViewingUserId(null);
             }}
           />
+        ) : (
+          <p className="text-center text-gray-600 py-8">Không tìm thấy thông tin người dùng</p>
         )}
       </Modal>
 
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteUserId} onOpenChange={() => setDeleteUserId(null)}>
+      {/* Suspend Confirmation Dialog */}
+      <AlertDialog open={!!suspendUserId} onOpenChange={() => setSuspendUserId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
+            <AlertDialogTitle>Xác nhận tạm ngưng</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa người dùng này? Hành động này không thể hoàn tác.
+              Bạn có chắc chắn muốn tạm ngưng tài khoản này? Người dùng sẽ không thể đăng nhập cho đến khi được kích hoạt lại.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
-              Xóa
+            <AlertDialogAction 
+              onClick={confirmSuspend} 
+              className="bg-orange-600 hover:bg-orange-700"
+              disabled={isSuspending}
+            >
+              {isSuspending ? "Đang xử lý..." : "Tạm ngưng"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Activate Confirmation Dialog */}
+      <AlertDialog open={!!activateUserId} onOpenChange={() => setActivateUserId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận kích hoạt</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc chắn muốn kích hoạt lại tài khoản này? Người dùng sẽ có thể đăng nhập và sử dụng hệ thống.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmActivate} 
+              className="bg-green-600 hover:bg-green-700"
+              disabled={isActivating}
+            >
+              {isActivating ? "Đang xử lý..." : "Kích hoạt"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

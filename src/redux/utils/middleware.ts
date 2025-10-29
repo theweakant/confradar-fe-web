@@ -9,6 +9,7 @@ import { transactionApi } from "../services/transaction.service"
 import { ticketApi } from "../services/ticket.service"
 import { cityApi } from "../services/city.service"
 import {userApi}  from "../services/user.service"
+import { paperApi } from "../services/paper.service"
 
 
 
@@ -23,5 +24,7 @@ export const apiMiddlewares: Middleware[] = [
   ticketApi.middleware,
   cityApi.middleware,
   userApi.middleware,
+  paperApi.middleware,
+
 
 ]
