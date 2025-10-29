@@ -53,18 +53,18 @@ export interface ConferenceBasicForm {
 //price step
 
 export interface Ticket {
-  ticketId?:string;
+  ticketId?: string;
   ticketPrice: number;
-  ticketName: string; 
+  ticketName: string;
   ticketDescription: number;
   isAuthor: boolean;
   totalSlot: number;
 }
 
 export interface Phase {
-  pricePhaseId?:string
+  pricePhaseId?: string
   phaseName: string;
-  applyPercent: number; 
+  applyPercent: number;
   startDate: string;
   endDate: string;
   totalslot: number;
@@ -91,7 +91,7 @@ export interface Session {
 }
 
 export interface Speaker {
-  speakerId?:string
+  speakerId?: string
   name: string;
   description: string;
   imageUrl: string;
@@ -229,11 +229,85 @@ export interface ConferenceResponse {
   cityId?: string;
   conferenceCategoryId?: string;
   conferenceStatusId?: string;
-  policies?: ConferencePolicyResponse[];
-  media?: ConferenceMediaResponse[];
-  sponsors?: SponsorResponse[];
+  // policies?: ConferencePolicyResponse[];
+  // media?: ConferenceMediaResponse[];
+  // sponsors?: SponsorResponse[];
   conferencePrices?: ConferencePriceResponse[];
-  sessions?: ConferenceSessionResponse[];
+  // sessions?: ConferenceSessionResponse[];
+}
+
+export interface TechnicalConferenceDetailResponse {
+  conferenceId?: string;
+  conferenceName?: string;
+  description?: string;
+  startDate?: string;
+  endDate?: string;
+  totalSlot?: number;
+  availableSlot?: number;
+  address?: string;
+  bannerImageUrl?: string;
+  createdAt?: string;
+  ticketSaleStart?: string;
+  ticketSaleEnd?: string;
+  isInternalHosted?: boolean;
+  isResearchConference?: boolean;
+  cityId?: string;
+  conferenceCategoryId?: string;
+  conferenceStatusId?: string;
+  targetAudience?: string;
+  refundPolicies?: RefundPolicyResponse[];
+  conferenceMedia?: ConferenceMediaResponse[];
+  policies?: ConferencePolicyResponse[];
+  sponsors?: SponsorResponse[];
+  sessions?: TechnicalConferenceSessionResponse[];
+  conferencePrices?: ConferencePriceResponse[]; // 
+}
+
+export interface ResearchConferenceDetailResponse {
+  conferenceId: string;
+  conferenceName?: string;
+  description?: string;
+  startDate?: string;
+  endDate?: string;
+  totalSlot?: number;
+  availableSlot?: number;
+  address?: string;
+  bannerImageUrl?: string;
+  createdAt?: string;
+  ticketSaleStart?: string;
+  ticketSaleEnd?: string;
+  isInternalHosted?: boolean;
+  isResearchConference?: boolean;
+  cityId?: string;
+  conferenceCategoryId?: string;
+  conferenceStatusId?: string;
+
+  // Research Conference specific fields
+  name?: string;
+  paperFormat?: string;
+  numberPaperAccept?: number;
+  revisionAttemptAllowed?: number;
+  rankingDescription?: string;
+  allowListener?: boolean;
+  rankValue?: string;
+  rankYear?: number;
+  reviewFee?: number;
+  rankingCategoryId?: string;
+  rankingCategoryName?: string;
+
+  // Research Conference related data
+  rankingFileUrls?: RankingFileUrlResponse[];
+  materialDownloads?: MaterialDownloadResponse[];
+  rankingReferenceUrls?: RankingReferenceUrlResponse[];
+  researchPhase?: ResearchConferencePhaseResponse;
+  researchSessions?: ResearchConferenceSessionResponse[];
+
+  // Shared data (same as technical conference)
+  policies?: ConferencePolicyResponse[];
+  sponsors?: SponsorResponse[];
+  refundPolicies?: RefundPolicyResponse[];
+  conferenceMedia?: ConferenceMediaResponse[];
+  conferencePrices?: ConferencePriceResponse[];
 }
 
 export interface ConferencePolicyResponse {
@@ -245,7 +319,6 @@ export interface ConferencePolicyResponse {
 export interface ConferenceMediaResponse {
   mediaId: string;
   mediaUrl?: string;
-  mediaTypeId?: string;
 }
 
 export interface SponsorResponse {
@@ -259,7 +332,7 @@ export interface ConferencePriceResponse {
   ticketPrice?: number;
   ticketName?: string;
   ticketDescription?: string;
-  isAuthot?: boolean;
+  isAuthor?: boolean;
   totalSlot?: number;
   availableSlot?: number;
   pricePhases?: ConferencePricePhaseResponse[];
@@ -275,8 +348,8 @@ export interface ConferencePricePhaseResponse {
   availableSlot?: number;
 }
 
-export interface ConferenceSessionResponse {
-  sessionId: string;
+export interface TechnicalConferenceSessionResponse {
+  conferenceSessionId: string;
   title: string;
   description?: string;
   startTime?: string;
@@ -307,6 +380,68 @@ export interface SpeakerResponse {
 export interface ConferenceSessionMediaResponse {
   conferenceSessionMediaId: string;
   conferenceSessionMediaUrl?: string;
+}
+
+export interface RankingFileUrlResponse {
+  rankingFileUrlId: string;
+  fileUrl?: string;
+}
+
+export interface MaterialDownloadResponse {
+  materialDownloadId: string;
+  fileName?: string;
+  fileDescription?: string;
+  fileUrl?: string;
+}
+
+export interface RankingReferenceUrlResponse {
+  referenceUrlId: string;
+  referenceUrl?: string;
+}
+
+export interface ResearchConferencePhaseResponse {
+  researchConferencePhaseId?: string;
+  conferenceId?: string;
+  registrationStartDate?: string;
+  registrationEndDate?: string;
+  fullPaperStartDate?: string;
+  fullPaperEndDate?: string;
+  reviewStartDate?: string;
+  reviewEndDate?: string;
+  reviseStartDate?: string;
+  reviseEndDate?: string;
+  cameraReadyStartDate?: string;
+  cameraReadyEndDate?: string;
+  isWaitlist?: boolean;
+  isActive?: boolean;
+  revisionRoundDeadlines?: RevisionRoundDeadlineResponse[];
+}
+
+export interface RevisionRoundDeadlineResponse {
+  revisionRoundDeadlineId?: string;
+  endDate?: string;
+  roundNumber?: number;
+  researchConferencePhaseId?: string;
+}
+
+export interface ResearchConferenceSessionResponse {
+  conferenceSessionId: string;
+  title?: string;
+  description?: string;
+  startTime?: string;
+  endTime?: string;
+  date?: string;
+  conferenceId?: string;
+  roomId?: string;
+  room?: RoomInfoResponse;
+  sessionMedia?: ConferenceSessionMediaResponse[];
+}
+
+export interface RefundPolicyResponse {
+  refundPolicyId?: string;
+  percentRefund?: number;
+  refundDeadline?: string;
+  refundOrder?: number;
 }
 
 export interface RegisteredUserInConference {

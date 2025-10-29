@@ -1,55 +1,43 @@
-import { useCreatePaymentForTechMutation, useLazyGetOwnTransactionQuery } from "@/redux/services/transaction.service";
+import { useCreatePaymentForResearchPaperMutation, useCreatePaymentForTechMutation, useLazyGetOwnTransactionQuery } from "@/redux/services/transaction.service";
+import { parseApiError } from "@/redux/utils/api";
 import { ApiResponse } from "@/types/api.type";
-import { CreateTechPaymentRequest } from "@/types/transaction.type";
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { CreatePaperPaymentRequest, CreateTechPaymentRequest } from "@/types/transaction.type";
 
 export const useTransaction = () => {
     const [
-        createPaymentMutation,
-        { isLoading: paymentLoading, error: paymentRawError, data: paymentData }
+        createTechPayment,
+        { isLoading: techPaymentLoading, error: techPaymentRawError, data: techPaymentData },
     ] = useCreatePaymentForTechMutation();
+
+    const [
+        createResearchPayment,
+        { isLoading: researchPaymentLoading, error: researchPaymentRawError, data: researchPaymentData },
+    ] = useCreatePaymentForResearchPaperMutation();
 
     const [
         getTransactions,
         { isLoading: transactionsLoading, data: transactionsData, error: transactionsRawError }
     ] = useLazyGetOwnTransactionQuery();
 
-    const parseError = (error: FetchBaseQueryError | SerializedError | undefined): string => {
-        if (!error) return 'Có lỗi xảy ra. Vui lòng thử lại.';
+    const techPaymentError = parseApiError<string>(techPaymentRawError);
+    const researchPaymentError = parseApiError<string>(researchPaymentRawError);
+    const transactionsError = parseApiError<string>(transactionsRawError);
 
-        if ('data' in error) {
-            const data = error.data as ApiResponse<null>;
-            if (data?.message) return data.message;
-            if (typeof data === 'string') return data;
-        }
-
-        if ('message' in error && error.message) return error.message;
-
-        return 'Có lỗi xảy ra. Vui lòng thử lại.';
-    };
-    // const parseError = (error: any): string => {
-    //     if (error?.data?.Message) {
-    //         return error.data.Message;
-    //     }
-    //     if (error?.data?.message) {
-    //         return error.data.message;
-    //     }
-    //     if (typeof error?.data === 'string') {
-    //         return error.data;
-    //     }
-    //     return 'Có lỗi xảy ra. Vui lòng thử lại.';
-    // };
-
-    const paymentError = paymentRawError ? parseError(paymentRawError) : null;
-    const transactionsError = transactionsRawError ? parseError(transactionsRawError) : null;
-
-    const purchaseTicket = async (request: CreateTechPaymentRequest) => {
+    const purchaseTechTicket = async (request: CreateTechPaymentRequest) => {
         try {
-            const result = await createPaymentMutation(request).unwrap();
+            const result = await createTechPayment(request).unwrap();
             return result;
         } catch (error) {
             throw error;
+        }
+    };
+
+    const purchaseResearchPaper = async (request: CreatePaperPaymentRequest): Promise<ApiResponse<string>> => {
+        try {
+            const result = await createResearchPayment(request).unwrap();
+            return result;
+        } catch (err) {
+            throw err;
         }
     };
 
@@ -63,13 +51,31 @@ export const useTransaction = () => {
     };
 
     return {
-        purchaseTicket,
+        // Actions
+        purchaseTechTicket,
+        purchaseResearchPaper,
         fetchTransactions,
-        loading: paymentLoading || transactionsLoading,
-        // loading: paymentLoading,
-        paymentError,
+
+        // loading
+        loading: techPaymentLoading || researchPaymentLoading || transactionsLoading,
+
+        //Error
+        techPaymentError,
+        researchPaymentError,
         transactionsError,
-        paymentResponse: paymentData,
+
+        //Data responses
+        techPaymentResponse: techPaymentData,
+        researchPaymentResponse: researchPaymentData,
         transactions: transactionsData?.data || [],
+
+        // purchaseTicket,
+        // fetchTransactions,
+        // loading: paymentLoading || transactionsLoading,
+        // // loading: paymentLoading,
+        // paymentError,
+        // transactionsError,
+        // paymentResponse: paymentData,
+        // transactions: transactionsData?.data || [],
     };
 };

@@ -2,11 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import{toast} from 'sonner'
-import { X, MapPin, Clock, Calendar, Star } from 'lucide-react';
-import { Dialog, DialogPanel, DialogTitle, Button } from "@headlessui/react";
+import { toast } from 'sonner'
+import { X } from 'lucide-react';
 import { useConference } from '@/redux/hooks/conference/useConference';
-import { ConferencePriceResponse, ConferenceResponse } from '@/types/conference.type';
+import { ConferencePriceResponse, } from '@/types/conference.type';
 import { useParams, useRouter } from 'next/navigation';
 import { useTransaction } from '@/redux/hooks/transaction/useTransaction';
 import { useSelector } from 'react-redux';
@@ -15,24 +14,44 @@ import ConferenceHeader from './ConferenceHeader';
 import InformationTab from './InformationTab';
 import SessionsTab from './SessionsTab';
 import FeedbackTab from './FeedbackTab';
+import ResearchPaperInformationTab from './ResearchPaperInformationTab';
 
 interface ImageModalProps {
   image: string;
   onClose: () => void;
 }
 
-interface ConferenceDetailProps {
-  conferenceId: string;
-}
-
 const ConferenceDetail = () => {
   const params = useParams();
   const conferenceId = params?.id as string;
+  const type = params?.type as string;
+
+  const isResearch = type === 'research';
 
   const router = useRouter()
 
   const { accessToken } = useSelector((state: RootState) => state.auth)
-  const { purchaseTicket, loading: paymentLoading, paymentError, paymentResponse } = useTransaction();
+
+  const {
+    technicalConference,
+    technicalConferenceLoading,
+    technicalConferenceError,
+    refetchTechnicalConference,
+    researchConference,
+    researchConferenceLoading,
+    researchConferenceError,
+    refetchResearchConference
+  } = useConference({ id: conferenceId });
+
+  const {
+    purchaseTechTicket,
+    purchaseResearchPaper,
+    loading: paymentLoading,
+    techPaymentError,
+    researchPaymentError,
+    techPaymentResponse,
+    researchPaymentResponse,
+  } = useTransaction();
 
   const [activeTab, setActiveTab] = useState('info');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -41,28 +60,36 @@ const ConferenceDetail = () => {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [selectedTicket, setSelectedTicket] = useState<ConferencePriceResponse | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
-  const [conference, setConference] = useState<ConferenceResponse | null>(null);
+  // const [conference, setConference] = useState<TechnicalConferenceDetailResponse | null>(null);
 
-  const { fetchConference, loading, error } = useConference();
+  // Use the appropriate conference data based on type
+  const conference = isResearch ? researchConference : technicalConference;
+  const loading = isResearch ? researchConferenceLoading : technicalConferenceLoading;
+  const error = isResearch ? researchConferenceError : technicalConferenceError;
 
   useEffect(() => {
-    const loadConference = async () => {
-      try {
-        const response = await fetchConference(conferenceId);
-        console.log('ddang fetch', response);
-        setConference(response.data);
-        // setFeedbacks([]);
-      } catch (err) {
-        console.error('Failed to load conference:', err);
-      }
-    };
-    console.log('id ne', conferenceId);
-    if (conferenceId) {
-      loadConference();
-    }
-  }, [conferenceId]);
+    if (techPaymentError) toast.error(techPaymentError.data?.message);
+    if (researchPaymentError) toast.error(researchPaymentError.data?.message);
+  }, [techPaymentError, researchPaymentError]);
 
-  const handlePurchaseTickt = async () => {
+  // const { fetchConference, loading, error } = useConference();
+
+  // useEffect(() => {
+  //   const loadConference = async () => {
+  //     try {
+  //       const response = await fetchConference(conferenceId);
+  //       setConference(response.data);
+  //       // setFeedbacks([]);
+  //     } catch (err) {
+  //       console.error('Failed to load conference:', err);
+  //     }
+  //   };
+  //   if (conferenceId) {
+  //     loadConference();
+  //   }
+  // }, [conferenceId]);
+
+  const handlePurchaseTicket = async () => {
     if (!accessToken) {
       router.push('/auth/login');
       return;
@@ -71,19 +98,28 @@ const ConferenceDetail = () => {
     if (!selectedTicket) return;
 
     try {
-      const response = await purchaseTicket({ conferencePriceId: selectedTicket.priceId });
+      let response;
+
+      if (selectedTicket.isAuthor) {
+        response = await purchaseResearchPaper({ conferencePriceId: selectedTicket.conferencePriceId });
+      } else {
+        response = await purchaseTechTicket({ conferencePriceId: selectedTicket.conferencePriceId });
+      }
+
       if (response?.data) {
         window.location.href = response.data;
       } else {
         alert("Không nhận được đường dẫn thanh toán.");
       }
-    } catch (error: unknown) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Có lỗi xảy ra, vui lòng thử lại!"
-      toast.error(message)
-    } finally {
+    }
+    // catch (error: unknown) {
+    //   const message =
+    //     error instanceof Error
+    //       ? error.message
+    //       : "Có lỗi xảy ra, vui lòng thử lại!"
+    //   toast.error(message)
+    // }
+    finally {
       setIsDialogOpen(false);
     }
   }
@@ -130,7 +166,7 @@ const ConferenceDetail = () => {
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black flex items-center justify-center">
         <div className="text-center text-white">
           <p className="text-red-400 mb-4">Có lỗi xảy ra khi tải thông tin hội nghị</p>
-          <p className="text-sm">{error}</p>
+          <p className="text-sm">{error.data?.message}</p>
         </div>
       </div>
     );
@@ -194,7 +230,7 @@ const ConferenceDetail = () => {
               selectedTicket={selectedTicket}
               setSelectedTicket={setSelectedTicket}
               paymentLoading={paymentLoading}
-              handlePurchaseTickt={handlePurchaseTickt}
+              handlePurchaseTicket={handlePurchaseTicket}
               accessToken={accessToken}
               formatDate={formatDate}
             />
@@ -394,6 +430,17 @@ const ConferenceDetail = () => {
                 >
                   Lịch trình Sessions
                 </button>
+                {isResearch && (
+                  <button
+                    onClick={() => setActiveTab('research')}
+                    className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === 'research'
+                      ? 'text-blue-500 border-b-2 border-coral-500'
+                      : 'text-white/70 hover:text-white'
+                      }`}
+                  >
+                    Research Paper Information
+                  </button>
+                )}
                 <button
                   onClick={() => setActiveTab('feedback')}
                   className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === 'feedback'
@@ -486,6 +533,15 @@ const ConferenceDetail = () => {
                 {activeTab === 'sessions' && (
                   <SessionsTab
                     conference={conference}
+                    formatDate={formatDate}
+                    formatTime={formatTime}
+                  />
+                )}
+
+                {/* Research Paper Information Tab */}
+                {activeTab === 'research' && isResearch && researchConference && (
+                  <ResearchPaperInformationTab
+                    conference={researchConference}
                     formatDate={formatDate}
                     formatTime={formatTime}
                   />

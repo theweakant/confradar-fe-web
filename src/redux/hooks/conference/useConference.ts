@@ -1,13 +1,10 @@
 // import { useGetAllConferencesWithPricesPaginationQuery, useGetConferenceByIdQuery, useLazyGetAllConferencesWithPricesPaginationQuery, useLazyGetConferenceByIdQuery } from '@/redux/services/conference.service';
-import { useGetAllConferencesPaginationQuery, useLazyGetAllConferencesPaginationQuery, useLazyGetAllConferencesWithPricesPaginationQuery, useLazyGetConferencesByStatusQuery } from '@/redux/services/conference.service';
+import { useGetAllConferencesPaginationQuery, useGetResearchConferenceDetailQuery, useGetTechnicalConferenceDetailQuery, useLazyGetAllConferencesPaginationQuery, useLazyGetAllConferencesWithPricesPaginationQuery, useLazyGetConferencesByStatusQuery } from '@/redux/services/conference.service';
 import { parseApiError } from '@/redux/utils/api';
-import { ApiResponse } from '@/types/api.type';
 import { ConferenceResponse } from '@/types/conference.type';
-import { SerializedError } from '@reduxjs/toolkit';
-import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { useCallback } from 'react';
 
-export const useConference = (params?: { page?: number; pageSize?: number }) => {
+export const useConference = (params?: { page?: number; pageSize?: number; id?: string }) => {
     // Auto-fetch default paginated list
     const {
         data: defaultConferencesData,
@@ -19,6 +16,22 @@ export const useConference = (params?: { page?: number; pageSize?: number }) => 
         page: params?.page ?? 1,
         pageSize: params?.pageSize ?? 12,
     });
+
+    const {
+        data: technicalConferenceData,
+        error: technicalConferenceError,
+        isLoading: technicalConferenceLoading,
+        isFetching: technicalConferenceFetching,
+        refetch: refetchTechnicalConference,
+    } = useGetTechnicalConferenceDetailQuery(params?.id ?? '', { skip: !params?.id });
+
+    const {
+        data: researchConferenceData,
+        error: researchConferenceError,
+        isLoading: researchConferenceLoading,
+        isFetching: researchConferenceFetching,
+        refetch: refetchResearchConference,
+    } = useGetResearchConferenceDetailQuery(params?.id ?? '', { skip: !params?.id });
 
     // Lazy load default paginated list
     const [triggerGetAll, { data: lazyDefaultData, error: lazyDefaultError, isLoading: lazyDefaultLoading }] =
@@ -58,22 +71,33 @@ export const useConference = (params?: { page?: number; pageSize?: number }) => 
         refetchDefaultConferences,
         defaultLoading: defaultConferencesLoading || defaultConferencesFetching || lazyDefaultLoading,
         // defaultError: defaultConferencesError || lazyDefaultError,
+        defaultError: parseApiError<ConferenceResponse[]>(defaultConferencesError || lazyDefaultError),
 
         // Conferences with prices (filterable)
         lazyConferencesWithPrices: lazyWithPricesData?.data,
         fetchConferencesWithPrices,
         lazyWithPricesLoading,
         // lazyWithPricesError,
+        lazyWithPricesError: parseApiError<ConferenceResponse[]>(lazyWithPricesError),
 
         // Conferences by status
         statusConferences: statusConferencesData?.data,
         fetchConferencesByStatus,
         statusConferencesLoading,
         // statusConferencesError,
-
-        defaultError: parseApiError<ConferenceResponse[]>(defaultConferencesError || lazyDefaultError),
-        lazyWithPricesError: parseApiError<ConferenceResponse[]>(lazyWithPricesError),
         statusConferencesError: parseApiError<ConferenceResponse[]>(statusConferencesError),
+
+        // technical conference
+        technicalConference: technicalConferenceData?.data,
+        refetchTechnicalConference,
+        technicalConferenceLoading: technicalConferenceLoading || technicalConferenceFetching,
+        technicalConferenceError: parseApiError(technicalConferenceError),
+
+        // Research conference
+        researchConference: researchConferenceData?.data,
+        refetchResearchConference,
+        researchConferenceLoading: researchConferenceLoading || researchConferenceFetching,
+        researchConferenceError: parseApiError(researchConferenceError),
     };
 };
 

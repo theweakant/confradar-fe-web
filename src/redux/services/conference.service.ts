@@ -1,7 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { apiClient } from "../api/apiClient";
 import { endpoint } from "../api/endpoint";
-import type { ConferenceFormData, ConferenceResponse, RegisteredUserInConference } from "@/types/conference.type";
+import type { ConferenceFormData, ConferenceResponse, RegisteredUserInConference, ResearchConferenceDetailResponse, TechnicalConferenceDetailResponse } from "@/types/conference.type";
 import type { ApiResponse, ApiResponsePagination } from "@/types/api.type";
 
 export const conferenceApi = createApi({
@@ -60,16 +60,28 @@ export const conferenceApi = createApi({
     // }),
 
     //tech detail endpoint
-    // getTechnicalConferenceDetail: builder.query<
-    //   ApiResponse<TechnicalConferenceDetailResponse>,
-    //   string
-    // >({
-    //   query: (conferenceId) => ({
-    //     url: `${endpoint.CONFERENCE.TECHNICAL_DETAIL}/${conferenceId}`,
-    //     method: "GET",
-    //   }),
-    //   providesTags: (result, error, conferenceId) => [{ type: "Conference", id: conferenceId }],
-    // }),
+    getTechnicalConferenceDetail: builder.query<
+      ApiResponse<TechnicalConferenceDetailResponse>,
+      string
+    >({
+      query: (conferenceId) => ({
+        url: `${endpoint.CONFERENCE.TECHNICAL_DETAIL}/${conferenceId}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, conferenceId) => [{ type: "Conference", id: conferenceId }],
+    }),
+
+    //research detail endpoint
+    getResearchConferenceDetail: builder.query<
+      ApiResponse<ResearchConferenceDetailResponse>,
+      string
+    >({
+      query: (conferenceId) => ({
+        url: `${endpoint.CONFERENCE.RESEARCH_DETAIL}/${conferenceId}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, conferenceId) => [{ type: "Conference", id: conferenceId }],
+    }),
 
     //conferences by status with pagination & start endDate filter
     getConferencesByStatus: builder.query<
@@ -149,6 +161,8 @@ export const conferenceApi = createApi({
 
 export const {
   useGetAllConferencesPaginationQuery,
+  useGetTechnicalConferenceDetailQuery,
+  useGetResearchConferenceDetailQuery,
   useGetAllConferencesWithPricesPaginationQuery,
   // useGetConferenceByIdQuery,
   useGetConferencesByStatusQuery,

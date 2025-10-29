@@ -9,7 +9,7 @@ export const endpoint = {
     VERIFY_FORGET_PASSWORD: "/Auth/verify-forget-password",
 
     //user
-    PROFILE:"/Auth/view-profile-by-id"
+    PROFILE: "/Auth/view-profile-by-id"
   },
   DESTINATION: {
     LIST: "/Destination",
@@ -37,6 +37,8 @@ export const endpoint = {
     LIST_WITH_PRICES: "/Conference/conferences-with-prices",
     LIST_BY_STATUS: "/Conference/by-status",
     DETAIL: "/Conference",
+    TECHNICAL_DETAIL: "/Conference/technical-detail",
+    RESEARCH_DETAIL: "/Conference/research-detail",
     CREATE: "/Conference",
     UPDATE: "/Conference",
     DELETE: "/Conference",
@@ -64,5 +66,11 @@ export const endpoint = {
 
   CITY: {
     LIST: "/City/cities",
+  },
+
+  TRANSACTION: {
+    CREATE_TECH_PAYMENT: "/payment/pay-tech-with-momo",
+    CREATE_RESEARCH_PAPER_PAYMENT: "/payment/pay-research-paper-with-momo",
+    GET_OWN_TRANSACTION: "/payment/get-own-transaction",
   },
 }

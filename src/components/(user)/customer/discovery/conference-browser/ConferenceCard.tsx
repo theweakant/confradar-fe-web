@@ -8,7 +8,7 @@ interface ConferenceCardProps {
     getMinPrice: (conf: ConferenceResponse) => number | null;
     getMaxPrice: (conf: ConferenceResponse) => number | null;
     formatDate: (dateString: string) => string;
-    onCardClick: (conferenceId: string) => void;
+    onCardClick: (conference: ConferenceResponse) => void;
 }
 
 const ConferenceCard: React.FC<ConferenceCardProps> = ({
@@ -30,7 +30,7 @@ const ConferenceCard: React.FC<ConferenceCardProps> = ({
 
     return (
         <div
-            onClick={() => onCardClick(conference.conferenceId)}
+            onClick={() => onCardClick(conference)}
             className="group relative bg-gray-800/80 rounded-xl border border-gray-700 overflow-hidden
         cursor-pointer transition-all duration-500
         hover:scale-[1.03] hover:border-blue-500 hover:shadow-[0_12px_30px_rgba(59,130,246,0.4)]"
@@ -71,7 +71,7 @@ const ConferenceCard: React.FC<ConferenceCardProps> = ({
                 <div className="flex items-center justify-between text-xs text-gray-400">
                     <div className="flex items-center gap-1">
                         <Users size={12} />
-                        <span>{conference.capacity || 0}</span>
+                        <span>{conference.totalSlot || 0}</span>
                     </div>
                     <div className="text-xs text-blue-400">
                         {conference.isResearchConference !== undefined
