@@ -22,6 +22,8 @@ import {
 
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 import { useGetAllRoomsQuery } from "@/redux/services/room.service";
+import { useGetAllCitiesQuery } from "@/redux/services/city.service"; 
+
 
 import {
   nextStep,
@@ -95,6 +97,8 @@ export function ConferenceStepForm({
 
   const { data: categoriesData, isLoading: isCategoriesLoading } = useGetAllCategoriesQuery();
   const { data: roomsData, isLoading: isRoomsLoading } = useGetAllRoomsQuery();
+  const { data: citiesData, isLoading: isCitiesLoading } = useGetAllCitiesQuery(); 
+
 
   const categoryOptions =
     categoriesData?.data?.map((category) => ({
@@ -106,6 +110,12 @@ export function ConferenceStepForm({
     roomsData?.data?.map((room) => ({
       value: room.roomId,
       label: `${room.number} - ${room.displayName} - ${room.destinationId}`,
+    })) || [];
+
+  const cityOptions =
+    citiesData?.data?.map((city) => ({
+      value: city.cityId,
+      label: city.cityName || "N/A",
     })) || [];
 
   // ============================================
@@ -299,7 +309,7 @@ export function ConferenceStepForm({
       const transformedSponsors: Sponsor[] = conf.sponsors.map((s) => ({
         sponsorId: s.sponsorId, // ⬅️ ADDED
         name: s.name ?? "",
-        imageFile: s.imageFile ?? "",
+        imageFile: s.imageUrl ?? "",
       }));
       setSponsors(transformedSponsors);
     }
@@ -482,34 +492,34 @@ export function ConferenceStepForm({
       let priceCreated = 0;
       let priceFailed = 0;
 
-const pricePromises = tickets.map(async (ticket) => {
-  try {
-    if (ticket.ticketId) {
-      // UPDATE existing ticket
-      await updatePrice({
-        ticketId: ticket.ticketId,
-        data: {
-          ticketPrice: ticket.ticketPrice,
-          ticketName: ticket.ticketName,
-          ticketDescription: ticket.ticketDescription,
-          isAuthor: ticket.isAuthor,
-          totalSlot: ticket.totalSlot,
-        },
-      }).unwrap();
-      priceUpdated++;
-    } else {
-      // CREATE new ticket
-      await createPrice({
-        conferenceId,
-        data: { tickets: [ticket], phases: [] }, 
-      }).unwrap();
-      priceCreated++;
-    }
-  } catch (error) {
-    console.error("Ticket operation failed:", error);
-    priceFailed++;
-  }
-});
+      const pricePromises = tickets.map(async (ticket) => {
+        try {
+          if (ticket.ticketId) {
+            // UPDATE existing ticket
+            await updatePrice({
+              ticketId: ticket.ticketId,
+              data: {
+                ticketPrice: ticket.ticketPrice,
+                ticketName: ticket.ticketName,
+                ticketDescription: ticket.ticketDescription,
+                isAuthor: ticket.isAuthor,
+                totalSlot: ticket.totalSlot,
+              },
+            }).unwrap();
+            priceUpdated++;
+          } else {
+            // CREATE new ticket
+            await createPrice({
+              conferenceId,
+              data: { tickets: [ticket], phases: [] }, 
+            }).unwrap();
+            priceCreated++;
+          }
+        } catch (error) {
+          console.error("Ticket operation failed:", error);
+          priceFailed++;
+        }
+      });
 
       await Promise.all(pricePromises);
       setStepLoadings((prev) => ({ ...prev, prices: false }));
@@ -594,15 +604,14 @@ const pricePromises = tickets.map(async (ticket) => {
       let speakerFailed = 0;
 
       const speakerPromises = sessions
-        .filter((s) => s.speaker?.speakerId) 
+        .filter((s) => s.sessionId && s.speaker) 
         .map(async (session) => {
           try {
             await updateSpeaker({
-              speakerId: session.speaker!.speakerId!, 
+              sessionId: session.sessionId!, 
               data: {
                 name: session.speaker?.name || "",
                 description: session.speaker?.description || "",
-                // image: ... (nếu cần)
               },
             }).unwrap();
             speakerUpdated++;
@@ -955,12 +964,14 @@ const handleAddTicket = () => {
               disabled={isCategoriesLoading}
             />
 
-            <FormInput
+<FormSelect
   label="Thành phố"
   name="cityId"
   value={basicForm.cityId}
   onChange={(val) => setBasicForm({ ...basicForm, cityId: val })}
+  options={cityOptions}
   required
+  disabled={isCitiesLoading}
 />
 
 <div className="grid grid-cols-2 gap-4">
@@ -1650,7 +1661,8 @@ case 2:
                 <h4 className="font-semibold text-blue-900 mb-2">📋 Tóm tắt thay đổi</h4>
                 <ul className="text-sm text-blue-800 space-y-1">
                   <li>✓ Thông tin cơ bản: {basicForm.conferenceName}</li>
-                  <li>✓ Số loại vé: {prices.length}</li>
+                  <li>✓ Số loại vé: {tickets.length}</li>
+                  <li>✓ Số giai đoạn: {phases.length}</li>
                   <li>✓ Số phiên họp: {sessions.length}</li>
                   <li>✓ Số chính sách: {policies.length}</li>
                   <li>✓ Số media: {mediaList.length}</li>

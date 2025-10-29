@@ -1,60 +1,91 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Calendar, MapPin, Users, Tag, Clock } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import {
+  useLazyGetPendingConferencesQuery,
+  useApproveConferenceMutation,
+} from "@/redux/services/conference.service";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 export default function PendingConference() {
-  const [pendingConferences, setPendingConferences] = useState([
-    {
-      id: "1",
-      title: "International Conference on Artificial Intelligence 2024",
-      organizer: "Vietnam AI Association",
-      category: "Công nghệ",
-      location: "Hà Nội, Việt Nam",
-      startDate: "2024-06-15",
-      endDate: "2024-06-17",
-      submittedDate: "2024-03-10",
-      maxAttendees: 500,
-      description: "Hội nghị quốc tế về trí tuệ nhân tạo và học máy, tập trung vào các ứng dụng thực tế trong công nghiệp."
-    },
-    {
-      id: "2",
-      title: "Southeast Asia Research Symposium 2024",
-      organizer: "ASEAN Research Network",
-      category: "Nghiên cứu",
-      location: "Bangkok, Thailand",
-      startDate: "2024-07-20",
-      endDate: "2024-07-22",
-      submittedDate: "2024-03-15",
-      maxAttendees: 300,
-      description: "Hội thảo nghiên cứu khu vực Đông Nam Á, tập trung vào phát triển bền vững và đổi mới sáng tạo."
-    },
-    {
-      id: "3",
-      title: "Digital Transformation Summit 2024",
-      organizer: "Tech Innovation Hub",
-      category: "Kinh doanh",
-      location: "TP. Hồ Chí Minh, Việt Nam",
-      startDate: "2024-08-10",
-      endDate: "2024-08-12",
-      submittedDate: "2024-03-20",
-      maxAttendees: 800,
-      description: "Hội nghị về chuyển đổi số cho doanh nghiệp, với các chuyên gia hàng đầu về công nghệ và quản trị."
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(10);
+
+  // `selectedConference` holds the id of the conference being acted on
+  const [selectedConference, setSelectedConference] = useState<string | null>(
+    null
+  );
+
+  // `isApproveAction` = true means "approve", false means "reject"
+  const [isApproveAction, setIsApproveAction] = useState<boolean>(true);
+
+  const [reason, setReason] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  // API hooks
+  const [getPendingConferences, { data, isLoading, isFetching }] =
+    useLazyGetPendingConferencesQuery();
+  const [approveConference, { isLoading: isSubmitting }] =
+    useApproveConferenceMutation();
+
+  // Fetch pending conferences on mount and when page changes
+  useEffect(() => {
+    getPendingConferences({ page, pageSize });
+  }, [page, pageSize, getPendingConferences]);
+
+  const handleOpenDialog = (conferenceId: string, approve: boolean) => {
+    setSelectedConference(conferenceId);
+    setIsApproveAction(approve);
+    setReason("");
+    setDialogOpen(true);
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedConference) return;
+
+    if (!reason.trim()) {
+      toast.error("Vui lòng nhập lý do!");
+      return;
     }
-  ]);
 
-  const handleApprove = (id: string) => {
-    setPendingConferences(prev => prev.filter(c => c.id !== id));
-    toast.success("Đã phê duyệt hội nghị thành công!");
+    try {
+      await approveConference({
+        conferenceId: selectedConference,
+        reason: reason.trim(),
+        isApprove: isApproveAction,
+      }).unwrap();
+
+      toast.success(
+        isApproveAction ? "Đã phê duyệt hội nghị thành công!" : "Đã từ chối hội nghị!"
+      );
+
+      // Refresh the list
+      getPendingConferences({ page, pageSize });
+
+      // Close dialog and reset
+      setDialogOpen(false);
+      setSelectedConference(null);
+      setReason("");
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Có lỗi xảy ra, vui lòng thử lại!");
+    }
   };
 
-  const handleReject = (id: string) => {
-    setPendingConferences(prev => prev.filter(c => c.id !== id));
-    toast.error("Đã từ chối hội nghị!");
-  };
+  const pendingConferences = data?.data?.items || [];
+  const totalPages = data?.data?.totalPages || 1;
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -66,89 +97,18 @@ export default function PendingConference() {
               Quay lại
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Hội nghị chờ duyệt
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900">Hội nghị chờ duyệt</h1>
           <p className="text-gray-600 mt-2">
             Danh sách các hội nghị đang chờ phê duyệt từ ban tổ chức
           </p>
         </div>
 
-        <div className="grid gap-6">
-          {pendingConferences.map((conference) => (
-            <div
-              key={conference.id}
-              className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    {conference.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4">
-                    {conference.description}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="flex items-center text-sm text-gray-600">
-                  <Users className="w-4 h-4 mr-2" />
-                  <span>Ban tổ chức: {conference.organizer}</span>
-                </div>
-                
-                <div className="flex items-center text-sm text-gray-600">
-                  <Tag className="w-4 h-4 mr-2" />
-                  <span>Danh mục: {conference.category}</span>
-                </div>
-                
-                <div className="flex items-center text-sm text-gray-600">
-                  <MapPin className="w-4 h-4 mr-2" />
-                  <span>{conference.location}</span>
-                </div>
-                
-                <div className="flex items-center text-sm text-gray-600">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  <span>{conference.startDate} - {conference.endDate}</span>
-                </div>
-
-                <div className="flex items-center text-sm text-gray-600">
-                  <Users className="w-4 h-4 mr-2" />
-                  <span>Sức chứa: {conference.maxAttendees} người</span>
-                </div>
-
-                <div className="flex items-center text-sm text-gray-600">
-                  <Clock className="w-4 h-4 mr-2" />
-                  <span>Nộp ngày: {conference.submittedDate}</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between pt-4 border-t">
-                <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
-                  Chờ phê duyệt
-                </span>
-                
-                <div className="flex gap-3">
-                  <Button 
-                    variant="outline" 
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    onClick={() => handleReject(conference.id)}
-                  >
-                    Từ chối
-                  </Button>
-                  <Button 
-                    className="bg-green-600 hover:bg-green-700"
-                    onClick={() => handleApprove(conference.id)}
-                  >
-                    Phê duyệt
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {pendingConferences.length === 0 && (
+        {isLoading || isFetching ? (
+          <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="text-gray-600 mt-4">Đang tải...</p>
+          </div>
+        ) : pendingConferences.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm p-12 text-center">
             <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -158,8 +118,208 @@ export default function PendingConference() {
               Hiện tại không có hội nghị nào đang chờ phê duyệt
             </p>
           </div>
+        ) : (
+          <>
+            <div className="grid gap-6">
+              {pendingConferences.map((conference: any) => (
+                <div
+                  key={conference.conferenceId}
+                  className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                        {conference.conferenceName}
+                      </h3>
+                      <p className="text-gray-600 text-sm mb-4">
+                        {conference.description}
+                      </p>
+                    </div>
+                    {/* optional banner */}
+                    {conference.bannerImageUrl && (
+                      <img
+                        src={conference.bannerImageUrl}
+                        alt={conference.conferenceName || "banner"}
+                        className="w-28 h-16 object-cover rounded-md ml-4"
+                      />
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Users className="w-4 h-4 mr-2" />
+                      <span>
+                        Người tạo:{" "}
+                        {conference.createdBy ?? conference.createdby ?? "N/A"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Tag className="w-4 h-4 mr-2" />
+                      <span>
+                        Danh mục: {conference.conferenceCategoryId ?? "N/A"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center text-sm text-gray-600">
+                      <MapPin className="w-4 h-4 mr-2" />
+                      <span>{conference.address ?? "N/A"}</span>
+                    </div>
+
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Calendar className="w-4 h-4 mr-2" />
+                      <span>
+                        {conference.startDate
+                          ? new Date(conference.startDate).toLocaleDateString(
+                              "vi-VN"
+                            )
+                          : "N/A"}{" "}
+                        -{" "}
+                        {conference.endDate
+                          ? new Date(conference.endDate).toLocaleDateString(
+                              "vi-VN"
+                            )
+                          : "N/A"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Users className="w-4 h-4 mr-2" />
+                      <span>
+                        Sức chứa: {conference.totalSlot ?? "N/A"} người
+                        {conference.availableSlot != null && (
+                          <span className="ml-2 text-xs text-gray-500">
+                            (Còn: {conference.availableSlot})
+                          </span>
+                        )}
+                      </span>
+                    </div>
+
+                    {conference.createdAt && (
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Clock className="w-4 h-4 mr-2" />
+                        <span>
+                          Nộp ngày:{" "}
+                          {new Date(conference.createdAt).toLocaleDateString(
+                            "vi-VN"
+                          )}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-4 border-t">
+                    <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+                      Chờ phê duyệt
+                    </span>
+
+                    <div className="flex gap-3">
+                      <Button
+                        variant="outline"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={() =>
+                          handleOpenDialog(conference.conferenceId, false)
+                        }
+                        disabled={isSubmitting}
+                      >
+                        Từ chối
+                      </Button>
+                      <Button
+                        className="bg-green-600 hover:bg-green-700"
+                        onClick={() =>
+                          handleOpenDialog(conference.conferenceId, true)
+                        }
+                        disabled={isSubmitting}
+                      >
+                        Phê duyệt
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-8 flex items-center justify-center gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1 || isFetching}
+                >
+                  Trang trước
+                </Button>
+                <span className="text-sm text-gray-600">
+                  Trang {page} / {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages || isFetching}
+                >
+                  Trang sau
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
+
+      {/* Approval/Rejection Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {isApproveAction ? "Phê duyệt hội nghị" : "Từ chối hội nghị"}
+            </DialogTitle>
+            <DialogDescription>
+              {isApproveAction
+                ? "Vui lòng nhập lý do phê duyệt hội nghị này."
+                : "Vui lòng nhập lý do từ chối hội nghị này."}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="reason">
+                Lý do {isApproveAction ? "phê duyệt" : "từ chối"}
+              </Label>
+              <Textarea
+                id="reason"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="Nhập lý do..."
+                rows={4}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDialogOpen(false);
+                setSelectedConference(null);
+                setReason("");
+              }}
+              disabled={isSubmitting}
+            >
+              Hủy
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={isSubmitting || !reason.trim()}
+              className={
+                isApproveAction
+                  ? "bg-green-600 hover:bg-green-700"
+                  : "bg-red-600 hover:bg-red-700"
+              }
+            >
+              {isSubmitting ? "Đang xử lý..." : "Xác nhận"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -23,13 +23,17 @@ export interface Conference {
   sponsors?: Sponsor[];
 
   tickets?: Ticket[];
-phases?: Phase[];
+  phases?: Phase[];
 
   prices?: ConferencePriceData[];
   sessions?: Session[];
   
   createdby?:string;
   targetAudienceTechnicalConference?:string;
+}
+
+export interface PendingConference extends Conference {
+  createdBy: string | null;
 }
 
 export type ConferenceFormData = Omit<
@@ -143,6 +147,8 @@ export interface Sponsor {
   sponsorId?: string;
   name: string;
   imageFile: string | File | null;
+  imageUrl?: string;
+
 }
 
 export interface ConferenceSponsorData {

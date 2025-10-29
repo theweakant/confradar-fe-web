@@ -546,12 +546,12 @@ export const conferenceStepApi = createApi({
     // Update Sponsors
     updateConferenceSponsor: builder.mutation<
       ApiResponse<Sponsor>,
-      { sponsorId: string; data: Omit<Sponsor, "sponsorId"> }
+      { sponsorId: string; name: string; imageFile?: File }
     >({
-      query: ({ sponsorId, data }) => {
+      query: ({ sponsorId, name, imageFile }) => {
         const formData = new FormData();
-        formData.append("name", data.name);
-        if (data.imageFile) formData.append("imageFile", data.imageFile);
+        formData.append("name", name);
+        if (imageFile) formData.append("imageFile", imageFile);
 
         return {
           url: endpoint.CONFERENCE_STEP.UPDATE_SPONSOR(sponsorId),

@@ -144,6 +144,41 @@ export const conferenceApi = createApi({
       providesTags: ["Conference"],
     }),
 
+
+  getPendingConferences: builder.query<
+    ApiResponsePagination<ConferenceResponse[]>,
+    { page?: number; pageSize?: number }
+  >({
+    query: ({ page = 1, pageSize = 10 }) => ({
+      url: endpoint.CONFERENCE.PENDING_CONFERENCES,
+      method: "GET",
+      params: { page, pageSize },
+    }),
+    providesTags: (result) =>
+      result?.data?.items
+        ? [
+            ...result.data.items.map(({ conferenceId }) => ({
+              type: "Conference" as const,
+              id: conferenceId,
+            })),
+            { type: "Conference", id: "PENDING_LIST" },
+          ]
+        : [{ type: "Conference", id: "PENDING_LIST" }],
+  }),
+
+    approveConference: builder.mutation<
+      ApiResponse<null>,
+      { conferenceId: string; reason: string; isApprove: boolean }
+    >({
+      query: ({ conferenceId, reason, isApprove }) => ({
+        url: endpoint.CONFERENCE.APPROVE_CONFERENCE(conferenceId),
+        method: "PUT",
+        body: { reason, isApprove },
+      }),
+      invalidatesTags: ["Conference"],
+    }),
+    
+
   }),
 });
 
@@ -156,8 +191,12 @@ export const {
   useLazyGetAllConferencesWithPricesPaginationQuery,
   // useLazyGetConferenceByIdQuery,
   useLazyGetConferencesByStatusQuery,
+  useViewRegisteredUsersForConferenceQuery,
+  useLazyGetPendingConferencesQuery,
+  
+  useApproveConferenceMutation,
+
   useCreateConferenceMutation,
   useUpdateConferenceMutation,
   useDeleteConferenceMutation,
-  useViewRegisteredUsersForConferenceQuery
 } = conferenceApi;
