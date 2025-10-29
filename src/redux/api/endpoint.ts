@@ -10,11 +10,11 @@ export const endpoint = {
 
     //user
     PROFILE: "/Auth/view-profile-by-id",
-    USERS_LIST:"/Auth/list-users",
-    CREATE_COLLABORATOR:"/Auth/create-collaborator-account",
+    USERS_LIST: "/Auth/list-users",
+    CREATE_COLLABORATOR: "/Auth/create-collaborator-account",
 
     SUSPEND: (userId: string) => `/Auth/suspend-account?userId=${userId}`,
-    ACTIVATE:(userId: string) => `/Auth/activate-account?userId=${userId}`, 
+    ACTIVATE: (userId: string) => `/Auth/activate-account?userId=${userId}`,
   },
   DESTINATION: {
     LIST: "/Destination",
@@ -98,16 +98,30 @@ export const endpoint = {
     CREATE_RESEARCH_PAPER_PAYMENT: "/payment/pay-research-paper-with-momo",
     GET_OWN_TRANSACTION: "/payment/get-own-transaction",
   },
-  
+
   PAPER: {
     SUBMIT: "/Conference/paginated-conferences",
 
     //ABSTRACT
-    LIST_PENDING_ABSTRACT:"/Paper/list-pending-abstract",
-    DECIDE_ABSTRACT:"/Paper/decide-abstract-paper-status",
-    ASSIGN_PAPER_TO_REVIEWER:"/Paper/assign-reviewer-to-paper",
+    SUBMIT_ABSTRACT: "/Paper/submit-abstract",
+    LIST_PENDING_ABSTRACT: "/Paper/list-pending-abstract",
+    DECIDE_ABSTRACT: "/Paper/decide-abstract-paper-status",
+    ASSIGN_PAPER_TO_REVIEWER: "/Paper/assign-reviewer-to-paper",
 
+    // FULL PAPER
+    SUBMIT_FULLPAPER: "/Paper/submit-fullpaper",
 
+    // REVISION PAPER
+    SUBMIT_PAPER_REVISION: "/Paper/submit-paper-revision",
+    SUBMIT_PAPER_REVISION_RESPONSE: "/Paper/submit-paper-revision-response",
+
+    // CAMERA READY
+    SUBMIT_CAMERA_READY: "/Paper/submit-camera-ready",
+
+    LIST_SUBMITTED_PAPERS_CUSTOMER: "/Paper/get-all-submitted-papers-for-customer",
+    GET_PAPER_DETAIL_CUSTOMER: "/Paper/get-paper-detail-customer",
+    LIST_PAPER_PHASES: "/Paper/list-paper-phases",
+    LIST_AVAILABLE_CUSTOMERS: "/Paper/list-available-customers",
   },
 
 
