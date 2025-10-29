@@ -68,16 +68,6 @@ export function ConferenceTable({ conferences, onView, onEdit, onDelete }: Confe
       ),
     },
     {
-      key: "capacity",
-      header: "Sức chứa",
-      render: (conference) => (
-        <div className="flex items-center gap-2">
-          <Users className="w-4 h-4 text-gray-400" />
-          <span className="text-sm text-gray-900">{conference.capacity}</span>
-        </div>
-      ),
-    },
-    {
       key: "actions",
       header: "Thao tác",
       className: "text-right",

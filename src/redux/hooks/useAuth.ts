@@ -15,7 +15,7 @@ type LoginResult = {
 
 export const useAuth = () => {
   const dispatch = useAppDispatch()
-  const { user, accessToken, role, loading } = useAppSelector((state) => state.auth) // ✅ Thêm role
+  const { user, accessToken, role, loading } = useAppSelector((state) => state.auth) 
   const [loginMutation] = useLoginMutation()
 
   const login = async (

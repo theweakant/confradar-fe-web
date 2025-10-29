@@ -2,27 +2,38 @@
 
 export interface Conference {
   conferenceId: string;
-  conferenceName: string;
-  description: string;
-  startDate: string;              // ISO date
-  endDate: string;                // ISO date
-  capacity: number;
-  address: string;
+  conferenceName?: string;
+  description?: string;
+  startDate?: string;
+  endDate?: string;
+  totalSlot?: number;
+  availableSlot?: number;
+  address?: string;
   bannerImageUrl?: string;
-  createdAt: string;
-  isInternalHosted: boolean;
-  isResearchConference: boolean;
-  isActive: boolean;
+  createdAt?: string;
+  ticketSaleStart?: string;
+  ticketSaleEnd?: string;
+  isInternalHosted?: boolean;
+  isResearchConference?: boolean;
+  cityId?: string;
+  conferenceCategoryId?: string;
+  conferenceStatusId?: string;
+  policies?: Policy[];
+  media?: Media[];
+  sponsors?: Sponsor[];
 
-  userId: string;
-  locationId: string;
-  categoryId: string;
+  tickets?: Ticket[];
+  phases?: Phase[];
 
-  policies: Policy[];
-  media: Media[];
-  sponsors: Sponsor[];
-  prices: Price[];
-  sessions: Session[];
+  prices?: ConferencePriceData[];
+  sessions?: Session[];
+  
+  createdby?:string;
+  targetAudienceTechnicalConference?:string;
+}
+
+export interface PendingConference extends Conference {
+  createdBy: string | null;
 }
 
 export type ConferenceFormData = Omit<
@@ -30,8 +41,11 @@ export type ConferenceFormData = Omit<
   "conferenceId" | "createdAt" | "isActive" | "priceId" | "sessionId"
 >;
 
-//basic step
+//+++++++++++++++
+
+//BASIC STEP
 export interface ConferenceBasicForm {
+  conferenceId?:string;
   conferenceName: string;
   description?: string;
   startDate: string;
@@ -45,24 +59,24 @@ export interface ConferenceBasicForm {
   cityId: string;
   ticketSaleStart: string; //ISO
   ticketSaleEnd: string; //ISO
-  createdby: string;
-  targetAudienceTechnicalConference: string;
+  createdby?: string;
+  targetAudienceTechnicalConference?: string;
 
 }
 
-//price step
-
+//PRICE STEP
 export interface Ticket {
   ticketId?: string;
   ticketPrice: number;
-  ticketName: string;
-  ticketDescription: number;
-  isAuthor: boolean;
+  ticketName: string; 
+  ticketDescription: string;
+  isAuthor?: boolean;
   totalSlot: number;
 }
 
+
 export interface Phase {
-  pricePhaseId?: string
+  pricePhaseId?:string;
   phaseName: string;
   applyPercent: number;
   startDate: string;
@@ -70,39 +84,35 @@ export interface Phase {
   totalslot: number;
 }
 
-//+++++++++++++
-
-
-
 export interface ConferencePriceData {
-
+  tickets: Ticket[];
+  phases: Phase[];
 }
 
-//session step
+//SESSION STEP
 export interface Session {
   sessionId?: string,
   title: string;
   description: string;
   startTime: string;
   endTime: string;
+  date: string;
   roomId: string;
   speaker?: Speaker;
-  sessionMedias?: SessionMedia
+  sessionMedias?: SessionMedia[]
 }
 
 export interface Speaker {
-  speakerId?: string
+  speakerId?:string;
   name: string;
   description: string;
-  imageUrl: string;
-  image: string;
+  imageUrl?: string;
+  image?: string;
 }
 
 export interface SessionMedia {
   sessionMediaId?: string
   mediaFile: string;
-  mediaUrl: string;
-
 }
 
 export interface ConferenceSessionData {
@@ -110,7 +120,7 @@ export interface ConferenceSessionData {
 }
 
 
-// Policies Step
+//POLICY STEP
 export interface Policy {
   policyId?: string;
   policyName: string;
@@ -121,28 +131,34 @@ export interface ConferencePolicyData {
   policies: Policy[];
 }
 
-// Media Step
+//MEDIA STEP
 export interface Media {
   mediaId?: string;
   mediaFile: string | File | null;
+  mediaUrl?: string;
 }
 
 export interface ConferenceMediaData {
   media: Media[];
 }
 
-// Sponsors Step
+//SPONSOR STEP
 export interface Sponsor {
-  sponsorId?: string
+  sponsorId?: string;
   name: string;
   imageFile: string | File | null;
+  imageUrl?: string;
+
 }
 
 export interface ConferenceSponsorData {
   sponsors: Sponsor[];
 }
 
-//+++
+//+++++++++++++++
+
+
+//prop
 export interface ConferenceStepFormProps {
   conference?: Conference | null;
   onSave?: (data: ConferenceFormData) => void;
@@ -150,14 +166,12 @@ export interface ConferenceStepFormProps {
   mode?: 'create' | 'edit';
 }
 
-
 export interface ConferenceFormProps {
   conference?: ConferenceResponse | null;
   onSave: (data: ConferenceFormData) => void;
   onCancel: () => void;
 }
 
-//-----------------------------------
 export interface ConferenceDetailProps {
   conference: ConferenceResponse;
   onClose: () => void;
@@ -176,6 +190,8 @@ export interface CategoryOption {
   value: string;
   label: string;
 }
+
+//-----------------------------------
 
 
 // Conference rankings

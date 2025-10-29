@@ -1,30 +1,28 @@
 import React from "react";
 import { 
-  Pencil, 
-  Trash2, 
   Eye,
-  Calendar,
-  FileText,
+  MoreVertical,
+  Ban,
+  CheckCircle
 } from "lucide-react";
 
 import { DataTable, Column } from "@/components/molecules/DataTable";
-import { formatDate } from "@/helper/format";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { StatusBadge } from "@/components/atoms/StatusBadge";
-import { ActionButton } from "@/components/atoms/ActionButton";
-import { User } from "@/types/user.type";
+import { UserProfileResponse } from "@/types/user.type";
 
 interface UserTableProps {
-  users: User[];
-  onView: (user: User) => void;
-  onEdit: (user: User) => void;
-  onDelete: (id: string) => void;
+  users: UserProfileResponse[];
+  onView: (user: UserProfileResponse) => void;
+  onSuspend: (userId: string) => void;
+  onActivate: (userId: string) => void;
 }
 
 export function UserTable({ 
   users, 
   onView, 
-  onEdit, 
-  onDelete 
+  onSuspend, 
+  onActivate 
 }: UserTableProps) {
   const getRoleLabel = (role: string) => {
     const labels: Record<string, string> = {
@@ -50,23 +48,7 @@ export function UserTable({
     return variants[role] || "info";
   };
 
-  const getStatusLabel = (status: string) => {
-    const labels: Record<string, string> = {
-      active: "Hoạt động",
-      inactive: "Không hoạt động"
-    };
-    return labels[status] || status;
-  };
-
-  const getStatusVariant = (status: string): "success" | "danger" | "warning" | "info" => {
-    const variants: Record<string, "success" | "danger" | "warning" | "info"> = {
-      active: "success",
-      inactive: "danger"
-    };
-    return variants[status] || "info";
-  };
-
-  const columns: Column<User>[] = [
+  const columns: Column<UserProfileResponse>[] = [
     {
       key: "fullName",
       header: "Tên người dùng",
@@ -88,61 +70,41 @@ export function UserTable({
       ),
     },
     {
-      key: "status",
-      header: "Trạng thái",
-      render: (user) => (
-        <StatusBadge
-          status={getStatusLabel(user.status)}
-          variant={getStatusVariant(user.status)}
-        />
-      ),
-    },
-    {
-      key: "registeredConferences",
-      header: "Số hội thảo",
-      render: (user) => (
-        <div className="flex items-center gap-2">
-          <FileText className="w-4 h-4 text-gray-400" />
-          <span className="text-sm text-gray-900">
-            {user.registeredConferences}
-          </span>
-        </div>
-      ),
-    },
-    {
-      key: "joinedDate",
-      header: "Ngày tham gia",
-      render: (user) => (
-        <div className="flex items-center gap-2 text-gray-600">
-          <Calendar className="w-4 h-4" />
-          <span className="text-sm">{formatDate(user.joinedDate)}</span>
-        </div>
-      ),
-    },
-    {
       key: "actions",
       header: "Thao tác",
       className: "text-right",
       render: (user) => (
-        <div className="flex items-center justify-end gap-2">
-          <ActionButton
-            onClick={() => onView(user)}
-            icon={<Eye className="w-4 h-4" />}
-            variant="success"
-            tooltip="Xem chi tiết"
-          />
-          <ActionButton
-            onClick={() => onEdit(user)}
-            icon={<Pencil className="w-4 h-4" />}
-            variant="primary"
-            tooltip="Chỉnh sửa"
-          />
-          <ActionButton
-            onClick={() => onDelete(user.userId)}
-            icon={<Trash2 className="w-4 h-4" />}
-            variant="danger"
-            tooltip="Xóa"
-          />
+        <div className="flex items-center justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="p-2 hover:bg-gray-100 rounded-md transition-colors">
+                <MoreVertical className="w-4 h-4 text-gray-600" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => onView(user)}
+                className="cursor-pointer"
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                Xem chi tiết
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onSuspend(user.userId)}
+                className="cursor-pointer text-orange-600 focus:text-orange-600"
+              >
+                <Ban className="w-4 h-4 mr-2" />
+                Tạm ngưng
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onActivate(user.userId)}
+                className="cursor-pointer text-green-600 focus:text-green-600"
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Kích hoạt
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       ),
     },

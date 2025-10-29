@@ -10,12 +10,27 @@ export interface UserProfileResponse {
   userId: string;
   email: string;
   fullName: string;
-  birthDay: string;
-  phoneNumber:string;
-  gender: string;
-  avatarUrl: string;
-  bioDescription: string;
+  birthDay: string | null;
+  phoneNumber:string | null;
+  gender: string | null;
+  avatarUrl: string | null;
+  bioDescription: string | null;
   createdAt: string;
+  roles?: string[]
+}
+
+export interface CollaboratorRequest {
+  userId?: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  fullName: string;
+}
+
+//+++++
+
+export interface UsersListResponse {
+  users: UserProfileResponse[]
 }
 
 export type UserFormData = Omit<UserProfileResponse, "userId" | "createdAt"  >;

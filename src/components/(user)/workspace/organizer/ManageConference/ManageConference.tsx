@@ -20,55 +20,37 @@ import { Modal } from "@/components/molecules/Modal";
 import { StatCard } from "@/components/molecules/StatCard";
 import { SearchFilter } from "@/components/molecules/SearchFilter";
 
-import { ConferenceDetail } from "@/components/(user)/workspace/organizer/ManageConference/ConferenceDetail/index";
 import { ConferenceTable } from "@/components/(user)/workspace/organizer/ManageConference/ConferenceTable/index";
 import { ConferenceFormData, ConferenceResponse } from "@/types/conference.type";
 
 import { ConferenceStepForm } from "@/components/(user)/workspace/organizer/ManageConference/ConferenceForm/TechForm";
 
-// Import API hooks
 import {
-  useGetAllConferencesQuery,
-  useGetConferenceByIdQuery,
+  useGetAllConferencesPaginationQuery,
   useDeleteConferenceMutation
 } from "@/redux/services/conference.service";
-import { useGetAllCategoriesQuery } from "@/redux/services/category.service"; // Thêm import này
+import { useGetAllCategoriesQuery } from "@/redux/services/category.service"; 
 
 type ConferenceType = boolean | null;
 
 export default function ManageConference() {
-  // API Hooks
-  const { data: conferencesData, isLoading, isError } = useGetAllConferencesQuery();
-  const { data: categoriesData, isLoading: isCategoriesLoading } = useGetAllCategoriesQuery(); // Thêm hook này
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(12);
+
+  // API Hooks with pagination
+  const { data: conferencesData, isLoading, isError } = useGetAllConferencesPaginationQuery({
+    page,
+    pageSize,
+  });
+  const { data: categoriesData, isLoading: isCategoriesLoading } = useGetAllCategoriesQuery();
   const [deleteConferenceMutation, { isLoading: isDeleting }] = useDeleteConferenceMutation();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [editingConference, setEditingConference] = useState<ConferenceResponse | null>(null);
-  const [viewingConferenceId, setViewingConferenceId] = useState<string | null>(null);
   const [deleteConferenceId, setDeleteConferenceId] = useState<string | null>(null);
   const [selectedConferenceType, setSelectedConferenceType] = useState<ConferenceType>(null);
-
-  // Fetch conference detail when viewing
-  const {
-    data: conferenceDetailData,
-    isLoading: isDetailLoading,
-    isError: isDetailError,
-  } = useGetConferenceByIdQuery(viewingConferenceId!, {
-    skip: !viewingConferenceId,
-  });
-
-  // Fetch conference detail for editing
-  const conferenceId = editingConference?.conferenceId;
-
-  const {
-    data: editConferenceData,
-    isLoading: isEditLoading,
-  } = useGetConferenceByIdQuery(conferenceId ?? "", {
-    skip: !conferenceId,
-  });
 
   // Tạo categoryOptions từ API data
   const categoryOptions = useMemo(() => {
@@ -86,8 +68,10 @@ export default function ManageConference() {
     return [allOption, ...apiCategories];
   }, [categoriesData]);
 
-  // Get conferences from API
-  const conferences = conferencesData?.data || [];
+  // Get conferences from API with pagination
+  const conferences = conferencesData?.data?.items || [];
+  const totalPages = conferencesData?.data?.totalPages || 1;
+  const totalItems = conferencesData?.data?.totalItems || 0;
 
   const filteredConferences = conferences.filter((conf) => {
     const matchesSearch = conf.conferenceName
@@ -109,11 +93,6 @@ export default function ManageConference() {
     setEditingConference(conference);
     setSelectedConferenceType(conference.isResearchConference ?? false);
     setIsModalOpen(true);
-  };
-
-  const handleView = (conference: ConferenceResponse) => {
-    setViewingConferenceId(conference.conferenceId);
-    setIsDetailOpen(true);
   };
 
   const handleSave = (_data: ConferenceFormData) => {
@@ -143,18 +122,16 @@ export default function ManageConference() {
     setSelectedConferenceType(type);
   };
 
-  const handleCloseDetail = () => {
-    setIsDetailOpen(false);
-    setViewingConferenceId(null);
-  };
-
   const handleCloseEditModal = () => {
     setIsModalOpen(false);
     setEditingConference(null);
     setSelectedConferenceType(null);
   };
 
-  const totalConferences = conferences.length;
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // Loading state
   if (isLoading || isCategoriesLoading) {
@@ -213,7 +190,7 @@ export default function ManageConference() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <StatCard
             title="Tổng hội thảo"
-            value={totalConferences}
+            value={totalItems}
             icon={<Calendar className="w-10 h-10" />}
             color="blue"
           />
@@ -232,10 +209,32 @@ export default function ManageConference() {
 
         <ConferenceTable
           conferences={filteredConferences}
-          onView={handleView}
           onEdit={handleEdit}
           onDelete={handleDelete}
         />
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="mt-6 flex items-center justify-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page === 1}
+            >
+              Trước
+            </Button>
+            <span className="text-sm text-gray-600">
+              Trang {page} / {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page === totalPages}
+            >
+              Sau
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Modal for Creating/Editing Conference */}
@@ -295,20 +294,11 @@ export default function ManageConference() {
           </div>
         ) : selectedConferenceType === false ? (
           // Tech Conference Form
-          editingConference && isEditLoading ? (
-            <div className="py-12 flex items-center justify-center">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Đang tải dữ liệu hội thảo...</p>
-              </div>
-            </div>
-          ) : (
-            <ConferenceStepForm
-              conference={editingConference ? editConferenceData?.data : null}
-              onSave={handleSave}
-              onCancel={handleCloseEditModal}
-            />
-          )
+          <ConferenceStepForm
+            conference={editingConference}
+            onSave={handleSave}
+            onCancel={handleCloseEditModal}
+          />
         ) : selectedConferenceType === true ? (
           // Research Conference Form - Not implemented yet
           <div className="py-8 text-center">
@@ -321,31 +311,6 @@ export default function ManageConference() {
               Quay lại
             </Button>
           </div>
-        ) : null}
-      </Modal>
-
-      {/* Modal for Viewing Conference Details */}
-      <Modal isOpen={isDetailOpen} onClose={handleCloseDetail} title="Chi tiết hội thảo" size="lg">
-        {isDetailLoading ? (
-          <div className="py-12 flex items-center justify-center">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">Đang tải chi tiết hội thảo...</p>
-            </div>
-          </div>
-        ) : isDetailError ? (
-          <div className="py-12 text-center">
-            <p className="text-red-600 mb-4">Không thể tải chi tiết hội thảo</p>
-            <Button onClick={handleCloseDetail} variant="outline">
-              Đóng
-            </Button>
-          </div>
-        ) : conferenceDetailData?.data ? (
-          <ConferenceDetail 
-            conference={conferenceDetailData.data} 
-            onClose={handleCloseDetail}
-            conferenceId={viewingConferenceId!} 
-          />
         ) : null}
       </Modal>
 
