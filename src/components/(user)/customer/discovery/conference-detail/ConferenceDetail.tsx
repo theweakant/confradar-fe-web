@@ -3,10 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { toast } from 'sonner'
-import { X, MapPin, Clock, Calendar, Star } from 'lucide-react';
-import { Dialog, DialogPanel, DialogTitle, Button } from "@headlessui/react";
+import { X } from 'lucide-react';
 import { useConference } from '@/redux/hooks/conference/useConference';
-import { ConferencePriceResponse, ConferenceResponse, TechnicalConferenceDetailResponse, ResearchConferenceDetailResponse } from '@/types/conference.type';
+import { ConferencePriceResponse, } from '@/types/conference.type';
 import { useParams, useRouter } from 'next/navigation';
 import { useTransaction } from '@/redux/hooks/transaction/useTransaction';
 import { useSelector } from 'react-redux';

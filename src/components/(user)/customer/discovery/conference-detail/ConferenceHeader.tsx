@@ -1,6 +1,6 @@
-import { X, MapPin, Clock, Calendar, Star } from 'lucide-react';
-import { Dialog, DialogPanel, DialogTitle, Button } from "@headlessui/react";
-import { ConferencePriceResponse, ConferenceResponse, ResearchConferenceDetailResponse, TechnicalConferenceDetailResponse } from "@/types/conference.type";
+import { MapPin, Calendar, Star } from 'lucide-react';
+import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+import { ConferencePriceResponse, ResearchConferenceDetailResponse, TechnicalConferenceDetailResponse } from "@/types/conference.type";
 import { getCurrentPrice } from "@/utils/conferenceUtils";
 
 interface ConferenceHeaderProps {

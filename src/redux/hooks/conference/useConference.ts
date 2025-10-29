@@ -1,10 +1,7 @@
 // import { useGetAllConferencesWithPricesPaginationQuery, useGetConferenceByIdQuery, useLazyGetAllConferencesWithPricesPaginationQuery, useLazyGetConferenceByIdQuery } from '@/redux/services/conference.service';
 import { useGetAllConferencesPaginationQuery, useGetResearchConferenceDetailQuery, useGetTechnicalConferenceDetailQuery, useLazyGetAllConferencesPaginationQuery, useLazyGetAllConferencesWithPricesPaginationQuery, useLazyGetConferencesByStatusQuery } from '@/redux/services/conference.service';
 import { parseApiError } from '@/redux/utils/api';
-import { ApiResponse } from '@/types/api.type';
 import { ConferenceResponse } from '@/types/conference.type';
-import { SerializedError } from '@reduxjs/toolkit';
-import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { useCallback } from 'react';
 
 export const useConference = (params?: { page?: number; pageSize?: number; id?: string }) => {
@@ -26,7 +23,7 @@ export const useConference = (params?: { page?: number; pageSize?: number; id?: 
         isLoading: technicalConferenceLoading,
         isFetching: technicalConferenceFetching,
         refetch: refetchTechnicalConference,
-    } = useGetTechnicalConferenceDetailQuery(params?.id!, { skip: !params?.id });
+    } = useGetTechnicalConferenceDetailQuery(params?.id ?? '', { skip: !params?.id });
 
     const {
         data: researchConferenceData,
@@ -34,7 +31,7 @@ export const useConference = (params?: { page?: number; pageSize?: number; id?: 
         isLoading: researchConferenceLoading,
         isFetching: researchConferenceFetching,
         refetch: refetchResearchConference,
-    } = useGetResearchConferenceDetailQuery(params?.id!, { skip: !params?.id });
+    } = useGetResearchConferenceDetailQuery(params?.id ?? '', { skip: !params?.id });
 
     // Lazy load default paginated list
     const [triggerGetAll, { data: lazyDefaultData, error: lazyDefaultError, isLoading: lazyDefaultLoading }] =

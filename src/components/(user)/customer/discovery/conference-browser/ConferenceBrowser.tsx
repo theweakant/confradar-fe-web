@@ -1,15 +1,11 @@
 "use client";
 
-import React, { useEffect, useState, Fragment } from 'react';
-import {
-  Calendar as CalendarIcon,
-  ChevronDown,
-} from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useConference } from '@/redux/hooks/conference/useConference';
 import { useGetAllCategoriesQuery } from '@/redux/services/category.service';
 import { useGetAllCitiesQuery } from '@/redux/services/city.service';
-import { CategoryOption, ConferencePriceResponse, ConferenceResponse } from '@/types/conference.type';
+import { CategoryOption, ConferenceResponse } from '@/types/conference.type';
 import { Category } from '@/types/category.type';
 import { City } from '@/types/city.type';
 import { mockStatusData } from '@/data/mockStatus.data';

@@ -2,8 +2,6 @@ import { useCreatePaymentForResearchPaperMutation, useCreatePaymentForTechMutati
 import { parseApiError } from "@/redux/utils/api";
 import { ApiResponse } from "@/types/api.type";
 import { CreatePaperPaymentRequest, CreateTechPaymentRequest } from "@/types/transaction.type";
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
 export const useTransaction = () => {
     const [

@@ -1,6 +1,6 @@
 import Image from 'next/image';
-import { X, MapPin, Clock, Calendar, Star } from 'lucide-react';
-import { ConferenceResponse, TechnicalConferenceDetailResponse, ResearchConferenceDetailResponse, TechnicalConferenceSessionResponse, ResearchConferenceSessionResponse } from "@/types/conference.type";
+import {  MapPin, Clock, Calendar } from 'lucide-react';
+import { TechnicalConferenceDetailResponse, ResearchConferenceDetailResponse, TechnicalConferenceSessionResponse, ResearchConferenceSessionResponse } from "@/types/conference.type";
 
 // Sessions Tab Component
 interface SessionsTabProps {
