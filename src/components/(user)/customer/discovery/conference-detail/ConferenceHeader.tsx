@@ -1,9 +1,10 @@
 import { X, MapPin, Clock, Calendar, Star } from 'lucide-react';
 import { Dialog, DialogPanel, DialogTitle, Button } from "@headlessui/react";
-import { ConferencePriceResponse, ConferenceResponse } from "@/types/conference.type";
+import { ConferencePriceResponse, ConferenceResponse, ResearchConferenceDetailResponse, TechnicalConferenceDetailResponse } from "@/types/conference.type";
+import { getCurrentPrice } from "@/utils/conferenceUtils";
 
 interface ConferenceHeaderProps {
-    conference: ConferenceResponse;
+    conference: TechnicalConferenceDetailResponse | ResearchConferenceDetailResponse;
     isFavorite: boolean;
     setIsFavorite: (favorite: boolean) => void;
     isDialogOpen: boolean;
@@ -11,7 +12,7 @@ interface ConferenceHeaderProps {
     selectedTicket: ConferencePriceResponse | null;
     setSelectedTicket: (ticket: ConferencePriceResponse | null) => void;
     paymentLoading: boolean;
-    handlePurchaseTickt: () => void;
+    handlePurchaseTicket: () => void;
     accessToken: string | null;
     formatDate: (dateString?: string) => string;
 }
@@ -25,7 +26,7 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
     selectedTicket,
     setSelectedTicket,
     paymentLoading,
-    handlePurchaseTickt,
+    handlePurchaseTicket,
     accessToken,
     formatDate
 }) => {
@@ -63,9 +64,9 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                                 <MapPin className="w-5 h-5 text-white" />
                                 <span>{conference.address}</span>
                             </div>
-                            {conference.capacity && (
+                            {conference.totalSlot && (
                                 <div className="flex items-center gap-2">
-                                    <span className="text-sm">Sức chứa: {conference.capacity} người</span>
+                                    <span className="text-sm">Sức chứa: {conference.totalSlot} người</span>
                                 </div>
                             )}
                         </div>
@@ -98,16 +99,179 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                             <DialogPanel
                                 transition
                                 className="w-full max-w-md rounded-2xl bg-white/10 backdrop-blur-2xl p-6
+            text-white duration-300 ease-out data-[closed]:opacity-0 data-[closed]:scale-95"
+                            >
+                                <DialogTitle as="h3" className="text-lg font-semibold mb-4">
+                                    Chọn loại vé
+                                </DialogTitle>
+
+                                <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+                                    {(conference.conferencePrices || []).map((ticket) => {
+                                        const currentPrice = getCurrentPrice(ticket);
+
+                                        const now = new Date();
+                                        const currentPhase = ticket.pricePhases?.find((phase) => {
+                                            const startDate = new Date(phase.startDate || "");
+                                            const endDate = new Date(phase.endDate || "");
+                                            return now >= startDate && now <= endDate;
+                                        });
+
+                                        const hasDiscount =
+                                            currentPrice < (ticket.ticketPrice ?? 0) &&
+                                            currentPhase?.applyPercent !== undefined;
+
+                                        return (
+                                            <label
+                                                key={ticket.conferencePriceId}
+                                                className={`block rounded-xl p-4 border cursor-pointer transition-all ${selectedTicket?.conferencePriceId === ticket.conferencePriceId
+                                                    ? "bg-coral-500/30 border-coral-400"
+                                                    : "bg-white/10 border-white/20 hover:bg-white/20"
+                                                    }`}
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="ticket"
+                                                    value={ticket.conferencePriceId}
+                                                    className="hidden"
+                                                    onChange={() => setSelectedTicket(ticket)}
+                                                />
+
+                                                <div className="flex justify-between items-start mb-1">
+                                                    <div className="flex flex-col">
+                                                        <span className="font-semibold text-lg">{ticket.ticketName}</span>
+                                                        {ticket.isAuthor && (
+                                                            <span className="text-xs text-yellow-300 font-medium mt-0.5">
+                                                                Vé dành cho tác giả
+                                                            </span>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="text-right">
+                                                        {hasDiscount && (
+                                                            <span className="text-sm line-through text-white/60 block">
+                                                                {(ticket.ticketPrice || 0).toLocaleString("vi-VN")}₫
+                                                            </span>
+                                                        )}
+                                                        <span className="text-coral-300 font-bold text-lg">
+                                                            {currentPrice.toLocaleString("vi-VN")}₫
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {ticket.ticketDescription && (
+                                                    <p className="text-sm text-white/70">{ticket.ticketDescription}</p>
+                                                )}
+
+                                                <div className="mt-2 text-sm space-y-1">
+                                                    {currentPhase && (
+                                                        <p>
+                                                            <span className="font-medium text-coral-200">Giai đoạn vé hiện tại:</span>{" "}
+                                                            {currentPhase.phaseName || "Không xác định"}{" "}
+                                                            {currentPhase.applyPercent !== undefined && (
+                                                                <p
+                                                                    className={`text-sm font-medium ${currentPhase.applyPercent > 100 ? "text-red-500" : currentPhase.applyPercent < 100 ? "text-green-500" : "text-gray-400"
+                                                                        }`}
+                                                                >
+                                                                    {currentPhase.applyPercent > 100
+                                                                        ? `+${currentPhase.applyPercent - 100}%`
+                                                                        : currentPhase.applyPercent < 100
+                                                                            ? `-${100 - currentPhase.applyPercent}%`
+                                                                            : "±0%"}
+                                                                </p>
+                                                            )}
+                                                            {/* {currentPhase.applyPercent && (
+                                                                <span className="text-white/70">
+                                                                    ({currentPhase.applyPercent}%)
+                                                                </span>
+                                                            )} */}
+                                                        </p>
+                                                    )}
+
+                                                    <p>
+                                                        <span className="font-medium text-coral-200">Số lượng:</span>{" "}
+                                                        {ticket.availableSlot} / {ticket.totalSlot}
+                                                    </p>
+
+                                                    {currentPhase?.startDate && (
+                                                        <p className="text-white/70">
+                                                            <span className="font-medium">Hiệu lực:</span>{" "}
+                                                            {formatDate(currentPhase.startDate)} →{" "}
+                                                            {formatDate(currentPhase.endDate)}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </label>
+                                        );
+                                    })}
+                                </div>
+
+                                <div className="mt-6 flex justify-end gap-3">
+                                    <button
+                                        onClick={() => setIsDialogOpen(false)}
+                                        className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-500 transition"
+                                    >
+                                        Hủy
+                                    </button>
+                                    <button
+                                        onClick={handlePurchaseTicket}
+                                        disabled={!selectedTicket || paymentLoading}
+                                        className="px-5 py-2 rounded-lg bg-coral-500 hover:bg-coral-600 disabled:opacity-50 transition"
+                                    >
+                                        {paymentLoading ? (
+                                            <div className="flex items-center gap-2">
+                                                <svg
+                                                    className="animate-spin h-5 w-5 text-white"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <circle
+                                                        className="opacity-25"
+                                                        cx="12"
+                                                        cy="12"
+                                                        r="10"
+                                                        stroke="currentColor"
+                                                        strokeWidth="4"
+                                                    ></circle>
+                                                    <path
+                                                        className="opacity-75"
+                                                        fill="currentColor"
+                                                        d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
+                                                    ></path>
+                                                </svg>
+                                                <span>Đang xử lý...</span>
+                                            </div>
+                                        ) : accessToken ? (
+                                            "Thanh toán"
+                                        ) : (
+                                            "Đăng nhập để thanh toán"
+                                        )}
+                                    </button>
+                                </div>
+                            </DialogPanel>
+                        </div>
+                    </Dialog>
+                    {/* <Dialog
+                        open={isDialogOpen}
+                        as="div"
+                        className="relative z-50 focus:outline-none"
+                        onClose={setIsDialogOpen}
+                    >
+                        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" aria-hidden="true" />
+                        <div className="fixed inset-0 flex items-center justify-center p-4">
+                            <DialogPanel
+                                transition
+                                className="w-full max-w-md rounded-2xl bg-white/10 backdrop-blur-2xl p-6
         text-white duration-300 ease-out data-[closed]:opacity-0 data-[closed]:scale-95"
                             >
                                 <DialogTitle as="h3" className="text-lg font-semibold mb-4">
                                     Chọn loại vé
                                 </DialogTitle>
                                 <div className="space-y-3">
-                                    {(conference.prices || []).map((ticket) => (
+                                    {(conference.conferencePrices || []).map((ticket) => (
                                         <label
-                                            key={ticket.priceId}
-                                            className={`block rounded-xl p-4 border cursor-pointer transition-all ${selectedTicket?.priceId === ticket.priceId
+                                            key={ticket.conferencePriceId}
+                                            className={`block rounded-xl p-4 border cursor-pointer transition-all ${selectedTicket?.conferencePriceId === ticket.conferencePriceId
                                                 ? "bg-coral-500/30 border-coral-400"
                                                 : "bg-white/10 border-white/20 hover:bg-white/20"
                                                 }`}
@@ -115,14 +279,14 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                                             <input
                                                 type="radio"
                                                 name="ticket"
-                                                value={ticket.priceId}
+                                                value={ticket.conferencePriceId}
                                                 className="hidden"
                                                 onChange={() => setSelectedTicket(ticket)}
                                             />
                                             <div className="flex justify-between items-center">
                                                 <span className="font-semibold">{ticket.ticketName}</span>
                                                 <span className="text-coral-300 font-medium">
-                                                    {(ticket.actualPrice || ticket.ticketPrice || 0).toLocaleString("vi-VN")}₫
+                                                    {(ticket.ticketPrice || 0).toLocaleString("vi-VN")}₫
                                                 </span>
                                             </div>
                                             <p className="text-sm text-white/70 mt-1">{ticket.ticketDescription}</p>
@@ -175,7 +339,7 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                                 </div>
                             </DialogPanel>
                         </div>
-                    </Dialog>
+                    </Dialog> */}
                 </div>
 
                 {/* Description Card */}

@@ -1,7 +1,8 @@
 import { ApiResponse } from "@/types/api.type";
-import { CreateTechPaymentRequest, Transaction } from "@/types/transaction.type";
+import { CreatePaperPaymentRequest, CreateTechPaymentRequest, Transaction } from "@/types/transaction.type";
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { apiClient } from "../api/apiClient";
+import { endpoint } from "../api/endpoint";
 
 export const transactionApi = createApi({
     reducerPath: 'transactionApi',
@@ -10,7 +11,7 @@ export const transactionApi = createApi({
     endpoints: (builder) => ({
         createPaymentForTech: builder.mutation<ApiResponse<string>, CreateTechPaymentRequest>({
             query: (request) => ({
-                url: '/payment/pay-tech-with-momo',
+                url: endpoint.TRANSACTION.CREATE_TECH_PAYMENT,
                 method: 'POST',
                 body: request,
             }),
@@ -27,8 +28,25 @@ export const transactionApi = createApi({
             invalidatesTags: ['Transaction'],
         }),
 
+        createPaymentForResearchPaper: builder.mutation<ApiResponse<string>, CreatePaperPaymentRequest>({
+            query: (request) => ({
+                url: endpoint.TRANSACTION.CREATE_RESEARCH_PAPER_PAYMENT,
+                method: 'POST',
+                body: request,
+            }),
+            async onQueryStarted(arg, { queryFulfilled }) {
+                try {
+                    const { data } = await queryFulfilled;
+                    if (data.data) {
+                        console.log('Research Paper Payment URL:', data.data);
+                    }
+                } catch (err) { }
+            },
+            invalidatesTags: ['Transaction'],
+        }),
+
         getOwnTransaction: builder.query<ApiResponse<Transaction[]>, void>({
-            query: () => '/payment/get-own-transaction',
+            query: () => endpoint.TRANSACTION.GET_OWN_TRANSACTION,
             providesTags: ['Transaction'],
         }),
     }),
@@ -36,6 +54,7 @@ export const transactionApi = createApi({
 
 export const {
     useCreatePaymentForTechMutation,
+    useCreatePaymentForResearchPaperMutation,
     useGetOwnTransactionQuery,
     useLazyGetOwnTransactionQuery,
 } = transactionApi;

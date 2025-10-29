@@ -67,4 +67,10 @@ export const endpoint = {
   CITY: {
     LIST: "/City/cities",
   },
+
+  TRANSACTION: {
+    CREATE_TECH_PAYMENT: "/payment/pay-tech-with-momo",
+    CREATE_RESEARCH_PAPER_PAYMENT: "/payment/pay-research-paper-with-momo",
+    GET_OWN_TRANSACTION: "/payment/get-own-transaction",
+  },
 }

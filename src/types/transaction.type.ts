@@ -2,6 +2,10 @@ export interface CreateTechPaymentRequest {
     conferencePriceId: string;
 }
 
+export interface CreatePaperPaymentRequest {
+    conferencePriceId: string;
+}
+
 export interface Transaction {
     transactionId: string;
     userId?: string;

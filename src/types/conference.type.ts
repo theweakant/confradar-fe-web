@@ -229,15 +229,15 @@ export interface ConferenceResponse {
   cityId?: string;
   conferenceCategoryId?: string;
   conferenceStatusId?: string;
-  policies?: ConferencePolicyResponse[];
-  media?: ConferenceMediaResponse[];
-  sponsors?: SponsorResponse[];
+  // policies?: ConferencePolicyResponse[];
+  // media?: ConferenceMediaResponse[];
+  // sponsors?: SponsorResponse[];
   conferencePrices?: ConferencePriceResponse[];
-  sessions?: ConferenceSessionResponse[];
+  // sessions?: ConferenceSessionResponse[];
 }
 
 export interface TechnicalConferenceDetailResponse {
-  conferenceId: string;
+  conferenceId?: string;
   conferenceName?: string;
   description?: string;
   startDate?: string;
@@ -255,11 +255,12 @@ export interface TechnicalConferenceDetailResponse {
   conferenceCategoryId?: string;
   conferenceStatusId?: string;
   targetAudience?: string;
+  refundPolicies?: RefundPolicyResponse[];
+  conferenceMedia?: ConferenceMediaResponse[];
   policies?: ConferencePolicyResponse[];
-  media?: ConferenceMediaResponse[];
   sponsors?: SponsorResponse[];
-  conferencePrices?: ConferencePriceResponse[];
-  sessions?: ConferenceSessionResponse[];
+  sessions?: TechnicalConferenceSessionResponse[];
+  conferencePrices?: ConferencePriceResponse[]; // 
 }
 
 export interface ResearchConferenceDetailResponse {
@@ -299,7 +300,7 @@ export interface ResearchConferenceDetailResponse {
   materialDownloads?: MaterialDownloadResponse[];
   rankingReferenceUrls?: RankingReferenceUrlResponse[];
   researchPhase?: ResearchConferencePhaseResponse;
-  researchSessions?: ResearchSessionWithMediaResponse[];
+  researchSessions?: ResearchConferenceSessionResponse[];
 
   // Shared data (same as technical conference)
   policies?: ConferencePolicyResponse[];
@@ -318,7 +319,6 @@ export interface ConferencePolicyResponse {
 export interface ConferenceMediaResponse {
   mediaId: string;
   mediaUrl?: string;
-  mediaTypeId?: string;
 }
 
 export interface SponsorResponse {
@@ -348,8 +348,8 @@ export interface ConferencePricePhaseResponse {
   availableSlot?: number;
 }
 
-export interface ConferenceSessionResponse {
-  sessionId: string;
+export interface TechnicalConferenceSessionResponse {
+  conferenceSessionId: string;
   title: string;
   description?: string;
   startTime?: string;
@@ -424,7 +424,7 @@ export interface RevisionRoundDeadlineResponse {
   researchConferencePhaseId?: string;
 }
 
-export interface ResearchSessionWithMediaResponse {
+export interface ResearchConferenceSessionResponse {
   conferenceSessionId: string;
   title?: string;
   description?: string;
@@ -433,12 +433,8 @@ export interface ResearchSessionWithMediaResponse {
   date?: string;
   conferenceId?: string;
   roomId?: string;
-  sessionMedia?: ResearchConferenceSessionMediaResponse[];
-}
-
-export interface ResearchConferenceSessionMediaResponse {
-  mediaId?: string;
-  mediaUrl?: string;
+  room?: RoomInfoResponse;
+  sessionMedia?: ConferenceSessionMediaResponse[];
 }
 
 export interface RefundPolicyResponse {

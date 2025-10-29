@@ -9,7 +9,8 @@ import {
   Ticket,
   UserCircle,
   Bell,
-  LogOut
+  LogOut,
+  FileText
 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -35,6 +36,7 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
     { id: 'discovery', label: 'Khám phá', icon: Compass, href: '/customer/discovery' },
     { id: 'ticket', label: 'Vé tham dự hội nghị', icon: Ticket, href: '/customer/tickets' },
     { id: 'transaction', label: 'Lịch sử giao dịch', icon: Ticket, href: '/customer/transaction-history' },
+    { id: 'paper', label: 'Bài báo của bạn', icon: FileText, href: '/customer/papers' },
     // { id: 'historyconferences', label: 'Hội nghị đã tham dự', icon: History, href: '/customer/history-conferences' },
     // { id: 'messages', label: 'Tin nhắn', icon: MessageCircle, href: '/customer/messages' },
     { id: 'notifications', label: 'Thông báo', icon: Bell, href: '/customer/notifications' },

@@ -43,7 +43,16 @@ const ConferenceDetail = () => {
     researchConferenceError,
     refetchResearchConference
   } = useConference({ id: conferenceId });
-  const { purchaseTicket, loading: paymentLoading, paymentError, paymentResponse } = useTransaction();
+
+  const {
+    purchaseTechTicket,
+    purchaseResearchPaper,
+    loading: paymentLoading,
+    techPaymentError,
+    researchPaymentError,
+    techPaymentResponse,
+    researchPaymentResponse,
+  } = useTransaction();
 
   const [activeTab, setActiveTab] = useState('info');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -60,11 +69,9 @@ const ConferenceDetail = () => {
   const error = isResearch ? researchConferenceError : technicalConferenceError;
 
   useEffect(() => {
-    if (paymentError) {
-      const message = typeof paymentError === 'string' ? paymentError : 'Có lỗi xảy ra khi thanh toán.';
-      toast.error(message);
-    }
-  }, [paymentError]);
+    if (techPaymentError) toast.error(techPaymentError.data?.message);
+    if (researchPaymentError) toast.error(researchPaymentError.data?.message);
+  }, [techPaymentError, researchPaymentError]);
 
   // const { fetchConference, loading, error } = useConference();
 
@@ -83,7 +90,7 @@ const ConferenceDetail = () => {
   //   }
   // }, [conferenceId]);
 
-  const handlePurchaseTickt = async () => {
+  const handlePurchaseTicket = async () => {
     if (!accessToken) {
       router.push('/auth/login');
       return;
@@ -92,7 +99,14 @@ const ConferenceDetail = () => {
     if (!selectedTicket) return;
 
     try {
-      const response = await purchaseTicket({ conferencePriceId: selectedTicket.conferencePriceId });
+      let response;
+
+      if (selectedTicket.isAuthor) {
+        response = await purchaseResearchPaper({ conferencePriceId: selectedTicket.conferencePriceId });
+      } else {
+        response = await purchaseTechTicket({ conferencePriceId: selectedTicket.conferencePriceId });
+      }
+
       if (response?.data) {
         window.location.href = response.data;
       } else {
@@ -217,7 +231,7 @@ const ConferenceDetail = () => {
               selectedTicket={selectedTicket}
               setSelectedTicket={setSelectedTicket}
               paymentLoading={paymentLoading}
-              handlePurchaseTickt={handlePurchaseTickt}
+              handlePurchaseTicket={handlePurchaseTicket}
               accessToken={accessToken}
               formatDate={formatDate}
             />

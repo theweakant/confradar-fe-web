@@ -13,7 +13,8 @@ const InformationTab: React.FC<InformationTabProps> = ({
 }) => {
     const isResearch = conference.isResearchConference === true;
 
-    const mediaList = isResearch ? (conference as ResearchConferenceDetailResponse).conferenceMedia || [] : (conference as TechnicalConferenceDetailResponse).media || [];
+    // const mediaList = isResearch ? (conference as ResearchConferenceDetailResponse).conferenceMedia || [] : (conference as TechnicalConferenceDetailResponse).conferenceMedia || [];
+    const mediaList = conference.conferenceMedia || [];
     const sponsorsList = conference.sponsors || [];
     const policiesList = conference.policies || [];
     const refundPolicies = isResearch ? (conference as ResearchConferenceDetailResponse).refundPolicies || [] : [];
