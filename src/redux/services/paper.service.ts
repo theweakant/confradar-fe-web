@@ -160,4 +160,11 @@ export const {
   useGetPaperDetailCustomerQuery,
   useLazyGetPaperDetailCustomerQuery,
   useListPaperPhasesQuery,
+  useSubmitAbstractMutation,
+  useListAvailableCustomersQuery,
+  useLazyListAvailableCustomersQuery,
+  useSubmitFullPaperMutation,
+  useSubmitPaperRevisionMutation,
+  useSubmitPaperRevisionResponseMutation,
+  useSubmitCameraReadyMutation,
 } = paperApi;
