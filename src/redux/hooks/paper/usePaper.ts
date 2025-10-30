@@ -147,7 +147,13 @@ export const usePaperCustomer = () => {
         request: CreateRevisionPaperSubmissionResponse
     ): Promise<ApiResponse<number>> => {
         try {
-            const result = await submitPaperRevisionResponse(request).unwrap();
+            const formData = new FormData();
+
+            formData.append('revisionPaperSubmissionId', request.revisionPaperSubmissionId);
+            formData.append('paperId', request.paperId);
+            formData.append('responses', JSON.stringify(request.responses));
+
+            const result = await submitPaperRevisionResponse(formData).unwrap();
             return result;
         } catch (error) {
             throw error;
