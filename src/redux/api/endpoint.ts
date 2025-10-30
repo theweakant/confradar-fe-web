@@ -13,6 +13,7 @@ export const endpoint = {
     USERS_LIST: "/Auth/list-users",
     CREATE_COLLABORATOR: "/Auth/create-collaborator-account",
     UPDATE_PROFILE: "/Auth/update-profile",
+    CHANGE_PASSWORD: "/Auth/change-password",
 
     SUSPEND: (userId: string) => `/Auth/suspend-account?userId=${userId}`,
     ACTIVATE: (userId: string) => `/Auth/activate-account?userId=${userId}`,

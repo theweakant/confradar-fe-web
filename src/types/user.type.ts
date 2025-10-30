@@ -28,6 +28,12 @@ export interface ProfileUpdateRequest {
   bioDescription?: string;
 }
 
+export interface ChangePasswordRequest {
+  oldPassword: string;
+  newPassword: string;
+  confirmNewPassword: string;
+}
+
 export interface CollaboratorRequest {
   userId?: string;
   email: string;

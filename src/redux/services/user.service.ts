@@ -2,7 +2,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react"
 import { apiClient } from "../api/apiClient"
 import { endpoint } from "../api/endpoint"
-import { UserProfileResponse, CollaboratorRequest, UsersListResponse, ProfileUpdateRequest } from "@/types/user.type"
+import { UserProfileResponse, CollaboratorRequest, UsersListResponse, ProfileUpdateRequest, ChangePasswordRequest } from "@/types/user.type"
 import { ApiResponse } from "@/types/api.type"
 
 export const userApi = createApi({
@@ -49,6 +49,13 @@ export const userApi = createApi({
       },
     }),
 
+    changePassword: builder.mutation<ApiResponse<null>, ChangePasswordRequest>({
+      query: (data) => ({
+        url: endpoint.AUTH.CHANGE_PASSWORD, // ví dụ: "/api/auth/change-password"
+        method: "PUT",
+        body: data,
+      }),
+    }),
 
     createCollaborator: builder.mutation<ApiResponse<number>, CollaboratorRequest>({
       query: (data) => ({
@@ -79,6 +86,7 @@ export const {
   useGetProfileByIdQuery,
   useGetUsersListQuery,
   useUpdateProfileMutation,
+  useChangePasswordMutation,
   useCreateCollaboratorMutation,
 
   useSuspendAccountMutation,
