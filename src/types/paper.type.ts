@@ -123,37 +123,59 @@ export interface PaperPhase {
 export interface Abstract {
   abstractId: string;
   globalStatusId?: string | null;
-  abstractUrl?: string | null;
+  fileUrl?: string | null;
 }
 
 export interface FullPaper {
   fullPaperId: string;
   reviewStatusId?: string | null;
-  fullPaperUrl?: string | null;
+  fileUrl?: string | null;
 }
 
 export interface RevisionPaper {
   revisionPaperId: string;
   revisionRound?: number | null;
-  globalStatusId?: string | null;
+  overallStatus?: string | null;
+  submissions: RevisionSubmission[];
+  // reviews: RevisionReview[];
+  // revisionPaperId: string;
+  // revisionRound?: number | null;
+  // globalStatusId?: string | null;
 }
 
 export interface RevisionSubmission {
-  revisionPaperId: string;
-  revisionRound?: number | null;
-  globalStatusId?: string | null;
+  submissionId: string;
+  fileUrl: string;
+  revisionDeadline: {
+    roundNumher: number;  // typo backend vẫn giữ là roundNumher
+    deadline: string;
+  };
+  feedbacks: RevisionSubmissionFeedback[];
+  // revisionPaperId: string;
+  // revisionRound?: number | null;
+  // globalStatusId?: string | null;
 }
 
 export interface RevisionSubmissionFeedback {
-  revisionPaperId: string;
-  revisionRound?: number | null;
-  globalStatusId?: string | null;
+  feedbackId: string;
+  feedBack: string;
+  response?: string | null;
+  order: number;
+  createdAt: string;
+  // revisionPaperId: string;
+  // revisionRound?: number | null;
+  // globalStatusId?: string | null;
+}
+
+
+export interface RevisionReview {
+  // Nếu backend có thêm gì cho reviews, bổ sung ở đây
 }
 
 export interface CameraReady {
   cameraReadyId: string;
   globalStatusId?: string | null;
-  cameraReadyUrl?: string | null;
+  fileUrl?: string | null;
 }
 
 export interface CreateAbstractRequest {

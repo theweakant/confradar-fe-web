@@ -13,6 +13,8 @@ import type { PaperPhase, PaperDetailResponse } from '@/types/paper.type';
 
 const PaperTracking = () => {
   const [currentStage, setCurrentStage] = useState<number>(1);
+  const [maxReachedStage, setMaxReachedStage] = useState<number>(1);
+
   const [paperDetail, setPaperDetail] = useState<PaperDetailResponse | null>(null);
   const [isLoadingPaperDetail, setIsLoadingPaperDetail] = useState<boolean>(false);
   const [paperDetailError, setPaperDetailError] = useState<string | null>(null);
@@ -27,7 +29,6 @@ const PaperTracking = () => {
     loading: paperPhasesLoading
   } = usePaperCustomer();
 
-  // Fetch paper detail when paperId is available
   useEffect(() => {
     const loadPaperDetail = async () => {
       if (!paperId) return;
@@ -68,15 +69,16 @@ const PaperTracking = () => {
 
       if (currentPhaseIndex !== -1) {
         setCurrentStage(currentPhaseIndex + 1);
+        setMaxReachedStage(currentPhaseIndex + 1);
       }
     }
   }, [paperPhases, paperDetail]);
 
   const stages = [
     { id: 1, label: 'Abstract' },
-    { id: 2, label: 'Full Paper' },
-    { id: 3, label: 'Revision' },
-    { id: 4, label: 'Camera Ready' },
+    { id: 2, label: 'FullPaper' },
+    { id: 3, label: 'Revise' },
+    { id: 4, label: 'CameraReady' },
   ];
 
   // const stages = paperPhases.length > 0
@@ -232,39 +234,12 @@ const PaperTracking = () => {
                       return acc;
                     }, {} as Record<number, React.ReactNode>)}
                     value={currentStage}
-                    onChange={(value) => {
+                    onBeforeChange={(value) => {
                       if (typeof value !== 'number') return;
 
-                      const targetStage = stages.find(s => s.id === value);
-                      const currentStageLabel = stages.find(s => s.id === currentStage)?.label;
-
-                      switch (currentStageLabel) {
-                        case 'Abstract':
-                          if (value > 1) {
-                            alert('Bạn chỉ có thể truy cập giai đoạn Abstract. Các giai đoạn sau chưa mở.');
-                            return;
-                          }
-                          break;
-
-                        case 'Full Paper':
-                          if (value > 2) {
-                            alert('Giai đoạn Revision và Camera Ready chưa diễn ra.');
-                            return;
-                          }
-                          break;
-
-                        case 'Revision':
-                          if (value > 3) {
-                            alert('Giai đoạn Camera Ready chưa mở.');
-                            return;
-                          }
-                          break;
-
-                        case 'Camera Ready':
-                          break;
-
-                        default:
-                          break;
+                      if (value > maxReachedStage) {
+                        alert("Bạn không thể bỏ qua giai đoạn hiện tại.");
+                        return;
                       }
 
                       setCurrentStage(value);

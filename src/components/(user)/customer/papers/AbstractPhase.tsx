@@ -118,9 +118,9 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
                     <p className="text-green-300 text-sm">
                         Abstract ID: {abstract.abstractId}
                     </p>
-                    {abstract.abstractUrl && (
+                    {abstract.fileUrl && (
                         <a
-                            href={abstract.abstractUrl}
+                            href={abstract.fileUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-400 hover:text-blue-300 text-sm underline mt-2 inline-block"

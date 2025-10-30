@@ -1,173 +1,127 @@
-const FullPaperPhase: React.FC = () => {
-    const paperStatus = [
-        { id: 1, step: 'Nộp bài báo', completed: true, date: '15/01/2025' },
-        { id: 2, step: 'Xác nhận tiếp nhận', completed: true, date: '17/01/2025' },
-        { id: 3, step: 'Phân công reviewer', completed: true, date: '20/01/2025' },
-        { id: 4, step: 'Đánh giá bài báo', completed: false, date: 'Đang tiến hành' },
-        { id: 5, step: 'Kết quả review', completed: false, date: 'Chờ xử lý' },
-        { id: 6, step: 'Camera-ready', completed: false, date: 'Chờ xử lý' },
-    ];
+import React, { useState } from "react";
+import { FullPaper } from "@/types/paper.type";
+import { usePaperCustomer } from "@/redux/hooks/paper/usePaper";
 
-    const paperDetails = {
-        title: 'Nghiên cứu về Machine Learning trong xử lý ngôn ngữ tự nhiên',
-        conference: 'Hội thảo Khoa học Máy tính Việt Nam 2025',
-        submittedDate: '15/01/2025',
-        reviewDeadline: '28/02/2025',
-        status: 'Đang được đánh giá'
+interface FullPaperPhaseProps {
+    paperId?: string;
+    fullPaper?: FullPaper | null;
+}
+
+const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper }) => {
+    const isSubmitted = !!fullPaper;
+
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+    const {
+        handleSubmitFullPaper,
+        submitFullPaperError,
+        loading: submitLoading
+    } = usePaperCustomer();
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setSelectedFile(file);
+        }
     };
 
-    const actions = [
-        { name: 'Xem chi tiết bài báo', progress: '100%', status: 'completed' },
-        { name: 'Theo dõi phản hồi reviewer', progress: '60%', status: 'in-progress' },
-        { name: 'Cập nhật thông tin tác giả', progress: '100%', status: 'completed' },
-        { name: 'Chuẩn bị bản camera-ready', progress: '0%', status: 'pending' },
-        { name: 'Đăng ký trình bày', progress: '0%', status: 'pending' },
-    ];
+    const handleSubmitFullPaperForm = async () => {
+        if (!selectedFile || !paperId) {
+            alert("Vui lòng chọn file full paper và đảm bảo có Paper ID");
+            return;
+        }
+
+        try {
+            await handleSubmitFullPaper({
+                fullPaperFile: selectedFile,
+                paperId
+            });
+
+            alert("Nộp full paper thành công!");
+            setSelectedFile(null);
+        } catch (error: any) {
+            let errorMessage = "Có lỗi xảy ra khi nộp full paper";
+
+            if (error?.data?.Message) {
+                errorMessage = error.data.Message;
+            } else if (error?.data?.Errors) {
+                const errors = Object.values(error.data.Errors);
+                errorMessage = errors.length > 0 ? errors[0] as string : errorMessage;
+            }
+
+            alert(errorMessage);
+        }
+    };
+
     return (
-        <div>
-            <h3 className="text-lg font-semibold mb-4">Giai đoạn Full Paper</h3>
-            <p className="text-gray-400 mb-4">
-                Đây là nội dung chi tiết của giai đoạn **Full Paper**.
-            </p>
-            <div className="bg-gray-700 p-4 rounded-lg">
-                <p>Thông tin chi tiết submission và reviewer assignment.</p>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Progress Section */}
-                    <div className="lg:col-span-2">
-                        <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
-                            <div className="flex items-center mb-6">
-                                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
-                                    3/6
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-bold">Tiến độ bài báo</h3>
-                                    <p className="text-gray-400">Giai đoạn trước và sau chuyển đổi</p>
-                                </div>
-                            </div>
+        <div className="space-y-6">
+            <h3 className="text-lg font-semibold">Giai đoạn Full Paper</h3>
+            <p className="text-gray-400">Nộp bản full paper hoàn chỉnh cho bài báo của bạn.</p>
 
-                            {/* Paper Details Card */}
-                            <div className="bg-gray-700 rounded-lg p-4 mb-6">
-                                <h4 className="font-semibold mb-2">{paperDetails.title}</h4>
-                                <p className="text-sm text-gray-400 mb-1">Hội thảo: {paperDetails.conference}</p>
-                                <p className="text-sm text-gray-400">Deadline review: {paperDetails.reviewDeadline}</p>
-                                <div className="mt-3">
-                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-900 text-yellow-300">
-                                        {paperDetails.status}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Progress Steps */}
-                            <div className="space-y-4">
-                                {paperStatus.map((step, index) => (
-                                    <div key={step.id} className="flex items-center">
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-4 ${step.completed
-                                            ? 'bg-blue-600 text-white'
-                                            : index === 3
-                                                ? 'bg-yellow-600 text-white'
-                                                : 'bg-gray-600 text-gray-400'
-                                            }`}>
-                                            {step.completed ? '✓' : index + 1}
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="flex justify-between items-center">
-                                                <span className={`font-medium ${step.completed ? 'text-white' : 'text-gray-400'}`}>
-                                                    {step.step}
-                                                </span>
-                                                <span className="text-sm text-gray-400">{step.date}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* Progress Bar */}
-                            <div className="mt-6">
-                                <div className="w-full bg-gray-700 rounded-full h-2">
-                                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: '50%' }}></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Recommended Support */}
-                        <div className="mt-8 bg-gray-800 rounded-xl p-6 border border-gray-700">
-                            <h3 className="text-lg font-bold mb-4">Hỗ trợ được đề xuất</h3>
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
-                                    <div>
-                                        <h4 className="font-medium">Hướng dẫn định dạng bài báo</h4>
-                                        <p className="text-sm text-gray-400">Tài liệu</p>
-                                    </div>
-                                    <button className="text-blue-400 hover:text-blue-300 text-sm font-medium">
-                                        Xem
-                                    </button>
-                                </div>
-                                <div className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
-                                    <div>
-                                        <h4 className="font-medium">Template bài báo khoa học</h4>
-                                        <p className="text-sm text-gray-400">Mẫu</p>
-                                    </div>
-                                    <button className="text-blue-400 hover:text-blue-300 text-sm font-medium">
-                                        Tải về
-                                    </button>
-                                </div>
-                                <div className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
-                                    <div>
-                                        <h4 className="font-medium">Hỗ trợ kỹ thuật</h4>
-                                        <p className="text-sm text-gray-400">Liên hệ</p>
-                                    </div>
-                                    <button className="text-blue-400 hover:text-blue-300 text-sm font-medium">
-                                        Chat
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Actions Panel */}
-                    <div className="lg:col-span-1">
-                        <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
-                            <h3 className="text-lg font-bold mb-4">Hành động</h3>
-                            <p className="text-sm text-gray-400 mb-6">
-                                Danh sách các hành động cần thực hiện
-                            </p>
-
-                            <div className="space-y-4">
-                                {actions.map((action, index) => (
-                                    <div key={index} className="border-b border-gray-700 pb-4 last:border-b-0">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <div className={`w-3 h-3 rounded-full mr-3 ${action.status === 'completed'
-                                                ? 'bg-green-500'
-                                                : action.status === 'in-progress'
-                                                    ? 'bg-yellow-500'
-                                                    : 'bg-gray-500'
-                                                }`}></div>
-                                            <span className="text-sm flex-1">{action.name}</span>
-                                        </div>
-                                        <div className="ml-6">
-                                            <div className="flex justify-between text-xs text-gray-400 mb-1">
-                                                <span>{action.status === 'completed' ? 'Hoàn thành' : action.status === 'in-progress' ? 'Đang thực hiện' : 'Chờ thực hiện'}</span>
-                                                <span>{action.progress}</span>
-                                            </div>
-                                            <div className="w-full bg-gray-700 rounded-full h-1">
-                                                <div
-                                                    className={`h-1 rounded-full ${action.status === 'completed' ? 'bg-green-500' : 'bg-yellow-500'
-                                                        }`}
-                                                    style={{ width: action.progress }}
-                                                ></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <button className="w-full mt-6 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
-                                Bỏ qua
-                            </button>
-                        </div>
-                    </div>
+            {/* Show current full paper if exists */}
+            {fullPaper && (
+                <div className="bg-green-900/20 border border-green-700 rounded-xl p-5">
+                    <h4 className="font-semibold text-green-400 mb-2">Full Paper đã nộp</h4>
+                    <p className="text-green-300 text-sm">
+                        Full Paper ID: {fullPaper.fullPaperId}
+                    </p>
+                    {fullPaper.fileUrl && (
+                        <a
+                            href={fullPaper.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400 hover:text-blue-300 text-sm underline mt-2 inline-block"
+                        >
+                            Xem file full paper →
+                        </a>
+                    )}
                 </div>
+            )}
+
+            {isSubmitted && (
+                <p className="text-sm text-yellow-400 mt-2">
+                    Bạn đã nộp full paper, không thể nộp lại.
+                </p>
+            )}
+
+            <div className="bg-gray-800 border border-gray-700 rounded-xl p-5">
+                <label className="block text-sm font-medium mb-2">Tải lên tệp full paper (.pdf)</label>
+                <input
+                    type="file"
+                    accept="application/pdf"
+                    onChange={handleFileChange}
+                    disabled={isSubmitted}
+                    className="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 
+                        file:rounded-lg file:border-0 file:text-sm file:font-semibold
+                        file:bg-blue-600 file:text-white hover:file:bg-blue-700
+                        disabled:opacity-50 disabled:cursor-not-allowed"
+                />
+                {selectedFile && (
+                    <p className="text-green-400 text-sm mt-2">
+                        Đã chọn: {selectedFile.name}
+                    </p>
+                )}
             </div>
+
+            {/* Submit Button */}
+            <div className="flex justify-end">
+                <button
+                    onClick={handleSubmitFullPaperForm}
+                    disabled={isSubmitted || !selectedFile || !paperId || submitLoading}
+                    className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition"
+                >
+                    {isSubmitted ? "Đã nộp Full Paper" : submitLoading ? "Đang nộp..." : "Nộp Full Paper"}
+                </button>
+            </div>
+
+            {/* Error Messages */}
+            {submitFullPaperError && (
+                <div className="bg-red-900/20 border border-red-700 rounded-xl p-4">
+                    <p className="text-red-400 text-sm">
+                        Lỗi: {typeof submitFullPaperError === 'string' ? submitFullPaperError : 'Có lỗi xảy ra khi nộp full paper'}
+                    </p>
+                </div>
+            )}
         </div>
     );
 };
