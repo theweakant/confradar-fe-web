@@ -1,175 +1,160 @@
-const AbstractPhase: React.FC = () => {
-    const paperStatus = [
-        { id: 1, step: 'Nộp bài báo', completed: true, date: '15/01/2025' },
-        { id: 2, step: 'Xác nhận tiếp nhận', completed: true, date: '17/01/2025' },
-        { id: 3, step: 'Phân công reviewer', completed: true, date: '20/01/2025' },
-        { id: 4, step: 'Đánh giá bài báo', completed: false, date: 'Đang tiến hành' },
-        { id: 5, step: 'Kết quả review', completed: false, date: 'Chờ xử lý' },
-        { id: 6, step: 'Camera-ready', completed: false, date: 'Chờ xử lý' },
-    ];
+import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+import { Search } from "lucide-react";
+import React, { useState } from "react";
+import Image from "next/image";
+import { AvailableCustomerResponse } from "@/types/paper.type";
 
-    const paperDetails = {
-        title: 'Nghiên cứu về Machine Learning trong xử lý ngôn ngữ tự nhiên',
-        conference: 'Hội thảo Khoa học Máy tính Việt Nam 2025',
-        submittedDate: '15/01/2025',
-        reviewDeadline: '28/02/2025',
-        status: 'Đang được đánh giá'
+const AbstractPhase: React.FC = () => {
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [selectedCoauthors, setSelectedCoauthors] = useState<AvailableCustomerResponse[]>([]);
+    const [availableCustomers, setAvailableCustomers] = useState<AvailableCustomerResponse[]>([
+        { userId: "u1", fullName: "Nguyễn Văn A", email: "a@gmail.com" },
+        { userId: "u2", fullName: "Trần Thị B", email: "b@gmail.com" },
+        { userId: "u3", fullName: "Phạm Minh C", email: "c@gmail.com" },
+    ]);
+
+    const handleSelectCoauthor = (user: AvailableCustomerResponse) => {
+        if (!selectedCoauthors.some((c) => c.userId === user.userId)) {
+            setSelectedCoauthors((prev) => [...prev, user]);
+        }
+        setIsDialogOpen(false);
     };
 
-    const actions = [
-        { name: 'Xem chi tiết bài báo', progress: '100%', status: 'completed' },
-        { name: 'Theo dõi phản hồi reviewer', progress: '60%', status: 'in-progress' },
-        { name: 'Cập nhật thông tin tác giả', progress: '100%', status: 'completed' },
-        { name: 'Chuẩn bị bản camera-ready', progress: '0%', status: 'pending' },
-        { name: 'Đăng ký trình bày', progress: '0%', status: 'pending' },
-    ];
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            console.log("File uploaded:", file.name);
+        }
+    };
+
+    const filteredCustomers = availableCustomers.filter((c) =>
+        c.fullName?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
-        <div>
-            <h3 className="text-lg font-semibold mb-4">Giai đoạn Abstract</h3>
-            <p className="text-gray-400 mb-4">
-                Đây là nội dung chi tiết của giai đoạn **Abstract**. (Hiện tại đang dùng nội dung mặc định từ phần detail).
-            </p>
-            {/* Copy nội dung phần detail hiện tại vào đây nếu cần hiển thị tạm */}
-            <div className="bg-gray-700 p-4 rounded-lg">
-                <p>Chi tiết bài báo, tiến độ, reviewer, v.v...</p>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Progress Section */}
-                    <div className="lg:col-span-2">
-                        <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
-                            <div className="flex items-center mb-6">
-                                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
-                                    3/6
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-bold">Tiến độ bài báo</h3>
-                                    <p className="text-gray-400">Giai đoạn trước và sau chuyển đổi</p>
-                                </div>
-                            </div>
+        <div className="space-y-6">
+            <h3 className="text-lg font-semibold">Giai đoạn Abstract</h3>
+            <p className="text-gray-400">Nộp abstract và chọn đồng tác giả cho bài báo của bạn.</p>
 
-                            {/* Paper Details Card */}
-                            <div className="bg-gray-700 rounded-lg p-4 mb-6">
-                                <h4 className="font-semibold mb-2">{paperDetails.title}</h4>
-                                <p className="text-sm text-gray-400 mb-1">Hội thảo: {paperDetails.conference}</p>
-                                <p className="text-sm text-gray-400">Deadline review: {paperDetails.reviewDeadline}</p>
-                                <div className="mt-3">
-                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-900 text-yellow-300">
-                                        {paperDetails.status}
-                                    </span>
-                                </div>
-                            </div>
+            <div className="bg-gray-800 border border-gray-700 rounded-xl p-5">
+                <label className="block text-sm font-medium mb-2">Tải lên tệp abstract (.pdf)</label>
+                <input
+                    type="file"
+                    accept="application/pdf"
+                    onChange={handleFileChange}
+                    className="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 
+          file:rounded-lg file:border-0 file:text-sm file:font-semibold
+          file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                />
+            </div>
 
-                            {/* Progress Steps */}
-                            <div className="space-y-4">
-                                {paperStatus.map((step, index) => (
-                                    <div key={step.id} className="flex items-center">
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-4 ${step.completed
-                                            ? 'bg-blue-600 text-white'
-                                            : index === 3
-                                                ? 'bg-yellow-600 text-white'
-                                                : 'bg-gray-600 text-gray-400'
-                                            }`}>
-                                            {step.completed ? '✓' : index + 1}
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="flex justify-between items-center">
-                                                <span className={`font-medium ${step.completed ? 'text-white' : 'text-gray-400'}`}>
-                                                    {step.step}
-                                                </span>
-                                                <span className="text-sm text-gray-400">{step.date}</span>
-                                            </div>
-                                        </div>
+            <div className="bg-gray-800 border border-gray-700 rounded-xl p-5">
+                <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold">Đồng tác giả ({selectedCoauthors.length})</h4>
+                    <button
+                        onClick={() => setIsDialogOpen(true)}
+                        className="px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition"
+                    >
+                        + Thêm đồng tác giả
+                    </button>
+                </div>
+
+                {selectedCoauthors.length > 0 ? (
+                    <ul className="space-y-2">
+                        {selectedCoauthors.map((c) => (
+                            <li key={c.userId} className="flex items-center justify-between bg-gray-700 p-3 rounded-lg">
+                                <div className="flex items-center gap-3">
+                                    <Image
+                                        src={c.avatarUrl || "/default-avatar.png"}
+                                        alt={c.fullName || "User"}
+                                        width={32}
+                                        height={32}
+                                        className="rounded-full"
+                                    />
+                                    <div>
+                                        <p className="font-medium">{c.fullName}</p>
+                                        <p className="text-xs text-gray-400">{c.email}</p>
                                     </div>
-                                ))}
-                            </div>
-
-                            {/* Progress Bar */}
-                            <div className="mt-6">
-                                <div className="w-full bg-gray-700 rounded-full h-2">
-                                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: '50%' }}></div>
                                 </div>
-                            </div>
+                                <button
+                                    onClick={() =>
+                                        setSelectedCoauthors((prev) => prev.filter((x) => x.userId !== c.userId))
+                                    }
+                                    className="text-red-400 hover:text-red-500 text-sm"
+                                >
+                                    Xóa
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="text-gray-400 text-sm">Chưa có đồng tác giả nào được thêm.</p>
+                )}
+            </div>
+
+            <Dialog open={isDialogOpen} as="div" className="relative z-50" onClose={setIsDialogOpen}>
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" aria-hidden="true" />
+                <div className="fixed inset-0 flex items-center justify-center p-4">
+                    <DialogPanel
+                        transition
+                        className="w-full max-w-md rounded-2xl bg-white/10 backdrop-blur-2xl p-6 text-white duration-300 ease-out data-[closed]:opacity-0 data-[closed]:scale-95"
+                    >
+                        <DialogTitle as="h3" className="text-lg font-semibold mb-4">
+                            Chọn đồng tác giả
+                        </DialogTitle>
+
+                        {/* Search bar */}
+                        <div className="relative mb-4">
+                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Tìm kiếm theo tên..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full bg-gray-700 text-sm rounded-lg pl-9 pr-3 py-2 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
                         </div>
 
-                        {/* Recommended Support */}
-                        <div className="mt-8 bg-gray-800 rounded-xl p-6 border border-gray-700">
-                            <h3 className="text-lg font-bold mb-4">Hỗ trợ được đề xuất</h3>
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
-                                    <div>
-                                        <h4 className="font-medium">Hướng dẫn định dạng bài báo</h4>
-                                        <p className="text-sm text-gray-400">Tài liệu</p>
-                                    </div>
-                                    <button className="text-blue-400 hover:text-blue-300 text-sm font-medium">
-                                        Xem
+                        {/* List available customers */}
+                        <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-1">
+                            {filteredCustomers.length > 0 ? (
+                                filteredCustomers.map((user) => (
+                                    <button
+                                        key={user.userId}
+                                        onClick={() => handleSelectCoauthor(user)}
+                                        className="flex items-center gap-3 w-full text-left bg-white/10 hover:bg-white/20 rounded-lg p-3 transition"
+                                    >
+                                        <Image
+                                            src={user.avatarUrl || "/default-avatar.png"}
+                                            alt={user.fullName || ""}
+                                            width={32}
+                                            height={32}
+                                            className="rounded-full"
+                                        />
+                                        <div>
+                                            <p className="font-medium">{user.fullName}</p>
+                                            <p className="text-xs text-gray-400">{user.email}</p>
+                                        </div>
                                     </button>
-                                </div>
-                                <div className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
-                                    <div>
-                                        <h4 className="font-medium">Template bài báo khoa học</h4>
-                                        <p className="text-sm text-gray-400">Mẫu</p>
-                                    </div>
-                                    <button className="text-blue-400 hover:text-blue-300 text-sm font-medium">
-                                        Tải về
-                                    </button>
-                                </div>
-                                <div className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
-                                    <div>
-                                        <h4 className="font-medium">Hỗ trợ kỹ thuật</h4>
-                                        <p className="text-sm text-gray-400">Liên hệ</p>
-                                    </div>
-                                    <button className="text-blue-400 hover:text-blue-300 text-sm font-medium">
-                                        Chat
-                                    </button>
-                                </div>
-                            </div>
+                                ))
+                            ) : (
+                                <p className="text-gray-400 text-sm text-center py-3">Không tìm thấy kết quả.</p>
+                            )}
                         </div>
-                    </div>
 
-                    {/* Actions Panel */}
-                    <div className="lg:col-span-1">
-                        <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
-                            <h3 className="text-lg font-bold mb-4">Hành động</h3>
-                            <p className="text-sm text-gray-400 mb-6">
-                                Danh sách các hành động cần thực hiện
-                            </p>
-
-                            <div className="space-y-4">
-                                {actions.map((action, index) => (
-                                    <div key={index} className="border-b border-gray-700 pb-4 last:border-b-0">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <div className={`w-3 h-3 rounded-full mr-3 ${action.status === 'completed'
-                                                ? 'bg-green-500'
-                                                : action.status === 'in-progress'
-                                                    ? 'bg-yellow-500'
-                                                    : 'bg-gray-500'
-                                                }`}></div>
-                                            <span className="text-sm flex-1">{action.name}</span>
-                                        </div>
-                                        <div className="ml-6">
-                                            <div className="flex justify-between text-xs text-gray-400 mb-1">
-                                                <span>{action.status === 'completed' ? 'Hoàn thành' : action.status === 'in-progress' ? 'Đang thực hiện' : 'Chờ thực hiện'}</span>
-                                                <span>{action.progress}</span>
-                                            </div>
-                                            <div className="w-full bg-gray-700 rounded-full h-1">
-                                                <div
-                                                    className={`h-1 rounded-full ${action.status === 'completed' ? 'bg-green-500' : 'bg-yellow-500'
-                                                        }`}
-                                                    style={{ width: action.progress }}
-                                                ></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <button className="w-full mt-6 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
-                                Bỏ qua
+                        {/* Buttons */}
+                        <div className="mt-5 flex justify-end">
+                            <button
+                                onClick={() => setIsDialogOpen(false)}
+                                className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-500 transition"
+                            >
+                                Đóng
                             </button>
                         </div>
-                    </div>
+                    </DialogPanel>
                 </div>
-            </div>
+            </Dialog>
         </div>
     );
 };

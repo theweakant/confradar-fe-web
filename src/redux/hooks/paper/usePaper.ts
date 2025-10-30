@@ -13,6 +13,7 @@ import {
 import { parseApiError } from "@/redux/utils/api";
 import type { ApiResponse } from "@/types/api.type";
 import type { AvailableCustomerResponse, CreateAbstractRequest, CreateCameraReadyRequest, CreateFullPaperRequest, CreateRevisionPaperSubmissionRequest, CreateRevisionPaperSubmissionResponse, PaperCustomer, PaperDetailResponse, PaperPhase } from "@/types/paper.type";
+import { useCallback } from "react";
 
 export const usePaperCustomer = () => {
     const {
@@ -78,7 +79,7 @@ export const usePaperCustomer = () => {
     const submitRevisionResponseError = parseApiError<string>(submitRevisionResponseRawError);
     const submitCameraReadyError = parseApiError<string>(submitCameraReadyRawError);
 
-    const fetchPaperDetail = async (
+    const fetchPaperDetail = useCallback(async (
         paperId: string
     ): Promise<ApiResponse<PaperDetailResponse>> => {
         try {
@@ -87,7 +88,18 @@ export const usePaperCustomer = () => {
         } catch (error) {
             throw error;
         }
-    };
+    }, [getPaperDetailCustomer]);
+
+    // const fetchPaperDetail = async (
+    //     paperId: string
+    // ): Promise<ApiResponse<PaperDetailResponse>> => {
+    //     try {
+    //         const result = await getPaperDetailCustomer(paperId).unwrap();
+    //         return result;
+    //     } catch (error) {
+    //         throw error;
+    //     }
+    // };
 
     const fetchAvailableCustomers = async (): Promise<ApiResponse<AvailableCustomerResponse[]>> => {
         try {

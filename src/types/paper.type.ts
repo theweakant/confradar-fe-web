@@ -138,6 +138,18 @@ export interface RevisionPaper {
   globalStatusId?: string | null;
 }
 
+export interface RevisionSubmission {
+  revisionPaperId: string;
+  revisionRound?: number | null;
+  globalStatusId?: string | null;
+}
+
+export interface RevisionSubmissionFeedback {
+  revisionPaperId: string;
+  revisionRound?: number | null;
+  globalStatusId?: string | null;
+}
+
 export interface CameraReady {
   cameraReadyId: string;
   globalStatusId?: string | null;
