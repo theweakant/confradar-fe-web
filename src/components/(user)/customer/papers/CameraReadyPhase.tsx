@@ -39,6 +39,8 @@ const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({ paperId, cameraRead
 
             alert("Nộp camera-ready thành công!");
             setSelectedFile(null);
+            // Reload page to refresh data
+            window.location.reload();
         } catch (error: any) {
             let errorMessage = "Có lỗi xảy ra khi nộp camera-ready";
 

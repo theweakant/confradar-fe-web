@@ -39,6 +39,8 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper }) =
 
             alert("Nộp full paper thành công!");
             setSelectedFile(null);
+            // Reload page to refresh data
+            window.location.reload();
         } catch (error: any) {
             let errorMessage = "Có lỗi xảy ra khi nộp full paper";
 

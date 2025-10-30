@@ -169,7 +169,11 @@ export interface RevisionSubmissionFeedback {
 
 
 export interface RevisionReview {
-  // Nếu backend có thêm gì cho reviews, bổ sung ở đây
+  reviewId: string;
+  note?: string;
+  feedBackToAuthor?: string;
+  feedbackMaterialURL?: string;
+  reviewedAt?: string;
 }
 
 export interface CameraReady {
