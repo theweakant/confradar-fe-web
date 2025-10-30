@@ -33,6 +33,17 @@ export interface UsersListResponse {
   users: UserProfileResponse[]
 }
 
+export interface ReviewerListResponse {
+  userId: string;
+  email: string;
+  phoneNumber: string | null;
+  fullName: string;
+  avatarUrl: string | null;
+}
+
+//+++++
+
+
 export type UserFormData = Omit<UserProfileResponse, "userId" | "createdAt"  >;
 
 export interface UserFormProps {

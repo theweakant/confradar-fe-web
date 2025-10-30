@@ -2,6 +2,7 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import { apiClient } from "../api/apiClient";
 import { endpoint } from "../api/endpoint";
 import type { Category, CategoryFormData } from "@/types/category.type";
+import { ConferenceRanking } from "@/types/conference.type";
 import type { ApiResponse } from "@/types/api.type";
 
 export const categoryApi = createApi({
@@ -54,6 +55,15 @@ export const categoryApi = createApi({
       }),
       invalidatesTags: ["Category"],
     }),
+
+
+    getAllRankingCategories: builder.query<ApiResponse<ConferenceRanking[]>, void>({
+      query: () => ({
+        url: endpoint.RANKING_CONFERENCE.LIST,
+        method: "GET",
+      }),
+      providesTags: ["Category"],
+    }),    
   }),
 });
 
@@ -63,4 +73,6 @@ export const {
   useCreateCategoryMutation,
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
+
+  useGetAllRankingCategoriesQuery
 } = categoryApi;

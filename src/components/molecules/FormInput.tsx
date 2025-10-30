@@ -1,6 +1,6 @@
 interface FormInputProps {
   label: string;
-  name: string;
+  name?: string;
   value: string | number | undefined;
   onChange: (value: string) => void;
   type?: "text" | "email" | "password" | "date" | "number" | "url" | "tel" | "datetime-local";

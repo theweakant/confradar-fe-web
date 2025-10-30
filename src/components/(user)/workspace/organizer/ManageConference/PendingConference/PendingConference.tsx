@@ -135,7 +135,6 @@ export default function PendingConference() {
                         {conference.description}
                       </p>
                     </div>
-                    {/* optional banner */}
                     {conference.bannerImageUrl && (
                       <img
                         src={conference.bannerImageUrl}

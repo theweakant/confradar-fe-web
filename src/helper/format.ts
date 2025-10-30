@@ -13,6 +13,7 @@ export function formatCurrency(amount: number | undefined): string {
 }
 
 export const truncateContent = (content: string, maxLength: number = 40): string => {
+  if (!content) return "N/A"; 
   if (content.length <= maxLength) return content 
 
   const words = content.split(' ')

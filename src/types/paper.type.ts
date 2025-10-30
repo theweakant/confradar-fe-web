@@ -1,45 +1,44 @@
+//paper.type.ts
+
 export interface Paper {
-  id: string;
-  title: string;
-  authors: string[];
-  authorEmails: string[];
-  abstract: string;
-  keywords: string[];
-  
-  // Conference & Track
-  conferenceId: string;
-  conferenceName: string;
-  trackId: string;
-  trackName: string;
-  
-  // Status & Review
-  status: "submitted" | "under_review" | "revision_required" | "accepted" | "rejected" | "withdrawn";
-  submissionDate: string;
-  lastModifiedDate: string;
-  
-  // Review information
-  reviewers: string[]; // Array of reviewer IDs
-  reviewCount: number;
-  averageScore: number; // 0-10 scale
-  
-  // Paper details
-  paperType: "full_paper" | "short_paper" | "poster" | "workshop";
-  fileUrl?: string;
-  fileSize?: string; // e.g., "2.5 MB"
-  pageCount?: number;
-  
-  // Additional metadata
-  submittedBy: string; // User ID
-  submitterName: string;
-  submitterEmail: string;
-  version: number;
-  isPresenterRegistered: boolean;
-  
-  // Decision
-  finalDecision?: "accept" | "reject" | "conditional_accept";
-  decisionDate?: string;
-  decisionNotes?: string;
+paperId:string;
 }
+
+
+export interface ListPaper {
+  paperId: string;
+  currentPhase: {
+    paperPhaseId: string;
+    phaseName: string;
+  };
+  abstract: {
+    abstractId: string;
+    globalStatusId: string;
+    globalStatusName: string | null;
+    abstractUrl: string;
+  } | null;
+  fullPaper: any | null;
+  revisionPaper: any | null;
+  cameraReady: any | null;
+}
+
+export interface PendingAbstract {
+  abstractId: string
+  abstractUrl: string
+  paperId: string
+  presenterId: string
+  presenterName: string
+  avatarUrl: string
+  conferenceId: string
+  conferenceName: string
+  globalStatusId: string
+  globalStatusName: string
+  createdAt: string
+}
+
+
+//------------------------------------------
+
 
 export interface AssignReviewerData {
   paperId: string | number;

@@ -1,109 +1,136 @@
 "use client";
 
-import { useState } from "react";
-import {  FileText, Calendar, User, Tag } from "lucide-react";
-import Link from "next/link";
+import { FileText, Calendar, User, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useListPendingAbstractsQuery, useDecideAbstractStatusMutation } from "@/redux/services/paper.service";
+import { toast } from "sonner";
 
-export default function AssignedPaperList() {
-  const [assignedPapers] = useState([
-    {
-      id: "1",
-      title: "Deep Learning Approaches for Natural Language Processing",
-      authors: ["John Smith", "Jane Doe"],
-      conference: "International Conference on AI 2024",
-      track: "Machine Learning",
-      submittedDate: "2024-03-15",
-      deadline: "2024-04-30",
-      status: "pending"
-    },
-    {
-      id: "2",
-      title: "Quantum Computing Applications in Cryptography",
-      authors: ["Alice Johnson", "Bob Wilson"],
-      conference: "Quantum Computing Conference 2024",
-      track: "Security",
-      submittedDate: "2024-03-20",
-      deadline: "2024-05-15",
-      status: "pending"
-    },
-    {
-      id: "3",
-      title: "Blockchain Technology for Supply Chain Management",
-      authors: ["Charlie Brown", "David Lee"],
-      conference: "FinTech & AI Conference 2024",
-      track: "Blockchain",
-      submittedDate: "2024-03-10",
-      deadline: "2024-04-20",
-      status: "pending"
+export default function PendingAbstractPaperList() {
+  const { data: response, isLoading, isError } = useListPendingAbstractsQuery();
+  const [decideAbstractStatus, { isLoading: isDeciding }] = useDecideAbstractStatusMutation();
+  
+  const pendingAbstracts = response?.data || [];
+
+  const handleAccept = async (paperId: string, abstractId: string) => {
+    try {
+      const result = await decideAbstractStatus({
+        paperId,
+        abstractId,
+        globalStatus: "Accepted"
+      }).unwrap();
+      
+      toast.success("Đã chấp nhận bài báo thành công!");
+    } catch (error) {
+      toast.error("Có lỗi xảy ra khi chấp nhận bài báo");
+      console.error("Error accepting abstract:", error);
     }
-  ]);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">
+              Danh sách bài báo đang chờ
+            </h1>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+            <p className="text-gray-600">Đang tải...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">
+              Danh sách bài báo đang chờ
+            </h1>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+            <p className="text-red-600">Có lỗi xảy ra khi tải dữ liệu</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          
           <h1 className="text-3xl font-bold text-gray-900">
-            Danh sách bài báo được phân công
+            Danh sách abstract chờ duyệt
           </h1>
         </div>
 
         <div className="grid gap-6">
-          {assignedPapers.map((paper) => (
+          {pendingAbstracts.map((abstract) => (
             <div
-              key={paper.id}
+              key={abstract.abstractId}
               className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                    {paper.title}
+                    abstractId: {abstract.abstractId.substring(0, 8)}...
                   </h3>
                   
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div className="flex items-center text-sm text-gray-600">
                       <User className="w-4 h-4 mr-2" />
-                      <span>Tác giả: {paper.authors.join(", ")}</span>
+                      <span>Diễn giả: {abstract.presenterName}</span>
                     </div>
                     
                     <div className="flex items-center text-sm text-gray-600">
                       <FileText className="w-4 h-4 mr-2" />
-                      <span>{paper.conference}</span>
+                      <span>{abstract.conferenceName}</span>
                     </div>
                     
                     <div className="flex items-center text-sm text-gray-600">
                       <Tag className="w-4 h-4 mr-2" />
-                      <span>Track: {paper.track}</span>
+                      <span>Trạng thái: {abstract.globalStatusName}</span>
                     </div>
                     
                     <div className="flex items-center text-sm text-gray-600">
                       <Calendar className="w-4 h-4 mr-2" />
-                      <span>Hạn: {paper.deadline}</span>
+                      <span>Ngày nộp: {new Date(abstract.createdAt).toLocaleDateString('vi-VN')}</span>
                     </div>
                   </div>
                   
                   <div className="flex items-center gap-2">
                     <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
-                      Chờ đánh giá
+                      {abstract.globalStatusName}
                     </span>
-                    <span className="text-xs text-gray-500">
-                      Nộp ngày: {paper.submittedDate}
-                    </span>
+                    <a 
+                      href={abstract.abstractUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-600 hover:underline"
+                    >
+                      Xem file
+                    </a>
                   </div>
                 </div>
                 
-                <Link href="/workspace/reviewer/manage-paper/assigned-papper-list/review-paper">
-                  <Button className="ml-4">
-                    Bắt đầu đánh giá
-                  </Button>
-                </Link>
+                <Button 
+                  className="ml-4"
+                  onClick={() => handleAccept(abstract.paperId, abstract.abstractId)}
+                  disabled={isDeciding}
+                >
+                  {isDeciding ? "Đang xử lý..." : "Chấp nhận"}
+                </Button>
               </div>
             </div>
           ))}
         </div>
 
-        {assignedPapers.length === 0 && (
+        {pendingAbstracts.length === 0 && (
           <div className="bg-white rounded-xl shadow-sm p-12 text-center">
             <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">

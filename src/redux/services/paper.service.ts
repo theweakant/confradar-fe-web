@@ -1,6 +1,7 @@
   import { createApi } from "@reduxjs/toolkit/query/react";
   import { apiClient } from "../api/apiClient";
   import { endpoint } from "../api/endpoint";
+  import {PendingAbstract,ListPaper}from "@/types/paper.type"
   import type { ApiResponse } from "@/types/api.type";
 
   export const paperApi = createApi({
@@ -8,6 +9,24 @@
     baseQuery: apiClient,
     tagTypes: ["Paper"],
     endpoints: (builder) => ({
+
+      listPendingAbstracts: builder.query<ApiResponse<PendingAbstract[]>, void>({
+        query: () => ({
+          url: endpoint.PAPER.LIST_PENDING_ABSTRACT,
+          method: "GET",
+        }),
+        providesTags: ["Paper"],
+      }),
+
+      listAllPapers: builder.query<ApiResponse<ListPaper[]>, void>({
+        query: () => ({
+          url: endpoint.PAPER.LIST_ALL_PAPERS,
+          method: "GET",
+        }),
+        providesTags: ["Paper"],
+      }),
+
+
       decideAbstractStatus: builder.mutation<
         ApiResponse<any>,
         { paperId: string; abstractId: string; globalStatus: string }
@@ -37,6 +56,8 @@
   });
 
   export const {
+    useListAllPapersQuery,
+    useListPendingAbstractsQuery,
     useDecideAbstractStatusMutation,
     useAssignPaperToReviewerMutation,
   } = paperApi;

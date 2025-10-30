@@ -32,6 +32,7 @@ import {
   setConferenceId,
   setMode,
   resetWizard,
+  setMaxStep
 } from "@/redux/slices/conferenceStep.slice";
 import type {
   ConferenceBasicForm,
@@ -71,7 +72,7 @@ export function ConferenceStepForm({
   onCancel,
 }: ConferenceStepFormProps) {
   const dispatch = useAppDispatch();
-  const { currentStep, conferenceId: reduxConferenceId, mode: reduxMode } = useAppSelector(
+  const { currentStep, conferenceId: reduxConferenceId, mode: reduxMode, maxStep } = useAppSelector(
     (state) => state.conferenceStep
   );
 
@@ -208,6 +209,7 @@ export function ConferenceStepForm({
 
   // Load data in edit mode
   useEffect(() => {
+    dispatch(setMaxStep(6));
     if (isEditMode && conference) {
       dispatch(setMode('edit'));
       dispatch(setConferenceId(conference.conferenceId));
@@ -288,7 +290,7 @@ export function ConferenceStepForm({
     // Step 4: Policies - INCLUDE policyId
     if (conf.policies && conf.policies.length > 0) {
       const transformedPolicies: Policy[] = conf.policies.map((p) => ({
-        policyId: p.policyId, // ⬅️ ADDED
+        policyId: p.policyId, 
         policyName: p.policyName ?? "",
         description: p.description ?? "",
       }));
@@ -307,7 +309,7 @@ export function ConferenceStepForm({
     // Step 6: Sponsors - INCLUDE sponsorId
     if (conf.sponsors && conf.sponsors.length > 0) {
       const transformedSponsors: Sponsor[] = conf.sponsors.map((s) => ({
-        sponsorId: s.sponsorId, // ⬅️ ADDED
+        sponsorId: s.sponsorId, 
         name: s.name ?? "",
         imageFile: s.imageUrl ?? "",
       }));
@@ -334,6 +336,18 @@ export function ConferenceStepForm({
           return false;
         }
         return true;
+
+      case 2: 
+        if (tickets.length === 0) {
+          toast.error("Vui lòng thêm ít nhất 1 loại vé!");
+          return false;
+        }
+        if (phases.length === 0) {
+          toast.warning("Chưa có giai đoạn giá nào. Bạn có thể thêm sau.");
+        }
+        return true;
+
+
       default:
         return true;
     }
@@ -358,24 +372,56 @@ export function ConferenceStepForm({
     }
   };
 
-  const handlePriceSubmitCreate = async () => {
-    if (!conferenceId) return;
-    try {
-      setStepLoadings({ ...stepLoadings, prices: true });
+  // const handlePriceSubmitCreate = async () => {
+  //   if (!conferenceId) return;
+  //   try {
+  //     setStepLoadings({ ...stepLoadings, prices: true });
+  //     const data: ConferencePriceData = { 
+  //       tickets,  
+  //       phases   
+  //     };
+  //     await createPrice({ conferenceId, data }).unwrap();
+  //     toast.success("Tạo giá vé thành công!");
+  //     dispatch(nextStep());
+  //   } catch (error) {
+  //     console.error("Failed to create price:", error);
+  //     toast.error("Tạo giá vé thất bại!");
+  //   } finally {
+  //     setStepLoadings({ ...stepLoadings, prices: false });
+  //   }
+  // };
+
+
+const handlePriceSubmitCreate = async () => {
+  if (!conferenceId) return;
+  
+  if (tickets.length === 0) {
+    toast.error("Vui lòng thêm ít nhất 1 loại vé!");
+    return;
+  }
+
+  try {
+    setStepLoadings({ ...stepLoadings, prices: true });
+    
+    
+    const promises = tickets.map(ticket => {
       const data: ConferencePriceData = { 
-        tickets,  
+        typeOfTicket: ticket,  
         phases   
       };
-      await createPrice({ conferenceId, data }).unwrap();
-      toast.success("Tạo giá vé thành công!");
-      dispatch(nextStep());
-    } catch (error) {
-      console.error("Failed to create price:", error);
-      toast.error("Tạo giá vé thất bại!");
-    } finally {
-      setStepLoadings({ ...stepLoadings, prices: false });
-    }
-  };
+      return createPrice({ conferenceId, data }).unwrap();
+    });
+
+    await Promise.all(promises);
+    toast.success(`Tạo thành công ${tickets.length} loại vé!`);
+    dispatch(nextStep());
+  } catch (error) {
+    console.error("Failed to create price:", error);
+    toast.error("Tạo giá vé thất bại!");
+  } finally {
+    setStepLoadings({ ...stepLoadings, prices: false });
+  }
+};
 
   const handleSessionSubmitCreate = async () => {
     if (!conferenceId) return;
@@ -508,17 +554,17 @@ export function ConferenceStepForm({
             }).unwrap();
             priceUpdated++;
           } else {
-            // CREATE new ticket
-            await createPrice({
-              conferenceId,
-              data: { tickets: [ticket], phases: [] }, 
-            }).unwrap();
-            priceCreated++;
-          }
-        } catch (error) {
-          console.error("Ticket operation failed:", error);
-          priceFailed++;
+      const data: ConferencePriceData = {
+            typeOfTicket: ticket,
+            phases
+          };
+          await createPrice({ conferenceId, data }).unwrap();
+          priceCreated++;
         }
+      } catch (error) {
+        console.error("Ticket operation failed:", error);
+        priceFailed++;
+      }
       });
 
       await Promise.all(pricePromises);
@@ -783,7 +829,7 @@ export function ConferenceStepForm({
       // ========================================
       // FINAL SUCCESS
       // ========================================
-      toast.success("🎉 All changes saved successfully!");
+      toast.success("All changes saved successfully!");
 
       if (onSave && conference) {
         onSave(conference);
@@ -807,7 +853,7 @@ export function ConferenceStepForm({
     }
 
     if (isEditMode) {
-      if (currentStep === 6) {
+      if (currentStep === maxStep) {
         handleSaveAllChanges();
       } else {
         dispatch(nextStep());

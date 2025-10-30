@@ -19,10 +19,9 @@ interface ConferenceTableProps {
   conferences: ConferenceResponse[];
   onView: (conference: ConferenceResponse) => void;
   onEdit: (conference: ConferenceResponse) => void;
-  onDelete: (id: string) => void;
 }
 
-export function ConferenceTable({ conferences, onView, onEdit, onDelete }: ConferenceTableProps) {
+export function ConferenceTable({ conferences, onView, onEdit }: ConferenceTableProps) {
   const columns: Column<ConferenceResponse>[] = [
     {
       key: "conferenceName",
@@ -85,7 +84,7 @@ export function ConferenceTable({ conferences, onView, onEdit, onDelete }: Confe
                 className="cursor-pointer"
               >
                 <Eye className="w-4 h-4 mr-2 text-green-600" />
-                <span>Xem chi tiết</span>
+                <span>Xem</span>
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onEdit(conference)}
@@ -93,13 +92,6 @@ export function ConferenceTable({ conferences, onView, onEdit, onDelete }: Confe
               >
                 <Pencil className="w-4 h-4 mr-2 text-blue-600" />
                 <span>Chỉnh sửa</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => onDelete(conference.conferenceId)}
-                className="cursor-pointer text-red-600 focus:text-red-600"
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                <span>Xóa</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

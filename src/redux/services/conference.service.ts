@@ -206,8 +206,8 @@ export const {
   // useLazyGetConferenceByIdQuery,
   useLazyGetConferencesByStatusQuery,
   useViewRegisteredUsersForConferenceQuery,
+
   useLazyGetPendingConferencesQuery,
-  
   useApproveConferenceMutation,
 
   useCreateConferenceMutation,

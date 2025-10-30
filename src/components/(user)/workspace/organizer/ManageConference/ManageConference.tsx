@@ -22,8 +22,10 @@ import { SearchFilter } from "@/components/molecules/SearchFilter";
 
 import { ConferenceTable } from "@/components/(user)/workspace/organizer/ManageConference/ConferenceTable/index";
 import { ConferenceFormData, ConferenceResponse } from "@/types/conference.type";
+// import {ConferenceDetail} from "./ConferenceDetail/index"
 
 import { ConferenceStepForm } from "@/components/(user)/workspace/organizer/ManageConference/ConferenceForm/TechForm";
+import { ResearchConferenceStepForm } from "./ConferenceForm/ResearchForm/index";
 
 import {
   useGetAllConferencesPaginationQuery,
@@ -37,7 +39,6 @@ export default function ManageConference() {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(12);
 
-  // API Hooks with pagination
   const { data: conferencesData, isLoading, isError } = useGetAllConferencesPaginationQuery({
     page,
     pageSize,
@@ -75,10 +76,10 @@ export default function ManageConference() {
 
   const filteredConferences = conferences.filter((conf) => {
     const matchesSearch = conf.conferenceName
-      .toLowerCase()
+      ?.toLowerCase()
       .includes(searchQuery.toLowerCase());
 
-    const matchesCategory = filterCategory === "all" || conf.categoryId === filterCategory;
+    const matchesCategory = filterCategory === "all" || conf.conferenceCategoryId === filterCategory;
 
     return matchesSearch && matchesCategory;
   });
@@ -101,9 +102,9 @@ export default function ManageConference() {
     setSelectedConferenceType(null);
   };
 
-  const handleDelete = (id: string) => {
-    setDeleteConferenceId(id);
-  };
+const handleView = (conference: ConferenceResponse) => {
+  toast.info("Chức năng xem chi tiết đang được phát triển");
+};
 
   const confirmDelete = async () => {
     if (deleteConferenceId) {
@@ -210,7 +211,7 @@ export default function ManageConference() {
         <ConferenceTable
           conferences={filteredConferences}
           onEdit={handleEdit}
-          onDelete={handleDelete}
+          onView={handleView}
         />
 
         {/* Pagination Controls */}
@@ -293,24 +294,18 @@ export default function ManageConference() {
             </div>
           </div>
         ) : selectedConferenceType === false ? (
-          // Tech Conference Form
           <ConferenceStepForm
             conference={editingConference}
             onSave={handleSave}
             onCancel={handleCloseEditModal}
           />
         ) : selectedConferenceType === true ? (
-          // Research Conference Form - Not implemented yet
-          <div className="py-8 text-center">
-            <Microscope className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Research Conference Form</h3>
-            <p className="text-sm text-gray-600 mb-6">
-              Form cho hội thảo nghiên cứu đang được phát triển và chưa có API hỗ trợ.
-            </p>
-            <Button variant="outline" onClick={handleCloseEditModal}>
-              Quay lại
-            </Button>
-          </div>
+          // Research Conference Form
+          <ResearchConferenceStepForm
+            conference={editingConference}
+            onSave={handleSave}
+            onCancel={handleCloseEditModal}
+          />
         ) : null}
       </Modal>
 

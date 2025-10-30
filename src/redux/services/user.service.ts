@@ -2,7 +2,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react"
 import { apiClient } from "../api/apiClient"
 import { endpoint } from "../api/endpoint"
-import { UserProfileResponse,CollaboratorRequest, UsersListResponse } from "@/types/user.type"
+import { UserProfileResponse,CollaboratorRequest, UsersListResponse ,ReviewerListResponse} from "@/types/user.type"
 import { ApiResponse } from "@/types/api.type"
 
 export const userApi = createApi({
@@ -19,6 +19,13 @@ export const userApi = createApi({
     getUsersList: builder.query<ApiResponse<UsersListResponse>, void>({
       query: () => ({
         url: endpoint.AUTH.USERS_LIST,
+        method: "GET",
+      }),
+    }),
+
+    getReviewersList: builder.query<ApiResponse<ReviewerListResponse[]>, void>({
+      query: () => ({
+        url: endpoint.AUTH.REVIEWERS_LIST,
         method: "GET",
       }),
     }),
@@ -60,6 +67,7 @@ export const userApi = createApi({
 export const { 
   useGetProfileByIdQuery,
   useGetUsersListQuery,
+  useGetReviewersListQuery,
   useUpdateProfileMutation,
   useCreateCollaboratorMutation,
   

@@ -1,5 +1,6 @@
 // // src/types/conference.type.ts
 
+//NAM
 export interface Conference {
   conferenceId: string;
   conferenceName?: string;
@@ -19,6 +20,7 @@ export interface Conference {
   conferenceCategoryId?: string;
   conferenceStatusId?: string;
   policies?: Policy[];
+  refundPolicies?: RefundPolicy[];
   media?: Media[];
   sponsors?: Sponsor[];
 
@@ -30,6 +32,14 @@ export interface Conference {
   
   createdby?:string;
   targetAudienceTechnicalConference?:string;
+
+  researchDetail?: ResearchDetail;
+  researchPhase?: ResearchPhase;
+  researchRankingFiles?: ResearchRankingFile[];
+  researchRankingReferences?: ResearchRankingReference[];
+  researchMaterials?: ResearchMaterial[]; 
+
+
 }
 
 export interface PendingConference extends Conference {
@@ -40,6 +50,15 @@ export type ConferenceFormData = Omit<
   Conference,
   "conferenceId" | "createdAt" | "isActive" | "priceId" | "sessionId"
 >;
+
+//+++++++++++++++
+
+export interface ConferenceRanking {
+  rankId: string;
+  rankName: string;
+  description: string | null;
+}
+
 
 //+++++++++++++++
 
@@ -60,7 +79,7 @@ export interface ConferenceBasicForm {
   ticketSaleStart: string; //ISO
   ticketSaleEnd: string; //ISO
   createdby?: string;
-  targetAudienceTechnicalConference?: string;
+  targetAudienceTechnicalConference?: string; //for tech conf
 
 }
 
@@ -74,7 +93,6 @@ export interface Ticket {
   totalSlot: number;
 }
 
-
 export interface Phase {
   pricePhaseId?:string;
   phaseName: string;
@@ -85,7 +103,8 @@ export interface Phase {
 }
 
 export interface ConferencePriceData {
-  tickets: Ticket[];
+  // tickets: Ticket[];
+  typeOfTicket: Ticket
   phases: Phase[];
 }
 
@@ -113,12 +132,12 @@ export interface Speaker {
 export interface SessionMedia {
   sessionMediaId?: string
   mediaFile: string;
+  mediaUrl?: string;
 }
 
 export interface ConferenceSessionData {
   sessions: Session[];
 }
-
 
 //POLICY STEP
 export interface Policy {
@@ -129,6 +148,17 @@ export interface Policy {
 
 export interface ConferencePolicyData {
   policies: Policy[];
+}
+
+export interface RefundPolicy {
+  refundPolicyId?: string; 
+  percentRefund: number;
+  refundDeadline: string; 
+  refundOrder: number;
+}
+
+export interface ConferenceRefundPolicyData {
+  refundPolicies: RefundPolicy[];
 }
 
 //MEDIA STEP
@@ -153,6 +183,118 @@ export interface Sponsor {
 
 export interface ConferenceSponsorData {
   sponsors: Sponsor[];
+}
+
+export interface RegisteredUserInConference {
+  ticketId: string;
+  userId: string;
+  userName: string;
+  avatarUrl: string;
+  email: string;
+  registeredDate: string;
+  conferenceId: string;
+  conferenceName: string;
+}
+
+//not in use
+export interface ConferenceBasicResponse {
+  conferenceId: string;
+  conferenceName: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  capacity: number;
+  address: string;
+  bannerImageUrl: string;
+  createdAt: string;
+  isInternalHosted: boolean;
+  isResearchConference: boolean;
+  isActive: boolean;
+  userId: string;
+  locationId: string | null;
+  categoryId: string;
+}
+
+//+++++++++++++++
+//RESEARCH DETAIL STEP
+export interface ResearchDetail {
+  researchDetailId?: string; 
+  name: string;
+  paperFormat: string;
+  numberPaperAccept: number;
+  revisionAttemptAllowed: number;
+  rankingDescription: string;
+  allowListener: boolean;
+  rankValue: string;
+  rankYear: number;
+  reviewFee: number;
+  rankingCategoryId: string;
+}
+
+export interface ConferenceResearchDetailData {
+  researchDetail: ResearchDetail;
+}
+
+//RESEARCH PHASE STEP
+export interface RevisionRoundDeadline {
+  revisionRoundDeadlineId?: string; 
+  endDate: string; // ISO date
+  roundNumber: number;
+}
+
+export interface ResearchPhase {
+  researchPhaseId?: string; 
+  registrationStartDate: string; // ISO date
+  registrationEndDate: string;
+  fullPaperStartDate: string;
+  fullPaperEndDate: string;
+  reviewStartDate: string;
+  reviewEndDate: string;
+  reviseStartDate: string;
+  reviseEndDate: string;
+  cameraReadyStartDate: string;
+  cameraReadyEndDate: string;
+  isWaitlist: boolean;
+  isActive: boolean;
+  revisionRoundDeadlines: RevisionRoundDeadline[];
+}
+
+export interface ConferenceResearchPhaseData {
+  researchPhase: ResearchPhase;
+}
+
+//RESEARCH RANKING FILE STEP
+export interface ResearchRankingFile {
+  rankingFileId?: string; // Có thể có khi update
+  fileUrl?: string;
+  file?: File | null;
+}
+
+export interface ConferenceResearchRankingFileData {
+  rankingFiles: ResearchRankingFile[];
+}
+
+//RESEARCH RANKING REFERENCE STEP
+export interface ResearchRankingReference {
+  rankingReferenceId?: string;
+  referenceUrl: string;
+}
+
+export interface ConferenceResearchRankingReferenceData {
+  rankingReferences: ResearchRankingReference[];
+}
+
+//RESEARCH MATERIAL STEP
+export interface ResearchMaterial {
+  materialId?: string; 
+  fileName: string;
+  fileDescription?: string;
+  file?: File | null;
+  fileUrl?: string; 
+}
+
+export interface ConferenceResearchMaterialData {
+  materials: ResearchMaterial[];
 }
 
 //+++++++++++++++
@@ -191,41 +333,10 @@ export interface CategoryOption {
   label: string;
 }
 
-//-----------------------------------
-
-
-// Conference rankings
-export const CONFERENCE_RANKINGS: CategoryOption[] = [
-  { value: "ieee", label: "IEEE" },
-  { value: "acm", label: "ACM" },
-  { value: "springer", label: "Springer" },
-  { value: "elsevier", label: "Elsevier" },
-  { value: "scopus", label: "Scopus" },
-  { value: "other", label: "Khác" }
-];
-
-// Global status options
-export const GLOBAL_STATUS_OPTIONS: CategoryOption[] = [
-  { value: "draft", label: "Nháp" },
-  { value: "published", label: "Đã xuất bản" },
-  { value: "open", label: "Đang mở đăng ký" },
-  { value: "closed", label: "Đã đóng đăng ký" },
-  { value: "ongoing", label: "Đang diễn ra" },
-  { value: "completed", label: "Đã kết thúc" },
-  { value: "cancelled", label: "Đã hủy" }
-];
-
-// Country options
-export const COUNTRY_OPTIONS: CategoryOption[] = [
-  { value: "VN", label: "Việt Nam" },
-  { value: "US", label: "United States" },
-  { value: "UK", label: "United Kingdom" },
-  { value: "SG", label: "Singapore" },
-  { value: "JP", label: "Japan" },
-  { value: "KR", label: "South Korea" }
-];
 
 //---------------------------------------------------
+
+//SON
 
 export interface ConferenceResponse {
   conferenceId: string;
@@ -460,32 +571,3 @@ export interface RefundPolicyResponse {
   refundOrder?: number;
 }
 
-export interface RegisteredUserInConference {
-  ticketId: string;
-  userId: string;
-  userName: string;
-  avatarUrl: string;
-  email: string;
-  registeredDate: string;
-  conferenceId: string;
-  conferenceName: string;
-}
-
-//not in use
-export interface ConferenceBasicResponse {
-  conferenceId: string;
-  conferenceName: string;
-  description: string;
-  startDate: string;
-  endDate: string;
-  capacity: number;
-  address: string;
-  bannerImageUrl: string;
-  createdAt: string;
-  isInternalHosted: boolean;
-  isResearchConference: boolean;
-  isActive: boolean;
-  userId: string;
-  locationId: string | null;
-  categoryId: string;
-}

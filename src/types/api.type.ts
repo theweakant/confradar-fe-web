@@ -20,6 +20,7 @@ export interface PaginationData<T = unknown> {
   page: number;
   pageSize: number;
   totalPages: number;
+  totalItems?:number;
 }
 
 export type ApiQueryError<T = unknown> = FetchBaseQueryError & {

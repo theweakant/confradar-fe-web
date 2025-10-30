@@ -8,6 +8,7 @@ interface ConferenceStepState {
   loading: boolean;
   error: string | null;
   mode: 'create' | 'edit';
+  maxStep: number;
 }
 
 const initialState: ConferenceStepState = {
@@ -17,6 +18,7 @@ const initialState: ConferenceStepState = {
   loading: false,
   error: null,
   mode: 'create',
+  maxStep: 6, 
 };
 
 const conferenceStepSlice = createSlice({
@@ -28,12 +30,21 @@ const conferenceStepSlice = createSlice({
       state.conferenceId = action.payload;
     },
 
+    // ✅ THÊM: Set maxStep để hỗ trợ cả Tech (6) và Research (9)
+    setMaxStep: (state, action: PayloadAction<number>) => {
+      state.maxStep = action.payload;
+    },
+
     // Load existing conference for edit
-    loadExistingConference: (state, action: PayloadAction<string>) => {
-      state.conferenceId = action.payload;
+    loadExistingConference: (state, action: PayloadAction<{id: string, maxStep?: number}>) => {
+      state.conferenceId = action.payload.id;
       state.mode = 'edit';
       state.currentStep = 1;
       state.completedSteps = [];
+      // ✅ Cho phép set maxStep khi load conference
+      if (action.payload.maxStep) {
+        state.maxStep = action.payload.maxStep;
+      }
     },
 
     // Set mode - QUAN TRỌNG: Reset về step 1 khi chuyển mode
@@ -51,9 +62,9 @@ const conferenceStepSlice = createSlice({
       state.mode = newMode;
     },
 
-    // Chuyển sang step tiếp theo
+    // ✅ FIX: Chuyển sang step tiếp theo - Dùng maxStep động
     nextStep: (state) => {
-      if (state.currentStep < 6) {
+      if (state.currentStep < state.maxStep) {
         if (!state.completedSteps.includes(state.currentStep)) {
           state.completedSteps.push(state.currentStep);
         }
@@ -68,11 +79,11 @@ const conferenceStepSlice = createSlice({
       }
     },
 
-    // Chuyển đến step cụ thể (chỉ cho edit mode)
+    // ✅ FIX: Chuyển đến step cụ thể - Dùng maxStep động
     goToStep: (state, action: PayloadAction<number>) => {
       const targetStep = action.payload;
-      // Chỉ cho phép nhảy step trong edit mode
-      if (state.mode === 'edit' && targetStep >= 1 && targetStep <= 6) {
+      // Chỉ cho phép nhảy step trong edit mode và trong phạm vi maxStep
+      if (state.mode === 'edit' && targetStep >= 1 && targetStep <= state.maxStep) {
         state.currentStep = targetStep;
       }
     },
@@ -109,6 +120,7 @@ const conferenceStepSlice = createSlice({
 
 export const {
   setConferenceId,
+  setMaxStep, 
   loadExistingConference,
   setMode,
   nextStep,

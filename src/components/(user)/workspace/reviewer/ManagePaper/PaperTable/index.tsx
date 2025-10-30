@@ -1,26 +1,31 @@
+"use client";
+
 import React from "react";
 import {
   Calendar,
   Users,
   MapPin,
-  Eye
+  Eye,
+  MoreVertical,
 } from "lucide-react";
 
 import { DataTable, Column } from "@/components/molecules/DataTable";
 import { formatDate, truncateContent } from "@/helper/format";
 import { StatusBadge } from "@/components/atoms/StatusBadge";
 import { Paper } from "@/types/paper.type";
-import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface PaperTableProps {
   papers: Paper[];
   onView?: (paper: Paper) => void;
 }
 
-export function PaperTable({
-  papers,
-  onView,
-}: PaperTableProps) {
+export function PaperTable({ papers, onView }: PaperTableProps) {
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
       submitted: "Đã nộp",
@@ -28,19 +33,21 @@ export function PaperTable({
       revision_required: "Yêu cầu sửa",
       accepted: "Chấp nhận",
       rejected: "Từ chối",
-      withdrawn: "Đã rút"
+      withdrawn: "Đã rút",
     };
     return labels[status] || status;
   };
 
-  const getStatusVariant = (status: string): "success" | "danger" | "warning" | "info" => {
+  const getStatusVariant = (
+    status: string
+  ): "success" | "danger" | "warning" | "info" => {
     const variants: Record<string, "success" | "danger" | "warning" | "info"> = {
       submitted: "info",
       under_review: "warning",
       revision_required: "warning",
       accepted: "success",
       rejected: "danger",
-      withdrawn: "info"
+      withdrawn: "info",
     };
     return variants[status] || "info";
   };
@@ -50,7 +57,7 @@ export function PaperTable({
       full_paper: "Full Paper",
       short_paper: "Short Paper",
       poster: "Poster",
-      workshop: "Workshop"
+      workshop: "Workshop",
     };
     return labels[type] || type;
   };
@@ -147,16 +154,26 @@ export function PaperTable({
     {
       key: "actions",
       header: "Hành động",
+      className: "text-right",
       render: (paper) => (
-        <Button
-          size="sm"
-          variant="outline"
-          className="flex items-center gap-1 text-blue-600 border-blue-200 hover:bg-blue-50"
-          onClick={() => onView?.(paper)}
-        >
-          <Eye className="w-4 h-4" />
-          Chi tiết
-        </Button>
+        <div className="flex items-center justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                <MoreVertical className="w-5 h-5 text-gray-600" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuItem
+                onClick={() => onView?.(paper)}
+                className="cursor-pointer"
+              >
+                <Eye className="w-4 h-4 mr-2 text-green-600" />
+                <span>Xem chi tiết</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       ),
     },
   ];

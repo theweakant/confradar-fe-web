@@ -11,6 +11,7 @@ export const endpoint = {
     //user
     PROFILE: "/Auth/view-profile-by-id",
     USERS_LIST:"/Auth/list-users",
+    REVIEWERS_LIST:"/Auth/list-all-reviewers",
     CREATE_COLLABORATOR:"/Auth/create-collaborator-account",
 
     SUSPEND: (userId: string) => `/Auth/suspend-account?userId=${userId}`,
@@ -37,6 +38,10 @@ export const endpoint = {
     UPDATE: "/ConferenceCategory",
     DELETE: "/ConferenceCategory",
   },
+  RANKING_CONFERENCE: {
+    LIST: "/ConferenceRanking/Get-all-ranking-category",
+  },
+  
   CONFERENCE: {
     LIST_PAGINATED: "/Conference/paginated-conferences",
     LIST_WITH_PRICES: "/Conference/conferences-with-prices",
@@ -48,7 +53,7 @@ export const endpoint = {
     GET_TECH_BY_ID: (conferenceId: string) => `/Conference/technical-detail/${conferenceId}`,
     GET_RESEARCH_BY_ID: (conferenceId: string) => `/Conference/research-detail/${conferenceId}`,
 
-    // ✅ Trạng thái & hoàn thành bước
+    // check status
     STEP_COMPLETION_STATUS: "/Conference/step-completion-status",
     RESEARCH_STEP_COMPLETION_STATUS: "/Conference/research-step-completion-status",
     CHECK_TECH_STEP_COMPLETION: "/Conference/check-technical-step-completion",
@@ -67,16 +72,19 @@ export const endpoint = {
     DELETE: "/Conference",
 
 
-
   },
 
   CONFERENCE_STEP: {
+
+    //TECH
     CREATE_BASIC: "/ConferenceStep/basic",
     CREATE_PRICE: (conferenceId: string) => `/ConferenceStep/${conferenceId}/prices`,
     CREATE_SESSION: (conferenceId: string) => `/ConferenceStep/${conferenceId}/sessions`,
     CREATE_POLICY: (conferenceId: string) => `/ConferenceStep/${conferenceId}/policies`,
+    CREATE_REFUND_POLICY: (conferenceId: string) => `/ConferenceStep/${conferenceId}/refund-policies`,
     CREATE_MEDIA: (conferenceId: string) => `/ConferenceStep/${conferenceId}/media`,
     CREATE_SPONSOR: (conferenceId: string) => `/ConferenceStep/${conferenceId}/sponsors`,
+
 
     UPDATE_BASIC: (conferenceId: string) => `/ConferenceStep/${conferenceId}/basic`,
     UPDATE_PRICE: (priceId: string) => `/ConferenceStep/prices/${priceId}`,
@@ -87,6 +95,17 @@ export const endpoint = {
     UPDATE_SPONSOR: (sponsorId: string) => `/ConferenceStep/sponsors/${sponsorId}`,
 
     GET_BASIC: (conferenceId: string) => `/ConferenceStep/${conferenceId}/basic`,
+
+
+    //RESEARCH
+    CREATE_RESEARCH_BASIC: "/ConferenceStep/research/basic",
+    CREATE_RESEARCH_DETAIL: (conferenceId: string) => `/ConferenceStep/${conferenceId}/research/detail`,
+    CREATE_RESEARCH_PHASE: (conferenceId: string) => `/ConferenceStep/${conferenceId}/research/phases`,
+    CREATE_RESEARCH_SESSION: (conferenceId: string) => `/ConferenceStep/${conferenceId}/research/sessions`,
+    CREATE_RESEARCH_RANKING_FILE: (conferenceId: string) => `/ConferenceStep/${conferenceId}/research/ranking-file-urls`,
+    CREATE_RESEARCH_RANKING_REFERENCE: (conferenceId: string) => `/ConferenceStep/${conferenceId}/research/ranking-reference-urls`,
+    CREATE_RESEARCH_MATERIAL: (conferenceId: string) => `/ConferenceStep/${conferenceId}/research/materials`,
+
   },
 
   CITY: {
@@ -100,10 +119,11 @@ export const endpoint = {
   },
   
   PAPER: {
-    SUBMIT: "/Conference/paginated-conferences",
+    LIST_ALL_PAPERS:"/Paper/list-all-papers",
 
     //ABSTRACT
     LIST_PENDING_ABSTRACT:"/Paper/list-pending-abstract",
+    
     DECIDE_ABSTRACT:"/Paper/decide-abstract-paper-status",
     ASSIGN_PAPER_TO_REVIEWER:"/Paper/assign-reviewer-to-paper",
 
