@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogPanel, } from '@headlessui/react'
 import { User } from '@/types/user.type'
 import { Edit, Mail, Phone, MapPin, Calendar, Users, X } from 'lucide-react'
+import { useAuth } from '@/redux/hooks/useAuth'
 
 const mockUser: User = {
   userId: "USER001",
@@ -23,6 +24,9 @@ const mockUser: User = {
 
 
 const EditProfileScreen: React.FC = () => {
+  const { user } = useAuth();
+  const userId = user?.userId;
+
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editFormData, setEditFormData] = useState({
     fullName: mockUser.fullName,
@@ -70,7 +74,6 @@ const EditProfileScreen: React.FC = () => {
 
   const handleSavePassword = () => {
     console.log('Password change data:', passwordData)
-    // TODO: gọi API đổi mật khẩu ở đây
     setIsChangePassDialogOpen(false)
   }
 
@@ -81,10 +84,8 @@ const EditProfileScreen: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
-      {/* Main Container */}
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
-        {/* Header Section */}
         <header className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
@@ -113,14 +114,11 @@ const EditProfileScreen: React.FC = () => {
           </div>
         </header>
 
-        {/* Main Content Grid */}
         <main className="grid grid-cols-1 xl:grid-cols-12 gap-6 lg:gap-8">
 
-          {/* Left Column - User Profile Card */}
           <section className="xl:col-span-4">
             <div className="bg-gray-900 border border-gray-700 rounded-lg overflow-hidden">
 
-              {/* Profile Header */}
               <div className="p-6 pb-4">
                 <div className="flex flex-col items-center text-center">
                   <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-xl sm:text-2xl font-bold mb-4">
@@ -142,7 +140,6 @@ const EditProfileScreen: React.FC = () => {
                 </div>
               </div>
 
-              {/* Contact Information */}
               <div className="px-6 pb-6">
                 <h3 className="text-sm font-semibold text-gray-300 mb-4 uppercase tracking-wide">Thông tin liên hệ</h3>
                 <div className="space-y-4">
@@ -200,17 +197,14 @@ const EditProfileScreen: React.FC = () => {
             </div>
           </section>
 
-          {/* Right Column - Activity Feed */}
-          <section className="xl:col-span-8">
+          {/* <section className="xl:col-span-8">
             <div className="bg-gray-900 border border-gray-700 rounded-lg">
 
-              {/* Activity Header */}
               <div className="p-6 pb-4 border-b border-gray-700">
                 <h3 className="text-lg font-semibold">Hoạt động gần đây</h3>
                 <p className="text-sm text-gray-400 mt-1">Nhật ký các hoạt động của người dùng</p>
               </div>
 
-              {/* Activity List */}
               <div className="p-6">
                 <div className="space-y-4">
                   <article className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors">
@@ -260,22 +254,19 @@ const EditProfileScreen: React.FC = () => {
                 </div>
               </div>
             </div>
-          </section>
+          </section> */}
         </main>
       </div>
 
-      {/* Edit Profile Dialog */}
       <Dialog
         open={isEditDialogOpen}
         as="div"
         className="relative z-50"
         onClose={setIsEditDialogOpen}
       >
-        {/* Backdrop */}
 
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
 
-        {/* Panel Container */}
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
             <DialogPanel
@@ -287,7 +278,6 @@ const EditProfileScreen: React.FC = () => {
                 msOverflowStyle: 'none'
               }}
             >
-              {/* Custom Close Button */}
               <button
                 onClick={() => setIsEditDialogOpen(false)}
                 className="absolute top-3 sm:top-4 right-3 sm:right-4 z-10 text-gray-400 hover:text-white transition-colors bg-gray-800/80 hover:bg-gray-700 rounded-full p-1"
@@ -295,7 +285,6 @@ const EditProfileScreen: React.FC = () => {
                 <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
 
-              {/* Header Gradient */}
               <header className="relative h-24 sm:h-32 bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-500 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-600/80 to-pink-600/80"></div>
               </header>

@@ -1,33 +1,37 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FileText, BookOpen, Calendar, Clock, ExternalLink } from "lucide-react";
+import { FileText, BookOpen, Calendar, Clock, ExternalLink, AlertCircle } from "lucide-react";
+import { usePaperCustomer } from "@/redux/hooks/paper/usePaper";
+import type { PaperCustomer } from "@/types/paper.type";
+import { useRouter } from "next/navigation";
 
-/* =========================
-   Types
-========================= */
-type PaperStatus = "Accepted" | "Rejected" | "Under Review" | "Revision Requested";
+function PaperCard({ paper }: { paper: PaperCustomer }) {
+    const router = useRouter();
 
-interface Paper {
-    id: string;
-    title: string;
-    conference: string;
-    submissionDate: string;
-    status: PaperStatus;
-}
+    const getPhaseStatus = () => {
+        const phases = [
+            { name: "Tóm tắt (Abstract)", available: !!paper.abstractId },
+            { name: "Bài đầy đủ (Full Paper)", available: !!paper.fullPaperId },
+            { name: "Bản chỉnh sửa (Revision)", available: !!paper.revisionPaperId },
+            { name: "Camera Ready", available: !!paper.cameraReadyId },
+        ];
 
-/* =========================
-   Reusable PaperCard
-========================= */
-function PaperCard({ paper }: { paper: Paper }) {
-    const statusColors: Record<PaperStatus, string> = {
-        "Accepted": "bg-green-600/80 text-white",
-        "Rejected": "bg-red-700/80 text-white",
-        "Under Review": "bg-yellow-600/80 text-white",
-        "Revision Requested": "bg-blue-700/80 text-white",
+        return phases.map((phase, index) => (
+            <div key={index} className="flex items-center gap-2 text-sm text-gray-300">
+                <Badge
+                    className={
+                        phase.available
+                            ? "bg-green-600/80 text-white"
+                            : "bg-gray-700 text-gray-300"
+                    }
+                >
+                    {phase.name}: {phase.available ? "Đã mở" : "Chưa diễn ra"}
+                </Badge>
+            </div>
+        ));
     };
 
     return (
@@ -36,18 +40,27 @@ function PaperCard({ paper }: { paper: Paper }) {
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                     {/* Left */}
                     <div className="space-y-3">
-                        <h2 className="text-xl font-semibold text-white leading-tight">{paper.title}</h2>
-                        <div className="flex items-center gap-2 text-sm text-gray-400">
-                            <BookOpen className="h-4 w-4" />
-                            <span>{paper.conference}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-400">
-                            <Calendar className="h-4 w-4" />
-                            <span>Nộp ngày: {paper.submissionDate}</span>
-                        </div>
-                        <Badge className={`${statusColors[paper.status]} font-medium`}>
-                            {paper.status}
-                        </Badge>
+                        <h2 className="text-xl font-semibold text-white leading-tight">
+                            Mã bài báo: {paper.paperId}
+                        </h2>
+                        {paper.conferenceId && (
+                            <div className="flex items-center gap-2 text-sm text-gray-400">
+                                <BookOpen className="h-4 w-4" />
+                                <span>Mã hội nghị:  {paper.conferenceId}</span>
+                            </div>
+                        )}
+                        {paper.createdAt && (
+                            <div className="flex items-center gap-2 text-sm text-gray-400">
+                                <Calendar className="h-4 w-4" />
+                                <span>Nộp ngày: {new Date(paper.createdAt).toLocaleDateString('vi-VN')}</span>
+                            </div>
+                        )}
+                        <div className="mt-3 space-y-1">{getPhaseStatus()}</div>
+                        {/* {paper.paperPhaseId && (
+                            <Badge className="bg-yellow-600/80 text-white font-medium">
+                                Phase: {paper.paperPhaseId}
+                            </Badge>
+                        )} */}
                     </div>
 
                     {/* Right actions */}
@@ -56,6 +69,7 @@ function PaperCard({ paper }: { paper: Paper }) {
                             variant="outline"
                             size="sm"
                             className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
+                            onClick={() => router.push(`/customer/papers/${paper.paperId}`)}
                         >
                             Xem chi tiết
                             <Clock className="h-4 w-4 ml-1" />
@@ -75,50 +89,27 @@ function PaperCard({ paper }: { paper: Paper }) {
     );
 }
 
-/* =========================
-   Main Component
-========================= */
 function CustomerPaperList() {
-    const [papers, setPapers] = useState<Paper[]>([]);
-    const [loading, setLoading] = useState(true);
+    const {
+        submittedPapers,
+        loading,
+        submittedPapersError
+    } = usePaperCustomer();
 
-    // Mock API
-    useEffect(() => {
-        setLoading(true);
-        setTimeout(() => {
-            setPapers([
-                {
-                    id: "p1",
-                    title: "Ứng dụng Machine Learning trong chẩn đoán y học",
-                    conference: "Hội nghị AI Việt Nam 2024",
-                    submissionDate: "10/09/2024",
-                    status: "Accepted",
-                },
-                {
-                    id: "p2",
-                    title: "Blockchain và Hệ thống Quản lý Danh tính Phi tập trung",
-                    conference: "Vietnam Blockchain Summit 2024",
-                    submissionDate: "15/09/2024",
-                    status: "Under Review",
-                },
-                {
-                    id: "p3",
-                    title: "Tác động của EdTech tới giáo dục đại học tại Việt Nam",
-                    conference: "Hội nghị Giáo dục Số 2024",
-                    submissionDate: "25/09/2024",
-                    status: "Rejected",
-                },
-                {
-                    id: "p4",
-                    title: "Phân tích dữ liệu lớn trong ngành tài chính Việt Nam",
-                    conference: "Fintech Research Forum 2024",
-                    submissionDate: "01/10/2024",
-                    status: "Revision Requested",
-                },
-            ]);
-            setLoading(false);
-        }, 500);
-    }, []);
+    const getErrorMessage = (): string => {
+        if (!submittedPapersError) return "";
+
+        if (submittedPapersError.data?.Message) {
+            return submittedPapersError.data.Message;
+        }
+
+        if (submittedPapersError.data?.Errors) {
+            const errors = Object.values(submittedPapersError.data.Errors);
+            return errors.length > 0 ? errors[0] : "Có lỗi xảy ra khi tải dữ liệu";
+        }
+
+        return "Có lỗi xảy ra khi tải dữ liệu";
+    };
 
     return (
         <div className="min-h-screen bg-gray-950 text-gray-100 p-4 sm:p-6 lg:p-8">
@@ -139,11 +130,31 @@ function CustomerPaperList() {
                     <p className="text-gray-400 text-center py-10">Đang tải bài báo...</p>
                 )}
 
+                {/* Error */}
+                {!loading && submittedPapersError && (
+                    <div className="text-center py-20">
+                        <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold text-red-400 mb-2">
+                            Lỗi tải dữ liệu
+                        </h3>
+                        <p className="text-gray-500 mb-4">
+                            {getErrorMessage()}
+                        </p>
+                        <Button
+                            variant="outline"
+                            className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
+                            onClick={() => window.location.reload()}
+                        >
+                            Thử lại
+                        </Button>
+                    </div>
+                )}
+
                 {/* Paper list */}
-                {!loading && (
+                {!loading && !submittedPapersError && (
                     <div className="space-y-6">
-                        {papers.length > 0 ? (
-                            papers.map((paper) => <PaperCard key={paper.id} paper={paper} />)
+                        {submittedPapers.length > 0 ? (
+                            submittedPapers.map((paper) => <PaperCard key={paper.paperId} paper={paper} />)
                         ) : (
                             <div className="text-center py-20">
                                 <FileText className="h-16 w-16 text-gray-600 mx-auto mb-4" />

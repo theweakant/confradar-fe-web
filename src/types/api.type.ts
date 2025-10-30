@@ -22,6 +22,13 @@ export interface PaginationData<T = unknown> {
   totalPages: number;
 }
 
+export interface ApiError<T = unknown> {
+  Success: boolean;
+  Message: string;
+  Data?: T;
+  Errors?: Record<string, string>;
+}
+
 export type ApiQueryError<T = unknown> = FetchBaseQueryError & {
-  data?: ApiResponse<T>;
+  data?: ApiError<T>;
 };
