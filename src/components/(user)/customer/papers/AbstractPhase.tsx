@@ -1,18 +1,55 @@
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { Search } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { AvailableCustomerResponse } from "@/types/paper.type";
+import { AvailableCustomerResponse, Abstract } from "@/types/paper.type";
+import { usePaperCustomer } from "@/redux/hooks/paper/usePaper";
 
-const AbstractPhase: React.FC = () => {
+interface AbstractPhaseProps {
+    paperId?: string;
+    abstract?: Abstract | null;
+}
+
+const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
+    const isSubmitted = !!abstract;
+
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCoauthors, setSelectedCoauthors] = useState<AvailableCustomerResponse[]>([]);
-    const [availableCustomers, setAvailableCustomers] = useState<AvailableCustomerResponse[]>([
-        { userId: "u1", fullName: "Nguyễn Văn A", email: "a@gmail.com" },
-        { userId: "u2", fullName: "Trần Thị B", email: "b@gmail.com" },
-        { userId: "u3", fullName: "Phạm Minh C", email: "c@gmail.com" },
-    ]);
+    const [availableCustomers, setAvailableCustomers] = useState<AvailableCustomerResponse[]>([]);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [isLoadingCustomers, setIsLoadingCustomers] = useState(false);
+    const [customersError, setCustomersError] = useState<string | null>(null);
+
+    const {
+        fetchAvailableCustomers,
+        handleSubmitAbstract,
+        submitAbstractError,
+        loading: submitLoading
+    } = usePaperCustomer();
+
+    const loadAvailableCustomers = async () => {
+        if (isLoadingCustomers || availableCustomers.length > 0) return;
+
+        setIsLoadingCustomers(true);
+        setCustomersError(null);
+
+        try {
+            const response = await fetchAvailableCustomers();
+            setAvailableCustomers(response.data || []);
+        } catch (error: any) {
+            if (error?.data?.Message) {
+                setCustomersError(error.data.Message);
+            } else if (error?.data?.Errors) {
+                const errors = Object.values(error.data.Errors);
+                setCustomersError(errors.length > 0 ? errors[0] as string : "Có lỗi xảy ra khi tải danh sách người dùng");
+            } else {
+                setCustomersError("Có lỗi xảy ra khi tải danh sách người dùng");
+            }
+        } finally {
+            setIsLoadingCustomers(false);
+        }
+    };
 
     const handleSelectCoauthor = (user: AvailableCustomerResponse) => {
         if (!selectedCoauthors.some((c) => c.userId === user.userId)) {
@@ -24,8 +61,45 @@ const AbstractPhase: React.FC = () => {
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            console.log("File uploaded:", file.name);
+            setSelectedFile(file);
         }
+    };
+
+    const handleSubmitAbstractForm = async () => {
+        if (!selectedFile || !paperId) {
+            alert("Vui lòng chọn file abstract và đảm bảo có Paper ID");
+            return;
+        }
+
+        try {
+            const coAuthorIds = selectedCoauthors.map(c => c.userId);
+            await handleSubmitAbstract({
+                abstractFile: selectedFile,
+                paperId,
+                coAuthorId: coAuthorIds
+            });
+
+            alert("Nộp abstract thành công!");
+            // Reset form
+            setSelectedFile(null);
+            setSelectedCoauthors([]);
+        } catch (error: any) {
+            let errorMessage = "Có lỗi xảy ra khi nộp abstract";
+
+            if (error?.data?.Message) {
+                errorMessage = error.data.Message;
+            } else if (error?.data?.Errors) {
+                const errors = Object.values(error.data.Errors);
+                errorMessage = errors.length > 0 ? errors[0] as string : errorMessage;
+            }
+
+            alert(errorMessage);
+        }
+    };
+
+    const handleOpenDialog = () => {
+        setIsDialogOpen(true);
+        loadAvailableCustomers();
     };
 
     const filteredCustomers = availableCustomers.filter((c) =>
@@ -37,27 +111,76 @@ const AbstractPhase: React.FC = () => {
             <h3 className="text-lg font-semibold">Giai đoạn Abstract</h3>
             <p className="text-gray-400">Nộp abstract và chọn đồng tác giả cho bài báo của bạn.</p>
 
+            {/* Show current abstract if exists */}
+            {abstract && (
+                <div className="bg-green-900/20 border border-green-700 rounded-xl p-5">
+                    <h4 className="font-semibold text-green-400 mb-2">Abstract đã nộp</h4>
+                    <p className="text-green-300 text-sm">
+                        Abstract ID: {abstract.abstractId}
+                    </p>
+                    {abstract.abstractUrl && (
+                        <a
+                            href={abstract.abstractUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400 hover:text-blue-300 text-sm underline mt-2 inline-block"
+                        >
+                            Xem file abstract →
+                        </a>
+                    )}
+                </div>
+            )}
+
+            {isSubmitted && (
+                <p className="text-sm text-yellow-400 mt-2">
+                    Bạn đã nộp abstract, không thể nộp lại.
+                </p>
+            )}
+
             <div className="bg-gray-800 border border-gray-700 rounded-xl p-5">
                 <label className="block text-sm font-medium mb-2">Tải lên tệp abstract (.pdf)</label>
                 <input
                     type="file"
                     accept="application/pdf"
                     onChange={handleFileChange}
+                    disabled={isSubmitted} // ✅
+                    className="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 
+    file:rounded-lg file:border-0 file:text-sm file:font-semibold
+    file:bg-blue-600 file:text-white hover:file:bg-blue-700
+    disabled:opacity-50 disabled:cursor-not-allowed"
+                />
+                {/* <input
+                    type="file"
+                    accept="application/pdf"
+                    onChange={handleFileChange}
                     className="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 
           file:rounded-lg file:border-0 file:text-sm file:font-semibold
           file:bg-blue-600 file:text-white hover:file:bg-blue-700"
-                />
+                /> */}
+                {selectedFile && (
+                    <p className="text-green-400 text-sm mt-2">
+                        Đã chọn: {selectedFile.name}
+                    </p>
+                )}
             </div>
 
             <div className="bg-gray-800 border border-gray-700 rounded-xl p-5">
                 <div className="flex items-center justify-between mb-3">
                     <h4 className="font-semibold">Đồng tác giả ({selectedCoauthors.length})</h4>
                     <button
-                        onClick={() => setIsDialogOpen(true)}
-                        className="px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition"
+                        onClick={handleOpenDialog}
+                        disabled={isSubmitted || isLoadingCustomers || customersError !== null} // ✅
+                        className="px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition"
                     >
-                        + Thêm đồng tác giả
+                        {isLoadingCustomers ? "Đang tải..." : "+ Thêm đồng tác giả"}
                     </button>
+                    {/* <button
+                        onClick={handleOpenDialog}
+                        disabled={isLoadingCustomers || customersError !== null}
+                        className="px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition"
+                    >
+                        {isLoadingCustomers ? "Đang tải..." : "+ Thêm đồng tác giả"}
+                    </button> */}
                 </div>
 
                 {selectedCoauthors.length > 0 ? (
@@ -93,6 +216,41 @@ const AbstractPhase: React.FC = () => {
                 )}
             </div>
 
+            {/* Submit Button */}
+            <div className="flex justify-end">
+                <button
+                    onClick={handleSubmitAbstractForm}
+                    disabled={isSubmitted || !selectedFile || !paperId || submitLoading} // ✅
+                    className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition"
+                >
+                    {isSubmitted ? "Đã nộp Abstract" : submitLoading ? "Đang nộp..." : "Nộp Abstract"}
+                </button>
+                {/* <button
+                    onClick={handleSubmitAbstractForm}
+                    disabled={!selectedFile || !paperId || submitLoading}
+                    className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition"
+                >
+                    {submitLoading ? "Đang nộp..." : "Nộp Abstract"}
+                </button> */}
+            </div>
+
+            {/* Error Messages */}
+            {submitAbstractError && (
+                <div className="bg-red-900/20 border border-red-700 rounded-xl p-4">
+                    <p className="text-red-400 text-sm">
+                        Lỗi: {typeof submitAbstractError === 'string' ? submitAbstractError : 'Có lỗi xảy ra khi nộp abstract'}
+                    </p>
+                </div>
+            )}
+
+            {customersError && (
+                <div className="bg-red-900/20 border border-red-700 rounded-xl p-4">
+                    <p className="text-red-400 text-sm">
+                        Lỗi tải danh sách: {customersError}
+                    </p>
+                </div>
+            )}
+
             <Dialog open={isDialogOpen} as="div" className="relative z-50" onClose={setIsDialogOpen}>
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" aria-hidden="true" />
                 <div className="fixed inset-0 flex items-center justify-center p-4">
@@ -118,7 +276,25 @@ const AbstractPhase: React.FC = () => {
 
                         {/* List available customers */}
                         <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-1">
-                            {filteredCustomers.length > 0 ? (
+                            {isLoadingCustomers ? (
+                                <div className="text-center py-4">
+                                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
+                                    <p className="text-gray-400 text-sm mt-2">Đang tải danh sách...</p>
+                                </div>
+                            ) : customersError ? (
+                                <div className="text-center py-4">
+                                    <p className="text-red-400 text-sm">{customersError}</p>
+                                    <button
+                                        onClick={() => {
+                                            setCustomersError(null);
+                                            loadAvailableCustomers();
+                                        }}
+                                        className="mt-2 text-blue-400 hover:text-blue-300 text-sm underline"
+                                    >
+                                        Thử lại
+                                    </button>
+                                </div>
+                            ) : filteredCustomers.length > 0 ? (
                                 filteredCustomers.map((user) => (
                                     <button
                                         key={user.userId}
@@ -139,7 +315,9 @@ const AbstractPhase: React.FC = () => {
                                     </button>
                                 ))
                             ) : (
-                                <p className="text-gray-400 text-sm text-center py-3">Không tìm thấy kết quả.</p>
+                                <p className="text-gray-400 text-sm text-center py-3">
+                                    {availableCustomers.length === 0 ? "Không có người dùng nào." : "Không tìm thấy kết quả."}
+                                </p>
                             )}
                         </div>
 

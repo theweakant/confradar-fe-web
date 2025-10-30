@@ -56,32 +56,40 @@ const PaperTracking = () => {
     loadPaperDetail();
   }, [paperId, fetchPaperDetail]);
 
-  // Calculate current stage based on paper phases and current phase
   useEffect(() => {
     if (paperPhases.length > 0 && paperDetail?.currentPhase) {
-      const currentPhaseIndex = paperPhases.findIndex(
-        (phase: PaperPhase) => phase.paperPhaseId === paperDetail.currentPhase.paperPhaseId
+      // const currentPhaseIndex = paperPhases.findIndex(
+      //   (phase: PaperPhase) => phase.paperPhaseId === paperDetail.currentPhase.paperPhaseId
+      // );
+
+      const currentPhaseIndex = stages.findIndex(
+        obj => obj.label.toLowerCase() === paperDetail.currentPhase!.phaseName?.toLowerCase()
       );
 
       if (currentPhaseIndex !== -1) {
-        // Set stage based on phase index (1-based)
         setCurrentStage(currentPhaseIndex + 1);
       }
     }
   }, [paperPhases, paperDetail]);
 
-  // Create dynamic stages from paper phases
-  const stages = paperPhases.length > 0
-    ? paperPhases.map((phase: PaperPhase, index: number) => ({
-      id: index + 1,
-      label: phase.phaseName || `Phase ${index + 1}`
-    }))
-    : [
-      { id: 1, label: 'Abstract' },
-      { id: 2, label: 'Full Paper' },
-      { id: 3, label: 'Revision' },
-      { id: 4, label: 'Camera Ready' },
-    ];
+  const stages = [
+    { id: 1, label: 'Abstract' },
+    { id: 2, label: 'Full Paper' },
+    { id: 3, label: 'Revision' },
+    { id: 4, label: 'Camera Ready' },
+  ];
+
+  // const stages = paperPhases.length > 0
+  //   ? paperPhases.map((phase: PaperPhase, index: number) => ({
+  //     id: index + 1,
+  //     label: phase.phaseName || `Phase ${index + 1}`
+  //   }))
+  //   : [
+  //     { id: 1, label: 'Abstract' },
+  //     { id: 2, label: 'Full Paper' },
+  //     { id: 3, label: 'Revision' },
+  //     { id: 4, label: 'Camera Ready' },
+  //   ];
 
   // Get error message for paper phases
   const getPaperPhasesErrorMessage = (): string => {
@@ -101,8 +109,7 @@ const PaperTracking = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      {/* Header */}
-      <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
+      {/* <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold">Theo dõi bài báo</h1>
@@ -112,7 +119,7 @@ const PaperTracking = () => {
             Tiếp tục theo dõi →
           </button>
         </div>
-      </header>
+      </header> */}
 
       <div className="flex">
         {/* Sidebar */}
@@ -157,10 +164,8 @@ const PaperTracking = () => {
           </nav>
         </aside> */}
 
-        {/* Main Content */}
         <main className="flex-1 p-6">
           <div className="max-w-7xl mx-auto">
-            {/* Welcome Message */}
             <div className="mb-8">
               <h2 className="text-2xl font-bold mb-2">Theo dõi bài báo</h2>
               <p className="text-gray-400">
@@ -173,7 +178,6 @@ const PaperTracking = () => {
               )}
             </div>
 
-            {/* Loading State */}
             {(paperPhasesLoading || isLoadingPaperDetail) && (
               <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 mb-10">
                 <div className="text-center">
@@ -183,7 +187,6 @@ const PaperTracking = () => {
               </div>
             )}
 
-            {/* Error States */}
             {!paperPhasesLoading && !isLoadingPaperDetail && (paperPhasesError || paperDetailError) && (
               <div className="bg-red-900/20 border border-red-700 rounded-xl p-6 mb-10">
                 <h3 className="text-red-400 font-semibold mb-2">Lỗi tải dữ liệu</h3>
@@ -206,7 +209,6 @@ const PaperTracking = () => {
               </div>
             )}
 
-            {/* Missing Paper ID */}
             {!paperId && !paperPhasesLoading && (
               <div className="bg-yellow-900/20 border border-yellow-700 rounded-xl p-6 mb-10">
                 <h3 className="text-yellow-400 font-semibold mb-2">Thiếu thông tin</h3>
@@ -216,7 +218,6 @@ const PaperTracking = () => {
               </div>
             )}
 
-            {/* Progress Slider - Only show when data is loaded */}
             {!paperPhasesLoading && !isLoadingPaperDetail && paperPhases.length > 0 && (
               <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 mb-10">
                 <h3 className="text-lg font-semibold mb-4">Các giai đoạn bài báo</h3>
@@ -232,13 +233,50 @@ const PaperTracking = () => {
                     }, {} as Record<number, React.ReactNode>)}
                     value={currentStage}
                     onChange={(value) => {
-                      if (typeof value === 'number') {
-                        // 🔹 Chỉ cho phép chọn giai đoạn hiện tại hoặc trước đó
-                        if (value <= currentStage) {
-                          setCurrentStage(value);
-                        }
+                      if (typeof value !== 'number') return;
+
+                      const targetStage = stages.find(s => s.id === value);
+                      const currentStageLabel = stages.find(s => s.id === currentStage)?.label;
+
+                      switch (currentStageLabel) {
+                        case 'Abstract':
+                          if (value > 1) {
+                            alert('Bạn chỉ có thể truy cập giai đoạn Abstract. Các giai đoạn sau chưa mở.');
+                            return;
+                          }
+                          break;
+
+                        case 'Full Paper':
+                          if (value > 2) {
+                            alert('Giai đoạn Revision và Camera Ready chưa diễn ra.');
+                            return;
+                          }
+                          break;
+
+                        case 'Revision':
+                          if (value > 3) {
+                            alert('Giai đoạn Camera Ready chưa mở.');
+                            return;
+                          }
+                          break;
+
+                        case 'Camera Ready':
+                          break;
+
+                        default:
+                          break;
                       }
+
+                      setCurrentStage(value);
                     }}
+                    // onChange={(value) => {
+                    //   if (typeof value === 'number') {
+                    //     // 🔹 Chỉ cho phép chọn giai đoạn hiện tại hoặc trước đó
+                    //     if (value <= currentStage) {
+                    //       setCurrentStage(value);
+                    //     }
+                    //   }
+                    // }}
                     // onChange={(value) => {
                     //   if (typeof value === 'number') setCurrentStage(value);
                     // }}
@@ -268,14 +306,13 @@ const PaperTracking = () => {
               </div>
             )}
 
-            {/* Phase Components - Only show when data is loaded and no errors */}
             {!paperPhasesLoading && !isLoadingPaperDetail && !paperPhasesError && !paperDetailError && paperPhases.length > 0 && (
               <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 mt-8">
-                {currentStage === 1 && <AbstractPhase />}
+                {currentStage === 1 && <AbstractPhase paperId={paperId} abstract={paperDetail?.abstract || null} />}
                 {currentStage === 2 && <FullPaperPhase />}
                 {currentStage === 3 && <RevisionPhase />}
                 {currentStage === 4 && <CameraReadyPhase />}
-                {/* Handle dynamic phases beyond the 4 default ones */}
+
                 {currentStage > 4 && (
                   <div className="text-center py-8">
                     <h3 className="text-lg font-semibold text-white mb-2">

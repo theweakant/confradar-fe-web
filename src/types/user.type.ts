@@ -5,18 +5,27 @@ export interface AuthUser {
   email: string
   role: string | null
 }
- 
+
 export interface UserProfileResponse {
   userId: string;
   email: string;
   fullName: string;
   birthDay: string | null;
-  phoneNumber:string | null;
+  phoneNumber: string | null;
   gender: string | null;
   avatarUrl: string | null;
   bioDescription: string | null;
   createdAt: string;
   roles?: string[]
+}
+
+export interface ProfileUpdateRequest {
+  fullName?: string;
+  birthDay?: string;
+  phoneNumber?: string;
+  gender?: 'Male' | 'Female' | 'Other';
+  avatarFile?: File;
+  bioDescription?: string;
 }
 
 export interface CollaboratorRequest {
@@ -33,7 +42,7 @@ export interface UsersListResponse {
   users: UserProfileResponse[]
 }
 
-export type UserFormData = Omit<UserProfileResponse, "userId" | "createdAt"  >;
+export type UserFormData = Omit<UserProfileResponse, "userId" | "createdAt">;
 
 export interface UserFormProps {
   user?: UserProfileResponse | null;
