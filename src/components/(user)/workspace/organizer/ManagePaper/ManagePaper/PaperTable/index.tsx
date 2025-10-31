@@ -3,19 +3,19 @@
 import React from "react";
 import { DataTable, Column } from "@/components/molecules/DataTable";
 import { ActionButton } from "@/components/atoms/ActionButton";
-import { Paper } from "@/types/paper.type";
+import { UnassignAbstract } from "@/types/paper.type";
 import { Eye, Trash2 } from "lucide-react";
 
 interface PaperTableProps {
-  papers: Paper[];
-  onView?: (paper: Paper) => void;
+  papers: UnassignAbstract[];
+  onView?: (paper: UnassignAbstract) => void;
 }
 
 export function PaperTable({
   papers,
   onView,
 }: PaperTableProps) {
-  const columns: Column<Paper>[] = [
+  const columns: Column<UnassignAbstract>[] = [
     {
       key: "paperId",
       header: "Mã bài báo",

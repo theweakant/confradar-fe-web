@@ -22,6 +22,14 @@ export interface ListPaper {
   cameraReady: any | null;
 }
 
+export interface UnassignAbstract {
+  abstractId: string;
+  paperId: string;
+  globalStatusId: string;
+  globalStatusName: string;
+  abstractUrl: string;
+}
+
 export interface PendingAbstract {
   abstractId: string
   abstractUrl: string
@@ -36,51 +44,203 @@ export interface PendingAbstract {
   createdAt: string
 }
 
+// Paper đã được assign cho reviewer
+export interface AssignedPaper {
+  paperId: string;
+  presenterId: string;
+  fullPaperId: string | null;
+  revisionPaperId: string | null;
+  cameraReadyId: string | null;
+  abstractId: string;
+  conferenceId: string;
+  paperPhaseId: string;
+  createdAt: string;
+  cameraReady: any | null;
+  conference: any | null;
+  paperAuthors: any[];
+  paperPhase: any | null;
+  presenter: any | null;
+}
 
 //------------------------------------------
+//CAMERA READY
 
-
-export interface AssignReviewerData {
-  paperId: string | number;
-  reviewerIds: string[];
+export interface PendingCameraReady {
+  cameraReadyId: string;
+  fileUrl: string;
+  status: string;
+  rootPaperId: string;
+  cameraReadyStartDate: string | null;
+  cameraReadyEndDate: string | null;
 }
 
-export interface PaperFormData {
-  title: string;
-  authors: string[];
-  authorEmails: string[];
-  abstract: string;
-  keywords: string[];
-  conferenceId: string;
-  trackId: string;
-  paperType: "full_paper" | "short_paper" | "poster" | "workshop";
-  fileUrl?: string;
-  fileSize?: string;
-  pageCount?: number;
+//------------------------------------------
+//DETAIL PAPER
+
+// export interface RevisionSubmissionFeedback {
+//   revisionSubmissionFeedbackId: string
+//   presenterId: string | null
+//   feedback: string | null
+//   response: string | null
+//   sortOrder: number
+//   createdAt: string | null
+// }
+
+// export interface RevisionPaperSubmission {
+//   revisionPaperSubmissionId: string
+//   revisionPaperUrl: string
+//   revisionPaperId: string
+//   revisionDeadlineRoundId: string
+//   endDate: string
+//   roundNumber: number
+//   revisionSubmissionFeedbacks: RevisionSubmissionFeedback[]
+// }
+
+// export interface RevisionPaper {
+//   revisionPaperId: string
+//   revisionRound: number
+//   globalStatusId: string
+//   globalStatusName: string
+//   revisionPaperSubmissions: RevisionPaperSubmission[]
+// }
+
+// export interface FullPaper {
+//   fullPaperId: string
+//   reviewStatusId: string
+//   reviewStatusName: string
+//   fullPaperUrl: string
+// }
+
+// export interface PaperDetailForReviewer {
+//   isHeadReviewer: boolean
+//   fullPaper: FullPaper | null
+//   revisionPaper: RevisionPaper | null
+// }
+
+
+export interface RevisionSubmissionFeedback {
+  revisionSubmissionFeedbackId: string;
+  userId: string | null;
+  fullName: string | null;
+  avatarUrl: string | null;
+  feedback: string | null;
+  response: string | null;
+  sortOrder: number;
+  createdAt: string | null;
 }
 
-export interface PaperReview {
-  id: string;
+export interface RevisionPaperReview {
+  revisionPaperReviewId: string;
+  globalStatusId: string;
+  globalStatusName: string;
+  note: string | null;
+  createdAt: string | null;
+  feedbackToAuthor: string | null;
+  feedbackMaterialUrl: string | null;
+  reviewerId: string | null;
+  reviewerName: string | null;
+  reviewerAvatarUrl: string | null;
+  revisionPaperId: string;
+}
+
+export interface RevisionPaperSubmission {
+  revisionPaperSubmissionId: string;
+  revisionPaperUrl: string;
+  revisionPaperId: string;
+  revisionDeadlineRoundId: string;
+  endDate: string;
+  roundNumber: number;
+  revisionSubmissionFeedbacks: RevisionSubmissionFeedback[];
+  revisionPaperReviews: RevisionPaperReview[];
+}
+
+export interface RevisionPaper {
+  revisionPaperId: string;
+  revisionRound: number;
+  globalStatusId: string;
+  globalStatusName: string;
+  isAllSubmittedRevisionPaperReview: boolean;
+  isAnsweredAllDiscussion: boolean;
+  revisionPaperSubmissions: RevisionPaperSubmission[];
+}
+
+export interface FullPaper {
+  fullPaperId: string;
+  reviewStatusId: string;
+  reviewStatusName: string;
+  fullPaperUrl: string;
+  isAllSubmittedFullPaperReview: boolean;
+}
+
+export interface PaperDetailForReviewer {
+  isHeadReviewer: boolean;
+  fullPaper: FullPaper | null;
+  revisionPaper: RevisionPaper | null;
+}
+
+
+//--------------------------------------------------------
+//SUBMIT FULL PAPER REVIEW
+export interface SubmitFullPaperReviewRequest {
+  fullPaperId: string;
+  note: string;
+  feedbackToAuthor: string;
+  reviewStatus: string;
+  feedbackMaterialFile?: File | null; 
+}
+
+//--------------------------------------------------------
+//FULL PAPER REVIEW
+export interface FullPaperReview {
+  fullPaperReviewId: string;
+  globalStatusId: string;
+  globalStatusName: string;
+  note: string;
+  createdAt: string | null;
+  feedbackToAuthor: string;
+  feedbackMaterialUrl: string | null;
+  reviewerId: string | null;
+  reviewerName: string | null;
+  reviewerAvatarUrl: string | null;
+  fullPaperId: string;
+}
+
+//--------------------------------------------------------
+//SUBMIT PAPER REVISION REVIEW
+export interface SubmitPaperRevisionReviewRequest {
   paperId: string;
-  reviewerId: string;
-  reviewerName: string;
-  score: number; // 0-10
-  confidence: number; // 1-5
-  comments: string;
-  strengths: string;
-  weaknesses: string;
-  recommendedAction: "accept" | "minor_revision" | "major_revision" | "reject";
-  reviewDate: string;
-  status: "pending" | "completed";
+  revisionPaperId: string;
+  globalStatus: string;
+  note: string;
+  feedbackToAuthor: string;
+  feedbackMaterialFile?: File;
 }
 
-export interface PaperStatistics {
-  total: number;
-  submitted: number;
-  underReview: number;
-  accepted: number;
-  rejected: number;
-  revisionRequired: number;
-  withdrawn: number;
-  averageReviewTime: number; // in days
+//--------------------------------------------------------
+//LIST REVISION PAPER REVIEW
+export interface ListRevisionPaperReview {
+  revisionPaperReviewId: string
+  globalStatusId: string
+  globalStatusName: string
+  note: string
+  createdAt: string | null
+  feedbackToAuthor: string
+  feedbackMaterialUrl: string
+  reviewerId: string | null
+  reviewerName: string | null
+  reviewerAvatarUrl: string | null
+  revisionPaperId: string
+}
+
+//--------------------------------------------------------
+//SUBMIT PAPER REVISION PAPER FEEDBACK
+export interface RevisionFeedback {
+  feedback: string;
+  sortOrder: number;
+}
+
+export interface SubmitPaperRevisionFeedbackRequest {
+  revisionPaperSubmissionId: string;
+  paperId: string;
+  feedbacks: RevisionFeedback[];
 }

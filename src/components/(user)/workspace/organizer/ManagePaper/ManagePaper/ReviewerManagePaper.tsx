@@ -12,30 +12,41 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import Link from "next/link";
 
-import { PaperTable } from "@/components/(user)/workspace/organizer/ManagePaper/ManagePaper/PaperTable/index";
-import { PaperDetail } from "@/components/(user)/workspace/organizer/ManagePaper/ManagePaper/PaperDetail/index";
-import { Paper } from "@/types/paper.type";
-import {  useListAllPapersQuery } from "@/redux/services/paper.service";
+import { PaperTable } from "@/components/(user)/workspace/organizer/ManagePaper/ManagePaper/PaperTable";
+import { PaperDetail } from "@/components/(user)/workspace/organizer/ManagePaper/ManagePaper/PaperDetail";
+import CameraReadyList from "@/components/(user)/workspace/organizer/ManagePaper/CameraReadyList";
+
+import { UnassignAbstract } from "@/types/paper.type";
+import { useListUnassignAbstractsQuery } from "@/redux/services/paper.service";
 import { useGetReviewersListQuery } from "@/redux/services/user.service";
 
-
 export default function ReviewerManagePage() {
-  // API queries
-  const { data: papersData, isLoading: papersLoading, error: papersError } = useListAllPapersQuery();
-  const { data: reviewersData, isLoading: reviewersLoading, error: reviewersError } = useGetReviewersListQuery();
+  // ✅ API queries
+  const {
+    data: papersData,
+    isLoading: papersLoading,
+    error: papersError,
+  } = useListUnassignAbstractsQuery();
 
-  const [viewPaper, setViewPaper] = useState<Paper | null>(null);
-  const [assignPaper, setAssignPaper] = useState<Paper | null>(null);
+  const {
+    data: reviewersData,
+    isLoading: reviewersLoading,
+    error: reviewersError,
+  } = useGetReviewersListQuery();
 
-  // Extract data from API responses
+  // ✅ State quản lý xem chi tiết, gán reviewer và mở Camera Ready
+  const [viewPaper, setViewPaper] = useState<UnassignAbstract | null>(null);
+  const [assignPaper, setAssignPaper] = useState<UnassignAbstract | null>(null);
+  const [showCameraReady, setShowCameraReady] = useState(false);
+
+  // ✅ Extract data từ API 
   const papers = papersData?.data || [];
 
-  const handleView = (paper: Paper) => {
+  const handleView = (paper: UnassignAbstract) => {
     setViewPaper(paper);
   };
 
-
-  // Loading state
+  // ✅ Loading state
   if (papersLoading || reviewersLoading) {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
@@ -47,7 +58,7 @@ export default function ReviewerManagePage() {
     );
   }
 
-  // Error state
+  // ✅ Error state
   if (papersError || reviewersError) {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
@@ -74,54 +85,57 @@ export default function ReviewerManagePage() {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <Link href="/workspace/organizer/manage-paper/assigned-papper-list">
-                <Button className="flex items-center gap-2 whitespace-nowrap" variant="outline">
+           <Link href="/workspace/organizer/manage-paper/assigned-papper-list">
+                <Button
+                  className="flex items-center gap-2 whitespace-nowrap"
+                  variant="outline"
+                >
                   <ScanEye className="w-5 h-5" />
                   Xem danh sách bài báo đang chờ
                 </Button>
-              </Link>
-              <Button
+              </Link>   
+
+              {/* <Button
                 className="flex items-center gap-2 whitespace-nowrap"
-                onClick={() => {
-                  if (papers.length > 0) {
-                    setAssignPaper(papers[0]);
-                  } else {
-                    toast.info("Không có bài báo nào để giao reviewer");
-                  }
-                }}
+                onClick={() => setShowCameraReady(true)}
               >
                 <UserPlus className="w-5 h-5" />
                 Duyệt Camera Ready
-              </Button>
+              </Button> */}
             </div>
           </div>
         </div>
 
-
-
+        {/* ✅ Bảng danh sách bài báo */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          <PaperTable
-            papers={papers}
-            onView={handleView}
-          />
+          <PaperTable papers={papers} onView={handleView} />
         </div>
 
+        {/* ✅ Dialog xem chi tiết bài báo */}
+        <Dialog open={!!viewPaper} onOpenChange={() => setViewPaper(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Chi tiết bài báo</DialogTitle>
+            </DialogHeader>
+            {viewPaper && (
+              <PaperDetail
+                paper={viewPaper}
+                paperId={viewPaper.paperId}
+                onClose={() => setViewPaper(null)}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
 
-        {/* Assign Reviewer Dialog */}
-          <Dialog open={!!viewPaper} onOpenChange={() => setViewPaper(null)}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Chi tiết bài báo</DialogTitle>
-              </DialogHeader>
-              {viewPaper && (
-                <PaperDetail
-                  paper={viewPaper}
-                  paperId={viewPaper.paperId}  
-                  onClose={() => setViewPaper(null)}
-                />
-              )}
-            </DialogContent>
-          </Dialog>
+        {/* ✅ Dialog hiển thị danh sách Camera Ready */}
+        <Dialog open={showCameraReady} onOpenChange={setShowCameraReady}>
+          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Duyệt Camera Ready</DialogTitle>
+            </DialogHeader>
+            <CameraReadyList />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

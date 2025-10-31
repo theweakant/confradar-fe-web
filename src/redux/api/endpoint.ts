@@ -123,9 +123,38 @@ export const endpoint = {
 
     //ABSTRACT
     LIST_PENDING_ABSTRACT:"/Paper/list-pending-abstract",
-    
     DECIDE_ABSTRACT:"/Paper/decide-abstract-paper-status",
     ASSIGN_PAPER_TO_REVIEWER:"/Paper/assign-reviewer-to-paper",
+    LIST_UNASSIGN_ABSTRACT:"/Paper/list-unassign-abstract",
+    LIST_ASSIGN_PAPER_REVIEWER:"/Paper/get-assigned-papers",
+
+
+    GET_PAPER_DETAIL_REVIEWER: (paperId: string) => 
+    `/Paper/paper-detail-for-reviewer?paperId=${paperId}`,
+
+    //FULL PAPER
+    SUBMIT_FULLPAPER_REVIEW: "/Paper/submit-fullpaper-review",
+    LIST_FULLPAPER_REVIEWS: (fullPaperId: string) => `/Paper/get-fullpaper-reviews/${fullPaperId}`,
+    DECIDE_FULLPAPER_STATUS: "/Paper/decide-fullpaper-status",
+
+
+    //CAMERA-READY
+    LIST_PENDING_CAMERA_READY:"/Paper/get-pending-cameraready",
+    DECIDE_CAMERA_READY:"/Paper/decide-camera-ready-status",
+
+    //REVISION
+    SUBMIT_PAPER_REVISION_REVIEW: "/Paper/submit-paper-revision-review",
+    LIST_REVISION_PAPER_REVIEW: "/Paper/list-revision-paper-review",
+    DECIDE_REVISION_STATUS: "/Paper/decide-revise-status",
+
+    SUBMIT_PAPER_REVISION_FEEDBACK: "/Paper/submit-paper-revision-feedback",
+
+
+
+
+
+
+
 
 
   },
