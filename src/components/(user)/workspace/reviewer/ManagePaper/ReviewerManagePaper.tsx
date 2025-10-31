@@ -15,7 +15,7 @@ import { PaperTable } from "@/components/(user)/workspace/reviewer/ManagePaper/P
 import { Paper } from "@/types/paper.type";
 import { useListAssignedPapersQuery } from "@/redux/services/paper.service";
 
-import CameraReadyList from "@/components/(user)/workspace/organizer/ManagePaper/CameraReadyList";
+import CameraReadyList from "@/components/(user)/workspace/reviewer/CameraReadyList/index";
 
 export default function ReviewerManagePaperPage() {
   const router = useRouter();
