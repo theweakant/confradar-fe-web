@@ -77,48 +77,7 @@ export interface PendingCameraReady {
 //------------------------------------------
 //DETAIL PAPER
 
-// export interface RevisionSubmissionFeedback {
-//   revisionSubmissionFeedbackId: string
-//   presenterId: string | null
-//   feedback: string | null
-//   response: string | null
-//   sortOrder: number
-//   createdAt: string | null
-// }
-
-// export interface RevisionPaperSubmission {
-//   revisionPaperSubmissionId: string
-//   revisionPaperUrl: string
-//   revisionPaperId: string
-//   revisionDeadlineRoundId: string
-//   endDate: string
-//   roundNumber: number
-//   revisionSubmissionFeedbacks: RevisionSubmissionFeedback[]
-// }
-
-// export interface RevisionPaper {
-//   revisionPaperId: string
-//   revisionRound: number
-//   globalStatusId: string
-//   globalStatusName: string
-//   revisionPaperSubmissions: RevisionPaperSubmission[]
-// }
-
-// export interface FullPaper {
-//   fullPaperId: string
-//   reviewStatusId: string
-//   reviewStatusName: string
-//   fullPaperUrl: string
-// }
-
-// export interface PaperDetailForReviewer {
-//   isHeadReviewer: boolean
-//   fullPaper: FullPaper | null
-//   revisionPaper: RevisionPaper | null
-// }
-
-
-export interface RevisionSubmissionFeedback {
+export interface RevisionSubmissionFeedbackA {
   revisionSubmissionFeedbackId: string;
   userId: string | null;
   fullName: string | null;
@@ -150,11 +109,11 @@ export interface RevisionPaperSubmission {
   revisionDeadlineRoundId: string;
   endDate: string;
   roundNumber: number;
-  revisionSubmissionFeedbacks: RevisionSubmissionFeedback[];
+  revisionSubmissionFeedbacks: RevisionSubmissionFeedbackA[];
   revisionPaperReviews: RevisionPaperReview[];
 }
 
-export interface RevisionPaper {
+export interface RevisionPaperA {
   revisionPaperId: string;
   revisionRound: number;
   globalStatusId: string;
@@ -162,10 +121,12 @@ export interface RevisionPaper {
   isAllSubmittedRevisionPaperReview: boolean;
   isAnsweredAllDiscussion: boolean;
   revisionPaperSubmissions: RevisionPaperSubmission[];
+
 }
 
-export interface FullPaper {
-  fullPaperId: string;
+
+export interface FullPaperA {
+  fullPaperId: string;  
   reviewStatusId: string;
   reviewStatusName: string;
   fullPaperUrl: string;
@@ -174,8 +135,8 @@ export interface FullPaper {
 
 export interface PaperDetailForReviewer {
   isHeadReviewer: boolean;
-  fullPaper: FullPaper | null;
-  revisionPaper: RevisionPaper | null;
+  fullPaper: FullPaperA | null;
+  revisionPaper: RevisionPaperA | null;
 }
 
 
@@ -243,4 +204,144 @@ export interface SubmitPaperRevisionFeedbackRequest {
   revisionPaperSubmissionId: string;
   paperId: string;
   feedbacks: RevisionFeedback[];
+}
+
+
+
+
+//CUSTOMER PAPER TYPE
+export interface PaperCustomer {
+  paperId: string;
+
+  presenterId?: string;
+  fullPaperId?: string;
+  revisionPaperId?: string;
+  cameraReadyId?: string;
+  abstractId?: string;
+  conferenceId?: string;
+  paperPhaseId?: string;
+  createdAt?: string;
+
+  // cameraReady?: CameraReady | null;
+  // conference?: Conference | null;
+  // paperPhase?: PaperPhase | null;
+  // presenter?: User | null;
+}
+
+
+export interface PaperDetailResponse {
+  paperId: string;
+  currentPhase: PaperPhase;
+  abstract?: Abstract | null;
+  fullPaper?: FullPaper | null;
+  revisionPaper?: RevisionPaper | null;
+  cameraReady?: CameraReady | null;
+}
+
+export interface PaperPhase {
+  paperPhaseId: string;
+  phaseName?: string | null;
+}
+
+export interface Abstract {
+  abstractId: string;
+  globalStatusId?: string | null;
+  fileUrl?: string | null;
+}
+
+export interface FullPaper {
+  fullPaperId: string;  
+
+reviewStatusId?: string | null;
+  fileUrl?: string | null;
+}
+
+export interface RevisionPaper {
+  revisionPaperId: string;
+  revisionRound?: number | null;
+  overallStatus?: string | null;
+  submissions: RevisionSubmission[];
+  // reviews: RevisionReview[];
+  // revisionPaperId: string;
+  // revisionRound?: number | null;
+  // globalStatusId?: string | null;
+}
+
+export interface RevisionSubmission {
+  submissionId: string;
+  fileUrl: string;
+  revisionDeadline: {
+    roundNumher: number;  // typo backend vẫn giữ là roundNumher
+    deadline: string;
+  };
+  feedbacks: RevisionSubmissionFeedback[];
+  // revisionPaperId: string;
+  // revisionRound?: number | null;
+  // globalStatusId?: string | null;
+}
+
+export interface RevisionSubmissionFeedback {
+  feedbackId: string;
+  feedBack: string;
+  response?: string | null;
+  order: number;
+  createdAt: string;
+  // revisionPaperId: string;
+  // revisionRound?: number | null;
+  // globalStatusId?: string | null;
+}
+
+
+
+export interface RevisionReview {
+  reviewId: string;
+  note?: string;
+  feedBackToAuthor?: string;
+  feedbackMaterialURL?: string;
+  reviewedAt?: string;
+}
+
+export interface CameraReady {
+  cameraReadyId: string;
+  globalStatusId?: string | null;
+  fileUrl?: string | null;
+}
+
+export interface CreateAbstractRequest {
+  abstractFile: File;
+  paperId: string;
+  coAuthorId: string[];
+}
+
+export interface AvailableCustomerResponse {
+  userId: string;
+  email?: string;
+  fullName?: string;
+  avatarUrl?: string;
+}
+
+export interface CreateFullPaperRequest {
+  fullPaperFile: File;
+  paperId: string;
+}
+
+export interface CreateRevisionPaperSubmissionRequest {
+  revisionPaperFile: File;
+  paperId: string;
+}
+
+export interface CreateRevisionPaperSubmissionResponse {
+  responses: RevisionPaperSubmissionFeedbackResponse[];
+  revisionPaperSubmissionId: string;
+  paperId: string;
+}
+
+export interface RevisionPaperSubmissionFeedbackResponse {
+  revisionSubmissionFeedbackId: string;
+  response?: string;
+}
+
+export interface CreateCameraReadyRequest {
+  paperId: string;
+  cameraReadyFile: File;
 }

@@ -2,7 +2,8 @@
 import { createApi } from "@reduxjs/toolkit/query/react"
 import { apiClient } from "../api/apiClient"
 import { endpoint } from "../api/endpoint"
-import { UserProfileResponse,CollaboratorRequest, UsersListResponse ,ReviewerListResponse} from "@/types/user.type"
+
+import { UserProfileResponse, CollaboratorRequest, UsersListResponse, ReviewerListResponse, ProfileUpdateRequest, ChangePasswordRequest } from "@/types/user.type"
 import { ApiResponse } from "@/types/api.type"
 
 export const userApi = createApi({
@@ -30,14 +31,41 @@ export const userApi = createApi({
       }),
     }),
     
-    updateProfile: builder.mutation<ApiResponse<UserProfileResponse>, { userId: string; data: Partial<UserProfileResponse> }>({
-      query: ({ userId, data }) => ({
-        url: `${endpoint.AUTH.PROFILE}`,
-        method: "PUT",
-        body: { userId, ...data },
-      }),
+
+
+    // updateProfile: builder.mutation<ApiResponse<UserProfileResponse>, { userId: string; data: Partial<UserProfileResponse> }>({
+    //   query: ({ userId, data }) => ({
+    //     url: `${endpoint.AUTH.PROFILE}`,
+    //     method: "PUT",
+    //     body: { userId, ...data },
+    //   }),
+    // }),
+
+    updateProfile: builder.mutation<ApiResponse<number>, ProfileUpdateRequest>({
+      query: (data) => {
+        const formData = new FormData();
+        if (data.fullName) formData.append("FullName", data.fullName);
+        if (data.birthDay) formData.append("BirthDay", data.birthDay);
+        if (data.phoneNumber) formData.append("PhoneNumber", data.phoneNumber);
+        if (data.gender) formData.append("Gender", data.gender);
+        if (data.avatarFile) formData.append("AvatarFile", data.avatarFile);
+        if (data.bioDescription) formData.append("BioDescription", data.bioDescription);
+
+        return {
+          url: endpoint.AUTH.UPDATE_PROFILE,
+          method: "PUT",
+          body: formData,
+        };
+      },
     }),
 
+    changePassword: builder.mutation<ApiResponse<null>, ChangePasswordRequest>({
+      query: (data) => ({
+        url: endpoint.AUTH.CHANGE_PASSWORD, // ví dụ: "/api/auth/change-password"
+        method: "PUT",
+        body: data,
+      }),
+    }),
 
     createCollaborator: builder.mutation<ApiResponse<number>, CollaboratorRequest>({
       query: (data) => ({
@@ -64,13 +92,14 @@ export const userApi = createApi({
   }),
 })
 
-export const { 
+export const {
   useGetProfileByIdQuery,
   useGetUsersListQuery,
   useGetReviewersListQuery,
   useUpdateProfileMutation,
+  useChangePasswordMutation,
   useCreateCollaboratorMutation,
-  
+
   useSuspendAccountMutation,
   useActivateAccountMutation
 } = userApi

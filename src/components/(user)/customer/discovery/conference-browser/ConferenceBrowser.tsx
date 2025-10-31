@@ -231,21 +231,39 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
 
     const matchesCategory = selectedCategory === 'all' || conf.conferenceCategoryId === selectedCategory;
 
-    if (absoluteMaxPrice === 0) {
-      return matchesBannerFilter && matchesCategory;
-    }
-
     const minPrice = getMinPrice(conf);
     const maxPrice = getMaxPrice(conf);
 
-    if (minPrice === null || maxPrice === null) {
-      return matchesBannerFilter && matchesCategory;
-    }
-
-    const matchesPrice = (minPrice <= priceRange[1]) && (maxPrice >= priceRange[0]);
+    // Nếu priceRange đang active và conference không có giá => loại ra
+    const priceRangeActive = priceRange[0] > 0 || priceRange[1] < absoluteMaxPrice;
+    const matchesPrice = minPrice !== null && maxPrice !== null
+      ? (minPrice <= priceRange[1] && maxPrice >= priceRange[0])
+      : !priceRangeActive // nếu filter không active thì vẫn hiển thị
 
     return matchesBannerFilter && matchesCategory && matchesPrice;
   });
+
+  // const filteredConferences = currentConferences.filter((conf: ConferenceResponse) => {
+  //   const confType = conf.isResearchConference ? 'research' : 'technical';
+  //   const matchesBannerFilter = bannerFilter === 'all' || confType === bannerFilter;
+
+  //   const matchesCategory = selectedCategory === 'all' || conf.conferenceCategoryId === selectedCategory;
+
+  //   if (absoluteMaxPrice === 0) {
+  //     return matchesBannerFilter && matchesCategory;
+  //   }
+
+  //   const minPrice = getMinPrice(conf);
+  //   const maxPrice = getMaxPrice(conf);
+
+  //   if (minPrice === null || maxPrice === null) {
+  //     return matchesBannerFilter && matchesCategory;
+  //   }
+
+  //   const matchesPrice = (minPrice <= priceRange[1]) && (maxPrice >= priceRange[0]);
+
+  //   return matchesBannerFilter && matchesCategory && matchesPrice;
+  // });
 
   // const filteredConferences = mockConferences.filter(conf => {
   //   const matchesSearch = conf.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -464,7 +482,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
           <div className="flex justify-center items-center py-12">
             <div className="text-red-400 text-center">
               <p>Có lỗi xảy ra khi tải dữ liệu hội nghị {bannerFilter === 'technical' ? 'kỹ thuật' : 'nghiên cứu'}</p>
-              <p className="text-sm mt-2">{defaultError?.data?.message || lazyWithPricesError?.data?.message || statusConferencesError?.data?.message}</p>
+              <p className="text-sm mt-2">{defaultError?.data?.Message || lazyWithPricesError?.data?.Message || statusConferencesError?.data?.Message}</p>
             </div>
           </div>
         )}

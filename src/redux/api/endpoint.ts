@@ -14,8 +14,11 @@ export const endpoint = {
     REVIEWERS_LIST:"/Auth/list-all-reviewers",
     CREATE_COLLABORATOR:"/Auth/create-collaborator-account",
 
+    UPDATE_PROFILE: "/Auth/update-profile",
+    CHANGE_PASSWORD: "/Auth/change-password",
+
     SUSPEND: (userId: string) => `/Auth/suspend-account?userId=${userId}`,
-    ACTIVATE:(userId: string) => `/Auth/activate-account?userId=${userId}`, 
+    ACTIVATE: (userId: string) => `/Auth/activate-account?userId=${userId}`,
   },
   DESTINATION: {
     LIST: "/Destination",
@@ -117,7 +120,7 @@ export const endpoint = {
     CREATE_RESEARCH_PAPER_PAYMENT: "/payment/pay-research-paper-with-momo",
     GET_OWN_TRANSACTION: "/payment/get-own-transaction",
   },
-  
+
   PAPER: {
     LIST_ALL_PAPERS:"/Paper/list-all-papers",
 
@@ -127,7 +130,7 @@ export const endpoint = {
     ASSIGN_PAPER_TO_REVIEWER:"/Paper/assign-reviewer-to-paper",
     LIST_UNASSIGN_ABSTRACT:"/Paper/list-unassign-abstract",
     LIST_ASSIGN_PAPER_REVIEWER:"/Paper/get-assigned-papers",
-
+   SUBMIT_ABSTRACT: "/Paper/submit-abstract",
 
     GET_PAPER_DETAIL_REVIEWER: (paperId: string) => 
     `/Paper/paper-detail-for-reviewer?paperId=${paperId}`,
@@ -146,17 +149,22 @@ export const endpoint = {
     SUBMIT_PAPER_REVISION_REVIEW: "/Paper/submit-paper-revision-review",
     LIST_REVISION_PAPER_REVIEW: "/Paper/list-revision-paper-review",
     DECIDE_REVISION_STATUS: "/Paper/decide-revise-status",
-
     SUBMIT_PAPER_REVISION_FEEDBACK: "/Paper/submit-paper-revision-feedback",
 
 
+    // FULL PAPER
+    SUBMIT_FULLPAPER: "/Paper/submit-fullpaper",
 
+    // REVISION PAPER
+    SUBMIT_PAPER_REVISION: "/Paper/submit-paper-revision",
+    SUBMIT_PAPER_REVISION_RESPONSE: "/Paper/submit-paper-revision-response",
 
-
-
-
-
-
+    // CAMERA READY
+    SUBMIT_CAMERA_READY: "/Paper/submit-camera-ready",
+    LIST_SUBMITTED_PAPERS_CUSTOMER: "/Paper/get-all-submitted-papers-for-customer",
+    GET_PAPER_DETAIL_CUSTOMER: "/Paper/get-paper-detail-customer",
+    LIST_PAPER_PHASES: "/Paper/list-paper-phases",
+    LIST_AVAILABLE_CUSTOMERS: "/Paper/list-available-customers",
   },
 
 

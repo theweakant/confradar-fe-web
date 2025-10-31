@@ -68,8 +68,10 @@ const ConferenceDetail = () => {
   const error = isResearch ? researchConferenceError : technicalConferenceError;
 
   useEffect(() => {
-    if (techPaymentError) toast.error(techPaymentError.data?.message);
-    if (researchPaymentError) toast.error(researchPaymentError.data?.message);
+    if (techPaymentError) toast.error(techPaymentError.data?.Message);
+    if (researchPaymentError) toast.error(researchPaymentError.data?.Message);
+    console.log(techPaymentError)
+    console.log(researchPaymentError)
   }, [techPaymentError, researchPaymentError]);
 
   // const { fetchConference, loading, error } = useConference();
@@ -166,7 +168,7 @@ const ConferenceDetail = () => {
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black flex items-center justify-center">
         <div className="text-center text-white">
           <p className="text-red-400 mb-4">Có lỗi xảy ra khi tải thông tin hội nghị</p>
-          <p className="text-sm">{error.data?.message}</p>
+          <p className="text-sm">{error.data?.Message}</p>
         </div>
       </div>
     );
