@@ -149,11 +149,12 @@ export const usePaperCustomer = () => {
         try {
             const formData = new FormData();
 
-            formData.append('revisionPaperSubmissionId', request.revisionPaperSubmissionId);
-            formData.append('paperId', request.paperId);
-            formData.append('responses', JSON.stringify(request.responses));
+            // formData.append('revisionPaperSubmissionId', request.revisionPaperSubmissionId);
+            // formData.append('paperId', request.paperId);
+            // formData.append('responses', JSON.stringify(request.responses));
 
-            const result = await submitPaperRevisionResponse(formData).unwrap();
+            // const result = await submitPaperRevisionResponse(formData).unwrap();
+            const result = await submitPaperRevisionResponse(request).unwrap();
             return result;
         } catch (error) {
             throw error;

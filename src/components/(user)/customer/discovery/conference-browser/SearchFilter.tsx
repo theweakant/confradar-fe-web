@@ -130,7 +130,7 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
                         />
                     </div>
 
-                    <div className="flex flex-col w-full">
+                    {/* <div className="flex flex-col w-full">
                         <label className="text-xs text-gray-300 mb-1">Trạng thái</label>
                         <DropdownSelect
                             id="status"
@@ -139,7 +139,7 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
                             onChange={setSelectedStatus}
                             placeholder="Trạng thái"
                         />
-                    </div>
+                    </div> */}
 
                     <div className="flex flex-col w-full">
                         <label className="text-xs text-gray-300 mb-1">Ngày bắt đầu</label>
