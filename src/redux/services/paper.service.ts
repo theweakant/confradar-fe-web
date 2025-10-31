@@ -126,12 +126,12 @@ export const paperApi = createApi({
 
     submitPaperRevisionResponse: builder.mutation<
       ApiResponse<number>,
-      FormData
+      CreateRevisionPaperSubmissionResponse
     >({
-      query: (formData) => ({
+      query: (body) => ({
         url: endpoint.PAPER.SUBMIT_PAPER_REVISION_RESPONSE,
-        method: "POST",
-        body: formData,
+        method: "PUT",
+        body,
       }),
       invalidatesTags: ["Paper"],
     }),
