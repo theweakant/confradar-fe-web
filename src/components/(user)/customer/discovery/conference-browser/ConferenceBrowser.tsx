@@ -461,8 +461,18 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
         />
 
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-white">
+          {/* <h2 className="text-xl font-semibold text-white">
             Kết quả hội nghị {bannerFilter === 'technical' ? 'Kỹ thuật' : 'Nghiên cứu'} ({totalCount} hội nghị)
+          </h2> */}
+
+          <h2 className="text-xl font-semibold text-white">
+            Kết quả hội nghị{" "}
+            {bannerFilter === 'technical'
+              ? 'Kỹ thuật'
+              : bannerFilter === 'research'
+                ? 'Nghiên cứu'
+                : ''}{" "}
+            ({totalCount} hội nghị)
           </h2>
           {(defaultLoading || lazyWithPricesLoading || statusConferencesLoading) && (
             <div className="text-sm text-blue-400">Đang tải...</div>
@@ -481,7 +491,15 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
         {(defaultError || lazyWithPricesError || statusConferencesError) && (
           <div className="flex justify-center items-center py-12">
             <div className="text-red-400 text-center">
-              <p>Có lỗi xảy ra khi tải dữ liệu hội nghị {bannerFilter === 'technical' ? 'kỹ thuật' : 'nghiên cứu'}</p>
+              {/* <p>Có lỗi xảy ra khi tải dữ liệu hội nghị {bannerFilter === 'technical' ? 'kỹ thuật' : 'nghiên cứu'}</p> */}
+              <p>
+                Có lỗi xảy ra khi tải dữ liệu hội nghị
+                {bannerFilter === 'all'
+                  ? ''
+                  : bannerFilter === 'technical'
+                    ? ' kỹ thuật'
+                    : ' nghiên cứu'}
+              </p>
               <p className="text-sm mt-2">{defaultError?.data?.Message || lazyWithPricesError?.data?.Message || statusConferencesError?.data?.Message}</p>
             </div>
           </div>
@@ -492,7 +510,11 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
           totalCount === 0 && (
             <div className="flex justify-center items-center py-12">
               <div className="text-gray-400 text-center">
-                <p>Không tìm thấy hội nghị {bannerFilter === 'technical' ? 'kỹ thuật' : 'nghiên cứu'} nào</p>
+                <p>Không tìm thấy hội nghị {bannerFilter === 'all'
+                  ? ''
+                  : bannerFilter === 'technical'
+                    ? ' kỹ thuật'
+                    : ' nghiên cứu'} nào</p>
                 <p className="text-sm mt-2">Hãy thử thay đổi bộ lọc hoặc tìm kiếm với từ khóa khác</p>
               </div>
             </div>
