@@ -2,6 +2,7 @@ import { MapPin, Calendar, Star } from 'lucide-react';
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { ConferencePriceResponse, ResearchConferenceDetailResponse, TechnicalConferenceDetailResponse } from "@/types/conference.type";
 import { getCurrentPrice } from "@/utils/conferenceUtils";
+import React from 'react';
 
 interface ConferenceHeaderProps {
     conference: TechnicalConferenceDetailResponse | ResearchConferenceDetailResponse;
@@ -15,6 +16,10 @@ interface ConferenceHeaderProps {
     handlePurchaseTicket: () => void;
     accessToken: string | null;
     formatDate: (dateString?: string) => string;
+    authorInfo: { title: string; description: string };
+    setAuthorInfo: (info: { title: string; description: string }) => void;
+    showAuthorForm: boolean;
+    setShowAuthorForm: (show: boolean) => void;
 }
 
 const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
@@ -28,8 +33,15 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
     paymentLoading,
     handlePurchaseTicket,
     accessToken,
-    formatDate
+    formatDate,
+    authorInfo,
+    setAuthorInfo,
+    showAuthorForm,
+    setShowAuthorForm,
 }) => {
+    const titleRef = React.useRef<HTMLInputElement>(null);
+    const descriptionRef = React.useRef<HTMLTextAreaElement>(null);
+
     return (
         <>
             <div className="relative max-w-6xl mx-auto px-4 py-8 md:py-16">
@@ -99,13 +111,19 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                             <DialogPanel
                                 transition
                                 className="w-full max-w-md rounded-2xl bg-white/10 backdrop-blur-2xl p-6
-            text-white duration-300 ease-out data-[closed]:opacity-0 data-[closed]:scale-95"
+            text-white duration-300 ease-out data-[closed]:opacity-0 data-[closed]:scale-95
+             max-h-[85vh] flex flex-col"
                             >
                                 <DialogTitle as="h3" className="text-lg font-semibold mb-4">
                                     Chọn loại vé
                                 </DialogTitle>
 
-                                <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+                                <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1"
+                                    style={{
+                                        scrollbarWidth: "thin",
+                                        scrollbarColor: "rgba(255,255,255,0.2) transparent",
+                                        scrollBehavior: "smooth",
+                                    }}>
                                     {(conference.conferencePrices || []).map((ticket) => {
                                         const currentPrice = getCurrentPrice(ticket);
 
@@ -127,13 +145,21 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                                                     ? "bg-coral-500/30 border-coral-400"
                                                     : "bg-white/10 border-white/20 hover:bg-white/20"
                                                     }`}
+                                                onClick={() => {
+                                                    setSelectedTicket(ticket);
+                                                    if (ticket.isAuthor) {
+                                                        setShowAuthorForm(true);
+                                                    } else {
+                                                        setShowAuthorForm(false);
+                                                    }
+                                                }}
                                             >
                                                 <input
                                                     type="radio"
                                                     name="ticket"
                                                     value={ticket.conferencePriceId}
                                                     className="hidden"
-                                                    onChange={() => setSelectedTicket(ticket)}
+                                                // onChange={() => setSelectedTicket(ticket)}
                                                 />
 
                                                 <div className="flex justify-between items-start mb-1">
@@ -205,7 +231,110 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                                     })}
                                 </div>
 
-                                <div className="mt-6 flex justify-end gap-3">
+                                {selectedTicket?.isAuthor && (
+                                    <div className="mt-4 flex-shrink-0">
+                                        <button
+                                            onClick={() => setShowAuthorForm(!showAuthorForm)}
+                                            className="w-full flex items-center justify-between p-3 rounded-lg 
+                           bg-gradient-to-r from-yellow-500/20 to-orange-500/20 
+                           border border-yellow-400/40 hover:border-yellow-400/60 transition-all"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <svg className="w-5 h-5 text-yellow-300" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                                                    <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
+                                                </svg>
+                                                <span className="text-sm font-medium text-yellow-300">
+                                                    Thông tin bài báo {authorInfo.title && authorInfo.description && '✓'}
+                                                </span>
+                                            </div>
+                                            <svg
+                                                className={`w-5 h-5 text-yellow-300 transition-transform ${showAuthorForm ? 'rotate-180' : ''}`}
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+
+                                        {/* Form content với animation */}
+                                        <div
+                                            className={`overflow-hidden transition-all duration-300 ease-in-out ${showAuthorForm ? 'max-h-96 opacity-100 mt-3' : 'max-h-0 opacity-0'
+                                                }`}
+                                        >
+                                            <div className="space-y-3 p-3 bg-black/20 rounded-lg border border-yellow-400/20">
+                                                <p className="text-xs text-yellow-200/80 leading-relaxed">
+                                                    💡 Viết tiêu đề và mô tả bài báo. Có thể chỉnh sửa sau tại <strong>"Bài báo của tôi"</strong>
+                                                </p>
+
+                                                <div>
+                                                    <label className="block text-xs font-medium mb-1.5 text-white/90">
+                                                        Tiêu đề <span className="text-red-400">*</span>
+                                                    </label>
+                                                    <input
+                                                        ref={titleRef}
+                                                        type="text"
+                                                        value={authorInfo.title}
+                                                        onChange={(e) => setAuthorInfo({ ...authorInfo, title: e.target.value })}
+                                                        placeholder="Nhập tiêu đề bài báo..."
+                                                        className="w-full px-3 py-2 text-sm rounded-lg bg-white/10 border border-white/30 
+                                     text-white placeholder-white/40 focus:outline-none focus:border-yellow-400
+                                     focus:ring-1 focus:ring-yellow-400/30"
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-xs font-medium mb-1.5 text-white/90">
+                                                        Mô tả <span className="text-red-400">*</span>
+                                                    </label>
+                                                    <textarea
+                                                        ref={descriptionRef}
+                                                        value={authorInfo.description}
+                                                        onChange={(e) => setAuthorInfo({ ...authorInfo, description: e.target.value })}
+                                                        placeholder="Nhập mô tả ngắn gọn..."
+                                                        rows={3}
+                                                        className="w-full px-3 py-2 text-sm rounded-lg bg-white/10 border border-white/30 
+                                     text-white placeholder-white/40 focus:outline-none focus:border-yellow-400
+                                     focus:ring-1 focus:ring-yellow-400/30 resize-none"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="mt-4 flex justify-end gap-3 flex-shrink-0 pt-4 border-t border-white/10">
+                                    <button
+                                        onClick={() => setIsDialogOpen(false)}
+                                        className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-500 transition text-sm font-medium"
+                                    >
+                                        Hủy
+                                    </button>
+                                    <button
+                                        onClick={handlePurchaseTicket}
+                                        disabled={!selectedTicket || paymentLoading ||
+                                            (selectedTicket?.isAuthor && (!authorInfo.title.trim() || !authorInfo.description.trim()))}
+                                        className="px-5 py-2 rounded-lg bg-coral-500 hover:bg-coral-600 
+                     disabled:opacity-50 disabled:cursor-not-allowed transition text-sm font-medium"
+                                    >
+                                        {paymentLoading ? (
+                                            <div className="flex items-center gap-2">
+                                                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"></path>
+                                                </svg>
+                                                <span>Đang xử lý...</span>
+                                            </div>
+                                        ) : accessToken ? (
+                                            "Thanh toán"
+                                        ) : (
+                                            "Đăng nhập"
+                                        )}
+                                    </button>
+                                </div>
+
+                                {/* <div className="mt-6 flex justify-end gap-3">
                                     <button
                                         onClick={() => setIsDialogOpen(false)}
                                         className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-500 transition"
@@ -247,7 +376,7 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                                             "Đăng nhập để thanh toán"
                                         )}
                                     </button>
-                                </div>
+                                </div> */}
                             </DialogPanel>
                         </div>
                     </Dialog>

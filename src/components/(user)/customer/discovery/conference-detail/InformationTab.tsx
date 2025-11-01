@@ -29,79 +29,61 @@ const InformationTab: React.FC<InformationTabProps> = ({
                 <div className="mb-8">
                     <h3 className="text-xl font-semibold text-white mb-4">Research Conference Details</h3>
                     <div className="bg-white/20 backdrop-blur-md rounded-lg p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {(conference as ResearchConferenceDetailResponse).paperFormat && (
-                            <div>
-                                <span className="text-white/70 text-sm">Paper Format:</span>
-                                <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).paperFormat}</p>
-                            </div>
-                        )}
-                        {(conference as ResearchConferenceDetailResponse).numberPaperAccept !== undefined && (
-                            <div>
-                                <span className="text-white/70 text-sm">Papers Accepted:</span>
-                                <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).numberPaperAccept}</p>
-                            </div>
-                        )}
-                        {(conference as ResearchConferenceDetailResponse).revisionAttemptAllowed !== undefined && (
-                            <div>
-                                <span className="text-white/70 text-sm">Revision Attempts Allowed:</span>
-                                <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).revisionAttemptAllowed}</p>
-                            </div>
-                        )}
-                        {(conference as ResearchConferenceDetailResponse).allowListener !== undefined && (
-                            <div>
-                                <span className="text-white/70 text-sm">Allow Listeners:</span>
-                                <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).allowListener ? 'Yes' : 'No'}</p>
-                            </div>
-                        )}
-                        {(conference as ResearchConferenceDetailResponse).rankValue && (
-                            <div>
-                                <span className="text-white/70 text-sm">Rank Value:</span>
-                                <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).rankValue}</p>
-                            </div>
-                        )}
-                        {(conference as ResearchConferenceDetailResponse).rankYear && (
-                            <div>
-                                <span className="text-white/70 text-sm">Rank Year:</span>
-                                <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).rankYear}</p>
-                            </div>
-                        )}
-                        {(conference as ResearchConferenceDetailResponse).reviewFee !== undefined && (
-                            <div>
-                                <span className="text-white/70 text-sm">Review Fee:</span>
-                                <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).reviewFee ?? 'Phí đánh giá bài báo chưa xác định'}₫</p>
-                            </div>
-                        )}
-                        {(conference as ResearchConferenceDetailResponse).rankingCategoryName && (
-                            <div>
-                                <span className="text-white/70 text-sm">Ranking Category:</span>
-                                <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).rankingCategoryName}</p>
-                            </div>
-                        )}
-                        {(conference as ResearchConferenceDetailResponse).rankingDescription && (
-                            <div className="col-span-full">
-                                <span className="text-white/70 text-sm">Ranking Description:</span>
-                                <p className="text-white mt-1">{(conference as ResearchConferenceDetailResponse).rankingDescription}</p>
-                            </div>
-                        )}
+                        <div>
+                            <span className="text-white/70 text-sm">Paper Format:</span>
+                            <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).paperFormat || 'Chưa có thông tin về định dạng bài báo'}</p>
+                        </div>
+                        <div>
+                            <span className="text-white/70 text-sm">Papers Accepted:</span>
+                            <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).numberPaperAccept !== undefined ? (conference as ResearchConferenceDetailResponse).numberPaperAccept : 'Chưa xác định số lượng bài báo được chấp nhận'}</p>
+                        </div>
+                        <div>
+                            <span className="text-white/70 text-sm">Revision Attempts Allowed:</span>
+                            <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).revisionAttemptAllowed !== undefined ? (conference as ResearchConferenceDetailResponse).revisionAttemptAllowed : 'Chưa xác định số lần sửa đổi cho phép'}</p>
+                        </div>
+                        <div>
+                            <span className="text-white/70 text-sm">Allow Listeners:</span>
+                            <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).allowListener !== undefined ? ((conference as ResearchConferenceDetailResponse).allowListener ? 'Có' : 'Không') : 'Chưa xác định chính sách người nghe'}</p>
+                        </div>
+                        <div>
+                            <span className="text-white/70 text-sm">Rank Value:</span>
+                            <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).rankValue || 'Chưa có thông tin về giá trị xếp hạng'}</p>
+                        </div>
+                        <div>
+                            <span className="text-white/70 text-sm">Rank Year:</span>
+                            <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).rankYear || 'Chưa có thông tin về năm xếp hạng'}</p>
+                        </div>
+                        <div>
+                            <span className="text-white/70 text-sm">Review Fee:</span>
+                            <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).reviewFee !== undefined ? `${(conference as ResearchConferenceDetailResponse).reviewFee?.toLocaleString('vi-VN')}₫` : 'Phí đánh giá bài báo chưa xác định'}</p>
+                        </div>
+                        <div>
+                            <span className="text-white/70 text-sm">Ranking Category:</span>
+                            <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).rankingCategoryName || 'Chưa có thông tin về danh mục xếp hạng'}</p>
+                        </div>
+                        <div className="col-span-full">
+                            <span className="text-white/70 text-sm">Ranking Description:</span>
+                            <p className="text-white mt-1">{(conference as ResearchConferenceDetailResponse).rankingDescription || 'Chưa có mô tả về xếp hạng'}</p>
+                        </div>
                     </div>
                 </div>
             )}
 
             {/* Technical Conference */}
-            {!isResearch && (conference as TechnicalConferenceDetailResponse).targetAudience && (
+            {!isResearch && (
                 <div className="mb-8">
                     <h3 className="text-xl font-semibold text-white mb-4">Technical Conference Details</h3>
                     <div className="bg-white/20 backdrop-blur-md rounded-lg p-6">
                         <span className="text-white/70 text-sm">Target Audience:</span>
-                        <p className="text-white font-medium">{(conference as TechnicalConferenceDetailResponse).targetAudience}</p>
+                        <p className="text-white font-medium">{(conference as TechnicalConferenceDetailResponse).targetAudience || 'Chưa có thông tin về đối tượng mục tiêu'}</p>
                     </div>
                 </div>
             )}
 
             {/* Media Section */}
-            {mediaList.length > 0 && (
-                <div className="mb-8">
-                    <h3 className="text-xl font-semibold text-white mb-4">Hình ảnh & Media</h3>
+            <div className="mb-8">
+                <h3 className="text-xl font-semibold text-white mb-4">Hình ảnh & Media</h3>
+                {mediaList.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {mediaList.map((media) => (
                             <div
@@ -120,13 +102,17 @@ const InformationTab: React.FC<InformationTabProps> = ({
                             </div>
                         ))}
                     </div>
-                </div>
-            )}
+                ) : (
+                    <div className="text-center text-white/70 py-6 bg-white/10 rounded-lg">
+                        <p>Chưa có hình ảnh hoặc media cho hội nghị này</p>
+                    </div>
+                )}
+            </div>
 
             {/* Sponsors */}
-            {sponsorsList.length > 0 && (
-                <div className="mb-8">
-                    <h3 className="text-xl font-semibold text-white mb-4">Nhà tài trợ</h3>
+            <div className="mb-8">
+                <h3 className="text-xl font-semibold text-white mb-4">Nhà tài trợ</h3>
+                {sponsorsList.length > 0 ? (
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                         {sponsorsList.map((sponsor) => (
                             <div
@@ -141,51 +127,63 @@ const InformationTab: React.FC<InformationTabProps> = ({
                                         className="object-contain"
                                     />
                                 </div>
-                                <span className="text-white text-sm text-center">{sponsor.name}</span>
+                                <span className="text-white text-sm text-center">{sponsor.name || 'Tên nhà tài trợ chưa xác định'}</span>
                             </div>
                         ))}
                     </div>
-                </div>
-            )}
+                ) : (
+                    <div className="text-center text-white/70 py-6 bg-white/10 rounded-lg">
+                        <p>Chưa có thông tin về nhà tài trợ</p>
+                    </div>
+                )}
+            </div>
 
             {/* Policies */}
-            {policiesList.length > 0 && (
-                <div className="mb-8">
-                    <h3 className="text-xl font-semibold text-white mb-4">Chính sách & Quy định</h3>
+            <div className="mb-8">
+                <h3 className="text-xl font-semibold text-white mb-4">Chính sách & Quy định</h3>
+                {policiesList.length > 0 ? (
                     <div className="space-y-4">
                         {policiesList.map((policy) => (
                             <div key={policy.policyId} className="bg-white/20 backdrop-blur-md rounded-lg p-4">
-                                <h4 className="font-semibold text-white mb-2">{policy.policyName}</h4>
-                                <p className="text-white/80 text-sm">{policy.description}</p>
+                                <h4 className="font-semibold text-white mb-2">{policy.policyName || 'Chính sách chưa đặt tên'}</h4>
+                                <p className="text-white/80 text-sm">{policy.description || 'Chưa có mô tả cho chính sách này'}</p>
                             </div>
                         ))}
                     </div>
-                </div>
-            )}
+                ) : (
+                    <div className="text-center text-white/70 py-6 bg-white/10 rounded-lg">
+                        <p>Chưa có thông tin về chính sách và quy định</p>
+                    </div>
+                )}
+            </div>
 
             {/* Refund Policies */}
-            {refundPolicies.length > 0 && (
+            {isResearch && (
                 <div className="mb-8">
                     <h3 className="text-xl font-semibold text-white mb-4">Chính sách hoàn tiền</h3>
-                    <div className="space-y-4">
-                        {refundPolicies.map((refund) => (
-                            <div key={refund.refundPolicyId} className="bg-white/20 backdrop-blur-md rounded-lg p-4">
-                                <div className="flex justify-between items-center">
-                                    <div>
-                                        <h4 className="font-semibold text-white mb-1">
-                                            Hoàn {refund.percentRefund}% phí tham gia
-                                        </h4>
-                                        {refund.refundDeadline && (
+                    {refundPolicies.length > 0 ? (
+                        <div className="space-y-4">
+                            {refundPolicies.map((refund) => (
+                                <div key={refund.refundPolicyId} className="bg-white/20 backdrop-blur-md rounded-lg p-4">
+                                    <div className="flex justify-between items-center">
+                                        <div>
+                                            <h4 className="font-semibold text-white mb-1">
+                                                Hoàn {refund.percentRefund || 0}% phí tham gia
+                                            </h4>
                                             <p className="text-white/80 text-sm">
-                                                Hạn chót: {new Date(refund.refundDeadline).toLocaleDateString('vi-VN')}
+                                                Hạn chót: {refund.refundDeadline ? new Date(refund.refundDeadline).toLocaleDateString('vi-VN') : 'Chưa xác định'}
                                             </p>
-                                        )}
+                                        </div>
+                                        <div className="text-coral-400 font-medium">Thứ tự: {refund.refundOrder || 'Chưa xác định'}</div>
                                     </div>
-                                    <div className="text-coral-400 font-medium">Thứ tự: {refund.refundOrder}</div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center text-white/70 py-6 bg-white/10 rounded-lg">
+                            <p>Chưa có thông tin về chính sách hoàn tiền</p>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
