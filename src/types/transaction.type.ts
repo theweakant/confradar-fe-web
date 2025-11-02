@@ -4,6 +4,8 @@ export interface CreateTechPaymentRequest {
 
 export interface CreatePaperPaymentRequest {
     conferencePriceId: string;
+    title: string;
+    description?: string;
 }
 
 export interface Transaction {
@@ -18,4 +20,10 @@ export interface Transaction {
     paymentMethodId?: string;
     PaymentStatusName?: string;
     PaymentMethodName?: string;
+}
+
+export interface PaymentMethod {
+    paymentMethodId: string;
+    methodName?: string;
+    methodDescription?: string;
 }

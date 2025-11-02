@@ -47,30 +47,24 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
 
                     {/* Session Info */}
                     <div className="flex-1">
-                      <h3 className="text-xl font-bold mb-2">{s.title}</h3>
-                      {s.description && (
-                        <p className="text-white/80 text-sm mb-3">
-                          {s.description}
-                        </p>
-                      )}
+                      <h3 className="text-xl font-bold mb-2">{s.title || 'Phiên họp chưa đặt tên'}</h3>
+                      <p className="text-white/80 text-sm mb-3">
+                        {s.description || 'Chưa có mô tả cho phiên họp này'}
+                      </p>
 
                       <div className="space-y-2 mb-3">
-                        {s.startTime && s.endTime && (
-                          <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4 text-white" />
-                            <span className="text-sm text-white">
-                              {formatTime(s.startTime)} - {formatTime(s.endTime)}
-                            </span>
-                          </div>
-                        )}
-                        {s.date && (
-                          <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4 text-white" />
-                            <span className="text-sm text-white">
-                              {formatDate(s.date)}
-                            </span>
-                          </div>
-                        )}
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-white" />
+                          <span className="text-sm text-white">
+                            {s.startTime && s.endTime ? `${formatTime(s.startTime)} - ${formatTime(s.endTime)}` : 'Thời gian chưa xác định'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-white" />
+                          <span className="text-sm text-white">
+                            {s.date ? formatDate(s.date) : 'Ngày chưa xác định'}
+                          </span>
+                        </div>
                         {s.sessionMedia && s.sessionMedia.length > 0 && (
                           <div className="mt-3">
                             <p className="text-white font-medium mb-2">

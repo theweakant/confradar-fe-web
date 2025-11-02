@@ -1,5 +1,5 @@
 import { ApiResponse } from "@/types/api.type";
-import { CreatePaperPaymentRequest, CreateTechPaymentRequest, Transaction } from "@/types/transaction.type";
+import { CreatePaperPaymentRequest, CreateTechPaymentRequest, PaymentMethod, Transaction } from "@/types/transaction.type";
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { apiClient } from "../api/apiClient";
 import { endpoint } from "../api/endpoint";
@@ -7,7 +7,7 @@ import { endpoint } from "../api/endpoint";
 export const transactionApi = createApi({
     reducerPath: 'transactionApi',
     baseQuery: apiClient,
-    tagTypes: ['Transaction'],
+    tagTypes: ['Transaction', 'PaymentMethod'],
     endpoints: (builder) => ({
         createPaymentForTech: builder.mutation<ApiResponse<string>, CreateTechPaymentRequest>({
             query: (request) => ({
@@ -49,6 +49,11 @@ export const transactionApi = createApi({
             query: () => endpoint.TRANSACTION.GET_OWN_TRANSACTION,
             providesTags: ['Transaction'],
         }),
+
+        getAllPaymentMethods: builder.query<ApiResponse<PaymentMethod[]>, void>({
+            query: () => endpoint.PAYMENT_METHOD.GET_ALL,
+            providesTags: ["PaymentMethod"],
+        }),
     }),
 });
 
@@ -57,4 +62,6 @@ export const {
     useCreatePaymentForResearchPaperMutation,
     useGetOwnTransactionQuery,
     useLazyGetOwnTransactionQuery,
+    useGetAllPaymentMethodsQuery,
+    useLazyGetAllPaymentMethodsQuery,
 } = transactionApi;

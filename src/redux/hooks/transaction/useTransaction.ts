@@ -1,7 +1,7 @@
-import { useCreatePaymentForResearchPaperMutation, useCreatePaymentForTechMutation, useLazyGetOwnTransactionQuery } from "@/redux/services/transaction.service";
+import { useCreatePaymentForResearchPaperMutation, useCreatePaymentForTechMutation, useGetAllPaymentMethodsQuery, useLazyGetAllPaymentMethodsQuery, useLazyGetOwnTransactionQuery } from "@/redux/services/transaction.service";
 import { parseApiError } from "@/redux/utils/api";
 import { ApiResponse } from "@/types/api.type";
-import { CreatePaperPaymentRequest, CreateTechPaymentRequest } from "@/types/transaction.type";
+import { CreatePaperPaymentRequest, CreateTechPaymentRequest, PaymentMethod } from "@/types/transaction.type";
 
 export const useTransaction = () => {
     const [
@@ -19,9 +19,15 @@ export const useTransaction = () => {
         { isLoading: transactionsLoading, data: transactionsData, error: transactionsRawError }
     ] = useLazyGetOwnTransactionQuery();
 
+    const { data, isLoading, error } = useGetAllPaymentMethodsQuery();
+    const [fetchPaymentMethods, { isLoading: lazyLoading, data: lazyData, error: lazyError }] =
+        useLazyGetAllPaymentMethodsQuery();
+
+
     const techPaymentError = parseApiError<string>(techPaymentRawError);
     const researchPaymentError = parseApiError<string>(researchPaymentRawError);
     const transactionsError = parseApiError<string>(transactionsRawError);
+    const paymentMethodsError = parseApiError<string>(error || lazyError);
 
     const purchaseTechTicket = async (request: CreateTechPaymentRequest) => {
         try {
@@ -50,24 +56,37 @@ export const useTransaction = () => {
         }
     };
 
+    const fetchAllPaymentMethods = async (): Promise<PaymentMethod[]> => {
+        try {
+            const result = await fetchPaymentMethods().unwrap();
+            return result.data || [];
+        } catch (err) {
+            throw err;
+        }
+    };
+
+
     return {
         // Actions
         purchaseTechTicket,
         purchaseResearchPaper,
         fetchTransactions,
+        fetchAllPaymentMethods,
 
         // loading
-        loading: techPaymentLoading || researchPaymentLoading || transactionsLoading,
+        loading: techPaymentLoading || researchPaymentLoading || transactionsLoading || isLoading || lazyLoading,
 
         //Error
         techPaymentError,
         researchPaymentError,
         transactionsError,
+        paymentMethodsError,
 
         //Data responses
         techPaymentResponse: techPaymentData,
         researchPaymentResponse: researchPaymentData,
         transactions: transactionsData?.data || [],
+        paymentMethods: data?.data || lazyData?.data || [],
 
         // purchaseTicket,
         // fetchTransactions,

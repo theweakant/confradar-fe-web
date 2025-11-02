@@ -10,9 +10,9 @@ export const endpoint = {
 
     //user
     PROFILE: "/Auth/view-profile-by-id",
-    USERS_LIST:"/Auth/list-users",
-    REVIEWERS_LIST:"/Auth/list-all-reviewers",
-    CREATE_COLLABORATOR:"/Auth/create-collaborator-account",
+    USERS_LIST: "/Auth/list-users",
+    REVIEWERS_LIST: "/Auth/list-all-reviewers",
+    CREATE_COLLABORATOR: "/Auth/create-collaborator-account",
 
     UPDATE_PROFILE: "/Auth/update-profile",
     CHANGE_PASSWORD: "/Auth/change-password",
@@ -44,7 +44,7 @@ export const endpoint = {
   RANKING_CONFERENCE: {
     LIST: "/ConferenceRanking/Get-all-ranking-category",
   },
-  
+
   CONFERENCE: {
     LIST_PAGINATED: "/Conference/paginated-conferences",
     LIST_WITH_PRICES: "/Conference/conferences-with-prices",
@@ -121,19 +121,23 @@ export const endpoint = {
     GET_OWN_TRANSACTION: "/payment/get-own-transaction",
   },
 
+  PAYMENT_METHOD: {
+    GET_ALL: "/PaymentMethod/list-all-payment-methods",
+  },
+
   PAPER: {
-    LIST_ALL_PAPERS:"/Paper/list-all-papers",
+    LIST_ALL_PAPERS: "/Paper/list-all-papers",
 
     //ABSTRACT
-    LIST_PENDING_ABSTRACT:"/Paper/list-pending-abstract",
-    DECIDE_ABSTRACT:"/Paper/decide-abstract-paper-status",
-    ASSIGN_PAPER_TO_REVIEWER:"/Paper/assign-reviewer-to-paper",
-    LIST_UNASSIGN_ABSTRACT:"/Paper/list-unassign-abstract",
-    LIST_ASSIGN_PAPER_REVIEWER:"/Paper/get-assigned-papers",
-   SUBMIT_ABSTRACT: "/Paper/submit-abstract",
+    LIST_PENDING_ABSTRACT: "/Paper/list-pending-abstract",
+    DECIDE_ABSTRACT: "/Paper/decide-abstract-paper-status",
+    ASSIGN_PAPER_TO_REVIEWER: "/Paper/assign-reviewer-to-paper",
+    LIST_UNASSIGN_ABSTRACT: "/Paper/list-unassign-abstract",
+    LIST_ASSIGN_PAPER_REVIEWER: "/Paper/get-assigned-papers",
+    SUBMIT_ABSTRACT: "/Paper/submit-abstract",
 
-    GET_PAPER_DETAIL_REVIEWER: (paperId: string) => 
-    `/Paper/paper-detail-for-reviewer?paperId=${paperId}`,
+    GET_PAPER_DETAIL_REVIEWER: (paperId: string) =>
+      `/Paper/paper-detail-for-reviewer?paperId=${paperId}`,
 
     //FULL PAPER
     SUBMIT_FULLPAPER_REVIEW: "/Paper/submit-fullpaper-review",
@@ -142,8 +146,8 @@ export const endpoint = {
 
 
     //CAMERA-READY
-    LIST_PENDING_CAMERA_READY:"/Paper/get-pending-cameraready",
-    DECIDE_CAMERA_READY:"/Paper/decide-camera-ready-status",
+    LIST_PENDING_CAMERA_READY: "/Paper/get-pending-cameraready",
+    DECIDE_CAMERA_READY: "/Paper/decide-camera-ready-status",
 
     //REVISION
     SUBMIT_PAPER_REVISION_REVIEW: "/Paper/submit-paper-revision-review",
