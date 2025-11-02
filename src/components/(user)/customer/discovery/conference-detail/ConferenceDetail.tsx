@@ -67,6 +67,9 @@ const ConferenceDetail = () => {
   });
   const [showAuthorForm, setShowAuthorForm] = React.useState(false);
 
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
+  const [showPaymentMethods, setShowPaymentMethods] = useState(false);
+
   const [isFavorite, setIsFavorite] = useState(false);
   // const [conference, setConference] = useState<TechnicalConferenceDetailResponse | null>(null);
 
@@ -82,23 +85,6 @@ const ConferenceDetail = () => {
     console.log(researchPaymentError)
   }, [techPaymentError, researchPaymentError]);
 
-  // const { fetchConference, loading, error } = useConference();
-
-  // useEffect(() => {
-  //   const loadConference = async () => {
-  //     try {
-  //       const response = await fetchConference(conferenceId);
-  //       setConference(response.data);
-  //       // setFeedbacks([]);
-  //     } catch (err) {
-  //       console.error('Failed to load conference:', err);
-  //     }
-  //   };
-  //   if (conferenceId) {
-  //     loadConference();
-  //   }
-  // }, [conferenceId]);
-
   const handlePurchaseTicket = async () => {
     if (!accessToken) {
       router.push('/auth/login');
@@ -106,6 +92,11 @@ const ConferenceDetail = () => {
     }
 
     if (!selectedTicket) return;
+
+    if (!selectedPaymentMethod) {
+      toast.error("Vui lòng chọn phương thức thanh toán!");
+      return;
+    }
 
     if (selectedTicket.isAuthor && (!authorInfo.title.trim() || !authorInfo.description.trim())) {
       toast.error("Vui lòng nhập tiêu đề và mô tả bài báo!");
@@ -116,7 +107,7 @@ const ConferenceDetail = () => {
       let response;
 
       if (selectedTicket.isAuthor) {
-        response = await purchaseResearchPaper({ conferencePriceId: selectedTicket.conferencePriceId });
+        response = await purchaseResearchPaper({ conferencePriceId: selectedTicket.conferencePriceId, title: authorInfo.title, description: authorInfo.description });
       } else {
         response = await purchaseTechTicket({ conferencePriceId: selectedTicket.conferencePriceId });
       }
@@ -127,16 +118,11 @@ const ConferenceDetail = () => {
         alert("Không nhận được đường dẫn thanh toán.");
       }
     }
-    // catch (error: unknown) {
-    //   const message =
-    //     error instanceof Error
-    //       ? error.message
-    //       : "Có lỗi xảy ra, vui lòng thử lại!"
-    //   toast.error(message)
-    // }
     finally {
       setIsDialogOpen(false);
       setAuthorInfo({ title: '', description: '' });
+      setSelectedPaymentMethod(null);
+      setShowPaymentMethods(false);
     }
   }
 
@@ -216,39 +202,19 @@ const ConferenceDetail = () => {
     });
   };
 
-  const sponsors: SponsorResponse[] = [
-    { sponsorId: '1', name: 'Sponsor A', imageUrl: '/images/sponsor1.png' },
-    { sponsorId: '2', name: 'Sponsor B', imageUrl: '/images/sponsor2.png' },
-    { sponsorId: '3', name: 'Sponsor C', imageUrl: '/images/sponsor3.png' },
-    { sponsorId: '3', name: 'Sponsor C', imageUrl: '/images/sponsor3.png' },
-    { sponsorId: '3', name: 'Sponsor C', imageUrl: '/images/sponsor3.png' },
-    { sponsorId: '3', name: 'Sponsor C', imageUrl: '/images/sponsor3.png' },
-    { sponsorId: '3', name: 'Sponsor C', imageUrl: '/images/sponsor3.png' },
-    { sponsorId: '3', name: 'Sponsor C', imageUrl: '/images/sponsor3.png' },
-  ];
-
-
   return (
     <div className="relative min-h-screen">
-
       <div className="absolute inset-0">
-        {/* Top hero image */}
         <div
           className="h-[50vh] bg-cover bg-center"
           style={{ backgroundImage: `url(${conference.bannerImageUrl || '/images/customer_route/confbannerbg1.jpg'})` }}
         />
-        {/* Bottom white part */}
         <div className="h-[calc(100vh-15rem)] bg-gradient-to-br from-gray-900 via-blue-900 to-black overflow-hidden" />
       </div>
 
       <div className="relative z-10 h-screen overflow-auto">
-        <div className="max-w-6xl mx-auto px-4 py-8 md:py-16">
-          {/* Hero Background Section */}
+        <div className="max-w-6xl mx-auto px-4">
           <div>
-            {/* <div className="relative w-full min-h-[60vh] bg-cover bg-center" style={{ backgroundImage: `url(${conference.heroImage})` }}>
-            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-transparent" /> */}
-
-            {/* Floating Content Cards */}
             <ConferenceHeader
               conference={conference}
               isFavorite={isFavorite}
@@ -265,6 +231,10 @@ const ConferenceDetail = () => {
               setAuthorInfo={setAuthorInfo}
               showAuthorForm={showAuthorForm}
               setShowAuthorForm={setShowAuthorForm}
+              selectedPaymentMethod={selectedPaymentMethod}
+              setSelectedPaymentMethod={setSelectedPaymentMethod}
+              showPaymentMethods={showPaymentMethods}
+              setShowPaymentMethods={setShowPaymentMethods}
             />
           </div>
 
@@ -272,7 +242,6 @@ const ConferenceDetail = () => {
             <SponsorCarousel sponsors={conference.sponsors ?? []} />
           </div>
 
-          {/* Tabs Section */}
           <div className="max-w-6xl mx-auto px-4 py-8">
             <div className="bg-black rounded-2xl shadow-lg overflow-hidden"> {/* Container tabs background đen */}
               {/* Tab Headers */}
