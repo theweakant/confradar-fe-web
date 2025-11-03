@@ -1,5 +1,4 @@
-import Image from 'next/image';
-import { X, MapPin, Clock, Calendar, Star } from 'lucide-react';
+import { Star } from 'lucide-react';
 import { ConferenceResponse } from "@/types/conference.type";
 
 // Feedback Tab Component

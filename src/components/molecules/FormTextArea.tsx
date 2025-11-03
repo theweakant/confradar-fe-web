@@ -7,6 +7,7 @@ interface FormTextAreaProps {
   error?: string;
   placeholder?: string;
   rows?: number;
+  disabled?: boolean;
 }
 
 export function FormTextArea({ 
@@ -17,7 +18,8 @@ export function FormTextArea({
   required = false, 
   error,
   placeholder,
-  rows = 4
+  rows = 4,
+  disabled = false,
 }: FormTextAreaProps) {
   return (
     <div>
@@ -30,9 +32,10 @@ export function FormTextArea({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         rows={rows}
+        disabled={disabled} 
         className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
           error ? "border-red-500" : "border-gray-300"
-        }`}
+        } ${disabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
       />
       {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
     </div>

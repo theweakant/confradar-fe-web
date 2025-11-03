@@ -24,6 +24,7 @@ import { ticketApi } from "./services/ticket.service";
 import { cityApi } from "./services/city.service";
 import {userApi} from "./services/user.service"
 import { paperApi } from "./services/paper.service";
+import {statusApi} from "./services/status.service";
 
 
 // Cấu hình persist
@@ -39,7 +40,8 @@ const persistConfig = {
     conferenceStepApi.reducerPath,
     categoryApi.reducerPath,
     userApi.reducerPath,
-    paperApi.reducerPath
+    paperApi.reducerPath,
+    statusApi.reducerPath,
   ],
 }
 
@@ -66,6 +68,8 @@ const appReducer = combineReducers({
   [cityApi.reducerPath]: cityApi.reducer,
   [userApi.reducerPath]: userApi.reducer,
   [paperApi.reducerPath]: paperApi.reducer,
+  [statusApi.reducerPath]: statusApi.reducer,
+
 })
 
 // Wrap với persistReducer

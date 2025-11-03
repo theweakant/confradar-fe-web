@@ -1,9 +1,11 @@
 // conferenceStepSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import type { ConferenceBasicResponse } from "@/types/conference.type"; 
 
 interface ConferenceStepState {
   currentStep: number;
   conferenceId: string | null;
+  conferenceBasicData: Partial<ConferenceBasicResponse> | null; 
   completedSteps: number[];
   loading: boolean;
   error: string | null;
@@ -14,6 +16,7 @@ interface ConferenceStepState {
 const initialState: ConferenceStepState = {
   currentStep: 1,
   conferenceId: null,
+  conferenceBasicData: null, 
   completedSteps: [],
   loading: false,
   error: null,
@@ -25,25 +28,44 @@ const conferenceStepSlice = createSlice({
   name: "conferenceStep",
   initialState,
   reducers: {
-    // Set conference ID sau khi tạo basic step
     setConferenceId: (state, action: PayloadAction<string>) => {
       state.conferenceId = action.payload;
     },
 
-    // ✅ THÊM: Set maxStep để hỗ trợ cả Tech (6) và Research (9)
+    // Lưu response data từ step 1
+    // setConferenceBasicData: (state, action: PayloadAction<ConferenceBasicResponse>) => {
+    //   state.conferenceBasicData = action.payload;
+    // },
+
+    setConferenceBasicData: (state, action: PayloadAction<Partial<ConferenceBasicResponse>>) => {
+  state.conferenceBasicData = {
+    ...state.conferenceBasicData,
+    ...action.payload,
+  } as ConferenceBasicResponse;
+},
+
     setMaxStep: (state, action: PayloadAction<number>) => {
       state.maxStep = action.payload;
     },
 
     // Load existing conference for edit
-    loadExistingConference: (state, action: PayloadAction<{id: string, maxStep?: number}>) => {
+    loadExistingConference: (state, action: PayloadAction<{
+      id: string, 
+      maxStep?: number,
+      basicData?: ConferenceBasicResponse 
+    }>) => {
       state.conferenceId = action.payload.id;
       state.mode = 'edit';
       state.currentStep = 1;
       state.completedSteps = [];
-      // ✅ Cho phép set maxStep khi load conference
+      
       if (action.payload.maxStep) {
         state.maxStep = action.payload.maxStep;
+      }
+      
+      
+      if (action.payload.basicData) {
+        state.conferenceBasicData = action.payload.basicData;
       }
     },
 
@@ -55,6 +77,7 @@ const conferenceStepSlice = createSlice({
       if (state.mode === 'edit' && newMode === 'create') {
         state.currentStep = 1;
         state.conferenceId = null;
+        state.conferenceBasicData = null; // ✅ THÊM
         state.completedSteps = [];
         state.error = null;
       }
@@ -120,6 +143,7 @@ const conferenceStepSlice = createSlice({
 
 export const {
   setConferenceId,
+  setConferenceBasicData,
   setMaxStep, 
   loadExistingConference,
   setMode,

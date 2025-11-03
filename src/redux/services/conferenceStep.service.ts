@@ -133,13 +133,66 @@ export const conferenceStepApi = createApi({
       ApiResponse<string>,
       { conferenceId: string; data: ConferenceSessionData }
     >({
-      query: ({ conferenceId, data }) => ({
-        url: endpoint.CONFERENCE_STEP.CREATE_SESSION(conferenceId),
-        method: "POST",
-        body: data,
-      }),
+      query: ({ conferenceId, data }) => {
+        const formData = new FormData();
+
+        // Lặp qua từng session
+        data.sessions.forEach((session, index) => {
+          formData.append(`sessions[${index}].title`, session.title);
+          formData.append(`sessions[${index}].description`, session.description);
+          formData.append(`sessions[${index}].startTime`, session.startTime);
+          formData.append(`sessions[${index}].endTime`, session.endTime);
+          formData.append(`sessions[${index}].date`, session.date);
+          formData.append(`sessions[${index}].roomId`, session.roomId);
+
+          // Speaker
+          session.speaker?.forEach((sp, spIndex) => {
+            formData.append(
+              `sessions[${index}].speaker[${spIndex}].name`,
+              sp.name
+            );
+            formData.append(
+              `sessions[${index}].speaker[${spIndex}].description`,
+              sp.description
+            );
+            if (sp.image instanceof File) {
+              formData.append(
+                `sessions[${index}].speaker[${spIndex}].image`,
+                sp.image
+              );
+            } else if (sp.imageUrl) {
+              formData.append(
+                `sessions[${index}].speaker[${spIndex}].imageUrl`,
+                sp.imageUrl
+              );
+            }
+          });
+
+          // Session medias
+          session.sessionMedias?.forEach((media, mediaIndex) => {
+            if (media.mediaFile instanceof File) {
+              formData.append(
+                `sessions[${index}].sessionMedias[${mediaIndex}].mediaFile`,
+                media.mediaFile
+              );
+            } else if (media.mediaUrl) {
+              formData.append(
+                `sessions[${index}].sessionMedias[${mediaIndex}].mediaUrl`,
+                media.mediaUrl
+              );
+            }
+          });
+        });
+
+        return {
+          url: endpoint.CONFERENCE_STEP.CREATE_SESSION(conferenceId),
+          method: "POST",
+          body: formData,
+        };
+      },
       invalidatesTags: ["ConferenceStep"],
     }),
+
 
     //UPDATE SESSION
     updateConferenceSession: builder.mutation<
