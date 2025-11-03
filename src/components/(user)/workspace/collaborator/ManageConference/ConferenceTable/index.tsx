@@ -106,20 +106,7 @@ export function ConferenceTable({
                 <Eye className="w-4 h-4 mr-2 text-green-600" />
                 <span>Xem chi tiết</span>
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => onEdit(conference)}
-                className="cursor-pointer"
-              >
-                <Pencil className="w-4 h-4 mr-2 text-blue-600" />
-                <span>Chỉnh sửa</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => onDelete(conference.conferenceId)}
-                className="cursor-pointer text-red-600 focus:text-red-600"
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                <span>Xóa</span>
-              </DropdownMenuItem>
+
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

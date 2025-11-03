@@ -215,7 +215,7 @@ export interface ConferenceRefundPolicyData {
 //MEDIA STEP
 export interface Media {
   mediaId?: string;
-  mediaFile: string | File | null;
+  mediaFile: File |null ;
   mediaUrl?: string;
 }
 
@@ -227,7 +227,7 @@ export interface ConferenceMediaData {
 export interface Sponsor {
   sponsorId?: string;
   name: string;
-  imageFile: string | File | null;
+  imageFile: File | null;
   imageUrl?: string;
 
 }

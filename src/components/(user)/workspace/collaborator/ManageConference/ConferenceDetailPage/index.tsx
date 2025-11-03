@@ -2,18 +2,16 @@
 
 import {
   Calendar,
-  MapPin,
-  Users,
-  Clock,
-  FileText,
   Loader2,
   ShieldCheck,
   Handshake,
   DollarSign,
   ArrowLeft,
   Info,
+  Image as ImageIcon,
 } from "lucide-react";
 
+import { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/helper/format";
@@ -29,7 +27,7 @@ export default function ConferenceDetailPage() {
   const router = useRouter();
   const { id } = useParams();
   const conferenceId = id as string;
-
+  const [activeTab, setActiveTab] = useState("information");
 
   const { data, isLoading, error } = useGetTechnicalConferenceDetailQuery(conferenceId);
   const { data: categoriesData } = useGetAllCategoriesQuery();
@@ -40,6 +38,14 @@ export default function ConferenceDetailPage() {
   const categories = categoriesData?.data || [];
   const statuses = statusesData?.data || [];
   const cities = citiesData?.data || [];
+
+  const tabs = [
+    { id: "information", label: "Thông tin cơ bản", icon: Info },
+    { id: "price", label: "Giá vé", icon: DollarSign },
+    { id: "refund-policy", label: "Hoàn trả & Chính sách", icon: ShieldCheck },
+    { id: "session", label: "Session", icon: Calendar },
+    { id: "sponsors-media", label: "Sponsors & Media", icon: ImageIcon },
+  ];
 
   const getCategoryName = (categoryId: string) => {
     const category = categories.find(c => c.conferenceCategoryId === categoryId);
@@ -104,7 +110,14 @@ export default function ConferenceDetailPage() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 
-
+        <div className="absolute top-4 right-4">
+          <Button
+            onClick={() => router.push(`/workspace/collaborator/manage-conference/update-tech-conference/${conference.conferenceId}`)}
+            className="bg-white/90 hover:bg-white text-gray-900 backdrop-blur-sm shadow-lg"
+          >
+            Chỉnh sửa
+          </Button>
+        </div>
             {/* Title Overlay */}
             <div className="absolute bottom-0 left-0 right-0 p-6">
               <div className="max-w-7xl mx-auto">
@@ -177,240 +190,393 @@ export default function ConferenceDetailPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Main Info */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Description */}
-            {conference.description && (
-              <section className="bg-white rounded-xl shadow-sm p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Info className="w-5 h-5 text-blue-600" />
-                  Giới thiệu
-                </h2>
-                <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                  {conference.description}
-                </p>
-              </section>
-            )}
-
-            {/* Ticket Prices */}
-            {conference.conferencePrices && conference.conferencePrices.length > 0 && (
-              <section className="bg-white rounded-xl shadow-sm p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-blue-600" />
-                  Giá vé
-                </h2>
-                <div className="space-y-4">
-                  {conference.conferencePrices.map((price) => (
-                    <div key={price.conferencePriceId} className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white rounded-xl p-5 hover:shadow-md transition-shadow">
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h3 className="font-bold text-gray-900 text-lg">{price.ticketName}</h3>
-                            {price.isAuthor && (
-                              <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-xs font-bold">
-                                TÁC GIẢ
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-sm text-gray-600 mb-3">{price.ticketDescription}</p>
-                          <div className="flex items-center gap-2 text-sm">
-                            <Users className="w-4 h-4 text-gray-500" />
-                            <span className="text-gray-700">
-                              Còn <span className="font-bold text-blue-600">{price.availableSlot}</span> / {price.totalSlot} vé
-                            </span>
-                          </div>
-                        </div>
-                        <div className="text-right ml-4">
-                          <p className="text-3xl font-bold text-blue-600">
-                            {(price.ticketPrice ?? 0).toLocaleString('vi-VN')}₫
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Price Phases */}
-                      {price.pricePhases && price.pricePhases.length > 0 && (
-                        <div className="mt-4 pt-4 border-t border-blue-200">
-                          <p className="text-sm font-bold text-gray-700 mb-3">🎯 Giai đoạn giảm giá:</p>
-                          <div className="space-y-2">
-                            {price.pricePhases.map((phase) => (
-                              <div key={phase.pricePhaseId} className="bg-white border border-gray-200 rounded-lg p-3 hover:border-green-300 transition-colors">
-                                <div className="flex justify-between items-center mb-2">
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-semibold text-gray-900">{phase.phaseName}</span>
-                                    <span className="px-2 py-1 bg-green-500 text-white rounded-lg text-xs font-bold">
-                                      -{phase.applyPercent}%
-                                    </span>
-                                  </div>
-                                  <p className="text-xl font-bold text-green-600">
-                                    {(((price.ticketPrice ?? 0) * (100 - (phase.applyPercent ?? 0))) / 100).toLocaleString('vi-VN')}₫
-                                  </p>
-                                </div>
-                                <div className="flex items-center justify-between text-xs text-gray-600">
-                                  <span>
-                                    {formatDate(phase.startDate)} - {formatDate(phase.endDate)}
-                                  </span>
-                                  <div className="flex items-center gap-1">
-                                    <Users className="w-3 h-3" />
-                                    <span>{phase.availableSlot}/{phase.totalSlot} vé</span>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Sessions */}
-            {conference.sessions && conference.sessions.length > 0 && (
-              <section className="bg-white rounded-xl shadow-sm p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-blue-600" />
-                  Phiên họp
-                </h2>
-                <div className="space-y-3">
-                  {conference.sessions.map((session, index) => (
-                    <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
-                      <p className="text-gray-800 font-medium">{session.title}</p>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Policies */}
-            {conference.policies && conference.policies.length > 0 && (
-              <section className="bg-white rounded-xl shadow-sm p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-blue-600" />
-                  Chính sách
-                </h2>
-                <div className="space-y-3">
-                  {conference.policies.map((policy) => (
-                    <div key={policy.policyId} className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <h3 className="font-bold text-gray-900 mb-2">{policy.policyName}</h3>
-                      <p className="text-sm text-gray-700 leading-relaxed">{policy.description}</p>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Refund Policies */}
-            {conference.refundPolicies && conference.refundPolicies.length > 0 && (
-              <section className="bg-white rounded-xl shadow-sm p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <DollarSign className="w-5 h-5 text-blue-600" />
-                  Chính sách hoàn tiền
-                </h2>
-                <div className="space-y-3">
-                  {conference.refundPolicies.map((policy, index) => (
-                    <div key={index} className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <p className="text-gray-800 font-medium">{policy.percentRefund}</p>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Conference Media */}
-            {conference.conferenceMedia && conference.conferenceMedia.length > 0 && (
-              <section className="bg-white rounded-xl shadow-sm p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Hình ảnh</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {conference.conferenceMedia.map((media, index) => (
-                    <div key={index} className="relative h-40 rounded-lg overflow-hidden group">
-                      <Image
-                        src={media.mediaUrl ?? "/placeholder.png"}
-                        alt={`Media ${index + 1}`}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-300"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-          </div>
-
-          {/* Right Column - Sidebar */}
-          <div className="space-y-6">
-            {/* Quick Info Card */}
-            <div className="bg-white rounded-xl shadow-sm p-6 sticky top-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">Thông tin chi tiết</h2>
-              
-              <div className="space-y-4">
-                <div className="flex gap-3">
-                  <Calendar className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-500 mb-1">Thời gian tổ chức</p>
-                    <p className="text-gray-900 font-semibold">{formatDate(conference.startDate)}</p>
-                    <p className="text-gray-600 text-sm">đến {formatDate(conference.endDate)}</p>
-                  </div>
-                </div>
-
-                <div className="border-t pt-4 flex gap-3">
-                  <Clock className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-500 mb-1">Thời gian bán vé</p>
-                    <p className="text-gray-900 font-semibold">{formatDate(conference.ticketSaleStart)}</p>
-                    <p className="text-gray-600 text-sm">đến {formatDate(conference.ticketSaleEnd)}</p>
-                  </div>
-                </div>
-
-                <div className="border-t pt-4 flex gap-3">
-                  <MapPin className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-500 mb-1">Địa điểm</p>
-                    <p className="text-gray-900 font-medium">{conference.address}</p>
-                    <p className="text-gray-600 text-sm mt-1">{getCityName(conference.cityId ?? "")}</p>
-                  </div>
-                </div>
-
-                <div className="border-t pt-4 flex gap-3">
-                  <Users className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-500 mb-1">Sức chứa</p>
-                    <p className="text-2xl font-bold text-blue-600">
-                      {conference.availableSlot}
-                    </p>
-                    <p className="text-sm text-gray-600">còn trống / {conference.totalSlot} tổng</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Sponsors */}
-            {conference.sponsors && conference.sponsors.length > 0 && (
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Handshake className="w-5 h-5 text-blue-600" />
-                  Nhà tài trợ
-                </h2>
-                <div className="space-y-2">
-                  {conference.sponsors.map((sponsor, index) => (
-                    <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center hover:border-blue-300 transition-colors">
-                      <p className="text-sm text-gray-800 font-semibold">{sponsor.name}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Metadata */}
-            <div className="bg-gray-50 rounded-xl p-5 text-xs text-gray-600 space-y-2">
-              <p className="font-semibold text-gray-700 mb-3">Thông tin kỹ thuật</p>
-              <p><span className="font-medium">ID:</span> {conference.conferenceId}</p>
-              <p><span className="font-medium">Ngày tạo:</span> {formatDate(conference.createdAt)}</p>
+        {/* Tabs Navigation */}
+        <div className="bg-white rounded-xl shadow-sm mb-6 overflow-hidden">
+          <div className="border-b border-gray-200">
+            <div className="flex overflow-x-auto">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-2 px-6 py-4 text-sm font-medium whitespace-nowrap transition-colors border-b-2 ${
+                      activeTab === tab.id
+                        ? "border-blue-600 text-blue-600 bg-blue-50"
+                        : "border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {tab.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
+
+        {/* Tab Content */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          {activeTab === "information" && (
+            <InformationTab 
+              conference={conference} 
+              getCategoryName={getCategoryName}
+              getStatusName={getStatusName}
+              getCityName={getCityName}
+            />
+          )}
+          {activeTab === "price" && <PriceTab conference={conference} />}
+          {activeTab === "refund-policy" && <RefundPolicyTab conference={conference} />}
+          {activeTab === "session" && <SessionTab conference={conference} />}
+          {activeTab === "sponsors-media" && <SponsorsMediaTab conference={conference} />}
+        </div>
       </div>
+    </div>
+  );
+}
+
+// Information Tab Component
+function InformationTab({ conference, getCategoryName, getStatusName, getCityName }: any) {
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">Conference Information</h2>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <InfoField label="Conference ID" value={conference.conferenceId} />
+        <InfoField label="Conference Name" value={conference.conferenceName} />
+        <InfoField label="Start Date" value={formatDate(conference.startDate)} />
+        <InfoField label="End Date" value={formatDate(conference.endDate)} />
+        <InfoField label="Total Slots" value={conference.totalSlot} />
+        <InfoField label="Available Slots" value={conference.availableSlot} />
+        <InfoField label="Ticket Sale Start" value={formatDate(conference.ticketSaleStart)} />
+        <InfoField label="Ticket Sale End" value={formatDate(conference.ticketSaleEnd)} />
+        <InfoField label="Address" value={conference.address} className="md:col-span-2" />
+        <InfoField label="City" value={getCityName(conference.cityId ?? "")} />
+        <InfoField label="Category" value={getCategoryName(conference.conferenceCategoryId ?? "")} />
+        <InfoField label="Status" value={getStatusName(conference.conferenceStatusId ?? "")} />
+        <InfoField label="Created At" value={formatDate(conference.createdAt)} />
+        
+        <div className="md:col-span-2 flex gap-4">
+          <div className="flex items-center gap-2">
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+              conference.isInternalHosted ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+            }`}>
+              {conference.isInternalHosted ? '✓' : '✗'} Internal Hosted
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+              conference.isResearchConference ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'
+            }`}>
+              {conference.isResearchConference ? '✓' : '✗'} Research Conference
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {conference.description && (
+        <div className="mt-6">
+          <h3 className="font-semibold text-gray-900 mb-2">Description</h3>
+          <p className="text-gray-700 leading-relaxed whitespace-pre-line bg-gray-50 p-4 rounded-lg">
+            {conference.description}
+          </p>
+        </div>
+      )}
+
+      {conference.bannerImageUrl && (
+        <div className="mt-6">
+          <h3 className="font-semibold text-gray-900 mb-2">Banner Image</h3>
+          <div className="relative h-64 w-full rounded-lg overflow-hidden">
+            <Image
+              src={conference.bannerImageUrl}
+              alt="Conference Banner"
+              fill
+              className="object-cover"
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Price Tab Component
+function PriceTab({ conference }: any) {
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">Ticket Prices</h2>
+      
+      {conference.conferencePrices && conference.conferencePrices.length > 0 ? (
+        <div className="space-y-4">
+          {conference.conferencePrices.map((price: any) => (
+            <div key={price.conferencePriceId} className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white rounded-xl p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="font-bold text-gray-900 text-xl">{price.ticketName}</h3>
+                    {price.isAuthor && (
+                      <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-xs font-bold">
+                        AUTHOR
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">{price.ticketDescription}</p>
+                  
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <InfoField label="Price ID" value={price.conferencePriceId} />
+                    <InfoField label="Total Slots" value={price.totalSlot} />
+                    <InfoField label="Available Slots" value={price.availableSlot} />
+                    <InfoField label="Is Author" value={price.isAuthor ? 'Yes' : 'No'} />
+                  </div>
+                </div>
+                <div className="text-right ml-4">
+                  <p className="text-sm text-gray-500 mb-1">Price</p>
+                  <p className="text-3xl font-bold text-blue-600">
+                    {(price.ticketPrice ?? 0).toLocaleString('vi-VN')}₫
+                  </p>
+                </div>
+              </div>
+
+              {/* Price Phases */}
+              {price.pricePhases && price.pricePhases.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-blue-200">
+                  <p className="text-sm font-bold text-gray-700 mb-3">🎯 Price Phases:</p>
+                  <div className="space-y-3">
+                    {price.pricePhases.map((phase: any) => (
+                      <div key={phase.pricePhaseId} className="bg-white border border-gray-200 rounded-lg p-4">
+                        <div className="flex justify-between items-center mb-3">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-gray-900">{phase.phaseName}</span>
+                            <span className="px-2 py-1 bg-green-500 text-white rounded-lg text-xs font-bold">
+                              -{phase.applyPercent}%
+                            </span>
+                          </div>
+                          <p className="text-xl font-bold text-green-600">
+                            {(((price.ticketPrice ?? 0) * (100 - (phase.applyPercent ?? 0))) / 100).toLocaleString('vi-VN')}₫
+                          </p>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                          <InfoField label="Phase ID" value={phase.pricePhaseId} />
+                          <InfoField label="Start Date" value={formatDate(phase.startDate)} />
+                          <InfoField label="End Date" value={formatDate(phase.endDate)} />
+                          <InfoField label="Apply Percent" value={`${phase.applyPercent}%`} />
+                          <InfoField label="Total Slots" value={phase.totalSlot} />
+                          <InfoField label="Available Slots" value={phase.availableSlot} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-gray-500 text-center py-8">No price information available</p>
+      )}
+    </div>
+  );
+}
+
+// Refund & Policy Tab Component
+function RefundPolicyTab({ conference }: any) {
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">Refund Policies & Conference Policies</h2>
+      
+      {/* Refund Policies */}
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <DollarSign className="w-5 h-5 text-green-600" />
+          Refund Policies
+        </h3>
+        {conference.refundPolicies && conference.refundPolicies.length > 0 ? (
+          <div className="space-y-3">
+            {conference.refundPolicies.map((policy: any, index: number) => (
+              <div key={index} className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <InfoField label="Percent Refund" value={policy.percentRefund} />
+                  <InfoField label="Refund Deadline" value={formatDate(policy.refundDeadline)} />
+                  <InfoField label="Refund Order" value={policy.refundOrder} />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-500 text-center py-4">No refund policies available</p>
+        )}
+      </div>
+
+      {/* Conference Policies */}
+      <div className="mt-8">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <ShieldCheck className="w-5 h-5 text-blue-600" />
+          Conference Policies
+        </h3>
+        {conference.policies && conference.policies.length > 0 ? (
+          <div className="space-y-3">
+            {conference.policies.map((policy: any) => (
+              <div key={policy.policyId} className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="font-bold text-gray-900 mb-2">{policy.policyName}</h4>
+                <p className="text-sm text-gray-700 leading-relaxed mb-3">{policy.description}</p>
+                <InfoField label="Policy ID" value={policy.policyId} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-500 text-center py-4">No conference policies available</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Session Tab Component
+function SessionTab({ conference }: any) {
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">Conference Sessions</h2>
+      
+      {conference.sessions && conference.sessions.length > 0 ? (
+        <div className="space-y-4">
+          {conference.sessions.map((session: any, index: number) => (
+            <div key={session.conferenceSessionId || index} className="bg-gradient-to-br from-purple-50 to-white border-2 border-purple-200 rounded-xl p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1">
+                  <h3 className="font-bold text-gray-900 text-lg mb-2">{session.title}</h3>
+                  {session.description && (
+                    <p className="text-gray-700 text-sm mb-4">{session.description}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                <InfoField label="Session ID" value={session.conferenceSessionId} />
+                <InfoField label="Date" value={formatDate(session.date)} />
+                <InfoField label="Start Time" value={session.startTime} />
+                <InfoField label="End Time" value={session.endTime} />
+                <InfoField label="Conference ID" value={session.conferenceId} />
+                <InfoField label="Room ID" value={session.roomId} />
+              </div>
+
+              {/* Room Info */}
+              {session.room && (
+                <div className="mt-4 pt-4 border-t border-purple-200">
+                  <h4 className="font-semibold text-gray-900 mb-3">Room Information</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white rounded-lg p-4">
+                    <InfoField label="Room ID" value={session.room.roomId} />
+                    <InfoField label="Room Number" value={session.room.number} />
+                    <InfoField label="Display Name" value={session.room.displayName} />
+                    <InfoField label="Destination ID" value={session.room.destinationId} />
+                  </div>
+                </div>
+              )}
+
+              {/* Session Media */}
+              {session.sessionMedia && session.sessionMedia.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-purple-200">
+                  <h4 className="font-semibold text-gray-900 mb-3">Session Media</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {session.sessionMedia.map((media: any, idx: number) => (
+                      <div key={idx} className="relative h-40 rounded-lg overflow-hidden">
+                        <Image
+                          src={media.mediaUrl?.startsWith('http') 
+                            ? media.mediaUrl 
+                            : `https://minio-api.confradar.io.vn/${media.mediaUrl}`
+                          }
+                          alt={`Session media ${idx + 1}`}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-gray-500 text-center py-8">No sessions available</p>
+      )}
+    </div>
+  );
+}
+
+// Sponsors & Media Tab Component
+function SponsorsMediaTab({ conference }: any) {
+  return (
+    <div className="space-y-8">
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">Sponsors & Media</h2>
+      
+      {/* Sponsors */}
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <Handshake className="w-5 h-5 text-blue-600" />
+          Sponsors
+        </h3>
+        {conference.sponsors && conference.sponsors.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {conference.sponsors.map((sponsor: any, index: number) => (
+            <div key={sponsor.sponsorId || index} className="bg-gradient-to-br from-yellow-50 to-white border-2 border-yellow-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+              {sponsor.imageUrl && (
+                <div className="relative h-32 w-full mb-3 rounded-lg overflow-hidden bg-white">
+                  <Image
+                    src={sponsor.imageUrl}
+                    alt={sponsor.name}
+                    fill
+                    className="object-contain p-2"
+                  />
+                </div>
+              )}
+              <h4 className="font-bold text-gray-900 text-center mb-2">{sponsor.name}</h4>
+              <InfoField label="Sponsor ID" value={sponsor.sponsorId} />
+            </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-500 text-center py-4">No sponsors available</p>
+        )}
+      </div>
+
+      {/* Conference Media */}
+      <div className="mt-8">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <ImageIcon className="w-5 h-5 text-blue-600" />
+          Conference Media
+        </h3>
+        {conference.conferenceMedia && conference.conferenceMedia.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+
+          {conference.conferenceMedia.map((media: any, index: number) => (
+            <div key={media.mediaId || index} className="space-y-2">
+              <div className="relative h-48 rounded-lg overflow-hidden group">
+                <Image
+                  src={`https://minio-api.confradar.io.vn/${media.mediaUrl}`}
+                  alt={`Media ${index + 1}`}
+                  fill
+                  className="object-cover group-hover:scale-110 transition-transform duration-300"
+                />
+              </div>
+              <InfoField label="Media ID" value={media.mediaId} />
+            </div>
+          ))}
+          </div>
+        ) : (
+          <p className="text-gray-500 text-center py-4">No media available</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Reusable Info Field Component
+function InfoField({ label, value, className = "" }: { label: string; value: any; className?: string }) {
+  return (
+    <div className={`${className}`}>
+      <p className="text-xs font-medium text-gray-500 mb-1">{label}</p>
+      <p className="text-sm text-gray-900 font-semibold break-words">{value || "N/A"}</p>
     </div>
   );
 }
