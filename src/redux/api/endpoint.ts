@@ -169,6 +169,10 @@ export const endpoint = {
     GET_PAPER_DETAIL_CUSTOMER: "/Paper/get-paper-detail-customer",
     LIST_PAPER_PHASES: "/Paper/list-paper-phases",
     LIST_AVAILABLE_CUSTOMERS: "/Paper/list-available-customers",
+
+    //WAITLIST
+    LIST_CUSTOMER_WAITLIST: "/Paper/list-customer-waitlist",
+    LEAVE_WAITLIST: "/Paper/leave-waitlist",
   },
 
 

@@ -10,7 +10,8 @@ import {
   UserCircle,
   Bell,
   LogOut,
-  FileText
+  FileText,
+  Heart
 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -37,15 +38,13 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
     { id: 'ticket', label: 'Vé tham dự hội nghị', icon: Ticket, href: '/customer/tickets' },
     { id: 'transaction', label: 'Lịch sử giao dịch', icon: Ticket, href: '/customer/transaction-history' },
     { id: 'paper', label: 'Bài báo của bạn', icon: FileText, href: '/customer/papers' },
-    // { id: 'historyconferences', label: 'Hội nghị đã tham dự', icon: History, href: '/customer/history-conferences' },
-    // { id: 'messages', label: 'Tin nhắn', icon: MessageCircle, href: '/customer/messages' },
     { id: 'notifications', label: 'Thông báo', icon: Bell, href: '/customer/notifications' },
-    // { id: 'create', label: 'Tạo', icon: PlusSquare, href: '/customer/create' },
     { id: 'profile', label: 'Trang cá nhân', icon: UserCircle, href: '/customer/profile' },
   ];
 
   const moreItems = [
-    { id: 'favoriteconferences', label: 'Hội nghị yêu thích', icon: Bookmark, href: '/customer/favorite-conferences' },
+    { id: 'favoriteconferences', label: 'Hội nghị yêu thích', icon: Heart, href: '/customer/favorite-conferences' },
+    { id: 'waitlist', label: 'Tạo', icon: Bookmark, href: '/customer/customer-waitlist' },
     // { id: 'history', label: 'Lịch sử', icon: Clock, href: '/customer/history' },
     { id: 'settings', label: 'Cài đặt', icon: Settings, href: '/customer/settings' },
   ];

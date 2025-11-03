@@ -1,120 +1,121 @@
-  import { createApi } from "@reduxjs/toolkit/query/react";
-  import { apiClient } from "../api/apiClient";
-  import { endpoint } from "../api/endpoint";
-  import {
-    PendingAbstract,
-    UnassignAbstract,
-    ListPaper,
-    FullPaperReview,
-    PendingCameraReady,
-    AssignedPaper,
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { apiClient } from "../api/apiClient";
+import { endpoint } from "../api/endpoint";
+import {
+  PendingAbstract,
+  UnassignAbstract,
+  ListPaper,
+  FullPaperReview,
+  PendingCameraReady,
+  AssignedPaper,
 
-    PaperDetailForReviewer,
+  PaperDetailForReviewer,
 
-    SubmitFullPaperReviewRequest,
+  SubmitFullPaperReviewRequest,
 
-    SubmitPaperRevisionReviewRequest, //REVISION
-    ListRevisionPaperReview, //REVISION
-    SubmitPaperRevisionFeedbackRequest,  //REVISION
+  SubmitPaperRevisionReviewRequest, //REVISION
+  ListRevisionPaperReview, //REVISION
+  SubmitPaperRevisionFeedbackRequest,  //REVISION
 
-    AvailableCustomerResponse, CreateAbstractRequest, CreateCameraReadyRequest, CreateFullPaperRequest, CreateRevisionPaperSubmissionRequest, CreateRevisionPaperSubmissionResponse, PaperCustomer, PaperDetailResponse, PaperPhase
+  AvailableCustomerResponse, CreateAbstractRequest, CreateCameraReadyRequest, CreateFullPaperRequest, CreateRevisionPaperSubmissionRequest, CreateRevisionPaperSubmissionResponse, PaperCustomer, PaperDetailResponse, PaperPhase
 
-  }from "@/types/paper.type"
+} from "@/types/paper.type"
 
 
-  import type { ApiResponse } from "@/types/api.type";
+import type { ApiResponse } from "@/types/api.type";
+import { CustomerWaitListResponse, LeaveWaitListRequest } from "@/types/waitlist.type";
 
-  export const paperApi = createApi({
-    reducerPath: "paperApi",
-    baseQuery: apiClient,
-    tagTypes: ["Paper"],
-    endpoints: (builder) => ({
+export const paperApi = createApi({
+  reducerPath: "paperApi",
+  baseQuery: apiClient,
+  tagTypes: ["Paper"],
+  endpoints: (builder) => ({
 
-      listAllPapers: builder.query<ApiResponse<ListPaper[]>, void>({
-        query: () => ({
-          url: endpoint.PAPER.LIST_ALL_PAPERS,
-          method: "GET",
-        }),
-        providesTags: ["Paper"],
+    listAllPapers: builder.query<ApiResponse<ListPaper[]>, void>({
+      query: () => ({
+        url: endpoint.PAPER.LIST_ALL_PAPERS,
+        method: "GET",
       }),
+      providesTags: ["Paper"],
+    }),
 
-      listPendingAbstracts: builder.query<ApiResponse<PendingAbstract[]>, void>({
-        query: () => ({
-          url: endpoint.PAPER.LIST_PENDING_ABSTRACT,
-          method: "GET",
-        }),
-        providesTags: ["Paper"],
+    listPendingAbstracts: builder.query<ApiResponse<PendingAbstract[]>, void>({
+      query: () => ({
+        url: endpoint.PAPER.LIST_PENDING_ABSTRACT,
+        method: "GET",
       }),
+      providesTags: ["Paper"],
+    }),
 
-      listUnassignAbstracts: builder.query<ApiResponse<UnassignAbstract[]>, void>({
-        query: () => ({
-          url: endpoint.PAPER.LIST_UNASSIGN_ABSTRACT,
-          method: "GET",
-        }),
-        providesTags: ["Paper"],
+    listUnassignAbstracts: builder.query<ApiResponse<UnassignAbstract[]>, void>({
+      query: () => ({
+        url: endpoint.PAPER.LIST_UNASSIGN_ABSTRACT,
+        method: "GET",
       }),
+      providesTags: ["Paper"],
+    }),
 
-      listAssignedPapers: builder.query<ApiResponse<AssignedPaper[]>, void>({
-        query: () => ({
-          url: endpoint.PAPER.LIST_ASSIGN_PAPER_REVIEWER,
-          method: "GET",
-        }),
-        providesTags: ["Paper"],
-      }),      
-
-      listPendingCameraReady: builder.query<ApiResponse<PendingCameraReady[]>, void>({
-        query: () => ({
-          url: endpoint.PAPER.LIST_PENDING_CAMERA_READY,
-          method: "GET",
-        }),
-        providesTags: ["Paper"],
+    listAssignedPapers: builder.query<ApiResponse<AssignedPaper[]>, void>({
+      query: () => ({
+        url: endpoint.PAPER.LIST_ASSIGN_PAPER_REVIEWER,
+        method: "GET",
       }),
+      providesTags: ["Paper"],
+    }),
 
-      decideAbstractStatus: builder.mutation<
-        ApiResponse<any>,
-        { paperId: string; abstractId: string; globalStatus: string }
-      >({
-        query: (body) => ({
-          url: endpoint.PAPER.DECIDE_ABSTRACT,
-          method: "PUT",
-          body,
-        }),
-        invalidatesTags: ["Paper"],
+    listPendingCameraReady: builder.query<ApiResponse<PendingCameraReady[]>, void>({
+      query: () => ({
+        url: endpoint.PAPER.LIST_PENDING_CAMERA_READY,
+        method: "GET",
       }),
+      providesTags: ["Paper"],
+    }),
 
-      decideCameraReady: builder.mutation<
-        ApiResponse<any>,
-        { cameraReadyId: string; globalStatus: string; paperid: string }
-      >({
-        query: (body) => ({
-          url: endpoint.PAPER.DECIDE_CAMERA_READY,
-          method: "PUT",
-          body,
-        }),
-        invalidatesTags: ["Paper"],
-      }), 
-
-      assignPaperToReviewer: builder.mutation<
-        ApiResponse<any>,
-        { userId: string; paperId: string; isHeadReviewer: boolean }
-      >({
-        query: (body) => ({
-          url: endpoint.PAPER.ASSIGN_PAPER_TO_REVIEWER,
-          method: "POST",
-          body, 
-        }),
-        invalidatesTags: ["Paper"],
+    decideAbstractStatus: builder.mutation<
+      ApiResponse<any>,
+      { paperId: string; abstractId: string; globalStatus: string }
+    >({
+      query: (body) => ({
+        url: endpoint.PAPER.DECIDE_ABSTRACT,
+        method: "PUT",
+        body,
       }),
+      invalidatesTags: ["Paper"],
+    }),
+
+    decideCameraReady: builder.mutation<
+      ApiResponse<any>,
+      { cameraReadyId: string; globalStatus: string; paperid: string }
+    >({
+      query: (body) => ({
+        url: endpoint.PAPER.DECIDE_CAMERA_READY,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["Paper"],
+    }),
+
+    assignPaperToReviewer: builder.mutation<
+      ApiResponse<any>,
+      { userId: string; paperId: string; isHeadReviewer: boolean }
+    >({
+      query: (body) => ({
+        url: endpoint.PAPER.ASSIGN_PAPER_TO_REVIEWER,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Paper"],
+    }),
 
 
-      getPaperDetailForReviewer: builder.query<ApiResponse<PaperDetailForReviewer>, string>({
-        query: (paperId) => ({
-          url: endpoint.PAPER.GET_PAPER_DETAIL_REVIEWER(paperId),
-          method: "GET",
-        }),
-        providesTags: ["Paper"],
-      }),   
-      
+    getPaperDetailForReviewer: builder.query<ApiResponse<PaperDetailForReviewer>, string>({
+      query: (paperId) => ({
+        url: endpoint.PAPER.GET_PAPER_DETAIL_REVIEWER(paperId),
+        method: "GET",
+      }),
+      providesTags: ["Paper"],
+    }),
+
     submitFullPaperReview: builder.mutation<
       ApiResponse<any>,
       SubmitFullPaperReviewRequest
@@ -138,8 +139,8 @@
       },
       invalidatesTags: ["Paper"],
     }),
-    
-   getFullPaperReviews: builder.query<ApiResponse<FullPaperReview[]>, string >({
+
+    getFullPaperReviews: builder.query<ApiResponse<FullPaperReview[]>, string>({
       query: (fullPaperId) => ({
         url: endpoint.PAPER.LIST_FULLPAPER_REVIEWS(fullPaperId),
         method: "GET",
@@ -157,7 +158,7 @@
         body,
       }),
       invalidatesTags: ["Paper"],
-    }),    
+    }),
 
     submitPaperRevisionReview: builder.mutation<
       ApiResponse<any>,
@@ -181,8 +182,8 @@
         };
       },
       invalidatesTags: ["Paper"],
-    }), 
-    
+    }),
+
     listRevisionPaperReviews: builder.query<
       ApiResponse<ListRevisionPaperReview[]>,
       { revisionPaperId: string; paperId: string }
@@ -193,7 +194,7 @@
         params: { revisionPaperId, paperId },
       }),
       providesTags: ["Paper"],
-    }),    
+    }),
 
     decideRevisionStatus: builder.mutation<
       ApiResponse<any>,
@@ -205,8 +206,8 @@
         body,
       }),
       invalidatesTags: ["Paper"],
-    }),  
-    
+    }),
+
     submitPaperRevisionFeedback: builder.mutation<
       ApiResponse<any>,
       SubmitPaperRevisionFeedbackRequest
@@ -217,9 +218,9 @@
         body,
       }),
       invalidatesTags: ["Paper"],
-    }),    
+    }),
 
-        listSubmittedPapersForCustomer: builder.query<
+    listSubmittedPapersForCustomer: builder.query<
       ApiResponse<PaperCustomer[]>,
       void
     >({
@@ -230,7 +231,7 @@
       providesTags: ["Paper"],
     }),
 
-        getPaperDetailCustomer: builder.query<
+    getPaperDetailCustomer: builder.query<
       ApiResponse<PaperDetailResponse>,
       string
     >({
@@ -337,38 +338,61 @@
       invalidatesTags: ["Paper"],
     }),
 
+    listCustomerWaitList: builder.query<
+      ApiResponse<CustomerWaitListResponse[]>,
+      void
+    >({
+      query: () => ({
+        url: endpoint.PAPER.LIST_CUSTOMER_WAITLIST,
+        method: "GET",
       }),
+      providesTags: ["Paper"],
+    }),
+
+    leaveWaitList: builder.mutation<
+      ApiResponse<boolean>,
+      LeaveWaitListRequest
+    >({
+      query: (body) => ({
+        url: endpoint.PAPER.LEAVE_WAITLIST,
+        method: "DELETE",
+        body,
+      }),
+      invalidatesTags: ["Paper"],
+    }),
+
+  }),
 });
 
 
-  export const {
-    useListAllPapersQuery,
-    useListPendingAbstractsQuery,
-    useListUnassignAbstractsQuery,
-    useListAssignedPapersQuery,
-    useDecideAbstractStatusMutation,
-    useAssignPaperToReviewerMutation,
+export const {
+  useListAllPapersQuery,
+  useListPendingAbstractsQuery,
+  useListUnassignAbstractsQuery,
+  useListAssignedPapersQuery,
+  useDecideAbstractStatusMutation,
+  useAssignPaperToReviewerMutation,
 
-    //FULL PAPER
-    useGetPaperDetailForReviewerQuery,
-    useSubmitFullPaperReviewMutation,
-    useGetFullPaperReviewsQuery,
-    useDecideFullPaperStatusMutation,
+  //FULL PAPER
+  useGetPaperDetailForReviewerQuery,
+  useSubmitFullPaperReviewMutation,
+  useGetFullPaperReviewsQuery,
+  useDecideFullPaperStatusMutation,
 
-    //CAMERA READY
-    useListPendingCameraReadyQuery,
-    useDecideCameraReadyMutation,
-
-
-    //REVISION
-    useSubmitPaperRevisionReviewMutation,
-    useListRevisionPaperReviewsQuery,
-    useDecideRevisionStatusMutation,
-    useSubmitPaperRevisionFeedbackMutation,
+  //CAMERA READY
+  useListPendingCameraReadyQuery,
+  useDecideCameraReadyMutation,
 
 
-    //SON
-      useListSubmittedPapersForCustomerQuery,
+  //REVISION
+  useSubmitPaperRevisionReviewMutation,
+  useListRevisionPaperReviewsQuery,
+  useDecideRevisionStatusMutation,
+  useSubmitPaperRevisionFeedbackMutation,
+
+
+  //SON
+  useListSubmittedPapersForCustomerQuery,
   useGetPaperDetailCustomerQuery,
   useLazyGetPaperDetailCustomerQuery,
   useListPaperPhasesQuery,
@@ -379,5 +403,7 @@
   useSubmitPaperRevisionMutation,
   useSubmitPaperRevisionResponseMutation,
   useSubmitCameraReadyMutation,
-  } = paperApi;
+  useListCustomerWaitListQuery,
+  useLeaveWaitListMutation,
+} = paperApi;
 
