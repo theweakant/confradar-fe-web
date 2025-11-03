@@ -1,7 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { apiClient } from "../api/apiClient";
 import { endpoint } from "../api/endpoint";
-import type { ConferenceFormData, ConferenceResponse, RegisteredUserInConference, ResearchConferenceDetailResponse, TechnicalConferenceDetailResponse } from "@/types/conference.type";
+import type { AddedFavouriteConferenceResponse, ConferenceFormData, ConferenceResponse, DeletedFavouriteConferenceResponse, FavouriteConferenceDetailResponse, FavouriteConferenceRequest, RegisteredUserInConference, ResearchConferenceDetailResponse, TechnicalConferenceDetailResponse } from "@/types/conference.type";
 import type { ApiResponse, ApiResponsePagination } from "@/types/api.type";
 
 export const conferenceApi = createApi({
@@ -157,26 +157,26 @@ export const conferenceApi = createApi({
     }),
 
 
-  getPendingConferences: builder.query<
-    ApiResponsePagination<ConferenceResponse[]>,
-    { page?: number; pageSize?: number }
-  >({
-    query: ({ page = 1, pageSize = 10 }) => ({
-      url: endpoint.CONFERENCE.PENDING_CONFERENCES,
-      method: "GET",
-      params: { page, pageSize },
-    }),
-    providesTags: (result) =>
-      result?.data?.items
-        ? [
+    getPendingConferences: builder.query<
+      ApiResponsePagination<ConferenceResponse[]>,
+      { page?: number; pageSize?: number }
+    >({
+      query: ({ page = 1, pageSize = 10 }) => ({
+        url: endpoint.CONFERENCE.PENDING_CONFERENCES,
+        method: "GET",
+        params: { page, pageSize },
+      }),
+      providesTags: (result) =>
+        result?.data?.items
+          ? [
             ...result.data.items.map(({ conferenceId }) => ({
               type: "Conference" as const,
               id: conferenceId,
             })),
             { type: "Conference", id: "PENDING_LIST" },
           ]
-        : [{ type: "Conference", id: "PENDING_LIST" }],
-  }),
+          : [{ type: "Conference", id: "PENDING_LIST" }],
+    }),
 
     approveConference: builder.mutation<
       ApiResponse<null>,
@@ -189,8 +189,42 @@ export const conferenceApi = createApi({
       }),
       invalidatesTags: ["Conference"],
     }),
-    
 
+    getOwnFavouriteConferences: builder.query<
+      ApiResponse<FavouriteConferenceDetailResponse[]>,
+      void
+    >({
+      query: () => ({
+        url: endpoint.FAVOURITE_CONFERENCE.LIST_OWN,
+        method: "GET",
+      }),
+      providesTags: ["Conference"],
+    }),
+
+    addToFavourite: builder.mutation<
+      ApiResponse<AddedFavouriteConferenceResponse>,
+      FavouriteConferenceRequest
+    >({
+      query: (body) => ({
+        url: endpoint.FAVOURITE_CONFERENCE.ADD,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Conference"],
+    }),
+
+    // Remove conference from favourites
+    deleteFromFavourite: builder.mutation<
+      ApiResponse<DeletedFavouriteConferenceResponse>,
+      FavouriteConferenceRequest
+    >({
+      query: (body) => ({
+        url: endpoint.FAVOURITE_CONFERENCE.DELETE,
+        method: "DELETE",
+        body,
+      }),
+      invalidatesTags: ["Conference"],
+    }),
   }),
 });
 
@@ -213,4 +247,11 @@ export const {
   useCreateConferenceMutation,
   useUpdateConferenceMutation,
   useDeleteConferenceMutation,
+
+
+  // Favourite conference hooks
+  useGetOwnFavouriteConferencesQuery,
+  useLazyGetOwnFavouriteConferencesQuery,
+  useAddToFavouriteMutation,
+  useDeleteFromFavouriteMutation,
 } = conferenceApi;

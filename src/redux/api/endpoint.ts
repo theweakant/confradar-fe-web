@@ -175,5 +175,9 @@ export const endpoint = {
     LEAVE_WAITLIST: "/Paper/leave-waitlist",
   },
 
-
+  FAVOURITE_CONFERENCE: {
+    LIST_OWN: '/FavouriteConference/list-own-favourite-conferences',
+    ADD: '/FavouriteConference/add-to-favourite',
+    DELETE: '/FavouriteConference/delete-from-favourite',
+  }
 }

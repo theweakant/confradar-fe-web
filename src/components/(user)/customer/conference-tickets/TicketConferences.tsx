@@ -42,7 +42,7 @@ export default function TicketConferences() {
     return new Intl.DateTimeFormat('vi-VN', {
       weekday: 'long',
       year: 'numeric',
-      month: 'long', 
+      month: 'long',
       day: 'numeric'
     }).format(new Date(dateString));
   };
@@ -66,9 +66,9 @@ export default function TicketConferences() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center py-16">
             <div className="text-red-400 mb-4">Có lỗi xảy ra khi tải dữ liệu</div>
-            <p className="text-gray-400">{ticketsError}</p>
-            <Button 
-              onClick={() => refetchTickets()} 
+            <p className="text-gray-400">{ticketsError.data?.Message}</p>
+            <Button
+              onClick={() => refetchTickets()}
               className="mt-4 bg-purple-600 hover:bg-purple-700"
             >
               Thử lại
@@ -102,11 +102,10 @@ export default function TicketConferences() {
               <Button
                 key={option.id}
                 variant={option.active ? "default" : "outline"}
-                className={`whitespace-nowrap ${
-                  option.active 
-                    ? "bg-purple-600 text-white hover:bg-purple-700 border-purple-600" 
+                className={`whitespace-nowrap ${option.active
+                    ? "bg-purple-600 text-white hover:bg-purple-700 border-purple-600"
                     : "bg-gray-800 text-gray-300 hover:bg-gray-700 border-gray-600"
-                }`}
+                  }`}
               >
                 {option.label}
               </Button>

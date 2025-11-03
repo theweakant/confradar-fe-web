@@ -44,7 +44,7 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
 
   const moreItems = [
     { id: 'favoriteconferences', label: 'Hội nghị yêu thích', icon: Heart, href: '/customer/favorite-conferences' },
-    { id: 'waitlist', label: 'Tạo', icon: Bookmark, href: '/customer/customer-waitlist' },
+    { id: 'waitlist', label: 'Danh sách chờ nộp bài báo', icon: Bookmark, href: '/customer/customer-waitlist' },
     // { id: 'history', label: 'Lịch sử', icon: Clock, href: '/customer/history' },
     { id: 'settings', label: 'Cài đặt', icon: Settings, href: '/customer/settings' },
   ];
