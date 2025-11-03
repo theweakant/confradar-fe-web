@@ -184,12 +184,15 @@ useEffect(() => {
 useEffect(() => {
   if (newSession.startTime && newSession.timeRange && newSession.timeRange > 0) {
     const start = new Date(newSession.startTime);
-    start.setHours(start.getHours() + newSession.timeRange);
-    const endTime = start.toISOString().slice(0, 16);
-    
-    setNewSession(prev => ({ ...prev, endTime }));
+    const end = new Date(start);
+    end.setHours(end.getHours() + Number(newSession.timeRange));
+
+    const formattedEnd = end.toLocaleString("sv-SE").replace(" ", "T").slice(0, 16);
+
+    setNewSession(prev => ({ ...prev, endTime: formattedEnd }));
   }
 }, [newSession.startTime, newSession.timeRange]);
+
 
   // Step 4: Policies
   const [policies, setPolicies] = useState<Policy[]>([]);
@@ -200,16 +203,16 @@ useEffect(() => {
 
   // Step 5: Media
   const [mediaList, setMediaList] = useState<Media[]>([]);
-  const [newMedia, setNewMedia] = useState<Media>({
-    mediaFile: "",
-  });
+const [newMedia, setNewMedia] = useState<Media>({ mediaFile: null });
+
 
   // Step 6: Sponsors
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [newSponsor, setNewSponsor] = useState<Sponsor>({
     name: "",
-    imageFile: "",
+    imageFile: null,
   });
+
 
   // Validate Step 1
   const validateBasicForm = (): boolean => {
@@ -246,8 +249,7 @@ useEffect(() => {
       const confId = result.data.conferenceId;
 
       dispatch(setConferenceId(confId));
-      // dispatch(setConferenceBasicData(result.data));
-      dispatch(setConferenceBasicData({ conferenceId: confId }));
+      dispatch(setConferenceBasicData(result.data));
       setBasicFormCompleted(true);
       
       toast.success("Tạo thông tin cơ bản thành công! Vui lòng điền các thông tin còn lại.");
@@ -349,7 +351,6 @@ const formattedSessions = sessions.map((s) => {
     }
   };
 
-  // Add handlers
 const handleAddPhaseToNewTicket = () => {
   const { phaseName, percentValue, percentType, startDate, durationInDays, totalslot } = newPhase;
   
@@ -368,12 +369,30 @@ const handleAddPhaseToNewTicket = () => {
     return;
   }
 
-  const saleStart = new Date(conferenceBasicData?.ticketSaleStart || '');
-  const saleEnd = new Date(conferenceBasicData?.ticketSaleEnd || '');
+  if (!conferenceBasicData?.ticketSaleStart || !conferenceBasicData?.ticketSaleEnd) {
+    toast.error("Không tìm thấy thông tin thời gian bán vé!");
+    return;
+  }
+
+  const saleStart = new Date(conferenceBasicData.ticketSaleStart);
+  const saleEnd = new Date(conferenceBasicData.ticketSaleEnd);
   const phaseStart = new Date(startDate);
+  
+  // Tính endDate của phase
+  const phaseEnd = new Date(phaseStart);
+  phaseEnd.setDate(phaseStart.getDate() + durationInDays - 1);
 
   if (phaseStart < saleStart || phaseStart > saleEnd) {
-    toast.error("Ngày bắt đầu giai đoạn phải trong khoảng thời gian bán vé!");
+    toast.error(
+      `Ngày bắt đầu giai đoạn phải trong khoảng ${saleStart.toLocaleDateString('vi-VN')} - ${saleEnd.toLocaleDateString('vi-VN')}!`
+    );
+    return;
+  }
+
+  if (phaseEnd > saleEnd) {
+    toast.error(
+      `Ngày kết thúc giai đoạn (${phaseEnd.toLocaleDateString('vi-VN')}) vượt quá thời gian bán vé!`
+    );
     return;
   }
 
@@ -385,14 +404,11 @@ const handleAddPhaseToNewTicket = () => {
     return;
   }
 
-  const start = new Date(startDate);
-  const end = new Date(start);
-  end.setDate(start.getDate() + durationInDays - 1);
-  
+  // Check overlap
   const hasOverlap = newTicket.phases.some(p => {
     const pStart = new Date(p.startDate);
     const pEnd = new Date(p.endDate);
-    return (start <= pEnd && end >= pStart);
+    return (phaseStart <= pEnd && phaseEnd >= pStart);
   });
 
   if (hasOverlap) {
@@ -400,14 +416,15 @@ const handleAddPhaseToNewTicket = () => {
     return;
   }
 
-  const endDate = end.toISOString().split("T")[0];
+  const endDate = phaseEnd.toISOString().split("T")[0];
   
   const applyPercent = percentType === 'increase' 
     ? 100 + percentValue  
-    : 100 - percentValue; 
+    : 100 - percentValue;
+    
   const phase: Phase = {
     phaseName,
-    applyPercent, 
+    applyPercent,
     startDate,
     endDate,
     totalslot,
@@ -477,12 +494,33 @@ const handleAddPhaseToNewTicket = () => {
     toast.success("Đã thêm vé!");
   };
 
-  const handleAddSession = () => {
-    if (!newSession.title || newSession.speaker.length === 0) {
-      toast.error("Vui lòng nhập tiêu đề và ít nhất 1 diễn giả!");
-      return;
-    }
-    
+const handleAddSession = () => {
+  if (!newSession.title || newSession.speaker.length === 0) {
+    toast.error("Vui lòng nhập tiêu đề và ít nhất 1 diễn giả!");
+    return;
+  }
+  
+  if (!newSession.date || !newSession.startTime || !newSession.endTime) {
+    toast.error("Vui lòng nhập đầy đủ ngày và thời gian!");
+    return;
+  }
+
+  if (!conferenceBasicData?.startDate || !conferenceBasicData?.endDate) {
+    toast.error("Không tìm thấy thông tin thời gian sự kiện!");
+    return;
+  }
+
+  const confStart = new Date(conferenceBasicData.startDate);
+  const confEnd = new Date(conferenceBasicData.endDate);
+  const sessionDate = new Date(newSession.date);
+
+  if (sessionDate < confStart || sessionDate > confEnd) {
+    toast.error(
+      `Ngày phiên họp phải trong khoảng ${confStart.toLocaleDateString('vi-VN')} - ${confEnd.toLocaleDateString('vi-VN')}!`
+    );
+    return;
+  }
+
   if (newSession.startTime && newSession.endTime) {
     const start = new Date(newSession.startTime);
     const end = new Date(newSession.endTime);
@@ -499,21 +537,21 @@ const handleAddPhaseToNewTicket = () => {
     }
   }
 
-    setSessions([...sessions, newSession]);
-    setNewSession({
-      title: "",
-      description: "",
-      date: "",
-      startTime: "",
-      endTime: "",
-      timeRange: 1,
-      roomId: "",
-      speaker: [],
-      sessionMedias: [],
-    });
-    
-    toast.success("Đã thêm session!");
-  };
+  setSessions([...sessions, newSession]);
+  setNewSession({
+    title: "",
+    description: "",
+    date: "",
+    startTime: "",
+    endTime: "",
+    timeRange: 1,
+    roomId: "",
+    speaker: [],
+    sessionMedias: [],
+  });
+  
+  toast.success("Đã thêm session!");
+};
 
   const handleAddPolicy = () => {
     if (!newPolicy.policyName) return;
@@ -521,55 +559,18 @@ const handleAddPhaseToNewTicket = () => {
     setNewPolicy({ policyName: "", description: "" });
   };
 
-  const handleAddMedia = () => {
-    if (!newMedia.mediaFile) return;
-    setMediaList([...mediaList, newMedia]);
-    setNewMedia({ mediaFile: "" });
-  };
+const handleAddMedia = () => {
+  if (!newMedia.mediaFile) return;
+  setMediaList([...mediaList, newMedia]);
+  setNewMedia({ mediaFile: null });
+};
 
   const handleAddSponsor = () => {
-    if (!newSponsor.name) return;
+    if (!newSponsor.name || !newSponsor.imageFile) return;
     setSponsors([...sponsors, newSponsor]);
-    setNewSponsor({ name: "", imageFile: "" });
+    setNewSponsor({ name: "", imageFile: null });
   };
 
-  const renderConferenceInfo = () => {
-    if (!conferenceBasicData) return null;
-    
-    return (
-      <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-        <div className="text-sm font-medium text-green-900 mb-3 flex items-center gap-2">
-          <span className="text-xl">✅</span>
-          <span>Thông tin cơ bản đã được lưu</span>
-        </div>
-        <div className="grid grid-cols-2 gap-3 text-sm text-green-700">
-          <div>
-            <strong>Tên:</strong> {conferenceBasicData.conferenceName}
-          </div>
-          <div>
-            <strong>Thời gian:</strong>{' '}
-            {formatDate(conferenceBasicData.startDate)} - {formatDate(conferenceBasicData.endDate)}
-          </div>
-          <div>
-            <strong>Bán vé:</strong>{' '}
-            {formatDate(conferenceBasicData.ticketSaleStart)} - {formatDate(conferenceBasicData.ticketSaleEnd)}
-          </div>
-          <div>
-            <strong>Sức chứa:</strong> {conferenceBasicData.totalSlot}
-          </div>
-          {conferenceBasicData.bannerImageFileUrl && (
-            <div className="col-span-2">
-              <img 
-                src={conferenceBasicData.bannerImageFileUrl} 
-                alt="Banner" 
-                className="h-24 rounded object-cover"
-              />
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div className="max-w-5xl mx-auto p-6">
@@ -784,57 +785,87 @@ const handleAddPhaseToNewTicket = () => {
       {/* REMAINING STEPS - Only show after Step 1 is completed */}
       {basicFormCompleted && (
         <>
-          {renderConferenceInfo()}
 
           {/* STEP 2: PRICE */}
           <div className="bg-white border rounded-lg p-6 mb-6">
             <h3 className="text-lg font-semibold mb-4">2. Giá vé</h3>
             
-            <div className="border p-4 rounded mb-4">
-              <h4 className="font-medium mb-3">Danh sách vé ({tickets.length})</h4>
-              {tickets.map((t, idx) => (
-                <div key={t.ticketId || idx} className="p-3 bg-gray-50 rounded mb-2">
-                  <div className="font-medium">{t.ticketName}</div>
-                  <div className="text-sm text-gray-600">
-                    Giá gốc: {t.ticketPrice.toLocaleString()} VND | Slot: {t.totalSlot}
-                  </div>
-                  
-                  {t.phases && t.phases.length > 0 && (
-                    <div className="mt-2 text-xs">
-                      <div className="font-medium">Giai đoạn ({t.phases.length}):</div>
-                      {t.phases.map((p, pi) => {
-                        const adjustedPrice = t.ticketPrice * (p.applyPercent / 100);
-                        const isIncrease = p.applyPercent > 100;
-                        const percentDisplay = isIncrease 
-                          ? `+${p.applyPercent - 100}%` 
-                          : `-${100 - p.applyPercent}%`;
-                        
-                        return (
-                          <div key={pi} className="ml-2 text-gray-600">
-                            • {p.phaseName}: 
-                            <span className={isIncrease ? 'text-red-600' : 'text-green-600'}>
-                              {percentDisplay}
-                            </span>
-                            {' '}→ {adjustedPrice.toLocaleString()} VND 
-                            (Slot: {p.totalslot}, {p.startDate} → {p.endDate})
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
+<div className="border p-4 rounded mb-4">
+  <h4 className="font-medium mb-3 text-blue-600">
+    Danh sách vé ({tickets.length})
+  </h4>
 
-                  <div className="flex gap-2 mt-2">
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => setTickets(tickets.filter((_, i) => i !== idx))}
-                    >
-                      Xóa vé
-                    </Button>
+  {tickets.map((t, idx) => (
+    <div key={t.ticketId || idx} className="border rounded-lg p-4 mb-3 bg-white shadow-sm">
+      {/* Header */}
+      <div className="flex justify-between items-start mb-3">
+        <div className="flex-1">
+          <div className="font-semibold text-lg text-blue-700">
+            {formatDate(t.phases?.[0]?.startDate)} - {formatDate(t.phases?.[t.phases.length - 1]?.endDate)}
+          </div>
+          <div className="text-sm text-gray-500">{t.ticketName}</div>
+        </div>
+      </div>
+
+      {/* Price and Details */}
+      <div className="flex items-center justify-between border-t pt-3">
+        <div>
+          <div className="font-semibold text-sm text-gray-800">{t.ticketName}</div>
+          <div className="text-xs text-gray-500">Slot: {t.totalSlot}</div>
+        </div>
+        <div className="text-right text-blue-600 font-semibold">
+          {t.ticketPrice.toLocaleString()} VND
+        </div>
+      </div>
+
+      {/* Phases */}
+      {t.phases && t.phases.length > 0 && (
+        <div className="mt-3 pt-3 border-t">
+          <div className="text-xs font-medium text-gray-600 mb-2">
+            Giai đoạn giá ({t.phases.length}):
+          </div>
+
+          {t.phases.map((p, pi) => {
+            const isIncrease = p.applyPercent > 100;
+            const percentDisplay = isIncrease 
+              ? `+${p.applyPercent - 100}%` 
+              : `-${100 - p.applyPercent}%`;
+
+            return (
+              <div key={pi} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded mb-1">
+                <div>
+                  <div className="text-sm font-medium text-gray-700">{p.phaseName}</div>
+                  <div className="text-xs text-gray-500">
+                    {formatDate(p.startDate)} - {formatDate(p.endDate)}
                   </div>
                 </div>
-              ))}
-            </div>
+                <div className="text-right text-sm">
+                  <span className="text-gray-500 mr-2">Slot: {p.totalslot}</span>
+                  <span className={`font-semibold ${isIncrease ? 'text-red-600' : 'text-green-600'}`}>
+                    {percentDisplay}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Actions */}
+      <div className="flex gap-2 mt-3">
+        <Button
+          size="sm"
+          variant="destructive"
+          onClick={() => setTickets(tickets.filter((_, i) => i !== idx))}
+          className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold"
+        >
+          Xóa vé
+        </Button>
+      </div>
+    </div>
+  ))}
+</div>
+
 
             <div className="border p-4 rounded">
               <h4 className="font-medium mb-3">Thêm vé mới</h4>
@@ -868,8 +899,13 @@ const handleAddPhaseToNewTicket = () => {
               </div>
 
               <div className="mt-4 border-t pt-3">
-                <h5 className="font-medium mb-2">
+                <h5 className="font-medium mb-2 flex items-center gap-2">
                   Giai đoạn giá cho vé này ({newTicket.phases.length})
+                  {conferenceBasicData?.ticketSaleStart && conferenceBasicData?.ticketSaleEnd && (
+                    <span className="text-sm text-blue-600">
+                      ({new Date(conferenceBasicData.ticketSaleStart).toLocaleDateString('vi-VN')} → {new Date(conferenceBasicData.ticketSaleEnd).toLocaleDateString('vi-VN')})
+                    </span>
+                  )}
                 </h5>
                 
                 {newTicket.phases.map((p, idx) => {
@@ -918,89 +954,100 @@ const handleAddPhaseToNewTicket = () => {
                     placeholder="VD: Early Bird, Standard, Late..."
                   />
                   
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium">Điều chỉnh giá</label>
-                    
-                    <div className="grid grid-cols-[auto_1fr] gap-2 items-end">
-                      <div className="flex gap-3">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="percentType"
-                            value="increase"
-                            checked={newPhase.percentType === 'increase'}
-                            onChange={() => setNewPhase({ ...newPhase, percentType: 'increase' })}
-                            className="w-4 h-4"
-                          />
-                          <span className="text-sm text-red-600 font-medium">Tăng</span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="percentType"
-                            value="decrease"
-                            checked={newPhase.percentType === 'decrease'}
-                            onChange={() => setNewPhase({ ...newPhase, percentType: 'decrease' })}
-                            className="w-4 h-4"
-                          />
-                          <span className="text-sm text-green-600 font-medium">Giảm</span>
-                        </label>
-                      </div>
+<div className="space-y-2">
+  <label className="block text-sm font-medium">Điều chỉnh giá</label>
 
-                      <FormInput
-                        label=""
-                        type="number"
-                        min="0"
-                        max="100"
-                        value={newPhase.percentValue}
-                        onChange={(val) => setNewPhase({ ...newPhase, percentValue: Number(val) })}
-                        placeholder="VD: 20"
-                      />
-                    </div>
+  <div className="flex items-end gap-3">
+ {/* Input phần trăm */}
+    <div className="w-24">
+      <FormInput
+        label=""
+        type="number"
+        min="0"
+        max="100"
+        value={newPhase.percentValue}
+        onChange={(val) => setNewPhase({ ...newPhase, percentValue: Number(val) })}
+        placeholder=""
+      />
+    </div>
+    <div className="flex gap-3">
+      <label className="flex items-center gap-2 cursor-pointer">
+        <input
+          type="radio"
+          name="percentType"
+          value="increase"
+          checked={newPhase.percentType === 'increase'}
+          onChange={() => setNewPhase({ ...newPhase, percentType: 'increase' })}
+          className="w-4 h-4"
+        />
+        <span className="text-sm text-red-600 font-medium">Tăng</span>
+      </label>
+      <label className="flex items-center gap-2 cursor-pointer">
+        <input
+          type="radio"
+          name="percentType"
+          value="decrease"
+          checked={newPhase.percentType === 'decrease'}
+          onChange={() => setNewPhase({ ...newPhase, percentType: 'decrease' })}
+          className="w-4 h-4"
+        />
+        <span className="text-sm text-green-600 font-medium">Giảm</span>
+      </label>
+    </div>    
+      {newTicket.ticketPrice > 0 && newPhase.percentValue > 0 && (
+    <div className="text-sm bg-gray-50 p-2 rounded">
+ 
+      <strong
+        className={
+          newPhase.percentType === 'increase' ? 'text-red-600' : 'text-green-600'
+        }
+      >
+        {(
+          newTicket.ticketPrice *
+          (newPhase.percentType === 'increase'
+            ? (100 + newPhase.percentValue) / 100
+            : (100 - newPhase.percentValue) / 100)
+        ).toLocaleString()}{' '}
+        VND
+      </strong>
+      {' '}({newPhase.percentType === 'increase' ? '+' : '-'}
+      {newPhase.percentValue}%)
+    </div>
+  )}
+  </div>
 
-                    {newTicket.ticketPrice > 0 && newPhase.percentValue > 0 && (
-                      <div className="text-sm bg-gray-50 p-2 rounded">
-                        💰 Giá sau điều chỉnh: {' '}
-                        <strong className={newPhase.percentType === 'increase' ? 'text-red-600' : 'text-green-600'}>
-                          {(newTicket.ticketPrice * (
-                            newPhase.percentType === 'increase' 
-                              ? (100 + newPhase.percentValue) / 100
-                              : (100 - newPhase.percentValue) / 100
-                          )).toLocaleString()} VND
-                        </strong>
-                        {' '}({newPhase.percentType === 'increase' ? '+' : '-'}{newPhase.percentValue}%)
-                      </div>
-                    )}
-                  </div>
+
+</div>
+
                   
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <FormInput
-                        label="Ngày bắt đầu"
-                        type="date"
-                        value={newPhase.startDate}
-                        onChange={(val) => setNewPhase({ ...newPhase, startDate: val })}
-                      />
-                      <p className="text-xs text-gray-500 mt-1">
-                        💡 Phải trong khoảng thời gian bán vé
-                      </p>
-                    </div>
-                    <FormInput
-                      label="Số ngày"
-                      type="number"
-                      min="1"
-                      value={newPhase.durationInDays}
-                      onChange={(val) => setNewPhase({ ...newPhase, durationInDays: Number(val) })}
-                    />
-                  </div>
-                  
-                  <FormInput
-                    label="Số lượng vé trong giai đoạn này"
-                    type="number"
-                    value={newPhase.totalslot}
-                    onChange={(val) => setNewPhase({ ...newPhase, totalslot: Number(val) })}
-                    placeholder={`Tối đa: ${newTicket.totalSlot - newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0)}`}
-                  />
+<div className="grid grid-cols-3 gap-3">
+  <div>
+    <FormInput
+      label="Ngày bắt đầu "
+      type="date"
+      value={newPhase.startDate}
+      onChange={(val) => setNewPhase({ ...newPhase, startDate: val })}
+    />
+    <p className="text-xs text-gray-500 mt-1"></p>
+  </div>
+
+  <FormInput
+    label="Số ngày"
+    type="number"
+    min="1"
+    value={newPhase.durationInDays}
+    onChange={(val) => setNewPhase({ ...newPhase, durationInDays: Number(val) })}
+  />
+
+  <FormInput
+    label="Số lượng vé"
+    type="number"
+    value={newPhase.totalslot}
+    onChange={(val) => setNewPhase({ ...newPhase, totalslot: Number(val) })}
+    placeholder={`Tối đa: ${newTicket.totalSlot - newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0)}`}
+  />
+</div>
+
                   
                   <Button 
                     size="sm" 
@@ -1088,8 +1135,14 @@ const handleAddPhaseToNewTicket = () => {
             </div>
 
             <div className="border p-4 rounded space-y-3">
-              <h4 className="font-medium">Thêm phiên họp mới</h4>
-              
+            <h4 className="font-medium flex items-center gap-2">
+              Thêm phiên họp mới
+              {conferenceBasicData?.startDate && conferenceBasicData?.endDate && (
+                <span className="text-sm text-green-600">
+                  ({new Date(conferenceBasicData.startDate).toLocaleDateString('vi-VN')} → {new Date(conferenceBasicData.endDate).toLocaleDateString('vi-VN')})
+                </span>
+              )}
+            </h4>                
               <FormInput
                 label="Tiêu đề"
                 value={newSession.title}
@@ -1103,7 +1156,6 @@ const handleAddPhaseToNewTicket = () => {
                 onChange={(val) => setNewSession({ ...newSession, description: val })}
                 rows={2}
               />
-              
               <FormInput
                 label="Ngày"
                 type="date"
@@ -1115,10 +1167,18 @@ const handleAddPhaseToNewTicket = () => {
               <div className="grid grid-cols-2 gap-3">
                 <FormInput
                   label="Thời gian bắt đầu"
-                  type="datetime-local"
+                  type="time" 
                   value={newSession.startTime}
-                  onChange={(val) => setNewSession({ ...newSession, startTime: val })}
+                  onChange={(val) => {
+                    if (newSession.date) {
+                      const datetime = `${newSession.date}T${val}`;
+                      setNewSession({ ...newSession, startTime: datetime });
+                    } else {
+                      toast.error("Vui lòng chọn ngày trước!");
+                    }
+                  }}
                   required
+                  disabled={!newSession.date}  
                 />
                 <FormInput
                   label="Thời lượng (giờ)"
@@ -1131,12 +1191,17 @@ const handleAddPhaseToNewTicket = () => {
                   required
                 />
               </div>
+                    {newSession.startTime && (
+                <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                  ⏰ Thời gian bắt đầu: <strong>{newSession.startTime.replace("T", " ")}</strong>
+                </div>
+              )}
 
               {newSession.endTime && (
                 <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
-                  ⏰ Kết thúc lúc: <strong>{new Date(newSession.endTime).toLocaleString('vi-VN')}</strong>
+                  ⏰ Kết thúc lúc: <strong>{newSession.endTime.replace("T", " ")}</strong>
                 </div>
-              )}
+              )}        
               
               <FormSelect
                 label="Phòng"
@@ -1188,9 +1253,7 @@ const handleAddPhaseToNewTicket = () => {
                   </div>
                 )}
                 
-                <div className="space-y-2 border p-3 rounded bg-gray-50">
-                  <p className="text-sm font-medium text-gray-700">Thêm diễn giả:</p>
-                  
+                <div className="space-y-2 border p-3 rounded bg-gray-50">                  
                   <FormInput
                     label="Tên diễn giả"
                     value={newSpeaker.name}

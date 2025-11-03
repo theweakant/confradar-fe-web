@@ -204,7 +204,6 @@ const handleView = (conference: Conference) => {
               conferences={conferences}
               onView={handleView}
               onEdit={(conference) => {
-                // Navigate to edit page if needed
                 console.log("Edit conference:", conference);
               }}
               onDelete={handleDelete}
