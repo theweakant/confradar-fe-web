@@ -10,9 +10,9 @@ interface FormInputProps {
   success?: boolean;
   placeholder?: string;
   disabled?: boolean;
-  min?: number;
-  max?: number;
-  step?: number;
+  min?: number | string;
+  max?: number |string;
+  step?: number |string;
 }
 
 export function FormInput({ 

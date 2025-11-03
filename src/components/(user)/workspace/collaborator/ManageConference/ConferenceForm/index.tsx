@@ -53,7 +53,7 @@ import { toast } from "sonner";
 const STEPS = [
   { id: 1, title: "Thông tin cơ bản" },
   { id: 2, title: "Giá vé" },
-  { id: 3, title: "Phiên họp" },
+  { id: 3, title: "Session" },
   { id: 4, title: "Chính sách" },
   { id: 5, title: "Media" },
   { id: 6, title: "Nhà tài trợ" },
@@ -172,19 +172,16 @@ export function ConferenceStepForm({
 
   // Step 3: Sessions
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [newSession, setNewSession] = useState<Session>({
-    title: "",
-    description: "",
-    startTime: "",
-    endTime: "",
-    date: "",  
-    roomId: "",
-    speaker: {
-      name: "",
-      description: "",
-      image: "",  
-    },
-  });
+const [newSession, setNewSession] = useState<Session>({
+  title: "",
+  description: "",
+  startTime: "",
+  endTime: "",
+  date: "",  
+  roomId: "",
+  speaker: [],
+  sessionMedias: [],
+});
 
   // Step 4: Policies
   const [policies, setPolicies] = useState<Policy[]>([]);
@@ -264,26 +261,32 @@ export function ConferenceStepForm({
       setPhases(transformedPhases);
     }
 
-    // Step 3: Sessions - INCLUDE sessionId
-    if (conf.sessions && conf.sessions.length > 0) {
-      const transformedSessions: Session[] = conf.sessions.map((s) => ({
-        sessionId: s.sessionId,
-        title: s.title ?? "",
-        description: s.description ?? "",
-        startTime: s.startTime ? s.startTime.slice(0, 16) : "",
-        endTime: s.endTime ? s.endTime.slice(0, 16) : "",
-        date: s.date ? s.date.split("T")[0] : "", 
-        roomId: s.roomId ?? "",
-        speaker: s.speaker ? {
-          speakerId: s.speaker.speakerId,  
-          name: s.speaker.name ?? "",
-          description: s.speaker.description ?? "",
-          image: s.speaker.image ?? "",  
-          imageUrl: s.speaker.imageUrl ?? "",  
-        } : undefined,
-      }));
-      setSessions(transformedSessions);
-    }
+
+// Step 3: Sessions 
+if (conf.sessions && conf.sessions.length > 0) {
+  const transformedSessions: Session[] = conf.sessions.map((s) => ({
+    sessionId: s.sessionId,
+    title: s.title ?? "",
+    description: s.description ?? "",
+    startTime: s.startTime ? s.startTime.slice(0, 16) : "",
+    endTime: s.endTime ? s.endTime.slice(0, 16) : "",
+    date: s.date ? s.date.split("T")[0] : "", 
+    roomId: s.roomId ?? "",
+    speaker: s.speaker?.map(sp => ({
+      speakerId: sp.speakerId,
+      name: sp.name ?? "",
+      description: sp.description ?? "",
+      image: sp.imageUrl ?? "",
+      imageUrl: sp.imageUrl ?? "",
+    })) || [],
+    sessionMedias: s.sessionMedias?.map(media => ({
+      sessionMediaId: media.sessionMediaId,
+      mediaFile: media.mediaUrl ?? "",
+      mediaUrl: media.mediaUrl ?? "",
+    })) || [],
+  }));
+  setSessions(transformedSessions);
+}
 
     // Step 4: Policies - INCLUDE policyId
     if (conf.policies && conf.policies.length > 0) {
@@ -298,7 +301,7 @@ export function ConferenceStepForm({
     // Step 5: Media - INCLUDE mediaId
     if (conf.media && conf.media.length > 0) {
       const transformedMedia: Media[] = conf.media.map((m) => ({
-        mediaId: m.mediaId, // ⬅️ ADDED
+        mediaId: m.mediaId, 
         mediaFile: m.mediaUrl ?? "",
       }));
       setMediaList(transformedMedia);
@@ -351,9 +354,7 @@ export function ConferenceStepForm({
     }
   };
 
-  // ============================================
-  // CREATE MODE - Handle Step Submit
-  // ============================================
+  //Handle Step Submit
   const handleBasicSubmitCreate = async () => {
     try {
       setStepLoadings({ ...stepLoadings, basic: true });
@@ -369,26 +370,6 @@ export function ConferenceStepForm({
       setStepLoadings({ ...stepLoadings, basic: false });
     }
   };
-
-  // const handlePriceSubmitCreate = async () => {
-  //   if (!conferenceId) return;
-  //   try {
-  //     setStepLoadings({ ...stepLoadings, prices: true });
-  //     const data: ConferencePriceData = { 
-  //       tickets,  
-  //       phases   
-  //     };
-  //     await createPrice({ conferenceId, data }).unwrap();
-  //     toast.success("Tạo giá vé thành công!");
-  //     dispatch(nextStep());
-  //   } catch (error) {
-  //     console.error("Failed to create price:", error);
-  //     toast.error("Tạo giá vé thất bại!");
-  //   } finally {
-  //     setStepLoadings({ ...stepLoadings, prices: false });
-  //   }
-  // };
-
 
 const handlePriceSubmitCreate = async () => {
   if (!conferenceId) return;
@@ -421,34 +402,40 @@ const handlePriceSubmitCreate = async () => {
   }
 };
 
-  const handleSessionSubmitCreate = async () => {
-    if (!conferenceId) return;
-    try {
-      setStepLoadings({ ...stepLoadings, sessions: true });
-      const formattedSessions = sessions.map((s) => ({
-        title: s.title,
-        description: s.description,
-        date: s.date,
-        startTime: new Date(s.startTime).toISOString(),
-        endTime: new Date(s.endTime).toISOString(),
-        roomId: s.roomId,
-        speaker: {
-          name: s.speaker?.name || "",
-          description: s.speaker?.description || "",
-        },
-      }));
+const handleSessionSubmitCreate = async () => {
+  if (!conferenceId) return;
+  try {
+    setStepLoadings({ ...stepLoadings, sessions: true });
+    const formattedSessions = sessions.map((s) => ({
+      title: s.title,
+      description: s.description,
+      date: s.date,
+      startTime: new Date(s.startTime).toISOString(),
+      endTime: new Date(s.endTime).toISOString(),
+      roomId: s.roomId,
+      speaker: s.speaker.map(sp => ({
+        name: sp.name,
+        description: sp.description,
+        image: sp.image instanceof File ? sp.image : undefined,
+        imageUrl: typeof sp.image === 'string' ? sp.image : undefined,
+      })),
+      sessionMedias: (s.sessionMedias || []).map(media => ({
+        mediaFile: media.mediaFile instanceof File ? media.mediaFile : undefined,
+        mediaUrl: typeof media.mediaFile === 'string' ? media.mediaFile : undefined,
+      })),
+    }));
 
-      const data = { sessions: formattedSessions };
-      await createSessions({ conferenceId, data }).unwrap();
-      toast.success("Tạo phiên họp thành công!");
-      dispatch(nextStep());
-    } catch (error) {
-      console.error("Failed to create sessions:", error);
-      toast.error("Tạo phiên họp thất bại!");
-    } finally {
-      setStepLoadings({ ...stepLoadings, sessions: false });
-    }
-  };
+    const data = { sessions: formattedSessions };
+    await createSessions({ conferenceId, data }).unwrap();
+    toast.success("Tạo phiên họp thành công!");
+    dispatch(nextStep());
+  } catch (error) {
+    console.error("Failed to create sessions:", error);
+    toast.error("Tạo buổi thất bại!");
+  } finally {
+    setStepLoadings({ ...stepLoadings, sessions: false });
+  }
+};
 
   const handlePolicySubmitCreate = async () => {
     if (!conferenceId) return;
@@ -515,12 +502,12 @@ const handlePriceSubmitCreate = async () => {
       setStepLoadings((prev) => ({ ...prev, basic: true }));
       try {
         await updateBasic({ conferenceId, data: basicForm }).unwrap();
-        toast.success("✅ Basic info updated!");
+        toast.success("Basic info updated!");
       } catch (error: unknown) {
         const message =
           error instanceof Error
             ? error.message
-            : "❌ Failed to update basic info";
+            : "Failed to update basic info";
 
         console.error("Failed to update basic:", error);
         toast.error(message);
@@ -969,7 +956,7 @@ const handleAddTicket = () => {
             />
             <div className="grid grid-cols-2 gap-4">
               <FormInput
-                label="Ngày bắt đầu"
+                label="Ngày bắt đầu giai"
                 name="startDate"
                 type="date"
                 value={basicForm.startDate}
@@ -1158,7 +1145,7 @@ case 2:
               required
             />
             <FormInput
-              label="Số lượng slot"
+              label="Số lượng vé"
               name="totalSlot"
               type="number"
               value={newTicket.totalSlot}
@@ -1263,7 +1250,7 @@ case 2:
             />
           </div>
           <FormInput
-            label="Số lượng slot"
+            label="Số lượng vé"
             name="totalslot"
             type="number"
             value={newPhase.totalslot}
@@ -1277,13 +1264,13 @@ case 2:
       {/* SUMMARY */}
       {(tickets.length > 0 || phases.length > 0) && (
         <div className="p-4 bg-green-50 border border-green-200 rounded">
-          <h5 className="font-medium text-green-900 mb-2">📊 Tóm tắt</h5>
+          <h5 className="font-medium text-green-900 mb-2">Tóm tắt</h5>
           <ul className="text-sm text-green-800 space-y-1">
-            <li>✓ Tổng số loại vé: {tickets.length}</li>
-            <li>✓ Tổng số giai đoạn: {phases.length}</li>
+            <li>Tổng số loại vé đã tạo: {tickets.length}</li>
+            <li>Tổng số giai đoạn: {phases.length}</li>
             {tickets.length > 0 && (
               <li>
-                ✓ Tổng slot vé: {tickets.reduce((sum, t) => sum + t.totalSlot, 0)}
+                Tổng slot vé: {tickets.reduce((sum, t) => sum + t.totalSlot, 0)}
               </li>
             )}
           </ul>

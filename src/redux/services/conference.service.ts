@@ -1,7 +1,16 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { apiClient } from "../api/apiClient";
 import { endpoint } from "../api/endpoint";
-import type { ConferenceFormData, ConferenceResponse, RegisteredUserInConference, ResearchConferenceDetailResponse, TechnicalConferenceDetailResponse } from "@/types/conference.type";
+import type { 
+  ConferenceFormData, 
+  ConferenceResponse, 
+  RegisteredUserInConference, 
+  ResearchConferenceDetailResponse, 
+  TechnicalConferenceDetailResponse, 
+
+  Conference,
+  ConferenceStatus
+} from "@/types/conference.type";
 import type { ApiResponse, ApiResponsePagination } from "@/types/api.type";
 
 export const conferenceApi = createApi({
@@ -191,6 +200,37 @@ export const conferenceApi = createApi({
     }),
     
 
+    getTechConferencesForCollaboratorAndOrganizer: builder.query<
+      ApiResponsePagination<Conference[]>,
+      {
+        page?: number;
+        pageSize?: number;
+        conferenceStatusId?: string;
+        searchKeyword?: string;
+        cityId?: string;
+        startDate?: string;
+        endDate?: string;
+      }
+    >({
+      query: (params) => ({
+        url: endpoint.CONFERENCE.TECH_CONF_FOR_COLLABORATOR_AND_ORGANIZER,
+        method: "GET",
+        params: {
+          page: params?.page ?? 1,
+          pageSize: params?.pageSize ?? 10,
+          ...(params?.conferenceStatusId && { conferenceStatusId: params.conferenceStatusId }),
+          ...(params?.searchKeyword && { searchKeyword: params.searchKeyword }),
+          ...(params?.cityId && { cityId: params.cityId }),
+          ...(params?.startDate && { startDate: params.startDate }),
+          ...(params?.endDate && { endDate: params.endDate }),
+        },
+      }),
+      providesTags: ["Conference"],
+    }),
+
+
+
+
   }),
 });
 
@@ -199,6 +239,10 @@ export const {
   useGetTechnicalConferenceDetailQuery,
   useGetResearchConferenceDetailQuery,
   useGetAllConferencesWithPricesPaginationQuery,
+  useGetTechConferencesForCollaboratorAndOrganizerQuery,
+
+
+
   // useGetConferenceByIdQuery,
   useGetConferencesByStatusQuery,
   useLazyGetAllConferencesPaginationQuery,

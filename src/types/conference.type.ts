@@ -39,7 +39,9 @@ export interface Conference {
   researchRankingReferences?: ResearchRankingReference[];
   researchMaterials?: ResearchMaterial[]; 
 
-
+  targetAudience?: string;
+  conferenceMedia?: Media[]; 
+  conferencePrices?: ConferencePrice[];
 }
 
 export interface PendingConference extends Conference {
@@ -63,38 +65,54 @@ export interface ConferenceRanking {
 //+++++++++++++++
 
 //BASIC STEP
-export interface ConferenceBasicForm {
-  conferenceId?:string;
+  export interface ConferenceBasicForm {
+    conferenceId?:string;
+    conferenceName: string;
+    description?: string;
+    startDate: string;
+    endDate: string;
+    dateRange?:number;
+    totalSlot: number;
+    address?: string;
+    bannerImageFile?: File | null;
+    isInternalHosted: boolean;
+    isResearchConference: boolean;
+    conferenceCategoryId: string;
+    cityId: string;
+    ticketSaleStart: string; //ISO
+    ticketSaleEnd: string; //ISO
+    ticketSaleDuration?:number;
+    createdby?: string;
+
+    targetAudienceTechnicalConference?: string; //for tech conf
+    customTarget?: string; 
+
+  }
+
+export interface ConferenceBasicResponse {
+  conferenceId: string;
   conferenceName: string;
-  description?: string;
+  description: string;
   startDate: string;
   endDate: string;
   totalSlot: number;
-  address?: string;
-  bannerImageFile?: File | null;
+  availableSlot: number;
+  address: string;
+  bannerImageFileUrl: string; 
   isInternalHosted: boolean;
   isResearchConference: boolean;
   conferenceCategoryId: string;
   cityId: string;
-  ticketSaleStart: string; //ISO
-  ticketSaleEnd: string; //ISO
-  createdby?: string;
-  targetAudienceTechnicalConference?: string; //for tech conf
-
+  createdAt: string;
+  ticketSaleStart: string;
+  ticketSaleEnd: string;
+  createdby: string;
+  targetAudience: string; 
 }
 
 //PRICE STEP
-export interface Ticket {
-  ticketId?: string;
-  ticketPrice: number;
-  ticketName: string; 
-  ticketDescription: string;
-  isAuthor?: boolean;
-  totalSlot: number;
-}
-
 export interface Phase {
-  pricePhaseId?:string;
+  pricePhaseId?: string;
   phaseName: string;
   applyPercent: number;
   startDate: string;
@@ -102,36 +120,69 @@ export interface Phase {
   totalslot: number;
 }
 
-export interface ConferencePriceData {
-  // tickets: Ticket[];
-  typeOfTicket: Ticket
+export interface Ticket {
+  ticketId?: string;
+  ticketPrice: number;
+  ticketName: string; 
+  ticketDescription: string;
+  isAuthor: boolean;
+  totalSlot: number;
   phases: Phase[];
+}
+
+
+export interface ConferencePriceData {
+  typeOfTicket: Ticket[];
+}
+
+
+//API res theo tech conf organizer&collab
+export interface PricePhase {
+  pricePhaseId: string;
+  phaseName: string;
+  startDate: string;
+  endDate: string;
+  applyPercent: number;
+  totalSlot: number;
+  availableSlot: number;
+}
+
+export interface ConferencePrice {
+  conferencePriceId: string;
+  ticketPrice: number;
+  ticketName: string;
+  ticketDescription: string;
+  isAuthor: boolean;
+  totalSlot: number;
+  availableSlot: number;
+  pricePhases: PricePhase[];
 }
 
 //SESSION STEP
 export interface Session {
-  sessionId?: string,
+  sessionId?: string;
   title: string;
   description: string;
-  startTime: string;
-  endTime: string;
-  date: string;
+  startTime: string;  
+  endTime: string;    
+  date: string;       
+  timeRange?: number; 
   roomId: string;
-  speaker?: Speaker;
-  sessionMedias?: SessionMedia[]
+  speaker: Speaker[];      
+  sessionMedias?: SessionMedia[]; 
 }
 
 export interface Speaker {
-  speakerId?:string;
+  speakerId?: string;
   name: string;
   description: string;
-  imageUrl?: string;
-  image?: string;
+  image?: File | string;     
+  imageUrl?: string;   
 }
 
 export interface SessionMedia {
-  sessionMediaId?: string
-  mediaFile: string;
+  sessionMediaId?: string;
+  mediaFile?: File | string;
   mediaUrl?: string;
 }
 
@@ -331,6 +382,13 @@ export interface Category {
 export interface CategoryOption {
   value: string;
   label: string;
+}
+
+export interface ConferenceStatus {
+  conferenceStatusId: string;
+  conferenceStatusName: string;
+  conferenceTimelineAfterwardStatuses: any[];
+  conferenceTimelinePreviousStatuses: any[];
 }
 
 
