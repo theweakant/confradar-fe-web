@@ -271,13 +271,23 @@ export const conferenceStepApi = createApi({
       ApiResponse<string>,
       { conferenceId: string; data: ConferenceMediaData }
     >({
-      query: ({ conferenceId, data }) => ({
-        url: endpoint.CONFERENCE_STEP.CREATE_MEDIA(conferenceId),
-        method: "POST",
-        body: data,
-      }),
+      query: ({ conferenceId, data }) => {
+        const formData = new FormData();
+
+        data.media.forEach((item, index) => {
+          formData.append(`media[${index}].mediaFile`, item.mediaFile as File);
+          formData.append(`media[${index}].mediaUrl`, item.mediaUrl || "");
+        });
+
+        return {
+          url: endpoint.CONFERENCE_STEP.CREATE_MEDIA(conferenceId),
+          method: "POST",
+          body: formData,
+        };
+      },
       invalidatesTags: ["ConferenceStep"],
     }),
+
 
     //UPDATE MEDIA 
     updateConferenceMedia: builder.mutation<
@@ -299,17 +309,31 @@ export const conferenceStepApi = createApi({
     }),
 
     //CREATE SPONSOR
-    createConferenceSponsors: builder.mutation<
-      ApiResponse<string>,
-      { conferenceId: string; data: ConferenceSponsorData }
-    >({
-      query: ({ conferenceId, data }) => ({
-        url: endpoint.CONFERENCE_STEP.CREATE_SPONSOR(conferenceId),
-        method: "POST",
-        body: data,
-      }),
-      invalidatesTags: ["ConferenceStep"],
-    }),
+createConferenceSponsors: builder.mutation<
+  ApiResponse<string>,
+  { conferenceId: string; data: ConferenceSponsorData }
+>({
+  query: ({ conferenceId, data }) => {
+    const formData = new FormData();
+
+    data.sponsors.forEach((item, index) => {
+      formData.append(`Sponsors[${index}].Name`, item.name);
+      if (item.imageFile instanceof File) {
+        formData.append(`Sponsors[${index}].ImageFile`, item.imageFile);
+      }
+      if (item.imageUrl) {
+        formData.append(`Sponsors[${index}].ImageUrl`, item.imageUrl);
+      }
+    });
+
+    return {
+      url: endpoint.CONFERENCE_STEP.CREATE_SPONSOR(conferenceId),
+      method: "POST",
+      body: formData,
+    };
+  },
+  invalidatesTags: ["ConferenceStep"],
+}),
 
     //UPDATE SPONSOR
     updateConferenceSponsor: builder.mutation<

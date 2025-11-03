@@ -4,10 +4,8 @@ import React from "react";
 import { 
   Eye, 
   Pencil, 
-  Trash2, 
   Calendar, 
   MapPin, 
-  Users, 
   MoreVertical 
 } from "lucide-react";
 
