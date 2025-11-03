@@ -3,14 +3,13 @@ import {
   Pencil, 
   Trash2, 
   Calendar,
-  MapPin,
   Users,
   Eye,
   MoreVertical,
 } from "lucide-react";
 
 import { DataTable, Column } from "@/components/molecules/DataTable";
-import { Conference, Category } from "@/types/conference.type";
+import { Conference } from "@/types/conference.type";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,65 +30,60 @@ export function ConferenceTable({
   onEdit, 
   onDelete 
 }: ConferenceTableProps) {
-  
-
   const columns: Column<Conference>[] = [
     {
       key: "conferenceName",
-      header: "Hội thảo",
+      header: "Tên hội thảo",
       render: (conference) => (
         <div className="max-w-xs">
           <p className="font-medium text-gray-900 truncate">{conference.conferenceName}</p>
-          <p className="text-sm text-gray-500 truncate">User ID: {conference.userId}</p>
         </div>
       ),
     },
     {
       key: "startDate",
-      header: "Thời gian",
+      header: "Ngày bắt đầu",
       render: (conference) => (
         <div className="flex items-center gap-2 text-gray-600">
           <Calendar className="w-4 h-4" />
-          <div>
-            <p className="text-sm whitespace-nowrap">
-              {new Date(conference.startDate).toLocaleDateString("vi-VN")}
-            </p>
-            <p className="text-xs text-gray-500">
-              đến {new Date(conference.endDate).toLocaleDateString("vi-VN")}
-            </p>
-          </div>
+          <span className="text-sm whitespace-nowrap">
+            {conference.startDate
+              ? new Date(conference.startDate).toLocaleDateString("vi-VN")
+              : "N/A"}
+          </span>
         </div>
       ),
     },
     {
-      key: "address",
-      header: "Địa điểm",
-      render: (conference) => (
-        <div className="flex items-center gap-2 text-gray-600">
-          <MapPin className="w-4 h-4" />
-          <span className="text-sm truncate max-w-[200px]">{conference.address}</span>
-        </div>
-      ),
-    },
-    {
-      key: "conferenceCategoryId",
-      header: "Danh mục",
-      render: (conference) => (
-        <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
-          {conference.categoryId}
-        </span>
-      ),
-    },
-    {
-      key: "capacity",
-      header: "Sức chứa",
+      key: "totalSlot",
+      header: "Tổng chỗ",
       render: (conference) => (
         <div className="flex items-center gap-2">
           <Users className="w-4 h-4 text-gray-400" />
           <span className="text-sm text-gray-900">
-            {conference.capacity}
+            {conference.totalSlot}
           </span>
         </div>
+      ),
+    },
+    {
+      key: "ticketSaleStart",
+      header: "Bắt đầu bán vé",
+      render: (conference) => (
+        <span className="text-sm text-gray-600">
+          {conference.ticketSaleStart
+            ? new Date(conference.ticketSaleStart).toLocaleDateString("vi-VN")
+            : "N/A"}
+        </span>
+      ),
+    },
+    {
+      key: "targetAudience",
+      header: "Đối tượng",
+      render: (conference) => (
+        <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+          {conference.targetAudience}
+        </span>
       ),
     },
     {

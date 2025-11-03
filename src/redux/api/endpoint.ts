@@ -49,6 +49,8 @@ export const endpoint = {
     LIST_PAGINATED: "/Conference/paginated-conferences",
     LIST_WITH_PRICES: "/Conference/conferences-with-prices",
     LIST_BY_STATUS: "/Conference/by-status",
+    TECH_CONF_FOR_COLLABORATOR_AND_ORGANIZER: "/Conference/technical-conferences-for-collaborator-and-Organizer",
+    LIST_ALL_CONF_STATUS:"/ConferenceStatus/get-all-conference-statuses",
 
     VIEW_REGISTERED_USERS: "/Conference/view-registered-users-for-conference",
 
@@ -65,6 +67,7 @@ export const endpoint = {
     //pending & approve
     PENDING_CONFERENCES: "/Conference/pending-conferences",
     APPROVE_CONFERENCE: (conferenceId: string) => `/Conference/approve-conference/${conferenceId}`,
+
 
 
     DETAIL: "/Conference",

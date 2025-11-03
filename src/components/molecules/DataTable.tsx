@@ -30,6 +30,9 @@ export function DataTable<T>({
   keyExtractor,
   onRowClick,
 }: DataTableProps<T>) {
+  // Ensure data is always an array
+  const safeData = Array.isArray(data) ? data : [];
+
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden">
       <Table>
@@ -46,7 +49,7 @@ export function DataTable<T>({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.length === 0 ? (
+          {safeData.length === 0 ? (
             <TableRow>
               <TableCell 
                 colSpan={columns.length} 
@@ -56,7 +59,7 @@ export function DataTable<T>({
               </TableCell>
             </TableRow>
           ) : (
-            data.map((item) => (
+            safeData.map((item) => (
               <TableRow 
                 key={keyExtractor(item)}
                 onClick={() => onRowClick?.(item)}
