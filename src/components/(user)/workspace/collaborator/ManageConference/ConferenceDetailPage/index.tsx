@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { formatDate } from "@/helper/format";
 import { useRouter, useParams } from "next/navigation"; 
 
-import { useGetTechnicalConferenceDetailQuery } from "@/redux/services/conference.service";
+import { useGetTechnicalConferenceDetailInternalQuery } from "@/redux/services/conference.service";
 import { useGetAllConferenceStatusesQuery } from "@/redux/services/status.service";
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
@@ -29,7 +29,7 @@ export default function ConferenceDetailPage() {
   const conferenceId = id as string;
   const [activeTab, setActiveTab] = useState("information");
 
-  const { data, isLoading, error } = useGetTechnicalConferenceDetailQuery(conferenceId);
+  const { data, isLoading, error } = useGetTechnicalConferenceDetailInternalQuery(conferenceId);
   const { data: categoriesData } = useGetAllCategoriesQuery();
   const { data: statusesData } = useGetAllConferenceStatusesQuery();
   const { data: citiesData } = useGetAllCitiesQuery();

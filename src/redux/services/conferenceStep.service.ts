@@ -74,6 +74,8 @@ export const conferenceStepApi = createApi({
     >({
       query: ({ conferenceId, data }) => {
         const formData = new FormData();
+
+        // Required fields
         formData.append("conferenceName", data.conferenceName);
         formData.append("startDate", data.startDate);
         formData.append("endDate", data.endDate);
@@ -85,13 +87,10 @@ export const conferenceStepApi = createApi({
         formData.append("ticketSaleStart", data.ticketSaleStart);
         formData.append("ticketSaleEnd", data.ticketSaleEnd);
 
+        // Optional fields
         if (data.description) formData.append("description", data.description);
         if (data.address) formData.append("address", data.address);
-        if (data.bannerImageFile)
-          formData.append("bannerImageFile", data.bannerImageFile);
-        if (data.createdby) formData.append("createdby", data.createdby);
-        if (data.targetAudienceTechnicalConference)
-          formData.append("targetAudienceTechnicalConference", data.targetAudienceTechnicalConference);
+        if (data.bannerImageFile) formData.append("bannerImageFile", data.bannerImageFile);
 
         return {
           url: endpoint.CONFERENCE_STEP.UPDATE_BASIC(conferenceId),
@@ -101,6 +100,7 @@ export const conferenceStepApi = createApi({
       },
       invalidatesTags: ["ConferenceStep"],
     }),
+
 
     //CREATE PRICE (TECH)
     createConferencePrice: builder.mutation<
@@ -117,16 +117,26 @@ export const conferenceStepApi = createApi({
 
     //UPDATE PRICE TICKET (TECH)
     updateConferencePrice: builder.mutation<
-      ApiResponse<Ticket>,
-      { ticketId: string; data: Omit<Ticket, "ticketId"> }
+      ApiResponse<{ priceId: string }>,
+      {
+        priceId: string;
+        data: {
+          ticketPrice: number;
+          ticketName: string;
+          ticketDescription: string;
+          totalSlot: number;
+        };
+      }
     >({
-      query: ({ ticketId, data }) => ({
-        url: endpoint.CONFERENCE_STEP.UPDATE_PRICE(ticketId),
+      query: ({ priceId, data }) => ({
+        url: endpoint.CONFERENCE_STEP.UPDATE_PRICE(priceId),
         method: "PUT",
         body: data,
       }),
       invalidatesTags: ["ConferenceStep"],
     }),
+
+    //UPDATE PHASE (đang thiếu)
 
     //CREATE SESSION
     createConferenceSessions: builder.mutation<
@@ -197,35 +207,52 @@ export const conferenceStepApi = createApi({
     //UPDATE SESSION
     updateConferenceSession: builder.mutation<
       ApiResponse<Session>,
-      { sessionId: string; data: Omit<Session, "sessionId" | "speaker" | "sessionMedias"> }
+      {
+        sessionId: string;
+        data: {
+          title: string;
+          description: string;
+          startTime: string;
+          endTime: string;
+          date: string; 
+          roomId: string;
+        };
+      }
     >({
       query: ({ sessionId, data }) => ({
         url: endpoint.CONFERENCE_STEP.UPDATE_SESSION(sessionId),
         method: "PUT",
-        body: data,
+        body: { request: data },
       }),
       invalidatesTags: ["ConferenceStep"],
     }),
 
     //UPDATE SPEAKER
-    updateConferenceSpeaker: builder.mutation<
-      ApiResponse<Speaker>,
-      { speakerId: string; data: Omit<Speaker, "speakerId"> }
-    >({
-      query: ({ speakerId, data }) => {
-        const formData = new FormData();
-        formData.append("name", data.name);
-        formData.append("description", data.description);
-        if (data.image) formData.append("image", data.image);
+updateSessionSpeaker: builder.mutation<
+  ApiResponse<Speaker>,
+  {
+    sessionId: string;
+    data: {
+      name: string;
+      description: string;
+      image?: File | string;
+    };
+  }
+>({
+  query: ({ sessionId, data }) => {
+    const formData = new FormData();
+    formData.append("name", data.name);
+    formData.append("description", data.description);
+    if (data.image) formData.append("image", data.image);
 
-        return {
-          url: endpoint.CONFERENCE_STEP.UPDATE_SPEAKER(speakerId),
-          method: "PUT",
-          body: formData,
-        };
-      },
-      invalidatesTags: ["ConferenceStep"],
-    }),
+    return {
+      url: endpoint.CONFERENCE_STEP.UPDATE_SPEAKER(sessionId),
+      method: "PUT",
+      body: formData,
+    };
+  },
+  invalidatesTags: ["ConferenceStep"],
+}),
 
     //CREATE POLICY
     createConferencePolicies: builder.mutation<
@@ -255,8 +282,14 @@ export const conferenceStepApi = createApi({
 
     //UPDATE POLICY
     updateConferencePolicy: builder.mutation<
-      ApiResponse<Policy>,
-      { policyId: string; data: Omit<Policy, "policyId"> }
+      ApiResponse<{ policyId: string }>,
+      {
+        policyId: string;
+        data: {
+          policyName: string;
+          description: string;
+        };
+      }
     >({
       query: ({ policyId, data }) => ({
         url: endpoint.CONFERENCE_STEP.UPDATE_POLICY(policyId),
@@ -265,6 +298,27 @@ export const conferenceStepApi = createApi({
       }),
       invalidatesTags: ["ConferenceStep"],
     }),
+
+    //UPDATE REFUND POLICY
+    updateConferenceRefundPolicy: builder.mutation<
+      ApiResponse<{ refundPolicyId: string }>,
+      {
+        refundPolicyId: string;
+        data: {
+          percentRefund: number;
+          refundDeadline: string; 
+          refundOrder: number;
+        };
+      }
+    >({
+      query: ({ refundPolicyId, data }) => ({
+        url: endpoint.CONFERENCE_STEP.UPDATE_REFUND_POLICY(refundPolicyId),
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["ConferenceStep"],
+    }),
+
 
     //CREATE MEDIA
     createConferenceMedia: builder.mutation<
@@ -309,41 +363,43 @@ export const conferenceStepApi = createApi({
     }),
 
     //CREATE SPONSOR
-createConferenceSponsors: builder.mutation<
-  ApiResponse<string>,
-  { conferenceId: string; data: ConferenceSponsorData }
->({
-  query: ({ conferenceId, data }) => {
-    const formData = new FormData();
+    createConferenceSponsors: builder.mutation<
+      ApiResponse<string>,
+      { conferenceId: string; data: ConferenceSponsorData }
+    >({
+      query: ({ conferenceId, data }) => {
+        const formData = new FormData();
 
-    data.sponsors.forEach((item, index) => {
-      formData.append(`Sponsors[${index}].Name`, item.name);
-      if (item.imageFile instanceof File) {
-        formData.append(`Sponsors[${index}].ImageFile`, item.imageFile);
-      }
-      if (item.imageUrl) {
-        formData.append(`Sponsors[${index}].ImageUrl`, item.imageUrl);
-      }
-    });
+        data.sponsors.forEach((item, index) => {
+          formData.append(`Sponsors[${index}].Name`, item.name);
+          if (item.imageFile instanceof File) {
+            formData.append(`Sponsors[${index}].ImageFile`, item.imageFile);
+          }
+          if (item.imageUrl) {
+            formData.append(`Sponsors[${index}].ImageUrl`, item.imageUrl);
+          }
+        });
 
-    return {
-      url: endpoint.CONFERENCE_STEP.CREATE_SPONSOR(conferenceId),
-      method: "POST",
-      body: formData,
-    };
-  },
-  invalidatesTags: ["ConferenceStep"],
-}),
+        return {
+          url: endpoint.CONFERENCE_STEP.CREATE_SPONSOR(conferenceId),
+          method: "POST",
+          body: formData,
+        };
+      },
+      invalidatesTags: ["ConferenceStep"],
+    }),
 
     //UPDATE SPONSOR
     updateConferenceSponsor: builder.mutation<
       ApiResponse<Sponsor>,
-      { sponsorId: string; name: string; imageFile?: File }
+      { sponsorId: string; name?: string; imageFile?: File; imageUrl?: string }
     >({
-      query: ({ sponsorId, name, imageFile }) => {
+      query: ({ sponsorId, name, imageFile, imageUrl }) => {
         const formData = new FormData();
-        formData.append("name", name);
+
+        if (name) formData.append("name", name);
         if (imageFile) formData.append("imageFile", imageFile);
+        if (imageUrl) formData.append("imageUrl", imageUrl);
 
         return {
           url: endpoint.CONFERENCE_STEP.UPDATE_SPONSOR(sponsorId),
@@ -353,6 +409,7 @@ createConferenceSponsors: builder.mutation<
       },
       invalidatesTags: ["ConferenceStep"],
     }),
+
 
     // GET BASIC
     getBasicStepById: builder.query<ApiResponse<ConferenceBasicResponse>, string>({
@@ -501,15 +558,19 @@ export const {
   useUpdateConferencePriceMutation,
   useCreateConferenceSessionsMutation,
   useUpdateConferenceSessionMutation,
-  useUpdateConferenceSpeakerMutation,
   useCreateConferencePoliciesMutation,
-  useCreateRefundPoliciesMutation,
   useUpdateConferencePolicyMutation,
+  useCreateRefundPoliciesMutation,
+  useUpdateConferenceRefundPolicyMutation,
   useCreateConferenceMediaMutation,
   useUpdateConferenceMediaMutation,
   useCreateConferenceSponsorsMutation,
   useUpdateConferenceSponsorMutation,
   useGetBasicStepByIdQuery,
+
+//UPDATE TECH
+  useUpdateSessionSpeakerMutation ,
+
 
   //RESEARCH
   useCreateBasicResearchConferenceMutation,
@@ -519,9 +580,5 @@ export const {
   useCreateResearchRankingFileMutation,
   useCreateResearchRankingReferenceMutation,
   useCreateResearchMaterialMutation
-
-
-
-
 
 } = conferenceStepApi;

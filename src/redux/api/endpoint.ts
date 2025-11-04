@@ -54,7 +54,10 @@ export const endpoint = {
 
     VIEW_REGISTERED_USERS: "/Conference/view-registered-users-for-conference",
 
+    //COLLABORATOR
+    GET_TECH_BY_ID_INTERNAL: (conferenceId: string) => `/Conference/detail-technical-for-organizer-collaborator/${conferenceId}`,
 
+    //CUSTOMER
     GET_TECH_BY_ID: (conferenceId: string) => `/Conference/technical-detail/${conferenceId}`,
     GET_RESEARCH_BY_ID: (conferenceId: string) => `/Conference/research-detail/${conferenceId}`,
 
@@ -97,6 +100,7 @@ export const endpoint = {
     UPDATE_SESSION: (sessionId: string) => `/ConferenceStep/sessions/${sessionId}`,
     UPDATE_SPEAKER: (sessionId: string) => `/ConferenceStep/sessions/${sessionId}/speaker`,
     UPDATE_POLICY: (policyId: string) => `/ConferenceStep/policies/${policyId}`,
+    UPDATE_REFUND_POLICY: (refundPolicyId: string) => `/ConferenceStep/refund-policies/${refundPolicyId}`,  
     UPDATE_MEDIA: (mediaId: string) => `/ConferenceStep/media/${mediaId}`,
     UPDATE_SPONSOR: (sponsorId: string) => `/ConferenceStep/sponsors/${sponsorId}`,
 

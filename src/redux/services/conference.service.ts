@@ -68,6 +68,20 @@ export const conferenceApi = createApi({
     //   providesTags: ["Conference"],
     // }),
 
+    //collaborator get tech detail
+    
+    getTechnicalConferenceDetailInternal: builder.query<
+      ApiResponse<TechnicalConferenceDetailResponse>,
+      string
+    >({
+      query: (conferenceId) => ({
+        url: endpoint.CONFERENCE.GET_TECH_BY_ID_INTERNAL(conferenceId),
+        method: "GET",
+      }),
+      providesTags: (result, error, conferenceId) => [{ type: "Conference", id: conferenceId }],
+    }),
+
+
     //tech detail endpoint
     getTechnicalConferenceDetail: builder.query<
       ApiResponse<TechnicalConferenceDetailResponse>,
@@ -240,7 +254,7 @@ export const {
   useGetResearchConferenceDetailQuery,
   useGetAllConferencesWithPricesPaginationQuery,
   useGetTechConferencesForCollaboratorAndOrganizerQuery,
-
+  useGetTechnicalConferenceDetailInternalQuery, //collab
 
 
   // useGetConferenceByIdQuery,
