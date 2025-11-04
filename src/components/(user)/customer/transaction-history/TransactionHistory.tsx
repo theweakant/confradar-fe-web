@@ -79,7 +79,7 @@ export default function TransactionHistory() {
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center py-16">
                         <div className="text-red-400 mb-4">Có lỗi xảy ra khi tải dữ liệu</div>
-                        <p className="text-gray-400">{transactionsError.data?.message}</p>
+                        <p className="text-gray-400">{transactionsError.data?.Message}</p>
                         <Button
                             onClick={() => fetchTransactions()}
                             className="mt-4 bg-purple-600 hover:bg-purple-700"
