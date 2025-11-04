@@ -24,24 +24,17 @@ export default function PendingConference() {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
 
-  // `selectedConference` holds the id of the conference being acted on
   const [selectedConference, setSelectedConference] = useState<string | null>(
     null
   );
 
-  // `isApproveAction` = true means "approve", false means "reject"
   const [isApproveAction, setIsApproveAction] = useState<boolean>(true);
-
   const [reason, setReason] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // API hooks
-  const [getPendingConferences, { data, isLoading, isFetching }] =
-    useLazyGetPendingConferencesQuery();
-  const [approveConference, { isLoading: isSubmitting }] =
-    useApproveConferenceMutation();
+  const [getPendingConferences, { data, isLoading, isFetching }] = useLazyGetPendingConferencesQuery();
+  const [approveConference, { isLoading: isSubmitting }] = useApproveConferenceMutation();
 
-  // Fetch pending conferences on mount and when page changes
   useEffect(() => {
     getPendingConferences({ page, pageSize });
   }, [page, pageSize, getPendingConferences]);

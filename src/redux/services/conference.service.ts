@@ -73,6 +73,61 @@ export const conferenceApi = createApi({
     //   providesTags: ["Conference"],
     // }),
 
+    getResearchConferencesForOrganizer: builder.query<
+      ApiResponsePagination<Conference[]>,
+      {
+        page?: number;
+        pageSize?: number;
+        conferenceStatusId?: string;
+        searchKeyword?: string;
+        cityId?: string;
+        startDate?: string;
+        endDate?: string;
+      }
+    >({
+      query: (params) => ({
+        url: endpoint.CONFERENCE.RESEARCH_CONF_FOR_ORGANIZER,
+        method: "GET",
+        params: {
+          page: params?.page ?? 1,
+          pageSize: params?.pageSize ?? 10,
+          ...(params?.conferenceStatusId && { conferenceStatusId: params.conferenceStatusId }),
+          ...(params?.searchKeyword && { searchKeyword: params.searchKeyword }),
+          ...(params?.cityId && { cityId: params.cityId }),
+          ...(params?.startDate && { startDate: params.startDate }),
+          ...(params?.endDate && { endDate: params.endDate }),
+        },
+      }),
+      providesTags: ["Conference"],
+    }),
+
+    
+    //collaborator get tech detail
+    getTechnicalConferenceDetailInternal: builder.query<
+      ApiResponse<TechnicalConferenceDetailResponse>,
+      string
+    >({
+      query: (conferenceId) => ({
+        url: endpoint.CONFERENCE.GET_TECH_BY_ID_INTERNAL(conferenceId),
+        method: "GET",
+      }),
+      providesTags: (result, error, conferenceId) => [{ type: "Conference", id: conferenceId }],
+    }),
+
+    //collaborator/organizer get research detail
+    getResearchConferenceDetailInternal: builder.query<
+      ApiResponse<ResearchConferenceDetailResponse>,
+      string
+    >({
+      query: (conferenceId) => ({
+        url: endpoint.CONFERENCE.GET_RESEARCH_BY_ID_INTERNAL(conferenceId),
+        method: "GET",
+      }),
+      providesTags: (result, error, conferenceId) => [
+        { type: "Conference", id: conferenceId },
+      ],
+    }),
+    
     //tech detail endpoint
     getTechnicalConferenceDetail: builder.query<
       ApiResponse<TechnicalConferenceDetailResponse>,
@@ -275,10 +330,10 @@ export const {
   useGetTechnicalConferenceDetailQuery,
   useGetResearchConferenceDetailQuery,
   useGetAllConferencesWithPricesPaginationQuery,
+  useGetTechnicalConferenceDetailInternalQuery, //collab
+  useGetResearchConferenceDetailInternalQuery, //organizer
+  useGetResearchConferencesForOrganizerQuery, 
   useGetTechConferencesForCollaboratorAndOrganizerQuery,
-
-
-
   // useGetConferenceByIdQuery,
   useGetConferencesByStatusQuery,
   useLazyGetAllConferencesPaginationQuery,

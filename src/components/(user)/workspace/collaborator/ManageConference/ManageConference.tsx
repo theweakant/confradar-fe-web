@@ -48,8 +48,6 @@ const router = useRouter();
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterCity, setFilterCity] = useState("all");
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [viewingConference, setViewingConference] = useState<Conference | null>(null);
   const [deleteConferenceId, setDeleteConferenceId] = useState<string | null>(null);
 
   // RTK Query hooks

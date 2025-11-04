@@ -122,10 +122,11 @@ export interface Phase {
 
 export interface Ticket {
   ticketId?: string;
+  priceId?: string;   
   ticketPrice: number;
   ticketName: string;
   ticketDescription: string;
-  isAuthor: boolean;
+  isAuthor?: boolean;
   totalSlot: number;
   phases: Phase[];
 }
@@ -265,6 +266,8 @@ export interface ConferenceBasicResponse {
   locationId: string | null;
   categoryId: string;
 }
+
+
 
 //+++++++++++++++
 //RESEARCH DETAIL STEP
@@ -445,7 +448,9 @@ export interface TechnicalConferenceDetailResponse {
   policies?: ConferencePolicyResponse[];
   sponsors?: SponsorResponse[];
   sessions?: TechnicalConferenceSessionResponse[];
-  conferencePrices?: ConferencePriceResponse[]; // 
+  conferencePrices?: ConferencePriceResponse[]; 
+
+  conferenceTimelines?:any[]
 }
 
 export interface ResearchConferenceDetailResponse {

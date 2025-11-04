@@ -795,32 +795,7 @@ const handleAddPhase = () => {
     setNewSponsor({ name: "", imageFile: "" });
   };
 
-  // ============================================
-  // NAVIGATION
-  // ============================================
-  // const handleNext = () => {
-  //   if (!validateStep(currentStep)) return;
 
-  //   if (isEditMode) {
-  //     if (currentStep === 9) {
-  //       handleSaveAllChanges();
-  //     } else {
-  //       dispatch(nextStep());
-  //     }
-  //   } else {
-  //     switch (currentStep) {
-  //       case 1: handleBasicSubmitCreate(); break;
-  //       case 2: handleResearchDetailSubmitCreate(); break;
-  //       case 3: handlePriceSubmitCreate(); break;
-  //       case 4: handleResearchPhaseSubmitCreate(); break;
-  //       case 5: handleSessionSubmitCreate(); break;
-  //       case 6: handlePoliciesSubmitCreate(); break;
-  //       case 7: handleMaterialsAndRankingsSubmitCreate(); break;
-  //       case 8: handleMediaSubmitCreate(); break;
-  //       case 9: handleSponsorSubmitCreate(); break;
-  //     }
-  //   }
-  // };
 
   const handleNext = () => {
   if (!validateStep(currentStep)) return;

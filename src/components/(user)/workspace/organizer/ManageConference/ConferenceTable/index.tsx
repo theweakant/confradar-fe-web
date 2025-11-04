@@ -16,10 +16,9 @@ import { ConferenceResponse } from "@/types/conference.type";
 interface ConferenceTableProps {
   conferences: ConferenceResponse[];
   onView: (conference: ConferenceResponse) => void;
-  onEdit: (conference: ConferenceResponse) => void;
 }
 
-export function ConferenceTable({ conferences, onView, onEdit }: ConferenceTableProps) {
+export function ConferenceTable({ conferences, onView }: ConferenceTableProps) {
   const columns: Column<ConferenceResponse>[] = [
     {
       key: "conferenceName",
@@ -84,13 +83,7 @@ export function ConferenceTable({ conferences, onView, onEdit }: ConferenceTable
                 <Eye className="w-4 h-4 mr-2 text-green-600" />
                 <span>Xem</span>
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => onEdit(conference)}
-                className="cursor-pointer"
-              >
-                <Pencil className="w-4 h-4 mr-2 text-blue-600" />
-                <span>Chỉnh sửa</span>
-              </DropdownMenuItem>
+
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

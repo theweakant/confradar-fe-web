@@ -1,21 +1,30 @@
 
 "use client"
-import { useRouter } from "next/navigation";
+import { useRouter, useParams  } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/molecules/FormInput";
 import { FormSelect } from "@/components/molecules/FormSelect";
 import { FormTextArea } from "@/components/molecules/FormTextArea";
-import { useAppDispatch, useAppSelector } from "@/redux/hooks/hooks";
 import {
-  useCreateBasicConferenceMutation,
   useCreateConferencePriceMutation,
   useCreateConferenceSessionsMutation,
   useCreateConferencePoliciesMutation,
   useCreateRefundPoliciesMutation,
   useCreateConferenceMediaMutation,
   useCreateConferenceSponsorsMutation,
+
+
+  useUpdateBasicConferenceMutation,
+  useUpdateConferencePriceMutation,
+  useUpdateConferenceSessionMutation,
+  useUpdateConferencePolicyMutation,
+  useUpdateConferenceRefundPolicyMutation,
+  useUpdateConferenceMediaMutation,
+  useUpdateConferenceSponsorMutation,
 } from "@/redux/services/conferenceStep.service";
+
+import { useGetTechnicalConferenceDetailInternalQuery } from "@/redux/services/conference.service";
 
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 import { useGetAllRoomsQuery } from "@/redux/services/room.service";
@@ -23,11 +32,7 @@ import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 
 import type { ApiError } from "@/types/api.type";
 
-import {
-  setConferenceId,
-  setConferenceBasicData,
-  resetWizard,
-} from "@/redux/slices/conferenceStep.slice";
+
 import type {
   ConferenceBasicForm,
   ConferencePriceData,
@@ -46,7 +51,7 @@ import type {
 import { toast } from "sonner";
 
 
-import {formatDate, formatCurrency} from "@/helper/format"
+import {formatDate,formatCurrency} from "@/helper/format"
 
 const TARGET_OPTIONS = [
   { value: "Học sinh", label: "Học sinh" },
@@ -56,26 +61,42 @@ const TARGET_OPTIONS = [
   { value: "Khác", label: "Khác" },
 ];
 
-export default function CreateConferenceStepPage() {
+export default function UpdateConferenceStepPage() { 
   const router = useRouter();
-  const dispatch = useAppDispatch();
-  const { conferenceId: reduxConferenceId, conferenceBasicData } = useAppSelector(
-    (state) => state.conferenceStep
-  );
+  const { id } = useParams(); 
+  const conferenceId = id as string;
 
-  const conferenceId = reduxConferenceId;
+  const { data: conferenceDetail, isLoading: isLoadingDetail } = 
+    useGetTechnicalConferenceDetailInternalQuery(conferenceId, {
+      skip: !conferenceId 
+    });
 
-  const [createBasic] = useCreateBasicConferenceMutation();
+
   const [createPrice] = useCreateConferencePriceMutation();
   const [createSessions] = useCreateConferenceSessionsMutation();
   const [createPolicies] = useCreateConferencePoliciesMutation();
   const [createRefundPolicies] = useCreateRefundPoliciesMutation();
   const [createMedia] = useCreateConferenceMediaMutation();
-  const [createSponsors] = useCreateConferenceSponsorsMutation();
+  const [createSponsors] = useCreateConferenceSponsorsMutation();    
+
+  const [updateBasic] = useUpdateBasicConferenceMutation();
+  const [updatePrice] = useUpdateConferencePriceMutation();
+  const [updateSession] = useUpdateConferenceSessionMutation(); 
+  const [updatePolicy] = useUpdateConferencePolicyMutation();  
+  const [updateRefundPolicy] = useUpdateConferenceRefundPolicyMutation();  
+  const [updateMedia] = useUpdateConferenceMediaMutation();
+  const [updateSponsor] = useUpdateConferenceSponsorMutation();  
 
   const { data: categoriesData, isLoading: isCategoriesLoading } = useGetAllCategoriesQuery();
   const { data: roomsData, isLoading: isRoomsLoading } = useGetAllRoomsQuery();
   const { data: citiesData, isLoading: isCitiesLoading } = useGetAllCitiesQuery();
+
+const [existingMediaUrls, setExistingMediaUrls] = useState<{mediaId: string, url: string}[]>([]);
+const [existingSponsorUrls, setExistingSponsorUrls] = useState<{
+  sponsorId: string;
+  name: string;
+  imageUrl: string;
+}[]>([]);
 
   const categoryOptions =
     categoriesData?.data?.map((category) => ({
@@ -119,6 +140,128 @@ export default function CreateConferenceStepPage() {
     createdby: "",
     targetAudienceTechnicalConference: "",
   });
+
+
+ useEffect(() => {
+  if (conferenceDetail?.data) {
+    const conf = conferenceDetail.data;
+    
+    // Step 1: Basic Info
+    setBasicForm({
+      conferenceName: conf.conferenceName || "",
+      description: conf.description || "",
+      startDate: conf.startDate?.split('T')[0] || "",
+      endDate: conf.endDate?.split('T')[0] || "",
+      dateRange: calculateDateRange(conf.startDate ||"", conf.endDate||""),
+      totalSlot: conf.totalSlot || 0,
+      address: conf.address || "",
+      bannerImageFile: null, 
+      isInternalHosted: conf.isInternalHosted || false,
+      isResearchConference: conf.isResearchConference || false,
+      conferenceCategoryId: conf.conferenceCategoryId || "",
+      cityId: conf.cityId || "",
+      ticketSaleStart: conf.ticketSaleStart?.split('T')[0] || "",
+      ticketSaleEnd: conf.ticketSaleEnd?.split('T')[0] || "",
+      ticketSaleDuration: calculateDateRange(conf.ticketSaleStart||"", conf.ticketSaleEnd||""),
+      createdby: "", 
+      targetAudienceTechnicalConference: conf.targetAudience || "",
+    });
+    setBasicFormCompleted(true);
+
+    // Step 2: Tickets & Phases
+    if (conf.conferencePrices) {
+      setTickets(conf.conferencePrices.map(t => ({
+        ticketId: t.conferencePriceId || "",
+        priceId: t.conferencePriceId || "",
+        ticketPrice: t.ticketPrice || 0,
+        ticketName: t.ticketName || "",
+        ticketDescription: t.ticketDescription || "",
+        isAuthor: t.isAuthor || false,
+        totalSlot: t.totalSlot || 0,
+        phases: (t.pricePhases || []).map(p => ({
+          phaseId: p.pricePhaseId || "",
+          phaseName: p.phaseName || "",
+          applyPercent: p.applyPercent || 100,
+          startDate: p.startDate?.split('T')[0] || "",
+          endDate: p.endDate?.split('T')[0] || "",
+          totalslot: p.totalSlot || 0
+        }))
+      })));
+    }
+
+    // Step 3: Sessions
+    if (conf.sessions) {
+      setSessions(conf.sessions.map(s => ({
+        sessionId: s.conferenceSessionId || "",
+        title: s.title || "",
+        description: s.description || "",
+        date: s.sessionDate?.split('T')[0] || "",
+        startTime: s.startTime || "",
+        endTime: s.endTime || "",
+        timeRange: calculateTimeRange(s.startTime ||"", s.endTime||""),
+        roomId: s.roomId || "",
+        speaker: (s.speakers || []).map(sp => ({
+          speakerId: sp.speakerId || "",
+          name: sp.name || "",
+          description: sp.description || "",
+          image: sp.image || ""
+        })),
+        sessionMedias: (s.sessionMedia || []).map(m => ({
+          mediaId: m.conferenceSessionMediaId || "",
+          mediaFile: m.conferenceSessionMediaUrl || ""
+        }))
+      })));
+    }
+
+    // Step 4: Policies
+    if (conf.policies) {
+      setPolicies(conf.policies.map(p => ({
+        policyId: p.policyId || "",
+        policyName: p.policyName || "",
+        description: p.description || ""
+      })));
+    }
+
+    // Step 4.2: Refund Policies
+    if (conf.refundPolicies) {
+      setRefundPolicies(conf.refundPolicies.map(rp => ({
+        refundPolicyId: rp.refundPolicyId || "",
+        percentRefund: rp.percentRefund || 0,
+        refundDeadline: rp.refundDeadline?.split('T')[0] || "",
+        refundOrder: rp.refundOrder || 1
+      })));
+    }
+
+    // Step 5: Media
+    if (conf.conferenceMedia) {
+      setExistingMediaUrls(conf.conferenceMedia.map(m => ({
+        mediaId: m.mediaId || "",
+        url: m.mediaUrl || ""
+      })));
+    }
+
+    // Step 6: Sponsors
+    if (conf.sponsors) {
+      setExistingSponsorUrls(conf.sponsors.map(s => ({
+        sponsorId: s.sponsorId || "",
+        name: s.name || "",
+        imageUrl: s.imageUrl || ""
+      })));
+    }
+  }
+}, [conferenceDetail]);
+
+const calculateDateRange = (start: string, end: string) => {
+  if (!start || !end) return 1;
+  const diff = new Date(end).getTime() - new Date(start).getTime();
+  return Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1;
+};
+
+const calculateTimeRange = (start: string, end: string) => {
+  if (!start || !end) return 1;
+  const diff = new Date(end).getTime() - new Date(start).getTime();
+  return diff / (1000 * 60 * 60); 
+};
 
 useEffect(() => {
   if (basicForm.startDate && basicForm.dateRange && basicForm.dateRange > 0) {
@@ -250,118 +393,179 @@ const [newMedia, setNewMedia] = useState<Media>({ mediaFile: null });
     return true;
   };
 
-  // Handle Step 1 Submit
-  const handleBasicSubmit = async () => {
-    if (!validateBasicForm()) return;
+const handleFinalSubmit = async () => {
+  if (!conferenceId) {
+    toast.error("Không tìm thấy conference ID!");
+    return;
+  }
+  try {
+    setIsSubmitting(true);
+    //BASIC
+    const basicUpdatePromise = updateBasic({ conferenceId, data: basicForm }).unwrap();
 
-    try {
-      setIsSubmitting(true);
-      const result = await createBasic(basicForm).unwrap();
-      const confId = result.data.conferenceId;
-
-      dispatch(setConferenceId(confId));
-      dispatch(setConferenceBasicData(result.data));
-      setBasicFormCompleted(true);
-      
-      toast.success("Tạo thông tin cơ bản thành công! Vui lòng điền các thông tin còn lại.");
-    } catch (error) {
-      const apiError = error as { data?: ApiError };
-      console.error("Failed to create basic info:", error);
-      toast.error(apiError?.data?.Message || "Tạo thông tin cơ bản thất bại!");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Handle Final Submit (All Steps)
-  const handleFinalSubmit = async () => {
-    if (!conferenceId) {
-      toast.error("Không tìm thấy conference ID!");
-      return;
-    }
-
-    if (tickets.length === 0) {
-      toast.error("Vui lòng thêm ít nhất 1 loại vé!");
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-
-      // Step 2: Price
-      const priceData: ConferencePriceData = {
-        typeOfTicket: tickets.map(ticket => ({
+    //Price
+    const ticketUpdatePromises = tickets
+      .filter(ticket => ticket.priceId)
+      .map(ticket => updatePrice({
+        priceId: ticket.priceId!,
+        data: {
           ticketPrice: parseFloat(ticket.ticketPrice.toFixed(2)),
           ticketName: ticket.ticketName,
           ticketDescription: ticket.ticketDescription,
-          isAuthor: ticket.isAuthor ?? false,
           totalSlot: ticket.totalSlot,
-          phases: (ticket.phases || []).map(phase => ({
-            phaseName: phase.phaseName,
-            applyPercent: parseFloat(phase.applyPercent.toFixed(2)),
-            startDate: phase.startDate,
-            endDate: phase.endDate,
-            totalslot: phase.totalslot
-          }))
-        }))
-      };
+        }
+      }).unwrap());
 
-      // Step 3: Sessions
-const formattedSessions = sessions.map((s) => {
-  const startDateTime = new Date(s.startTime);
-  const endDateTime = new Date(s.endTime);
-  
-  const startTime = startDateTime.toTimeString().slice(0, 8); 
-  const endTime = endDateTime.toTimeString().slice(0, 8);    
-  
-  // Validate duration (ít nhất 30 phút)
-  const durationMinutes = (endDateTime.getTime() - startDateTime.getTime()) / (1000 * 60);
-  if (durationMinutes < 30) {
-    console.warn(`Session "${s.title}" duration is ${durationMinutes} minutes (< 30 min)`);
+    const newTickets = tickets.filter(t => !t.priceId);
+    const ticketCreatePromise = newTickets.length > 0
+      ? createPrice({
+          conferenceId,
+          data: {
+            typeOfTicket: newTickets.map(t => ({
+              ticketPrice: parseFloat(t.ticketPrice.toFixed(2)),
+              ticketName: t.ticketName,
+              ticketDescription: t.ticketDescription,
+              isAuthor: t.isAuthor ?? false,
+              totalSlot: t.totalSlot,
+              phases: (t.phases || []).map(p => ({
+                phaseName: p.phaseName,
+                applyPercent: p.applyPercent,
+                startDate: p.startDate,
+                endDate: p.endDate,
+                totalslot: p.totalslot
+              }))
+            }))
+          }
+        }).unwrap()
+      : Promise.resolve();
+
+    // Step 3: Sessions
+    const sessionUpdatePromises = sessions
+      .filter(s => s.sessionId)
+      .map(s => updateSession({
+        sessionId: s.sessionId!,
+        data: {
+          title: s.title,
+          description: s.description,
+          date: s.date,
+          startTime: s.startTime,
+          endTime: s.endTime,
+          roomId: s.roomId,
+        }
+      }).unwrap());
+
+    const newSessions = sessions.filter(s => !s.sessionId);
+    const sessionCreatePromise = newSessions.length > 0
+      ? createSessions({
+          conferenceId,
+          data: {
+            sessions: newSessions.map(s => ({
+              title: s.title,
+              description: s.description,
+              date: s.date,
+              startTime: s.startTime,
+              endTime: s.endTime,
+              roomId: s.roomId,
+              speaker: s.speaker.map(sp => ({
+                name: sp.name,
+                description: sp.description,
+                image: sp.image instanceof File ? sp.image : undefined,
+                imageUrl: typeof sp.image === 'string' ? sp.image : undefined,
+              })),
+              sessionMedias: (s.sessionMedias || []).map(m => ({
+                mediaFile: m.mediaFile instanceof File ? m.mediaFile : undefined,
+                mediaUrl: typeof m.mediaFile === 'string' ? m.mediaFile : undefined,
+              }))
+            }))
+          }
+        }).unwrap()
+      : Promise.resolve();
+
+    // Step 4: Policies
+    const policyUpdatePromises = policies
+      .filter(p => p.policyId)
+      .map(p => updatePolicy({
+        policyId: p.policyId!,
+        data: { policyName: p.policyName, description: p.description }
+      }).unwrap());
+
+    const newPolicies = policies.filter(p => !p.policyId);
+    const policyCreatePromise = newPolicies.length > 0
+      ? createPolicies({ conferenceId, data: { policies: newPolicies } }).unwrap()
+      : Promise.resolve();
+
+    // Step 4.2: Refund Policies
+    const refundPolicyUpdatePromises = refundPolicies
+      .filter(rp => rp.refundPolicyId)
+      .map(rp => updateRefundPolicy({
+        refundPolicyId: rp.refundPolicyId!,
+        data: {
+          percentRefund: rp.percentRefund,
+          refundDeadline: rp.refundDeadline,
+          refundOrder: rp.refundOrder,
+        }
+      }).unwrap());
+
+    const newRefundPolicies = refundPolicies.filter(rp => !rp.refundPolicyId);
+    const refundPolicyCreatePromise = newRefundPolicies.length > 0
+      ? createRefundPolicies({ conferenceId, data: { refundPolicies: newRefundPolicies } }).unwrap()
+      : Promise.resolve();
+
+    // Step 5: Media
+    const mediaUpdatePromises = mediaList
+      .filter(m => m.mediaId && m.mediaFile instanceof File)
+      .map(m => updateMedia({
+        mediaId: m.mediaId!,
+        mediaFile: m.mediaFile as File,
+      }).unwrap());
+
+    const newMediaItems = mediaList.filter(m => !m.mediaId);
+    const mediaCreatePromise = newMediaItems.length > 0
+      ? createMedia({ conferenceId, data: { media: newMediaItems } }).unwrap()
+      : Promise.resolve();
+
+    // Step 6: Sponsors
+    const sponsorUpdatePromises = sponsors
+      .filter(s => s.sponsorId && s.imageFile instanceof File)
+      .map(s => updateSponsor({
+        sponsorId: s.sponsorId!,
+        name: s.name,
+        imageFile: s.imageFile as File,
+      }).unwrap());
+
+    const newSponsors = sponsors.filter(s => !s.sponsorId);
+    const sponsorCreatePromise = newSponsors.length > 0
+      ? createSponsors({ conferenceId, data: { sponsors: newSponsors } }).unwrap()
+      : Promise.resolve();
+
+    
+    await Promise.all([
+      basicUpdatePromise,
+      ...ticketUpdatePromises,
+      ...sessionUpdatePromises,
+      ...policyUpdatePromises,
+      ...refundPolicyUpdatePromises,
+      ...mediaUpdatePromises,
+      ...sponsorUpdatePromises,
+      ticketCreatePromise,
+      sessionCreatePromise,
+      policyCreatePromise,
+      refundPolicyCreatePromise,
+      mediaCreatePromise,
+      sponsorCreatePromise,
+    ]);
+
+    toast.success("Cập nhật hội thảo thành công!");
+    router.push(`/workspace/collaborator/manage-conference`);
+  } catch (error) {
+    const apiError = error as { data?: ApiError };
+    console.error("Failed to update conference:", error);
+    toast.error(apiError?.data?.Message || "Cập nhật hội thảo thất bại!");
+  } finally {
+    setIsSubmitting(false);
   }
-  
-  return {
-    title: s.title,
-    description: s.description,
-    date: s.date,
-    startTime: startTime,
-    endTime: endTime,
-    roomId: s.roomId,
-    speaker: s.speaker.map(sp => ({
-      name: sp.name,
-      description: sp.description,
-      image: sp.image instanceof File ? sp.image : undefined,
-      imageUrl: typeof sp.image === 'string' ? sp.image : undefined,
-    })),
-    sessionMedias: (s.sessionMedias || []).map(media => ({
-      mediaFile: media.mediaFile instanceof File ? media.mediaFile : undefined,
-      mediaUrl: typeof media.mediaFile === 'string' ? media.mediaFile : undefined,
-    })),
-  };
-});
-      const sessionData: ConferenceSessionData = { sessions: formattedSessions };
+};
 
-      // Execute all API calls
-      await Promise.all([
-        createPrice({ conferenceId, data: priceData }).unwrap(),
-        sessions.length > 0 ? createSessions({ conferenceId, data: sessionData }).unwrap() : Promise.resolve(),
-        policies.length > 0 ? createPolicies({ conferenceId, data: { policies } }).unwrap() : Promise.resolve(),
-        refundPolicies.length > 0 ? createRefundPolicies({ conferenceId, data: { refundPolicies } }).unwrap() : Promise.resolve(), 
-        mediaList.length > 0 ? createMedia({ conferenceId, data: { media: mediaList } }).unwrap() : Promise.resolve(),
-        sponsors.length > 0 ? createSponsors({ conferenceId, data: { sponsors } }).unwrap() : Promise.resolve(),
-      ]);
-
-      toast.success("Tạo hội thảo thành công!");
-      dispatch(resetWizard());
-      router.push(`/workspace/collaborator/manage-conference`);
-    } catch (error) {
-      const apiError = error as { data?: ApiError };
-      console.error("Failed to create conference:", error);
-      toast.error(apiError?.data?.Message || "Tạo hội thảo thất bại!");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
 const handleAddPhaseToNewTicket = () => {
   const { phaseName, percentValue, percentType, startDate, durationInDays, totalslot } = newPhase;
@@ -381,13 +585,13 @@ const handleAddPhaseToNewTicket = () => {
     return;
   }
 
-  if (!conferenceBasicData?.ticketSaleStart || !conferenceBasicData?.ticketSaleEnd) {
+  if (!conferenceDetail?.data?.ticketSaleStart || !conferenceDetail?.data?.ticketSaleEnd) {
     toast.error("Không tìm thấy thông tin thời gian bán vé!");
     return;
   }
 
-  const saleStart = new Date(conferenceBasicData.ticketSaleStart);
-  const saleEnd = new Date(conferenceBasicData.ticketSaleEnd);
+  const saleStart = new Date(conferenceDetail.data.ticketSaleStart);
+  const saleEnd = new Date(conferenceDetail.data.ticketSaleEnd);
   const phaseStart = new Date(startDate);
   
   // Tính endDate của phase
@@ -517,13 +721,13 @@ const handleAddSession = () => {
     return;
   }
 
-  if (!conferenceBasicData?.startDate || !conferenceBasicData?.endDate) {
+  if (!conferenceDetail?.data?.startDate || !conferenceDetail?.data?.endDate) {
     toast.error("Không tìm thấy thông tin thời gian sự kiện!");
     return;
   }
 
-  const confStart = new Date(conferenceBasicData.startDate);
-  const confEnd = new Date(conferenceBasicData.endDate);
+  const confStart = new Date(conferenceDetail.data.startDate);
+  const confEnd = new Date(conferenceDetail.data.endDate);
   const sessionDate = new Date(newSession.date);
 
   if (sessionDate < confStart || sessionDate > confEnd) {
@@ -571,7 +775,6 @@ const handleAddSession = () => {
     setNewPolicy({ policyName: "", description: "" });
   };
 
-
   const handleAddRefundPolicy = () => {
   if (newRefundPolicy.percentRefund <= 0 || newRefundPolicy.percentRefund > 100) {
     toast.error("Phần trăm hoàn tiền phải từ 1-100%!");
@@ -583,13 +786,13 @@ const handleAddSession = () => {
     return;
   }
 
-  if (!conferenceBasicData?.startDate) {
+  if (!conferenceDetail?.data?.startDate) {
     toast.error("Không tìm thấy thông tin thời gian sự kiện!");
     return;
   }
 
   const deadline = new Date(newRefundPolicy.refundDeadline);
-  const eventStart = new Date(conferenceBasicData.startDate);
+  const eventStart = new Date(conferenceDetail.data.startDate);
 
   if (deadline >= eventStart) {
     toast.error("Hạn hoàn tiền phải trước ngày bắt đầu sự kiện!");
@@ -630,8 +833,8 @@ const handleAddMedia = () => {
   return (
     <div className="max-w-5xl mx-auto p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Tạo hội thảo mới</h1>
-        <p className="text-gray-600 mt-1">Điền đầy đủ thông tin để tạo hội thảo</p>
+        <h1 className="text-2xl font-bold text-gray-900">Cập nhật hội thảo</h1>
+        <p className="text-gray-600 mt-1">Chỉnh sửa thông tin hội thảo</p>
       </div>
 
       {isSubmitting && (
@@ -649,9 +852,7 @@ const handleAddMedia = () => {
       <div className="bg-white border rounded-lg p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">1. Thông tin cơ bản</h3>
-          {basicFormCompleted && (
-            <span className="text-sm text-green-600 font-medium">✓ Đã hoàn thành</span>
-          )}
+
         </div>
 
         <div className="space-y-4">
@@ -661,14 +862,14 @@ const handleAddMedia = () => {
             value={basicForm.conferenceName}
             onChange={(val) => setBasicForm({ ...basicForm, conferenceName: val })}
             required
-            disabled={basicFormCompleted}
+           
           />
           <FormTextArea
             label="Mô tả"
             value={basicForm.description ?? ""}
             onChange={(val) => setBasicForm({ ...basicForm, description: val })}
             rows={3}
-            disabled={basicFormCompleted}
+           
           />
 
 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -682,8 +883,6 @@ const handleAddMedia = () => {
       onChange={(e) => setBasicForm({ ...basicForm, startDate: e.target.value })}
       required
       className="w-full px-3 py-2 border rounded-lg"
-      disabled={basicFormCompleted}
-
     />
   </div>
 
@@ -698,8 +897,6 @@ const handleAddMedia = () => {
       required
       placeholder="VD: 3 ngày"
       className="w-full px-3 py-2 border rounded-lg"
-      disabled={basicFormCompleted}
-
     />
   </div>
 
@@ -719,76 +916,45 @@ const handleAddMedia = () => {
   </div>
 </div>
 
-          {/* <div className="grid grid-cols-2 gap-4">
-            <FormInput
-              label="Ngày bắt đầu bán vé"
-              type="date"
-              value={basicForm.ticketSaleStart}
-              onChange={(val) => setBasicForm({ ...basicForm, ticketSaleStart: val })}
-              required
-              disabled={basicFormCompleted}
-            />
-            <FormInput
-              label="Số ngày bán vé"
-              type="number"
-              min="1"
-              value={basicForm.ticketSaleDuration}
-              onChange={(val) => setBasicForm({ ...basicForm, ticketSaleDuration: Number(val) })}
-              required
-              placeholder="VD: 30 ngày"
-              disabled={basicFormCompleted}
-            />
-          </div>
 
-          {basicForm.ticketSaleEnd && (
-            <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
-              📅 Ngày kết thúc bán vé: <strong>{new Date(basicForm.ticketSaleEnd).toLocaleDateString('vi-VN')}</strong>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <FormInput
+            label="Ngày bắt đầu bán vé"
+            type="date"
+            value={basicForm.ticketSaleStart}
+            onChange={(val) => setBasicForm({ ...basicForm, ticketSaleStart: val })}
+            required
+          />
+          
+          <FormInput
+            label="Số ngày bán vé"
+            type="number"
+            min="1"
+            value={basicForm.ticketSaleDuration}
+            onChange={(val) => setBasicForm({ ...basicForm, ticketSaleDuration: Number(val) })}
+            required
+            placeholder="VD: 30 ngày"
+          />
+
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Ngày kết thúc bán vé
+            </label>
+            <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
+              {basicForm.ticketSaleEnd ? (
+                <span className="text-gray-900">
+                  {new Date(basicForm.ticketSaleEnd).toLocaleDateString("vi-VN")}
+                </span>
+              ) : (
+                <span className="text-gray-400">--/--/----</span>
+              )}
             </div>
-          )}
+          </div>
+        </div>
 
           <p className="text-xs text-gray-500 mt-1">
-            💡 Thời gian bán vé phải trước ngày bắt đầu sự kiện
-          </p> */}
-
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FormInput
-                      label="Ngày bắt đầu bán vé"
-                      type="date"
-                      value={basicForm.ticketSaleStart}
-                      onChange={(val) => setBasicForm({ ...basicForm, ticketSaleStart: val })}
-                      required
-                      disabled={basicFormCompleted}
-
-                    />
-                    
-                    <FormInput
-                      label="Số ngày bán vé"
-                      type="number"
-                      min="1"
-                      value={basicForm.ticketSaleDuration}
-                      onChange={(val) => setBasicForm({ ...basicForm, ticketSaleDuration: Number(val) })}
-                      required
-                      placeholder="VD: 30 ngày"
-                      disabled={basicFormCompleted}
-
-                    />
-          
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        Ngày kết thúc bán vé
-                      </label>
-                      <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
-                        {basicForm.ticketSaleEnd ? (
-                          <span className="text-gray-900">
-                            {new Date(basicForm.ticketSaleEnd).toLocaleDateString("vi-VN")}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">--/--/----</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+            Thời gian bán vé phải trước ngày bắt đầu sự kiện
+          </p>
 
 {/* Sức chứa + Danh mục */}
 <div className="grid grid-cols-2 gap-4">
@@ -798,7 +964,7 @@ const handleAddMedia = () => {
     type="number"
     value={basicForm.totalSlot}
     onChange={(val) => setBasicForm({ ...basicForm, totalSlot: Number(val) })}
-    disabled={basicFormCompleted}
+   
   />
   <FormSelect
     label="Danh mục"
@@ -818,7 +984,7 @@ const handleAddMedia = () => {
     name="address"
     value={basicForm.address}
     onChange={(val) => setBasicForm({ ...basicForm, address: val })}
-    disabled={basicFormCompleted}
+   
   />
   <FormSelect
     label="Thành phố"
@@ -838,65 +1004,62 @@ const handleAddMedia = () => {
     value={basicForm.targetAudienceTechnicalConference}
     onChange={(val) => setBasicForm({ ...basicForm, targetAudienceTechnicalConference: val })}
     options={TARGET_OPTIONS}
-    disabled={basicFormCompleted}
+   
   />
   {basicForm.targetAudienceTechnicalConference === "Khác" && (
     <FormInput
       label="Nhập đối tượng khác"
       value={basicForm.customTarget || ""}
       onChange={(val) => setBasicForm({ ...basicForm, customTarget: val })}
-      disabled={basicFormCompleted}
+     
     />
   )}
 </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">Banner Image (1 ảnh)</label>
-            {basicForm.bannerImageFile && (
-              <div className="relative inline-block mt-2">
-                <img
-                  src={URL.createObjectURL(basicForm.bannerImageFile)}
-                  alt="Preview"
-                  className="h-32 object-cover rounded border"
-                />
-                {!basicFormCompleted && (
-                  <button
-                    type="button"
-                    onClick={() => setBasicForm({ ...basicForm, bannerImageFile: null })}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
-            )}
-            {!basicFormCompleted && (
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) =>
-                  setBasicForm({
-                    ...basicForm,
-                    bannerImageFile: e.target.files?.[0] || null,
-                  })
-                }
-              />
-            )}
-          </div>
+<div>
+  <label className="block text-sm font-medium mb-2">Banner Image</label>
+  
+  {/* Hiển thị ảnh hiện tại hoặc preview */}
+  {(basicForm.bannerImageFile || conferenceDetail?.data?.bannerImageUrl) && (
+    <div className="relative inline-block mt-2">
+      <img
+        src={
+          basicForm.bannerImageFile 
+            ? URL.createObjectURL(basicForm.bannerImageFile)
+            : conferenceDetail?.data?.bannerImageUrl
+        }
+        alt="Preview"
+        className="h-32 object-cover rounded border"
+      />
+      {!basicFormCompleted && (
+        <button
+          type="button"
+          onClick={() => setBasicForm({ ...basicForm, bannerImageFile: null })}
+          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6"
+        >
+          ×
+        </button>
+      )}
+    </div>
+  )}
+  
+  {!basicFormCompleted && (
+    <input
+      type="file"
+      accept="image/*"
+      onChange={(e) =>
+        setBasicForm({
+          ...basicForm,
+          bannerImageFile: e.target.files?.[0] || null,
+        })
+      }
+    />
+  )}
+</div>
 
-          {!basicFormCompleted && (
-            <Button
-              onClick={handleBasicSubmit}
-              disabled={isSubmitting}
-              className="w-full bg-blue-600 text-white hover:bg-blue-700"
-            >
-              {isSubmitting ? "Đang lưu..." : "Tạo thông tin cơ bản để tiếp tục"}
-            </Button>
-          )}
         </div>
       </div>
 
-      {/* REMAINING STEPS - Only show after Step 1 is completed */}
       {basicFormCompleted && (
         <>
 
@@ -910,50 +1073,43 @@ const handleAddMedia = () => {
   </h4>
 
 {tickets.map((t, idx) => (
-  <div
-    key={t.ticketId || idx}
-    className="border rounded-lg p-4 mb-3 bg-white shadow-sm hover:shadow-md transition-all duration-200"
-  >
-    {/* Header */}
-    <div className="flex justify-between items-start mb-3 border-b pb-2">
+  <div key={t.ticketId || idx} className="border rounded-lg p-3 mb-3 bg-white shadow-sm hover:shadow-md transition-shadow">
+    {/* Header - Compact */}
+    <div className="flex items-center justify-between mb-2 pb-2 border-b">
       <div className="flex-1">
         <h3 className="font-semibold text-base text-gray-800">{t.ticketName}</h3>
         <p className="text-xs text-gray-500 mt-0.5">
-          {formatDate(t.phases?.[0]?.startDate)} -{" "}
-          {formatDate(t.phases?.[t.phases.length - 1]?.endDate)}
+          {formatDate(t.phases?.[0]?.startDate)} - {formatDate(t.phases?.[t.phases.length - 1]?.endDate)}
         </p>
       </div>
-      <div className="text-right">
-        <div className="text-lg font-bold text-blue-600">
-          {formatCurrency(t.ticketPrice)}
-        </div>
-        <div className="text-xs text-gray-500">Số lượng: {t.totalSlot}</div>
+      <div className="text-right ml-4">
+      <div className="text-lg font-bold text-blue-600">
+        {formatCurrency(t.ticketPrice)}
+      </div>        
+      <div className="text-xs text-gray-500">Số lượng: {t.totalSlot}</div>
       </div>
     </div>
 
-    {/* Phases */}
+    {/* Phases - 5 columns grid */}
     {t.phases && t.phases.length > 0 && (
-      <div className="mt-2">
+      <div className="mb-2">
         <div className="text-xs font-medium text-gray-600 mb-1.5">
-          Giai đoạn giá ({t.phases.length}):
+          Giai đoạn ({t.phases.length}):
         </div>
 
         <div className="grid grid-cols-5 gap-2">
           {t.phases.map((p, pi) => {
             const isIncrease = p.applyPercent > 100;
-            const percentDisplay = isIncrease
-              ? `+${p.applyPercent - 100}%`
+            const percentDisplay = isIncrease 
+              ? `+${p.applyPercent - 100}%` 
               : `-${100 - p.applyPercent}%`;
 
             return (
-              <div
-                key={pi}
+              <div 
+                key={pi} 
                 className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-md p-2 border border-gray-200 hover:border-blue-300 transition-colors"
               >
-                <div
-                  className="text-xs font-semibold text-gray-800 mb-1 truncate"
-                  title={p.phaseName}
-                >
+                <div className="text-xs font-semibold text-gray-800 mb-1 truncate" title={p.phaseName}>
                   {p.phaseName}
                 </div>
                 <div className="text-[10px] text-gray-500 mb-1 leading-tight">
@@ -961,11 +1117,7 @@ const handleAddMedia = () => {
                 </div>
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-gray-600">Tổng: {p.totalslot}</span>
-                  <span
-                    className={`font-bold ${
-                      isIncrease ? "text-red-600" : "text-green-600"
-                    }`}
-                  >
+                  <span className={`font-bold ${isIncrease ? 'text-red-600' : 'text-green-600'}`}>
                     {percentDisplay}
                   </span>
                 </div>
@@ -981,13 +1133,12 @@ const handleAddMedia = () => {
       size="sm"
       variant="destructive"
       onClick={() => setTickets(tickets.filter((_, i) => i !== idx))}
-      className="w-full bg-red-500 hover:bg-red-600 text-white font-medium text-sm py-1.5 mt-3"
+      className="w-full bg-red-500 hover:bg-red-600 text-white font-medium text-sm py-1.5 mt-2"
     >
       Xóa vé
     </Button>
   </div>
 ))}
-
 </div>
 
 
@@ -1025,9 +1176,9 @@ const handleAddMedia = () => {
               <div className="mt-4 border-t pt-3">
                 <h5 className="font-medium mb-2 flex items-center gap-2">
                   Giai đoạn giá cho vé này ({newTicket.phases.length})
-                  {conferenceBasicData?.ticketSaleStart && conferenceBasicData?.ticketSaleEnd && (
+                  {conferenceDetail?.data?.ticketSaleStart && conferenceDetail?.data?.ticketSaleEnd && (
                     <span className="text-sm text-blue-600">
-                      ({new Date(conferenceBasicData.ticketSaleStart).toLocaleDateString('vi-VN')} → {new Date(conferenceBasicData.ticketSaleEnd).toLocaleDateString('vi-VN')})
+                      ({new Date(conferenceDetail.data.ticketSaleStart).toLocaleDateString('vi-VN')} → {new Date(conferenceDetail.data.ticketSaleEnd).toLocaleDateString('vi-VN')})
                     </span>
                   )}
                 </h5>
@@ -1261,9 +1412,9 @@ const handleAddMedia = () => {
             <div className="border p-4 rounded space-y-3">
             <h4 className="font-medium flex items-center gap-2">
               Thêm phiên họp mới
-              {conferenceBasicData?.startDate && conferenceBasicData?.endDate && (
+              {conferenceDetail?.data?.startDate && conferenceDetail?.data?.endDate && (
                 <span className="text-sm text-green-600">
-                  ({new Date(conferenceBasicData.startDate).toLocaleDateString('vi-VN')} → {new Date(conferenceBasicData.endDate).toLocaleDateString('vi-VN')})
+                  ({new Date(conferenceDetail.data.startDate).toLocaleDateString('vi-VN')} → {new Date(conferenceDetail.data.endDate).toLocaleDateString('vi-VN')})
                 </span>
               )}
             </h4>                
@@ -1527,9 +1678,9 @@ const handleAddMedia = () => {
   <div className="border-t pt-6">
     <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
       4.2. Chính sách hoàn tiền (Tùy chọn)
-      {conferenceBasicData?.startDate && (
+      {conferenceDetail?.data?.startDate && (
         <span className="text-sm text-blue-600">
-          (Trước ngày {new Date(conferenceBasicData.startDate).toLocaleDateString('vi-VN')})
+          (Trước ngày {new Date(conferenceDetail.data.startDate).toLocaleDateString('vi-VN')})
         </span>
       )}
     </h4>
@@ -1698,6 +1849,36 @@ const handleAddMedia = () => {
             <h3 className="text-lg font-semibold mb-4">6. Nhà tài trợ (Tùy chọn)</h3>
             
             <div className="space-y-2 mb-4">
+
+{existingSponsorUrls.map((s, idx) => (
+  <div key={s.sponsorId} className="p-3 bg-gray-50 rounded flex justify-between items-center">
+    <div className="flex items-center gap-3">
+      {s.imageUrl && (  
+        <img
+          src={s.imageUrl}  
+          alt={s.name}
+          className="h-16 w-16 object-cover rounded"
+        />
+      )}
+      <div>
+        <div className="font-medium">{s.name}</div>
+        <div className="text-sm text-gray-600">Logo hiện tại</div>
+      </div>
+    </div>
+    <Button
+      size="sm"
+      variant="destructive"
+      onClick={() => {
+        setExistingSponsorUrls(existingSponsorUrls.filter((_, i) => i !== idx));
+        toast.success("Đã xóa nhà tài trợ!");
+      }}
+    >
+      Xóa
+    </Button>
+  </div>
+))}
+
+
               {sponsors.map((s, idx) => (
                 <div key={idx} className="p-3 bg-gray-50 rounded flex justify-between items-center">
                   <div className="flex items-center gap-3">
@@ -1778,18 +1959,15 @@ const handleAddMedia = () => {
 
           {/* SUBMIT BUTTON */}
           <div className="bg-white border rounded-lg p-6">
-            <Button
-              onClick={handleFinalSubmit}
-              disabled={isSubmitting || tickets.length === 0}
-              className="w-full bg-green-600 text-white hover:bg-green-700 h-12 text-lg font-semibold"
-            >
-              {isSubmitting ? "Đang tạo hội thảo..." : "🎉 Hoàn thành & Tạo hội thảo"}
+            <Button onClick={handleFinalSubmit} >
+              {isSubmitting 
+                ? "Đang cập nhật..." 
+                : conferenceId 
+                  ? "💾 Lưu thay đổi" 
+                  : "🎉 Hoàn thành & Tạo hội thảo"
+              }
             </Button>
-            {tickets.length === 0 && (
-              <p className="text-sm text-red-600 text-center mt-2">
-                * Vui lòng thêm ít nhất 1 loại vé để hoàn thành
-              </p>
-            )}
+
           </div>
         </>
       )}

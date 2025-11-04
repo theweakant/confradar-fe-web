@@ -17,10 +17,12 @@ import { Button } from "@/components/ui/button";
 import { formatDate } from "@/helper/format";
 import { useRouter, useParams } from "next/navigation"; 
 
-import { useGetTechnicalConferenceDetailQuery } from "@/redux/services/conference.service";
+import { useGetTechnicalConferenceDetailInternalQuery } from "@/redux/services/conference.service";
 import { useGetAllConferenceStatusesQuery } from "@/redux/services/status.service";
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
+
+import { UpdateConferenceStatus } from "@/components/molecules/Status/UpdateConferenceStatus";
 
 
 export default function ConferenceDetailPage() {
@@ -29,7 +31,9 @@ export default function ConferenceDetailPage() {
   const conferenceId = id as string;
   const [activeTab, setActiveTab] = useState("information");
 
-  const { data, isLoading, error } = useGetTechnicalConferenceDetailQuery(conferenceId);
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+
+  const { data, isLoading, error } = useGetTechnicalConferenceDetailInternalQuery(conferenceId);
   const { data: categoriesData } = useGetAllCategoriesQuery();
   const { data: statusesData } = useGetAllConferenceStatusesQuery();
   const { data: citiesData } = useGetAllCitiesQuery();
@@ -110,14 +114,29 @@ export default function ConferenceDetailPage() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 
-        <div className="absolute top-4 right-4">
-          <Button
-            onClick={() => router.push(`/workspace/collaborator/manage-conference/update-tech-conference/${conference.conferenceId}`)}
-            className="bg-white/90 hover:bg-white text-gray-900 backdrop-blur-sm shadow-lg"
-          >
-            Chỉnh sửa
-          </Button>
-        </div>
+          <div className="absolute top-4 right-4 flex gap-2">
+            <Button
+              onClick={() => router.push(`/workspace/collaborator/manage-conference/update-tech-conference/${conference.conferenceId}`)}
+              className="bg-white/90 hover:bg-white text-gray-900 backdrop-blur-sm shadow-lg"
+            >
+              Chỉnh sửa
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setStatusDialogOpen(true)}
+              className="bg-white/90 hover:bg-white text-gray-900 backdrop-blur-sm shadow-lg border-white/50"
+            >
+              Cập nhật trạng thái
+            </Button>
+            <UpdateConferenceStatus
+              open={statusDialogOpen}
+              onClose={() => setStatusDialogOpen(false)}
+              conference={{
+                ...conference,
+                conferenceStatusId: conference.conferenceStatusId, 
+              }}
+            />
+          </div>
             {/* Title Overlay */}
             <div className="absolute bottom-0 left-0 right-0 p-6">
               <div className="max-w-7xl mx-auto">

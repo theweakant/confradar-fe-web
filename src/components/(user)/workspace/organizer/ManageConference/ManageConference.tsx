@@ -1,18 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useMemo, useEffect } from "react";
 import { Plus, Calendar, Microscope, Cpu } from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -21,112 +12,153 @@ import { StatCard } from "@/components/molecules/StatCard";
 import { SearchFilter } from "@/components/molecules/SearchFilter";
 
 import { ConferenceTable } from "@/components/(user)/workspace/organizer/ManageConference/ConferenceTable/index";
-import { ConferenceFormData, ConferenceResponse } from "@/types/conference.type";
-// import {ConferenceDetail} from "./ConferenceDetail/index"
-
-import { ConferenceStepForm } from "@/components/(user)/workspace/organizer/ManageConference/ConferenceForm/TechForm";
-import { ResearchConferenceStepForm } from "./ConferenceForm/ResearchForm/index";
+import { ConferenceResponse } from "@/types/conference.type";
 
 import {
-  useGetAllConferencesPaginationQuery,
-  useDeleteConferenceMutation
+  useGetTechConferencesForCollaboratorAndOrganizerQuery,
+  useGetResearchConferencesForOrganizerQuery,
 } from "@/redux/services/conference.service";
-import { useGetAllCategoriesQuery } from "@/redux/services/category.service"; 
+import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
+import { useGetAllCitiesQuery } from "@/redux/services/city.service";
+import { useGetAllConferenceStatusesQuery } from "@/redux/services/status.service";
 
 type ConferenceType = boolean | null;
+type TabType = "tech" | "research";
 
 export default function ManageConference() {
+  const router = useRouter();
   const [page, setPage] = useState(1);
   const [pageSize] = useState(12);
-
-  const { data: conferencesData, isLoading, isError } = useGetAllConferencesPaginationQuery({
-    page,
-    pageSize,
-  });
-  const { data: categoriesData, isLoading: isCategoriesLoading } = useGetAllCategoriesQuery();
-  const [deleteConferenceMutation, { isLoading: isDeleting }] = useDeleteConferenceMutation();
-
+  const [activeTab, setActiveTab] = useState<TabType>("tech");
+  
+  // Filter states
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingConference, setEditingConference] = useState<ConferenceResponse | null>(null);
-  const [deleteConferenceId, setDeleteConferenceId] = useState<string | null>(null);
-  const [selectedConferenceType, setSelectedConferenceType] = useState<ConferenceType>(null);
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterCity, setFilterCity] = useState("all");
+  const [isSelectTypeModalOpen, setIsSelectTypeModalOpen] = useState(false);
 
-  // Tạo categoryOptions từ API data
+  // RTK Query cho Tech Conferences
+  const { 
+    data: techConferencesData, 
+    isLoading: techLoading, 
+    isError: techError,
+    refetch: refetchTech 
+  } = useGetTechConferencesForCollaboratorAndOrganizerQuery({
+    page,
+    pageSize,
+    ...(filterStatus !== "all" && { conferenceStatusId: filterStatus }),
+    ...(filterCity !== "all" && { cityId: filterCity }),
+    ...(searchQuery && { searchKeyword: searchQuery }),
+  }, {
+    skip: activeTab !== "tech"
+  });
+
+  // RTK Query cho Research Conferences
+  const { 
+    data: researchConferencesData, 
+    isLoading: researchLoading, 
+    isError: researchError,
+    refetch: refetchResearch 
+  } = useGetResearchConferencesForOrganizerQuery({
+    page,
+    pageSize,
+    ...(filterStatus !== "all" && { conferenceStatusId: filterStatus }),
+    ...(filterCity !== "all" && { cityId: filterCity }),
+    ...(searchQuery && { searchKeyword: searchQuery }),
+  }, {
+    skip: activeTab !== "research"
+  });
+
+  const { data: categoriesData, isLoading: categoriesLoading } = useGetAllCategoriesQuery();
+  const { data: citiesData, isLoading: citiesLoading } = useGetAllCitiesQuery();
+  const { data: statusesData, isLoading: statusesLoading } = useGetAllConferenceStatusesQuery();
+
+  // Reset page về 1 khi filter hoặc tab thay đổi
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPage(1);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, filterCategory, filterStatus, filterCity, activeTab]);
+
+  // Get data dựa trên active tab
+  const currentData = activeTab === "tech" ? techConferencesData : researchConferencesData;
+  const conferences = currentData?.data?.items || [];
+  const totalPages = currentData?.data?.totalPages || 1;
+  const totalItems = currentData?.data?.totalCount || 0;
+
+  const isLoading = activeTab === "tech" ? techLoading : researchLoading;
+  const isError = activeTab === "tech" ? techError : researchError;
+
+  const cities = citiesData?.data || [];
+  const statuses = statusesData?.data || [];
+  const categories = categoriesData?.data || [];
+
+  // Client-side filter by category
+  const filteredConferences = useMemo(() => {
+    if (filterCategory === "all") {
+      return conferences;
+    }
+    return conferences.filter(
+      (conf) => conf.conferenceCategoryId === filterCategory
+    );
+  }, [conferences, filterCategory]);
+
+  // Tạo filter options
   const categoryOptions = useMemo(() => {
     const allOption = { value: "all", label: "Tất cả danh mục" };
     
-    if (!categoriesData?.data) {
-      return [allOption];
-    }
-
-    const apiCategories = categoriesData.data.map((category) => ({
+    const apiCategories = categories.map((category) => ({
       value: category.conferenceCategoryId,
-      label: category.conferenceCategoryName,
+      label: category.conferenceCategoryName || "N/A",
     }));
 
     return [allOption, ...apiCategories];
-  }, [categoriesData]);
+  }, [categories]);
 
-  // Get conferences from API with pagination
-  const conferences = conferencesData?.data?.items || [];
-  const totalPages = conferencesData?.data?.totalPages || 1;
-  const totalItems = conferencesData?.data?.totalItems || 0;
+  const statusOptions = useMemo(() => {
+    const allOption = { value: "all", label: "Tất cả trạng thái" };
+    
+    const apiStatuses = statuses.map((status) => ({
+      value: status.conferenceStatusId,
+      label: status.conferenceStatusName || "N/A",
+    }));
 
-  const filteredConferences = conferences.filter((conf) => {
-    const matchesSearch = conf.conferenceName
-      ?.toLowerCase()
-      .includes(searchQuery.toLowerCase());
+    return [allOption, ...apiStatuses];
+  }, [statuses]);
 
-    const matchesCategory = filterCategory === "all" || conf.conferenceCategoryId === filterCategory;
+  const cityOptions = useMemo(() => {
+    const allOption = { value: "all", label: "Tất cả thành phố" };
+    
+    const apiCities = cities.map((city) => ({
+      value: city.cityId,
+      label: city.cityName || "N/A",
+    }));
 
-    return matchesSearch && matchesCategory;
-  });
+    return [allOption, ...apiCities];
+  }, [cities]);
 
   const handleCreate = () => {
-    setEditingConference(null);
-    setSelectedConferenceType(null);
-    setIsModalOpen(true);
+    setIsSelectTypeModalOpen(true);
   };
 
-  const handleEdit = (conference: ConferenceResponse) => {
-    setEditingConference(conference);
-    setSelectedConferenceType(conference.isResearchConference ?? false);
-    setIsModalOpen(true);
-  };
-
-  const handleSave = (_data: ConferenceFormData) => {
-    setIsModalOpen(false);
-    setEditingConference(null);
-    setSelectedConferenceType(null);
-  };
-
-const handleView = (conference: ConferenceResponse) => {
-  toast.info("Chức năng xem chi tiết đang được phát triển");
-};
-
-  const confirmDelete = async () => {
-    if (deleteConferenceId) {
-      try {
-        await deleteConferenceMutation(deleteConferenceId).unwrap();
-        toast.success("Xóa hội thảo thành công!");
-        setDeleteConferenceId(null);
-      } catch (error) {
-        toast.error("Xóa hội thảo thất bại. Vui lòng thử lại!");
-        console.error("Delete error:", error);
-      }
+  const handleView = (conference: ConferenceResponse) => {
+    if (conference.conferenceId) {
+      router.push(`/workspace/organizer/manage-conference/view-detail/${conference.conferenceId}`);
+    } else {
+      toast.error("Không tìm thấy ID hội thảo");
     }
   };
 
   const handleSelectConferenceType = (type: ConferenceType) => {
-    setSelectedConferenceType(type);
-  };
-
-  const handleCloseEditModal = () => {
-    setIsModalOpen(false);
-    setEditingConference(null);
-    setSelectedConferenceType(null);
+    if (type === false) {
+      router.push('/workspace/organizer/manage-conference/create-tech-conference');
+    } else if (type === true) {
+      router.push('/workspace/organizer/manage-conference/create-research-conference');
+    }
+    setIsSelectTypeModalOpen(false);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -134,8 +166,13 @@ const handleView = (conference: ConferenceResponse) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    setPage(1);
+  };
+
   // Loading state
-  if (isLoading || isCategoriesLoading) {
+  if (isLoading || categoriesLoading || citiesLoading || statusesLoading) {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
         <div className="text-center">
@@ -152,7 +189,9 @@ const handleView = (conference: ConferenceResponse) => {
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4">Không thể tải dữ liệu hội thảo</p>
-          <Button onClick={() => window.location.reload()}>Thử lại</Button>
+          <Button onClick={() => activeTab === "tech" ? refetchTech() : refetchResearch()}>
+            Thử lại
+          </Button>
         </div>
       </div>
     );
@@ -175,25 +214,73 @@ const handleView = (conference: ConferenceResponse) => {
           <p className="text-gray-600 mt-2">Quản lý thông tin các hội thảo trên ConfRadar</p>
         </div>
 
+        {/* Tab Switcher */}
+        <div className="mb-6 border-b border-gray-200">
+          <div className="flex gap-4">
+            <button
+              onClick={() => handleTabChange("tech")}
+              className={`pb-4 px-2 font-medium text-sm transition-colors relative ${
+                activeTab === "tech"
+                  ? "text-blue-600"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Cpu className="w-4 h-4" />
+                <span>Tech Conferences</span>
+              </div>
+              {activeTab === "tech" && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
+              )}
+            </button>
+            <button
+              onClick={() => handleTabChange("research")}
+              className={`pb-4 px-2 font-medium text-sm transition-colors relative ${
+                activeTab === "research"
+                  ? "text-green-600"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Microscope className="w-4 h-4" />
+                <span>Research Conferences</span>
+              </div>
+              {activeTab === "research" && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-600" />
+              )}
+            </button>
+          </div>
+        </div>
+
         <SearchFilter
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
-          searchPlaceholder="Tìm kiếm..."
+          searchPlaceholder="Tìm kiếm theo tên, mô tả, địa chỉ..."
           filters={[
             {
               value: filterCategory,
               onValueChange: setFilterCategory,
               options: categoryOptions,
             },
+            {
+              value: filterStatus,
+              onValueChange: setFilterStatus,
+              options: statusOptions,
+            },
+            {
+              value: filterCity,
+              onValueChange: setFilterCity,
+              options: cityOptions,
+            },
           ]}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <StatCard
-            title="Tổng hội thảo"
-            value={totalItems}
-            icon={<Calendar className="w-10 h-10" />}
-            color="blue"
+            title={`Tổng ${activeTab === "tech" ? "Tech" : "Research"} Conference`}
+            value={isLoading ? "..." : filteredConferences.length}
+            icon={activeTab === "tech" ? <Cpu className="w-10 h-10" /> : <Microscope className="w-10 h-10" />}
+            color={activeTab === "tech" ? "blue" : "green"}
           />
         </div>
 
@@ -210,7 +297,6 @@ const handleView = (conference: ConferenceResponse) => {
 
         <ConferenceTable
           conferences={filteredConferences}
-          onEdit={handleEdit}
           onView={handleView}
         />
 
@@ -238,99 +324,55 @@ const handleView = (conference: ConferenceResponse) => {
         )}
       </div>
 
-      {/* Modal for Creating/Editing Conference */}
+      {/* Modal for Selecting Conference Type */}
       <Modal
-        isOpen={isModalOpen}
-        onClose={handleCloseEditModal}
-        title={
-          editingConference
-            ? "Chỉnh sửa hội thảo"
-            : selectedConferenceType !== null
-            ? "Thêm hội thảo/ hội nghị mới"
-            : "Chọn loại hội thảo"
-        }
+        isOpen={isSelectTypeModalOpen}
+        onClose={() => setIsSelectTypeModalOpen(false)}
+        title="Chọn loại hội thảo"
         size="lg"
       >
-        {!editingConference && selectedConferenceType === null ? (
-          // Conference Type Selection Screen
-          <div className="py-8">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6 text-center">
-              Chọn loại hội thảo bạn muốn tạo
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <button
-                onClick={() => handleSelectConferenceType(false)}
-                className="group relative overflow-hidden rounded-xl border-2 border-gray-200 bg-white p-8 transition-all hover:border-blue-500 hover:shadow-lg"
-              >
-                <div className="flex flex-col items-center gap-4">
-                  <div className="rounded-full bg-blue-100 p-4 transition-colors group-hover:bg-blue-500">
-                    <Cpu className="h-10 w-10 text-blue-600 transition-colors group-hover:text-white" />
-                  </div>
-                  <div className="text-center">
-                    <h4 className="text-xl font-bold text-gray-900 mb-2">Tech Conference</h4>
-                    <p className="text-sm text-gray-600">
-                      Hội thảo về công nghệ, lập trình, AI, và các chủ đề kỹ thuật
-                    </p>
-                  </div>
+        <div className="py-8">
+          <h3 className="text-lg font-semibold text-gray-900 mb-6 text-center">
+            Chọn loại hội thảo bạn muốn tạo
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <button
+              onClick={() => handleSelectConferenceType(false)}
+              className="group relative overflow-hidden rounded-xl border-2 border-gray-200 bg-white p-8 transition-all hover:border-blue-500 hover:shadow-lg"
+            >
+              <div className="flex flex-col items-center gap-4">
+                <div className="rounded-full bg-blue-100 p-4 transition-colors group-hover:bg-blue-500">
+                  <Cpu className="h-10 w-10 text-blue-600 transition-colors group-hover:text-white" />
                 </div>
-              </button>
+                <div className="text-center">
+                  <h4 className="text-xl font-bold text-gray-900 mb-2">Tech Conference</h4>
+                  <p className="text-sm text-gray-600">
+                    Hội thảo về công nghệ, lập trình, AI, và các chủ đề kỹ thuật
+                  </p>
+                </div>
+              </div>
+            </button>
 
-              <button
-                onClick={() => handleSelectConferenceType(true)}
-                className="group relative overflow-hidden rounded-xl border-2 border-gray-200 bg-white p-8 transition-all hover:border-green-500 hover:shadow-lg"
-              >
-                <div className="flex flex-col items-center gap-4">
-                  <div className="rounded-full bg-green-100 p-4 transition-colors group-hover:bg-green-500">
-                    <Microscope className="h-10 w-10 text-green-600 transition-colors group-hover:text-white" />
-                  </div>
-                  <div className="text-center">
-                    <h4 className="text-xl font-bold text-gray-900 mb-2">Research Conference</h4>
-                    <p className="text-sm text-gray-600">
-                      Hội thảo nghiên cứu khoa học, học thuật và đổi mới
-                    </p>
-                  </div>
+            <button
+              onClick={() => handleSelectConferenceType(true)}
+              className="group relative overflow-hidden rounded-xl border-2 border-gray-200 bg-white p-8 transition-all hover:border-green-500 hover:shadow-lg"
+            >
+              <div className="flex flex-col items-center gap-4">
+                <div className="rounded-full bg-green-100 p-4 transition-colors group-hover:bg-green-500">
+                  <Microscope className="h-10 w-10 text-green-600 transition-colors group-hover:text-white" />
                 </div>
-              </button>
-            </div>
+                <div className="text-center">
+                  <h4 className="text-xl font-bold text-gray-900 mb-2">Research Conference</h4>
+                  <p className="text-sm text-gray-600">
+                    Hội thảo nghiên cứu khoa học, học thuật và đổi mới
+                  </p>
+                </div>
+              </div>
+            </button>
           </div>
-        ) : selectedConferenceType === false ? (
-          <ConferenceStepForm
-            conference={editingConference}
-            onSave={handleSave}
-            onCancel={handleCloseEditModal}
-          />
-        ) : selectedConferenceType === true ? (
-          // Research Conference Form
-          <ResearchConferenceStepForm
-            conference={editingConference}
-            onSave={handleSave}
-            onCancel={handleCloseEditModal}
-          />
-        ) : null}
+        </div>
       </Modal>
 
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteConferenceId} onOpenChange={() => setDeleteConferenceId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
-            <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa hội thảo này? Hành động này không thể hoàn tác và sẽ xóa
-              tất cả các đăng ký liên quan.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDelete}
-              className="bg-red-600 hover:bg-red-700"
-              disabled={isDeleting}
-            >
-              {isDeleting ? "Đang xóa..." : "Xóa"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
