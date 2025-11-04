@@ -15,18 +15,21 @@ import { ConferenceTable } from "@/components/(user)/workspace/organizer/ManageC
 import { ConferenceResponse } from "@/types/conference.type";
 
 import {
-  useGetAllConferencesPaginationQuery,
+  useGetTechConferencesForCollaboratorAndOrganizerQuery,
+  useGetResearchConferencesForOrganizerQuery,
 } from "@/redux/services/conference.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllConferenceStatusesQuery } from "@/redux/services/status.service";
 
 type ConferenceType = boolean | null;
+type TabType = "tech" | "research";
 
 export default function ManageConference() {
   const router = useRouter();
   const [page, setPage] = useState(1);
   const [pageSize] = useState(12);
+  const [activeTab, setActiveTab] = useState<TabType>("tech");
   
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,37 +38,73 @@ export default function ManageConference() {
   const [filterCity, setFilterCity] = useState("all");
   const [isSelectTypeModalOpen, setIsSelectTypeModalOpen] = useState(false);
 
-  // RTK Query với filters
-  const { data: conferencesData, isLoading, isError, refetch } = useGetAllConferencesPaginationQuery({
+  // RTK Query cho Tech Conferences
+  const { 
+    data: techConferencesData, 
+    isLoading: techLoading, 
+    isError: techError,
+    refetch: refetchTech 
+  } = useGetTechConferencesForCollaboratorAndOrganizerQuery({
     page,
     pageSize,
-    ...(filterCategory !== "all" && { conferenceCategoryId: filterCategory }),
     ...(filterStatus !== "all" && { conferenceStatusId: filterStatus }),
     ...(filterCity !== "all" && { cityId: filterCity }),
     ...(searchQuery && { searchKeyword: searchQuery }),
+  }, {
+    skip: activeTab !== "tech"
+  });
+
+  // RTK Query cho Research Conferences
+  const { 
+    data: researchConferencesData, 
+    isLoading: researchLoading, 
+    isError: researchError,
+    refetch: refetchResearch 
+  } = useGetResearchConferencesForOrganizerQuery({
+    page,
+    pageSize,
+    ...(filterStatus !== "all" && { conferenceStatusId: filterStatus }),
+    ...(filterCity !== "all" && { cityId: filterCity }),
+    ...(searchQuery && { searchKeyword: searchQuery }),
+  }, {
+    skip: activeTab !== "research"
   });
 
   const { data: categoriesData, isLoading: categoriesLoading } = useGetAllCategoriesQuery();
   const { data: citiesData, isLoading: citiesLoading } = useGetAllCitiesQuery();
   const { data: statusesData, isLoading: statusesLoading } = useGetAllConferenceStatusesQuery();
 
-  // Reset page về 1 khi filter thay đổi (debounce 500ms)
+  // Reset page về 1 khi filter hoặc tab thay đổi
   useEffect(() => {
     const timer = setTimeout(() => {
       setPage(1);
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, filterCategory, filterStatus, filterCity]);
+  }, [searchQuery, filterCategory, filterStatus, filterCity, activeTab]);
 
-  // Get data từ API responses
-  const conferences = conferencesData?.data?.items || [];
-  const totalPages = conferencesData?.data?.totalPages || 1;
-  const totalItems = conferencesData?.data?.totalItems || 0;
+  // Get data dựa trên active tab
+  const currentData = activeTab === "tech" ? techConferencesData : researchConferencesData;
+  const conferences = currentData?.data?.items || [];
+  const totalPages = currentData?.data?.totalPages || 1;
+  const totalItems = currentData?.data?.totalCount || 0;
+
+  const isLoading = activeTab === "tech" ? techLoading : researchLoading;
+  const isError = activeTab === "tech" ? techError : researchError;
 
   const cities = citiesData?.data || [];
   const statuses = statusesData?.data || [];
   const categories = categoriesData?.data || [];
+
+  // Client-side filter by category
+  const filteredConferences = useMemo(() => {
+    if (filterCategory === "all") {
+      return conferences;
+    }
+    return conferences.filter(
+      (conf) => conf.conferenceCategoryId === filterCategory
+    );
+  }, [conferences, filterCategory]);
 
   // Tạo filter options
   const categoryOptions = useMemo(() => {
@@ -115,10 +154,8 @@ export default function ManageConference() {
 
   const handleSelectConferenceType = (type: ConferenceType) => {
     if (type === false) {
-      // Tech Conference
       router.push('/workspace/organizer/manage-conference/create-tech-conference');
     } else if (type === true) {
-      // Research Conference
       router.push('/workspace/organizer/manage-conference/create-research-conference');
     }
     setIsSelectTypeModalOpen(false);
@@ -127,6 +164,11 @@ export default function ManageConference() {
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    setPage(1);
   };
 
   // Loading state
@@ -147,7 +189,9 @@ export default function ManageConference() {
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4">Không thể tải dữ liệu hội thảo</p>
-          <Button onClick={() => refetch()}>Thử lại</Button>
+          <Button onClick={() => activeTab === "tech" ? refetchTech() : refetchResearch()}>
+            Thử lại
+          </Button>
         </div>
       </div>
     );
@@ -168,6 +212,44 @@ export default function ManageConference() {
             </Button>
           </div>
           <p className="text-gray-600 mt-2">Quản lý thông tin các hội thảo trên ConfRadar</p>
+        </div>
+
+        {/* Tab Switcher */}
+        <div className="mb-6 border-b border-gray-200">
+          <div className="flex gap-4">
+            <button
+              onClick={() => handleTabChange("tech")}
+              className={`pb-4 px-2 font-medium text-sm transition-colors relative ${
+                activeTab === "tech"
+                  ? "text-blue-600"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Cpu className="w-4 h-4" />
+                <span>Tech Conferences</span>
+              </div>
+              {activeTab === "tech" && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
+              )}
+            </button>
+            <button
+              onClick={() => handleTabChange("research")}
+              className={`pb-4 px-2 font-medium text-sm transition-colors relative ${
+                activeTab === "research"
+                  ? "text-green-600"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Microscope className="w-4 h-4" />
+                <span>Research Conferences</span>
+              </div>
+              {activeTab === "research" && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-600" />
+              )}
+            </button>
+          </div>
         </div>
 
         <SearchFilter
@@ -195,10 +277,10 @@ export default function ManageConference() {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <StatCard
-            title="Tổng hội thảo"
-            value={isLoading ? "..." : totalItems}
-            icon={<Calendar className="w-10 h-10" />}
-            color="blue"
+            title={`Tổng ${activeTab === "tech" ? "Tech" : "Research"} Conference`}
+            value={isLoading ? "..." : filteredConferences.length}
+            icon={activeTab === "tech" ? <Cpu className="w-10 h-10" /> : <Microscope className="w-10 h-10" />}
+            color={activeTab === "tech" ? "blue" : "green"}
           />
         </div>
 
@@ -214,7 +296,7 @@ export default function ManageConference() {
         </div>
 
         <ConferenceTable
-          conferences={conferences}
+          conferences={filteredConferences}
           onView={handleView}
         />
 

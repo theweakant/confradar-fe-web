@@ -27,10 +27,25 @@ export const statusApi = createApi({
             ]
           : [{ type: "Status", id: "LIST" }],
     }),
+
+
+        updateOwnConferenceStatus: builder.mutation<
+          ApiResponse<null>,
+          { confid: string; newStatus: string; reason: string }
+        >({
+          query: ({ confid, newStatus, reason }) => ({
+            url: endpoint.CONFERENCE.UPDATE_OWN_STATUS,
+            method: "POST",
+            params: { confid, newStatus, reason },
+          }),
+          invalidatesTags: ["Status"],
+        }),
   }),
 });
 
 export const {
   useGetAllConferenceStatusesQuery, 
   useLazyGetAllConferenceStatusesQuery,
+  useUpdateOwnConferenceStatusMutation,
+
 } = statusApi;

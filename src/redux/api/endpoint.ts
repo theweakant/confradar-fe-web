@@ -49,13 +49,15 @@ export const endpoint = {
     LIST_PAGINATED: "/Conference/paginated-conferences",
     LIST_WITH_PRICES: "/Conference/conferences-with-prices",
     LIST_BY_STATUS: "/Conference/by-status",
-    TECH_CONF_FOR_COLLABORATOR_AND_ORGANIZER: "/Conference/technical-conferences-for-collaborator-and-Organizer",
-    LIST_ALL_CONF_STATUS:"/ConferenceStatus/get-all-conference-statuses",
-
     VIEW_REGISTERED_USERS: "/Conference/view-registered-users-for-conference",
 
-    //COLLABORATOR
+    TECH_CONF_FOR_COLLABORATOR_AND_ORGANIZER: "/Conference/technical-conferences-for-collaborator-and-Organizer",
+    RESEARCH_CONF_FOR_ORGANIZER: "/Conference/research-conferences-for-Organizer",
+
+    //DETAIL CONF
     GET_TECH_BY_ID_INTERNAL: (conferenceId: string) => `/Conference/detail-technical-for-organizer-collaborator/${conferenceId}`,
+    GET_RESEARCH_BY_ID_INTERNAL: (conferenceId: string) => `/Conference/detail-research-organizer-for-organizer/${conferenceId}`,
+
 
     //CUSTOMER
     GET_TECH_BY_ID: (conferenceId: string) => `/Conference/technical-detail/${conferenceId}`,
@@ -71,6 +73,9 @@ export const endpoint = {
     PENDING_CONFERENCES: "/Conference/pending-conferences",
     APPROVE_CONFERENCE: (conferenceId: string) => `/Conference/approve-conference/${conferenceId}`,
 
+    //STATUS
+    LIST_ALL_CONF_STATUS:"/ConferenceStatus/get-all-conference-statuses",
+    UPDATE_OWN_STATUS: "/Conference/Update-own-conference-Status",
 
 
     DETAIL: "/Conference",
