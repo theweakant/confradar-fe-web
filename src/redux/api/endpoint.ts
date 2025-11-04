@@ -181,7 +181,15 @@ export const endpoint = {
     GET_PAPER_DETAIL_CUSTOMER: "/Paper/get-paper-detail-customer",
     LIST_PAPER_PHASES: "/Paper/list-paper-phases",
     LIST_AVAILABLE_CUSTOMERS: "/Paper/list-available-customers",
+
+    //WAITLIST
+    LIST_CUSTOMER_WAITLIST: "/Paper/list-customer-waitlist",
+    LEAVE_WAITLIST: "/Paper/leave-waitlist",
   },
 
-
+  FAVOURITE_CONFERENCE: {
+    LIST_OWN: '/FavouriteConference/list-own-favourite-conferences',
+    ADD: '/FavouriteConference/add-to-favourite',
+    DELETE: '/FavouriteConference/delete-from-favourite',
+  }
 }

@@ -1,96 +1,52 @@
 import { useGetOwnPaidTicketsQuery, useLazyGetOwnPaidTicketsQuery } from '@/redux/services/ticket.service';
-import { ApiResponse } from '@/types/api.type';
-import { SerializedError } from '@reduxjs/toolkit';
-import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
-// import { useEffect } from 'react';
+import { parseApiError } from '@/redux/utils/api';
 
-
-export const useTicket = () => {
+export const useTicket = (filters?: {
+    keyword?: string;
+    pageNumber?: number;
+    pageSize?: number;
+    sessionStartTime?: string;
+    sessionEndTime?: string;
+}) => {
     const {
-        data: ticketsData,
+        data: ticketsResponse,
         isLoading: ticketsLoading,
         error: ticketsRawError,
-        refetch: refetchTickets
-    } = useGetOwnPaidTicketsQuery();
+        refetch: refetchTickets,
+    } = useGetOwnPaidTicketsQuery(filters ?? {});
 
     const [
         getTickets,
-        { isLoading: lazyTicketsLoading, error: lazyTicketsRawError }
+        { isLoading: lazyTicketsLoading, error: lazyTicketsRawError },
     ] = useLazyGetOwnPaidTicketsQuery();
 
-    // const [
-    //     getTicketById,
-    //     { isLoading: ticketByIdLoading, error: ticketByIdRawError }
-    // ] = useLazyGetTicketByIdQuery();
+    const ticketsError = parseApiError<string>(ticketsRawError);
+    const lazyTicketsError = parseApiError<string>(lazyTicketsRawError);
 
-    const parseError = (error: FetchBaseQueryError | SerializedError | undefined): string => {
-        if (!error) return 'Có lỗi xảy ra. Vui lòng thử lại.';
-
-        if ('data' in error) {
-            const data = error.data as ApiResponse<null>;
-            if (data?.message) return data.message;
-            if (typeof data === 'string') return data;
-        }
-
-        if ('message' in error && error.message) return error.message;
-
-        return 'Có lỗi xảy ra. Vui lòng thử lại.';
-    };
-    // const parseError = (error: any): string => {
-    //     if (error?.data?.Message) {
-    //         return error.data.Message;
-    //     }
-    //     if (error?.data?.message) {
-    //         return error.data.message;
-    //     }
-    //     if (typeof error?.data === 'string') {
-    //         return error.data;
-    //     }
-    //     return 'Có lỗi xảy ra. Vui lòng thử lại.';
-    // };
-
-    const ticketsError = ticketsRawError ? parseError(ticketsRawError) : null;
-    const lazyTicketsError = lazyTicketsRawError ? parseError(lazyTicketsRawError) : null;
-    // const ticketByIdError = ticketByIdRawError ? parseError(ticketByIdRawError) : null;
-
-    // Fetch tickets handler
-    const fetchTickets = async () => {
+    const fetchTickets = async (params?: typeof filters) => {
         try {
-            const result = await getTickets().unwrap();
+            const result = await getTickets(params ?? {}).unwrap();
             return result;
         } catch (error) {
             throw error;
         }
     };
 
-    // Fetch ticket by ID handler
-    // const fetchTicketById = async (id: string) => {
-    //     try {
-    //         const result = await getTicketById(id).unwrap();
-    //         return result;
-    //     } catch (error) {
-    //         throw error;
-    //     }
-    // };
 
     return {
-
         // Data
-        tickets: ticketsData?.data || [],
-        ticketsResponse: ticketsData,
+        tickets: ticketsResponse?.data?.items ?? [],
+        totalPages: ticketsResponse?.data?.totalPages ?? 1,
+        totalCount: ticketsResponse?.data?.totalCount ?? 0,
 
         // Methods
         fetchTickets,
-        // fetchTicketById,
         refetchTickets,
 
         // Loading states
-        // loading: paymentLoading || transactionsLoading || ticketsLoading || lazyTicketsLoading || ticketByIdLoading,
         loading: ticketsLoading || lazyTicketsLoading,
-        // ticketsLoading,
 
         // Errors
         ticketsError: ticketsError || lazyTicketsError,
-        // ticketByIdError,
     };
 };

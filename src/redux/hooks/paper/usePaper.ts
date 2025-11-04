@@ -9,10 +9,13 @@ import {
     useSubmitPaperRevisionMutation,
     useSubmitPaperRevisionResponseMutation,
     useSubmitCameraReadyMutation,
+    useListCustomerWaitListQuery,
+    useLeaveWaitListMutation,
 } from "@/redux/services/paper.service";
 import { parseApiError } from "@/redux/utils/api";
 import type { ApiResponse } from "@/types/api.type";
 import type { AvailableCustomerResponse, CreateAbstractRequest, CreateCameraReadyRequest, CreateFullPaperRequest, CreateRevisionPaperSubmissionRequest, CreateRevisionPaperSubmissionResponse, PaperCustomer, PaperDetailResponse, PaperPhase } from "@/types/paper.type";
+import { LeaveWaitListRequest } from "@/types/waitlist.type";
 import { useCallback } from "react";
 
 export const usePaperCustomer = () => {
@@ -67,6 +70,15 @@ export const usePaperCustomer = () => {
     const [submitCameraReady, { isLoading: submitCameraReadyLoading, error: submitCameraReadyRawError }] =
         useSubmitCameraReadyMutation();
 
+    const {
+        data: waitListData,
+        isLoading: waitListLoading,
+        error: waitListRawError,
+    } = useListCustomerWaitListQuery();
+
+    const [leaveWaitList, { isLoading: leavingWaitListLoading, error: leaveWaitListRawError }] =
+        useLeaveWaitListMutation();
+
     // errors
     const submittedPapersError = parseApiError<string>(submittedPapersRawError);
     const paperDetailError = parseApiError<string>(paperDetailRawError);
@@ -78,6 +90,8 @@ export const usePaperCustomer = () => {
     const submitRevisionError = parseApiError<string>(submitRevisionRawError);
     const submitRevisionResponseError = parseApiError<string>(submitRevisionResponseRawError);
     const submitCameraReadyError = parseApiError<string>(submitCameraReadyRawError);
+    const waitListError = parseApiError<string>(waitListRawError);
+    const leaveWaitListError = parseApiError<string>(leaveWaitListRawError);
 
     const fetchPaperDetail = useCallback(async (
         paperId: string
@@ -172,6 +186,19 @@ export const usePaperCustomer = () => {
         }
     };
 
+    const handleLeaveWaitList = useCallback(
+        async (conferenceId: string): Promise<ApiResponse<boolean>> => {
+            try {
+                const result = await leaveWaitList({ conferenceId } as LeaveWaitListRequest).unwrap();
+                return result;
+            } catch (error) {
+                throw error;
+            }
+        },
+        [leaveWaitList]
+    );
+
+
     const loading =
         submittedPapersLoading ||
         paperDetailLoading ||
@@ -182,7 +209,9 @@ export const usePaperCustomer = () => {
         submitFullPaperLoading ||
         submitRevisionLoading ||
         submitRevisionResponseLoading ||
-        submitCameraReadyLoading;
+        submitCameraReadyLoading ||
+        waitListLoading ||
+        leavingWaitListLoading;
     ;
 
     return {
@@ -191,6 +220,7 @@ export const usePaperCustomer = () => {
         paperDetail: paperDetailData?.data || null,
         paperPhases: paperPhasesData?.data || [],
         availableCustomers: availableCustomersData?.data || lazyAvailableCustomersData?.data || [],
+        waitLists: waitListData?.data || [],
 
         fetchPaperDetail,
         fetchAvailableCustomers,
@@ -199,9 +229,12 @@ export const usePaperCustomer = () => {
         handleSubmitPaperRevision,
         handleSubmitPaperRevisionResponse,
         handleSubmitCameraReady,
+        handleLeaveWaitList,
 
         //Loading
         loading,
+        waitListLoading,
+        leavingWaitListLoading,
 
         //Errors
         submittedPapersError,
@@ -214,5 +247,7 @@ export const usePaperCustomer = () => {
         submitRevisionError,
         submitRevisionResponseError,
         submitCameraReadyError,
+        waitListError,
+        leaveWaitListError,
     };
 };

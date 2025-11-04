@@ -70,7 +70,6 @@ const ConferenceDetail = () => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
   const [showPaymentMethods, setShowPaymentMethods] = useState(false);
 
-  const [isFavorite, setIsFavorite] = useState(false);
   // const [conference, setConference] = useState<TechnicalConferenceDetailResponse | null>(null);
 
   // Use the appropriate conference data based on type
@@ -217,8 +216,6 @@ const ConferenceDetail = () => {
           <div>
             <ConferenceHeader
               conference={conference}
-              isFavorite={isFavorite}
-              setIsFavorite={setIsFavorite}
               isDialogOpen={isDialogOpen}
               setIsDialogOpen={setIsDialogOpen}
               selectedTicket={selectedTicket}

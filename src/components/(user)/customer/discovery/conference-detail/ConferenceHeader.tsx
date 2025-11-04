@@ -2,13 +2,13 @@ import { MapPin, Calendar, Star } from 'lucide-react';
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { ConferencePriceResponse, ResearchConferenceDetailResponse, TechnicalConferenceDetailResponse } from "@/types/conference.type";
 import { getCurrentPrice } from "@/utils/conferenceUtils";
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTransaction } from '@/redux/hooks/transaction/useTransaction';
+import { useConference } from '@/redux/hooks/conference/useConference';
+import { toast } from 'sonner';
 
 interface ConferenceHeaderProps {
     conference: TechnicalConferenceDetailResponse | ResearchConferenceDetailResponse;
-    isFavorite: boolean;
-    setIsFavorite: (favorite: boolean) => void;
     isDialogOpen: boolean;
     setIsDialogOpen: (open: boolean) => void;
     selectedTicket: ConferencePriceResponse | null;
@@ -29,8 +29,6 @@ interface ConferenceHeaderProps {
 
 const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
     conference,
-    isFavorite,
-    setIsFavorite,
     isDialogOpen,
     setIsDialogOpen,
     selectedTicket,
@@ -48,6 +46,50 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
     showPaymentMethods,
     setShowPaymentMethods,
 }) => {
+    // Favorite conference logic
+    const {
+        favouriteConferences,
+        addFavourite,
+        removeFavourite,
+        addingToFavourite,
+        deletingFromFavourite,
+        refetchFavouriteConferences
+    } = useConference();
+
+    const [isFavorite, setIsFavorite] = useState(false);
+
+    // Check if current conference is in favorites
+    useEffect(() => {
+        if (favouriteConferences && conference.conferenceId) {
+            const isInFavorites = favouriteConferences.some(
+                fav => fav.conferenceId === conference.conferenceId
+            );
+            setIsFavorite(isInFavorites);
+        }
+    }, [favouriteConferences, conference.conferenceId]);
+
+    // Handle favorite toggle
+    const handleFavoriteToggle = async () => {
+        if (!conference.conferenceId || !accessToken) {
+            toast.error('Vui lòng đăng nhập để sử dụng tính năng này');
+            return;
+        }
+
+        try {
+            if (isFavorite) {
+                await removeFavourite(conference.conferenceId);
+                toast.success('Đã bỏ khỏi danh sách yêu thích');
+            } else {
+                await addFavourite(conference.conferenceId);
+                toast.success('Đã thêm vào danh sách yêu thích');
+            }
+            // Refetch favorites to update the list
+            refetchFavouriteConferences();
+        } catch (error) {
+            toast.error('Có lỗi xảy ra, vui lòng thử lại');
+            console.error('Favorite toggle error:', error);
+        }
+    };
     const [localTitle, setLocalTitle] = React.useState('');
     const [localDescription, setLocalDescription] = React.useState('');
     const [isComposing, setIsComposing] = React.useState(false);
@@ -78,12 +120,13 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                             {conference.conferenceName}
                         </h1>
                         <button
-                            onClick={() => setIsFavorite(!isFavorite)}
-                            className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition"
+                            onClick={handleFavoriteToggle}
+                            disabled={addingToFavourite || deletingFromFavourite}
+                            className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition disabled:opacity-50 disabled:cursor-not-allowed"
                             title={isFavorite ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
                         >
                             <Star
-                                className={`w-6 h-6 transition-colors ${isFavorite ? "fill-yellow-400 text-yellow-400" : "text-white"}`}
+                                className={`w-6 h-6 transition-colors ${isFavorite ? "fill-yellow-400 text-yellow-400" : "text-white"} ${(addingToFavourite || deletingFromFavourite) ? "animate-pulse" : ""}`}
                             />
                         </button>
                         <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap">

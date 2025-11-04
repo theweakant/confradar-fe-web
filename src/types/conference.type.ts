@@ -29,18 +29,18 @@ export interface Conference {
 
   prices?: ConferencePriceData[];
   sessions?: Session[];
-  
-  createdby?:string;
-  targetAudienceTechnicalConference?:string;
+
+  createdby?: string;
+  targetAudienceTechnicalConference?: string;
 
   researchDetail?: ResearchDetail;
   researchPhase?: ResearchPhase;
   researchRankingFiles?: ResearchRankingFile[];
   researchRankingReferences?: ResearchRankingReference[];
-  researchMaterials?: ResearchMaterial[]; 
+  researchMaterials?: ResearchMaterial[];
 
   targetAudience?: string;
-  conferenceMedia?: Media[]; 
+  conferenceMedia?: Media[];
   conferencePrices?: ConferencePrice[];
 }
 
@@ -65,29 +65,29 @@ export interface ConferenceRanking {
 //+++++++++++++++
 
 //BASIC STEP
-  export interface ConferenceBasicForm {
-    conferenceId?:string;
-    conferenceName: string;
-    description?: string;
-    startDate: string;
-    endDate: string;
-    dateRange?:number;
-    totalSlot: number;
-    address?: string;
-    bannerImageFile?: File | null;
-    isInternalHosted: boolean;
-    isResearchConference: boolean;
-    conferenceCategoryId: string;
-    cityId: string;
-    ticketSaleStart: string; //ISO
-    ticketSaleEnd: string; //ISO
-    ticketSaleDuration?:number;
-    createdby?: string;
+export interface ConferenceBasicForm {
+  conferenceId?: string;
+  conferenceName: string;
+  description?: string;
+  startDate: string;
+  endDate: string;
+  dateRange?: number;
+  totalSlot: number;
+  address?: string;
+  bannerImageFile?: File | null;
+  isInternalHosted: boolean;
+  isResearchConference: boolean;
+  conferenceCategoryId: string;
+  cityId: string;
+  ticketSaleStart: string; //ISO
+  ticketSaleEnd: string; //ISO
+  ticketSaleDuration?: number;
+  createdby?: string;
 
-    targetAudienceTechnicalConference?: string; //for tech conf
-    customTarget?: string; 
+  targetAudienceTechnicalConference?: string; //for tech conf
+  customTarget?: string;
 
-  }
+}
 
 export interface ConferenceBasicResponse {
   conferenceId: string;
@@ -98,7 +98,7 @@ export interface ConferenceBasicResponse {
   totalSlot: number;
   availableSlot: number;
   address: string;
-  bannerImageFileUrl: string; 
+  bannerImageFileUrl: string;
   isInternalHosted: boolean;
   isResearchConference: boolean;
   conferenceCategoryId: string;
@@ -107,7 +107,7 @@ export interface ConferenceBasicResponse {
   ticketSaleStart: string;
   ticketSaleEnd: string;
   createdby: string;
-  targetAudience: string; 
+  targetAudience: string;
 }
 
 //PRICE STEP
@@ -124,7 +124,7 @@ export interface Ticket {
   ticketId?: string;
   priceId?: string;   
   ticketPrice: number;
-  ticketName: string; 
+  ticketName: string;
   ticketDescription: string;
   isAuthor?: boolean;
   totalSlot: number;
@@ -164,21 +164,21 @@ export interface Session {
   sessionId?: string;
   title: string;
   description: string;
-  startTime: string;  
-  endTime: string;    
-  date: string;       
-  timeRange?: number; 
+  startTime: string;
+  endTime: string;
+  date: string;
+  timeRange?: number;
   roomId: string;
-  speaker: Speaker[];      
-  sessionMedias?: SessionMedia[]; 
+  speaker: Speaker[];
+  sessionMedias?: SessionMedia[];
 }
 
 export interface Speaker {
   speakerId?: string;
   name: string;
   description: string;
-  image?: File | string;     
-  imageUrl?: string;   
+  image?: File | string;
+  imageUrl?: string;
 }
 
 export interface SessionMedia {
@@ -203,9 +203,9 @@ export interface ConferencePolicyData {
 }
 
 export interface RefundPolicy {
-  refundPolicyId?: string; 
+  refundPolicyId?: string;
   percentRefund: number;
-  refundDeadline: string; 
+  refundDeadline: string;
   refundOrder: number;
 }
 
@@ -272,7 +272,7 @@ export interface ConferenceBasicResponse {
 //+++++++++++++++
 //RESEARCH DETAIL STEP
 export interface ResearchDetail {
-  researchDetailId?: string; 
+  researchDetailId?: string;
   name: string;
   paperFormat: string;
   numberPaperAccept: number;
@@ -291,13 +291,13 @@ export interface ConferenceResearchDetailData {
 
 //RESEARCH PHASE STEP
 export interface RevisionRoundDeadline {
-  revisionRoundDeadlineId?: string; 
+  revisionRoundDeadlineId?: string;
   endDate: string; // ISO date
   roundNumber: number;
 }
 
 export interface ResearchPhase {
-  researchPhaseId?: string; 
+  researchPhaseId?: string;
   registrationStartDate: string; // ISO date
   registrationEndDate: string;
   fullPaperStartDate: string;
@@ -340,11 +340,11 @@ export interface ConferenceResearchRankingReferenceData {
 
 //RESEARCH MATERIAL STEP
 export interface ResearchMaterial {
-  materialId?: string; 
+  materialId?: string;
   fileName: string;
   fileDescription?: string;
   file?: File | null;
-  fileUrl?: string; 
+  fileUrl?: string;
 }
 
 export interface ConferenceResearchMaterialData {
@@ -634,3 +634,31 @@ export interface RefundPolicyResponse {
   refundOrder?: number;
 }
 
+export interface FavouriteConferenceDetailResponse {
+  conferenceId: string;
+  favouriteCreatedAt?: string;
+  conferenceName?: string;
+  conferenceDescription?: string;
+  bannerImageUrl?: string;
+  conferenceStartDate?: string;
+  conferenceEndDate?: string;
+  ticketSaleStart?: string;
+  ticketSaleEnd?: string;
+  isInternalHosted?: boolean;
+  isResearchConference?: boolean;
+  availableSlot?: number;
+}
+
+export interface DeletedFavouriteConferenceResponse {
+  conferenceId: string;
+  isDeleted: boolean;
+}
+
+export interface AddedFavouriteConferenceResponse {
+  conferenceId: string;
+  isAdded: boolean;
+}
+
+export interface FavouriteConferenceRequest {
+  conferenceId: string;
+}
