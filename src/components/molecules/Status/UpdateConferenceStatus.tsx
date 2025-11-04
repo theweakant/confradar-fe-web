@@ -22,13 +22,12 @@ import {
   useGetAllConferenceStatusesQuery,
   useUpdateOwnConferenceStatusMutation,
 } from "@/redux/services/status.service";
-import { ROLES } from "@/constants/roles";
 import { ApiResponse } from "@/types/api.type";
 
 interface Conference {
   conferenceId: string;
-  conferenceStatusId: string; // ✅ Bắt buộc có ID
-  conferenceStatusName?: string; // có thể không có
+  conferenceStatusId: string;
+  conferenceStatusName?: string;
   [key: string]: any;
 }
 
@@ -38,7 +37,6 @@ interface UpdateConferenceStatusProps {
   conference: Conference;
 }
 
-// Chuẩn hóa tên trạng thái để so sánh an toàn
 const normalizeStatus = (name: string): string => {
   return name.toLowerCase().replace(/\s+/g, "");
 };
@@ -49,41 +47,52 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
   conference,
 }) => {
   const { role } = useAuth();
-  const { data: statusData } = useGetAllConferenceStatusesQuery();
+    const { data: statusData, refetch } = useGetAllConferenceStatusesQuery();
   const [updateStatus, { isLoading }] = useUpdateOwnConferenceStatusMutation();
 
   const [newStatus, setNewStatus] = useState<string>("");
   const [reason, setReason] = useState<string>("");
 
-
-  
-  // 🔍 Lấy currentStatusName từ conferenceStatusId (ưu tiên hơn conferenceStatusName)
   const currentStatus = useMemo(() => {
     const statusId = conference?.conferenceStatusId;
-    if (!statusId || !statusData?.data) return "Unknown";
+    if (!statusId || !statusData?.data) return "N/A";
 
     const matchedStatus = statusData.data.find(
       (s: any) => s.conferenceStatusId === statusId
     );
-    return matchedStatus?.conferenceStatusName || "Unknown";
+    return matchedStatus?.conferenceStatusName || "N/A";
   }, [conference?.conferenceStatusId, statusData]);
 
   const normalizedCurrentStatus = normalizeStatus(currentStatus);
 
-  // 🧠 Logic chuyển trạng thái (dùng tên đã chuẩn hóa để so sánh)
+    // Hàm trả về class màu text cho trạng thái
+    const getStatusColor = (status: string): string => {
+    const normalized = normalizeStatus(status);
+
+    switch (normalized) {
+        case "preparing":
+        return "text-yellow-600 bg-yellow-100 border border-yellow-300";
+        case "ready":
+        return "text-blue-600 bg-blue-100 border border-blue-300";
+        case "completed":
+        return "text-green-600 bg-green-100 border border-green-300";
+        case "onhold":
+        return "text-orange-600 bg-orange-100 border border-orange-300";
+        case "canceled":
+        return "text-red-600 bg-red-100 border border-red-300";
+        default:
+        return "text-gray-600 bg-gray-100 border border-gray-300";
+    }
+    };
+
+
+
   const availableStatuses = useMemo<string[]>(() => {
     if (!role || normalizedCurrentStatus === "unknown") return [];
 
     const roleLower = role.toLowerCase();
 
-    if (roleLower === ROLES.COLLABORATOR) {
-      if (normalizedCurrentStatus === "pending") {
-        return ["Accepted", "Rejected"];
-      }
-      return [];
-    }
-
-    if (roleLower === ROLES.CONFERENCE_ORGANIZER) {
+    if (roleLower.includes("collaborator")) {
       switch (normalizedCurrentStatus) {
         case "preparing":
           return ["Ready", "Canceled"];
@@ -99,9 +108,8 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
     return [];
   }, [role, normalizedCurrentStatus]);
 
-  // 🚀 Gửi request cập nhật
   const handleSubmit = async () => {
-    if (!newStatus) return toast.error("Please select a new status");
+    if (!newStatus) return toast.error("Vui lòng chọn trạng thái mới");
 
     try {
       const res: ApiResponse = await updateStatus({
@@ -111,44 +119,48 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
       }).unwrap();
 
       if (res.success) {
-        toast.success("Conference status updated successfully!");
-        onClose();
+        toast.success("Cập nhật trạng thái  thành công!");
+        await refetch();
+        setNewStatus("");
+        setReason("");
+        onClose();;
       } else {
-        toast.error(res.message || "Failed to update status");
+        toast.error(res.message || "Cập nhật thất bại");
       }
     } catch (err) {
-      console.error("Update status error:", err);
-      toast.error("Error updating status");
+      console.error("Lỗi khi cập nhật trạng thái:", err);
+      toast.error("Có lỗi xảy ra khi cập nhật");
     }
   };
 
-console.log("Role:", role);
-console.log("Normalized Current Status:", normalizedCurrentStatus);
-
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md p-6">
         <DialogHeader>
-          <DialogTitle>Update Conference Status</DialogTitle>
+          <DialogTitle>Cập nhật trạng thái hội thảo</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        {/* Current & New Status trên cùng hàng */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
           <div>
-            <Label>Current Status</Label>
-            <p className="text-sm font-medium text-gray-600">
-              {currentStatus}
+            <Label className="text-sm font-medium">Trạng thái hiện tại</Label>
+            <p className={`text-sm font-semibold mt-3 px-2 py-1 rounded-md inline-block ${getStatusColor(
+                currentStatus
+            )}`}
+            >
+            {currentStatus}
             </p>
           </div>
 
           <div>
-            <Label>New Status</Label>
+            <Label className="text-sm font-medium">Trạng thái mới</Label>
             <Select
               onValueChange={setNewStatus}
               value={newStatus}
               disabled={availableStatuses.length === 0}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Select new status" />
+              <SelectTrigger className="mt-3">
+                <SelectValue placeholder="Chọn trạng thái mới" />
               </SelectTrigger>
               <SelectContent>
                 {availableStatuses.map((status) => (
@@ -160,27 +172,29 @@ console.log("Normalized Current Status:", normalizedCurrentStatus);
             </Select>
             {availableStatuses.length === 0 && (
               <p className="text-xs text-gray-400 mt-1">
-                No valid transitions available for current status.
+                Không có trạng thái chuyển tiếp hợp lệ.
               </p>
             )}
           </div>
-
-          <div>
-            <Label>Reason (optional)</Label>
-            <Textarea
-              placeholder="Enter reason (optional)"
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-            />
-          </div>
         </div>
 
-        <DialogFooter>
+        <div className="">
+          <Label className="text-sm font-medium mb-4">Lý do (tùy chọn)</Label>
+          <Textarea
+            placeholder="Nhập lý do (nếu có)"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            className="mt-1"
+            rows={3}
+          />
+        </div>
+
+        <DialogFooter className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>
-            Cancel
+            Hủy
           </Button>
           <Button onClick={handleSubmit} disabled={isLoading}>
-            {isLoading ? "Updating..." : "Confirm"}
+            {isLoading ? "Đang cập nhật..." : "Xác nhận"}
           </Button>
         </DialogFooter>
       </DialogContent>
