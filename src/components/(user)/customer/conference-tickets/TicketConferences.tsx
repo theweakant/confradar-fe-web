@@ -17,6 +17,10 @@ export default function TicketConferences() {
   const [checkInDialogOpen, setCheckInDialogOpen] = useState(false);
   const [selectedTransactions, setSelectedTransactions] = useState<CustomerTransactionDetailResponse[]>([]);
   const [selectedCheckIns, setSelectedCheckIns] = useState<CustomerCheckInDetailResponse[]>([]);
+  const [selectedTransaction, setSelectedTransaction] = useState<CustomerTransactionDetailResponse | null>(null);
+  const [selectedCheckIn, setSelectedCheckIn] = useState<CustomerCheckInDetailResponse | null>(null);
+  const [singleTransactionDialogOpen, setSingleTransactionDialogOpen] = useState(false);
+  const [singleCheckInDialogOpen, setSingleCheckInDialogOpen] = useState(false);
 
   const filterOptions = [
     { id: "upcoming", label: "Sắp diễn ra", active: true },
@@ -74,6 +78,16 @@ export default function TicketConferences() {
   const handleShowCheckIns = (checkIns: CustomerCheckInDetailResponse[]) => {
     setSelectedCheckIns(checkIns);
     setCheckInDialogOpen(true);
+  };
+
+  const handleViewSingleTransaction = (transaction: CustomerTransactionDetailResponse) => {
+    setSelectedTransaction(transaction);
+    setSingleTransactionDialogOpen(true);
+  };
+
+  const handleViewSingleCheckIn = (checkIn: CustomerCheckInDetailResponse) => {
+    setSelectedCheckIn(checkIn);
+    setSingleCheckInDialogOpen(true);
   };
 
   const toggleExpand = (ticketId: string) => {
@@ -149,10 +163,10 @@ export default function TicketConferences() {
         {/* Ticket List */}
         <div className="space-y-6">
           {tickets.map((ticket) => (
-            <Card key={ticket.ticketId} className="bg-gray-800 border-gray-700 overflow-hidden hover:shadow-lg hover:shadow-purple-500/10 transition-shadow">
+            <Card key={ticket.ticketId} className="bg-gray-800 border-gray-700 hover:shadow-lg hover:shadow-purple-500/10 transition-shadow">
               <div className="flex flex-col lg:flex-row">
                 {/* Content */}
-                <CardContent className="flex-1 p-6">
+                <CardContent className="flex-1 p-6 overflow-hidden">
                   <div className="flex flex-col gap-4">
                     <div className="flex-1 space-y-3">
                       {/* Date & Status */}
@@ -233,81 +247,75 @@ export default function TicketConferences() {
 
                     {/* Expanded Details */}
                     {expandedTicketId === ticket.ticketId && (
-                      <div className="border-t border-gray-600 pt-4 space-y-4">
+                      <div className="border-t border-gray-600 pt-4 space-y-4 w-full">
                         {/* Transactions Section */}
                         {ticket.transactions && ticket.transactions.length > 0 && (
-                          <div className="bg-gray-700/50 rounded-lg p-4">
-                            <div className="flex items-center justify-between mb-3">
-                              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                                <CreditCard className="h-5 w-5 text-purple-400" />
-                                Giao dịch ({ticket.transactions.length})
-                              </h3>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleShowTransactions(ticket.transactions)}
-                                className="text-purple-400 border-purple-600 hover:bg-purple-900/50 bg-gray-800"
-                              >
-                                Xem chi tiết
-                              </Button>
-                            </div>
-                            <div className="space-y-2">
-                              {ticket.transactions.slice(0, 2).map((transaction) => (
-                                <div key={transaction.transactionId} className="bg-gray-800 p-3 rounded border border-gray-600 text-sm">
-                                  <div className="flex justify-between items-start mb-1">
-                                    <span className="text-gray-400">Mã GD: {transaction.transactionCode}</span>
-                                    <span className="text-green-400 font-semibold">{formatPrice(transaction.amount)}</span>
+                          <div className="bg-gray-700/50 rounded-lg p-4 w-full">
+                            <h3 className="text-lg font-semibold text-white flex items-center gap-2 mb-3">
+                              <CreditCard className="h-5 w-5 text-purple-400" />
+                              Giao dịch ({ticket.transactions.length})
+                            </h3>
+                            <div className="w-full overflow-x-auto -mx-4 px-4" style={{
+                              scrollbarWidth: 'thin',
+                              scrollbarColor: 'rgba(148,163,184,0.4) transparent',
+                            }}>
+                              <div className="flex gap-3 pb-2">
+                                {ticket.transactions.map((transaction) => (
+                                  <div
+                                    key={transaction.transactionId}
+                                    className="bg-gray-800 p-3 rounded border border-gray-600 text-sm cursor-pointer hover:bg-gray-700 transition-colors flex-shrink-0 w-64"
+                                    onClick={() => handleViewSingleTransaction(transaction)}
+                                  >
+                                    <div className="flex justify-between items-start mb-1">
+                                      <span className="text-gray-400 truncate">Mã GD: {transaction.transactionCode}</span>
+                                      <span className="text-green-400 font-semibold ml-2 whitespace-nowrap">{formatPrice(transaction.amount)}</span>
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                      {formatDateTime(transaction.createdAt)}
+                                    </div>
+                                    <div className="text-xs text-purple-400 mt-1">
+                                      Click để xem chi tiết
+                                    </div>
                                   </div>
-                                  <div className="text-xs text-gray-500">
-                                    {formatDateTime(transaction.createdAt)}
-                                  </div>
-                                </div>
-                              ))}
-                              {ticket.transactions.length > 2 && (
-                                <div className="text-center text-sm text-gray-400">
-                                  +{ticket.transactions.length - 2} giao dịch khác
-                                </div>
-                              )}
+                                ))}
+                              </div>
                             </div>
                           </div>
                         )}
 
                         {/* Check-ins Section */}
                         {ticket.userCheckIns && ticket.userCheckIns.length > 0 && (
-                          <div className="bg-gray-700/50 rounded-lg p-4">
-                            <div className="flex items-center justify-between mb-3">
-                              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                                <CheckCircle2 className="h-5 w-5 text-green-400" />
-                                Điểm danh ({ticket.userCheckIns.length})
-                              </h3>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleShowCheckIns(ticket.userCheckIns)}
-                                className="text-green-400 border-green-600 hover:bg-green-900/50 bg-gray-800"
-                              >
-                                Xem chi tiết
-                              </Button>
-                            </div>
-                            <div className="space-y-2">
-                              {ticket.userCheckIns.slice(0, 2).map((checkIn) => (
-                                <div key={checkIn.userCheckinId} className="bg-gray-800 p-3 rounded border border-gray-600 text-sm">
-                                  <div className="flex justify-between items-start mb-1">
-                                    <span className="text-white font-medium">{checkIn.conferenceSessionDetail?.title}</span>
-                                    <Badge className="bg-green-800 text-green-200 border-green-600 text-xs">
-                                      {checkIn.checkinStatusName}
-                                    </Badge>
+                          <div className="bg-gray-700/50 rounded-lg p-4 w-full">
+                            <h3 className="text-lg font-semibold text-white flex items-center gap-2 mb-3">
+                              <CheckCircle2 className="h-5 w-5 text-green-400" />
+                              Điểm danh ({ticket.userCheckIns.length})
+                            </h3>
+                            <div className="w-full overflow-x-auto -mx-4 px-4" style={{
+                              scrollbarWidth: 'thin',
+                              scrollbarColor: 'rgba(148,163,184,0.4) transparent',
+                            }}>
+                              <div className="flex gap-3 pb-2">
+                                {ticket.userCheckIns.map((checkIn) => (
+                                  <div
+                                    key={checkIn.userCheckinId}
+                                    className="bg-gray-800 p-3 rounded border border-gray-600 text-sm cursor-pointer hover:bg-gray-700 transition-colors flex-shrink-0 w-72"
+                                    onClick={() => handleViewSingleCheckIn(checkIn)}
+                                  >
+                                    <div className="flex justify-between items-start mb-1">
+                                      <span className="text-white font-medium truncate flex-1 max-w-[180px]">{checkIn.conferenceSessionDetail?.title || 'Phiên không xác định'}</span>
+                                      <Badge className="bg-green-800 text-green-200 border-green-600 text-xs ml-2 flex-shrink-0 whitespace-nowrap">
+                                        {checkIn.checkinStatusName}
+                                      </Badge>
+                                    </div>
+                                    <div className="text-xs text-gray-400">
+                                      Ngày check-in: {formatDateTime(checkIn.checkInTime)}
+                                    </div>
+                                    <div className="text-xs text-green-400 mt-1">
+                                      Click để xem chi tiết
+                                    </div>
                                   </div>
-                                  <div className="text-xs text-gray-400">
-                                    {formatDateTime(checkIn.checkInTime)}
-                                  </div>
-                                </div>
-                              ))}
-                              {ticket.userCheckIns.length > 2 && (
-                                <div className="text-center text-sm text-gray-400">
-                                  +{ticket.userCheckIns.length - 2} phiên khác
-                                </div>
-                              )}
+                                ))}
+                              </div>
                             </div>
                           </div>
                         )}
@@ -317,11 +325,11 @@ export default function TicketConferences() {
                 </CardContent>
 
                 {/* Image */}
-                <div className="lg:w-80 lg:flex-shrink-0">
+                {/* <div className="lg:w-80 lg:flex-shrink-0">
                   <div className="h-48 lg:h-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
                     <Ticket className="h-16 w-16 text-white/70" />
                   </div>
-                </div>
+                </div> */}
               </div>
             </Card>
           ))}
@@ -341,8 +349,221 @@ export default function TicketConferences() {
         )}
       </div>
 
-      {/* Transaction Dialog */}
-      <Transition appear show={transactionDialogOpen} as={Fragment}>
+      {/* Single Transaction Dialog */}
+      <Transition appear show={singleTransactionDialogOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={() => setSingleTransactionDialogOpen(false)}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black bg-opacity-75" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-lg bg-gray-800 border border-gray-700 shadow-xl transition-all">
+                  <div className="sticky top-0 bg-gray-800 border-b border-gray-700 px-6 py-4 flex items-center justify-between">
+                    <Dialog.Title className="text-xl font-semibold text-white flex items-center gap-2">
+                      <CreditCard className="h-6 w-6 text-purple-400" />
+                      Chi tiết giao dịch
+                    </Dialog.Title>
+                    <button
+                      onClick={() => setSingleTransactionDialogOpen(false)}
+                      className="text-gray-400 hover:text-white transition-colors"
+                    >
+                      <X className="h-6 w-6" />
+                    </button>
+                  </div>
+                  <div className="px-6 py-4">
+                    {selectedTransaction && (
+                      <div className="bg-gray-700 p-4 rounded-lg border border-gray-600">
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <div className="text-sm text-gray-400 mb-1">Mã giao dịch</div>
+                            <div className="text-white font-mono text-sm">{selectedTransaction.transactionCode}</div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm text-gray-400 mb-1">Số tiền</div>
+                            <div className="text-green-400 font-bold text-lg">{formatPrice(selectedTransaction.amount)}</div>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <div className="text-gray-400">Phương thức</div>
+                            <div className="text-white">{selectedTransaction.paymentMethodName || 'Chưa xác định'}</div>
+                          </div>
+                          <div>
+                            <div className="text-gray-400">Tiền tệ</div>
+                            <div className="text-white">{selectedTransaction.currency || 'VND'}</div>
+                          </div>
+                          <div>
+                            <div className="text-gray-400">Thời gian</div>
+                            <div className="text-white">{formatDateTime(selectedTransaction.createdAt)}</div>
+                          </div>
+                          <div>
+                            <div className="text-gray-400">Trạng thái</div>
+                            <div>
+                              {selectedTransaction.isRefunded ? (
+                                <Badge className="bg-gray-800 text-gray-200 border-gray-600">Đã hoàn tiền</Badge>
+                              ) : (
+                                <Badge className="bg-green-800 text-green-200 border-green-600">Thành công</Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+
+      {/* Single Check-in Dialog */}
+      <Transition appear show={singleCheckInDialogOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={() => setSingleCheckInDialogOpen(false)}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black bg-opacity-75" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-lg bg-gray-800 border border-gray-700 shadow-xl transition-all">
+                  <div className="sticky top-0 bg-gray-800 border-b border-gray-700 px-6 py-4 flex items-center justify-between">
+                    <Dialog.Title className="text-xl font-semibold text-white flex items-center gap-2">
+                      <CheckCircle2 className="h-6 w-6 text-green-400" />
+                      Chi tiết điểm danh
+                    </Dialog.Title>
+                    <button
+                      onClick={() => setSingleCheckInDialogOpen(false)}
+                      className="text-gray-400 hover:text-white transition-colors"
+                    >
+                      <X className="h-6 w-6" />
+                    </button>
+                  </div>
+                  <div className="px-6 py-4 max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+                    {selectedCheckIn && (
+                      <div className="bg-gray-700 p-4 rounded-lg border border-gray-600">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex-1">
+                            <h3 className="text-lg font-semibold text-white mb-2">
+                              {selectedCheckIn.conferenceSessionDetail?.title || 'Phiên không xác định'}
+                            </h3>
+                            {selectedCheckIn.conferenceSessionDetail?.description && (
+                              <p className="text-sm text-gray-400 mb-2">
+                                {selectedCheckIn.conferenceSessionDetail.description}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            <Badge className="bg-green-800 text-green-200 border-green-600">
+                              {selectedCheckIn.checkinStatusName}
+                            </Badge>
+                            {selectedCheckIn.isPresenter && (
+                              <Badge className="bg-purple-800 text-purple-200 border-purple-600">
+                                Diễn giả
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm mb-3">
+                          <div>
+                            <div className="text-gray-400 flex items-center gap-1">
+                              <Clock className="h-4 w-4" />
+                              Thời gian điểm danh
+                            </div>
+                            <div className="text-white">{formatDateTime(selectedCheckIn.checkInTime)}</div>
+                          </div>
+                          <div>
+                            <div className="text-gray-400 flex items-center gap-1">
+                              <Calendar className="h-4 w-4" />
+                              Ngày diễn ra
+                            </div>
+                            <div className="text-white">{formatDate(selectedCheckIn.conferenceSessionDetail?.sessionDate)}</div>
+                          </div>
+                        </div>
+
+                        {selectedCheckIn.conferenceSessionDetail && (
+                          <div className="bg-gray-800 p-3 rounded border border-gray-600 space-y-2">
+                            <div className="text-xs text-gray-400 font-semibold mb-2">THÔNG TIN ĐỊA ĐIỂM</div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                              {selectedCheckIn.conferenceSessionDetail.conferenceName && (
+                                <div>
+                                  <div className="text-gray-400">Hội nghị</div>
+                                  <div className="text-white">{selectedCheckIn.conferenceSessionDetail.conferenceName}</div>
+                                </div>
+                              )}
+                              {selectedCheckIn.conferenceSessionDetail.roomDisplayName && (
+                                <div>
+                                  <div className="text-gray-400">Phòng</div>
+                                  <div className="text-white">{selectedCheckIn.conferenceSessionDetail.roomDisplayName}</div>
+                                </div>
+                              )}
+                              {selectedCheckIn.conferenceSessionDetail.destinationName && (
+                                <div className="col-span-2">
+                                  <div className="text-gray-400 flex items-center gap-1">
+                                    <MapPin className="h-4 w-4" />
+                                    Địa điểm
+                                  </div>
+                                  <div className="text-white">
+                                    {selectedCheckIn.conferenceSessionDetail.destinationName}
+                                    {selectedCheckIn.conferenceSessionDetail.cityName && `, ${selectedCheckIn.conferenceSessionDetail.cityName}`}
+                                  </div>
+                                  {(selectedCheckIn.conferenceSessionDetail.street || selectedCheckIn.conferenceSessionDetail.district) && (
+                                    <div className="text-gray-400 text-xs mt-1">
+                                      {[selectedCheckIn.conferenceSessionDetail.street, selectedCheckIn.conferenceSessionDetail.district].filter(Boolean).join(', ')}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+
+      {/* <Transition appear show={transactionDialogOpen} as={Fragment}>
         <Dialog as="div" className="relative z-50" onClose={() => setTransactionDialogOpen(false)}>
           <Transition.Child
             as={Fragment}
@@ -429,7 +650,6 @@ export default function TicketConferences() {
         </Dialog>
       </Transition>
 
-      {/* Check-in Dialog */}
       <Transition appear show={checkInDialogOpen} as={Fragment}>
         <Dialog as="div" className="relative z-50" onClose={() => setCheckInDialogOpen(false)}>
           <Transition.Child
@@ -557,7 +777,7 @@ export default function TicketConferences() {
             </div>
           </div>
         </Dialog>
-      </Transition>
+      </Transition> */}
 
       <style jsx global>{`
         .scrollbar-thin::-webkit-scrollbar {
