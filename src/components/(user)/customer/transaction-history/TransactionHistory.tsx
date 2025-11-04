@@ -141,8 +141,8 @@ export default function TransactionHistory() {
                                     </h2>
                                     <div className="flex items-center gap-3 text-sm text-gray-400">
                                         <span>Số tiền: <span className="font-semibold text-purple-400">{formatAmount(txn.amount, txn.currency)}</span></span>
-                                        <span>Phương thức: {txn.PaymentMethodName || "Không xác định"}</span>
-                                        {getStatusBadge(txn.PaymentStatusName)}
+                                        <span>Phương thức: {txn.paymentMethodName || "Không xác định"}</span>
+                                        {getStatusBadge(txn.paymentStatusName)}
                                     </div>
                                     <div className="text-xs text-gray-500 font-mono">
                                         Mã giao dịch: {txn.transactionId}
@@ -154,7 +154,7 @@ export default function TransactionHistory() {
                                     )}
                                 </div>
                                 <div className="flex gap-2 mt-3 sm:mt-0">
-                                    {txn.PaymentStatusName?.toLowerCase().includes("thành công") && (
+                                    {txn.paymentStatusName?.toLowerCase().includes("thành công") && (
                                         <Button
                                             variant="outline"
                                             size="sm"

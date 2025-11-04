@@ -30,7 +30,7 @@ export const userApi = createApi({
         method: "GET",
       }),
     }),
-    
+
 
 
     // updateProfile: builder.mutation<ApiResponse<UserProfileResponse>, { userId: string; data: Partial<UserProfileResponse> }>({
@@ -61,7 +61,7 @@ export const userApi = createApi({
 
     changePassword: builder.mutation<ApiResponse<null>, ChangePasswordRequest>({
       query: (data) => ({
-        url: endpoint.AUTH.CHANGE_PASSWORD, // ví dụ: "/api/auth/change-password"
+        url: endpoint.AUTH.CHANGE_PASSWORD,
         method: "PUT",
         body: data,
       }),

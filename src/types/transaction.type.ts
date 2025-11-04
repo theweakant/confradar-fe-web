@@ -18,8 +18,8 @@ export interface Transaction {
     transactionStatusId?: string;
     transactionTypeId?: string;
     paymentMethodId?: string;
-    PaymentStatusName?: string;
-    PaymentMethodName?: string;
+    paymentStatusName: string;
+    paymentMethodName: string;
 }
 
 export interface PaymentMethod {
