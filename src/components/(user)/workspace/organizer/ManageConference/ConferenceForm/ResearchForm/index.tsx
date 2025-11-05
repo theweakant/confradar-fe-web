@@ -6,23 +6,17 @@ import { FormTextArea } from "@/components/molecules/FormTextArea";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks/hooks";
 import {
   useCreateBasicResearchConferenceMutation,
-  useUpdateBasicConferenceMutation,
   useCreateResearchDetailMutation,
   useCreateResearchPhaseMutation,
   useCreateConferencePriceMutation,
-  useUpdateConferencePriceMutation,
   useCreateResearchSessionsMutation,
-  useUpdateConferenceSessionMutation,
   useCreateConferencePoliciesMutation,
   useCreateRefundPoliciesMutation,
-  useUpdateConferencePolicyMutation,
   useCreateResearchMaterialMutation,
   useCreateResearchRankingFileMutation,
   useCreateResearchRankingReferenceMutation,
   useCreateConferenceMediaMutation,
-  useUpdateConferenceMediaMutation,
   useCreateConferenceSponsorsMutation,
-  useUpdateConferenceSponsorMutation,
 } from "@/redux/services/conferenceStep.service";
 
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
@@ -90,8 +84,8 @@ export function ResearchConferenceStepForm({
     (state) => state.conferenceStep
   );
 
-  const isEditMode = reduxMode === 'edit' || !!conference;
-  const conferenceId = isEditMode ? conference?.conferenceId : reduxConferenceId;
+const conferenceId = reduxConferenceId;
+
 
   // API Mutations - CREATE
   const [createBasicResearch] = useCreateBasicResearchConferenceMutation();
@@ -106,14 +100,6 @@ export function ResearchConferenceStepForm({
   const [createResearchRankingReference] = useCreateResearchRankingReferenceMutation();
   const [createMedia] = useCreateConferenceMediaMutation();
   const [createSponsors] = useCreateConferenceSponsorsMutation();
-
-  // API Mutations - UPDATE (TODO: thêm sau)
-  const [updateBasic] = useUpdateBasicConferenceMutation();
-  const [updatePrice] = useUpdateConferencePriceMutation(); 
-  const [updateSession] = useUpdateConferenceSessionMutation();
-  const [updatePolicy] = useUpdateConferencePolicyMutation();
-  const [updateMedia] = useUpdateConferenceMediaMutation();
-  const [updateSponsor] = useUpdateConferenceSponsorMutation();
 
   // Query hooks
   const { data: categoriesData, isLoading: isCategoriesLoading } = useGetAllCategoriesQuery();
@@ -145,9 +131,6 @@ export function ResearchConferenceStepForm({
       label: ranking.rankName || "N/A",
     })) || [];
 
-  // ============================================
-  // LOADING STATES
-  // ============================================
   const [stepLoadings, setStepLoadings] = useState({
     basic: false,
     researchDetail: false,
@@ -294,139 +277,6 @@ export function ResearchConferenceStepForm({
     imageFile: "",
   });
 
-  // ============================================
-  // LOAD DATA IN EDIT MODE
-  // ============================================
-  useEffect(() => {
-      dispatch(setMaxStep(9));
-
-    if (isEditMode && conference) {
-      dispatch(setMode('edit'));
-      dispatch(setConferenceId(conference.conferenceId));
-      loadConferenceData(conference);
-    } else {
-      dispatch(setMode('create'));
-    }
-  }, [isEditMode, conference, dispatch]);
-
-  const loadConferenceData = (conf: Conference) => {
-    // Step 1: Basic Info
-    setBasicForm({
-      conferenceName: conf.conferenceName || "",
-      description: conf.description || "",
-      startDate: conf.startDate ? conf.startDate.split("T")[0] : "",
-      endDate: conf.endDate ? conf.endDate.split("T")[0] : "",
-      totalSlot: conf.totalSlot || 0,
-      address: conf.address || "",
-      bannerImageFile: null,
-      isInternalHosted: conf.isInternalHosted ?? true,
-      isResearchConference: true,
-      conferenceCategoryId: conf.conferenceCategoryId || "",
-      cityId: conf.cityId || "",
-      ticketSaleStart: conf.ticketSaleStart ? conf.ticketSaleStart.split("T")[0] : "",
-      ticketSaleEnd: conf.ticketSaleEnd ? conf.ticketSaleEnd.split("T")[0] : "",
-      createdby: conf.createdby || "",
-    });
-    setExistingBannerUrl(conf.bannerImageUrl || "");
-
-    // Step 2: Research Details
-    if (conf.researchDetail) {
-      setResearchDetail(conf.researchDetail);
-    }
-
-    //Step 3: PRICE
-    if (conf.tickets && conf.tickets.length > 0) {
-      const transformedTickets: Ticket[] = conf.tickets.map((t) => ({
-        ticketId: t.ticketId,
-        ticketPrice: t.ticketPrice ?? 0,
-        ticketName: t.ticketName ?? "",
-        ticketDescription: t.ticketDescription ?? "",
-        isAuthor: t.isAuthor ?? false,
-        totalSlot: t.totalSlot ?? 0,
-      }));
-      setTickets(transformedTickets);
-    }    
-
-    if (conf.phases && conf.phases.length > 0) {
-      const transformedPhases: Phase[] = conf.phases.map((p) => ({
-        pricePhaseId: p.pricePhaseId,
-        phaseName: p.phaseName ?? "",
-        applyPercent: p.applyPercent ?? 0,
-        startDate: p.startDate ? p.startDate.split("T")[0] : "",
-        endDate: p.endDate ? p.endDate.split("T")[0] : "",
-        totalslot: p.totalslot ?? 0,
-      }));
-      setPhases(transformedPhases);
-    }    
-
-    // Step 4: Research Phases
-    if (conf.researchPhase) {
-      setResearchPhase({
-        ...conf.researchPhase,
-        registrationStartDate: conf.researchPhase.registrationStartDate?.split("T")[0] || "",
-        registrationEndDate: conf.researchPhase.registrationEndDate?.split("T")[0] || "",
-        fullPaperStartDate: conf.researchPhase.fullPaperStartDate?.split("T")[0] || "",
-        fullPaperEndDate: conf.researchPhase.fullPaperEndDate?.split("T")[0] || "",
-        reviewStartDate: conf.researchPhase.reviewStartDate?.split("T")[0] || "",
-        reviewEndDate: conf.researchPhase.reviewEndDate?.split("T")[0] || "",
-        reviseStartDate: conf.researchPhase.reviseStartDate?.split("T")[0] || "",
-        reviseEndDate: conf.researchPhase.reviseEndDate?.split("T")[0] || "",
-        cameraReadyStartDate: conf.researchPhase.cameraReadyStartDate?.split("T")[0] || "",
-        cameraReadyEndDate: conf.researchPhase.cameraReadyEndDate?.split("T")[0] || "",
-      });
-      setRevisionRoundDeadlines(conf.researchPhase.revisionRoundDeadlines || []);
-    }
-
-    // Step 5: Sessions
-    if (conf.sessions) {
-      setSessions(conf.sessions.map(s => ({
-        sessionId: s.sessionId,
-        title: s.title || "",
-        description: s.description || "",
-        startTime: s.startTime ? s.startTime.slice(0, 16) : "",
-        endTime: s.endTime ? s.endTime.slice(0, 16) : "",
-        date: s.date ? s.date.split("T")[0] : "",
-        roomId: s.roomId || "",
-        sessionMedias: s.sessionMedias || [],
-      })));
-    }
-
-    // Step 6: Policies
-    if (conf.policies) {
-      setPolicies(conf.policies);
-    }
-    if (conf.refundPolicies) {
-      setRefundPolicies(conf.refundPolicies);
-    }
-
-    // Step 7: Materials & Rankings
-    if (conf.researchMaterials) {
-      setResearchMaterials(conf.researchMaterials);
-    }
-    if (conf.researchRankingFiles) {
-      setRankingFiles(conf.researchRankingFiles);
-    }
-    if (conf.researchRankingReferences) {
-      setRankingReferences(conf.researchRankingReferences);
-    }
-
-    // Step 8: Media
-    if (conf.media) {
-      setMediaList(conf.media.map(m => ({
-        mediaId: m.mediaId,
-        mediaFile: m.mediaUrl || "",
-      })));
-    }
-
-    // Step 9: Sponsors
-    if (conf.sponsors) {
-      setSponsors(conf.sponsors.map(s => ({
-        sponsorId: s.sponsorId,
-        name: s.name || "",
-        imageFile: s.imageUrl || "",
-      })));
-    }
-  };
 
   // ============================================
   // VALIDATION
@@ -697,13 +547,6 @@ export function ResearchConferenceStepForm({
     }
   };
 
-  // ============================================
-  // EDIT MODE - TODO: Implement later
-  // ============================================
-  const handleSaveAllChanges = async () => {
-    toast.info("Chức năng cập nhật đang được phát triển!");
-    // TODO: Implement update logic similar to TechForm
-  };
 
   // ============================================
   // ADD HANDLERS
@@ -797,7 +640,8 @@ const handleAddPhase = () => {
 
 
 
-  const handleNext = () => {
+// THAY THẾ:
+const handleNext = () => {
   if (!validateStep(currentStep)) return;
 
   if (isEditMode) {
@@ -821,11 +665,26 @@ const handleAddPhase = () => {
   }
 };
 
-  const handleStepClick = (stepId: number) => {
-    if (isEditMode) {
-      dispatch(goToStep(stepId));
-    }
-  };
+// BẰNG:
+const handleNext = () => {
+  if (!validateStep(currentStep)) return;
+
+  switch (currentStep) {
+    case 1: handleBasicSubmitCreate(); break;
+    case 2: handleResearchDetailSubmitCreate(); break;
+    case 3: handlePriceSubmitCreate(); break;
+    case 4: handleResearchPhaseSubmitCreate(); break;
+    case 5: handleSessionSubmitCreate(); break;
+    case 6: handlePoliciesSubmitCreate(); break;
+    case 7: handleMaterialsAndRankingsSubmitCreate(); break;
+    case 8: handleMediaSubmitCreate(); break;
+    case 9: handleSponsorSubmitCreate(); break;
+  }
+};
+
+const handleStepClick = (stepId: number) => {
+  toast.warning("Vui lòng hoàn thành từng bước theo thứ tự!");
+};
 
   // ============================================
   // RENDER STEP CONTENT

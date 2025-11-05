@@ -95,7 +95,7 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
         case "preparing":
           return ["Ready", "Canceled"];
         case "ready":
-          return ["Completed", "OnHold"];
+          return ["Completed", "On Hold"];
         case "onhold":
           return ["Ready", "Canceled"];
         default:

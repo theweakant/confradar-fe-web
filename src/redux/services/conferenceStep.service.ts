@@ -136,7 +136,28 @@ export const conferenceStepApi = createApi({
       invalidatesTags: ["ConferenceStep"],
     }),
 
-    //UPDATE PHASE (đang thiếu)
+
+    // UPDATE PRICE PHASE
+    updateConferencePricePhase: builder.mutation<
+      ApiResponse<any>,
+      {
+        pricePhaseId: string;
+        data: {
+          phaseName?: string;
+          applyPercent?: number;
+          startDate?: string;
+          endDate?: string;
+          totalSlot?: number;
+        };
+      }
+    >({
+      query: ({ pricePhaseId, data }) => ({
+        url: endpoint.CONFERENCE_STEP.UPDATE_PHASE(pricePhaseId),
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["ConferenceStep"],
+    }),
 
     //CREATE SESSION
     createConferenceSessions: builder.mutation<
@@ -235,7 +256,7 @@ updateSessionSpeaker: builder.mutation<
     data: {
       name: string;
       description: string;
-      image?: File | string;
+      image?: File ;
     };
   }
 >({
@@ -570,7 +591,7 @@ export const {
 
 //UPDATE TECH
   useUpdateSessionSpeakerMutation ,
-
+useUpdateConferencePricePhaseMutation,
 
   //RESEARCH
   useCreateBasicResearchConferenceMutation,

@@ -17,7 +17,9 @@ import {
 
   useUpdateBasicConferenceMutation,
   useUpdateConferencePriceMutation,
+  useUpdateConferencePricePhaseMutation,
   useUpdateConferenceSessionMutation,
+  useUpdateSessionSpeakerMutation,
   useUpdateConferencePolicyMutation,
   useUpdateConferenceRefundPolicyMutation,
   useUpdateConferenceMediaMutation,
@@ -35,18 +37,16 @@ import type { ApiError } from "@/types/api.type";
 
 import type {
   ConferenceBasicForm,
-  ConferencePriceData,
   Phase,
   Ticket,
   Session,
   Speaker,
   Policy,
   RefundPolicy, 
-  ConferenceRefundPolicyData, 
   Media,
   Sponsor,
   RoomInfoResponse,
-  ConferenceSessionData
+  
 } from "@/types/conference.type";
 import { toast } from "sonner";
 
@@ -81,7 +81,9 @@ export default function UpdateConferenceStepPage() {
 
   const [updateBasic] = useUpdateBasicConferenceMutation();
   const [updatePrice] = useUpdateConferencePriceMutation();
+  const [updatePricePhase] = useUpdateConferencePricePhaseMutation();
   const [updateSession] = useUpdateConferenceSessionMutation(); 
+  const [updateSessionSpeaker] = useUpdateSessionSpeakerMutation();
   const [updatePolicy] = useUpdateConferencePolicyMutation();  
   const [updateRefundPolicy] = useUpdateConferenceRefundPolicyMutation();  
   const [updateMedia] = useUpdateConferenceMediaMutation();
@@ -91,12 +93,14 @@ export default function UpdateConferenceStepPage() {
   const { data: roomsData, isLoading: isRoomsLoading } = useGetAllRoomsQuery();
   const { data: citiesData, isLoading: isCitiesLoading } = useGetAllCitiesQuery();
 
-const [existingMediaUrls, setExistingMediaUrls] = useState<{mediaId: string, url: string}[]>([]);
-const [existingSponsorUrls, setExistingSponsorUrls] = useState<{
-  sponsorId: string;
-  name: string;
-  imageUrl: string;
-}[]>([]);
+  const [editingTicketIndex, setEditingTicketIndex] = useState<number | null>(null);
+  const [editingPhaseIndex, setEditingPhaseIndex] = useState<number | null>(null);
+  const [existingMediaUrls, setExistingMediaUrls] = useState<{mediaId: string, url: string}[]>([]);
+  const [existingSponsorUrls, setExistingSponsorUrls] = useState<{
+    sponsorId: string;
+    name: string;
+    imageUrl: string;
+  }[]>([]);
 
   const categoryOptions =
     categoriesData?.data?.map((category) => ({
@@ -367,32 +371,6 @@ const [newMedia, setNewMedia] = useState<Media>({ mediaFile: null });
     imageFile: null,
   });
 
-
-  // Validate Step 1
-  const validateBasicForm = (): boolean => {
-    const saleStart = new Date(basicForm.ticketSaleStart);
-    const saleEnd = new Date(basicForm.ticketSaleEnd);
-    const eventStart = new Date(basicForm.startDate);
-
-    if (saleStart >= eventStart || saleEnd >= eventStart) {
-      toast.error("Hãy chọn ngày bán vé trước ngày bắt đầu sự kiện");
-      return false;
-    }
-    if (!basicForm.conferenceName.trim()) {
-      toast.error("Vui lòng nhập tên hội thảo!");
-      return false;
-    }
-    if (!basicForm.startDate || !basicForm.endDate) {
-      toast.error("Vui lòng chọn ngày bắt đầu và kết thúc!");
-      return false;
-    }
-    if (!basicForm.conferenceCategoryId) {
-      toast.error("Vui lòng chọn danh mục!");
-      return false;
-    }
-    return true;
-  };
-
 const handleFinalSubmit = async () => {
   if (!conferenceId) {
     toast.error("Không tìm thấy conference ID!");
@@ -400,10 +378,11 @@ const handleFinalSubmit = async () => {
   }
   try {
     setIsSubmitting(true);
-    //BASIC
+    
+    // BASIC
     const basicUpdatePromise = updateBasic({ conferenceId, data: basicForm }).unwrap();
 
-    //Price
+    // PRICE - Update existing tickets
     const ticketUpdatePromises = tickets
       .filter(ticket => ticket.priceId)
       .map(ticket => updatePrice({
@@ -416,6 +395,25 @@ const handleFinalSubmit = async () => {
         }
       }).unwrap());
 
+    // PRICE PHASES - Update existing phases
+    const phaseUpdatePromises = tickets
+      .filter(ticket => ticket.priceId)
+      .flatMap(ticket => 
+        (ticket.phases || [])
+          .filter(phase => phase.pricePhaseId)  
+          .map(phase => updatePricePhase({
+            pricePhaseId: phase.pricePhaseId!,  
+            data: {
+              phaseName: phase.phaseName,
+              applyPercent: phase.applyPercent,
+              startDate: phase.startDate,
+              endDate: phase.endDate,
+              totalSlot: phase.totalslot,
+            }
+          }).unwrap())
+      );
+
+    // PRICE - Create new tickets
     const newTickets = tickets.filter(t => !t.priceId);
     const ticketCreatePromise = newTickets.length > 0
       ? createPrice({
@@ -439,7 +437,7 @@ const handleFinalSubmit = async () => {
         }).unwrap()
       : Promise.resolve();
 
-    // Step 3: Sessions
+    // SESSIONS - Update existing sessions
     const sessionUpdatePromises = sessions
       .filter(s => s.sessionId)
       .map(s => updateSession({
@@ -454,6 +452,23 @@ const handleFinalSubmit = async () => {
         }
       }).unwrap());
 
+    // SPEAKERS - Update existing speakers
+    const speakerUpdatePromises = sessions
+      .filter(s => s.sessionId)
+      .flatMap(s => 
+        (s.speaker || [])
+          .filter(sp => sp.speakerId)
+          .map(sp => updateSessionSpeaker({
+            sessionId: s.sessionId!,
+            data: {
+              name: sp.name,
+              description: sp.description,
+              image: sp.image instanceof File ? sp.image : undefined,
+            }
+          }).unwrap())
+      );
+
+    // SESSIONS - Create new sessions
     const newSessions = sessions.filter(s => !s.sessionId);
     const sessionCreatePromise = newSessions.length > 0
       ? createSessions({
@@ -481,7 +496,7 @@ const handleFinalSubmit = async () => {
         }).unwrap()
       : Promise.resolve();
 
-    // Step 4: Policies
+    // POLICIES - Update existing policies
     const policyUpdatePromises = policies
       .filter(p => p.policyId)
       .map(p => updatePolicy({
@@ -489,12 +504,13 @@ const handleFinalSubmit = async () => {
         data: { policyName: p.policyName, description: p.description }
       }).unwrap());
 
+    // POLICIES - Create new policies
     const newPolicies = policies.filter(p => !p.policyId);
     const policyCreatePromise = newPolicies.length > 0
       ? createPolicies({ conferenceId, data: { policies: newPolicies } }).unwrap()
       : Promise.resolve();
 
-    // Step 4.2: Refund Policies
+    // REFUND POLICIES - Update existing refund policies
     const refundPolicyUpdatePromises = refundPolicies
       .filter(rp => rp.refundPolicyId)
       .map(rp => updateRefundPolicy({
@@ -506,12 +522,13 @@ const handleFinalSubmit = async () => {
         }
       }).unwrap());
 
+    // REFUND POLICIES - Create new refund policies
     const newRefundPolicies = refundPolicies.filter(rp => !rp.refundPolicyId);
     const refundPolicyCreatePromise = newRefundPolicies.length > 0
       ? createRefundPolicies({ conferenceId, data: { refundPolicies: newRefundPolicies } }).unwrap()
       : Promise.resolve();
 
-    // Step 5: Media
+    // MEDIA - Update existing media
     const mediaUpdatePromises = mediaList
       .filter(m => m.mediaId && m.mediaFile instanceof File)
       .map(m => updateMedia({
@@ -519,12 +536,13 @@ const handleFinalSubmit = async () => {
         mediaFile: m.mediaFile as File,
       }).unwrap());
 
+    // MEDIA - Create new media
     const newMediaItems = mediaList.filter(m => !m.mediaId);
     const mediaCreatePromise = newMediaItems.length > 0
       ? createMedia({ conferenceId, data: { media: newMediaItems } }).unwrap()
       : Promise.resolve();
 
-    // Step 6: Sponsors
+    // SPONSORS - Update existing sponsors
     const sponsorUpdatePromises = sponsors
       .filter(s => s.sponsorId && s.imageFile instanceof File)
       .map(s => updateSponsor({
@@ -533,16 +551,20 @@ const handleFinalSubmit = async () => {
         imageFile: s.imageFile as File,
       }).unwrap());
 
+    // SPONSORS - Create new sponsors
     const newSponsors = sponsors.filter(s => !s.sponsorId);
     const sponsorCreatePromise = newSponsors.length > 0
       ? createSponsors({ conferenceId, data: { sponsors: newSponsors } }).unwrap()
       : Promise.resolve();
 
     
+    // Execute all promises
     await Promise.all([
       basicUpdatePromise,
       ...ticketUpdatePromises,
+      ...phaseUpdatePromises,
       ...sessionUpdatePromises,
+      ...speakerUpdatePromises,
       ...policyUpdatePromises,
       ...refundPolicyUpdatePromises,
       ...mediaUpdatePromises,
@@ -566,8 +588,132 @@ const handleFinalSubmit = async () => {
   }
 };
 
+const handleEditTicket = (ticket: Ticket, index: number) => {
+  setNewTicket({
+    ticketPrice: ticket.ticketPrice,
+    ticketName: ticket.ticketName,
+    ticketDescription: ticket.ticketDescription,
+    isAuthor: ticket.isAuthor ?? false,
+    totalSlot: ticket.totalSlot,
+    phases: ticket.phases || []
+  });
+  setEditingTicketIndex(index);
+  
+  setTimeout(() => {
+    document.getElementById('ticket-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+};
 
-const handleAddPhaseToNewTicket = () => {
+const handleAddOrUpdateTicket = () => {
+  if (!newTicket.ticketName.trim()) {
+    toast.error("Vui lòng nhập tên vé!");
+    return;
+  }
+  
+  if (newTicket.ticketPrice <= 0) {
+    toast.error("Giá vé phải lớn hơn 0!");
+    return;
+  }
+  
+  if (newTicket.totalSlot <= 0) {
+    toast.error("Số lượng vé phải lớn hơn 0!");
+    return;
+  }
+
+  if (newTicket.phases.length > 0) {
+    const totalPhaseSlots = newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0);
+    if (totalPhaseSlots !== newTicket.totalSlot) {
+      toast.error(
+        `Tổng slot các giai đoạn (${totalPhaseSlots}) phải bằng tổng slot vé (${newTicket.totalSlot})!`
+      );
+      return;
+    }
+  }
+
+  if (editingTicketIndex !== null) {
+    // Update existing ticket
+    const updatedTickets = [...tickets];
+    updatedTickets[editingTicketIndex] = {
+      ...tickets[editingTicketIndex],
+      ...newTicket
+    };
+    setTickets(updatedTickets);
+    toast.success("Đã cập nhật vé!");
+  } else {
+    // Add new ticket
+    setTickets([...tickets, { ...newTicket, isAuthor: false }]);
+    toast.success("Đã thêm vé!");
+  }
+
+  // Reset form
+  setNewTicket({
+    ticketPrice: 0,
+    ticketName: "",
+    ticketDescription: "",
+    isAuthor: false,
+    totalSlot: 0,
+    phases: [],
+  });
+  setEditingTicketIndex(null);
+};
+
+// Hàm hủy edit
+const handleCancelEdit = () => {
+  setNewTicket({
+    ticketPrice: 0,
+    ticketName: "",
+    ticketDescription: "",
+    isAuthor: false,
+    totalSlot: 0,
+    phases: [],
+  });
+  setEditingTicketIndex(null);
+  toast.info("Đã hủy chỉnh sửa");
+};
+
+
+//--
+
+// Hàm edit phase
+const handleEditPhase = (phase: Phase, index: number) => {
+  const isIncrease = phase.applyPercent > 100;
+  const percentValue = isIncrease 
+    ? phase.applyPercent - 100 
+    : 100 - phase.applyPercent;
+  
+  // Tính số ngày từ startDate và endDate
+  const start = new Date(phase.startDate);
+  const end = new Date(phase.endDate);
+  const durationInDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  
+  setNewPhase({
+    phaseName: phase.phaseName,
+    percentValue: percentValue,
+    percentType: isIncrease ? 'increase' : 'decrease',
+    startDate: phase.startDate,
+    durationInDays: durationInDays,
+    totalslot: phase.totalslot,
+  });
+  
+  setEditingPhaseIndex(index);
+  toast.info("Đang chỉnh sửa giai đoạn");
+};
+
+// Hàm hủy edit phase
+const handleCancelPhaseEdit = () => {
+  setNewPhase({
+    phaseName: "",
+    percentValue: 0,
+    percentType: 'increase',
+    startDate: "",
+    durationInDays: 1,
+    totalslot: 0,
+  });
+  setEditingPhaseIndex(null);
+  toast.info("Đã hủy chỉnh sửa giai đoạn");
+};
+
+const handleAddOrUpdatePhase = () => {
   const { phaseName, percentValue, percentType, startDate, durationInDays, totalslot } = newPhase;
   
   if (!phaseName.trim()) {
@@ -585,13 +731,13 @@ const handleAddPhaseToNewTicket = () => {
     return;
   }
 
-  if (!conferenceDetail?.data?.ticketSaleStart || !conferenceDetail?.data?.ticketSaleEnd) {
+  if (!basicForm.ticketSaleStart || !basicForm.ticketSaleEnd) {
     toast.error("Không tìm thấy thông tin thời gian bán vé!");
     return;
   }
 
-  const saleStart = new Date(conferenceDetail.data.ticketSaleStart);
-  const saleEnd = new Date(conferenceDetail.data.ticketSaleEnd);
+  const saleStart = new Date(basicForm.ticketSaleStart);
+  const saleEnd = new Date(basicForm.ticketSaleEnd);
   const phaseStart = new Date(startDate);
   
   // Tính endDate của phase
@@ -612,7 +758,11 @@ const handleAddPhaseToNewTicket = () => {
     return;
   }
 
-  const currentPhasesTotal = newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0);
+  // Check tổng slot (nếu không đang edit hoặc đang edit nhưng slot thay đổi)
+  const currentPhasesTotal = newTicket.phases
+    .filter((_, idx) => idx !== editingPhaseIndex) // Loại trừ phase đang edit
+    .reduce((sum, p) => sum + p.totalslot, 0);
+    
   if (currentPhasesTotal + totalslot > newTicket.totalSlot) {
     toast.error(
       `Tổng slot các giai đoạn (${currentPhasesTotal + totalslot}) vượt quá tổng slot vé (${newTicket.totalSlot})!`
@@ -620,12 +770,14 @@ const handleAddPhaseToNewTicket = () => {
     return;
   }
 
-  // Check overlap
-  const hasOverlap = newTicket.phases.some(p => {
-    const pStart = new Date(p.startDate);
-    const pEnd = new Date(p.endDate);
-    return (phaseStart <= pEnd && phaseEnd >= pStart);
-  });
+  // Check overlap (loại trừ phase đang edit)
+  const hasOverlap = newTicket.phases
+    .filter((_, idx) => idx !== editingPhaseIndex)
+    .some(p => {
+      const pStart = new Date(p.startDate);
+      const pEnd = new Date(p.endDate);
+      return (phaseStart <= pEnd && phaseEnd >= pStart);
+    });
 
   if (hasOverlap) {
     toast.error("Giai đoạn này bị trùng thời gian với giai đoạn khác!");
@@ -646,11 +798,28 @@ const handleAddPhaseToNewTicket = () => {
     totalslot,
   };
 
-  setNewTicket(prev => ({
-    ...prev,
-    phases: [...prev.phases, phase],
-  }));
+  if (editingPhaseIndex !== null) {
+    // UPDATE existing phase
+    const updatedPhases = [...newTicket.phases];
+    updatedPhases[editingPhaseIndex] = {
+      ...updatedPhases[editingPhaseIndex],
+      ...phase
+    };
+    setNewTicket(prev => ({
+      ...prev,
+      phases: updatedPhases,
+    }));
+    toast.success("Đã cập nhật giai đoạn!");
+  } else {
+    // ADD new phase
+    setNewTicket(prev => ({
+      ...prev,
+      phases: [...prev.phases, phase],
+    }));
+    toast.success("Đã thêm giai đoạn!");
+  }
 
+  // Reset form
   setNewPhase({
     phaseName: "",
     percentValue: 0,
@@ -659,57 +828,22 @@ const handleAddPhaseToNewTicket = () => {
     durationInDays: 1,
     totalslot: 0,
   });
-  
-  toast.success("Đã thêm giai đoạn!");
+  setEditingPhaseIndex(null);
 };
 
-  const handleRemovePhaseFromTicket = (phaseIndex: number) => {
-    setNewTicket(prev => ({
-      ...prev,
-      phases: prev.phases.filter((_, idx) => idx !== phaseIndex),
-    }));
-    toast.success("Đã xóa giai đoạn!");
-  };
+// Cập nhật hàm handleRemovePhaseFromTicket
+const handleRemovePhaseFromTicket = (phaseIndex: number) => {
+  if (editingPhaseIndex === phaseIndex) {
+    handleCancelPhaseEdit();
+  }
+  setNewTicket(prev => ({
+    ...prev,
+    phases: prev.phases.filter((_, idx) => idx !== phaseIndex),
+  }));
+  toast.success("Đã xóa giai đoạn!");
+};
 
-  const handleAddTicket = () => {
-    if (!newTicket.ticketName.trim()) {
-      toast.error("Vui lòng nhập tên vé!");
-      return;
-    }
-    
-    if (newTicket.ticketPrice <= 0) {
-      toast.error("Giá vé phải lớn hơn 0!");
-      return;
-    }
-    
-    if (newTicket.totalSlot <= 0) {
-      toast.error("Số lượng vé phải lớn hơn 0!");
-      return;
-    }
-
-    if (newTicket.phases.length > 0) {
-      const totalPhaseSlots = newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0);
-      if (totalPhaseSlots !== newTicket.totalSlot) {
-        toast.error(
-          `Tổng slot các giai đoạn (${totalPhaseSlots}) phải bằng tổng slot vé (${newTicket.totalSlot})!`
-        );
-        return;
-      }
-    }
-
-    setTickets([...tickets, { ...newTicket, isAuthor: false }]);
-    setNewTicket({
-      ticketPrice: 0,
-      ticketName: "",
-      ticketDescription: "",
-      isAuthor: false,
-      totalSlot: 0,
-      phases: [],
-    });
-    
-    toast.success("Đã thêm vé!");
-  };
-
+//--  
 const handleAddSession = () => {
   if (!newSession.title || newSession.speaker.length === 0) {
     toast.error("Vui lòng nhập tiêu đề và ít nhất 1 diễn giả!");
@@ -721,13 +855,12 @@ const handleAddSession = () => {
     return;
   }
 
-  if (!conferenceDetail?.data?.startDate || !conferenceDetail?.data?.endDate) {
-    toast.error("Không tìm thấy thông tin thời gian sự kiện!");
+  if (!basicForm.startDate || !basicForm.endDate) {
+    toast.error("Vui lòng nhập đầy đủ ngày bắt đầu và kết thúc hội thảo!");
     return;
   }
-
-  const confStart = new Date(conferenceDetail.data.startDate);
-  const confEnd = new Date(conferenceDetail.data.endDate);
+  const confStart = new Date(basicForm.startDate);
+  const confEnd = new Date(basicForm.endDate);
   const sessionDate = new Date(newSession.date);
 
   if (sessionDate < confStart || sessionDate > confEnd) {
@@ -786,13 +919,13 @@ const handleAddSession = () => {
     return;
   }
 
-  if (!conferenceDetail?.data?.startDate) {
+  if (!basicForm.startDate) {
     toast.error("Không tìm thấy thông tin thời gian sự kiện!");
     return;
   }
 
   const deadline = new Date(newRefundPolicy.refundDeadline);
-  const eventStart = new Date(conferenceDetail.data.startDate);
+  const eventStart = new Date(basicForm.startDate);
 
   if (deadline >= eventStart) {
     toast.error("Hạn hoàn tiền phải trước ngày bắt đầu sự kiện!");
@@ -1004,14 +1137,16 @@ const handleAddMedia = () => {
     value={basicForm.targetAudienceTechnicalConference}
     onChange={(val) => setBasicForm({ ...basicForm, targetAudienceTechnicalConference: val })}
     options={TARGET_OPTIONS}
+    disabled={basicFormCompleted} 
+
    
   />
   {basicForm.targetAudienceTechnicalConference === "Khác" && (
     <FormInput
       label="Nhập đối tượng khác"
-      value={basicForm.customTarget || ""}
+      value={basicForm.customTarget || "Khác"}
       onChange={(val) => setBasicForm({ ...basicForm, customTarget: val })}
-     
+      disabled={basicFormCompleted}
     />
   )}
 </div>
@@ -1063,99 +1198,156 @@ const handleAddMedia = () => {
       {basicFormCompleted && (
         <>
 
+
           {/* STEP 2: PRICE */}
           <div className="bg-white border rounded-lg p-6 mb-6">
             <h3 className="text-lg font-semibold mb-4">2. Giá vé</h3>
             
-<div className="border p-4 rounded mb-4">
-  <h4 className="font-medium mb-3 text-blue-600">
-    Danh sách vé ({tickets.length})
-  </h4>
+            {/* Danh sách vé hiện có */}
+            <div className="border p-4 rounded mb-4">
+              <h4 className="font-medium mb-3 text-blue-600">
+                Danh sách vé ({tickets.length})
+              </h4>
 
-{tickets.map((t, idx) => (
-  <div key={t.ticketId || idx} className="border rounded-lg p-3 mb-3 bg-white shadow-sm hover:shadow-md transition-shadow">
-    {/* Header - Compact */}
-    <div className="flex items-center justify-between mb-2 pb-2 border-b">
-      <div className="flex-1">
-        <h3 className="font-semibold text-base text-gray-800">{t.ticketName}</h3>
-        <p className="text-xs text-gray-500 mt-0.5">
-          {formatDate(t.phases?.[0]?.startDate)} - {formatDate(t.phases?.[t.phases.length - 1]?.endDate)}
-        </p>
-      </div>
-      <div className="text-right ml-4">
-      <div className="text-lg font-bold text-blue-600">
-        {formatCurrency(t.ticketPrice)}
-      </div>        
-      <div className="text-xs text-gray-500">Số lượng: {t.totalSlot}</div>
-      </div>
-    </div>
-
-    {/* Phases - 5 columns grid */}
-    {t.phases && t.phases.length > 0 && (
-      <div className="mb-2">
-        <div className="text-xs font-medium text-gray-600 mb-1.5">
-          Giai đoạn ({t.phases.length}):
-        </div>
-
-        <div className="grid grid-cols-5 gap-2">
-          {t.phases.map((p, pi) => {
-            const isIncrease = p.applyPercent > 100;
-            const percentDisplay = isIncrease 
-              ? `+${p.applyPercent - 100}%` 
-              : `-${100 - p.applyPercent}%`;
-
-            return (
-              <div 
-                key={pi} 
-                className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-md p-2 border border-gray-200 hover:border-blue-300 transition-colors"
-              >
-                <div className="text-xs font-semibold text-gray-800 mb-1 truncate" title={p.phaseName}>
-                  {p.phaseName}
+              {tickets.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <p>Chưa có vé nào. Hãy thêm vé mới bên dưới.</p>
                 </div>
-                <div className="text-[10px] text-gray-500 mb-1 leading-tight">
-                  {formatDate(p.startDate)} - {formatDate(p.endDate)}
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-600">Tổng: {p.totalslot}</span>
-                  <span className={`font-bold ${isIncrease ? 'text-red-600' : 'text-green-600'}`}>
-                    {percentDisplay}
-                  </span>
-                </div>
+              ) : (
+                tickets.map((t, idx) => {
+                  const isEditing = editingTicketIndex === idx;
+                  
+                  return (
+                    <div 
+                      key={t.ticketId || idx} 
+                      className={`border rounded-lg p-3 mb-3 bg-white shadow-sm hover:shadow-md transition-all ${
+                        isEditing ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+                      }`}
+                    >
+                      {/* Header - Compact */}
+                      <div className="flex items-center justify-between mb-2 pb-2 border-b">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-base text-gray-800">{t.ticketName}</h3>
+                            {isEditing && (
+                              <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded">
+                                Đang chỉnh sửa
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {formatDate(t.phases?.[0]?.startDate)} - {formatDate(t.phases?.[t.phases.length - 1]?.endDate)}
+                          </p>
+                        </div>
+                        <div className="text-right ml-4">
+                          <div className="text-lg font-bold text-blue-600">
+                            {formatCurrency(t.ticketPrice)}
+                          </div>        
+                          <div className="text-xs text-gray-500">Số lượng: {t.totalSlot}</div>
+                        </div>
+                      </div>
+
+                      {/* Phases - 5 columns grid */}
+                      {t.phases && t.phases.length > 0 && (
+                        <div className="mb-2">
+                          <div className="text-xs font-medium text-gray-600 mb-1.5">
+                            Giai đoạn ({t.phases.length}):
+                          </div>
+
+                          <div className="grid grid-cols-5 gap-2">
+                            {t.phases.map((p, pi) => {
+                              const isIncrease = p.applyPercent > 100;
+                              const percentDisplay = isIncrease 
+                                ? `+${p.applyPercent - 100}%` 
+                                : `-${100 - p.applyPercent}%`;
+
+                              return (
+                                <div 
+                                  key={pi} 
+                                  className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-md p-2 border border-gray-200 hover:border-blue-300 transition-colors"
+                                >
+                                  <div className="text-xs font-semibold text-gray-800 mb-1 truncate" title={p.phaseName}>
+                                    {p.phaseName}
+                                  </div>
+                                  <div className="text-[10px] text-gray-500 mb-1 leading-tight">
+                                    {formatDate(p.startDate)} - {formatDate(p.endDate)}
+                                  </div>
+                                  <div className="flex items-center justify-between text-xs">
+                                    <span className="text-gray-600">Tổng: {p.totalslot}</span>
+                                    <span className={`font-bold ${isIncrease ? 'text-red-600' : 'text-green-600'}`}>
+                                      {percentDisplay}
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEditTicket(t, idx)}
+                          className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-300"
+                        >
+                          ✏️ Chỉnh sửa
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => {
+                            setTickets(tickets.filter((_, i) => i !== idx));
+                            if (editingTicketIndex === idx) {
+                              handleCancelEdit();
+                            }
+                            toast.success("Đã xóa vé!");
+                          }}
+                          className="flex-1 bg-red-500 hover:bg-red-600 text-white"
+                        >
+                          🗑️ Xóa vé
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Form thêm/chỉnh sửa vé */}
+            <div id="ticket-form" className="border p-4 rounded">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-medium">
+                  {editingTicketIndex !== null ? 'Chỉnh sửa vé' : 'Thêm vé mới'}
+                </h4>
+                {editingTicketIndex !== null && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={handleCancelEdit}
+                    className="text-gray-600 hover:text-gray-800"
+                  >
+                    ✕ Hủy
+                  </Button>
+                )}
               </div>
-            );
-          })}
-        </div>
-      </div>
-    )}
 
-    {/* Action Button */}
-    <Button
-      size="sm"
-      variant="destructive"
-      onClick={() => setTickets(tickets.filter((_, i) => i !== idx))}
-      className="w-full bg-red-500 hover:bg-red-600 text-white font-medium text-sm py-1.5 mt-2"
-    >
-      Xóa vé
-    </Button>
-  </div>
-))}
-</div>
-
-
-            <div className="border p-4 rounded">
-              <h4 className="font-medium mb-3">Thêm vé mới</h4>
               <FormInput
                 label="Tên vé"
                 value={newTicket.ticketName}
                 onChange={(val) => setNewTicket({ ...newTicket, ticketName: val })}
                 placeholder="VD: Vé thường, VIP, Early Bird..."
               />
+              
               <FormTextArea
                 label="Mô tả"
                 value={newTicket.ticketDescription}
                 onChange={(val) => setNewTicket({ ...newTicket, ticketDescription: val })}
                 rows={2}
               />
+              
               <div className="grid grid-cols-2 gap-3 mt-2">
                 <FormInput
                   label="Giá vé gốc (VND)"
@@ -1173,54 +1365,90 @@ const handleAddMedia = () => {
                 />
               </div>
 
+              {/* Giai đoạn giá */}
               <div className="mt-4 border-t pt-3">
                 <h5 className="font-medium mb-2 flex items-center gap-2">
                   Giai đoạn giá cho vé này ({newTicket.phases.length})
-                  {conferenceDetail?.data?.ticketSaleStart && conferenceDetail?.data?.ticketSaleEnd && (
+                  {basicForm.ticketSaleStart && basicForm.ticketSaleEnd && (
                     <span className="text-sm text-blue-600">
-                      ({new Date(conferenceDetail.data.ticketSaleStart).toLocaleDateString('vi-VN')} → {new Date(conferenceDetail.data.ticketSaleEnd).toLocaleDateString('vi-VN')})
+                      ({new Date(basicForm.ticketSaleStart).toLocaleDateString('vi-VN')} → {new Date(basicForm.ticketSaleEnd).toLocaleDateString('vi-VN')})
                     </span>
                   )}
                 </h5>
                 
+                {/* Danh sách giai đoạn đã thêm */}
                 {newTicket.phases.map((p, idx) => {
                   const adjustedPrice = newTicket.ticketPrice * (p.applyPercent / 100);
                   const isIncrease = p.applyPercent > 100;
                   const percentDisplay = isIncrease 
                     ? `+${p.applyPercent - 100}%` 
                     : `-${100 - p.applyPercent}%`;
+                  const isEditingPhase = editingPhaseIndex === idx;
                   
                   return (
                     <div 
                       key={idx} 
-                      className="text-sm bg-blue-50 p-2 rounded flex justify-between items-center mb-2"
+                      className={`text-sm p-2 rounded flex justify-between items-center mb-2 transition-all ${
+                        isEditingPhase ? 'bg-blue-100 ring-2 ring-blue-400' : 'bg-blue-50'
+                      }`}
                     >
-                      <div>
-                        <span className="font-medium">{p.phaseName}</span> — 
-                        <span className={isIncrease ? 'text-red-600' : 'text-green-600'}>
-                          {percentDisplay}
-                        </span>
-                        <br />
-                        <span className="text-xs text-gray-600">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{p.phaseName}</span>
+                          {isEditingPhase && (
+                            <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded">
+                              Đang chỉnh sửa
+                            </span>
+                          )}
+                          <span className={isIncrease ? 'text-red-600' : 'text-green-600'}>
+                            {percentDisplay}
+                          </span>
+                        </div>
+                        <div className="text-xs text-gray-600 mt-1">
                           Giá: {adjustedPrice.toLocaleString()} VND | 
                           Slot: {p.totalslot} | 
                           {p.startDate} → {p.endDate}
-                        </span>
+                        </div>
                       </div>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleRemovePhaseFromTicket(idx)}
-                        className="text-red-600 hover:text-red-800"
-                      >
-                        ✕
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleEditPhase(p, idx)}
+                          className="text-blue-600 hover:text-blue-800"
+                        >
+                          ✏️
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleRemovePhaseFromTicket(idx)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          ✕
+                        </Button>
+                      </div>
                     </div>
                   );
                 })}
 
+                {/* Form thêm/chỉnh sửa giai đoạn mới */}
                 <div className="mt-3 p-3 bg-gray-50 rounded space-y-2">
-                  <p className="text-sm font-medium text-gray-700">Thêm giai đoạn mới:</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium text-gray-700">
+                      {editingPhaseIndex !== null ? 'Chỉnh sửa giai đoạn:' : 'Thêm giai đoạn mới:'}
+                    </p>
+                    {editingPhaseIndex !== null && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={handleCancelPhaseEdit}
+                        className="text-gray-600 hover:text-gray-800 text-xs"
+                      >
+                        ✕ Hủy
+                      </Button>
+                    )}
+                  </div>
                   
                   <FormInput
                     label="Tên giai đoạn"
@@ -1229,113 +1457,120 @@ const handleAddMedia = () => {
                     placeholder="VD: Early Bird, Standard, Late..."
                   />
                   
-<div className="space-y-2">
-  <label className="block text-sm font-medium">Điều chỉnh giá</label>
+                  {/* Điều chỉnh giá */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium">Điều chỉnh giá</label>
 
-  <div className="flex items-end gap-3">
- {/* Input phần trăm */}
-    <div className="w-24">
-      <FormInput
-        label=""
-        type="number"
-        min="0"
-        max="100"
-        value={newPhase.percentValue}
-        onChange={(val) => setNewPhase({ ...newPhase, percentValue: Number(val) })}
-        placeholder=""
-      />
-    </div>
-    <div className="flex gap-3">
-      <label className="flex items-center gap-2 cursor-pointer">
-        <input
-          type="radio"
-          name="percentType"
-          value="increase"
-          checked={newPhase.percentType === 'increase'}
-          onChange={() => setNewPhase({ ...newPhase, percentType: 'increase' })}
-          className="w-4 h-4"
-        />
-        <span className="text-sm text-red-600 font-medium">Tăng</span>
-      </label>
-      <label className="flex items-center gap-2 cursor-pointer">
-        <input
-          type="radio"
-          name="percentType"
-          value="decrease"
-          checked={newPhase.percentType === 'decrease'}
-          onChange={() => setNewPhase({ ...newPhase, percentType: 'decrease' })}
-          className="w-4 h-4"
-        />
-        <span className="text-sm text-green-600 font-medium">Giảm</span>
-      </label>
-    </div>    
-      {newTicket.ticketPrice > 0 && newPhase.percentValue > 0 && (
-    <div className="text-sm bg-gray-50 p-2 rounded">
- 
-      <strong
-        className={
-          newPhase.percentType === 'increase' ? 'text-red-600' : 'text-green-600'
-        }
-      >
-        {(
-          newTicket.ticketPrice *
-          (newPhase.percentType === 'increase'
-            ? (100 + newPhase.percentValue) / 100
-            : (100 - newPhase.percentValue) / 100)
-        ).toLocaleString()}{' '}
-        VND
-      </strong>
-      {' '}({newPhase.percentType === 'increase' ? '+' : '-'}
-      {newPhase.percentValue}%)
-    </div>
-  )}
-  </div>
+                    <div className="flex items-end gap-3">
+                      {/* Input phần trăm */}
+                      <div className="w-24">
+                        <FormInput
+                          label=""
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={newPhase.percentValue}
+                          onChange={(val) => setNewPhase({ ...newPhase, percentValue: Number(val) })}
+                          placeholder="0"
+                        />
+                      </div>
+                      
+                      {/* Radio tăng/giảm */}
+                      <div className="flex gap-3">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="percentType"
+                            value="increase"
+                            checked={newPhase.percentType === 'increase'}
+                            onChange={() => setNewPhase({ ...newPhase, percentType: 'increase' })}
+                            className="w-4 h-4"
+                          />
+                          <span className="text-sm text-red-600 font-medium">Tăng</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="percentType"
+                            value="decrease"
+                            checked={newPhase.percentType === 'decrease'}
+                            onChange={() => setNewPhase({ ...newPhase, percentType: 'decrease' })}
+                            className="w-4 h-4"
+                          />
+                          <span className="text-sm text-green-600 font-medium">Giảm</span>
+                        </label>
+                      </div>
+                      
+                      {/* Preview giá */}
+                      {newTicket.ticketPrice > 0 && newPhase.percentValue > 0 && (
+                        <div className="text-sm bg-white p-2 rounded border">
+                          <strong
+                            className={
+                              newPhase.percentType === 'increase' ? 'text-red-600' : 'text-green-600'
+                            }
+                          >
+                            {(
+                              newTicket.ticketPrice *
+                              (newPhase.percentType === 'increase'
+                                ? (100 + newPhase.percentValue) / 100
+                                : (100 - newPhase.percentValue) / 100)
+                            ).toLocaleString()}{' '}
+                            VND
+                          </strong>
+                          {' '}({newPhase.percentType === 'increase' ? '+' : '-'}
+                          {newPhase.percentValue}%)
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
+                  {/* Ngày bắt đầu, số ngày, số lượng */}
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <FormInput
+                        label="Ngày bắt đầu"
+                        type="date"
+                        value={newPhase.startDate}
+                        onChange={(val) => setNewPhase({ ...newPhase, startDate: val })}
+                      />
+                    </div>
 
-</div>
+                    <FormInput
+                      label="Số ngày"
+                      type="number"
+                      min="1"
+                      value={newPhase.durationInDays}
+                      onChange={(val) => setNewPhase({ ...newPhase, durationInDays: Number(val) })}
+                    />
 
-                  
-<div className="grid grid-cols-3 gap-3">
-  <div>
-    <FormInput
-      label="Ngày bắt đầu "
-      type="date"
-      value={newPhase.startDate}
-      onChange={(val) => setNewPhase({ ...newPhase, startDate: val })}
-    />
-    <p className="text-xs text-gray-500 mt-1"></p>
-  </div>
+                    <FormInput
+                      label="Số lượng vé"
+                      type="number"
+                      value={newPhase.totalslot}
+                      onChange={(val) => setNewPhase({ ...newPhase, totalslot: Number(val) })}
+                      placeholder={`Tối đa: ${newTicket.totalSlot - newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0)}`}
+                    />
+                  </div>
 
-  <FormInput
-    label="Số ngày"
-    type="number"
-    min="1"
-    value={newPhase.durationInDays}
-    onChange={(val) => setNewPhase({ ...newPhase, durationInDays: Number(val) })}
-  />
-
-  <FormInput
-    label="Số lượng vé"
-    type="number"
-    value={newPhase.totalslot}
-    onChange={(val) => setNewPhase({ ...newPhase, totalslot: Number(val) })}
-    placeholder={`Tối đa: ${newTicket.totalSlot - newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0)}`}
-  />
-</div>
-
-                  
                   <Button 
                     size="sm" 
-                    onClick={handleAddPhaseToNewTicket}
+                    onClick={handleAddOrUpdatePhase}
                     className="w-full"
                   >
-                    + Thêm giai đoạn
+                    {editingPhaseIndex !== null ? '💾 Cập nhật giai đoạn' : '+ Thêm giai đoạn'}
                   </Button>
                 </div>
               </div>
 
-              <Button className="mt-4 w-full" onClick={handleAddTicket}>
-                ✓ Thêm vé vào danh sách
+              {/* Button thêm/cập nhật vé */}
+              <Button 
+                className="mt-4 w-full" 
+                onClick={handleAddOrUpdateTicket}
+              >
+                {editingTicketIndex !== null 
+                  ? '💾 Cập nhật vé' 
+                  : '✓ Thêm vé vào danh sách'
+                }
               </Button>
             </div>
           </div>
@@ -1412,9 +1647,9 @@ const handleAddMedia = () => {
             <div className="border p-4 rounded space-y-3">
             <h4 className="font-medium flex items-center gap-2">
               Thêm phiên họp mới
-              {conferenceDetail?.data?.startDate && conferenceDetail?.data?.endDate && (
+              {basicForm.startDate && basicForm.endDate && (
                 <span className="text-sm text-green-600">
-                  ({new Date(conferenceDetail.data.startDate).toLocaleDateString('vi-VN')} → {new Date(conferenceDetail.data.endDate).toLocaleDateString('vi-VN')})
+                  ({new Date(basicForm.startDate).toLocaleDateString('vi-VN')} → {new Date(basicForm.endDate).toLocaleDateString('vi-VN')})
                 </span>
               )}
             </h4>                
@@ -1678,9 +1913,9 @@ const handleAddMedia = () => {
   <div className="border-t pt-6">
     <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
       4.2. Chính sách hoàn tiền (Tùy chọn)
-      {conferenceDetail?.data?.startDate && (
+      {basicForm.startDate && (
         <span className="text-sm text-blue-600">
-          (Trước ngày {new Date(conferenceDetail.data.startDate).toLocaleDateString('vi-VN')})
+          (Trước ngày {new Date(basicForm.startDate).toLocaleDateString('vi-VN')})
         </span>
       )}
     </h4>

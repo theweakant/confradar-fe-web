@@ -997,7 +997,7 @@ const handleAddMedia = () => {
                 label="Tên vé"
                 value={newTicket.ticketName}
                 onChange={(val) => setNewTicket({ ...newTicket, ticketName: val })}
-                placeholder="VD: Vé thường, VIP, Early Bird..."
+                placeholder="Vé cơ bản, tiêu chuẩn, nâng cao ..."
               />
               <FormTextArea
                 label="Mô tả"

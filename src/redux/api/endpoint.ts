@@ -91,35 +91,36 @@ export const endpoint = {
   CONFERENCE_STEP: {
 
     //TECH
-    CREATE_BASIC: "/ConferenceStep/basic",
-    CREATE_PRICE: (conferenceId: string) => `/ConferenceStep/${conferenceId}/prices`,
-    CREATE_SESSION: (conferenceId: string) => `/ConferenceStep/${conferenceId}/sessions`,
-    CREATE_POLICY: (conferenceId: string) => `/ConferenceStep/${conferenceId}/policies`,
-    CREATE_REFUND_POLICY: (conferenceId: string) => `/ConferenceStep/${conferenceId}/refund-policies`,
-    CREATE_MEDIA: (conferenceId: string) => `/ConferenceStep/${conferenceId}/media`,
-    CREATE_SPONSOR: (conferenceId: string) => `/ConferenceStep/${conferenceId}/sponsors`,
+    CREATE_BASIC: "/conferencestep/basic",
+    CREATE_PRICE: (conferenceId: string) => `/conferencestep/${conferenceId}/prices`,
+    CREATE_SESSION: (conferenceId: string) => `/conferencestep/${conferenceId}/sessions`,
+    CREATE_POLICY: (conferenceId: string) => `/conferencestep/${conferenceId}/policies`,
+    CREATE_REFUND_POLICY: (conferenceId: string) => `/conferencestep/${conferenceId}/refund-policies`,
+    CREATE_MEDIA: (conferenceId: string) => `/conferencestep/${conferenceId}/media`,
+    CREATE_SPONSOR: (conferenceId: string) => `/conferencestep/${conferenceId}/sponsors`,
 
 
-    UPDATE_BASIC: (conferenceId: string) => `/ConferenceStep/${conferenceId}/basic`,
-    UPDATE_PRICE: (priceId: string) => `/ConferenceStep/prices/${priceId}`,
-    UPDATE_SESSION: (sessionId: string) => `/ConferenceStep/sessions/${sessionId}`,
-    UPDATE_SPEAKER: (sessionId: string) => `/ConferenceStep/sessions/${sessionId}/speaker`,
-    UPDATE_POLICY: (policyId: string) => `/ConferenceStep/policies/${policyId}`,
-    UPDATE_REFUND_POLICY: (refundPolicyId: string) => `/ConferenceStep/refund-policies/${refundPolicyId}`,  
-    UPDATE_MEDIA: (mediaId: string) => `/ConferenceStep/media/${mediaId}`,
-    UPDATE_SPONSOR: (sponsorId: string) => `/ConferenceStep/sponsors/${sponsorId}`,
+    UPDATE_BASIC: (conferenceId: string) => `/conferencestep/${conferenceId}/basic`,
+    UPDATE_PRICE: (priceId: string) => `/conferencestep/prices/${priceId}`,
+    UPDATE_PHASE: (pricePhaseId: string) => `/conferencestep/phases/${pricePhaseId}`,
+    UPDATE_SESSION: (sessionId: string) => `/conferencestep/sessions/${sessionId}`,
+    UPDATE_SPEAKER: (sessionId: string) => `/conferencestep/sessions/${sessionId}/speaker`,
+    UPDATE_POLICY: (policyId: string) => `/conferencestep/policies/${policyId}`,
+    UPDATE_REFUND_POLICY: (refundPolicyId: string) => `/conferencestep/refund-policies/${refundPolicyId}`,  
+    UPDATE_MEDIA: (mediaId: string) => `/conferencestep/media/${mediaId}`,
+    UPDATE_SPONSOR: (sponsorId: string) => `/conferencestep/sponsors/${sponsorId}`,
 
-    GET_BASIC: (conferenceId: string) => `/ConferenceStep/${conferenceId}/basic`,
+    GET_BASIC: (conferenceId: string) => `/conferencestep/${conferenceId}/basic`,
 
 
     //RESEARCH
-    CREATE_RESEARCH_BASIC: "/ConferenceStep/research/basic",
-    CREATE_RESEARCH_DETAIL: (conferenceId: string) => `/ConferenceStep/${conferenceId}/research/detail`,
-    CREATE_RESEARCH_PHASE: (conferenceId: string) => `/ConferenceStep/${conferenceId}/research/phases`,
-    CREATE_RESEARCH_SESSION: (conferenceId: string) => `/ConferenceStep/${conferenceId}/research/sessions`,
-    CREATE_RESEARCH_RANKING_FILE: (conferenceId: string) => `/ConferenceStep/${conferenceId}/research/ranking-file-urls`,
-    CREATE_RESEARCH_RANKING_REFERENCE: (conferenceId: string) => `/ConferenceStep/${conferenceId}/research/ranking-reference-urls`,
-    CREATE_RESEARCH_MATERIAL: (conferenceId: string) => `/ConferenceStep/${conferenceId}/research/materials`,
+    CREATE_RESEARCH_BASIC: "/conferencestep/research/basic",
+    CREATE_RESEARCH_DETAIL: (conferenceId: string) => `/conferencestep/${conferenceId}/research/detail`,
+    CREATE_RESEARCH_PHASE: (conferenceId: string) => `/conferencestep/${conferenceId}/research/phases`,
+    CREATE_RESEARCH_SESSION: (conferenceId: string) => `/conferencestep/${conferenceId}/research/sessions`,
+    CREATE_RESEARCH_RANKING_FILE: (conferenceId: string) => `/conferencestep/${conferenceId}/research/ranking-file-urls`,
+    CREATE_RESEARCH_RANKING_REFERENCE: (conferenceId: string) => `/conferencestep/${conferenceId}/research/ranking-reference-urls`,
+    CREATE_RESEARCH_MATERIAL: (conferenceId: string) => `/conferencestep/${conferenceId}/research/materials`,
 
   },
 

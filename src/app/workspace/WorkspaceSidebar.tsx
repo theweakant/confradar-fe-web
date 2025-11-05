@@ -50,7 +50,7 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
       { label: "Tổng quan", href: "/workspace/organizer", icon: LayoutDashboard },
       { label: "Hội nghị", href: "/workspace/organizer/manage-conference", icon: Calendar },
       { label: "Bài báo", href: "/workspace/organizer/manage-paper", icon: FileText },
-      { label: "Người tham gia", href: "/workspace/organizer/manage-user", icon: Users },
+      { label: "Đối tác", href: "/workspace/organizer/manage-user", icon: Users },
       { label: "Quản lí phản biện", href: "/workspace/organizer/manage-reviewer", icon: Users },
       { label: "Yêu cầu", href: "/workspace/organizer/manage-request", icon: Building2 },
     ],
@@ -83,10 +83,10 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
     [ROLES.EXTERNAL_REVIEWER]: { name: "Đánh giá ngoài", color: "bg-orange-500", icon: GraduationCap },
   }
 
-  const roleMenu = roleMenus[normalizedRole]
+  const roleMenu = roleMenus[normalizedRole]??[]
 
-  const info = roleInfo[normalizedRole]
-  const RoleIcon = info.icon
+const info = roleInfo[normalizedRole] ?? { name: "Không xác định", color: "bg-gray-400", icon: Shield }
+const RoleIcon = info.icon
 
   const handleLogout = async () => {
     try {
