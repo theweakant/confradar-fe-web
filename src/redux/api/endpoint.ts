@@ -32,6 +32,7 @@ export const endpoint = {
     CREATE: "/Room",
     UPDATE: "/Room",
     DELETE: "/Room",
+    DETAIL: "/room",
   },
 
   CATEGORY: {

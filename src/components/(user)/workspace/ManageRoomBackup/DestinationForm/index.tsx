@@ -3,10 +3,8 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/molecules/FormInput";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Destination, DestinationFormData } from "@/types/destination.type";
 import { validationDestinationRules } from "@/utils/validationRoomRules";
-import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 
 interface DestinationFormProps {
   destination?: Destination | null;
@@ -15,9 +13,6 @@ interface DestinationFormProps {
 }
 
 export function DestinationForm({ destination, onSave, onCancel }: DestinationFormProps) {
-  const { data: citiesResponse, isLoading: citiesLoading } = useGetAllCitiesQuery();
-  const cities = citiesResponse?.data || [];
-
   const [formData, setFormData] = useState<DestinationFormData>({
     name: destination?.name || "",
     city: destination?.city || "",
@@ -27,6 +22,31 @@ export function DestinationForm({ destination, onSave, onCancel }: DestinationFo
 
   const [errors, setErrors] = useState<Partial<Record<keyof DestinationFormData, string>>>({});
   const [touched, setTouched] = useState<Set<keyof DestinationFormData>>(new Set());
+
+  // --- Thêm state cho API tỉnh/huyện ---
+  const [provinces, setProvinces] = useState<{ code: number; name: string }[]>([]);
+  const [districts, setDistricts] = useState<{ code: number; name: string }[]>([]);
+  const [selectedProvinceCode, setSelectedProvinceCode] = useState<number | null>(null);
+
+  // Lấy danh sách tỉnh/thành khi mở form
+  useEffect(() => {
+    fetch("https://provinces.open-api.vn/api/p/")
+      .then((res) => res.json())
+      .then((data) => setProvinces(data))
+      .catch((err) => console.error("Lỗi tải provinces:", err));
+  }, []);
+
+  // Khi chọn tỉnh => load quận/huyện tương ứng
+  useEffect(() => {
+    if (selectedProvinceCode) {
+      fetch(`https://provinces.open-api.vn/api/p/${selectedProvinceCode}?depth=2`)
+        .then((res) => res.json())
+        .then((data) => setDistricts(data.districts || []))
+        .catch((err) => console.error("Lỗi tải districts:", err));
+    } else {
+      setDistricts([]);
+    }
+  }, [selectedProvinceCode]);
 
   const handleChange = (field: keyof DestinationFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -67,7 +87,12 @@ export function DestinationForm({ destination, onSave, onCancel }: DestinationFo
 
   const handleSubmit = () => {
     if (validate()) {
-      onSave(formData);
+      // Khi gửi => chỉ gửi name của city và district
+      onSave({
+        ...formData,
+        city: formData.city, // đã là name của tỉnh
+        district: formData.district, // đã là name của huyện
+      });
     }
   };
 
@@ -87,44 +112,55 @@ export function DestinationForm({ destination, onSave, onCancel }: DestinationFo
           placeholder=""
         />
 
-        {/* Thành phố (dropdown từ city service) */}
+        {/* Thành phố (dropdown từ API) */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Thành phố <span className="text-red-500">*</span>
           </label>
-          <Select
+          <select
+            className="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300"
             value={formData.city}
-            onValueChange={(value) => handleChange("city", value)}
-            disabled={citiesLoading}
+            onChange={(e) => {
+              const selectedCode = Number(e.target.selectedOptions[0].getAttribute("data-code"));
+              setSelectedProvinceCode(selectedCode);
+              handleChange("city", e.target.value);
+              handleChange("district", ""); // reset huyện khi đổi tỉnh
+            }}
           >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="-- Chọn Tỉnh / Thành phố --" />
-            </SelectTrigger>
-            <SelectContent>
-              {cities.map((city) => (
-                <SelectItem key={city.cityId} value={city.cityName || ""}>
-                  {city.cityName}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            <option value="">-- Chọn Tỉnh / Thành phố --</option>
+            {provinces.map((p) => (
+              <option key={p.code} value={p.name} data-code={p.code}>
+                {p.name}
+              </option>
+            ))}
+          </select>
           {touched.has("city") && errors.city && (
             <p className="text-red-500 text-sm mt-1">{errors.city}</p>
           )}
         </div>
 
-        {/* Quận / Huyện (input field) */}
-        <FormInput
-          label="Quận / Huyện"
-          name="district"
-          value={formData.district}
-          onChange={(value) => handleChange("district", value)}
-          onBlur={() => validateField("district", formData.district)}
-          required
-          error={touched.has("district") ? errors.district : undefined}
-          success={touched.has("district") && !errors.district}
-          placeholder="Nhập quận/huyện"
-        />
+        {/* Quận / Huyện (dropdown theo tỉnh) */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Quận / Huyện <span className="text-red-500">*</span>
+          </label>
+          <select
+            className="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300"
+            value={formData.district}
+            onChange={(e) => handleChange("district", e.target.value)}
+            disabled={!selectedProvinceCode}
+          >
+            <option value="">-- Chọn Quận / Huyện --</option>
+            {districts.map((d) => (
+              <option key={d.code} value={d.name}>
+                {d.name}
+              </option>
+            ))}
+          </select>
+          {touched.has("district") && errors.district && (
+            <p className="text-red-500 text-sm mt-1">{errors.district}</p>
+          )}
+        </div>
 
         {/* Đường */}
         <FormInput

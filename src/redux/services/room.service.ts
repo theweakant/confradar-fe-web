@@ -1,8 +1,8 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { apiClient } from "../api/apiClient";
 import { endpoint } from "../api/endpoint";
-import type { Room, RoomFormData } from "@/types/room.type";
-import type { ApiResponse } from "@/types/api.type";
+import type { Room, RoomFormData, RoomOccupationSlot, RoomWithSessions, TimeSpan } from "@/types/room.type";
+import type { ApiResponse, ApiResponsePagination } from "@/types/api.type";
 
 export const roomApi = createApi({
   reducerPath: "roomApi",
@@ -42,6 +42,98 @@ export const roomApi = createApi({
       }),
       invalidatesTags: ["Room"],
     }),
+
+    getRoomById: builder.query<ApiResponse<Room>, string>({
+      query: (id) => ({
+        url: `${endpoint.ROOM.DETAIL}/${id}`,
+        method: "GET",
+      }),
+      providesTags: ["Room"],
+    }),
+
+    getRoomOccupationSlots: builder.query<
+      ApiResponse<RoomOccupationSlot[]>,
+      { roomId: string; startDate: string; endDate: string }
+    >({
+      query: ({ roomId, startDate, endDate }) => ({
+        url: `${endpoint.ROOM.DETAIL}/${roomId}/session-between-2-dateonlys`,
+        method: "GET",
+        params: { startDate, endDate },
+      }),
+    }),
+
+    checkRoomAvailability: builder.query<
+      ApiResponse<boolean>,
+      { roomId: string; date: string; startTime: string; endTime: string }
+    >({
+      query: ({ roomId, date, startTime, endTime }) => ({
+        url: `${endpoint.ROOM.DETAIL}/${roomId}/occupation/check-if-room-is-available-in-a-date-between-2-timeonly`,
+        method: "GET",
+        params: { date, startTime, endTime },
+      }),
+    }),
+
+    isRoomOccupiedAtTime: builder.query<
+      ApiResponse<boolean>,
+      { roomId: string; date: string; time: string }
+    >({
+      query: ({ roomId, date, time }) => ({
+        url: `${endpoint.ROOM.DETAIL}/${roomId}/occupation/is-occupied-in-a-given-time`,
+        method: "GET",
+        params: { date, time },
+      }),
+    }),
+
+    getSessionsInRoomOnDate: builder.query<
+      ApiResponse<RoomOccupationSlot[]>,
+      { roomId: string; date: string }
+    >({
+      query: ({ roomId, date }) => ({
+        url: `${endpoint.ROOM.DETAIL}/${roomId}/sessions-on-date`,
+        method: "GET",
+        params: { date },
+      }),
+    }),
+
+    getAvailableTimesInRoom: builder.query<
+      ApiResponse<TimeSpan[]>,
+      { roomId: string; date: string }
+    >({
+      query: ({ roomId, date }) => ({
+        url: `${endpoint.ROOM.DETAIL}/${roomId}/available-times`,
+        method: "GET",
+        params: { date },
+      }),
+    }),
+
+    getBusyTimesInRoom: builder.query<
+      ApiResponse<TimeSpan[]>,
+      { roomId: string; date: string }
+    >({
+      query: ({ roomId, date }) => ({
+        url: `${endpoint.ROOM.DETAIL}/${roomId}/busy-time`,
+        method: "GET",
+        params: { date },
+      }),
+    }),
+
+    getRoomsWithSessions: builder.query<
+      ApiResponsePagination<RoomWithSessions>,
+      { page?: number; pageSize?: number; destinationId?: string; searchKeyword?: string; date?: string }
+    >({
+      query: ({ page = 1, pageSize = 10, destinationId, searchKeyword, date }) => ({
+        url: `${endpoint.ROOM.LIST}/rooms-with-sessions`,
+        method: "GET",
+        params: {
+          page,
+          pageSize,
+          ...(destinationId && { destinationId }),
+          ...(searchKeyword && { searchKeyword }),
+          ...(date && { date }),
+        },
+      }),
+      providesTags: ["Room"],
+    }),
   }),
 });
 
@@ -50,4 +142,14 @@ export const {
   useCreateRoomMutation,
   useUpdateRoomMutation,
   useDeleteRoomMutation,
+  useGetRoomByIdQuery,
+  useGetRoomOccupationSlotsQuery,
+  useCheckRoomAvailabilityQuery,
+  useIsRoomOccupiedAtTimeQuery,
+  useGetSessionsInRoomOnDateQuery,
+  useGetAvailableTimesInRoomQuery,
+  useGetBusyTimesInRoomQuery,
+  useGetRoomsWithSessionsQuery,
+  useLazyCheckRoomAvailabilityQuery,
+  useLazyIsRoomOccupiedAtTimeQuery,
 } = roomApi;
