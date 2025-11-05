@@ -46,7 +46,6 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
     showPaymentMethods,
     setShowPaymentMethods,
 }) => {
-    // Favorite conference logic
     const {
         favouriteConferences,
         addFavourite,
@@ -90,9 +89,6 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
             console.error('Favorite toggle error:', error);
         }
     };
-    const [localTitle, setLocalTitle] = React.useState('');
-    const [localDescription, setLocalDescription] = React.useState('');
-    const [isComposing, setIsComposing] = React.useState(false);
 
     const { paymentMethods, loading: paymentMethodsLoading, fetchAllPaymentMethods } = useTransaction();
 
@@ -102,6 +98,26 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
             fetchAllPaymentMethods();
         }
     }, [isDialogOpen]);
+
+    // Handle add to waitlist - placeholder function
+    const handleAddToWaitlist = async (conferenceId?: string) => {
+        if (!conferenceId || !accessToken) {
+            toast.error('Vui lòng đăng nhập để sử dụng tính năng này');
+            return;
+        }
+
+        try {
+            // TODO: Implement actual API call
+            // const response = await addToWaitlistApi(conferenceId);
+
+            // For now, just show success message
+            toast.success('Đã thêm vào danh sách chờ thành công!');
+            console.log('Adding to waitlist for conference:', conferenceId);
+        } catch (error) {
+            toast.error('Có lỗi xảy ra, vui lòng thử lại');
+            console.error('Add to waitlist error:', error);
+        }
+    };
 
     return (
         <div className="relative max-w-6xl mx-auto px-4 py-8 md:py-16">
@@ -207,23 +223,47 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                                         return now >= startDate && now <= endDate;
                                     });
 
+                                    // Check for future phases
+                                    const futurePhases = ticket.pricePhases?.filter((phase) => {
+                                        const startDate = new Date(phase.startDate || "");
+                                        return startDate > now;
+                                    }).sort((a, b) => new Date(a.startDate || "").getTime() - new Date(b.startDate || "").getTime());
+
+                                    const nextPhase = futurePhases && futurePhases.length > 0 ? futurePhases[0] : null;
+
+                                    // Check if current phase is sold out
+                                    const currentPhaseSoldOut = currentPhase && currentPhase.availableSlot === 0;
+
+                                    // Check if this is the last phase (no future phases)
+                                    const isLastPhase = !nextPhase;
+
+                                    // Check if ticket is completely sold out (no current and no future phases with available slots)
+                                    const isTicketSoldOut = (!currentPhase || currentPhase.availableSlot === 0) &&
+                                        (!futurePhases || futurePhases.every(phase => phase.availableSlot === 0));
+
                                     const hasDiscount =
                                         currentPrice < (ticket.ticketPrice ?? 0) &&
                                         currentPhase?.applyPercent !== undefined;
 
+                                    const isDisabled = currentPhaseSoldOut || isTicketSoldOut;
+
                                     return (
                                         <label
                                             key={ticket.conferencePriceId}
-                                            className={`block rounded-xl p-4 border cursor-pointer transition-all ${selectedTicket?.conferencePriceId === ticket.conferencePriceId
-                                                ? "bg-coral-500/30 border-coral-400"
-                                                : "bg-white/10 border-white/20 hover:bg-white/20"
+                                            className={`block rounded-xl p-4 border transition-all ${isDisabled
+                                                ? "bg-gray-500/20 border-gray-400/30 cursor-not-allowed opacity-60"
+                                                : selectedTicket?.conferencePriceId === ticket.conferencePriceId
+                                                    ? "bg-coral-500/30 border-coral-400 cursor-pointer"
+                                                    : "bg-white/10 border-white/20 hover:bg-white/20 cursor-pointer"
                                                 }`}
                                             onClick={() => {
-                                                setSelectedTicket(ticket);
-                                                if (ticket.isAuthor) {
-                                                    setShowAuthorForm(true);
-                                                } else {
-                                                    setShowAuthorForm(false);
+                                                if (!isDisabled) {
+                                                    setSelectedTicket(ticket);
+                                                    if (ticket.isAuthor) {
+                                                        setShowAuthorForm(true);
+                                                    } else {
+                                                        setShowAuthorForm(false);
+                                                    }
                                                 }
                                             }}
                                         >
@@ -288,7 +328,7 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
 
                                                 <p>
                                                     <span className="font-medium text-coral-200">Số lượng:</span>{" "}
-                                                    {ticket.availableSlot} / {ticket.totalSlot}
+                                                    {currentPhase?.availableSlot ?? 'N/A'} / {currentPhase?.totalSlot ?? 'N/A'}
                                                 </p>
 
                                                 {currentPhase?.startDate && (
@@ -299,10 +339,66 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                                                     </p>
                                                 )}
                                             </div>
+
+                                            {/* Status messages */}
+                                            {currentPhaseSoldOut && !isLastPhase && nextPhase && (
+                                                <div className="mt-3 p-2 bg-yellow-500/20 border border-yellow-400/40 rounded-lg">
+                                                    <p className="text-xs text-yellow-200">
+                                                        Giai đoạn hiện tại đã hết vé, vui lòng chờ giai đoạn tiếp theo từ{" "}
+                                                        {formatDate(nextPhase.startDate)} - {formatDate(nextPhase.endDate)}
+                                                    </p>
+                                                </div>
+                                            )}
+
+                                            {isTicketSoldOut && isLastPhase && (
+                                                <div className="mt-3 p-2 bg-red-500/20 border border-red-400/40 rounded-lg">
+                                                    <p className="text-xs text-red-200">
+                                                        Vé đã bán hết
+                                                    </p>
+                                                </div>
+                                            )}
                                         </label>
                                     );
                                 })}
                             </div>
+
+                            {/* Author ticket waitlist logic */}
+                            {(() => {
+                                // Check if all author tickets are sold out with no future phases
+                                const authorTickets = (conference.conferencePrices || []).filter(ticket => ticket.isAuthor);
+                                const allAuthorTicketsSoldOut = authorTickets.length > 0 && authorTickets.every(ticket => {
+                                    const now = new Date();
+                                    const currentPhase = ticket.pricePhases?.find((phase) => {
+                                        const startDate = new Date(phase.startDate || "");
+                                        const endDate = new Date(phase.endDate || "");
+                                        return now >= startDate && now <= endDate;
+                                    });
+
+                                    const futurePhases = ticket.pricePhases?.filter((phase) => {
+                                        const startDate = new Date(phase.startDate || "");
+                                        return startDate > now;
+                                    });
+
+                                    const currentPhaseAvailable = (currentPhase?.availableSlot ?? 0) > 0;
+                                    const futurePhaseAvailable = futurePhases?.some(phase => (phase.availableSlot ?? 0) > 0);
+
+                                    return !currentPhaseAvailable && !futurePhaseAvailable;
+                                });
+
+                                return allAuthorTicketsSoldOut && (
+                                    <div className="mt-4 p-4 bg-orange-500/20 border border-orange-400/40 rounded-xl">
+                                        <p className="text-sm text-orange-200 mb-3">
+                                            Loại vé cho tác giả hiện đang hết, bạn vui lòng xác nhận thêm vào danh sách chờ để nhận được thông báo khi vé mở lại, hoặc đăng ký với tư cách thính giả.
+                                        </p>
+                                        <button
+                                            onClick={() => handleAddToWaitlist(conference.conferenceId)}
+                                            className="w-full px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors"
+                                        >
+                                            Thêm vào danh sách chờ
+                                        </button>
+                                    </div>
+                                );
+                            })()}
 
                             {selectedTicket && (
                                 <div className="mt-4 flex-shrink-0">
@@ -384,7 +480,7 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                                                     />
 
                                                     {/* Dropdown Content */}
-                                                    <div className="absolute top-full left-0 right-0 mt-2 z-20 
+                                                    <div className="absolute bottom-full left-0 right-0 mt-2 z-20 
                                       bg-gray-900/95 backdrop-blur-xl rounded-xl 
                                       border border-indigo-400/30 shadow-2xl shadow-indigo-500/20
                                       overflow-hidden animate-slideDown">
@@ -523,7 +619,7 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                                 </button>
                                 <button
                                     onClick={handlePurchaseTicket}
-                                    disabled={!selectedTicket || paymentLoading ||
+                                    disabled={!selectedTicket || paymentLoading || !selectedPaymentMethod ||
                                         (selectedTicket?.isAuthor && (!authorInfo.title.trim() || !authorInfo.description.trim()))}
                                     className="px-5 py-2 rounded-lg bg-coral-500 hover:bg-coral-600 
                      disabled:opacity-50 disabled:cursor-not-allowed transition text-sm font-medium"

@@ -74,7 +74,7 @@ export const endpoint = {
     APPROVE_CONFERENCE: (conferenceId: string) => `/Conference/approve-conference/${conferenceId}`,
 
     //STATUS
-    LIST_ALL_CONF_STATUS:"/ConferenceStatus/get-all-conference-statuses",
+    LIST_ALL_CONF_STATUS: "/ConferenceStatus/get-all-conference-statuses",
     UPDATE_OWN_STATUS: "/Conference/Update-own-conference-Status",
 
 
@@ -105,7 +105,7 @@ export const endpoint = {
     UPDATE_SESSION: (sessionId: string) => `/ConferenceStep/sessions/${sessionId}`,
     UPDATE_SPEAKER: (sessionId: string) => `/ConferenceStep/sessions/${sessionId}/speaker`,
     UPDATE_POLICY: (policyId: string) => `/ConferenceStep/policies/${policyId}`,
-    UPDATE_REFUND_POLICY: (refundPolicyId: string) => `/ConferenceStep/refund-policies/${refundPolicyId}`,  
+    UPDATE_REFUND_POLICY: (refundPolicyId: string) => `/ConferenceStep/refund-policies/${refundPolicyId}`,
     UPDATE_MEDIA: (mediaId: string) => `/ConferenceStep/media/${mediaId}`,
     UPDATE_SPONSOR: (sponsorId: string) => `/ConferenceStep/sponsors/${sponsorId}`,
 
@@ -128,8 +128,8 @@ export const endpoint = {
   },
 
   TRANSACTION: {
-    CREATE_TECH_PAYMENT: "/payment/pay-tech-with-momo",
-    CREATE_RESEARCH_PAPER_PAYMENT: "/payment/pay-research-paper-with-momo",
+    CREATE_TECH_PAYMENT: "/payment/pay-tech",
+    CREATE_RESEARCH_PAPER_PAYMENT: "/payment/pay-research",
     GET_OWN_TRANSACTION: "/payment/get-own-transaction",
   },
 

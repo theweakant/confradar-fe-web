@@ -106,9 +106,9 @@ const ConferenceDetail = () => {
       let response;
 
       if (selectedTicket.isAuthor) {
-        response = await purchaseResearchPaper({ conferencePriceId: selectedTicket.conferencePriceId, title: authorInfo.title, description: authorInfo.description });
+        response = await purchaseResearchPaper({ conferencePriceId: selectedTicket.conferencePriceId, title: authorInfo.title, description: authorInfo.description, paymentMethodId: selectedPaymentMethod });
       } else {
-        response = await purchaseTechTicket({ conferencePriceId: selectedTicket.conferencePriceId });
+        response = await purchaseTechTicket({ conferencePriceId: selectedTicket.conferencePriceId, paymentMethodId: selectedPaymentMethod });
       }
 
       if (response?.data) {

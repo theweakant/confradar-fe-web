@@ -1,11 +1,13 @@
 export interface CreateTechPaymentRequest {
     conferencePriceId: string;
+    paymentMethodId: string;
 }
 
 export interface CreatePaperPaymentRequest {
     conferencePriceId: string;
     title: string;
     description?: string;
+    paymentMethodId: string;
 }
 
 export interface Transaction {
