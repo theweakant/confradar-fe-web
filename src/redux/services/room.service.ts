@@ -35,13 +35,13 @@ export const roomApi = createApi({
       invalidatesTags: ["Room"],
     }),
 
-    deleteRoom: builder.mutation<ApiResponse<string>, string>({
-      query: (id) => ({
-        url: `${endpoint.ROOM.DELETE}/${id}`,
-        method: "DELETE",
-      }),
-      invalidatesTags: ["Room"],
-    }),
+    // deleteRoom: builder.mutation<ApiResponse<string>, string>({
+    //   query: (id) => ({
+    //     url: `${endpoint.ROOM.DELETE}/${id}`,
+    //     method: "DELETE",
+    //   }),
+    //   invalidatesTags: ["Room"],
+    // }),
   }),
 });
 
@@ -49,5 +49,5 @@ export const {
   useGetAllRoomsQuery,
   useCreateRoomMutation,
   useUpdateRoomMutation,
-  useDeleteRoomMutation,
+  // useDeleteRoomMutation,
 } = roomApi;

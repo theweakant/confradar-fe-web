@@ -20,9 +20,9 @@ import {
 import type { ElementType } from "react"
 import { useDispatch } from "react-redux"
 import { logout } from "@/redux/slices/auth.slice"
-import { persistor } from "@/redux/store" 
+import { persistor } from "@/redux/store"
 import { toast } from "sonner"
-import { ROLES } from "@/constants/roles" 
+import { ROLES } from "@/constants/roles"
 
 
 interface WorkspaceSidebarProps {
@@ -50,8 +50,8 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
       { label: "Tổng quan", href: "/workspace/organizer", icon: LayoutDashboard },
       { label: "Hội nghị", href: "/workspace/organizer/manage-conference", icon: Calendar },
       { label: "Bài báo", href: "/workspace/organizer/manage-paper", icon: FileText },
-      { label: "Người tham gia", href: "/workspace/organizer/manage-user", icon: Users },
-      { label: "Quản lí phản biện", href: "/workspace/organizer/manage-reviewer", icon: Users },
+      { label: "Quản lý tài khoản đối tác", href: "/workspace/organizer/manage-user", icon: Users },
+      { label: "Quản lí tài khoản Reviewer", href: "/workspace/organizer/manage-reviewer", icon: Users },
       { label: "Yêu cầu", href: "/workspace/organizer/manage-request", icon: Building2 },
     ],
     [ROLES.COLLABORATOR]: [
@@ -152,8 +152,8 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
                 key={item.href}
                 href={item.href}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${active
-                    ? "bg-blue-50 text-blue-600 font-medium"
-                    : "text-gray-700 hover:bg-gray-100"
+                  ? "bg-blue-50 text-blue-600 font-medium"
+                  : "text-gray-700 hover:bg-gray-100"
                   }`}
               >
                 <Icon size={20} />
