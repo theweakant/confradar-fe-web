@@ -25,8 +25,8 @@ import {
 import { ApiResponse } from "@/types/api.type";
 
 interface Conference {
-  conferenceId: string;
-  conferenceStatusId: string;
+  conferenceId?: string;
+  conferenceStatusId?: string;
   conferenceStatusName?: string;
   [key: string]: any;
 }
@@ -65,7 +65,6 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
 
   const normalizedCurrentStatus = normalizeStatus(currentStatus);
 
-    // Hàm trả về class màu text cho trạng thái
     const getStatusColor = (status: string): string => {
     const normalized = normalizeStatus(status);
 
@@ -84,7 +83,6 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
         return "text-gray-600 bg-gray-100 border border-gray-300";
     }
     };
-
 
 
   const availableStatuses = useMemo<string[]>(() => {
@@ -112,6 +110,11 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
     if (!newStatus) return toast.error("Vui lòng chọn trạng thái mới");
 
     try {
+       if (!conference?.conferenceId) {
+        toast.error("Không tìm thấy mã hội thảo.");
+        return;
+        } 
+
       const res: ApiResponse = await updateStatus({
         confid: conference.conferenceId,
         newStatus,
