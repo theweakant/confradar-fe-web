@@ -10,6 +10,8 @@ interface RevisionPhaseProps {
 const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper }) => {
     const { handleSubmitPaperRevision, handleSubmitPaperRevisionResponse, loading } = usePaperCustomer();
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
     const [feedbackResponses, setFeedbackResponses] = useState<{ [key: string]: string }>({});
     const [activeSubmissionId, setActiveSubmissionId] = useState<string | null>(null);
 
@@ -27,19 +29,23 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
     };
 
     const handleSubmitNewSubmission = async () => {
-        if (!selectedFile || !paperId) {
-            alert("Vui lòng chọn file revision và đảm bảo có Paper ID");
+        if (!selectedFile || !paperId || !title.trim() || !description.trim()) {
+            alert("Vui lòng chọn file revision, nhập title, description và đảm bảo có Paper ID");
             return;
         }
 
         try {
             await handleSubmitPaperRevision({
                 revisionPaperFile: selectedFile,
-                paperId
+                paperId,
+                title: title.trim(),
+                description: description.trim()
             });
 
             alert("Nộp revision paper thành công!");
             setSelectedFile(null);
+            setTitle("");
+            setDescription("");
             window.location.reload();
         } catch (error: any) {
             let errorMessage = "Có lỗi xảy ra khi nộp revision paper";
@@ -158,6 +164,32 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        Tiêu đề
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={title}
+                                        onChange={(e) => setTitle(e.target.value)}
+                                        placeholder="Nhập tiêu đề bài báo"
+                                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        Mô tả
+                                    </label>
+                                    <textarea
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        placeholder="Nhập mô tả bài báo"
+                                        rows={3}
+                                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
                                         Chọn file revision paper
                                     </label>
                                     <input
@@ -174,7 +206,7 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
                                 </div>
                                 <button
                                     onClick={handleSubmitNewSubmission}
-                                    disabled={!selectedFile || loading}
+                                    disabled={!selectedFile || !title.trim() || !description.trim() || loading}
                                     className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white py-2 px-4 rounded-lg font-medium transition-colors"
                                 >
                                     {loading ? 'Đang nộp...' : 'Nộp Submission'}

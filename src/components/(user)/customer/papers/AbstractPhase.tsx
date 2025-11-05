@@ -18,6 +18,8 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
     const [selectedCoauthors, setSelectedCoauthors] = useState<AvailableCustomerResponse[]>([]);
     const [availableCustomers, setAvailableCustomers] = useState<AvailableCustomerResponse[]>([]);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
     const [isLoadingCustomers, setIsLoadingCustomers] = useState(false);
     const [customersError, setCustomersError] = useState<string | null>(null);
 
@@ -66,8 +68,8 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
     };
 
     const handleSubmitAbstractForm = async () => {
-        if (!selectedFile || !paperId) {
-            alert("Vui lòng chọn file abstract và đảm bảo có Paper ID");
+        if (!selectedFile || !paperId || !title.trim() || !description.trim()) {
+            alert("Vui lòng chọn file abstract, nhập title, description và đảm bảo có Paper ID");
             return;
         }
 
@@ -76,12 +78,16 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
             await handleSubmitAbstract({
                 abstractFile: selectedFile,
                 paperId,
+                title: title.trim(),
+                description: description.trim(),
                 coAuthorId: coAuthorIds
             });
 
             alert("Nộp abstract thành công!");
             // Reset form
             setSelectedFile(null);
+            setTitle("");
+            setDescription("");
             setSelectedCoauthors([]);
         } catch (error: any) {
             let errorMessage = "Có lỗi xảy ra khi nộp abstract";
@@ -137,31 +143,49 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
                 </p>
             )}
 
-            <div className="bg-gray-800 border border-gray-700 rounded-xl p-5">
-                <label className="block text-sm font-medium mb-2">Tải lên tệp abstract (.pdf)</label>
-                <input
-                    type="file"
-                    accept="application/pdf"
-                    onChange={handleFileChange}
-                    disabled={isSubmitted} // ✅
-                    className="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 
-    file:rounded-lg file:border-0 file:text-sm file:font-semibold
-    file:bg-blue-600 file:text-white hover:file:bg-blue-700
-    disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-                {/* <input
-                    type="file"
-                    accept="application/pdf"
-                    onChange={handleFileChange}
-                    className="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 
-          file:rounded-lg file:border-0 file:text-sm file:font-semibold
-          file:bg-blue-600 file:text-white hover:file:bg-blue-700"
-                /> */}
-                {selectedFile && (
-                    <p className="text-green-400 text-sm mt-2">
-                        Đã chọn: {selectedFile.name}
-                    </p>
-                )}
+            <div className="bg-gray-800 border border-gray-700 rounded-xl p-5 space-y-4">
+                <div>
+                    <label className="block text-sm font-medium mb-2">Tiêu đề</label>
+                    <input
+                        type="text"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        disabled={isSubmitted}
+                        placeholder="Nhập tiêu đề bài báo"
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium mb-2">Mô tả</label>
+                    <textarea
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        disabled={isSubmitted}
+                        placeholder="Nhập mô tả bài báo"
+                        rows={3}
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed resize-none"
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium mb-2">Tải lên tệp abstract (.pdf)</label>
+                    <input
+                        type="file"
+                        accept="application/pdf"
+                        onChange={handleFileChange}
+                        disabled={isSubmitted}
+                        className="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 
+        file:rounded-lg file:border-0 file:text-sm file:font-semibold
+        file:bg-blue-600 file:text-white hover:file:bg-blue-700
+        disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
+                    {selectedFile && (
+                        <p className="text-green-400 text-sm mt-2">
+                            Đã chọn: {selectedFile.name}
+                        </p>
+                    )}
+                </div>
             </div>
 
             <div className="bg-gray-800 border border-gray-700 rounded-xl p-5">
@@ -220,7 +244,7 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
             <div className="flex justify-end">
                 <button
                     onClick={handleSubmitAbstractForm}
-                    disabled={isSubmitted || !selectedFile || !paperId || submitLoading} // ✅
+                    disabled={isSubmitted || !selectedFile || !paperId || !title.trim() || !description.trim() || submitLoading}
                     className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition"
                 >
                     {isSubmitted ? "Đã nộp Abstract" : submitLoading ? "Đang nộp..." : "Nộp Abstract"}

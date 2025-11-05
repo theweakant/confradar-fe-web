@@ -1,7 +1,7 @@
 import { useCreatePaymentForResearchPaperMutation, useCreatePaymentForTechMutation, useGetAllPaymentMethodsQuery, useLazyGetAllPaymentMethodsQuery, useLazyGetOwnTransactionQuery } from "@/redux/services/transaction.service";
 import { parseApiError } from "@/redux/utils/api";
 import { ApiResponse } from "@/types/api.type";
-import { CreatePaperPaymentRequest, CreateTechPaymentRequest, PaymentMethod } from "@/types/transaction.type";
+import { CreatePaperPaymentRequest, CreateTechPaymentRequest, GeneralPaymentResultResponse, PaymentMethod } from "@/types/transaction.type";
 
 export const useTransaction = () => {
     const [
@@ -29,7 +29,7 @@ export const useTransaction = () => {
     const transactionsError = parseApiError<string>(transactionsRawError);
     const paymentMethodsError = parseApiError<string>(error || lazyError);
 
-    const purchaseTechTicket = async (request: CreateTechPaymentRequest) => {
+    const purchaseTechTicket = async (request: CreateTechPaymentRequest): Promise<ApiResponse<GeneralPaymentResultResponse>> => {
         try {
             const result = await createTechPayment(request).unwrap();
             return result;
@@ -38,7 +38,7 @@ export const useTransaction = () => {
         }
     };
 
-    const purchaseResearchPaper = async (request: CreatePaperPaymentRequest): Promise<ApiResponse<string>> => {
+    const purchaseResearchPaper = async (request: CreatePaperPaymentRequest): Promise<ApiResponse<GeneralPaymentResultResponse>> => {
         try {
             const result = await createResearchPayment(request).unwrap();
             return result;

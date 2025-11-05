@@ -111,8 +111,8 @@ const ConferenceDetail = () => {
         response = await purchaseTechTicket({ conferencePriceId: selectedTicket.conferencePriceId, paymentMethodId: selectedPaymentMethod });
       }
 
-      if (response?.data) {
-        window.location.href = response.data;
+      if (response?.data.checkOutUrl) {
+        window.location.href = response.data.checkOutUrl;
       } else {
         alert("Không nhận được đường dẫn thanh toán.");
       }

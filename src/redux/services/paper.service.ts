@@ -255,6 +255,8 @@ export const paperApi = createApi({
         const formData = new FormData();
         formData.append("abstractFile", body.abstractFile);
         formData.append("paperId", body.paperId);
+        formData.append("title", body.title);
+        formData.append("description", body.description);
         body.coAuthorId.forEach((id) => {
           formData.append("coAuthorId", id);
         });
@@ -283,6 +285,8 @@ export const paperApi = createApi({
         const formData = new FormData();
         formData.append("fullPaperFile", body.fullPaperFile);
         formData.append("paperId", body.paperId);
+        formData.append("title", body.title);
+        formData.append("description", body.description);
 
         return {
           url: endpoint.PAPER.SUBMIT_FULLPAPER,
@@ -301,6 +305,8 @@ export const paperApi = createApi({
         const formData = new FormData();
         formData.append("revisionPaperFile", body.revisionPaperFile);
         formData.append("paperId", body.paperId);
+        formData.append("title", body.title);
+        formData.append("description", body.description);
 
         return {
           url: endpoint.PAPER.SUBMIT_PAPER_REVISION,
@@ -328,6 +334,8 @@ export const paperApi = createApi({
         const formData = new FormData();
         formData.append("cameraReadyFile", body.cameraReadyFile);
         formData.append("paperId", body.paperId);
+        formData.append("title", body.title);
+        formData.append("description", body.description);
 
         return {
           url: endpoint.PAPER.SUBMIT_CAMERA_READY,

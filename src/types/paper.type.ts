@@ -1,7 +1,7 @@
 //paper.type.ts
 
 export interface Paper {
-paperId:string;
+  paperId: string;
 }
 
 
@@ -126,7 +126,7 @@ export interface RevisionPaperA {
 
 
 export interface FullPaperA {
-  fullPaperId: string;  
+  fullPaperId: string;
   reviewStatusId: string;
   reviewStatusName: string;
   fullPaperUrl: string;
@@ -147,7 +147,7 @@ export interface SubmitFullPaperReviewRequest {
   note: string;
   feedbackToAuthor: string;
   reviewStatus: string;
-  feedbackMaterialFile?: File | null; 
+  feedbackMaterialFile?: File | null;
 }
 
 //--------------------------------------------------------
@@ -212,8 +212,10 @@ export interface SubmitPaperRevisionFeedbackRequest {
 //CUSTOMER PAPER TYPE
 export interface PaperCustomer {
   paperId: string;
+  title?: string;
+  description?: string;
 
-  presenterId?: string;
+  // presenterId?: string;
   fullPaperId?: string;
   revisionPaperId?: string;
   cameraReadyId?: string;
@@ -250,9 +252,9 @@ export interface Abstract {
 }
 
 export interface FullPaper {
-  fullPaperId: string;  
+  fullPaperId: string;
 
-reviewStatusId?: string | null;
+  reviewStatusId?: string | null;
   fileUrl?: string | null;
 }
 
@@ -310,6 +312,8 @@ export interface CameraReady {
 export interface CreateAbstractRequest {
   abstractFile: File;
   paperId: string;
+  title: string;
+  description: string;
   coAuthorId: string[];
 }
 
@@ -323,11 +327,15 @@ export interface AvailableCustomerResponse {
 export interface CreateFullPaperRequest {
   fullPaperFile: File;
   paperId: string;
+  title: string;
+  description: string;
 }
 
 export interface CreateRevisionPaperSubmissionRequest {
   revisionPaperFile: File;
   paperId: string;
+  title: string;
+  description: string;
 }
 
 export interface CreateRevisionPaperSubmissionResponse {
@@ -344,4 +352,6 @@ export interface RevisionPaperSubmissionFeedbackResponse {
 export interface CreateCameraReadyRequest {
   paperId: string;
   cameraReadyFile: File;
+  title: string;
+  description: string;
 }
