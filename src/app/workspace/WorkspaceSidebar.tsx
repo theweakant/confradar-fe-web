@@ -50,6 +50,7 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
       { label: "Tổng quan", href: "/workspace/organizer", icon: LayoutDashboard },
       { label: "Hội nghị", href: "/workspace/organizer/manage-conference", icon: Calendar },
       { label: "Bài báo", href: "/workspace/organizer/manage-paper", icon: FileText },
+      { label: "Địa điểm", href: "/workspace/organizer/manage-accommodation", icon: Home },
       { label: "Quản lý tài khoản đối tác", href: "/workspace/organizer/manage-user", icon: Users },
       { label: "Quản lí tài khoản Reviewer", href: "/workspace/organizer/manage-reviewer", icon: Users },
       { label: "Yêu cầu", href: "/workspace/organizer/manage-request", icon: Building2 },
