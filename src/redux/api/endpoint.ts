@@ -32,7 +32,7 @@ export const endpoint = {
     CREATE: "/Room",
     UPDATE: "/Room",
     DELETE: "/Room",
-    DETAIL: "/api/room",
+    DETAIL: "/room",
   },
 
   CATEGORY: {

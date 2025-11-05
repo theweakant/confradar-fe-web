@@ -86,7 +86,7 @@ export default function ManageRoom() {
   const filteredDestinations = destinations.filter((destination: Destination) => {
     const matchesSearch =
       destination.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      destination.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      // destination.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
       destination.district.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesSearch;
   });
