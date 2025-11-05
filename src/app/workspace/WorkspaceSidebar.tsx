@@ -84,10 +84,10 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
     [ROLES.EXTERNAL_REVIEWER]: { name: "Đánh giá ngoài", color: "bg-orange-500", icon: GraduationCap },
   }
 
-  const roleMenu = roleMenus[normalizedRole]
+  const roleMenu = roleMenus[normalizedRole]??[]
 
-  const info = roleInfo[normalizedRole]
-  const RoleIcon = info.icon
+const info = roleInfo[normalizedRole] ?? { name: "Không xác định", color: "bg-gray-400", icon: Shield }
+const RoleIcon = info.icon
 
   const handleLogout = async () => {
     try {

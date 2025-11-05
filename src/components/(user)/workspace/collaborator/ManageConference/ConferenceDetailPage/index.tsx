@@ -11,13 +11,19 @@ import {
   Image as ImageIcon,
   FileText,
   BookOpen,
+  ChevronDown
 } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { formatDate, formatCurrency } from "@/helper/format";
 import { useRouter, useParams } from "next/navigation"; 
+
+import { UpdateConferenceStatus } from "@/components/molecules/Status/UpdateConferenceStatus"; 
+
 
 import { useGetTechnicalConferenceDetailInternalQuery } from "@/redux/services/conference.service";
 import { useGetResearchConferenceDetailInternalQuery } from "@/redux/services/conference.service";
@@ -32,34 +38,36 @@ export default function ConferenceDetailPage() {
   const conferenceId = id as string;
   const [activeTab, setActiveTab] = useState("information");
   const [conferenceType, setConferenceType] = useState<"technical" | "research" | null>(null);
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const { data: techData, isLoading: techLoading, error: techError } = 
+    useGetTechnicalConferenceDetailInternalQuery(conferenceId);
 
-  // Fetch both types
-  const { data: techData, isLoading: techLoading, error: techError } = useGetTechnicalConferenceDetailInternalQuery(conferenceId, {
-    skip: conferenceType === "research"
-  });
-  
-  const { data: researchData, isLoading: researchLoading, error: researchError } = useGetResearchConferenceDetailInternalQuery(conferenceId, {
-    skip: conferenceType === "technical"
-  });
+  const { data: researchData, isLoading: researchLoading, error: researchError } = 
+    useGetResearchConferenceDetailInternalQuery(conferenceId);
 
   const { data: categoriesData } = useGetAllCategoriesQuery();
   const { data: statusesData } = useGetAllConferenceStatusesQuery();
   const { data: citiesData } = useGetAllCitiesQuery();
 
-  // Determine conference type and data
-  useEffect(() => {
-    if (techData?.data && !techError) {
-      setConferenceType("technical");
-    } else if (researchData?.data && !researchError) {
+useEffect(() => {
+  if (researchData?.data && !researchError) {
+    if (researchData.data.isResearchConference === true) {
       setConferenceType("research");
-    } else if (techError && !researchLoading) {
-      // If tech fails, try research
-      setConferenceType("research");
-    } else if (researchError && !techLoading) {
-      // If research fails, try technical
-      setConferenceType("technical");
+      return;
     }
-  }, [techData, researchData, techError, researchError, techLoading, researchLoading]);
+  }
+  
+  if (techData?.data && !techError) {
+    if (techData.data.isResearchConference === true) {
+      setConferenceType("research");
+      return;
+    } else {
+      setConferenceType("technical");
+      return;
+    }
+  }
+  // ... fallback logic
+}, [techData, researchData, techError, researchError]);
 
   const conference = conferenceType === "technical" ? techData?.data : researchData?.data;
   const isLoading = conferenceType === null || (conferenceType === "technical" ? techLoading : researchLoading);
@@ -74,8 +82,8 @@ export default function ConferenceDetailPage() {
     { id: "price", label: "Giá vé", icon: DollarSign },
     { id: "refund-policy", label: "Hoàn trả & Chính sách", icon: ShieldCheck },
     { id: "session", label: "Session", icon: Calendar },
-    ...(conferenceType === "research" ? [
-      { id: "research-materials", label: "Tài iệu nghiên cứu", icon: FileText },
+    ...(conference?.isResearchConference === true ? [
+      { id: "research-materials", label: "Tài liệu nghiên cứu", icon: FileText },
       { id: "research-info", label: "Research Info", icon: BookOpen }
     ] : []),
     { id: "sponsors-media", label: "Sponsors & Media", icon: ImageIcon },
@@ -136,9 +144,9 @@ export default function ConferenceDetailPage() {
     );
   }
 
-  const updateRoute = conferenceType === "technical" 
-    ? `/workspace/collaborator/manage-conference/update-tech-conference/${conference.conferenceId}`
-    : `/workspace/collaborator/manage-conference/update-research-conference/${conference.conferenceId}`;
+const updateRoute = conference.isResearchConference === true
+  ? `/workspace/collaborator/manage-conference/update-research-conference/${conference.conferenceId}`
+  : `/workspace/collaborator/manage-conference/update-tech-conference/${conference.conferenceId}`;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -154,14 +162,38 @@ export default function ConferenceDetailPage() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 
-            <div className="absolute top-4 right-4">
-              <Button
-                onClick={() => router.push(updateRoute)}
-                className="bg-white/90 hover:bg-white text-gray-900 backdrop-blur-sm shadow-lg"
-              >
-                Chỉnh sửa
-              </Button>
-            </div>
+
+<div className="absolute top-4 right-4 flex gap-2">
+  {(conference.conferenceStatusId === "Preparing" ||
+    conference.conferenceStatusId === "Pending" ||
+    getCurrentStatusName() === "Preparing" ||
+    getCurrentStatusName() === "Pending") && (
+    <Button
+      onClick={() => router.push(updateRoute)}
+      className="bg-white/90 hover:bg-white text-gray-900 backdrop-blur-sm shadow-lg border border-white/50"
+    >
+      Chỉnh sửa
+    </Button>
+  )}
+
+  <Button
+    variant="outline"
+    onClick={() => setStatusDialogOpen(true)}
+    className="bg-white/90 hover:bg-white text-gray-900 backdrop-blur-sm shadow-lg border border-white/50"
+  >
+    Cập nhật trạng thái
+  </Button>
+
+  <UpdateConferenceStatus
+    open={statusDialogOpen}
+    onClose={() => setStatusDialogOpen(false)}
+    conference={{
+      ...conference,
+      conferenceStatusId: conference.conferenceStatusId,
+    }}
+  />
+</div>
+
             
             {/* Title Overlay */}
             <div className="absolute bottom-0 left-0 right-0 p-6">
@@ -187,9 +219,6 @@ export default function ConferenceDetailPage() {
                       Nghiên cứu
                     </span>
                   )}
-                  <span className="px-3 py-1 bg-blue-500/90 text-white rounded-full text-sm font-medium backdrop-blur-sm">
-                    {conference.targetAudience}
-                  </span>
                   <span className="px-3 py-1 bg-orange-500/90 text-white rounded-full text-sm font-medium backdrop-blur-sm">
                     {getCategoryName(conference.conferenceCategoryId ?? "")}
                   </span>
@@ -232,9 +261,6 @@ export default function ConferenceDetailPage() {
                     Nghiên cứu
                   </span>
                 )}
-                <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                  {conference.targetAudience}
-                </span>
                 <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">
                   {getCategoryName(conference.conferenceCategoryId ?? "")}
                 </span>
@@ -781,134 +807,157 @@ function RefundPolicyTab({ conference }: any) {
 
 // Session Tab Component
 function SessionTab({ conference, conferenceType }: any) {
-  const sessions = conferenceType === "research" ? conference.researchSessions : conference.sessions;
-  
+  const sessions = conferenceType === "research" ? conference.researchSessions : conference.sessions
+  const [expandedSessions, setExpandedSessions] = useState<Set<string>>(new Set())
+
+  const toggleSession = (sessionId: string) => {
+    const newExpanded = new Set(expandedSessions)
+    if (newExpanded.has(sessionId)) {
+      newExpanded.delete(sessionId)
+    } else {
+      newExpanded.add(sessionId)
+    }
+    setExpandedSessions(newExpanded)
+  }
+
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Conference Sessions</h2>
-      
-      {/* Research Phase for Research Conferences */}
+    <div className="space-y-4 p-4">
       {conferenceType === "research" && conference.researchPhase && (
-        <div className="bg-gradient-to-br from-indigo-50 to-white border-2 border-indigo-200 rounded-xl p-6 mb-6">
-          <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-indigo-600" />
-            Research Conference Phase
+        <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
+          <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-blue-600" />
+            Giai Đoạn Hội Nghị
           </h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-            <InfoField label="Phase ID" value={conference.researchPhase.researchConferencePhaseId} />
-            <InfoField label="Registration Start" value={formatDate(conference.researchPhase.registrationStartDate)} />
-            <InfoField label="Registration End" value={formatDate(conference.researchPhase.registrationEndDate)} />
-            <InfoField label="Full Paper Start" value={formatDate(conference.researchPhase.fullPaperStartDate)} />
-            <InfoField label="Full Paper End" value={formatDate(conference.researchPhase.fullPaperEndDate)} />
-            <InfoField label="Review Start" value={formatDate(conference.researchPhase.reviewStartDate)} />
-            <InfoField label="Review End" value={formatDate(conference.researchPhase.reviewEndDate)} />
-            <InfoField label="Revise Start" value={formatDate(conference.researchPhase.reviseStartDate)} />
-            <InfoField label="Revise End" value={formatDate(conference.researchPhase.reviseEndDate)} />
-            <InfoField label="Camera Ready Start" value={formatDate(conference.researchPhase.cameraReadyStartDate)} />
-            <InfoField label="Camera Ready End" value={formatDate(conference.researchPhase.cameraReadyEndDate)} />
-          </div>
 
-          <div className="flex gap-4 mb-4">
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              conference.researchPhase.isWaitlist ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'
-            }`}>
-              {conference.researchPhase.isWaitlist ? '✓' : '✗'} Waitlist
-            </span>
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              conference.researchPhase.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-            }`}>
-              {conference.researchPhase.isActive ? '✓' : '✗'} Active
-            </span>
-          </div>
-
-          {/* Revision Round Deadlines */}
-          {conference.researchPhase.revisionRoundDeadlines && conference.researchPhase.revisionRoundDeadlines.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-indigo-200">
-              <h4 className="font-semibold text-gray-900 mb-3">Revision Round Deadlines</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {conference.researchPhase.revisionRoundDeadlines.map((deadline: any) => (
-                  <div key={deadline.revisionRoundDeadlineId} className="bg-white border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded text-xs font-bold">
-                        Round {deadline.roundNumber}
-                      </span>
-                    </div>
-                    <InfoField label="Deadline ID" value={deadline.revisionRoundDeadlineId} />
-                    <InfoField label="End Date" value={deadline.endDate ? formatDate(deadline.endDate) : 'Not set'} />
-                  </div>
-                ))}
-              </div>
+          {/* Main Phase Timeline */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+            <InfoField label="Đăng ký" value={formatDate(conference.researchPhase.registrationStartDate)} />
+            <InfoField label="Nộp bài" value={formatDate(conference.researchPhase.fullPaperStartDate)} />
+            <InfoField label="Đánh giá" value={formatDate(conference.researchPhase.reviewStartDate)} />
+            <InfoField label="Chỉnh sửa" value={formatDate(conference.researchPhase.reviseStartDate)} />
+            <InfoField label="Camera Ready" value={formatDate(conference.researchPhase.cameraReadyStartDate)} />
+            <div className="flex gap-2 items-center">
+              <span
+                className={`px-2 py-1 rounded text-xs font-medium ${
+                  conference.researchPhase.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
+                }`}
+              >
+                {conference.researchPhase.isActive ? "✓ Đang diễn ra" : "✗ Không hoạt động"}
+              </span>
             </div>
-          )}
+          </div>
+
+          {conference.researchPhase.revisionRoundDeadlines &&
+            conference.researchPhase.revisionRoundDeadlines.length > 0 && (
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="revision-rounds" className="border border-blue-200">
+                  <AccordionTrigger className="text-sm font-semibold text-gray-900 py-2 px-3 hover:bg-blue-100">
+                    Các Vòng Chỉnh Sửa ({conference.researchPhase.revisionRoundDeadlines.length})
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-3">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {conference.researchPhase.revisionRoundDeadlines.map((deadline: any) => (
+                        <div
+                          key={deadline.revisionRoundDeadlineId}
+                          className="bg-white border border-blue-100 rounded p-2"
+                        >
+                          <div className="text-xs font-bold text-blue-700 mb-1">Vòng {deadline.roundNumber}</div>
+                          <div className="text-xs text-gray-700">
+                            {deadline.endDate ? formatDate(deadline.endDate) : "Chưa xác định"}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            )}
         </div>
       )}
 
-      {/* Sessions List */}
-      {sessions && sessions.length > 0 ? (
-        <div className="space-y-4">
-          {sessions.map((session: any, index: number) => (
-            <div key={session.conferenceSessionId || index} className="bg-gradient-to-br from-purple-50 to-white border-2 border-purple-200 rounded-xl p-6">
-              <div className="flex items-start justify-between mb-4">
+      <div className="space-y-2">
+        <h2 className="text-lg font-bold text-gray-900 mb-3">Lịch Các Phiên Họp</h2>
+        {sessions && sessions.length > 0 ? (
+          sessions.map((session: any, index: number) => (
+            <div
+              key={session.conferenceSessionId || index}
+              className="border border-gray-200 rounded-lg overflow-hidden bg-white hover:shadow-md transition-shadow"
+            >
+              {/* Session Header - Clickable */}
+              <button
+                onClick={() => toggleSession(session.conferenceSessionId || index.toString())}
+                className="w-full text-left p-3 hover:bg-gray-50 flex items-center justify-between group"
+              >
                 <div className="flex-1">
-                  <h3 className="font-bold text-gray-900 text-lg mb-2">{session.title}</h3>
+                  <h3 className="font-semibold text-gray-900 group-hover:text-blue-600">{session.title}</h3>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {formatDate(session.date)} • {session.startTime} - {session.endTime}
+                  </div>
+                </div>
+                <ChevronDown
+                  className={`w-5 h-5 text-gray-400 transition-transform ${expandedSessions.has(session.conferenceSessionId || index.toString()) ? "rotate-180" : ""}`}
+                />
+              </button>
+
+              {/* Session Details - Collapsed/Expanded */}
+              {expandedSessions.has(session.conferenceSessionId || index.toString()) && (
+                <div className="border-t border-gray-200 p-3 bg-gray-50 space-y-3">
                   {session.description && (
-                    <p className="text-gray-700 text-sm mb-4">{session.description}</p>
+                    <div>
+                      <p className="text-sm text-gray-700 italic">{session.description}</p>
+                    </div>
+                  )}
+
+                  {/* Basic Info Grid */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                    <InfoField label="ID Phiên" value={session.conferenceSessionId} />
+                    <InfoField label="Phòng" value={session.roomId} />
+                    <InfoField label="ID Hội Nghị" value={session.conferenceId} />
+                  </div>
+
+                  {/* Room Info */}
+                  {session.room && (
+                    <div className="pt-2 border-t border-gray-300">
+                      <h4 className="text-xs font-semibold text-gray-900 mb-2">Thông Tin Phòng</h4>
+                      <div className="grid grid-cols-2 gap-2 text-xs bg-white p-2 rounded border border-gray-200">
+                        <InfoField label="Tên Phòng" value={session.room.displayName} />
+                        <InfoField label="Số Phòng" value={session.room.number} />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Session Media */}
+                  {session.sessionMedia && session.sessionMedia.length > 0 && (
+                    <div className="pt-2 border-t border-gray-300">
+                      <h4 className="text-xs font-semibold text-gray-900 mb-2">Tài Liệu Phiên Họp</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        {session.sessionMedia.map((media: any, idx: number) => (
+                          <div key={idx} className="relative h-24 rounded overflow-hidden border border-gray-300">
+                            <Image
+                              src={
+                                media.mediaUrl?.startsWith("http")
+                                  ? media.mediaUrl
+                                  : `https://minio-api.confradar.io.vn/${media.mediaUrl}`
+                              }
+                              alt={`Tài liệu ${idx + 1}`}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                <InfoField label="Session ID" value={session.conferenceSessionId} />
-                <InfoField label="Date" value={formatDate(session.date)} />
-                <InfoField label="Start Time" value={session.startTime} />
-                <InfoField label="End Time" value={session.endTime} />
-                <InfoField label="Conference ID" value={session.conferenceId} />
-                <InfoField label="Room ID" value={session.roomId} />
-              </div>
-
-              {/* Room Info */}
-              {session.room && (
-                <div className="mt-4 pt-4 border-t border-purple-200">
-                  <h4 className="font-semibold text-gray-900 mb-3">Room Information</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white rounded-lg p-4">
-                    <InfoField label="Room ID" value={session.room.roomId} />
-                    <InfoField label="Room Number" value={session.room.number} />
-                    <InfoField label="Display Name" value={session.room.displayName} />
-                    <InfoField label="Destination ID" value={session.room.destinationId} />
-                  </div>
-                </div>
-              )}
-
-              {/* Session Media */}
-              {session.sessionMedia && session.sessionMedia.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-purple-200">
-                  <h4 className="font-semibold text-gray-900 mb-3">Session Media</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {session.sessionMedia.map((media: any, idx: number) => (
-                      <div key={idx} className="relative h-40 rounded-lg overflow-hidden">
-                        <Image
-                          src={media.mediaUrl?.startsWith('http') 
-                            ? media.mediaUrl 
-                            : `https://minio-api.confradar.io.vn/${media.mediaUrl}`
-                          }
-                          alt={`Session media ${idx + 1}`}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
               )}
             </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-gray-500 text-center py-8">No sessions available</p>
-      )}
+          ))
+        ) : (
+          <p className="text-gray-500 text-center py-4 text-sm">Không có phiên họp nào</p>
+        )}
+      </div>
     </div>
-  );
+  )
 }
 
 // Sponsors & Media Tab Component
@@ -1137,36 +1186,122 @@ function ResearchInfoTab({ conference }: any) {
         </div>
       )}
 
-      {/* Conference Timelines */}
-      {conference.conferenceTimelines && conference.conferenceTimelines.length > 0 && (
+      {/* Research Phase Timeline */}
+      {conference.researchPhase ? (
         <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
           <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <Calendar className="w-5 h-5 text-teal-600" />
-            Conference Timelines
+            Research Phase Timeline
           </h3>
-          <div className="space-y-3">
-            {conference.conferenceTimelines.map((timeline: any, index: number) => (
-              <div key={index} className="bg-gradient-to-br from-teal-50 to-white border-2 border-teal-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <InfoField label="Timeline Name" value={timeline.timelineName} />
-                  <InfoField label="Date" value={formatDate(timeline.date)} />
-                  {timeline.description && (
-                    <InfoField label="Description" value={timeline.description} className="md:col-span-2" />
-                  )}
-                </div>
+          <div className="space-y-4">
+            {/* Registration Phase */}
+            <div className="bg-gradient-to-br from-blue-50 to-white border-2 border-blue-200 rounded-lg p-4">
+              <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                <span className="px-2 py-1 bg-blue-600 text-white rounded text-xs font-bold">1</span>
+                Registration Phase
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <InfoField label="Start Date" value={formatDate(conference.researchPhase.registrationStartDate)} />
+                <InfoField label="End Date" value={formatDate(conference.researchPhase.registrationEndDate)} />
               </div>
-            ))}
+            </div>
+
+            {/* Full Paper Submission Phase */}
+            <div className="bg-gradient-to-br from-purple-50 to-white border-2 border-purple-200 rounded-lg p-4">
+              <h4 className="font-semibold text-purple-900 mb-3 flex items-center gap-2">
+                <span className="px-2 py-1 bg-purple-600 text-white rounded text-xs font-bold">2</span>
+                Full Paper Submission Phase
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <InfoField label="Start Date" value={formatDate(conference.researchPhase.fullPaperStartDate)} />
+                <InfoField label="End Date" value={formatDate(conference.researchPhase.fullPaperEndDate)} />
+              </div>
+            </div>
+
+            {/* Review Phase */}
+            <div className="bg-gradient-to-br from-orange-50 to-white border-2 border-orange-200 rounded-lg p-4">
+              <h4 className="font-semibold text-orange-900 mb-3 flex items-center gap-2">
+                <span className="px-2 py-1 bg-orange-600 text-white rounded text-xs font-bold">3</span>
+                Review Phase
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <InfoField label="Start Date" value={formatDate(conference.researchPhase.reviewStartDate)} />
+                <InfoField label="End Date" value={formatDate(conference.researchPhase.reviewEndDate)} />
+              </div>
+            </div>
+
+            {/* Revision Phase */}
+            <div className="bg-gradient-to-br from-yellow-50 to-white border-2 border-yellow-200 rounded-lg p-4">
+              <h4 className="font-semibold text-yellow-900 mb-3 flex items-center gap-2">
+                <span className="px-2 py-1 bg-yellow-600 text-white rounded text-xs font-bold">4</span>
+                Revision Phase
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <InfoField label="Start Date" value={formatDate(conference.researchPhase.reviseStartDate)} />
+                <InfoField label="End Date" value={formatDate(conference.researchPhase.reviseEndDate)} />
+              </div>
+              
+              {/* Revision Round Deadlines */}
+              {conference.researchPhase.revisionRoundDeadlines && conference.researchPhase.revisionRoundDeadlines.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-yellow-300">
+                  <p className="text-xs font-semibold text-yellow-900 mb-2">Revision Rounds:</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {conference.researchPhase.revisionRoundDeadlines.map((deadline: any) => (
+                      <div key={deadline.revisionRoundDeadlineId} className="bg-white border border-yellow-200 rounded p-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-yellow-900">Round {deadline.roundNumber}</span>
+                          <span className="text-xs text-gray-600">
+                            {deadline.endDate ? formatDate(deadline.endDate) : 'Not set'}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Camera Ready Phase */}
+            <div className="bg-gradient-to-br from-green-50 to-white border-2 border-green-200 rounded-lg p-4">
+              <h4 className="font-semibold text-green-900 mb-3 flex items-center gap-2">
+                <span className="px-2 py-1 bg-green-600 text-white rounded text-xs font-bold">5</span>
+                Camera Ready Phase
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <InfoField label="Start Date" value={formatDate(conference.researchPhase.cameraReadyStartDate)} />
+                <InfoField label="End Date" value={formatDate(conference.researchPhase.cameraReadyEndDate)} />
+              </div>
+            </div>
+
+            {/* Phase Status */}
+            <div className="bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 rounded-lg p-4">
+              <h4 className="font-semibold text-gray-900 mb-3">Phase Status</h4>
+              <div className="flex gap-3">
+                <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${
+                  conference.researchPhase.isWaitlist 
+                    ? 'bg-yellow-100 text-yellow-700 border border-yellow-300' 
+                    : 'bg-gray-100 text-gray-600 border border-gray-300'
+                }`}>
+                  {conference.researchPhase.isWaitlist ? '✓' : '✗'} Waitlist Mode
+                </span>
+                <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${
+                  conference.researchPhase.isActive 
+                    ? 'bg-green-100 text-green-700 border border-green-300' 
+                    : 'bg-red-100 text-red-700 border border-red-300'
+                }`}>
+                  {conference.researchPhase.isActive ? '✓' : '✗'} Active
+                </span>
+              </div>
+            </div>
           </div>
         </div>
-      )}
-
-      {(!conference.conferenceTimelines || conference.conferenceTimelines.length === 0) && (
+      ) : (
         <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
           <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <Calendar className="w-5 h-5 text-teal-600" />
-            Conference Timelines
+            Research Phase Timeline
           </h3>
-          <p className="text-gray-500 text-center py-4 bg-gray-50 rounded-lg">No timelines available</p>
+          <p className="text-gray-500 text-center py-4 bg-gray-50 rounded-lg">No research phase data available</p>
         </div>
       )}
     </div>
