@@ -137,7 +137,7 @@ export default function TransactionHistory() {
                                         {formatDate(txn.createdAt)}
                                     </div>
                                     <h2 className="text-xl sm:text-2xl font-bold text-white leading-tight">
-                                        Giao dịch #{txn.transactionId?.slice(-8) || 'N/A'}
+                                        Giao dịch {txn.transactionId || 'N/A'}
                                     </h2>
                                     <div className="flex items-center gap-3 text-sm text-gray-400">
                                         <span>Số tiền: <span className="font-semibold text-purple-400">{formatAmount(txn.amount, txn.currency)}</span></span>

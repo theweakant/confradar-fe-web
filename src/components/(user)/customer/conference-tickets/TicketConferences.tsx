@@ -182,7 +182,7 @@ export default function TicketConferences() {
 
                       {/* Title */}
                       <h2 className="text-xl sm:text-2xl font-bold text-white leading-tight">
-                        Vé hội nghị #{ticket.ticketId.slice(-8)}
+                        Vé hội nghị {ticket.ticketId}
                       </h2>
 
                       {/* Ticket Info */}
