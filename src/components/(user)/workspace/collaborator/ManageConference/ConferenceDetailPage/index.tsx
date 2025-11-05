@@ -34,32 +34,35 @@ export default function ConferenceDetailPage() {
   const [conferenceType, setConferenceType] = useState<"technical" | "research" | null>(null);
 
   // Fetch both types
-  const { data: techData, isLoading: techLoading, error: techError } = useGetTechnicalConferenceDetailInternalQuery(conferenceId, {
-    skip: conferenceType === "research"
-  });
-  
-  const { data: researchData, isLoading: researchLoading, error: researchError } = useGetResearchConferenceDetailInternalQuery(conferenceId, {
-    skip: conferenceType === "technical"
-  });
+const { data: techData, isLoading: techLoading, error: techError } = 
+  useGetTechnicalConferenceDetailInternalQuery(conferenceId);
+
+const { data: researchData, isLoading: researchLoading, error: researchError } = 
+  useGetResearchConferenceDetailInternalQuery(conferenceId);
 
   const { data: categoriesData } = useGetAllCategoriesQuery();
   const { data: statusesData } = useGetAllConferenceStatusesQuery();
   const { data: citiesData } = useGetAllCitiesQuery();
 
-  // Determine conference type and data
-  useEffect(() => {
-    if (techData?.data && !techError) {
-      setConferenceType("technical");
-    } else if (researchData?.data && !researchError) {
+useEffect(() => {
+  if (researchData?.data && !researchError) {
+    if (researchData.data.isResearchConference === true) {
       setConferenceType("research");
-    } else if (techError && !researchLoading) {
-      // If tech fails, try research
-      setConferenceType("research");
-    } else if (researchError && !techLoading) {
-      // If research fails, try technical
-      setConferenceType("technical");
+      return;
     }
-  }, [techData, researchData, techError, researchError, techLoading, researchLoading]);
+  }
+  
+  if (techData?.data && !techError) {
+    if (techData.data.isResearchConference === true) {
+      setConferenceType("research");
+      return;
+    } else {
+      setConferenceType("technical");
+      return;
+    }
+  }
+  // ... fallback logic
+}, [techData, researchData, techError, researchError]);
 
   const conference = conferenceType === "technical" ? techData?.data : researchData?.data;
   const isLoading = conferenceType === null || (conferenceType === "technical" ? techLoading : researchLoading);
@@ -74,8 +77,8 @@ export default function ConferenceDetailPage() {
     { id: "price", label: "Giá vé", icon: DollarSign },
     { id: "refund-policy", label: "Hoàn trả & Chính sách", icon: ShieldCheck },
     { id: "session", label: "Session", icon: Calendar },
-    ...(conferenceType === "research" ? [
-      { id: "research-materials", label: "Tài iệu nghiên cứu", icon: FileText },
+    ...(conference?.isResearchConference === true ? [
+      { id: "research-materials", label: "Tài liệu nghiên cứu", icon: FileText },
       { id: "research-info", label: "Research Info", icon: BookOpen }
     ] : []),
     { id: "sponsors-media", label: "Sponsors & Media", icon: ImageIcon },
@@ -136,9 +139,9 @@ export default function ConferenceDetailPage() {
     );
   }
 
-  const updateRoute = conferenceType === "technical" 
-    ? `/workspace/collaborator/manage-conference/update-tech-conference/${conference.conferenceId}`
-    : `/workspace/collaborator/manage-conference/update-research-conference/${conference.conferenceId}`;
+const updateRoute = conference.isResearchConference === true
+  ? `/workspace/collaborator/manage-conference/update-research-conference/${conference.conferenceId}`
+  : `/workspace/collaborator/manage-conference/update-tech-conference/${conference.conferenceId}`;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1137,36 +1140,122 @@ function ResearchInfoTab({ conference }: any) {
         </div>
       )}
 
-      {/* Conference Timelines */}
-      {conference.conferenceTimelines && conference.conferenceTimelines.length > 0 && (
+      {/* Research Phase Timeline */}
+      {conference.researchPhase ? (
         <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
           <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <Calendar className="w-5 h-5 text-teal-600" />
-            Conference Timelines
+            Research Phase Timeline
           </h3>
-          <div className="space-y-3">
-            {conference.conferenceTimelines.map((timeline: any, index: number) => (
-              <div key={index} className="bg-gradient-to-br from-teal-50 to-white border-2 border-teal-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <InfoField label="Timeline Name" value={timeline.timelineName} />
-                  <InfoField label="Date" value={formatDate(timeline.date)} />
-                  {timeline.description && (
-                    <InfoField label="Description" value={timeline.description} className="md:col-span-2" />
-                  )}
-                </div>
+          <div className="space-y-4">
+            {/* Registration Phase */}
+            <div className="bg-gradient-to-br from-blue-50 to-white border-2 border-blue-200 rounded-lg p-4">
+              <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                <span className="px-2 py-1 bg-blue-600 text-white rounded text-xs font-bold">1</span>
+                Registration Phase
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <InfoField label="Start Date" value={formatDate(conference.researchPhase.registrationStartDate)} />
+                <InfoField label="End Date" value={formatDate(conference.researchPhase.registrationEndDate)} />
               </div>
-            ))}
+            </div>
+
+            {/* Full Paper Submission Phase */}
+            <div className="bg-gradient-to-br from-purple-50 to-white border-2 border-purple-200 rounded-lg p-4">
+              <h4 className="font-semibold text-purple-900 mb-3 flex items-center gap-2">
+                <span className="px-2 py-1 bg-purple-600 text-white rounded text-xs font-bold">2</span>
+                Full Paper Submission Phase
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <InfoField label="Start Date" value={formatDate(conference.researchPhase.fullPaperStartDate)} />
+                <InfoField label="End Date" value={formatDate(conference.researchPhase.fullPaperEndDate)} />
+              </div>
+            </div>
+
+            {/* Review Phase */}
+            <div className="bg-gradient-to-br from-orange-50 to-white border-2 border-orange-200 rounded-lg p-4">
+              <h4 className="font-semibold text-orange-900 mb-3 flex items-center gap-2">
+                <span className="px-2 py-1 bg-orange-600 text-white rounded text-xs font-bold">3</span>
+                Review Phase
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <InfoField label="Start Date" value={formatDate(conference.researchPhase.reviewStartDate)} />
+                <InfoField label="End Date" value={formatDate(conference.researchPhase.reviewEndDate)} />
+              </div>
+            </div>
+
+            {/* Revision Phase */}
+            <div className="bg-gradient-to-br from-yellow-50 to-white border-2 border-yellow-200 rounded-lg p-4">
+              <h4 className="font-semibold text-yellow-900 mb-3 flex items-center gap-2">
+                <span className="px-2 py-1 bg-yellow-600 text-white rounded text-xs font-bold">4</span>
+                Revision Phase
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <InfoField label="Start Date" value={formatDate(conference.researchPhase.reviseStartDate)} />
+                <InfoField label="End Date" value={formatDate(conference.researchPhase.reviseEndDate)} />
+              </div>
+              
+              {/* Revision Round Deadlines */}
+              {conference.researchPhase.revisionRoundDeadlines && conference.researchPhase.revisionRoundDeadlines.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-yellow-300">
+                  <p className="text-xs font-semibold text-yellow-900 mb-2">Revision Rounds:</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {conference.researchPhase.revisionRoundDeadlines.map((deadline: any) => (
+                      <div key={deadline.revisionRoundDeadlineId} className="bg-white border border-yellow-200 rounded p-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-yellow-900">Round {deadline.roundNumber}</span>
+                          <span className="text-xs text-gray-600">
+                            {deadline.endDate ? formatDate(deadline.endDate) : 'Not set'}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Camera Ready Phase */}
+            <div className="bg-gradient-to-br from-green-50 to-white border-2 border-green-200 rounded-lg p-4">
+              <h4 className="font-semibold text-green-900 mb-3 flex items-center gap-2">
+                <span className="px-2 py-1 bg-green-600 text-white rounded text-xs font-bold">5</span>
+                Camera Ready Phase
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <InfoField label="Start Date" value={formatDate(conference.researchPhase.cameraReadyStartDate)} />
+                <InfoField label="End Date" value={formatDate(conference.researchPhase.cameraReadyEndDate)} />
+              </div>
+            </div>
+
+            {/* Phase Status */}
+            <div className="bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 rounded-lg p-4">
+              <h4 className="font-semibold text-gray-900 mb-3">Phase Status</h4>
+              <div className="flex gap-3">
+                <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${
+                  conference.researchPhase.isWaitlist 
+                    ? 'bg-yellow-100 text-yellow-700 border border-yellow-300' 
+                    : 'bg-gray-100 text-gray-600 border border-gray-300'
+                }`}>
+                  {conference.researchPhase.isWaitlist ? '✓' : '✗'} Waitlist Mode
+                </span>
+                <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${
+                  conference.researchPhase.isActive 
+                    ? 'bg-green-100 text-green-700 border border-green-300' 
+                    : 'bg-red-100 text-red-700 border border-red-300'
+                }`}>
+                  {conference.researchPhase.isActive ? '✓' : '✗'} Active
+                </span>
+              </div>
+            </div>
           </div>
         </div>
-      )}
-
-      {(!conference.conferenceTimelines || conference.conferenceTimelines.length === 0) && (
+      ) : (
         <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
           <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <Calendar className="w-5 h-5 text-teal-600" />
-            Conference Timelines
+            Research Phase Timeline
           </h3>
-          <p className="text-gray-500 text-center py-4 bg-gray-50 rounded-lg">No timelines available</p>
+          <p className="text-gray-500 text-center py-4 bg-gray-50 rounded-lg">No research phase data available</p>
         </div>
       )}
     </div>
