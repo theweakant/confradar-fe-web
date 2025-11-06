@@ -4,7 +4,6 @@ import { useState } from "react";
 import {  
   Plus, 
   UserCheck, 
-  UserX,
   Shield
 } from "lucide-react";
 import {
@@ -19,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { ApiError } from "@/types/api.type";
 
 import { SearchFilter } from "@/components/molecules/SearchFilter";
 import { Modal } from "@/components/molecules/Modal";
@@ -101,9 +101,11 @@ export default function ManageUser() {
       toast.success(response.message || "Thêm collaborator thành công!");
       
       setIsFormModalOpen(false);
-      refetch(); // Refresh danh sách
-    } catch (error: any) {
-      toast.error(error?.data?.message || "Thêm collaborator thất bại!");
+      refetch(); 
+    } catch (error: unknown) {
+        const err = error as ApiError;
+        const errorMessage = err?.Message || "Them đối tác thất bại!";
+        toast.error(errorMessage);
     }
   };
 
@@ -118,8 +120,10 @@ export default function ManageUser() {
         toast.success(response.message || "Tạm ngưng tài khoản thành công!");
         setSuspendUserId(null);
         refetch();
-      } catch (error: any) {
-        toast.error(error?.data?.message || "Tạm ngưng tài khoản thất bại!");
+      } catch (error: unknown) {
+        const err = error as ApiError;
+        const errorMessage = err?.Message || "Tạm ngưng tài khoản thất bại";
+        toast.error(errorMessage);
       }
     }
   };
@@ -135,8 +139,10 @@ export default function ManageUser() {
         toast.success(response.message || "Kích hoạt tài khoản thành công!");
         setActivateUserId(null);
         refetch();
-      } catch (error: any) {
-        toast.error(error?.data?.message || "Kích hoạt tài khoản thất bại!");
+      } catch (error: unknown) {
+        const err = error as ApiError;
+        const errorMessage = err?.Message || "Kích hoạt tài khoản thât bại";
+        toast.error(errorMessage);
       }
     }
   };

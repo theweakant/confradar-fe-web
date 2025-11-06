@@ -16,6 +16,7 @@ import {
 } from "@/redux/services/paper.service";
 import { useState } from "react";
 import { toast } from "sonner";
+import { ApiError } from "@/types/api.type";
 
 // Component for Revision Reviews List
 function RevisionReviewsList({ 
@@ -243,8 +244,9 @@ export default function ReviewPaperPage() {
       setNote("");
       setFeedbackToAuthor("");
       setFile(null);
-    } catch (error: any) {
-      const errorMessage = error?.data?.Message || error?.Message || "Lỗi khi gửi đánh giá";
+    } catch (error: unknown) {
+      const err = error as ApiError;
+      const errorMessage = err?.Message || "Lỗi khi gửi đánh giá";
       toast.error(errorMessage);
     }
   };
@@ -277,8 +279,9 @@ export default function ReviewPaperPage() {
         delete updated[submissionId];
         return updated;
       });
-    } catch (error: any) {
-      const errorMessage = error?.data?.Message || error?.Message || "Lỗi khi gửi đánh giá revision";
+    } catch (error: unknown) {
+      const err = error as ApiError;
+      const errorMessage = err?.Message || "Lỗi khi gửi revision review";
       toast.error(errorMessage);
     }
   };
@@ -309,15 +312,20 @@ export default function ReviewPaperPage() {
         ...prev,
         [submissionId]: [],
       }));
-    } catch (error: any) {
-      const errorMessage = error?.data?.Message || error?.message || "Lỗi khi gửi revision feedback";
+    } catch (error: unknown) {
+      const err = error as ApiError;
+      const errorMessage = err?.Message || "Lỗi khi gửi revision feedback";
       toast.error(errorMessage);
     }
   };
 
   // Revision Review helpers
-  const updateRevisionReview = (submissionId: string, field: string, value: any) => {
-    setRevisionReviews(prev => ({
+  const updateRevisionReview = (
+    submissionId: string,
+    field: string,
+    value: string | boolean | File | null
+  ) => {
+    setRevisionReviews((prev) => ({
       ...prev,
       [submissionId]: {
         ...(prev[submissionId] || {
@@ -386,10 +394,11 @@ export default function ReviewPaperPage() {
       }).unwrap();
       toast.success("Cập nhật trạng thái thành công");
       setShowDecisionPopup(false);
-    } catch (error: any) {
-      const errorMessage = error?.data?.Message || error?.Message || "Lỗi khi cập nhật trạng thái";
-      toast.error(errorMessage);
-    }
+    } catch (error: unknown) {
+        const apiError = error as ApiError; 
+        const errorMessage =apiError?.Message ||"Lỗi khi cập nhật trạng thái";
+        toast.error(errorMessage);
+      }
   };
 
   const handleDecideRevisionStatus = async () => {
@@ -402,10 +411,10 @@ export default function ReviewPaperPage() {
       }).unwrap();
       toast.success("Cập nhật trạng thái revision thành công");
       setShowRevisionDecisionPopup(false);
-    } catch (error: any) {
-      const errorMessage = error?.data?.Message || error?.Message || "Lỗi khi cập nhật trạng thái revision";
-      toast.error(errorMessage);
-    }
+      } catch (error: unknown) {
+        const err = error as ApiError;
+        toast.error(err.Message || "Lỗi khi cập nhật trạng thái revision");
+      }
   };
 
   const getStatusIcon = (statusName?: string) => {

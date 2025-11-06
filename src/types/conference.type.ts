@@ -311,6 +311,12 @@ export interface ResearchPhase {
   isWaitlist: boolean;
   isActive: boolean;
   revisionRoundDeadlines: RevisionRoundDeadline[];
+
+  registrationDuration?: number;
+  fullPaperDuration?: number;
+  reviewDuration?: number;
+  reviseDuration?: number;
+  cameraReadyDuration?: number;
 }
 
 export interface ConferenceResearchPhaseData {
@@ -390,8 +396,8 @@ export interface CategoryOption {
 export interface ConferenceStatus {
   conferenceStatusId: string;
   conferenceStatusName: string;
-  conferenceTimelineAfterwardStatuses: any[];
-  conferenceTimelinePreviousStatuses: any[];
+  conferenceTimelineAfterwardStatuses: unknown[];
+  conferenceTimelinePreviousStatuses: unknown[];
 }
 
 
@@ -422,6 +428,7 @@ export interface ConferenceResponse {
   // sponsors?: SponsorResponse[];
   conferencePrices?: ConferencePriceResponse[];
   // sessions?: ConferenceSessionResponse[];
+  createdBy?: string;
 }
 
 export interface TechnicalConferenceDetailResponse {
@@ -449,8 +456,8 @@ export interface TechnicalConferenceDetailResponse {
   sponsors?: SponsorResponse[];
   sessions?: TechnicalConferenceSessionResponse[];
   conferencePrices?: ConferencePriceResponse[];
+  conferenceTimelines?: unknown[]
 
-  conferenceTimelines?: any[]
 }
 
 export interface ResearchConferenceDetailResponse {

@@ -284,16 +284,19 @@ export default function ManageConference() {
           />
         </div>
 
-        <div className="flex justify-end mb-4">
-          <Link href="/workspace/organizer/manage-conference/pending-conference">
-            <Button
-              variant="link"
-              className="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1.5"
-            >
-              Xem hội nghị đang chờ duyệt
-            </Button>
-          </Link>
-        </div>
+
+        {activeTab === "tech" && (
+          <div className="flex justify-end mb-4">
+            <Link href="/workspace/organizer/manage-conference/pending-conference">
+              <Button
+                variant="link"
+                className="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1.5"
+              >
+                Xem hội nghị đang chờ duyệt
+              </Button>
+            </Link>
+          </div>
+        )}
 
         <ConferenceTable
           conferences={filteredConferences}

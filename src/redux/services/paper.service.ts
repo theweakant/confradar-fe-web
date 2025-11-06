@@ -72,7 +72,7 @@ export const paperApi = createApi({
     }),
 
     decideAbstractStatus: builder.mutation<
-      ApiResponse<any>,
+      ApiResponse<unknown>,
       { paperId: string; abstractId: string; globalStatus: string }
     >({
       query: (body) => ({
@@ -84,7 +84,7 @@ export const paperApi = createApi({
     }),
 
     decideCameraReady: builder.mutation<
-      ApiResponse<any>,
+      ApiResponse<unknown>,
       { cameraReadyId: string; globalStatus: string; paperid: string }
     >({
       query: (body) => ({
@@ -96,7 +96,7 @@ export const paperApi = createApi({
     }),
 
     assignPaperToReviewer: builder.mutation<
-      ApiResponse<any>,
+      ApiResponse<unknown>,
       { userId: string; paperId: string; isHeadReviewer: boolean }
     >({
       query: (body) => ({
@@ -117,7 +117,7 @@ export const paperApi = createApi({
     }),
 
     submitFullPaperReview: builder.mutation<
-      ApiResponse<any>,
+      ApiResponse<unknown>,
       SubmitFullPaperReviewRequest
     >({
       query: (body) => {
@@ -149,7 +149,7 @@ export const paperApi = createApi({
     }),
 
     decideFullPaperStatus: builder.mutation<
-      ApiResponse<any>,
+      ApiResponse<unknown>,
       { paperId: string; fullPaperId: string; reviewStatus: string }
     >({
       query: (body) => ({
@@ -161,7 +161,7 @@ export const paperApi = createApi({
     }),
 
     submitPaperRevisionReview: builder.mutation<
-      ApiResponse<any>,
+      ApiResponse<unknown>,
       SubmitPaperRevisionReviewRequest
     >({
       query: (body) => {
@@ -197,7 +197,7 @@ export const paperApi = createApi({
     }),
 
     decideRevisionStatus: builder.mutation<
-      ApiResponse<any>,
+      ApiResponse<unknown>,
       { revisionPaperId: string; paperId: string; globalStatus: string }
     >({
       query: (body) => ({
@@ -209,7 +209,7 @@ export const paperApi = createApi({
     }),
 
     submitPaperRevisionFeedback: builder.mutation<
-      ApiResponse<any>,
+      ApiResponse<unknown>,
       SubmitPaperRevisionFeedbackRequest
     >({
       query: (body) => ({

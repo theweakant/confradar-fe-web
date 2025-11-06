@@ -1,6 +1,6 @@
-
 "use client"
 import { useRouter } from "next/navigation";
+import {X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/molecules/FormInput";
@@ -37,7 +37,6 @@ import type {
   Speaker,
   Policy,
   RefundPolicy, 
-  ConferenceRefundPolicyData, 
   Media,
   Sponsor,
   RoomInfoResponse,
@@ -45,8 +44,8 @@ import type {
 } from "@/types/conference.type";
 import { toast } from "sonner";
 
-
-import {formatDate, formatCurrency} from "@/helper/format"
+import {ImageUpload} from "@/components/atoms/ImageUpload";
+import {formatDate, formatCurrency, formatTimeDate} from "@/helper/format"
 
 const TARGET_OPTIONS = [
   { value: "Học sinh", label: "Học sinh" },
@@ -59,7 +58,7 @@ const TARGET_OPTIONS = [
 export default function CreateConferenceStepPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { conferenceId: reduxConferenceId, conferenceBasicData } = useAppSelector(
+  const { conferenceId: reduxConferenceId } = useAppSelector(
     (state) => state.conferenceStep
   );
 
@@ -95,9 +94,11 @@ export default function CreateConferenceStepPage() {
       label: city.cityName || "N/A",
     })) || [];
 
-  // Loading states
+ 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [basicFormCompleted, setBasicFormCompleted] = useState(false);
+  const [isPhaseModalOpen, setIsPhaseModalOpen] = useState(false);
+  const [isSpeakerModalOpen, setIsSpeakerModalOpen] = useState(false);
 
   // Step 1: Basic Info
   const [basicForm, setBasicForm] = useState<ConferenceBasicForm>({
@@ -214,7 +215,7 @@ useEffect(() => {
 
   // Step 5: Media
   const [mediaList, setMediaList] = useState<Media[]>([]);
-const [newMedia, setNewMedia] = useState<Media>({ mediaFile: null });
+  const [newMedia, setNewMedia] = useState<Media>({ mediaFile: null });
 
 
   // Step 6: Sponsors
@@ -223,6 +224,8 @@ const [newMedia, setNewMedia] = useState<Media>({ mediaFile: null });
     name: "",
     imageFile: null,
   });
+  const [resetSponsorUpload, setResetSponsorUpload] = useState(false);
+
 
 
   // Validate Step 1
@@ -381,16 +384,15 @@ const handleAddPhaseToNewTicket = () => {
     return;
   }
 
-  if (!conferenceBasicData?.ticketSaleStart || !conferenceBasicData?.ticketSaleEnd) {
+  if (!basicForm.ticketSaleStart || !basicForm.ticketSaleEnd) {
     toast.error("Không tìm thấy thông tin thời gian bán vé!");
     return;
   }
 
-  const saleStart = new Date(conferenceBasicData.ticketSaleStart);
-  const saleEnd = new Date(conferenceBasicData.ticketSaleEnd);
+  const saleStart = new Date(basicForm.ticketSaleStart);
+  const saleEnd = new Date(basicForm.ticketSaleEnd);
   const phaseStart = new Date(startDate);
   
-  // Tính endDate của phase
   const phaseEnd = new Date(phaseStart);
   phaseEnd.setDate(phaseStart.getDate() + durationInDays - 1);
 
@@ -456,6 +458,7 @@ const handleAddPhaseToNewTicket = () => {
     totalslot: 0,
   });
   
+  setIsPhaseModalOpen(false); 
   toast.success("Đã thêm giai đoạn!");
 };
 
@@ -517,13 +520,13 @@ const handleAddSession = () => {
     return;
   }
 
-  if (!conferenceBasicData?.startDate || !conferenceBasicData?.endDate) {
+  if (!basicForm.startDate || !basicForm.endDate) {
     toast.error("Không tìm thấy thông tin thời gian sự kiện!");
     return;
   }
 
-  const confStart = new Date(conferenceBasicData.startDate);
-  const confEnd = new Date(conferenceBasicData.endDate);
+  const confStart = new Date(basicForm.startDate);
+  const confEnd = new Date(basicForm.endDate);
   const sessionDate = new Date(newSession.date);
 
   if (sessionDate < confStart || sessionDate > confEnd) {
@@ -583,13 +586,13 @@ const handleAddSession = () => {
     return;
   }
 
-  if (!conferenceBasicData?.startDate) {
+  if (!basicForm.startDate) {
     toast.error("Không tìm thấy thông tin thời gian sự kiện!");
     return;
   }
 
   const deadline = new Date(newRefundPolicy.refundDeadline);
-  const eventStart = new Date(conferenceBasicData.startDate);
+  const eventStart = new Date(basicForm.startDate);
 
   if (deadline >= eventStart) {
     toast.error("Hạn hoàn tiền phải trước ngày bắt đầu sự kiện!");
@@ -614,18 +617,30 @@ const handleAddSession = () => {
   toast.success("Đã thêm chính sách hoàn tiền!");
 };
 
-const handleAddMedia = () => {
-  if (!newMedia.mediaFile) return;
-  setMediaList([...mediaList, newMedia]);
-  setNewMedia({ mediaFile: null });
-};
-
-  const handleAddSponsor = () => {
-    if (!newSponsor.name || !newSponsor.imageFile) return;
-    setSponsors([...sponsors, newSponsor]);
-    setNewSponsor({ name: "", imageFile: null });
+  const handleAddMedia = () => {
+    if (!newMedia.mediaFile) return;
+    setMediaList([...mediaList, newMedia]);
+    setNewMedia({ mediaFile: null });
   };
 
+  const handleAddSponsor = () => {
+  if (!newSponsor.name || !newSponsor.imageFile) {
+    toast.error("Vui lòng nhập tên và chọn logo!");
+    return;
+  }
+    setSponsors([...sponsors, newSponsor]);
+    setNewSponsor({ name: "", imageFile: null });
+      toast.success("Đã thêm nhà tài trợ!");
+
+  };
+
+  const calculatePhaseEndDate = (startDate: string, durationInDays: number): string => {
+    if (!startDate || durationInDays <= 0) return "";
+    const start = new Date(startDate);
+    const end = new Date(start);
+    end.setDate(start.getDate() + durationInDays - 1);
+    return end.toISOString().split("T")[0];
+  };
 
   return (
     <div className="max-w-5xl mx-auto p-6">
@@ -719,37 +734,6 @@ const handleAddMedia = () => {
   </div>
 </div>
 
-          {/* <div className="grid grid-cols-2 gap-4">
-            <FormInput
-              label="Ngày bắt đầu bán vé"
-              type="date"
-              value={basicForm.ticketSaleStart}
-              onChange={(val) => setBasicForm({ ...basicForm, ticketSaleStart: val })}
-              required
-              disabled={basicFormCompleted}
-            />
-            <FormInput
-              label="Số ngày bán vé"
-              type="number"
-              min="1"
-              value={basicForm.ticketSaleDuration}
-              onChange={(val) => setBasicForm({ ...basicForm, ticketSaleDuration: Number(val) })}
-              required
-              placeholder="VD: 30 ngày"
-              disabled={basicFormCompleted}
-            />
-          </div>
-
-          {basicForm.ticketSaleEnd && (
-            <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
-              📅 Ngày kết thúc bán vé: <strong>{new Date(basicForm.ticketSaleEnd).toLocaleDateString('vi-VN')}</strong>
-            </div>
-          )}
-
-          <p className="text-xs text-gray-500 mt-1">
-            💡 Thời gian bán vé phải trước ngày bắt đầu sự kiện
-          </p> */}
-
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormInput
@@ -790,99 +774,73 @@ const handleAddMedia = () => {
                     </div>
                   </div>
 
-{/* Sức chứa + Danh mục */}
-<div className="grid grid-cols-2 gap-4">
-  <FormInput
-    label="Sức chứa"
-    name="totalSlot"
-    type="number"
-    value={basicForm.totalSlot}
-    onChange={(val) => setBasicForm({ ...basicForm, totalSlot: Number(val) })}
-    disabled={basicFormCompleted}
-  />
-  <FormSelect
-    label="Danh mục"
-    name="categoryId"
-    value={basicForm.conferenceCategoryId}
-    onChange={(val) => setBasicForm({ ...basicForm, conferenceCategoryId: val })}
-    options={categoryOptions}
-    required
-    disabled={isCategoriesLoading || basicFormCompleted}
-  />
-</div>
+        {/* Sức chứa + Danh mục */}
+        <div className="grid grid-cols-2 gap-4">
+          <FormInput
+            label="Sức chứa"
+            name="totalSlot"
+            type="number"
+            value={basicForm.totalSlot}
+            onChange={(val) => setBasicForm({ ...basicForm, totalSlot: Number(val) })}
+            disabled={basicFormCompleted}
+          />
+          <FormSelect
+            label="Danh mục"
+            name="categoryId"
+            value={basicForm.conferenceCategoryId}
+            onChange={(val) => setBasicForm({ ...basicForm, conferenceCategoryId: val })}
+            options={categoryOptions}
+            required
+            disabled={isCategoriesLoading || basicFormCompleted}
+          />
+        </div>
 
-{/* Địa chỉ + Thành phố */}
-<div className="grid grid-cols-2 gap-4">
-  <FormInput
-    label="Địa chỉ"
-    name="address"
-    value={basicForm.address}
-    onChange={(val) => setBasicForm({ ...basicForm, address: val })}
-    disabled={basicFormCompleted}
-  />
-  <FormSelect
-    label="Thành phố"
-    name="cityId"
-    value={basicForm.cityId}
-    onChange={(val) => setBasicForm({ ...basicForm, cityId: val })}
-    options={cityOptions}
-    required
-    disabled={isCitiesLoading || basicFormCompleted}
-  />
-</div>
+      {/* Địa chỉ + Thành phố */}
+      <div className="grid grid-cols-2 gap-4">
+        <FormInput
+          label="Địa chỉ"
+          name="address"
+          value={basicForm.address}
+          onChange={(val) => setBasicForm({ ...basicForm, address: val })}
+          disabled={basicFormCompleted}
+        />
+        <FormSelect
+          label="Thành phố"
+          name="cityId"
+          value={basicForm.cityId}
+          onChange={(val) => setBasicForm({ ...basicForm, cityId: val })}
+          options={cityOptions}
+          required
+          disabled={isCitiesLoading || basicFormCompleted}
+        />
+      </div>
 
-{/* Đối tượng mục tiêu - 1/2 width */}
-<div className="grid grid-cols-2 gap-4">
-  <FormSelect
-    label="Đối tượng mục tiêu"
-    value={basicForm.targetAudienceTechnicalConference}
-    onChange={(val) => setBasicForm({ ...basicForm, targetAudienceTechnicalConference: val })}
-    options={TARGET_OPTIONS}
-    disabled={basicFormCompleted}
-  />
-  {basicForm.targetAudienceTechnicalConference === "Khác" && (
-    <FormInput
-      label="Nhập đối tượng khác"
-      value={basicForm.customTarget || ""}
-      onChange={(val) => setBasicForm({ ...basicForm, customTarget: val })}
-      disabled={basicFormCompleted}
-    />
-  )}
-</div>
+        {/* Đối tượng mục tiêu - 1/2 width */}
+        <div className="grid grid-cols-2 gap-4">
+          <FormSelect
+            label="Đối tượng mục tiêu"
+            value={basicForm.targetAudienceTechnicalConference}
+            onChange={(val) => setBasicForm({ ...basicForm, targetAudienceTechnicalConference: val })}
+            options={TARGET_OPTIONS}
+            disabled={basicFormCompleted}
+          />
+          {basicForm.targetAudienceTechnicalConference === "Khác" && (
+            <FormInput
+              label="Nhập đối tượng khác"
+              value={basicForm.customTarget || ""}
+              onChange={(val) => setBasicForm({ ...basicForm, customTarget: val })}
+              disabled={basicFormCompleted}
+            />
+          )}
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">Banner Image (1 ảnh)</label>
-            {basicForm.bannerImageFile && (
-              <div className="relative inline-block mt-2">
-                <img
-                  src={URL.createObjectURL(basicForm.bannerImageFile)}
-                  alt="Preview"
-                  className="h-32 object-cover rounded border"
-                />
-                {!basicFormCompleted && (
-                  <button
-                    type="button"
-                    onClick={() => setBasicForm({ ...basicForm, bannerImageFile: null })}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
-            )}
-            {!basicFormCompleted && (
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) =>
-                  setBasicForm({
-                    ...basicForm,
-                    bannerImageFile: e.target.files?.[0] || null,
-                  })
-                }
-              />
-            )}
-          </div>
+          <ImageUpload
+            label="Banner Image (1 ảnh)"
+            subtext="Dưới 4MB, định dạng PNG hoặc JPG"
+            maxSizeMB={4}
+            height="h-48"
+            onChange={(file) => setBasicForm({ ...basicForm, bannerImageFile: file as File | null })}
+          />
 
           {!basicFormCompleted && (
             <Button
@@ -904,91 +862,91 @@ const handleAddMedia = () => {
           <div className="bg-white border rounded-lg p-6 mb-6">
             <h3 className="text-lg font-semibold mb-4">2. Giá vé</h3>
             
-<div className="border p-4 rounded mb-4">
-  <h4 className="font-medium mb-3 text-blue-600">
-    Danh sách vé ({tickets.length})
-  </h4>
+            <div className="border p-4 rounded mb-4">
+              <h4 className="font-medium mb-3 text-blue-600">
+                Danh sách vé ({tickets.length})
+              </h4>
 
-{tickets.map((t, idx) => (
-  <div
-    key={t.ticketId || idx}
-    className="border rounded-lg p-4 mb-3 bg-white shadow-sm hover:shadow-md transition-all duration-200"
-  >
-    {/* Header */}
-    <div className="flex justify-between items-start mb-3 border-b pb-2">
-      <div className="flex-1">
-        <h3 className="font-semibold text-base text-gray-800">{t.ticketName}</h3>
-        <p className="text-xs text-gray-500 mt-0.5">
-          {formatDate(t.phases?.[0]?.startDate)} -{" "}
-          {formatDate(t.phases?.[t.phases.length - 1]?.endDate)}
-        </p>
-      </div>
-      <div className="text-right">
-        <div className="text-lg font-bold text-blue-600">
-          {formatCurrency(t.ticketPrice)}
-        </div>
-        <div className="text-xs text-gray-500">Số lượng: {t.totalSlot}</div>
-      </div>
-    </div>
-
-    {/* Phases */}
-    {t.phases && t.phases.length > 0 && (
-      <div className="mt-2">
-        <div className="text-xs font-medium text-gray-600 mb-1.5">
-          Giai đoạn giá ({t.phases.length}):
-        </div>
-
-        <div className="grid grid-cols-5 gap-2">
-          {t.phases.map((p, pi) => {
-            const isIncrease = p.applyPercent > 100;
-            const percentDisplay = isIncrease
-              ? `+${p.applyPercent - 100}%`
-              : `-${100 - p.applyPercent}%`;
-
-            return (
+            {tickets.map((t, idx) => (
               <div
-                key={pi}
-                className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-md p-2 border border-gray-200 hover:border-blue-300 transition-colors"
+                key={t.ticketId || idx}
+                className="border rounded-lg p-4 mb-3 bg-white shadow-sm hover:shadow-md transition-all duration-200"
               >
-                <div
-                  className="text-xs font-semibold text-gray-800 mb-1 truncate"
-                  title={p.phaseName}
+                {/* Header */}
+                <div className="flex justify-between items-start mb-3 border-b pb-2">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-base text-gray-800">{t.ticketName}</h3>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {formatDate(t.phases?.[0]?.startDate)} -{" "}
+                      {formatDate(t.phases?.[t.phases.length - 1]?.endDate)}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-blue-600">
+                      {formatCurrency(t.ticketPrice)}
+                    </div>
+                    <div className="text-xs text-gray-500">Số lượng: {t.totalSlot}</div>
+                  </div>
+                </div>
+
+                {/* Phases */}
+                {t.phases && t.phases.length > 0 && (
+                  <div className="mt-2">
+                    <div className="text-xs font-medium text-gray-600 mb-1.5">
+                      Giai đoạn giá ({t.phases.length}):
+                    </div>
+
+                    <div className="grid grid-cols-5 gap-2">
+                      {t.phases.map((p, pi) => {
+                        const isIncrease = p.applyPercent > 100;
+                        const percentDisplay = isIncrease
+                          ? `+${p.applyPercent - 100}%`
+                          : `-${100 - p.applyPercent}%`;
+
+                        return (
+                          <div
+                            key={pi}
+                            className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-md p-2 border border-gray-200 hover:border-blue-300 transition-colors"
+                          >
+                            <div
+                              className="text-xs font-semibold text-gray-800 mb-1 truncate"
+                              title={p.phaseName}
+                            >
+                              {p.phaseName}
+                            </div>
+                            <div className="text-[10px] text-gray-500 mb-1 leading-tight">
+                              {formatDate(p.startDate)} - {formatDate(p.endDate)}
+                            </div>
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-gray-600">Tổng: {p.totalslot}</span>
+                              <span
+                                className={`font-bold ${
+                                  isIncrease ? "text-red-600" : "text-green-600"
+                                }`}
+                              >
+                                {percentDisplay}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Action Button */}
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => setTickets(tickets.filter((_, i) => i !== idx))}
+                  className="w-full bg-red-500 hover:bg-red-600 text-white font-medium text-sm py-1.5 mt-3"
                 >
-                  {p.phaseName}
-                </div>
-                <div className="text-[10px] text-gray-500 mb-1 leading-tight">
-                  {formatDate(p.startDate)} - {formatDate(p.endDate)}
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-600">Tổng: {p.totalslot}</span>
-                  <span
-                    className={`font-bold ${
-                      isIncrease ? "text-red-600" : "text-green-600"
-                    }`}
-                  >
-                    {percentDisplay}
-                  </span>
-                </div>
+                  Xóa vé
+                </Button>
               </div>
-            );
-          })}
-        </div>
-      </div>
-    )}
+            ))}
 
-    {/* Action Button */}
-    <Button
-      size="sm"
-      variant="destructive"
-      onClick={() => setTickets(tickets.filter((_, i) => i !== idx))}
-      className="w-full bg-red-500 hover:bg-red-600 text-white font-medium text-sm py-1.5 mt-3"
-    >
-      Xóa vé
-    </Button>
-  </div>
-))}
-
-</div>
+            </div>
 
 
             <div className="border p-4 rounded">
@@ -1024,167 +982,219 @@ const handleAddMedia = () => {
 
               <div className="mt-4 border-t pt-3">
                 <h5 className="font-medium mb-2 flex items-center gap-2">
-                  Giai đoạn giá cho vé này ({newTicket.phases.length})
-                  {conferenceBasicData?.ticketSaleStart && conferenceBasicData?.ticketSaleEnd && (
+                  Giai đoạn giá ({newTicket.phases.length})
+                  {basicForm.ticketSaleStart && basicForm.ticketSaleEnd && (
                     <span className="text-sm text-blue-600">
-                      ({new Date(conferenceBasicData.ticketSaleStart).toLocaleDateString('vi-VN')} → {new Date(conferenceBasicData.ticketSaleEnd).toLocaleDateString('vi-VN')})
+                      ({new Date(basicForm.ticketSaleStart).toLocaleDateString('vi-VN')} → {new Date(basicForm.ticketSaleEnd).toLocaleDateString('vi-VN')})
                     </span>
                   )}
                 </h5>
                 
-                {newTicket.phases.map((p, idx) => {
-                  const adjustedPrice = newTicket.ticketPrice * (p.applyPercent / 100);
-                  const isIncrease = p.applyPercent > 100;
-                  const percentDisplay = isIncrease 
-                    ? `+${p.applyPercent - 100}%` 
-                    : `-${100 - p.applyPercent}%`;
-                  
-                  return (
-                    <div 
-                      key={idx} 
-                      className="text-sm bg-blue-50 p-2 rounded flex justify-between items-center mb-2"
-                    >
-                      <div>
-                        <span className="font-medium">{p.phaseName}</span> — 
-                        <span className={isIncrease ? 'text-red-600' : 'text-green-600'}>
-                          {percentDisplay}
-                        </span>
-                        <br />
-                        <span className="text-xs text-gray-600">
-                          Giá: {adjustedPrice.toLocaleString()} VND | 
-                          Slot: {p.totalslot} | 
-                          {p.startDate} → {p.endDate}
-                        </span>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleRemovePhaseFromTicket(idx)}
-                        className="text-red-600 hover:text-red-800"
-                      >
-                        ✕
-                      </Button>
+                {newTicket.phases.length > 0 ? (
+                  <div className="mt-2">
+                    <div className="grid grid-cols-3 gap-2">
+                      {newTicket.phases.map((p, idx) => {
+                        const isIncrease = p.applyPercent > 100;
+                        const percentDisplay = isIncrease
+                          ? `+${p.applyPercent - 100}%`
+                          : `-${100 - p.applyPercent}%`;
+                        const adjustedPrice = newTicket.ticketPrice * (p.applyPercent / 100);
+
+                        return (
+                          <div
+                            key={idx}
+                            className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-md p-2 border border-gray-200 relative"
+                          >
+                            <button
+                              type="button"
+                              onClick={() => handleRemovePhaseFromTicket(idx)}
+                              className="absolute top-1 right-1 text-red-500 hover:text-red-700 text-xs font-bold"
+                              title="Xóa giai đoạn"
+                            >
+                              ✕
+                            </button>
+
+                            <div className="text-xs font-semibold text-gray-800 mb-1 truncate" title={p.phaseName}>
+                              {p.phaseName}
+                            </div>
+                            <div className="text-[10px] text-gray-500 mb-1 leading-tight">
+                              {formatDate(p.startDate)} - {formatDate(p.endDate)}
+                            </div>
+                            <div className="text-[10px] text-gray-600 mb-1">
+                              Giá: {formatCurrency(adjustedPrice)}
+                            </div>
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-gray-600">SL: {p.totalslot}</span>
+                              <span
+                                className={`font-bold ${
+                                  isIncrease ? "text-red-600" : "text-green-600"
+                                }`}
+                              >
+                                {percentDisplay}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  );
-                })}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 italic">Chưa có giai đoạn nào được thêm.</p>
+                )}
 
-                <div className="mt-3 p-3 bg-gray-50 rounded space-y-2">
-                  <p className="text-sm font-medium text-gray-700">Thêm giai đoạn mới:</p>
-                  
-                  <FormInput
-                    label="Tên giai đoạn"
-                    value={newPhase.phaseName}
-                    onChange={(val) => setNewPhase({ ...newPhase, phaseName: val })}
-                    placeholder="VD: Early Bird, Standard, Late..."
-                  />
-                  
-<div className="space-y-2">
-  <label className="block text-sm font-medium">Điều chỉnh giá</label>
-
-  <div className="flex items-end gap-3">
- {/* Input phần trăm */}
-    <div className="w-24">
-      <FormInput
-        label=""
-        type="number"
-        min="0"
-        max="100"
-        value={newPhase.percentValue}
-        onChange={(val) => setNewPhase({ ...newPhase, percentValue: Number(val) })}
-        placeholder=""
-      />
-    </div>
-    <div className="flex gap-3">
-      <label className="flex items-center gap-2 cursor-pointer">
-        <input
-          type="radio"
-          name="percentType"
-          value="increase"
-          checked={newPhase.percentType === 'increase'}
-          onChange={() => setNewPhase({ ...newPhase, percentType: 'increase' })}
-          className="w-4 h-4"
-        />
-        <span className="text-sm text-red-600 font-medium">Tăng</span>
-      </label>
-      <label className="flex items-center gap-2 cursor-pointer">
-        <input
-          type="radio"
-          name="percentType"
-          value="decrease"
-          checked={newPhase.percentType === 'decrease'}
-          onChange={() => setNewPhase({ ...newPhase, percentType: 'decrease' })}
-          className="w-4 h-4"
-        />
-        <span className="text-sm text-green-600 font-medium">Giảm</span>
-      </label>
-    </div>    
-      {newTicket.ticketPrice > 0 && newPhase.percentValue > 0 && (
-    <div className="text-sm bg-gray-50 p-2 rounded">
- 
-      <strong
-        className={
-          newPhase.percentType === 'increase' ? 'text-red-600' : 'text-green-600'
-        }
-      >
-        {(
-          newTicket.ticketPrice *
-          (newPhase.percentType === 'increase'
-            ? (100 + newPhase.percentValue) / 100
-            : (100 - newPhase.percentValue) / 100)
-        ).toLocaleString()}{' '}
-        VND
-      </strong>
-      {' '}({newPhase.percentType === 'increase' ? '+' : '-'}
-      {newPhase.percentValue}%)
-    </div>
-  )}
-  </div>
-
-
-</div>
-
-                  
-<div className="grid grid-cols-3 gap-3">
-  <div>
-    <FormInput
-      label="Ngày bắt đầu "
-      type="date"
-      value={newPhase.startDate}
-      onChange={(val) => setNewPhase({ ...newPhase, startDate: val })}
-    />
-    <p className="text-xs text-gray-500 mt-1"></p>
-  </div>
-
-  <FormInput
-    label="Số ngày"
-    type="number"
-    min="1"
-    value={newPhase.durationInDays}
-    onChange={(val) => setNewPhase({ ...newPhase, durationInDays: Number(val) })}
-  />
-
-  <FormInput
-    label="Số lượng vé"
-    type="number"
-    value={newPhase.totalslot}
-    onChange={(val) => setNewPhase({ ...newPhase, totalslot: Number(val) })}
-    placeholder={`Tối đa: ${newTicket.totalSlot - newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0)}`}
-  />
-</div>
-
-                  
-                  <Button 
+                <Button 
                     size="sm" 
-                    onClick={handleAddPhaseToNewTicket}
-                    className="w-full"
+                    onClick={() => setIsPhaseModalOpen(true)}
+                    className="w-full mt-2"
+                    variant="outline"
                   >
-                    + Thêm giai đoạn
-                  </Button>
-                </div>
+                    Thêm giai đoạn giá
+                </Button>
+                  {/* Modal thêm giai đoạn - Đặt sau div border p-4 rounded của "Thêm vé mới" */}
+                  {isPhaseModalOpen && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                      <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-4">
+                          <h3 className="text-lg font-semibold">Thêm giai đoạn giá</h3>
+                          <button
+                            onClick={() => setIsPhaseModalOpen(false)}
+                            className="text-gray-400 hover:text-gray-600"
+                          >
+                            ✕
+                          </button>
+                        </div>
+
+                        <div className="space-y-4">
+                          <FormInput
+                            label="Tên giai đoạn"
+                            value={newPhase.phaseName}
+                            onChange={(val) => setNewPhase({ ...newPhase, phaseName: val })}
+                            placeholder="VD: Early Bird, Standard, Late..."
+                          />
+                          
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium">Điều chỉnh giá</label>
+                            <div className="flex items-end gap-3">
+                              <div className="w-24">
+                                <FormInput
+                                  label=""
+                                  type="number"
+                                  min="0"
+                                  max="100"
+                                  value={newPhase.percentValue}
+                                  onChange={(val) => setNewPhase({ ...newPhase, percentValue: Number(val) })}
+                                  placeholder=""
+                                />
+                              </div>
+                              <div className="flex gap-3">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                  <input
+                                    type="radio"
+                                    name="percentType"
+                                    value="increase"
+                                    checked={newPhase.percentType === 'increase'}
+                                    onChange={() => setNewPhase({ ...newPhase, percentType: 'increase' })}
+                                    className="w-4 h-4"
+                                  />
+                                  <span className="text-sm text-red-600 font-medium">Tăng</span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                  <input
+                                    type="radio"
+                                    name="percentType"
+                                    value="decrease"
+                                    checked={newPhase.percentType === 'decrease'}
+                                    onChange={() => setNewPhase({ ...newPhase, percentType: 'decrease' })}
+                                    className="w-4 h-4"
+                                  />
+                                  <span className="text-sm text-green-600 font-medium">Giảm</span>
+                                </label>
+                              </div>    
+                              {newTicket.ticketPrice > 0 && newPhase.percentValue > 0 && (
+                                <div className="text-sm bg-gray-50 p-2 rounded">
+                                  <strong
+                                    className={
+                                      newPhase.percentType === 'increase' ? 'text-red-600' : 'text-green-600'
+                                    }
+                                  >
+                                    {(
+                                      newTicket.ticketPrice *
+                                      (newPhase.percentType === 'increase'
+                                        ? (100 + newPhase.percentValue) / 100
+                                        : (100 - newPhase.percentValue) / 100)
+                                    ).toLocaleString()}{' '}
+                                    VND
+                                  </strong>
+                                  {' '}({newPhase.percentType === 'increase' ? '+' : '-'}
+                                  {newPhase.percentValue}%)
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-4 gap-3">
+                            <div>
+                              <FormInput
+                                label="Ngày bắt đầu"
+                                type="date"
+                                value={newPhase.startDate}
+                                onChange={(val) => setNewPhase({ ...newPhase, startDate: val })}
+                              />
+                            </div>
+
+                            <FormInput
+                              label="Số ngày"
+                              type="number"
+                              min="1"
+                              value={newPhase.durationInDays}
+                              onChange={(val) => setNewPhase({ ...newPhase, durationInDays: Number(val) })}
+                            />
+
+                            <div>
+                              <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
+                              <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
+                                {newPhase.startDate && newPhase.durationInDays > 0 ? (
+                                  <span className="text-gray-900">
+                                    {new Date(calculatePhaseEndDate(newPhase.startDate, newPhase.durationInDays)).toLocaleDateString('vi-VN')}
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-400">--/--/----</span>
+                                )}
+                              </div>
+                            </div>
+
+                            <FormInput
+                              label="Số lượng vé"
+                              type="number"
+                              value={newPhase.totalslot}
+                              onChange={(val) => setNewPhase({ ...newPhase, totalslot: Number(val) })}
+                              placeholder={`Tối đa: ${newTicket.totalSlot - newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0)}`}
+                            />
+                          </div>
+
+                          <div className="flex gap-3 mt-6">
+                            <Button 
+                              onClick={() => setIsPhaseModalOpen(false)}
+                              variant="outline"
+                              className="flex-1"
+                            >
+                              Hủy
+                            </Button>
+                            <Button 
+                              onClick={handleAddPhaseToNewTicket}
+                              className="flex-1"
+                            >
+                              Thêm giai đoạn
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
               </div>
 
               <Button className="mt-4 w-full" onClick={handleAddTicket}>
-                ✓ Thêm vé vào danh sách
+                Thêm vé
               </Button>
             </div>
           </div>
@@ -1205,53 +1215,63 @@ const handleAddMedia = () => {
                   );
 
                   return (
-                    <div key={idx} className="p-3 bg-gray-50 rounded">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="font-medium">{s.title}</div>
-                          <div className="text-sm text-gray-600 mt-1">
-                            📅 {s.date} | ⏰ {s.startTime} - {s.endTime}
-                          </div>
-                          {room && (
-                            <div className="text-xs text-gray-500 mt-1">
-                              🏢 Phòng: {room.number} - {room.displayName}
-                            </div>
-                          )}
-                          
-                          {s.speaker.length > 0 && (
-                            <div className="mt-2">
-                              <div className="text-sm font-medium text-gray-700">Diễn giả:</div>
-                              <div className="space-y-1 mt-1">
-                                {s.speaker.map((spk, spkIdx) => (
-                                  <div key={spkIdx} className="text-sm text-gray-600 ml-2">
-                                    • {spk.name} {spk.description && `- ${spk.description}`}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setNewSession(s);
-                              setSessions(sessions.filter((_, i) => i !== idx));
-                            }}
-                          >
-                            Sửa
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => setSessions(sessions.filter((_, i) => i !== idx))}
-                          >
-                            Xóa
-                          </Button>
-                        </div>
-                      </div>
+                    <div key={idx} className="p-3 bg-white rounded">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            {sessions.map((s, idx) => (
+              <div
+                key={idx}
+                className="relative bg-white border border-gray-300 rounded-xl p-4 shadow-sm flex flex-col justify-between"
+              >
+                <div>
+                  <div className="font-semibold text-gray-900">{s.title}</div>
+
+                  <div className="text-sm text-gray-600 mt-1">
+                    {formatTimeDate(s.startTime)} - {formatTimeDate(s.endTime)}
+                  </div>
+
+                  {room && (
+                    <div className="text-xs text-gray-500 mt-1">
+                      Phòng: <span className="font-medium">{room.number}</span> - {room.displayName}
+                    </div>
+                  )}
+
+                  {s.speaker.length > 0 && (
+                    <div className="mt-3">
+                      <div className="text-sm font-medium text-gray-800 mb-1">Diễn giả:</div>
+                      <ul className="space-y-1 text-sm text-gray-600">
+                        {s.speaker.map((spk, spkIdx) => (
+                          <li key={spkIdx} className="ml-2">
+                            <span className="font-medium">{spk.name}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex justify-end gap-2 mt-4">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setNewSession(s);
+                      setSessions(sessions.filter((_, i) => i !== idx));
+                    }}
+                  >
+                    Sửa
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => setSessions(sessions.filter((_, i) => i !== idx))}
+                  >
+                    Xóa
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
                     </div>
                   );
                 })
@@ -1259,14 +1279,14 @@ const handleAddMedia = () => {
             </div>
 
             <div className="border p-4 rounded space-y-3">
-            <h4 className="font-medium flex items-center gap-2">
-              Thêm phiên họp mới
-              {conferenceBasicData?.startDate && conferenceBasicData?.endDate && (
-                <span className="text-sm text-green-600">
-                  ({new Date(conferenceBasicData.startDate).toLocaleDateString('vi-VN')} → {new Date(conferenceBasicData.endDate).toLocaleDateString('vi-VN')})
-                </span>
-              )}
-            </h4>                
+              <h4 className="font-medium flex items-center gap-2">
+                Thêm phiên họp mới
+                {basicForm.startDate && basicForm.endDate && (
+                  <span className="text-sm text-green-600">
+                    ({formatDate(basicForm.startDate)} → {formatDate(basicForm.endDate)})
+                  </span>
+                )}
+              </h4>                
               <FormInput
                 label="Tiêu đề"
                 value={newSession.title}
@@ -1280,15 +1300,16 @@ const handleAddMedia = () => {
                 onChange={(val) => setNewSession({ ...newSession, description: val })}
                 rows={2}
               />
-              <FormInput
-                label="Ngày"
-                type="date"
-                value={newSession.date}
-                onChange={(val) => setNewSession({ ...newSession, date: val })}
-                required
-              />
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
+                <FormInput
+                  label="Ngày"
+                  type="date"
+                  value={newSession.date}
+                  onChange={(val) => setNewSession({ ...newSession, date: val })}
+                  required
+                />
+
                 <FormInput
                   label="Thời gian bắt đầu"
                   type="time" 
@@ -1304,6 +1325,7 @@ const handleAddMedia = () => {
                   required
                   disabled={!newSession.date}  
                 />
+
                 <FormInput
                   label="Thời lượng (giờ)"
                   type="number"
@@ -1315,17 +1337,21 @@ const handleAddMedia = () => {
                   required
                 />
               </div>
-                    {newSession.startTime && (
-                <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
-                  ⏰ Thời gian bắt đầu: <strong>{newSession.startTime.replace("T", " ")}</strong>
+
+              {/* Preview time */}
+              {newSession.startTime && newSession.endTime && (
+                <div className="bg-blue-50 p-3 rounded space-y-1">
+                  <div className="text-sm text-gray-700">
+                    <span className="font-medium">Bắt đầu:</span>{" "}
+                    {formatTimeDate(newSession.startTime)}
+
+                  </div>
+                  <div className="text-sm text-gray-700">
+                    <span className="font-medium">Kết thúc:</span>{" "}
+                    {formatTimeDate(newSession.endTime)}
+                  </div>
                 </div>
               )}
-
-              {newSession.endTime && (
-                <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
-                  ⏰ Kết thúc lúc: <strong>{newSession.endTime.replace("T", " ")}</strong>
-                </div>
-              )}        
               
               <FormSelect
                 label="Phòng"
@@ -1337,47 +1363,89 @@ const handleAddMedia = () => {
               />
 
               <div className="border-t pt-3">
-                <h5 className="font-medium mb-2">Diễn giả</h5>
+                <h5 className="font-medium mb-2">Diễn giả ({newSession.speaker.length})</h5>
                 
                 {newSession.speaker.length > 0 && (
                   <div className="space-y-2 mb-3">
-                    {newSession.speaker.map((spk, idx) => (
-                      <div key={idx} className="flex justify-between items-center bg-blue-50 p-2 rounded">
-                        <div className="flex items-center gap-2">
-                          {spk.image && (
-                            <img 
-                              src={spk.image} 
-                              alt={spk.name}
-                              className="w-10 h-10 rounded-full object-cover"
-                            />
-                          )}
-                          <div>
-                            <div className="font-medium text-sm">{spk.name}</div>
-                            {spk.description && (
-                              <div className="text-xs text-gray-600">{spk.description}</div>
-                            )}
-                          </div>
+                      {newSession.speaker.length > 0 && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+                          {newSession.speaker.map((spk, idx) => (
+                            <div
+                              key={idx}
+                              className="relative bg-transparent border-black-900 rounded-xl p-4 flex flex-col items-center text-center shadow-sm"
+                            >
+                              {spk.image && (
+                                <img
+                                  src={
+                                    spk.image instanceof File
+                                      ? URL.createObjectURL(spk.image)
+                                      : spk.image
+                                  }
+                                  alt={spk.name}
+                                  className="w-16 h-16 rounded-full object-cover mb-2 border border-blue-200"
+                                />
+                              )}
+                              <div className="font-medium text-sm text-gray-900">{spk.name}</div>
+                              {spk.description && (
+                                <div className="text-xs text-gray-600 mt-1">{spk.description}</div>
+                              )}
+
+                              {/* Nút xoá */}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setNewSession({
+                                    ...newSession,
+                                    speaker: newSession.speaker.filter((_, i) => i !== idx),
+                                  });
+                                  toast.success("Đã xóa diễn giả!");
+                                }}
+                                className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs "
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ))}
                         </div>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => {
-                            setNewSession({
-                              ...newSession,
-                              speaker: newSession.speaker.filter((_, i) => i !== idx)
-                            });
-                            toast.success("Đã xóa diễn giả!");
-                          }}
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          ✕
-                        </Button>
-                      </div>
-                    ))}
+                      )}
+
                   </div>
                 )}
                 
-                <div className="space-y-2 border p-3 rounded bg-gray-50">                  
+                <Button 
+                  size="sm"
+                  onClick={() => setIsSpeakerModalOpen(true)}
+                  className="w-full"
+                  variant="outline"
+                >
+                  Thêm diễn giả
+                </Button>
+              </div>
+
+              <Button 
+                onClick={handleAddSession}
+                className="w-full mt-4"
+              >
+                Thêm phiên họp
+              </Button>
+            </div>
+          </div>
+
+          {/* Modal thêm diễn giả */}
+          {isSpeakerModalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">Thêm diễn giả</h3>
+                  <button
+                    onClick={() => setIsSpeakerModalOpen(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="space-y-4">
                   <FormInput
                     label="Tên diễn giả"
                     value={newSpeaker.name}
@@ -1393,346 +1461,88 @@ const handleAddMedia = () => {
                     placeholder="Chức vụ, kinh nghiệm..."
                   />
                   
-
-              <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Ảnh diễn giả <span className="text-red-500">*</span>
-                  </label>
-                  
-                  {/* Preview ảnh */}
-                  {newSpeaker.image && (
-                    <div className="mb-2">
-                      <img
-                        src={URL.createObjectURL(newSpeaker.image)}
-                        alt="Preview"
-                        className="h-20 w-20 rounded-full object-cover border"
-                      />
-                    </div>
-                  )}
-                  
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        setNewSpeaker({ ...newSpeaker, image: file });
-                      }
-                    }}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
+                  <ImageUpload
+                    label="Ảnh diễn giả"
+                    subtext="Dưới 4MB, định dạng PNG hoặc JPG"
+                    maxSizeMB={4}
+                    height="h-32"
+                    onChange={(file) => setNewSpeaker({ ...newSpeaker, image: file as File | null })}
                   />
-                </div>
 
-                <Button 
-                  size="sm"
-                  onClick={() => {
-                    if (!newSpeaker.name.trim()) {
-                      toast.error("Vui lòng nhập tên diễn giả!");
-                      return;
-                    }
-                    
-                    if (!newSpeaker.image) {
-                      toast.error("Vui lòng chọn ảnh diễn giả!");
-                      return;
-                    }
-                    
-                    setNewSession({
-                      ...newSession,
-                      speaker: [...(newSession.speaker || []), newSpeaker as Speaker] 
-                    });
-                    
-                    // Reset form
-                    setNewSpeaker({ name: "", description: "", image: null });
-                    toast.success("Đã thêm diễn giả!");
-                  }}
-                  className="w-full mt-2"
-                >
-                  + Thêm diễn giả
-                </Button>
+                  <div className="flex gap-3 mt-6">
+                    <Button 
+                      onClick={() => setIsSpeakerModalOpen(false)}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      Hủy
+                    </Button>
+                    <Button 
+                      onClick={() => {
+                        if (!newSpeaker.name.trim()) {
+                          toast.error("Vui lòng nhập tên diễn giả!");
+                          return;
+                        }
+                        
+                        if (!newSpeaker.image) {
+                          toast.error("Vui lòng chọn ảnh diễn giả!");
+                          return;
+                        }
+                        
+                        setNewSession({
+                          ...newSession,
+                          speaker: [...(newSession.speaker || []), newSpeaker as Speaker] 
+                        });
+                        
+                        // Reset form
+                        setNewSpeaker({ name: "", description: "", image: null });
+                        setIsSpeakerModalOpen(false);
+                        toast.success("Đã thêm diễn giả!");
+                      }}
+                      className="flex-1"
+                    >
+                      Thêm
+                    </Button>
+                  </div>
                 </div>
               </div>
-
-              <Button 
-                onClick={handleAddSession}
-                className="w-full mt-4"
-              >
-                ✓ Thêm phiên họp vào danh sách
-              </Button>
             </div>
-          </div>
+          )}
 
           {/* STEP 4: POLICIES */}
-<div className="bg-white border rounded-lg p-6 mb-6">
-  <h3 className="text-lg font-semibold mb-4">4. Chính sách (Tùy chọn)</h3>
-  
-  {/* Phần 4.1: Chính sách chung */}
-  <div className="mb-6">
-    <h4 className="font-medium text-gray-700 mb-3">4.1. Chính sách chung (Tùy chọn)</h4>
-    
-    <div className="space-y-2 mb-4">
-      {policies.length === 0 ? (
-        <div className="p-3 bg-gray-50 text-gray-600 rounded text-sm">
-          Chưa có chính sách nào. Bạn có thể bỏ qua hoặc thêm chính sách mới bên dưới.
-        </div>
-      ) : (
-        policies.map((p, idx) => (
-          <div key={idx} className="p-3 bg-gray-50 rounded flex justify-between items-center">
-            <div>
-              <div className="font-medium">{p.policyName}</div>
-              <div className="text-sm text-gray-600">{p.description}</div>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  setNewPolicy(p);
-                  setPolicies(policies.filter((_, i) => i !== idx));
-                }}
-              >
-                Sửa
-              </Button>
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => setPolicies(policies.filter((_, i) => i !== idx))}
-              >
-                Xóa
-              </Button>
-            </div>
-          </div>
-        ))
-      )}
-    </div>
-
-    <div className="border p-4 rounded space-y-3">
-      <h5 className="font-medium">Thêm chính sách chung</h5>
-      <FormInput
-        label="Tên chính sách"
-        value={newPolicy.policyName}
-        onChange={(val) => setNewPolicy({ ...newPolicy, policyName: val })}
-      />
-      <FormTextArea
-        label="Mô tả"
-        value={newPolicy.description || ""}
-        onChange={(val) => setNewPolicy({ ...newPolicy, description: val })}
-        rows={3}
-      />
-      <Button onClick={handleAddPolicy}>Thêm chính sách</Button>
-    </div>
-  </div>
-
-  {/* Phần 4.2: Chính sách hoàn tiền */}
-  <div className="border-t pt-6">
-    <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
-      4.2. Chính sách hoàn tiền (Tùy chọn)
-      {conferenceBasicData?.startDate && (
-        <span className="text-sm text-blue-600">
-          (Trước ngày {new Date(conferenceBasicData.startDate).toLocaleDateString('vi-VN')})
-        </span>
-      )}
-    </h4>
-    
-    <div className="space-y-2 mb-4">
-      {refundPolicies.length === 0 ? (
-        <div className="p-3 bg-gray-50 text-gray-600 rounded text-sm">
-          Chưa có chính sách hoàn tiền nào. Bạn có thể bỏ qua hoặc thêm mới bên dưới.
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {refundPolicies
-            .sort((a, b) => a.refundOrder - b.refundOrder)
-            .map((rp, idx) => (
-              <div key={idx} className="p-3 bg-blue-50 rounded flex justify-between items-center">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="bg-blue-600 text-white px-2 py-0.5 rounded text-xs font-medium">
-                      #{rp.refundOrder}
-                    </span>
-                    <span className="font-semibold text-blue-700">
-                      {rp.percentRefund}% hoàn tiền
-                    </span>
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    📅 Trước ngày: <strong>{new Date(rp.refundDeadline).toLocaleDateString('vi-VN')}</strong>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setNewRefundPolicy(rp);
-                      setRefundPolicies(refundPolicies.filter((_, i) => i !== idx));
-                    }}
-                  >
-                    Sửa
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => {
-                      setRefundPolicies(refundPolicies.filter((_, i) => i !== idx));
-                      toast.success("Đã xóa chính sách hoàn tiền!");
-                    }}
-                  >
-                    Xóa
-                  </Button>
-                </div>
-              </div>
-            ))}
-        </div>
-      )}
-    </div>
-
-    <div className="border p-4 rounded space-y-3 bg-gray-50">
-      <h5 className="font-medium">Thêm chính sách hoàn tiền mới</h5>
-      
-      <div className="grid grid-cols-3 gap-3">
-        <FormInput
-          label="Thứ tự"
-          type="number"
-          min="1"
-          value={newRefundPolicy.refundOrder}
-          onChange={(val) => setNewRefundPolicy({ ...newRefundPolicy, refundOrder: Number(val) })}
-          placeholder="1, 2, 3..."
-        />
-        
-        <FormInput
-          label="% hoàn tiền"
-          type="number"
-          min="1"
-          max="100"
-          value={newRefundPolicy.percentRefund}
-          onChange={(val) => setNewRefundPolicy({ ...newRefundPolicy, percentRefund: Number(val) })}
-          placeholder="VD: 80"
-        />
-        
-        <FormInput
-          label="Hạn hoàn tiền"
-          type="date"
-          value={newRefundPolicy.refundDeadline}
-          onChange={(val) => setNewRefundPolicy({ ...newRefundPolicy, refundDeadline: val })}
-        />
-      </div>
-
-      <div className="text-xs text-gray-600 bg-white p-2 rounded">
-        💡 <strong>Ví dụ:</strong> Hoàn 80% nếu hủy trước 7 ngày, 50% nếu hủy trước 3 ngày, 0% nếu hủy trong 24h.
-      </div>
-
-      <Button onClick={handleAddRefundPolicy} className="w-full">
-        + Thêm chính sách hoàn tiền
-      </Button>
-    </div>
-  </div>
-</div>
-
-          {/* STEP 5: MEDIA */}
           <div className="bg-white border rounded-lg p-6 mb-6">
-            <h3 className="text-lg font-semibold mb-4">5. Media (Tùy chọn)</h3>
+            <h3 className="text-lg font-semibold mb-4">4. Chính sách (Tùy chọn)</h3>
             
-            <div className="space-y-2 mb-4">
-              {mediaList.map((m, idx) => (
-                <div key={idx} className="p-3 bg-gray-50 rounded flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                    {m.mediaFile instanceof File ? (
-                      <img
-                        src={URL.createObjectURL(m.mediaFile)}
-                        alt="Media Preview"
-                        className="h-16 w-16 object-cover rounded"
-                      />
-                    ) : typeof m.mediaFile === "string" && m.mediaFile ? (
-                      <img
-                        src={m.mediaFile}
-                        alt="Media"
-                        className="h-16 w-16 object-cover rounded"
-                      />
-                    ) : null}
-                    
-                    <div>
-                      <div className="text-sm">
-                        {m.mediaFile instanceof File
-                          ? m.mediaFile.name
-                          : typeof m.mediaFile === "string"
-                          ? "Ảnh hiện tại"
-                          : "No file"}
-                      </div>
-                    </div>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => setMediaList(mediaList.filter((_, i) => i !== idx))}
-                  >
-                    Xóa
-                  </Button>
-                </div>
-              ))}
+            {/* Phần 4.1: Chính sách chung */}
+            <div className="mb-6">
+              <h4 className="font-medium text-gray-700 mb-3">A. Chính sách chung (Tùy chọn)</h4>
+              
+              <div className="space-y-2 mb-4">
+          {policies.length === 0 ? (
+            <div className="p-4 bg-gray-50 text-gray-600 rounded-lg text-sm border border-gray-200 text-center">
+              Chưa có chính sách nào. Bạn có thể bỏ qua hoặc thêm chính sách mới bên dưới.
             </div>
-
-            <div className="border p-4 rounded space-y-3">
-              <h4 className="font-medium">Thêm media</h4>
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Media File
-                </label>
-                <input
-                  type="file"
-                  onChange={(e) =>
-                    setNewMedia({
-                      ...newMedia,
-                      mediaFile: e.target.files?.[0] || null,
-                    })
-                  }
-                  accept="image/*,video/*"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <Button onClick={handleAddMedia}>Thêm media</Button>
-            </div>
-          </div>
-
-          {/* STEP 6: SPONSORS */}
-          <div className="bg-white border rounded-lg p-6 mb-6">
-            <h3 className="text-lg font-semibold mb-4">6. Nhà tài trợ (Tùy chọn)</h3>
-            
-            <div className="space-y-2 mb-4">
-              {sponsors.map((s, idx) => (
-                <div key={idx} className="p-3 bg-gray-50 rounded flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                    {s.imageFile instanceof File ? (
-                      <img
-                        src={URL.createObjectURL(s.imageFile)}
-                        alt="Sponsor Preview"
-                        className="h-16 w-16 object-cover rounded"
-                      />
-                    ) : typeof s.imageFile === "string" && s.imageFile ? (
-                      <img
-                        src={s.imageFile}
-                        alt={s.name}
-                        className="h-16 w-16 object-cover rounded"
-                      />
-                    ) : null}
-                    
-                    <div>
-                      <div className="font-medium">{s.name}</div>
-                      <div className="text-sm text-gray-600">
-                        {s.imageFile instanceof File
-                          ? s.imageFile.name
-                          : typeof s.imageFile === "string"
-                          ? "Logo hiện tại"
-                          : "No image"}
-                      </div>
-                    </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
+              {policies.map((p, idx) => (
+                <div
+                  key={idx}
+                  className="relative bg-white border border-gray-300 rounded-xl p-4 flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="font-semibold text-gray-900">{p.policyName}</div>
+                    {p.description && (
+                      <div className="text-sm text-gray-600 mt-1">{p.description}</div>
+                    )}
                   </div>
-                  <div className="flex gap-2">
+
+                  <div className="flex justify-end gap-2 mt-4">
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => {
-                        setNewSponsor(s);
-                        setSponsors(sponsors.filter((_, i) => i !== idx));
+                        setNewPolicy(p);
+                        setPolicies(policies.filter((_, i) => i !== idx));
                       }}
                     >
                       Sửa
@@ -1740,7 +1550,7 @@ const handleAddMedia = () => {
                     <Button
                       size="sm"
                       variant="destructive"
-                      onClick={() => setSponsors(sponsors.filter((_, i) => i !== idx))}
+                      onClick={() => setPolicies(policies.filter((_, i) => i !== idx))}
                     >
                       Xóa
                     </Button>
@@ -1748,33 +1558,301 @@ const handleAddMedia = () => {
                 </div>
               ))}
             </div>
+          )}
 
-            <div className="border p-4 rounded space-y-3">
+              </div>
+
+              <div className="border p-4 rounded space-y-3">
+                <h5 className="font-medium">Thêm chính sách chung</h5>
+                <FormInput
+                  label="Tên chính sách"
+                  value={newPolicy.policyName}
+                  onChange={(val) => setNewPolicy({ ...newPolicy, policyName: val })}
+                />
+                <FormTextArea
+                  label="Mô tả"
+                  value={newPolicy.description || ""}
+                  onChange={(val) => setNewPolicy({ ...newPolicy, description: val })}
+                  rows={3}
+                />
+                <Button onClick={handleAddPolicy}>Thêm chính sách</Button>
+              </div>
+            </div>
+
+            {/* Phần 4.2: Chính sách hoàn tiền */}
+            <div className="border-t pt-6">
+              <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
+                B. Chính sách hoàn tiền (Tùy chọn)
+                {basicForm.startDate && (
+                  <span className="text-sm text-blue-600">
+                    (Trước ngày {new Date(basicForm.startDate).toLocaleDateString('vi-VN')})
+                  </span>
+                )}
+              </h4>
+              
+              <div className="space-y-2 mb-4">
+          {refundPolicies.length === 0 ? (
+            <div className="p-4 bg-gray-50 text-gray-600 rounded-lg text-sm border border-gray-200 text-center">
+              Chưa có chính sách hoàn tiền nào. Bạn có thể bỏ qua hoặc thêm mới bên dưới.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-3">
+              {refundPolicies
+                .sort((a, b) => a.refundOrder - b.refundOrder)
+                .map((rp, idx) => (
+                  <div
+                    key={idx}
+                    className="relative bg-white border border-gray-300 rounded-xl p-4 shadow-sm hover:shadow-md transition flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-black px-2 py-0.5 rounded text-xs font-semibold">
+                          #{rp.refundOrder}
+                        </span>
+                        <span className="text-blue-700 font-semibold">
+                          Hoàn trả {rp.percentRefund}%
+                        </span>
+                      </div>
+
+                      <div className="text-sm text-gray-700">
+                        Trước ngày:{" "}
+                        <strong>
+                          {formatDate(rp.refundDeadline)}
+                        </strong>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-2 mt-4">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setNewRefundPolicy(rp);
+                          setRefundPolicies(refundPolicies.filter((_, i) => i !== idx));
+                        }}
+                      >
+                        Sửa
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => {
+                          setRefundPolicies(refundPolicies.filter((_, i) => i !== idx));
+                          toast.success("Đã xóa chính sách hoàn tiền!");
+                        }}
+                      >
+                        Xóa
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
+
+              </div>
+
+              <div className="border p-4 rounded space-y-3 bg-gray-50">
+                <h5 className="font-medium">Thêm chính sách hoàn tiền mới</h5>
+                
+                <div className="grid grid-cols-3 gap-3">
+                  <FormInput
+                    label="Thứ tự"
+                    type="number"
+                    min="1"
+                    value={newRefundPolicy.refundOrder}
+                    onChange={(val) => setNewRefundPolicy({ ...newRefundPolicy, refundOrder: Number(val) })}
+                    placeholder="1, 2, 3..."
+                  />
+                  
+                  <FormInput
+                    label="% Hoàn tiền"
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={newRefundPolicy.percentRefund}
+                    onChange={(val) => setNewRefundPolicy({ ...newRefundPolicy, percentRefund: Number(val) })}
+                    placeholder="VD: 80"
+                  />
+                  
+                  <FormInput
+                    label="Hạn hoàn tiền"
+                    type="date"
+                    value={newRefundPolicy.refundDeadline}
+                    onChange={(val) => setNewRefundPolicy({ ...newRefundPolicy, refundDeadline: val })}
+                  />
+                </div>
+
+                <div className="text-xs text-gray-600 bg-white p-2 rounded">
+                  <strong>Ví dụ:</strong> Hoàn 80% nếu hủy trước 7 ngày, 50% nếu hủy trước 3 ngày, 0% nếu hủy trong 24h.
+                </div>
+
+                <Button onClick={handleAddRefundPolicy} className="w-full">
+                  + Thêm chính sách hoàn tiền
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* STEP 5: MEDIA */}
+          <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6">
+            <h3 className="text-lg font-semibold mb-4">5. Media (Tùy chọn)</h3>
+
+            {mediaList.length === 0 ? (
+              <div className="p-4 bg-gray-50 text-gray-600 rounded-lg text-sm border border-gray-200 text-center mb-8">
+                Chưa có media nào. Bạn có thể bỏ qua hoặc thêm mới bên dưới.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                {mediaList.map((m, idx) => (
+                  <div
+                    key={idx}
+                    className="relative bg-white border border-gray-300 rounded-lg p-3 shadow-sm hover:shadow-md transition flex flex-col items-center text-center"
+                  >
+                  {m.mediaFile && (
+                    <>
+                      {m.mediaFile instanceof File ? (
+                        <img
+                          src={URL.createObjectURL(m.mediaFile)}
+                          alt="Media Preview"
+                          className="w-full h-40 object-cover rounded-lg mb-2"
+                        />
+                      ) : typeof m.mediaFile === "string" && (m.mediaFile as string).length > 0 ? (
+                        <img
+                          src={m.mediaFile}
+                          alt="Media"
+                          className="w-full h-40 object-cover rounded-lg mb-2"
+                        />
+                      ) : null}
+                    </>
+                  )}
+
+
+
+                    <div className="text-sm text-gray-700 truncate w-full">
+                      {m.mediaFile instanceof File
+                        ? m.mediaFile.name
+                        : typeof m.mediaFile === "string"
+                        ? "Ảnh/Video hiện tại"
+                        : "No file"}
+                    </div>
+
+                    <button
+                      onClick={() => setMediaList(mediaList.filter((_, i) => i !== idx))}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="border border-gray-200 p-4 rounded-xl space-y-4">
+              <h4 className="font-medium text-gray-800">Thêm media</h4>
+              <ImageUpload
+                label="Upload media (ảnh hoặc video)"
+                subtext="(4MB max)"
+                isList={false}
+                onChange={(file) => setNewMedia({ ...newMedia, mediaFile: file as File | null })}
+              />
+              <Button onClick={handleAddMedia}>Thêm media</Button>
+            </div>
+          </div>
+
+          {/* STEP 6: SPONSORS */}
+          <div className="bg-white border rounded-lg p-6 mb-6">
+            <h3 className="text-lg font-semibold mb-4">6. Nhà tài trợ (Tùy chọn)</h3>
+
+            {/* Hiển thị danh sách nhà tài trợ */}
+            {sponsors.length === 0 ? (
+              <div className="p-3 bg-gray-50 text-gray-600 rounded text-sm">
+                Chưa có nhà tài trợ nào. Bạn có thể bỏ qua hoặc thêm mới bên dưới.
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                {sponsors.map((s, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3 bg-gray-50 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition flex flex-col items-center text-center"
+                  >
+                    {s.imageFile instanceof File ? (
+                      <img
+                        src={URL.createObjectURL(s.imageFile)}
+                        alt="Sponsor Preview"
+                        className="h-20 w-20 object-cover rounded-full border border-gray-300 mb-2"
+                      />
+                    ) : typeof s.imageFile === "string" && s.imageFile ? (
+                      <img
+                        src={s.imageFile}
+                        alt={s.name}
+                        className="h-20 w-20 object-cover rounded-full border border-gray-300 mb-2"
+                      />
+                    ) : (
+                      <div className="h-20 w-20 flex items-center justify-center bg-gray-100 rounded-full text-gray-400">
+                        No Image
+                      </div>
+                    )}
+
+                    <div className="font-medium text-gray-800">{s.name}</div>
+                    <div className="text-xs text-gray-500 mb-2">
+                      {s.imageFile instanceof File
+                        ? s.imageFile.name
+                        : typeof s.imageFile === "string"
+                        ? "Logo hiện tại"
+                        : ""}
+                    </div>
+
+                    <div className="flex gap-2 mt-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setNewSponsor(s);
+                          setSponsors(sponsors.filter((_, i) => i !== idx));
+                        }}
+                      >
+                        Sửa
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => setSponsors(sponsors.filter((_, i) => i !== idx))}
+                      >
+                        Xóa
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Form thêm mới */}
+            <div className="border p-4 rounded space-y-4">
               <h4 className="font-medium">Thêm nhà tài trợ</h4>
               <FormInput
-                label="Tên"
+                label="Tên nhà tài trợ"
                 value={newSponsor.name}
                 onChange={(val) => setNewSponsor({ ...newSponsor, name: val })}
               />
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Logo Nhà tài trợ
-                </label>
-                <input
-                  type="file"
-                  onChange={(e) =>
-                    setNewSponsor({
-                      ...newSponsor,
-                      imageFile: e.target.files?.[0] || null,
-                    })
-                  }
-                  accept="image/*"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <Button onClick={handleAddSponsor}>Thêm nhà tài trợ</Button>
+              <ImageUpload
+                isList={false}
+                height="h-32"
+                onChange={(file) => setNewSponsor({ ...newSponsor, imageFile: file as File | null })}
+                resetTrigger={resetSponsorUpload}
+              />
+
+              <Button
+                onClick={() => {
+                  handleAddSponsor();
+                  setResetSponsorUpload(true);
+                  setTimeout(() => setResetSponsorUpload(false), 200);
+                }}
+              >
+                Thêm nhà tài trợ
+              </Button>
             </div>
           </div>
+
 
           {/* SUBMIT BUTTON */}
           <div className="bg-white border rounded-lg p-6">
@@ -1783,7 +1861,7 @@ const handleAddMedia = () => {
               disabled={isSubmitting || tickets.length === 0}
               className="w-full bg-green-600 text-white hover:bg-green-700 h-12 text-lg font-semibold"
             >
-              {isSubmitting ? "Đang tạo hội thảo..." : "🎉 Hoàn thành & Tạo hội thảo"}
+              {isSubmitting ? "Đang tạo hội thảo..." : "Hoàn tất"}
             </Button>
             {tickets.length === 0 && (
               <p className="text-sm text-red-600 text-center mt-2">
