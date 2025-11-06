@@ -357,6 +357,18 @@ export const paperApi = createApi({
       providesTags: ["Paper"],
     }),
 
+    addToWaitList: builder.mutation<
+      ApiResponse<boolean>,
+      LeaveWaitListRequest
+    >({
+      query: (body) => ({
+        url: endpoint.PAPER.ADD_TO_WAITLIST,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Paper"],
+    }),
+
     leaveWaitList: builder.mutation<
       ApiResponse<boolean>,
       LeaveWaitListRequest
@@ -412,6 +424,7 @@ export const {
   useSubmitPaperRevisionResponseMutation,
   useSubmitCameraReadyMutation,
   useListCustomerWaitListQuery,
+  useAddToWaitListMutation,
   useLeaveWaitListMutation,
 } = paperApi;
 
