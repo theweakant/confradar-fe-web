@@ -86,7 +86,7 @@ export const endpoint = {
     UPDATE: "/Conference",
     DELETE: "/Conference",
 
-
+    GET_OWN_CONFERENCES_FOR_SCHEDULE: '/Conference/own-conferences-for-schedule',
   },
 
   CONFERENCE_STEP: {

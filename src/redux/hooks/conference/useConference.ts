@@ -1,7 +1,7 @@
 // import { useGetAllConferencesWithPricesPaginationQuery, useGetConferenceByIdQuery, useLazyGetAllConferencesWithPricesPaginationQuery, useLazyGetConferenceByIdQuery } from '@/redux/services/conference.service';
-import { useAddToFavouriteMutation, useDeleteFromFavouriteMutation, useGetAllConferencesPaginationQuery, useGetOwnFavouriteConferencesQuery, useGetResearchConferenceDetailQuery, useGetTechnicalConferenceDetailQuery, useLazyGetAllConferencesPaginationQuery, useLazyGetAllConferencesWithPricesPaginationQuery, useLazyGetConferencesByStatusQuery, useLazyGetOwnFavouriteConferencesQuery } from '@/redux/services/conference.service';
+import { useAddToFavouriteMutation, useDeleteFromFavouriteMutation, useGetAllConferencesPaginationQuery, useGetOwnConferencesForScheduleQuery, useGetOwnFavouriteConferencesQuery, useGetResearchConferenceDetailQuery, useGetTechnicalConferenceDetailQuery, useLazyGetAllConferencesPaginationQuery, useLazyGetAllConferencesWithPricesPaginationQuery, useLazyGetConferencesByStatusQuery, useLazyGetOwnConferencesForScheduleQuery, useLazyGetOwnFavouriteConferencesQuery } from '@/redux/services/conference.service';
 import { parseApiError } from '@/redux/utils/api';
-import { AddedFavouriteConferenceResponse, ConferenceResponse, DeletedFavouriteConferenceResponse, FavouriteConferenceDetailResponse } from '@/types/conference.type';
+import { AddedFavouriteConferenceResponse, ConferenceDetailForScheduleResponse, ConferenceResponse, DeletedFavouriteConferenceResponse, FavouriteConferenceDetailResponse } from '@/types/conference.type';
 import { useCallback } from 'react';
 
 export const useConference = (params?: { page?: number; pageSize?: number; id?: string }) => {
@@ -60,6 +60,20 @@ export const useConference = (params?: { page?: number; pageSize?: number; id?: 
         isLoading: lazyFavouritesLoading
     }] = useLazyGetOwnFavouriteConferencesQuery();
 
+    const {
+        data: ownConferencesScheduleData,
+        error: ownConferencesScheduleError,
+        isLoading: ownConferencesScheduleLoading,
+        isFetching: ownConferencesScheduleFetching,
+        refetch: refetchOwnConferencesSchedule,
+    } = useGetOwnConferencesForScheduleQuery();
+
+    const [triggerGetOwnConferencesSchedule, {
+        data: lazyOwnConferencesScheduleData,
+        error: lazyOwnConferencesScheduleError,
+        isLoading: lazyOwnConferencesScheduleLoading,
+    }] = useLazyGetOwnConferencesForScheduleQuery();
+
     // Favourite mutations
     const [addToFavourite, {
         isLoading: addingToFavourite,
@@ -102,6 +116,11 @@ export const useConference = (params?: { page?: number; pageSize?: number; id?: 
     const removeFavourite = useCallback(
         (conferenceId: string) => deleteFromFavourite({ conferenceId }).unwrap(),
         [deleteFromFavourite]
+    );
+
+    const fetchOwnConferencesForSchedule = useCallback(
+        () => triggerGetOwnConferencesSchedule().unwrap(),
+        [triggerGetOwnConferencesSchedule]
     );
 
     return {
@@ -157,6 +176,17 @@ export const useConference = (params?: { page?: number; pageSize?: number; id?: 
         deletingFromFavourite,
         addToFavouriteError: parseApiError<AddedFavouriteConferenceResponse>(addToFavouriteError),
         deleteFromFavouriteError: parseApiError<DeletedFavouriteConferenceResponse>(deleteFromFavouriteError),
+
+        // --- Own Conferences for Schedule ---
+        ownConferencesForSchedule: ownConferencesScheduleData?.data,
+        lazyOwnConferencesForSchedule: lazyOwnConferencesScheduleData?.data,
+        fetchOwnConferencesForSchedule,
+        refetchOwnConferencesSchedule,
+        ownConferencesForScheduleLoading:
+            ownConferencesScheduleLoading || ownConferencesScheduleFetching || lazyOwnConferencesScheduleLoading,
+        ownConferencesForScheduleError: parseApiError<ConferenceDetailForScheduleResponse[]>(
+            ownConferencesScheduleError || lazyOwnConferencesScheduleError
+        ),
     };
 };
 

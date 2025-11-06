@@ -122,7 +122,7 @@ export interface Phase {
 
 export interface Ticket {
   ticketId?: string;
-  priceId?: string;   
+  priceId?: string;
   ticketPrice: number;
   ticketName: string;
   ticketDescription: string;
@@ -216,7 +216,7 @@ export interface ConferenceRefundPolicyData {
 //MEDIA STEP
 export interface Media {
   mediaId?: string;
-  mediaFile: File |null ;
+  mediaFile: File | null;
   mediaUrl?: string;
 }
 
@@ -448,9 +448,9 @@ export interface TechnicalConferenceDetailResponse {
   policies?: ConferencePolicyResponse[];
   sponsors?: SponsorResponse[];
   sessions?: TechnicalConferenceSessionResponse[];
-  conferencePrices?: ConferencePriceResponse[]; 
+  conferencePrices?: ConferencePriceResponse[];
 
-  conferenceTimelines?:any[]
+  conferenceTimelines?: any[]
 }
 
 export interface ResearchConferenceDetailResponse {
@@ -661,4 +661,53 @@ export interface AddedFavouriteConferenceResponse {
 
 export interface FavouriteConferenceRequest {
   conferenceId: string;
+}
+
+export interface ConferenceDetailForScheduleResponse {
+  conferenceId: string;
+
+  conferenceName?: string;
+  description?: string;
+
+  startDate?: string;
+  endDate?: string;
+
+  totalSlot?: number;
+  availableSlot?: number;
+  address?: string;
+  bannerImageUrl?: string;
+  createdAt?: string;
+  ticketSaleStart?: string;
+  ticketSaleEnd?: string;
+
+  isInternalHosted?: boolean;
+  isResearchConference?: boolean;
+
+  cityId?: string;
+  cityName?: string;
+  conferenceCategoryId?: string;
+  conferenceCategoryName?: string;
+  conferenceStatusId?: string;
+  conferenceStatusName?: string;
+
+  sessions: SessionDetailForScheduleResponse[];
+}
+
+export interface SessionDetailForScheduleResponse {
+  conferenceSessionId: string;
+  title?: string;
+  description?: string;
+  startTime?: string;
+  endTime?: string;
+  sessionDate?: string;
+  conferenceId?: string;
+  roomId?: string;
+  roomNumber?: string;
+  roomDisplayName?: string;
+  destinationId?: string;
+  destinationName?: string;
+  destinationDistrict?: string;
+  destinationStreet?: string;
+  cityId?: string;
+  cityName?: string;
 }
