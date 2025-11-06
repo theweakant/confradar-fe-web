@@ -39,7 +39,20 @@ export const formatDate = (date?: string) => {
   return `${day}/${month}/${year}`;
 };
 
+export const formatTimeDate = (date?: string): string => {
+  if (!date) return "-";
 
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return "-";
+
+  const hours = String(d.getHours());
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+
+  return `${hours}h${minutes} ${day}/${month}/${year}`;
+};
 
  
 //date time

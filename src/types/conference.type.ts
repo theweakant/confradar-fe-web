@@ -311,6 +311,12 @@ export interface ResearchPhase {
   isWaitlist: boolean;
   isActive: boolean;
   revisionRoundDeadlines: RevisionRoundDeadline[];
+
+  registrationDuration?: number;
+  fullPaperDuration?: number;
+  reviewDuration?: number;
+  reviseDuration?: number;
+  cameraReadyDuration?: number;  
 }
 
 export interface ConferenceResearchPhaseData {

@@ -1,5 +1,5 @@
-import CreateConferenceStepPage from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/index";
+import CreateResearchConferenceStepPage from "@/components/(user)/workspace/organizer/ManageConference/ConferenceForm/CreateResearchPage/index";
 
-export default function ManageConferencePage() {
-  return <CreateConferenceStepPage />;
+export default function Page() {
+  return <CreateResearchConferenceStepPage />;
 }

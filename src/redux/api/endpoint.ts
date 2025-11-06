@@ -132,7 +132,7 @@ export const endpoint = {
   TRANSACTION: {
     CREATE_TECH_PAYMENT: "/payment/pay-tech",
     CREATE_RESEARCH_PAPER_PAYMENT: "/payment/pay-research",
-    GET_OWN_TRANSACTION: "/payment/get-own-transaction",
+      GET_OWN_TRANSACTION: "/payment/get-own-transaction",
   },
 
   PAYMENT_METHOD: {
