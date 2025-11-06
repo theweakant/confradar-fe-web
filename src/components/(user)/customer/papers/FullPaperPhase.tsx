@@ -70,19 +70,46 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper }) =
             {fullPaper && (
                 <div className="bg-green-900/20 border border-green-700 rounded-xl p-5">
                     <h4 className="font-semibold text-green-400 mb-2">Full Paper đã nộp</h4>
-                    <p className="text-green-300 text-sm">
-                        Full Paper ID: {fullPaper.fullPaperId}
-                    </p>
-                    {fullPaper.fileUrl && (
-                        <a
-                            href={fullPaper.fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-400 hover:text-blue-300 text-sm underline mt-2 inline-block"
-                        >
-                            Xem file full paper →
-                        </a>
-                    )}
+                    <div className="space-y-2">
+                        <p className="text-green-300 text-sm">
+                            Full Paper ID: {fullPaper.fullPaperId}
+                        </p>
+                        {fullPaper.title && (
+                            <p className="text-green-300 text-sm">
+                                <span className="font-medium">Tiêu đề:</span> {fullPaper.title}
+                            </p>
+                        )}
+                        {fullPaper.description && (
+                            <p className="text-green-300 text-sm">
+                                <span className="font-medium">Mô tả:</span> {fullPaper.description}
+                            </p>
+                        )}
+                        {fullPaper.reviewStatusId && (
+                            <p className="text-green-300 text-sm">
+                                <span className="font-medium">Trạng thái đánh giá:</span> {fullPaper.reviewStatusId}
+                            </p>
+                        )}
+                        {fullPaper.created && (
+                            <p className="text-green-300 text-sm">
+                                <span className="font-medium">Ngày tạo:</span> {new Date(fullPaper.created).toLocaleDateString('vi-VN')}
+                            </p>
+                        )}
+                        {fullPaper.reviewedAt && (
+                            <p className="text-green-300 text-sm">
+                                <span className="font-medium">Ngày đánh giá:</span> {new Date(fullPaper.reviewedAt).toLocaleDateString('vi-VN')}
+                            </p>
+                        )}
+                        {fullPaper.fileUrl && (
+                            <a
+                                href={fullPaper.fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-400 hover:text-blue-300 text-sm underline mt-2 inline-block"
+                            >
+                                Xem file full paper →
+                            </a>
+                        )}
+                    </div>
                 </div>
             )}
 

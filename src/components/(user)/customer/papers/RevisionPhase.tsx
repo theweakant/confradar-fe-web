@@ -148,10 +148,39 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
                         <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 mb-6">
                             <h3 className="text-xl font-bold mb-4">Thông tin Revision Paper</h3>
                             {revisionPaper ? (
-                                <div>
-                                    <p className="text-gray-400 mb-2">Revision Round: {revisionPaper.revisionRound || 1}</p>
-                                    <p className="text-gray-400 mb-4">Overall Status: {revisionPaper.overallStatus || 'Đang xử lý'}</p>
-                                    <p className="text-gray-400 mb-4">Số submissions: {revisionPaper.submissions?.length || 0}</p>
+                                <div className="space-y-2">
+                                    <p className="text-gray-400">
+                                        <span className="font-medium text-white">Revision Paper ID:</span> {revisionPaper.revisionPaperId}
+                                    </p>
+                                    {revisionPaper.title && (
+                                        <p className="text-gray-400">
+                                            <span className="font-medium text-white">Tiêu đề:</span> {revisionPaper.title}
+                                        </p>
+                                    )}
+                                    {revisionPaper.description && (
+                                        <p className="text-gray-400">
+                                            <span className="font-medium text-white">Mô tả:</span> {revisionPaper.description}
+                                        </p>
+                                    )}
+                                    <p className="text-gray-400">
+                                        <span className="font-medium text-white">Revision Round:</span> {revisionPaper.revisionRound || 1}
+                                    </p>
+                                    <p className="text-gray-400">
+                                        <span className="font-medium text-white">Overall Status:</span> {revisionPaper.overallStatus || 'Đang xử lý'}
+                                    </p>
+                                    <p className="text-gray-400">
+                                        <span className="font-medium text-white">Số submissions:</span> {revisionPaper.submissions?.length || 0}
+                                    </p>
+                                    {revisionPaper.created && (
+                                        <p className="text-gray-400">
+                                            <span className="font-medium text-white">Ngày tạo:</span> {new Date(revisionPaper.created).toLocaleDateString('vi-VN')}
+                                        </p>
+                                    )}
+                                    {revisionPaper.reviewedAt && (
+                                        <p className="text-gray-400">
+                                            <span className="font-medium text-white">Ngày đánh giá:</span> {new Date(revisionPaper.reviewedAt).toLocaleDateString('vi-VN')}
+                                        </p>
+                                    )}
                                 </div>
                             ) : (
                                 <p className="text-gray-400">Chưa có thông tin revision paper</p>
@@ -226,6 +255,22 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
                                                 <span className="text-sm text-gray-400">
                                                     Round {submission.revisionDeadline?.roundNumher || 'N/A'}
                                                 </span>
+                                            </div>
+
+                                            <div className="mb-4 space-y-2">
+                                                <p className="text-sm text-gray-400">
+                                                    <span className="font-medium text-white">Submission ID:</span> {submission.submissionId}
+                                                </p>
+                                                {submission.title && (
+                                                    <p className="text-sm text-gray-400">
+                                                        <span className="font-medium text-white">Tiêu đề:</span> {submission.title}
+                                                    </p>
+                                                )}
+                                                {submission.description && (
+                                                    <p className="text-sm text-gray-400">
+                                                        <span className="font-medium text-white">Mô tả:</span> {submission.description}
+                                                    </p>
+                                                )}
                                             </div>
 
                                             {submission.fileUrl && (

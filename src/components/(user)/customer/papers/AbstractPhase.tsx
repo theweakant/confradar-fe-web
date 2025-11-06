@@ -121,19 +121,46 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
             {abstract && (
                 <div className="bg-green-900/20 border border-green-700 rounded-xl p-5">
                     <h4 className="font-semibold text-green-400 mb-2">Abstract đã nộp</h4>
-                    <p className="text-green-300 text-sm">
-                        Abstract ID: {abstract.abstractId}
-                    </p>
-                    {abstract.fileUrl && (
-                        <a
-                            href={abstract.fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-400 hover:text-blue-300 text-sm underline mt-2 inline-block"
-                        >
-                            Xem file abstract →
-                        </a>
-                    )}
+                    <div className="space-y-2">
+                        <p className="text-green-300 text-sm">
+                            Abstract ID: {abstract.abstractId}
+                        </p>
+                        {abstract.title && (
+                            <p className="text-green-300 text-sm">
+                                <span className="font-medium">Tiêu đề:</span> {abstract.title}
+                            </p>
+                        )}
+                        {abstract.description && (
+                            <p className="text-green-300 text-sm">
+                                <span className="font-medium">Mô tả:</span> {abstract.description}
+                            </p>
+                        )}
+                        {abstract.globalStatusId && (
+                            <p className="text-green-300 text-sm">
+                                <span className="font-medium">Trạng thái:</span> {abstract.globalStatusId}
+                            </p>
+                        )}
+                        {abstract.created && (
+                            <p className="text-green-300 text-sm">
+                                <span className="font-medium">Ngày tạo:</span> {new Date(abstract.created).toLocaleDateString('vi-VN')}
+                            </p>
+                        )}
+                        {abstract.reviewedAt && (
+                            <p className="text-green-300 text-sm">
+                                <span className="font-medium">Ngày đánh giá:</span> {new Date(abstract.reviewedAt).toLocaleDateString('vi-VN')}
+                            </p>
+                        )}
+                        {abstract.fileUrl && (
+                            <a
+                                href={abstract.fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-400 hover:text-blue-300 text-sm underline mt-2 inline-block"
+                            >
+                                Xem file abstract →
+                            </a>
+                        )}
+                    </div>
                 </div>
             )}
 
