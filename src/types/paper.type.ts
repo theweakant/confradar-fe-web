@@ -17,9 +17,9 @@ export interface ListPaper {
     globalStatusName: string | null;
     abstractUrl: string;
   } | null;
-  fullPaper: any | null;
-  revisionPaper: any | null;
-  cameraReady: any | null;
+  fullPaper: unknown  | null;
+  revisionPaper: unknown  | null;
+  cameraReady: unknown  | null;
 }
 
 export interface UnassignAbstract {
@@ -55,11 +55,11 @@ export interface AssignedPaper {
   conferenceId: string;
   paperPhaseId: string;
   createdAt: string;
-  cameraReady: any | null;
-  conference: any | null;
-  paperAuthors: any[];
-  paperPhase: any | null;
-  presenter: any | null;
+  cameraReady: unknown  | null;
+  conference: unknown  | null;
+  paperAuthors: unknown [];
+  paperPhase: unknown  | null;
+  presenter: unknown  | null;
 }
 
 //------------------------------------------
@@ -169,6 +169,7 @@ export interface FullPaperReview {
 //--------------------------------------------------------
 //SUBMIT PAPER REVISION REVIEW
 export interface SubmitPaperRevisionReviewRequest {
+  revisionPaperSubmissionId?: string;
   paperId: string;
   revisionPaperId: string;
   globalStatus: string;
@@ -303,8 +304,8 @@ export interface RevisionReview {
 
 export interface CameraReady {
   cameraReadyId: string;
-  globalStatusId?: string | null;
-  fileUrl?: string | null;
+  globalStatusId?: string ;
+  fileUrl?: string;
 }
 
 export interface CreateAbstractRequest {

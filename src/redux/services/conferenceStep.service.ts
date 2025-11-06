@@ -139,7 +139,7 @@ export const conferenceStepApi = createApi({
 
     // UPDATE PRICE PHASE
     updateConferencePricePhase: builder.mutation<
-      ApiResponse<any>,
+      ApiResponse<unknown>,
       {
         pricePhaseId: string;
         data: {

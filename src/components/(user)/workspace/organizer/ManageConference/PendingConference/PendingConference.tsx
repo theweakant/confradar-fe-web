@@ -1,5 +1,5 @@
 "use client";
-
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { ArrowLeft, Calendar, MapPin, Users, Tag, Clock } from "lucide-react";
 import Link from "next/link";
@@ -20,7 +20,10 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
+import { ApiError } from "@/types/api.type";
+import { ConferenceResponse } from "@/types/conference.type";
 export default function PendingConference() {
+  const router = useRouter();
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
 
@@ -45,7 +48,9 @@ export default function PendingConference() {
     setReason("");
     setDialogOpen(true);
   };
-
+  const handleConferenceClick = (conferenceId: string) => {
+    router.push(`/workspace/organizer/manage-conference/view-detail/${conferenceId}`);
+  };
   const handleSubmit = async () => {
     if (!selectedConference) return;
 
@@ -65,16 +70,16 @@ export default function PendingConference() {
         isApproveAction ? "Đã phê duyệt hội nghị thành công!" : "Đã từ chối hội nghị!"
       );
 
-      // Refresh the list
       getPendingConferences({ page, pageSize });
 
-      // Close dialog and reset
       setDialogOpen(false);
       setSelectedConference(null);
       setReason("");
-    } catch (error: any) {
-      toast.error(error?.data?.message || "Có lỗi xảy ra, vui lòng thử lại!");
-    }
+    } catch (error: unknown) { 
+      const err = error as ApiError; 
+      const errorMessage = err?.Message || "Có lỗi xảy ra, hãy thử lại!"; 
+      toast.error(errorMessage); 
+      }
   };
 
   const pendingConferences = data?.data?.items || [];
@@ -114,11 +119,12 @@ export default function PendingConference() {
         ) : (
           <>
             <div className="grid gap-6">
-              {pendingConferences.map((conference: any) => (
-                <div
-                  key={conference.conferenceId}
-                  className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
-                >
+              {pendingConferences.map((conference: ConferenceResponse) => (
+                  <div
+                    key={conference.conferenceId}
+                    className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer"
+                    onClick={() => handleConferenceClick(conference.conferenceId)}
+                  >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -142,7 +148,7 @@ export default function PendingConference() {
                       <Users className="w-4 h-4 mr-2" />
                       <span>
                         Người tạo:{" "}
-                        {conference.createdBy ?? conference.createdby ?? "N/A"}
+                        {conference.createdBy ?? "N/A"}
                       </span>
                     </div>
 
@@ -209,18 +215,20 @@ export default function PendingConference() {
                       <Button
                         variant="outline"
                         className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        onClick={() =>
-                          handleOpenDialog(conference.conferenceId, false)
-                        }
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenDialog(conference.conferenceId, false);
+                        }}
                         disabled={isSubmitting}
                       >
                         Từ chối
                       </Button>
                       <Button
                         className="bg-green-600 hover:bg-green-700"
-                        onClick={() =>
-                          handleOpenDialog(conference.conferenceId, true)
-                        }
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenDialog(conference.conferenceId, true);
+                        }}
                         disabled={isSubmitting}
                       >
                         Phê duyệt

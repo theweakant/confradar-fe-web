@@ -23,12 +23,13 @@ import {
   useUpdateOwnConferenceStatusMutation,
 } from "@/redux/services/status.service";
 import { ApiResponse } from "@/types/api.type";
+import { ConferenceStatus } from "@/types/conference.type";
 
 interface Conference {
   conferenceId?: string;
   conferenceStatusId?: string;
   conferenceStatusName?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface UpdateConferenceStatusProps {
@@ -58,7 +59,7 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
     if (!statusId || !statusData?.data) return "N/A";
 
     const matchedStatus = statusData.data.find(
-      (s: any) => s.conferenceStatusId === statusId
+      (s: ConferenceStatus) => s.conferenceStatusId === statusId
     );
     return matchedStatus?.conferenceStatusName || "N/A";
   }, [conference?.conferenceStatusId, statusData]);

@@ -1,10 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { ApiError } from "@/types/api.type";
 import{Paper} from "@/types/paper.type"
 import { useAssignPaperToReviewerMutation,  } from "@/redux/services/paper.service";
 import { useGetReviewersListQuery } from "@/redux/services/user.service";
+
+import { ReviewerListResponse } from "@/types/user.type";
 
 interface PaperDetailProps {
   paper: Paper;
@@ -33,11 +37,12 @@ const reviewers = reviewersData?.data ?? [];
         isHeadReviewer,
       }).unwrap();
 
-      alert(res.message || "Giao reviewer thành công!");
+      toast.success(res.message || "Giao reviewer thành công!");
       onClose();
-    } catch (err: any) {
-      console.error("Assign error:", err);
-      alert(err?.data?.message || "Không thể giao reviewer");
+    } catch (error: unknown) { 
+      const err = error as ApiError; 
+      const errorMessage = err?.Message || "Them đối tác thất bại!"; 
+      toast.error(errorMessage); 
     }
   };
 
@@ -65,7 +70,7 @@ const reviewers = reviewersData?.data ?? [];
             ) : reviewers.length === 0 ? (
               <option disabled>Không có reviewer nào</option>
             ) : (
-              reviewers.map((rev: any) => (
+              reviewers.map((rev: ReviewerListResponse) => (
                 <option key={rev.userId} value={rev.userId}>
                   {rev.fullName || rev.email || rev.userId}
                 </option>
