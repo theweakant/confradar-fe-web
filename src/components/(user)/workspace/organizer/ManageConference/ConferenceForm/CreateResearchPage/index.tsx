@@ -1010,7 +1010,7 @@ const handleAddPhaseToNewTicket = () => {
               <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
                 {basicForm.endDate ? (
                   <span className="text-gray-900">
-                    {new Date(basicForm.endDate).toLocaleDateString("vi-VN")}
+                    {formatDate(basicForm.endDate)}                                        
                   </span>
                 ) : (
                   <span className="text-gray-400">--/--/----</span>
@@ -1047,7 +1047,7 @@ const handleAddPhaseToNewTicket = () => {
               <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
                 {basicForm.ticketSaleEnd ? (
                   <span className="text-gray-900">
-                    {new Date(basicForm.ticketSaleEnd).toLocaleDateString("vi-VN")}
+                    {formatDate(basicForm.ticketSaleEnd)}
                   </span>
                 ) : (
                   <span className="text-gray-400">--/--/----</span>
@@ -1328,9 +1328,9 @@ const handleAddPhaseToNewTicket = () => {
       {researchPhase.registrationStartDate && researchPhase.registrationEndDate && (
     <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
       <div className="text-sm text-amber-800">
-        <strong>Thời gian đăng ký:</strong>{" "}
-        {new Date(researchPhase.registrationStartDate).toLocaleDateString('vi-VN')} -{" "}
-        {new Date(researchPhase.registrationEndDate).toLocaleDateString('vi-VN')}
+        <strong>Thời gian đăng ký:</strong>{" "}            
+        {formatDate(researchPhase.registrationStartDate)} -{" "}
+        {formatDate(researchPhase.registrationEndDate)}
       </div>
       <div className="text-xs text-amber-600 mt-1">
         * Vé tác giả phải bán trong khoảng thời gian này
@@ -1385,8 +1385,8 @@ const handleAddPhaseToNewTicket = () => {
       <h5 className="font-medium mb-2 flex items-center gap-2">
         Giai đoạn giá ({newTicket.phases.length})
         {basicForm.ticketSaleStart && basicForm.ticketSaleEnd && (
-          <span className="text-sm text-blue-600">
-            ({new Date(basicForm.ticketSaleStart).toLocaleDateString('vi-VN')} → {new Date(basicForm.ticketSaleEnd).toLocaleDateString('vi-VN')})
+          <span className="text-sm text-blue-600">         
+            {formatDate(basicForm.ticketSaleStart)} → {formatDate(basicForm.ticketSaleEnd)}
           </span>
         )}
       </h5>
@@ -1557,7 +1557,7 @@ const handleAddPhaseToNewTicket = () => {
                   <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
                     {newPhase.startDate && newPhase.durationInDays > 0 ? (
                       <span className="text-gray-900">
-                        {new Date(calculatePhaseEndDate(newPhase.startDate, newPhase.durationInDays)).toLocaleDateString('vi-VN')}
+                        {formatDate(calculatePhaseEndDate(newPhase.startDate, newPhase.durationInDays))}
                       </span>
                     ) : (
                       <span className="text-gray-400">--/--/----</span>
@@ -1644,7 +1644,7 @@ const handleAddPhaseToNewTicket = () => {
                     <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
                         {researchPhase.registrationEndDate ? (
                         <span className="text-gray-900">
-                            {new Date(researchPhase.registrationEndDate).toLocaleDateString("vi-VN")}
+                          {formatDate(researchPhase.registrationEndDate)}
                         </span>
                         ) : (
                         <span className="text-gray-400">--/--/----</span>
@@ -1686,7 +1686,7 @@ const handleAddPhaseToNewTicket = () => {
                     <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
                         {researchPhase.fullPaperEndDate ? (
                         <span className="text-gray-900">
-                            {new Date(researchPhase.fullPaperEndDate).toLocaleDateString("vi-VN")}
+                          {formatDate(researchPhase.fullPaperEndDate)}
                         </span>
                         ) : (
                         <span className="text-gray-400">--/--/----</span>
@@ -1727,7 +1727,7 @@ const handleAddPhaseToNewTicket = () => {
                     <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
                         {researchPhase.reviewEndDate ? (
                         <span className="text-gray-900">
-                            {new Date(researchPhase.reviewEndDate).toLocaleDateString("vi-VN")}
+                          {formatDate(researchPhase.reviewEndDate)}
                         </span>
                         ) : (
                         <span className="text-gray-400">--/--/----</span>
@@ -1768,7 +1768,7 @@ const handleAddPhaseToNewTicket = () => {
                     <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
                         {researchPhase.reviseEndDate ? (
                         <span className="text-gray-900">
-                            {new Date(researchPhase.reviseEndDate).toLocaleDateString("vi-VN")}
+                          {formatDate(researchPhase.reviseEndDate)}
                         </span>
                         ) : (
                         <span className="text-gray-400">--/--/----</span>
@@ -1854,7 +1854,7 @@ const handleAddPhaseToNewTicket = () => {
                     <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
                         {researchPhase.cameraReadyEndDate ? (
                         <span className="text-gray-900">
-                            {new Date(researchPhase.cameraReadyEndDate).toLocaleDateString("vi-VN")}
+                          {formatDate(researchPhase.cameraReadyEndDate)}
                         </span>
                         ) : (
                         <span className="text-gray-400">--/--/----</span>
@@ -2134,7 +2134,7 @@ const handleAddPhaseToNewTicket = () => {
                 B. Chính sách hoàn tiền (Tùy chọn)
                 {basicForm.startDate && (
                   <span className="text-sm text-blue-600">
-                    (Trước ngày {new Date(basicForm.startDate).toLocaleDateString('vi-VN')})
+                    (Trước ngày {formatDate(basicForm.startDate)})
                   </span>
                 )}
               </h4>
