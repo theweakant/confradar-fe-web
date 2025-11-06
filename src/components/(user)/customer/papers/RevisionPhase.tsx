@@ -47,15 +47,15 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
             setTitle("");
             setDescription("");
             window.location.reload();
-        } catch (error: any) {
+        } catch (error: unknown) {
             let errorMessage = "Có lỗi xảy ra khi nộp revision paper";
 
-            if (error?.data?.Message) {
-                errorMessage = error.data.Message;
-            } else if (error?.data?.Errors) {
-                const errors = Object.values(error.data.Errors);
-                errorMessage = errors.length > 0 ? errors[0] as string : errorMessage;
-            }
+            // if (error?.data?.Message) {
+            //     errorMessage = error.data.Message;
+            // } else if (error?.data?.Errors) {
+            //     const errors = Object.values(error.data.Errors);
+            //     errorMessage = errors.length > 0 ? errors[0] as string : errorMessage;
+            // }
 
             alert(errorMessage);
         }
@@ -92,15 +92,15 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
             setActiveSubmissionId(null);
             // Reload page to refresh data
             // window.location.reload();
-        } catch (error: any) {
+        } catch (error: unknown) {
             let errorMessage = "Có lỗi xảy ra khi gửi phản hồi";
 
-            if (error?.data?.Message) {
-                errorMessage = error.data.Message;
-            } else if (error?.data?.Errors) {
-                const errors = Object.values(error.data.Errors);
-                errorMessage = errors.length > 0 ? errors[0] as string : errorMessage;
-            }
+            // if (error?.data?.Message) {
+            //     errorMessage = error.data.Message;
+            // } else if (error?.data?.Errors) {
+            //     const errors = Object.values(error.data.Errors);
+            //     errorMessage = errors.length > 0 ? errors[0] as string : errorMessage;
+            // }
 
             alert(errorMessage);
         }
@@ -252,9 +252,9 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
                                         <div key={submission.submissionId} className="border border-gray-600 rounded-lg p-4">
                                             <div className="flex justify-between items-start mb-4">
                                                 <h4 className="font-semibold">Submission #{index + 1}</h4>
-                                                <span className="text-sm text-gray-400">
+                                                {/* <span className="text-sm text-gray-400">
                                                     Round {submission.revisionDeadline?.roundNumher || 'N/A'}
-                                                </span>
+                                                </span> */}
                                             </div>
 
                                             <div className="mb-4 space-y-2">
@@ -286,11 +286,11 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
                                                 </div>
                                             )}
 
-                                            {submission.revisionDeadline?.deadline && (
+                                            {/* {submission.revisionDeadline?.deadline && (
                                                 <p className="text-sm text-gray-400 mb-4">
                                                     Deadline: {new Date(submission.revisionDeadline.deadline).toLocaleDateString('vi-VN')}
                                                 </p>
-                                            )}
+                                            )} */}
 
                                             {/* Feedbacks */}
                                             {submission.feedbacks && submission.feedbacks.length > 0 && (

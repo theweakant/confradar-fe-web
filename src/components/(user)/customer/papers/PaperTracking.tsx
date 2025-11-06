@@ -39,16 +39,16 @@ const PaperTracking = () => {
       try {
         const response = await fetchPaperDetail(paperId);
         setPaperDetail(response.data);
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Handle API error
-        if (error?.data?.Message) {
-          setPaperDetailError(error.data.Message);
-        } else if (error?.data?.Errors) {
-          const errors = Object.values(error.data.Errors);
-          setPaperDetailError(errors.length > 0 ? errors[0] as string : "Có lỗi xảy ra khi tải chi tiết bài báo");
-        } else {
-          setPaperDetailError("Có lỗi xảy ra khi tải chi tiết bài báo");
-        }
+        // if (error?.data?.Message) {
+        //   setPaperDetailError(error.data.Message);
+        // } else if (error?.data?.Errors) {
+        //   const errors = Object.values(error.data.Errors);
+        //   setPaperDetailError(errors.length > 0 ? errors[0] as string : "Có lỗi xảy ra khi tải chi tiết bài báo");
+        // } else {
+        //   setPaperDetailError("Có lỗi xảy ra khi tải chi tiết bài báo");
+        // }
       } finally {
         setIsLoadingPaperDetail(false);
       }

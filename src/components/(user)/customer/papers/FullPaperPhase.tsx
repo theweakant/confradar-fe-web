@@ -47,15 +47,15 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper }) =
             setDescription("");
             // Reload page to refresh data
             window.location.reload();
-        } catch (error: any) {
+        } catch (error: unknown) {
             let errorMessage = "Có lỗi xảy ra khi nộp full paper";
 
-            if (error?.data?.Message) {
-                errorMessage = error.data.Message;
-            } else if (error?.data?.Errors) {
-                const errors = Object.values(error.data.Errors);
-                errorMessage = errors.length > 0 ? errors[0] as string : errorMessage;
-            }
+            // if (error?.data?.Message) {
+            //     errorMessage = error.data.Message;
+            // } else if (error?.data?.Errors) {
+            //     const errors = Object.values(error.data.Errors);
+            //     errorMessage = errors.length > 0 ? errors[0] as string : errorMessage;
+            // }
 
             alert(errorMessage);
         }

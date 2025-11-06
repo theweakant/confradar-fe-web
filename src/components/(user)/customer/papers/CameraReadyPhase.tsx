@@ -47,15 +47,15 @@ const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({ paperId, cameraRead
             setDescription("");
             // Reload page to refresh data
             window.location.reload();
-        } catch (error: any) {
+        } catch (error: unknown) {
             let errorMessage = "Có lỗi xảy ra khi nộp camera-ready";
 
-            if (error?.data?.Message) {
-                errorMessage = error.data.Message;
-            } else if (error?.data?.Errors) {
-                const errors = Object.values(error.data.Errors);
-                errorMessage = errors.length > 0 ? errors[0] as string : errorMessage;
-            }
+            // if (error?.data?.Message) {
+            //     errorMessage = error.data.Message;
+            // } else if (error?.data?.Errors) {
+            //     const errors = Object.values(error.data.Errors);
+            //     errorMessage = errors.length > 0 ? errors[0] as string : errorMessage;
+            // }
 
             alert(errorMessage);
         }

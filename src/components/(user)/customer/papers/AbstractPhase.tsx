@@ -39,15 +39,15 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
         try {
             const response = await fetchAvailableCustomers();
             setAvailableCustomers(response.data || []);
-        } catch (error: any) {
-            if (error?.data?.Message) {
-                setCustomersError(error.data.Message);
-            } else if (error?.data?.Errors) {
-                const errors = Object.values(error.data.Errors);
-                setCustomersError(errors.length > 0 ? errors[0] as string : "Có lỗi xảy ra khi tải danh sách người dùng");
-            } else {
-                setCustomersError("Có lỗi xảy ra khi tải danh sách người dùng");
-            }
+        } catch (error: unknown) {
+            // if (error?.data?.Message) {
+            //     setCustomersError(error.data.Message);
+            // } else if (error?.data?.Errors) {
+            //     const errors = Object.values(error.data.Errors);
+            //     setCustomersError(errors.length > 0 ? errors[0] as string : "Có lỗi xảy ra khi tải danh sách người dùng");
+            // } else {
+            //     setCustomersError("Có lỗi xảy ra khi tải danh sách người dùng");
+            // }
         } finally {
             setIsLoadingCustomers(false);
         }
@@ -89,15 +89,15 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
             setTitle("");
             setDescription("");
             setSelectedCoauthors([]);
-        } catch (error: any) {
+        } catch (error: unknown) {
             let errorMessage = "Có lỗi xảy ra khi nộp abstract";
 
-            if (error?.data?.Message) {
-                errorMessage = error.data.Message;
-            } else if (error?.data?.Errors) {
-                const errors = Object.values(error.data.Errors);
-                errorMessage = errors.length > 0 ? errors[0] as string : errorMessage;
-            }
+            // if (error?.data?.Message) {
+            //     errorMessage = error.data.Message;
+            // } else if (error?.data?.Errors) {
+            //     const errors = Object.values(error.data.Errors);
+            //     errorMessage = errors.length > 0 ? errors[0] as string : errorMessage;
+            // }
 
             alert(errorMessage);
         }

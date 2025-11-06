@@ -3,6 +3,8 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import { EventClickArg } from "@fullcalendar/core";
+import type { Calendar as FullCalendarInstance } from '@fullcalendar/core';
 import { Calendar, Clock, MapPin, Users, Tag, X, Eye } from 'lucide-react';
 import { useConference } from '@/redux/hooks/conference/useConference';
 import type { ConferenceDetailForScheduleResponse, SessionDetailForScheduleResponse } from '@/types/conference.type';
@@ -21,7 +23,8 @@ const ConferenceCalendar: React.FC = () => {
     const [selectedConference, setSelectedConference] = useState<string | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [selectedConferenceForDialog, setSelectedConferenceForDialog] = useState<ConferenceDetailForScheduleResponse | null>(null);
-    const calendarRef = useRef<any>(null);
+    // const calendarRef = useRef<any>(null);
+    const calendarRef = useRef<FullCalendar | null>(null);
     const conferenceListRef = useRef<HTMLDivElement>(null);
 
     // API call to get conferences using useConference hook
@@ -105,7 +108,7 @@ const ConferenceCalendar: React.FC = () => {
         }
     };
 
-    const handleEventClick = (info: any) => {
+    const handleEventClick = (info: EventClickArg) => {
         const conf = info.event.extendedProps.conference;
         setSelectedConference(conf.conferenceId);
 
