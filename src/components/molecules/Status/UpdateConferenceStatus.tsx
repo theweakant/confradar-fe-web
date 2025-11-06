@@ -94,11 +94,11 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
     if (roleLower.includes("collaborator")) {
       switch (normalizedCurrentStatus) {
         case "preparing":
-          return ["Ready", "Canceled"];
+          return ["Ready", "Cancelled"];
         case "ready":
-          return ["Completed", "On Hold"];
+          return ["Completed", "OnHold"];
         case "onhold":
-          return ["Ready", "Canceled"];
+          return ["Ready", "Cancelled"];
         default:
           return [];
       }

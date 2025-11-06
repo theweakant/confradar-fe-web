@@ -28,7 +28,7 @@ export const truncateContent = (content: string, maxLength: number = 40): string
 }
 
 //date
-export const formatDate = (date?: string) => {
+export const formatDate = (date?: string |null) => {
   if (!date) return "-";
 
   const d = new Date(date);

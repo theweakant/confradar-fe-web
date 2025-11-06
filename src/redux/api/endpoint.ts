@@ -193,5 +193,13 @@ export const endpoint = {
     LIST_OWN: '/FavouriteConference/list-own-favourite-conferences',
     ADD: '/FavouriteConference/add-to-favourite',
     DELETE: '/FavouriteConference/delete-from-favourite',
+  },
+
+  PRESENTER_SESSSION:{
+  LIST_ACCEPTED_PAPER:"/assigningpresentersession/get-accepted-papers",
+  ASSIGN_PRESENTER:"/assigningpresentersession/assign-presenter-to-session",
+  REQUEST_CHANGE_PRESENTER:"/assigningpresentersession/request-change-presenter",
+  APPROVE_CHANGE_PRESENTER:"/assigningpresentersession/approve-change-presenter",
+  LIST_PENDING_CHANGE_REQUEST:"/assigningpresentersession/get-pending-presenter-change-requests"
   }
 }

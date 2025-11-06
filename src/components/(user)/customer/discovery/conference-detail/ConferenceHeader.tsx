@@ -574,7 +574,7 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                                         >
                                             <div className="space-y-3 p-3 bg-black/20 rounded-lg border border-yellow-400/20">
                                                 <p className="text-xs text-yellow-200/80 leading-relaxed">
-                                                    💡 Viết tiêu đề và mô tả bài báo. Có thể chỉnh sửa sau tại <strong>"Bài báo của tôi"</strong>
+                                                💡 Viết tiêu đề và mô tả bài báo. Có thể chỉnh sửa sau tại <strong>'Bài báo của tôi'</strong>
                                                 </p>
                                                 <div>
                                                     <label className="block text-xs font-medium mb-1.5 text-white/90">

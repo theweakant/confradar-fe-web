@@ -298,7 +298,7 @@ export interface RevisionRoundDeadline {
 
 export interface ResearchPhase {
   researchPhaseId?: string;
-  registrationStartDate: string; // ISO date
+  registrationStartDate: string; 
   registrationEndDate: string;
   fullPaperStartDate: string;
   fullPaperEndDate: string;
@@ -325,7 +325,7 @@ export interface ConferenceResearchPhaseData {
 
 //RESEARCH RANKING FILE STEP
 export interface ResearchRankingFile {
-  rankingFileId?: string; // Có thể có khi update
+  rankingFileId?: string; 
   fileUrl?: string;
   file?: File | null;
 }
