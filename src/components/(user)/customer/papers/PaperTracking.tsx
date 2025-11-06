@@ -39,16 +39,16 @@ const PaperTracking = () => {
       try {
         const response = await fetchPaperDetail(paperId);
         setPaperDetail(response.data);
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Handle API error
-        if (error?.data?.Message) {
-          setPaperDetailError(error.data.Message);
-        } else if (error?.data?.Errors) {
-          const errors = Object.values(error.data.Errors);
-          setPaperDetailError(errors.length > 0 ? errors[0] as string : "Có lỗi xảy ra khi tải chi tiết bài báo");
-        } else {
-          setPaperDetailError("Có lỗi xảy ra khi tải chi tiết bài báo");
-        }
+        // if (error?.data?.Message) {
+        //   setPaperDetailError(error.data.Message);
+        // } else if (error?.data?.Errors) {
+        //   const errors = Object.values(error.data.Errors);
+        //   setPaperDetailError(errors.length > 0 ? errors[0] as string : "Có lỗi xảy ra khi tải chi tiết bài báo");
+        // } else {
+        //   setPaperDetailError("Có lỗi xảy ra khi tải chi tiết bài báo");
+        // }
       } finally {
         setIsLoadingPaperDetail(false);
       }
@@ -276,6 +276,55 @@ const PaperTracking = () => {
                     <span className="text-gray-500 ml-2">
                       (ID: {paperDetail.currentPhase.paperPhaseId})
                     </span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Paper Overview */}
+            {!paperPhasesLoading && !isLoadingPaperDetail && !paperPhasesError && !paperDetailError && paperDetail && (
+              <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 mt-8">
+                <h2 className="text-xl font-bold mb-4 text-white">Thông tin tổng quan bài báo</h2>
+                <div className="space-y-3">
+                  <p className="text-gray-300">
+                    <span className="font-medium text-white">Paper ID:</span> {paperDetail.paperId}
+                  </p>
+                  {paperDetail.title && (
+                    <p className="text-gray-300">
+                      <span className="font-medium text-white">Tiêu đề:</span> {paperDetail.title}
+                    </p>
+                  )}
+                  {paperDetail.description && (
+                    <p className="text-gray-300">
+                      <span className="font-medium text-white">Mô tả:</span> {paperDetail.description}
+                    </p>
+                  )}
+                  {paperDetail.currentPhase && (
+                    <p className="text-gray-300">
+                      <span className="font-medium text-white">Giai đoạn hiện tại:</span> {paperDetail.currentPhase.phaseName || 'Chưa xác định'}
+                    </p>
+                  )}
+                  {paperDetail.rootAuthor && (
+                    <p className="text-gray-300">
+                      <span className="font-medium text-white">Tác giả chính:</span> {paperDetail.rootAuthor.fullName}
+                    </p>
+                  )}
+                  {paperDetail.coAuthors && paperDetail.coAuthors.length > 0 && (
+                    <div className="text-gray-300">
+                      <span className="font-medium text-white">Đồng tác giả:</span>
+                      <ul className="ml-4 mt-1">
+                        {paperDetail.coAuthors.map((author, index) => (
+                          <li key={author.userId} className="text-sm">
+                            • {author.fullName}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {paperDetail.created && (
+                    <p className="text-gray-300">
+                      <span className="font-medium text-white">Ngày tạo:</span> {new Date(paperDetail.created).toLocaleDateString('vi-VN')}
+                    </p>
                   )}
                 </div>
               </div>

@@ -25,7 +25,7 @@ export default function CustomerWaitlist() {
     React.useEffect(() => {
         if (!waitLists) return;
 
-        let sorted = [...waitLists];
+        const sorted = [...waitLists];
 
         switch (activeFilter) {
             case "most-recent":

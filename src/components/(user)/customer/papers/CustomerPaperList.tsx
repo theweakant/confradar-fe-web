@@ -43,6 +43,17 @@ function PaperCard({ paper }: { paper: PaperCustomer }) {
                         <h2 className="text-xl font-semibold text-white leading-tight">
                             Mã bài báo: {paper.paperId}
                         </h2>
+                        {paper.title && (
+                            <h2 className="text-xl font-semibold text-white leading-tight">
+                                Tên bài báo: {paper.title}
+                            </h2>
+                        )}
+
+                        {paper.description && (
+                            <h2 className="text-xl font-semibold text-white leading-tight">
+                                Miêu tả về bài báo: {paper.description}
+                            </h2>
+                        )}
                         {paper.conferenceId && (
                             <div className="flex items-center gap-2 text-sm text-gray-400">
                                 <BookOpen className="h-4 w-4" />

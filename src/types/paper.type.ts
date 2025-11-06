@@ -1,7 +1,7 @@
 //paper.type.ts
 
 export interface Paper {
-paperId:string;
+  paperId: string;
 }
 
 
@@ -17,9 +17,9 @@ export interface ListPaper {
     globalStatusName: string | null;
     abstractUrl: string;
   } | null;
-  fullPaper: unknown  | null;
-  revisionPaper: unknown  | null;
-  cameraReady: unknown  | null;
+  fullPaper: unknown | null;
+  revisionPaper: unknown | null;
+  cameraReady: unknown | null;
 }
 
 export interface UnassignAbstract {
@@ -55,11 +55,11 @@ export interface AssignedPaper {
   conferenceId: string;
   paperPhaseId: string;
   createdAt: string;
-  cameraReady: unknown  | null;
-  conference: unknown  | null;
-  paperAuthors: unknown [];
-  paperPhase: unknown  | null;
-  presenter: unknown  | null;
+  cameraReady: unknown | null;
+  conference: unknown | null;
+  paperAuthors: unknown[];
+  paperPhase: unknown | null;
+  presenter: unknown | null;
 }
 
 //------------------------------------------
@@ -126,7 +126,7 @@ export interface RevisionPaperA {
 
 
 export interface FullPaperA {
-  fullPaperId: string;  
+  fullPaperId: string;
   reviewStatusId: string;
   reviewStatusName: string;
   fullPaperUrl: string;
@@ -147,7 +147,7 @@ export interface SubmitFullPaperReviewRequest {
   note: string;
   feedbackToAuthor: string;
   reviewStatus: string;
-  feedbackMaterialFile?: File | null; 
+  feedbackMaterialFile?: File | null;
 }
 
 //--------------------------------------------------------
@@ -213,8 +213,10 @@ export interface SubmitPaperRevisionFeedbackRequest {
 //CUSTOMER PAPER TYPE
 export interface PaperCustomer {
   paperId: string;
+  title?: string;
+  description?: string;
 
-  presenterId?: string;
+  // presenterId?: string;
   fullPaperId?: string;
   revisionPaperId?: string;
   cameraReadyId?: string;
@@ -232,11 +234,21 @@ export interface PaperCustomer {
 
 export interface PaperDetailResponse {
   paperId: string;
+  title?: string;
+  description?: string;
   currentPhase: PaperPhase;
+  rootAuthor: Author;
+  coAuthors: Author[]
   abstract?: Abstract | null;
   fullPaper?: FullPaper | null;
   revisionPaper?: RevisionPaper | null;
   cameraReady?: CameraReady | null;
+  created?: string;
+}
+
+export interface Author {
+  userId: string;
+  fullName: string;
 }
 
 export interface PaperPhase {
@@ -246,22 +258,33 @@ export interface PaperPhase {
 
 export interface Abstract {
   abstractId: string;
+  title?: string;
+  description?: string;
   globalStatusId?: string | null;
   fileUrl?: string | null;
+  created?: string;
+  reviewedAt?: string;
 }
 
 export interface FullPaper {
-  fullPaperId: string;  
-
-reviewStatusId?: string | null;
+  fullPaperId: string;
+  title?: string;
+  description?: string;
+  reviewStatusId?: string | null;
   fileUrl?: string | null;
+  created?: string;
+  reviewedAt?: string;
 }
 
 export interface RevisionPaper {
   revisionPaperId: string;
+  title?: string;
+  description?: string;
   revisionRound?: number | null;
   overallStatus?: string | null;
   submissions: RevisionSubmission[];
+  created?: string;
+  reviewedAt?: string;
   // reviews: RevisionReview[];
   // revisionPaperId: string;
   // revisionRound?: number | null;
@@ -270,11 +293,13 @@ export interface RevisionPaper {
 
 export interface RevisionSubmission {
   submissionId: string;
+  title?: string;
+  description?: string;
   fileUrl: string;
-  revisionDeadline: {
-    roundNumher: number;  // typo backend vẫn giữ là roundNumher
-    deadline: string;
-  };
+  // revisionDeadline: {
+  //   roundNumher: number;
+  //   deadline: string;
+  // };
   feedbacks: RevisionSubmissionFeedback[];
   // revisionPaperId: string;
   // revisionRound?: number | null;
@@ -296,6 +321,8 @@ export interface RevisionSubmissionFeedback {
 
 export interface RevisionReview {
   reviewId: string;
+  title?: string;
+  description?: string;
   note?: string;
   feedBackToAuthor?: string;
   feedbackMaterialURL?: string;
@@ -304,13 +331,19 @@ export interface RevisionReview {
 
 export interface CameraReady {
   cameraReadyId: string;
-  globalStatusId?: string ;
+  title?: string;
+  description?: string;
+  globalStatusId?: string;
   fileUrl?: string;
+  created?: string;
+  reviewedAt?: string;
 }
 
 export interface CreateAbstractRequest {
   abstractFile: File;
   paperId: string;
+  title: string;
+  description: string;
   coAuthorId: string[];
 }
 
@@ -324,11 +357,15 @@ export interface AvailableCustomerResponse {
 export interface CreateFullPaperRequest {
   fullPaperFile: File;
   paperId: string;
+  title: string;
+  description: string;
 }
 
 export interface CreateRevisionPaperSubmissionRequest {
   revisionPaperFile: File;
   paperId: string;
+  title: string;
+  description: string;
 }
 
 export interface CreateRevisionPaperSubmissionResponse {
@@ -345,4 +382,6 @@ export interface RevisionPaperSubmissionFeedbackResponse {
 export interface CreateCameraReadyRequest {
   paperId: string;
   cameraReadyFile: File;
+  title: string;
+  description: string;
 }

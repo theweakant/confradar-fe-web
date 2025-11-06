@@ -10,6 +10,7 @@ import {
     useSubmitPaperRevisionResponseMutation,
     useSubmitCameraReadyMutation,
     useListCustomerWaitListQuery,
+    useAddToWaitListMutation,
     useLeaveWaitListMutation,
 } from "@/redux/services/paper.service";
 import { parseApiError } from "@/redux/utils/api";
@@ -76,6 +77,9 @@ export const usePaperCustomer = () => {
         error: waitListRawError,
     } = useListCustomerWaitListQuery();
 
+    const [addToWaitList, { isLoading: addingToWaitListLoading, error: addToWaitListRawError }] =
+        useAddToWaitListMutation();
+
     const [leaveWaitList, { isLoading: leavingWaitListLoading, error: leaveWaitListRawError }] =
         useLeaveWaitListMutation();
 
@@ -91,6 +95,7 @@ export const usePaperCustomer = () => {
     const submitRevisionResponseError = parseApiError<string>(submitRevisionResponseRawError);
     const submitCameraReadyError = parseApiError<string>(submitCameraReadyRawError);
     const waitListError = parseApiError<string>(waitListRawError);
+    const addToWaitListError = parseApiError<string>(addToWaitListRawError);
     const leaveWaitListError = parseApiError<string>(leaveWaitListRawError);
 
     const fetchPaperDetail = useCallback(async (
@@ -186,6 +191,18 @@ export const usePaperCustomer = () => {
         }
     };
 
+    const handleAddToWaitList = useCallback(
+        async (conferenceId: string): Promise<ApiResponse<boolean>> => {
+            try {
+                const result = await addToWaitList({ conferenceId } as LeaveWaitListRequest).unwrap();
+                return result;
+            } catch (error) {
+                throw error;
+            }
+        },
+        [addToWaitList]
+    );
+
     const handleLeaveWaitList = useCallback(
         async (conferenceId: string): Promise<ApiResponse<boolean>> => {
             try {
@@ -211,6 +228,7 @@ export const usePaperCustomer = () => {
         submitRevisionResponseLoading ||
         submitCameraReadyLoading ||
         waitListLoading ||
+        addingToWaitListLoading ||
         leavingWaitListLoading;
     ;
 
@@ -229,11 +247,13 @@ export const usePaperCustomer = () => {
         handleSubmitPaperRevision,
         handleSubmitPaperRevisionResponse,
         handleSubmitCameraReady,
+        handleAddToWaitList,
         handleLeaveWaitList,
 
         //Loading
         loading,
         waitListLoading,
+        addingToWaitListLoading,
         leavingWaitListLoading,
 
         //Errors
@@ -248,6 +268,7 @@ export const usePaperCustomer = () => {
         submitRevisionResponseError,
         submitCameraReadyError,
         waitListError,
+        addToWaitListError,
         leaveWaitListError,
     };
 };

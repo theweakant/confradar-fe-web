@@ -86,7 +86,7 @@ export const endpoint = {
     UPDATE: "/Conference",
     DELETE: "/Conference",
 
-
+    GET_OWN_CONFERENCES_FOR_SCHEDULE: '/Conference/own-conferences-for-schedule',
   },
 
   CONFERENCE_STEP: {
@@ -107,7 +107,7 @@ export const endpoint = {
     UPDATE_SESSION: (sessionId: string) => `/conferencestep/sessions/${sessionId}`,
     UPDATE_SPEAKER: (sessionId: string) => `/conferencestep/sessions/${sessionId}/speaker`,
     UPDATE_POLICY: (policyId: string) => `/conferencestep/policies/${policyId}`,
-    UPDATE_REFUND_POLICY: (refundPolicyId: string) => `/conferencestep/refund-policies/${refundPolicyId}`,  
+    UPDATE_REFUND_POLICY: (refundPolicyId: string) => `/conferencestep/refund-policies/${refundPolicyId}`,
     UPDATE_MEDIA: (mediaId: string) => `/conferencestep/media/${mediaId}`,
     UPDATE_SPONSOR: (sponsorId: string) => `/conferencestep/sponsors/${sponsorId}`,
 
@@ -131,8 +131,8 @@ export const endpoint = {
 
   TRANSACTION: {
     CREATE_TECH_PAYMENT: "/payment/pay-tech",
-    CREATE_RESEARCH_PAPER_PAYMENT: "/payment/pay-research",
-      GET_OWN_TRANSACTION: "/payment/get-own-transaction",
+    CREATE_RESEARCH_PAPER_PAYMENT: "/payment/pay-research-paper",
+    GET_OWN_TRANSACTION: "/payment/get-own-transaction",
   },
 
   PAYMENT_METHOD: {
@@ -185,6 +185,7 @@ export const endpoint = {
     LIST_AVAILABLE_CUSTOMERS: "/Paper/list-available-customers",
 
     //WAITLIST
+    ADD_TO_WAITLIST: "/Paper/add-waitlist",
     LIST_CUSTOMER_WAITLIST: "/Paper/list-customer-waitlist",
     LEAVE_WAITLIST: "/Paper/leave-waitlist",
   },

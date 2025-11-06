@@ -29,3 +29,10 @@ export interface PaymentMethod {
     methodName?: string;
     methodDescription?: string;
 }
+
+export interface GeneralPaymentResultResponse {
+    paymentMessage: string;
+    checkOutUrl?: string;
+    // isAddedWaitList?: boolean;
+    // conferenceId?: string;
+}

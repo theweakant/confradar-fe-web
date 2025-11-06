@@ -95,15 +95,15 @@ const EditProfileScreen: React.FC = () => {
       alert('Cập nhật hồ sơ thành công!')
       setIsEditDialogOpen(false)
       setAvatarFile(null)
-    } catch (error: any) {
+    } catch (error: unknown) {
       let errorMessage = "Có lỗi xảy ra khi cập nhật hồ sơ"
 
-      if (error?.data?.Message) {
-        errorMessage = error.data.Message
-      } else if (error?.data?.Errors) {
-        const errors = Object.values(error.data.Errors)
-        errorMessage = errors.length > 0 ? errors[0] as string : errorMessage
-      }
+      // if (error?.data?.Message) {
+      //   errorMessage = error.data.Message
+      // } else if (error?.data?.Errors) {
+      //   const errors = Object.values(error.data.Errors)
+      //   errorMessage = errors.length > 0 ? errors[0] as string : errorMessage
+      // }
 
       alert(errorMessage)
     }
@@ -138,15 +138,15 @@ const EditProfileScreen: React.FC = () => {
       alert('Đổi mật khẩu thành công!')
       setIsChangePassDialogOpen(false)
       setPasswordData({ oldPassword: '', newPassword: '', confirmNewPassword: '' })
-    } catch (error: any) {
+    } catch (error: unknown) {
       let errorMessage = "Có lỗi xảy ra khi đổi mật khẩu"
 
-      if (error?.data?.Message) {
-        errorMessage = error.data.Message
-      } else if (error?.data?.Errors) {
-        const errors = Object.values(error.data.Errors)
-        errorMessage = errors.length > 0 ? errors[0] as string : errorMessage
-      }
+      // if (error?.data?.Message) {
+      //   errorMessage = error.data.Message
+      // } else if (error?.data?.Errors) {
+      //   const errors = Object.values(error.data.Errors)
+      //   errorMessage = errors.length > 0 ? errors[0] as string : errorMessage
+      // }
 
       alert(errorMessage)
     }

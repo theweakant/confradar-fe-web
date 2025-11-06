@@ -15,6 +15,7 @@ import type {
   DeletedFavouriteConferenceResponse,
   FavouriteConferenceDetailResponse,
   FavouriteConferenceRequest,
+  ConferenceDetailForScheduleResponse,
 } from "@/types/conference.type";
 import type { ApiResponse, ApiResponsePagination } from "@/types/api.type";
 
@@ -101,7 +102,7 @@ export const conferenceApi = createApi({
       providesTags: ["Conference"],
     }),
 
-    
+
     //collaborator get tech detail
     getTechnicalConferenceDetailInternal: builder.query<
       ApiResponse<TechnicalConferenceDetailResponse>,
@@ -127,7 +128,7 @@ export const conferenceApi = createApi({
         { type: "Conference", id: conferenceId },
       ],
     }),
-    
+
     //tech detail endpoint
     getTechnicalConferenceDetail: builder.query<
       ApiResponse<TechnicalConferenceDetailResponse>,
@@ -322,6 +323,17 @@ export const conferenceApi = createApi({
       }),
       invalidatesTags: ["Conference"],
     }),
+
+    getOwnConferencesForSchedule: builder.query<
+      ApiResponse<ConferenceDetailForScheduleResponse[]>,
+      void
+    >({
+      query: () => ({
+        url: endpoint.CONFERENCE.GET_OWN_CONFERENCES_FOR_SCHEDULE,
+        method: "GET",
+      }),
+      providesTags: ["Conference"],
+    }),
   }),
 });
 
@@ -332,7 +344,7 @@ export const {
   useGetAllConferencesWithPricesPaginationQuery,
   useGetTechnicalConferenceDetailInternalQuery, //collab
   useGetResearchConferenceDetailInternalQuery, //organizer
-  useGetResearchConferencesForOrganizerQuery, 
+  useGetResearchConferencesForOrganizerQuery,
   useGetTechConferencesForCollaboratorAndOrganizerQuery,
   // useGetConferenceByIdQuery,
   useGetConferencesByStatusQuery,
@@ -355,4 +367,7 @@ export const {
   useLazyGetOwnFavouriteConferencesQuery,
   useAddToFavouriteMutation,
   useDeleteFromFavouriteMutation,
+
+  useGetOwnConferencesForScheduleQuery,
+  useLazyGetOwnConferencesForScheduleQuery,
 } = conferenceApi;

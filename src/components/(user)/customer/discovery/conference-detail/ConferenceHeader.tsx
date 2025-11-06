@@ -5,6 +5,7 @@ import { getCurrentPrice } from "@/utils/conferenceUtils";
 import React, { useEffect, useState } from 'react';
 import { useTransaction } from '@/redux/hooks/transaction/useTransaction';
 import { useConference } from '@/redux/hooks/conference/useConference';
+import { usePaperCustomer } from '@/redux/hooks/paper/usePaper';
 import { toast } from 'sonner';
 
 interface ConferenceHeaderProps {
@@ -92,6 +93,8 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
 
     const { paymentMethods, loading: paymentMethodsLoading, fetchAllPaymentMethods } = useTransaction();
 
+    const { handleAddToWaitList, addingToWaitListLoading } = usePaperCustomer();
+
 
     useEffect(() => {
         if (isDialogOpen) {
@@ -99,7 +102,7 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
         }
     }, [isDialogOpen]);
 
-    // Handle add to waitlist - placeholder function
+    // Handle add to waitlist
     const handleAddToWaitlist = async (conferenceId?: string) => {
         if (!conferenceId || !accessToken) {
             toast.error('Vui lòng đăng nhập để sử dụng tính năng này');
@@ -107,12 +110,8 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
         }
 
         try {
-            // TODO: Implement actual API call
-            // const response = await addToWaitlistApi(conferenceId);
-
-            // For now, just show success message
+            await handleAddToWaitList(conferenceId);
             toast.success('Đã thêm vào danh sách chờ thành công!');
-            console.log('Adding to waitlist for conference:', conferenceId);
         } catch (error) {
             toast.error('Có lỗi xảy ra, vui lòng thử lại');
             console.error('Add to waitlist error:', error);
@@ -392,9 +391,20 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                                         </p>
                                         <button
                                             onClick={() => handleAddToWaitlist(conference.conferenceId)}
-                                            className="w-full px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors"
+                                            disabled={addingToWaitListLoading}
+                                            className="w-full px-4 py-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
                                         >
-                                            Thêm vào danh sách chờ
+                                            {addingToWaitListLoading ? (
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"></path>
+                                                    </svg>
+                                                    <span>Đang xử lý...</span>
+                                                </div>
+                                            ) : (
+                                                'Thêm vào danh sách chờ'
+                                            )}
                                         </button>
                                     </div>
                                 );
@@ -574,7 +584,7 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                                         >
                                             <div className="space-y-3 p-3 bg-black/20 rounded-lg border border-yellow-400/20">
                                                 <p className="text-xs text-yellow-200/80 leading-relaxed">
-                                                    💡 Viết tiêu đề và mô tả bài báo. Có thể chỉnh sửa sau tại <strong>"Bài báo của tôi"</strong>
+                                                    💡 Viết tiêu đề và mô tả bài báo. Có thể chỉnh sửa sau tại <strong>&quot;Bài báo của tôi&quot;</strong>
                                                 </p>
                                                 <div>
                                                     <label className="block text-xs font-medium mb-1.5 text-white/90">
