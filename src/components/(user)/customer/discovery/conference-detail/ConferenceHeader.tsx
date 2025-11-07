@@ -174,17 +174,56 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                     <p className="text-white text-sm mb-4">
                         Nhấn để chọn khung giá vé và thanh toán
                     </p>
-                    <button
-                        onClick={() => setIsDialogOpen(true)}
-                        // className="w-full bg-black hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-                        className="w-full bg-gradient-to-r from-sky-500 via-indigo-500 to-violet-500 
-             hover:from-sky-400 hover:via-indigo-400 hover:to-violet-400
-             text-white px-6 py-3 rounded-lg font-semibold
-             shadow-lg shadow-indigo-500/30 transition-all duration-300
-             hover:scale-[1.02]"
-                    >
-                        Mở chọn vé
-                    </button>
+                    {(() => {
+                        const now = new Date();
+                        const ticketSaleStart = conference.ticketSaleStart ? new Date(conference.ticketSaleStart) : null;
+                        const ticketSaleEnd = conference.ticketSaleEnd ? new Date(conference.ticketSaleEnd) : null;
+                        
+                        const isBeforeSale = ticketSaleStart && now < ticketSaleStart;
+                        const isAfterSale = ticketSaleEnd && now > ticketSaleEnd;
+                        
+                        if (isBeforeSale) {
+                            return (
+                                <div>
+                                    <button
+                                        disabled
+                                        className="w-full bg-gray-500/50 text-white/70 px-6 py-3 rounded-lg font-semibold
+                                         cursor-not-allowed opacity-60"
+                                    >
+                                        Chưa đến lúc mở bán vé
+                                    </button>
+                                    <p className="text-white/60 text-xs mt-2 text-center">
+                                        Ngày bắt đầu bán vé: {formatDate(conference.ticketSaleStart)}
+                                    </p>
+                                </div>
+                            );
+                        }
+                        
+                        if (isAfterSale) {
+                            return (
+                                <button
+                                    disabled
+                                    className="w-full bg-red-500/50 text-white/70 px-6 py-3 rounded-lg font-semibold
+                                     cursor-not-allowed opacity-60"
+                                >
+                                    Đã hết thời gian bán vé
+                                </button>
+                            );
+                        }
+                        
+                        return (
+                            <button
+                                onClick={() => setIsDialogOpen(true)}
+                                className="w-full bg-gradient-to-r from-sky-500 via-indigo-500 to-violet-500 
+                                 hover:from-sky-400 hover:via-indigo-400 hover:to-violet-400
+                                 text-white px-6 py-3 rounded-lg font-semibold
+                                 shadow-lg shadow-indigo-500/30 transition-all duration-300
+                                 hover:scale-[1.02]"
+                            >
+                                Mở chọn vé
+                            </button>
+                        );
+                    })()}
                 </div>
 
                 {/* Ticket Selection Dialog */}

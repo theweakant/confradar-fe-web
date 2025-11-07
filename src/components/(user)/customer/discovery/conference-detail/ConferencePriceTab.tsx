@@ -107,7 +107,13 @@ const ConferencePriceTab: React.FC<ConferencePriceTabProps> = ({
                                 <h4 className="text-lg font-semibold text-white mb-4">Các giai đoạn giá vé</h4>
                                 {ticket.pricePhases && ticket.pricePhases.length > 0 ? (
                                     <div className="space-y-3">
-                                        {ticket.pricePhases.map((phase, index) => {
+                                        {ticket.pricePhases
+                                            .sort((a, b) => {
+                                                const startA = new Date(a.startDate || '').getTime();
+                                                const startB = new Date(b.startDate || '').getTime();
+                                                return startA - startB;
+                                            })
+                                            .map((phase, index) => {
                                             const status = getPhaseStatus(phase);
                                             const statusDisplay = getStatusDisplay(status);
                                             const actualPrice = ticket.ticketPrice && phase.applyPercent

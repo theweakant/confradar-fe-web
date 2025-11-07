@@ -57,7 +57,16 @@ const PolicyTab: React.FC<PolicyTabProps> = ({ conference }) => {
                 {refundPolicies.length > 0 ? (
                     <div className="space-y-4">
                         {refundPolicies
-                            .sort((a, b) => (a.refundOrder || 0) - (b.refundOrder || 0))
+                            .sort((a, b) => {
+                                // Sort by refundOrder first, then by percentRefund descending
+                                const orderA = a.refundOrder || 999;
+                                const orderB = b.refundOrder || 999;
+                                if (orderA !== orderB) return orderA - orderB;
+                                
+                                const percentA = a.percentRefund || 0;
+                                const percentB = b.percentRefund || 0;
+                                return percentB - percentA; // Higher percentage first
+                            })
                             .map((refund) => (
                             <div key={refund.refundPolicyId} className="bg-white/20 backdrop-blur-md rounded-lg p-6 border border-white/10">
                                 <div className="flex items-center justify-between">

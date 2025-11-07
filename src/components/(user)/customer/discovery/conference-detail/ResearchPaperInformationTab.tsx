@@ -121,7 +121,9 @@ const ResearchPaperInformationTab: React.FC<ResearchPaperInformationTabProps> = 
                             <div className="mt-4">
                                 <h4 className="text-white font-medium mb-2">Revision Rounds</h4>
                                 <div className="space-y-2">
-                                    {conference.researchPhase.revisionRoundDeadlines.map((round, index) => (
+                                    {conference.researchPhase.revisionRoundDeadlines
+                                        .sort((a, b) => (a.roundNumber || 0) - (b.roundNumber || 0))
+                                        .map((round, index) => (
                                         <div key={round.revisionRoundDeadlineId || index} className="bg-white/10 rounded p-2">
                                             <div className="flex justify-between items-center">
                                                 <span className="text-white font-medium">Round {round.roundNumber}</span>
@@ -243,7 +245,17 @@ const ResearchPaperInformationTab: React.FC<ResearchPaperInformationTabProps> = 
                 <div className="mb-8">
                     <h3 className="text-xl font-semibold text-white mb-4">Research Sessions</h3>
                     <div className="space-y-4">
-                        {conference.researchSessions.map((session) => (
+                        {conference.researchSessions
+                            .sort((a, b) => {
+                                const dateA = new Date(a.date || '').getTime();
+                                const dateB = new Date(b.date || '').getTime();
+                                if (dateA !== dateB) return dateA - dateB;
+                                
+                                const timeA = new Date(a.startTime || '').getTime();
+                                const timeB = new Date(b.startTime || '').getTime();
+                                return timeA - timeB;
+                            })
+                            .map((session) => (
                             <div key={session.conferenceSessionId} className="bg-white/20 backdrop-blur-md rounded-xl p-6">
                                 <h4 className="text-xl font-bold text-white mb-2">{session.title || 'Chưa có tiêu đề session'}</h4>
                                 {session.description && (
