@@ -492,15 +492,15 @@ updateSessionSpeaker: builder.mutation<
     //CREATE PHASE
     createResearchPhase: builder.mutation<
       ApiResponse<string>,
-      { conferenceId: string; data: ResearchPhase }
+      { conferenceId: string; data: ResearchPhase[] }
     >({
       query: ({ conferenceId, data }) => ({
         url: endpoint.CONFERENCE_STEP.CREATE_RESEARCH_PHASE(conferenceId),
         method: "POST",
-        body: data,
+        body: { phases: data },
       }),
       invalidatesTags: ["ConferenceStep"],
-    }), 
+    }),
     
     //CREATE SESSION
     createResearchSessions: builder.mutation<

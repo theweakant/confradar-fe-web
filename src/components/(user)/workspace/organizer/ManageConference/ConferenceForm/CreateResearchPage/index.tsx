@@ -177,7 +177,29 @@ export default function CreateResearchConferenceStepPage() {
   });
 
   // Step 4: Research Phase/Timeline
-  const [researchPhase, setResearchPhase] = useState<ResearchPhase>({
+  // const [researchPhase, setResearchPhase] = useState<ResearchPhase>({
+  //   registrationStartDate: "",
+  //   registrationEndDate: "",
+  //   registrationDuration: 1,
+  //   fullPaperStartDate: "",
+  //   fullPaperEndDate: "",
+  //   fullPaperDuration: 1,
+  //   reviewStartDate: "",
+  //   reviewEndDate: "",
+  //   reviewDuration: 1,
+  //   reviseStartDate: "",
+  //   reviseEndDate: "",
+  //   reviseDuration: 1,
+  //   cameraReadyStartDate: "",
+  //   cameraReadyEndDate: "",
+  //   cameraReadyDuration: 1,
+  //   isWaitlist: false,
+  //   isActive: true,
+  //   revisionRoundDeadlines: [],
+  // });
+const [researchPhases, setResearchPhases] = useState<ResearchPhase[]>([
+  {
+    // Main phase
     registrationStartDate: "",
     registrationEndDate: "",
     registrationDuration: 1,
@@ -196,12 +218,39 @@ export default function CreateResearchConferenceStepPage() {
     isWaitlist: false,
     isActive: true,
     revisionRoundDeadlines: [],
-  });
+  },
+  {
+    registrationStartDate: "",
+    registrationEndDate: "",
+    registrationDuration: 1,
+    fullPaperStartDate: "",
+    fullPaperEndDate: "",
+    fullPaperDuration: 1,
+    reviewStartDate: "",
+    reviewEndDate: "",
+    reviewDuration: 1,
+    reviseStartDate: "",
+    reviseEndDate: "",
+    reviseDuration: 1,
+    cameraReadyStartDate: "",
+    cameraReadyEndDate: "",
+    cameraReadyDuration: 1,
+    isWaitlist: true,
+    isActive: false, 
+    revisionRoundDeadlines: [],
+  },
+]);
+
 
   const [revisionRoundDeadlines, setRevisionRoundDeadlines] = useState<RevisionRoundDeadline[]>([]);
-  const [newRevisionRound, setNewRevisionRound] = useState<RevisionRoundDeadline>({
-    endDate: "",
+  const [newRevisionRound, setNewRevisionRound] = useState<{
+    roundNumber: number;
+    startDate: string;     // <-- thêm
+    durationInDays: number; // <-- thêm
+  }>({
     roundNumber: 1,
+    startDate: "",
+    durationInDays: 3, 
   });
 
   // Step 5: Sessions (Copy from Conference)
@@ -262,6 +311,35 @@ export default function CreateResearchConferenceStepPage() {
     imageFile: null,
   });
 
+  //HEPLER
+  const updatePhaseEndDate = (
+  index: number,
+  startDateKey: keyof ResearchPhase,
+  durationKey: keyof ResearchPhase,
+  endDateKey: keyof ResearchPhase
+) => {
+  setResearchPhases((prev) => {
+    const phase = prev[index];
+    if (
+      !phase ||
+      !phase[startDateKey] ||
+      !phase[durationKey] ||
+      (phase[durationKey] as number) <= 0
+    ) {
+      return prev;
+    }
+
+    const start = new Date(phase[startDateKey] as string);
+    const end = new Date(start);
+    end.setDate(start.getDate() + (phase[durationKey] as number) - 1);
+    const newEndDate = end.toISOString().split("T")[0];
+
+    const updated = [...prev];
+    updated[index] = { ...updated[index], [endDateKey]: newEndDate };
+    return updated;
+  });
+};
+
   // ============================================
   // AUTO-CALCULATE DATES
   // ============================================
@@ -285,60 +363,73 @@ export default function CreateResearchConferenceStepPage() {
     }
   }, [basicForm.ticketSaleStart, basicForm.ticketSaleDuration]);
 
-  useEffect(() => {
-    if (researchPhase.registrationStartDate && 
-        researchPhase.registrationDuration && 
-        researchPhase.registrationDuration > 0) {
-      const start = new Date(researchPhase.registrationStartDate);
-      const end = new Date(start);
-      end.setDate(start.getDate() + researchPhase.registrationDuration - 1);
-      setResearchPhase(prev => ({ ...prev, registrationEndDate: end.toISOString().split("T")[0] }));
-    }
-  }, [researchPhase.registrationStartDate, researchPhase.registrationDuration]);
+// === MAIN PHASE (isWaitlist: false) ===
+const mainPhaseIndex = researchPhases.findIndex(p => !p.isWaitlist);
+const mainPhase = researchPhases[mainPhaseIndex];
 
-  useEffect(() => {
-    if (researchPhase.fullPaperStartDate &&
-        researchPhase.fullPaperDuration && 
-        researchPhase.fullPaperDuration > 0) {
-      const start = new Date(researchPhase.fullPaperStartDate);
-      const end = new Date(start);
-      end.setDate(start.getDate() + researchPhase.fullPaperDuration - 1);
-      setResearchPhase(prev => ({ ...prev, fullPaperEndDate: end.toISOString().split("T")[0] }));
-    }
-  }, [researchPhase.fullPaperStartDate, researchPhase.fullPaperDuration]);
+useEffect(() => {
+  if (mainPhaseIndex !== -1) {
+    updatePhaseEndDate(mainPhaseIndex, 'registrationStartDate', 'registrationDuration', 'registrationEndDate');
+  }
+}, [mainPhase?.registrationStartDate, mainPhase?.registrationDuration]);
 
-  useEffect(() => {
-    if (researchPhase.reviewStartDate && 
-        researchPhase.reviewDuration && 
-        researchPhase.reviewDuration > 0) {
-      const start = new Date(researchPhase.reviewStartDate);
-      const end = new Date(start);
-      end.setDate(start.getDate() + researchPhase.reviewDuration - 1);
-      setResearchPhase(prev => ({ ...prev, reviewEndDate: end.toISOString().split("T")[0] }));
-    }
-  }, [researchPhase.reviewStartDate, researchPhase.reviewDuration]);
+useEffect(() => {
+  if (mainPhaseIndex !== -1) {
+    updatePhaseEndDate(mainPhaseIndex, 'fullPaperStartDate', 'fullPaperDuration', 'fullPaperEndDate');
+  }
+}, [mainPhase?.fullPaperStartDate, mainPhase?.fullPaperDuration]);
 
-  useEffect(() => {
-    if (researchPhase.reviseStartDate &&
-        researchPhase.reviseDuration && 
-        researchPhase.reviseDuration > 0) {
-      const start = new Date(researchPhase.reviseStartDate);
-      const end = new Date(start);
-      end.setDate(start.getDate() + researchPhase.reviseDuration - 1);
-      setResearchPhase(prev => ({ ...prev, reviseEndDate: end.toISOString().split("T")[0] }));
-    }
-  }, [researchPhase.reviseStartDate, researchPhase.reviseDuration]);
+useEffect(() => {
+  if (mainPhaseIndex !== -1) {
+    updatePhaseEndDate(mainPhaseIndex, 'reviewStartDate', 'reviewDuration', 'reviewEndDate');
+  }
+}, [mainPhase?.reviewStartDate, mainPhase?.reviewDuration]);
 
-  useEffect(() => {
-    if (researchPhase.cameraReadyStartDate &&
-        researchPhase.cameraReadyDuration &&  
-        researchPhase.cameraReadyDuration > 0) {
-      const start = new Date(researchPhase.cameraReadyStartDate);
-      const end = new Date(start);
-      end.setDate(start.getDate() + researchPhase.cameraReadyDuration - 1);
-      setResearchPhase(prev => ({ ...prev, cameraReadyEndDate: end.toISOString().split("T")[0] }));
-    }
-  }, [researchPhase.cameraReadyStartDate, researchPhase.cameraReadyDuration]);
+useEffect(() => {
+  if (mainPhaseIndex !== -1) {
+    updatePhaseEndDate(mainPhaseIndex, 'reviseStartDate', 'reviseDuration', 'reviseEndDate');
+  }
+}, [mainPhase?.reviseStartDate, mainPhase?.reviseDuration]);
+
+useEffect(() => {
+  if (mainPhaseIndex !== -1) {
+    updatePhaseEndDate(mainPhaseIndex, 'cameraReadyStartDate', 'cameraReadyDuration', 'cameraReadyEndDate');
+  }
+}, [mainPhase?.cameraReadyStartDate, mainPhase?.cameraReadyDuration]);
+
+// === WAITLIST PHASE (isWaitlist: true) ===
+const waitlistPhaseIndex = researchPhases.findIndex(p => p.isWaitlist);
+const waitlistPhase = researchPhases[waitlistPhaseIndex];
+
+useEffect(() => {
+  if (waitlistPhaseIndex !== -1) {
+    updatePhaseEndDate(waitlistPhaseIndex, 'registrationStartDate', 'registrationDuration', 'registrationEndDate');
+  }
+}, [waitlistPhase?.registrationStartDate, waitlistPhase?.registrationDuration]);
+
+useEffect(() => {
+  if (waitlistPhaseIndex !== -1) {
+    updatePhaseEndDate(waitlistPhaseIndex, 'fullPaperStartDate', 'fullPaperDuration', 'fullPaperEndDate');
+  }
+}, [waitlistPhase?.fullPaperStartDate, waitlistPhase?.fullPaperDuration]);
+
+useEffect(() => {
+  if (waitlistPhaseIndex !== -1) {
+    updatePhaseEndDate(waitlistPhaseIndex, 'reviewStartDate', 'reviewDuration', 'reviewEndDate');
+  }
+}, [waitlistPhase?.reviewStartDate, waitlistPhase?.reviewDuration]);
+
+useEffect(() => {
+  if (waitlistPhaseIndex !== -1) {
+    updatePhaseEndDate(waitlistPhaseIndex, 'reviseStartDate', 'reviseDuration', 'reviseEndDate');
+  }
+}, [waitlistPhase?.reviseStartDate, waitlistPhase?.reviseDuration]);
+
+useEffect(() => {
+  if (waitlistPhaseIndex !== -1) {
+    updatePhaseEndDate(waitlistPhaseIndex, 'cameraReadyStartDate', 'cameraReadyDuration', 'cameraReadyEndDate');
+  }
+}, [waitlistPhase?.cameraReadyStartDate, waitlistPhase?.cameraReadyDuration]);
 
   useEffect(() => {
   if (newSession.startTime && newSession.timeRange && newSession.timeRange > 0) {
@@ -350,6 +441,14 @@ export default function CreateResearchConferenceStepPage() {
   }
 }, [newSession.startTime, newSession.timeRange]);
 
+
+const calculateEndDate = (startDate: string, duration: number): string => {
+  if (!startDate || duration <= 0) return "";
+  const start = new Date(startDate);
+  const end = new Date(start);
+  end.setDate(start.getDate() + duration - 1);
+  return end.toISOString().split("T")[0];
+};
   // VALIDATION
   const validateBasicForm = (): boolean => {
     const saleStart = new Date(basicForm.ticketSaleStart);
@@ -376,13 +475,25 @@ export default function CreateResearchConferenceStepPage() {
   };
 
   const validateResearchTimeline = (): boolean => {
+    const mainPhase = researchPhases.find(p => !p.isWaitlist);
+    
+    if (!mainPhase) {
+      toast.error("Thiếu timeline chính (main phase) cho hội thảo!");
+      return false;
+    }
+
     const { 
-      registrationStartDate, registrationEndDate,
-      fullPaperStartDate, fullPaperEndDate,
-      reviewStartDate, reviewEndDate,
-      reviseStartDate, reviseEndDate,
-      cameraReadyStartDate, cameraReadyEndDate
-    } = researchPhase;
+      registrationStartDate,
+      registrationEndDate,
+      fullPaperStartDate,
+      fullPaperEndDate,
+      reviewStartDate,
+      reviewEndDate,
+      reviseStartDate,
+      reviseEndDate,
+      cameraReadyStartDate,
+      cameraReadyEndDate
+    } = mainPhase;
 
     const { ticketSaleStart } = basicForm;
 
@@ -393,7 +504,7 @@ export default function CreateResearchConferenceStepPage() {
         !reviseStartDate || !reviseEndDate ||
         !cameraReadyStartDate || !cameraReadyEndDate ||
         !ticketSaleStart) {
-      toast.error("Vui lòng điền đầy đủ tất cả các ngày trong Timeline!");
+      toast.error("Vui lòng điền đầy đủ tất cả các ngày trong Timeline chính!");
       return false;
     }
 
@@ -456,7 +567,6 @@ export default function CreateResearchConferenceStepPage() {
       return false;
     }
 
-    
     if (camEnd >= saleStart) {
       toast.error(
         `Timeline research phải kết thúc trước khi bán vé! CameraReady phải kết thúc trước ${saleStart.toLocaleDateString('vi-VN')}`
@@ -474,7 +584,7 @@ export default function CreateResearchConferenceStepPage() {
     }
 
     const category = rankingData?.data?.find((r) => r.rankId === categoryId);
-    if (!category) return true; // Nếu không tìm thấy category thì bỏ qua
+    if (!category) return true; 
 
     const categoryName = category.rankName?.toLowerCase() || "";
     const upperValue = value.toUpperCase();
@@ -526,153 +636,210 @@ export default function CreateResearchConferenceStepPage() {
   };
 
 
-  const handleFinalSubmit = async () => {
-    if (!conferenceId) {
-      toast.error("Không tìm thấy conference ID!");
-      return;
-    }
-    if (!validateResearchTimeline()) {
-      return;
-    }
+const handleFinalSubmit = async () => {
+  if (!conferenceId) {
+    toast.error("Không tìm thấy conference ID!");
+    return;
+  }
+  if (!validateResearchTimeline()) {
+    return;
+  }
 
-    const hasAuthorTicket = tickets.some(t => t.isAuthor === true);
-    if (!hasAuthorTicket) {
-      toast.error("Hội nghị nghiên cứu cần có ít nhất một loại vé dành cho tác giả!");
-      return;
-    }
-    
-    try {
-      setIsSubmitting(true);
+  const hasAuthorTicket = tickets.some(t => t.isAuthor === true);
+  if (!hasAuthorTicket) {
+    toast.error("Hội nghị nghiên cứu cần có ít nhất một loại vé dành cho tác giả!");
+    return;
+  }
+  
+  try {
+    setIsSubmitting(true);
 
-      // ============================================
-      // BƯỚC 1: Detail và Phases PHẢI HOÀN THÀNH TRƯỚC
-      // ============================================
-      await Promise.all([
-        createResearchDetail({ conferenceId, data: researchDetail }).unwrap(),
-        createResearchPhase({ conferenceId, data: { ...researchPhase, revisionRoundDeadlines } }).unwrap()
-      ]);
-
-      // ============================================
-      // BƯỚC 2: SAU ĐÓ MỚI XỬ LÝ PRICE
-      // ============================================
-      if (tickets.length > 0) {
-        const priceData: ConferencePriceData = {
-          typeOfTicket: tickets.map(ticket => ({
-            ticketPrice: parseFloat(ticket.ticketPrice.toFixed(2)),
-            ticketName: ticket.ticketName,
-            ticketDescription: ticket.ticketDescription,
-            isAuthor: ticket.isAuthor ?? false,
-            totalSlot: ticket.totalSlot,
-            phases: (ticket.phases || []).map(phase => ({
-              phaseName: phase.phaseName,
-              applyPercent: parseFloat(phase.applyPercent.toFixed(2)),
-              startDate: phase.startDate,
-              endDate: phase.endDate,
-              totalslot: phase.totalslot
-            }))
-          }))
-        };
-        
-        await createPrice({ conferenceId, data: priceData }).unwrap();
+    // ============================================
+    // ✅ BƯỚC 1: TẠO RESEARCH DETAIL TRƯỚC
+    // ============================================
+    await createResearchDetail({
+      conferenceId,
+      data: {
+        name: researchDetail.name,
+        paperFormat: researchDetail.paperFormat,
+        numberPaperAccept: researchDetail.numberPaperAccept,
+        revisionAttemptAllowed: researchDetail.revisionAttemptAllowed,
+        rankingDescription: researchDetail.rankingDescription,
+        allowListener: researchDetail.allowListener,
+        rankValue: researchDetail.rankValue,
+        rankYear: researchDetail.rankYear,
+        reviewFee: researchDetail.reviewFee,
+        rankingCategoryId: researchDetail.rankingCategoryId,
       }
+    }).unwrap();
 
-      // ============================================
-      // BƯỚC 3: CÁC API CÒN LẠI (SONG SONG)
-      // ============================================
-      const sessionPromise = sessions.length > 0 ? (() => {
-        const formattedSessions = sessions.map((s) => {
-          const startDateTime = new Date(s.startTime);
-          const endDateTime = new Date(s.endTime);
-          
-          const startTime = startDateTime.toTimeString().slice(0, 8);
-          const endTime = endDateTime.toTimeString().slice(0, 8);
-          
-          return {
-            title: s.title,
-            description: s.description,
-            date: s.date,
-            startTime: startTime,
-            endTime: endTime,
-            roomId: s.roomId,
-            speaker: s.speaker.map(sp => ({
-              name: sp.name,
-              description: sp.description,
-              image: sp.image instanceof File ? sp.image : undefined,
-              imageUrl: typeof sp.image === 'string' ? sp.image : undefined,
-            })),
-            sessionMedias: (s.sessionMedias || []).map(media => ({
-              mediaFile: media.mediaFile instanceof File ? media.mediaFile : undefined,
-              mediaUrl: typeof media.mediaFile === 'string' ? media.mediaFile : undefined,
-            })),
-          };
-        });
-        return createSessions({ conferenceId, data: { sessions: formattedSessions } }).unwrap();
-      })() : Promise.resolve();
+    // ============================================
+    // ✅ BƯỚC 2: TẠO RESEARCH PHASES
+    // ============================================
+    await createResearchPhase({
+      conferenceId,
+      data: researchPhases.map((phase) => ({
+        ...phase,
+        revisionRoundDeadlines: phase.revisionRoundDeadlines,
+      })),
+    }).unwrap(); // ⚠️ THÊM .unwrap()
 
-      const policiesPromise = policies.length > 0 ? createPolicies({ conferenceId, data: { policies } }).unwrap() : Promise.resolve();
-      const refundPromise = refundPolicies.length > 0 ? createRefundPolicies({ conferenceId, data: { refundPolicies } }).unwrap() : Promise.resolve();
-
-      const materialPromises = researchMaterials.map(material =>
-        createResearchMaterial({
-          conferenceId,
-          fileName: material.fileName,
-          fileDescription: material.fileDescription,
-          file: material.file || undefined,
-        }).unwrap()
-      );
-
-      const rankingFilePromises = rankingFiles.filter(f => f.fileUrl).map(file =>
-        createResearchRankingFile({
-          conferenceId,
-          fileUrl: file.fileUrl!,
-          file: file.file || undefined,
-        }).unwrap()
-      );
-
-      const rankingRefPromises = rankingReferences.map(ref =>
-        createResearchRankingReference({
-          conferenceId,
-          referenceUrl: ref.referenceUrl,
-        }).unwrap()
-      );
-
-      const mediaPromise = mediaList.length > 0 ? createMedia({ conferenceId, data: { media: mediaList } }).unwrap() : Promise.resolve();
-      const sponsorPromise = sponsors.length > 0 ? createSponsors({ conferenceId, data: { sponsors } }).unwrap() : Promise.resolve();
-
-      await Promise.all([
-        sessionPromise,
-        policiesPromise,
-        refundPromise,
-        ...materialPromises,
-        ...rankingFilePromises,
-        ...rankingRefPromises,
-        mediaPromise,
-        sponsorPromise,
-      ]);
-
-      toast.success("Tạo hội thảo nghiên cứu thành công!");
-      dispatch(resetWizard());
-      router.push(`/workspace/collaborator/manage-conference`);
-    } catch (error) {
-      const apiError = error as { data?: ApiError };
-      console.error("Failed to create research conference:", error);
-      toast.error(apiError?.data?.Message || "Tạo hội thảo thất bại!");
-    } finally {
-      setIsSubmitting(false);
+    // ============================================
+    // BƯỚC 3: SAU ĐÓ MỚI XỬ LÝ PRICE
+    // ============================================
+    if (tickets.length > 0) {
+      const priceData: ConferencePriceData = {
+        typeOfTicket: tickets.map(ticket => ({
+          ticketPrice: parseFloat(ticket.ticketPrice.toFixed(2)),
+          ticketName: ticket.ticketName,
+          ticketDescription: ticket.ticketDescription,
+          isAuthor: ticket.isAuthor ?? false,
+          totalSlot: ticket.totalSlot,
+          phases: (ticket.phases || []).map(phase => ({
+            phaseName: phase.phaseName,
+            applyPercent: parseFloat(phase.applyPercent.toFixed(2)),
+            startDate: phase.startDate,
+            endDate: phase.endDate,
+            totalslot: phase.totalslot
+          }))
+        }))
+      };
+      
+      await createPrice({ conferenceId, data: priceData }).unwrap();
     }
-  };
+
+    // ============================================
+    // BƯỚC 4: CÁC API CÒN LẠI (SONG SONG)
+    // ============================================
+    const sessionPromise = sessions.length > 0 ? (() => {
+      const formattedSessions = sessions.map((s) => {
+        const startDateTime = new Date(s.startTime);
+        const endDateTime = new Date(s.endTime);
+        
+        const startTime = startDateTime.toTimeString().slice(0, 8);
+        const endTime = endDateTime.toTimeString().slice(0, 8);
+        
+        return {
+          title: s.title,
+          description: s.description,
+          date: s.date,
+          startTime: startTime,
+          endTime: endTime,
+          roomId: s.roomId,
+          speaker: s.speaker.map(sp => ({
+            name: sp.name,
+            description: sp.description,
+            image: sp.image instanceof File ? sp.image : undefined,
+            imageUrl: typeof sp.image === 'string' ? sp.image : undefined,
+          })),
+          sessionMedias: (s.sessionMedias || []).map(media => ({
+            mediaFile: media.mediaFile instanceof File ? media.mediaFile : undefined,
+            mediaUrl: typeof media.mediaFile === 'string' ? media.mediaFile : undefined,
+          })),
+        };
+      });
+      return createSessions({ conferenceId, data: { sessions: formattedSessions } }).unwrap();
+    })() : Promise.resolve();
+
+    const policiesPromise = policies.length > 0 ? createPolicies({ conferenceId, data: { policies } }).unwrap() : Promise.resolve();
+    const refundPromise = refundPolicies.length > 0 ? createRefundPolicies({ conferenceId, data: { refundPolicies } }).unwrap() : Promise.resolve();
+
+    const materialPromises = researchMaterials.map(material =>
+      createResearchMaterial({
+        conferenceId,
+        fileName: material.fileName,
+        fileDescription: material.fileDescription,
+        file: material.file || undefined,
+      }).unwrap()
+    );
+
+    const rankingFilePromises = rankingFiles.filter(f => f.fileUrl).map(file =>
+      createResearchRankingFile({
+        conferenceId,
+        fileUrl: file.fileUrl!,
+        file: file.file || undefined,
+      }).unwrap()
+    );
+
+    const rankingRefPromises = rankingReferences.map(ref =>
+      createResearchRankingReference({
+        conferenceId,
+        referenceUrl: ref.referenceUrl,
+      }).unwrap()
+    );
+
+    const mediaPromise = mediaList.length > 0 ? createMedia({ conferenceId, data: { media: mediaList } }).unwrap() : Promise.resolve();
+    const sponsorPromise = sponsors.length > 0 ? createSponsors({ conferenceId, data: { sponsors } }).unwrap() : Promise.resolve();
+
+    await Promise.all([
+      sessionPromise,
+      policiesPromise,
+      refundPromise,
+      ...materialPromises,
+      ...rankingFilePromises,
+      ...rankingRefPromises,
+      mediaPromise,
+      sponsorPromise,
+    ]);
+
+    toast.success("Tạo hội thảo nghiên cứu thành công!");
+    dispatch(resetWizard());
+    router.push(`/workspace/collaborator/manage-conference`);
+  } catch (error) {
+    const apiError = error as { data?: ApiError };
+    console.error("Failed to create research conference:", error);
+    toast.error(apiError?.data?.Message || "Tạo hội thảo thất bại!");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   // ============================================
   // ADD HANDLERS (Research-specific)
   // ============================================
   const handleAddRevisionRound = () => {
-    if (!newRevisionRound.endDate) {
-      toast.error("Vui lòng chọn ngày deadline!");
+    const { roundNumber, startDate, durationInDays } = newRevisionRound;
+
+    if (!startDate) {
+      toast.error("Vui lòng chọn ngày bắt đầu vòng chỉnh sửa!");
       return;
     }
-    
-    setRevisionRoundDeadlines([...revisionRoundDeadlines, newRevisionRound]);
-    setNewRevisionRound({ endDate: "", roundNumber: revisionRoundDeadlines.length + 2 });
+
+    if (durationInDays <= 0) {
+      toast.error("Số ngày phải lớn hơn 0!");
+      return;
+    }
+
+    const endDate = calculateEndDate(startDate, durationInDays);
+
+    // Kiểm tra trùng lặp với các vòng khác (tùy chọn)
+    const isOverlapping = revisionRoundDeadlines.some(round => {
+      const existingStart = new Date(round.startSubmissionDate);
+      const existingEnd = new Date(round.endSubmissionDate);
+      const newStart = new Date(startDate);
+      const newEnd = new Date(endDate);
+      return newStart <= existingEnd && newEnd >= existingStart;
+    });
+
+    if (isOverlapping) {
+      toast.error("Vòng chỉnh sửa này bị trùng thời gian với vòng khác!");
+      return;
+    }
+
+    const newRound: RevisionRoundDeadline = {
+      roundNumber,
+      startSubmissionDate: startDate,
+      endSubmissionDate: endDate,
+    };
+
+    setRevisionRoundDeadlines([...revisionRoundDeadlines, newRound]);
+
+    setNewRevisionRound({
+      roundNumber: revisionRoundDeadlines.length + 2,
+      startDate: "",
+      durationInDays: 3,
+    });
+
     toast.success("Đã thêm vòng chỉnh sửa!");
   };
 
@@ -715,17 +882,17 @@ export default function CreateResearchConferenceStepPage() {
 
 const handleAddPhaseToNewTicket = () => {
   const { phaseName, percentValue, percentType, startDate, durationInDays, totalslot } = newPhase;
-  
+
   if (!phaseName.trim()) {
     toast.error("Vui lòng nhập tên giai đoạn!");
     return;
   }
-  
+
   if (!startDate) {
     toast.error("Vui lòng chọn ngày bắt đầu!");
     return;
   }
-  
+
   if (totalslot <= 0) {
     toast.error("Số lượng phải lớn hơn 0!");
     return;
@@ -735,15 +902,18 @@ const handleAddPhaseToNewTicket = () => {
   const phaseEnd = new Date(phaseStart);
   phaseEnd.setDate(phaseStart.getDate() + durationInDays - 1);
 
+  // Lấy main phase (không phải waitlist)
+  const mainPhase = researchPhases.find(p => !p.isWaitlist);
+
   // VALIDATION CHO VÉ TÁC GIẢ (isAuthor = true)
   if (newTicket.isAuthor) {
-    if (!researchPhase.registrationStartDate || !researchPhase.registrationEndDate) {
+    if (!mainPhase?.registrationStartDate || !mainPhase?.registrationEndDate) {
       toast.error("Vui lòng điền thông tin Timeline (Bước 4 - Registration) trước khi thêm giai đoạn giá cho vé tác giả!");
       return;
     }
 
-    const regStart = new Date(researchPhase.registrationStartDate);
-    const regEnd = new Date(researchPhase.registrationEndDate);
+    const regStart = new Date(mainPhase.registrationStartDate);
+    const regEnd = new Date(mainPhase.registrationEndDate);
 
     // Phase phải BẮT ĐẦU trong khoảng Registration
     if (phaseStart < regStart || phaseStart > regEnd) {
@@ -760,7 +930,7 @@ const handleAddPhaseToNewTicket = () => {
       );
       return;
     }
-  } 
+  }
   // VALIDATION CHO VÉ NGƯỜI NGHE (isAuthor = false)
   else {
     if (!basicForm.ticketSaleStart || !basicForm.ticketSaleEnd) {
@@ -801,7 +971,7 @@ const handleAddPhaseToNewTicket = () => {
   const hasOverlap = newTicket.phases.some(p => {
     const pStart = new Date(p.startDate);
     const pEnd = new Date(p.endDate);
-    return (phaseStart <= pEnd && phaseEnd >= pStart);
+    return phaseStart <= pEnd && phaseEnd >= pStart;
   });
 
   if (hasOverlap) {
@@ -810,11 +980,11 @@ const handleAddPhaseToNewTicket = () => {
   }
 
   const endDate = phaseEnd.toISOString().split("T")[0];
-  
-  const applyPercent = percentType === 'increase' 
-    ? 100 + percentValue  
+
+  const applyPercent = percentType === 'increase'
+    ? 100 + percentValue
     : 100 - percentValue;
-    
+
   const phase: Phase = {
     phaseName,
     applyPercent,
@@ -836,8 +1006,8 @@ const handleAddPhaseToNewTicket = () => {
     durationInDays: 1,
     totalslot: 0,
   });
-  
-  setIsPhaseModalOpen(false); 
+
+  setIsPhaseModalOpen(false);
   toast.success("Đã thêm giai đoạn!");
 };
 
@@ -849,106 +1019,108 @@ const handleAddPhaseToNewTicket = () => {
     toast.success("Đã xóa giai đoạn!");
   };
 
-  const handleAddTicket = () => {
-    if (!newTicket.ticketName.trim()) {
-      toast.error("Vui lòng nhập tên vé!");
+const handleAddTicket = () => {
+  if (!newTicket.ticketName.trim()) {
+    toast.error("Vui lòng nhập tên vé!");
+    return;
+  }
+
+  if (newTicket.ticketPrice <= 0) {
+    toast.error("Giá vé phải lớn hơn 0!");
+    return;
+  }
+
+  if (newTicket.totalSlot <= 0) {
+    toast.error("Số lượng vé phải lớn hơn 0!");
+    return;
+  }
+
+  // Lấy main phase (không phải waitlist)
+  const mainPhase = researchPhases.find(p => !p.isWaitlist);
+
+  // VALIDATION CHO VÉ TÁC GIẢ
+  if (newTicket.isAuthor) {
+    if (!mainPhase?.registrationStartDate || !mainPhase?.registrationEndDate) {
+      toast.error("Vui lòng điền thông tin Timeline (Bước 4 - Registration) trước khi thêm vé tác giả!");
       return;
     }
-    
-    if (newTicket.ticketPrice <= 0) {
-      toast.error("Giá vé phải lớn hơn 0!");
-      return;
-    }
-    
-    if (newTicket.totalSlot <= 0) {
-      toast.error("Số lượng vé phải lớn hơn 0!");
-      return;
-    }
 
-    // VALIDATION CHO VÉ TÁC GIẢ
-    if (newTicket.isAuthor) {
-      if (!researchPhase.registrationStartDate || !researchPhase.registrationEndDate) {
-        toast.error("Vui lòng điền thông tin Timeline (Bước 4 - Registration) trước khi thêm vé tác giả!");
-        return;
-      }
+    const regStart = new Date(mainPhase.registrationStartDate);
+    const regEnd = new Date(mainPhase.registrationEndDate);
 
-      const regStart = new Date(researchPhase.registrationStartDate);
-      const regEnd = new Date(researchPhase.registrationEndDate);
-
-      // Nếu có phases, check từng phase
-      if (newTicket.phases.length > 0) {
-        for (const phase of newTicket.phases) {
-          const phaseStart = new Date(phase.startDate);
-          const phaseEnd = new Date(phase.endDate);
-
-          if (phaseStart < regStart || phaseEnd > regEnd) {
-            toast.error(
-              `Vé tác giả phải bán trong thời gian đăng ký (${regStart.toLocaleDateString('vi-VN')} - ${regEnd.toLocaleDateString('vi-VN')}). Giai đoạn "${phase.phaseName}" không hợp lệ!`
-            );
-            return;
-          }
-        }
-      } else {
-        toast.error("Vé tác giả phải có ít nhất 1 giai đoạn giá!");
-        return;
-      }
-    }
-    // VALIDATION CHO VÉ NGƯỜI NGHE
-    else {
-      if (!basicForm.ticketSaleStart || !basicForm.ticketSaleEnd) {
-        toast.error("Không tìm thấy thông tin thời gian bán vé!");
-        return;
-      }
-
-      const saleStart = new Date(basicForm.ticketSaleStart);
-      const saleEnd = new Date(basicForm.ticketSaleEnd);
-
-      // Nếu có phases, check từng phase
-      if (newTicket.phases.length > 0) {
-        for (const phase of newTicket.phases) {
-          const phaseStart = new Date(phase.startDate);
-          const phaseEnd = new Date(phase.endDate);
-
-          if (phaseStart < saleStart || phaseEnd > saleEnd) {
-            toast.error(
-              `Vé người nghe phải bán trong thời gian bán vé (${saleStart.toLocaleDateString('vi-VN')} - ${saleEnd.toLocaleDateString('vi-VN')}). Giai đoạn "${phase.phaseName}" không hợp lệ!`
-            );
-            return;
-          }
-        }
-      } else {
-        toast.error("Vé người nghe phải có ít nhất 1 giai đoạn giá!");
-        return;
-      }
-    }
-
-    // Check tổng số lượng phases = totalSlot
+    // Nếu có phases, check từng phase
     if (newTicket.phases.length > 0) {
-      const totalPhaseSlots = newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0);
-      if (totalPhaseSlots !== newTicket.totalSlot) {
-        toast.error(
-          `Tổng số lượng vé các giai đoạn (${totalPhaseSlots}) phải bằng tổng số chỗ ngồi vé (${newTicket.totalSlot})!`
-        );
-        return;
+      for (const phase of newTicket.phases) {
+        const phaseStart = new Date(phase.startDate);
+        const phaseEnd = new Date(phase.endDate);
+
+        if (phaseStart < regStart || phaseEnd > regEnd) {
+          toast.error(
+            `Vé tác giả phải bán trong thời gian đăng ký (${regStart.toLocaleDateString('vi-VN')} - ${regEnd.toLocaleDateString('vi-VN')}). Giai đoạn "${phase.phaseName}" không hợp lệ!`
+          );
+          return;
+        }
       }
+    } else {
+      toast.error("Vé tác giả phải có ít nhất 1 giai đoạn giá!");
+      return;
+    }
+  }
+  // VALIDATION CHO VÉ NGƯỜI NGHE
+  else {
+    if (!basicForm.ticketSaleStart || !basicForm.ticketSaleEnd) {
+      toast.error("Không tìm thấy thông tin thời gian bán vé!");
+      return;
     }
 
-    // Thêm vé vào danh sách
-    setTickets([...tickets, { ...newTicket }]);
-    
-    // Reset form
-    setNewTicket({
-      ticketPrice: 0,
-      ticketName: "",
-      ticketDescription: "",
-      isAuthor: false,
-      totalSlot: 0,
-      phases: [],
-    });
-    
-    toast.success("Đã thêm vé!");
-  };
+    const saleStart = new Date(basicForm.ticketSaleStart);
+    const saleEnd = new Date(basicForm.ticketSaleEnd);
 
+    // Nếu có phases, check từng phase
+    if (newTicket.phases.length > 0) {
+      for (const phase of newTicket.phases) {
+        const phaseStart = new Date(phase.startDate);
+        const phaseEnd = new Date(phase.endDate);
+
+        if (phaseStart < saleStart || phaseEnd > saleEnd) {
+          toast.error(
+            `Vé người nghe phải bán trong thời gian bán vé (${saleStart.toLocaleDateString('vi-VN')} - ${saleEnd.toLocaleDateString('vi-VN')}). Giai đoạn "${phase.phaseName}" không hợp lệ!`
+          );
+          return;
+        }
+      }
+    } else {
+      toast.error("Vé người nghe phải có ít nhất 1 giai đoạn giá!");
+      return;
+    }
+  }
+
+  // Check tổng số lượng phases = totalSlot
+  if (newTicket.phases.length > 0) {
+    const totalPhaseSlots = newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0);
+    if (totalPhaseSlots !== newTicket.totalSlot) {
+      toast.error(
+        `Tổng số lượng vé các giai đoạn (${totalPhaseSlots}) phải bằng tổng số chỗ ngồi vé (${newTicket.totalSlot})!`
+      );
+      return;
+    }
+  }
+
+  // Thêm vé vào danh sách
+  setTickets([...tickets, { ...newTicket }]);
+
+  // Reset form
+  setNewTicket({
+    ticketPrice: 0,
+    ticketName: "",
+    ticketDescription: "",
+    isAuthor: false,
+    totalSlot: 0,
+    phases: [],
+  });
+
+  toast.success("Đã thêm vé!");
+};
 
   const handleAddSession = () => {
     
@@ -1303,23 +1475,23 @@ const handleAddRefundPolicy = () => {
               />
                 
                 <div className="grid grid-cols-3 gap-4">
-      <FormSelect
-        label="Định dạng bài báo"
-        name="paperFormat"
-        value={researchDetail.paperFormat}
-        onChange={(val) => setResearchDetail({ ...researchDetail, paperFormat: val })}
-        options={[
-          { value: "acm", label: "ACM" },
-          { value: "apa", label: "APA" },
-          { value: "chicago", label: "Chicago" },
-          { value: "elsevier", label: "Elsevier" },
-          { value: "ieee", label: "IEEE" },
-          { value: "lncs", label: "LNCS" },
-          { value: "mla", label: "MLA" },
-          { value: "springer", label: "Springer" },
-        ]}
-        required
-      />
+                <FormSelect
+                  label="Định dạng bài báo"
+                  name="paperFormat"
+                  value={researchDetail.paperFormat}
+                  onChange={(val) => setResearchDetail({ ...researchDetail, paperFormat: val })}
+                  options={[
+                    { value: "acm", label: "ACM" },
+                    { value: "apa", label: "APA" },
+                    { value: "chicago", label: "Chicago" },
+                    { value: "elsevier", label: "Elsevier" },
+                    { value: "ieee", label: "IEEE" },
+                    { value: "lncs", label: "LNCS" },
+                    { value: "mla", label: "MLA" },
+                    { value: "springer", label: "Springer" },
+                  ]}
+                  required
+                />
                 <FormInput
                     label="Số bài báo chấp nhận"
                     name="numberPaperAccept"
@@ -1348,14 +1520,15 @@ const handleAddRefundPolicy = () => {
                     setResearchDetail({
                       ...researchDetail,
                       rankingCategoryId: val,
-                      rankValue: "", // Reset rankValue khi đổi category
+                      rankValue: "", 
                     });
                   }}
                   options={rankingOptions}
                   required
                   disabled={isRankingLoading}
                 />
-                <FormSelect
+                {/*lấy chỗ này*/}
+                {/* <FormSelect
                   label="Giá trị xếp hạng"
                   name="rankValue"
                   value={researchDetail.rankValue}
@@ -1366,7 +1539,6 @@ const handleAddRefundPolicy = () => {
                     );
                     const categoryName = category?.rankName?.toLowerCase() || "";
 
-                    // Trả về options tùy theo loại ranking
                     if (
                       categoryName.includes("core") ||
                       categoryName.includes("scopus") ||
@@ -1382,7 +1554,7 @@ const handleAddRefundPolicy = () => {
                       ];
                     }
 
-                    // Nếu là loại khác (VD: A*, A, B, C...)
+                    
                     return [
                       { value: "A*", label: "A*" },
                       { value: "A", label: "A" },
@@ -1392,7 +1564,80 @@ const handleAddRefundPolicy = () => {
                   })()}
                   required={!!researchDetail.rankingCategoryId}
                   disabled={!researchDetail.rankingCategoryId}
-                />
+                /> */}
+
+                {/*9h36*/}
+                {/* {researchDetail.rankingCategoryId && (() => {
+                  const category = rankingData?.data?.find(
+                    (r) => r.rankId === researchDetail.rankingCategoryId
+                  );
+                  const categoryName = (category?.rankName || "").toLowerCase();
+
+                  if (categoryName.includes("citescore")) {
+                    return (
+                      <FormInput
+                        label="Giá trị xếp hạng (CiteScore)"
+                        name="rankValue"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={researchDetail.rankValue}
+                        onChange={(val) => setResearchDetail({ ...researchDetail, rankValue: val })}
+                        placeholder="VD: 1.25"
+                        required
+                      />
+                    );
+                  } else {
+                    return (
+                      <FormSelect
+                        label="Giá trị xếp hạng"
+                        name="rankValue"
+                        value={researchDetail.rankValue}
+                        onChange={(val) => setResearchDetail({ ...researchDetail, rankValue: val })}
+                        options={(() => {
+                          if (
+                            categoryName.includes("core") ||
+                            categoryName.includes("scopus") ||
+                            categoryName.includes("scimago") ||
+                            categoryName.includes("isi") ||
+                            categoryName.includes("web of science")
+                          ) {
+                            return [
+                              { value: "Q1", label: "Q1" },
+                              { value: "Q2", label: "Q2" },
+                              { value: "Q3", label: "Q3" },
+                              { value: "Q4", label: "Q4" },
+                            ];
+                          }
+                          return [
+                            { value: "A*", label: "A*" },
+                            { value: "A", label: "A" },
+                            { value: "B", label: "B" },
+                            { value: "C", label: "C" },
+                          ];
+                        })()}
+                        required
+                        disabled={!researchDetail.rankingCategoryId}
+                      />
+                    );
+                  }
+                })()} */}
+
+                {researchDetail.rankingCategoryId && (
+                  <FormInput
+                    label="Giá trị xếp hạng"
+                    name="rankValue"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={researchDetail.rankValue}
+                    onChange={(val) =>
+                      setResearchDetail({ ...researchDetail, rankValue: val })
+                    }
+                    placeholder="Nhập giá trị xếp hạng, ví dụ: 1.25"
+                    required
+                  />
+                )}
                 <FormInput
                     label="Năm xếp hạng"
                     name="rankYear"
@@ -1440,301 +1685,443 @@ const handleAddRefundPolicy = () => {
             </div>
             </div>
           {/* STEP 3: RESEARCH PHASE/TIMELINE */}
-            <div className="bg-white border rounded-lg p-6 mb-6">
-            <h3 className="text-lg font-semibold mb-4">3. Timeline & Giai đoạn</h3>
-                {basicForm.startDate && basicForm.endDate && (
-                  <span className="text-sm text-green-600">
-                    ({formatDate(basicForm.startDate)} → {formatDate(basicForm.endDate)})
-                    ({formatDate(basicForm.ticketSaleStart)} → {formatDate(basicForm.ticketSaleEnd)})
+<div className="bg-white border rounded-lg p-6 mb-6">
+  <h3 className="text-lg font-semibold mb-4">3. Timeline & Giai đoạn</h3>
+  {basicForm.startDate && basicForm.endDate && (
+    <span className="text-sm text-green-600">
+      Ngày tổ chức ({formatDate(basicForm.startDate)} → {formatDate(basicForm.endDate)}) |
+      Ngày bán vé ({formatDate(basicForm.ticketSaleStart)} → {formatDate(basicForm.ticketSaleEnd)})
+    </span>
+  )}
+  <div className="space-y-6">
+    {/* Tab switching */}
+    <div>
+      <h4 className="font-medium mb-3">⚙️ Chọn timeline</h4>
+      <div className="flex gap-2 mb-4">
+        <Button
+          variant={researchPhases[0].isActive ? "default" : "outline"}
+          onClick={() => {
+            const updated = [...researchPhases];
+            updated[0] = { ...updated[0], isActive: true };
+            updated[1] = { ...updated[1], isActive: false };
+            setResearchPhases(updated);
+          }}
+        >
+          Timeline chính
+        </Button>
+        <Button
+          variant={researchPhases[1].isActive ? "default" : "outline"}
+          onClick={() => {
+            const updated = [...researchPhases];
+            updated[0] = { ...updated[0], isActive: false };
+            updated[1] = { ...updated[1], isActive: true };
+            setResearchPhases(updated);
+          }}
+        >
+          Waitlist Timeline
+        </Button>
+      </div>
 
-                  </span>
-                )}
-            <div className="space-y-6">
-                {/* Registration Phase */}
-                <div>
-                <h4 className="font-medium mb-3 flex items-center gap-2">
-                    📝 Đăng ký tham dự
-                    {researchPhase.registrationStartDate && researchPhase.registrationEndDate && (
-                    <span className="text-sm text-blue-600">
-                        ({formatDate(researchPhase.registrationStartDate)} → {formatDate(researchPhase.registrationEndDate)})
+      {/* Nút tạo waitlist */}
+
+      {!researchPhases[1].isActive && (
+        <div className="mt-2 flex gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              // Copy giống main
+              const main = researchPhases[0];
+              const copiedWaitlist: ResearchPhase = {
+                ...main,
+                isWaitlist: true,
+                isActive: true,
+              };
+              setResearchPhases([main, copiedWaitlist]);
+            }}
+          >
+            Tạo waitlist timeline tương tự
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              // Tạo mới trống
+              const emptyWaitlist: ResearchPhase = {
+                registrationStartDate: "",
+                registrationEndDate: "",
+                registrationDuration: 1,
+                fullPaperStartDate: "",
+                fullPaperEndDate: "",
+                fullPaperDuration: 1,
+                reviewStartDate: "",
+                reviewEndDate: "",
+                reviewDuration: 1,
+                reviseStartDate: "",
+                reviseEndDate: "",
+                reviseDuration: 1,
+                cameraReadyStartDate: "",
+                cameraReadyEndDate: "",
+                cameraReadyDuration: 1,
+                isWaitlist: true,
+                isActive: true,
+                revisionRoundDeadlines: [],
+              };
+              setResearchPhases([researchPhases[0], emptyWaitlist]);
+            }}
+          >
+            Tạo waitlist timeline mới
+          </Button>
+        </div>
+      )}
+    </div>
+
+    {/* === RENDER ACTIVE PHASE === */}
+    {(() => {
+      const activePhase = researchPhases.find(p => p.isActive) || researchPhases[0];
+
+      const updateActivePhase = (updates: Partial<ResearchPhase>) => {
+        setResearchPhases(prev =>
+          prev.map(p => (p.isActive ? { ...p, ...updates } : p))
+        );
+      };
+
+      const updateDeadline = (newDeadlines: RevisionRoundDeadline[]) => {
+        setResearchPhases(prev =>
+          prev.map(p => (p.isActive ? { ...p, revisionRoundDeadlines: newDeadlines } : p))
+        );
+      };
+
+      return (
+        <>
+          {/* Registration Phase */}
+          <div>
+            <h4 className="font-medium mb-3 flex items-center gap-2">
+              📝 Đăng ký tham dự
+              {activePhase.registrationStartDate && activePhase.registrationEndDate && (
+                <span className="text-sm text-blue-600">
+                  ({formatDate(activePhase.registrationStartDate)} → {formatDate(activePhase.registrationEndDate)})
+                </span>
+              )}
+            </h4>
+            <div className="grid grid-cols-3 gap-4">
+              <FormInput
+                label="Ngày bắt đầu"
+                type="date"
+                name="registrationStartDate"
+                value={activePhase.registrationStartDate}
+                onChange={(val) =>
+                  updateActivePhase({ registrationStartDate: val })
+                }
+                required
+              />
+              <FormInput
+                label="Số ngày"
+                type="number"
+                min="1"
+                value={activePhase.registrationDuration}
+                onChange={(val) =>
+                  updateActivePhase({ registrationDuration: Number(val) })
+                }
+                placeholder="VD: 30 ngày"
+              />
+              <div>
+                <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
+                <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
+                  {activePhase.registrationEndDate ? (
+                    <span className="text-gray-900">
+                      {formatDate(activePhase.registrationEndDate)}
                     </span>
-                    )}
-                </h4>
-                <div className="grid grid-cols-3 gap-4">
-                    <FormInput
-                    label="Ngày bắt đầu"
-                    type="date"
-                    name="registrationStartDate"
-                    value={researchPhase.registrationStartDate}
-                    onChange={(val) => setResearchPhase({ ...researchPhase, registrationStartDate: val })}
-                    required
-                    />
-                    <FormInput
-                    label="Số ngày"
-                    type="number"
-                    min="1"
-                    value={researchPhase.registrationDuration}
-                    onChange={(val) => setResearchPhase({ ...researchPhase, registrationDuration: Number(val) })}
-                    placeholder="VD: 30 ngày"
-                    />
-                    <div>
-                    <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
-                    <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
-                        {researchPhase.registrationEndDate ? (
-                        <span className="text-gray-900">
-                          {formatDate(researchPhase.registrationEndDate)}
-                        </span>
-                        ) : (
-                        <span className="text-gray-400">--/--/----</span>
-                        )}
-                    </div>
-                    </div>
+                  ) : (
+                    <span className="text-gray-400">--/--/----</span>
+                  )}
                 </div>
-                </div>
-
-                {/* Full Paper Phase */}
-                <div>
-                <h4 className="font-medium mb-3 flex items-center gap-2">
-                    📄 Nộp bài full paper
-                    {researchPhase.fullPaperStartDate && researchPhase.fullPaperEndDate && (
-                    <span className="text-sm text-green-600">
-                        ({formatDate(researchPhase.fullPaperStartDate)} → {formatDate(researchPhase.fullPaperEndDate)})
-                    </span>
-                    )}
-                </h4>
-                <div className="grid grid-cols-3 gap-4">
-                    <FormInput
-                    label="Ngày bắt đầu"
-                    type="date"
-                    name="fullPaperStartDate"
-                    value={researchPhase.fullPaperStartDate}
-                    onChange={(val) => setResearchPhase({ ...researchPhase, fullPaperStartDate: val })}
-                    required
-                    />
-                    <FormInput
-                    label="Số ngày"
-                    type="number"
-                    min="1"
-                    value={researchPhase.fullPaperDuration}
-                    onChange={(val) => setResearchPhase({ ...researchPhase, fullPaperDuration: Number(val) })}
-                    placeholder="VD: 60 ngày"
-                    />
-                    <div>
-                    <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
-                    <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
-                        {researchPhase.fullPaperEndDate ? (
-                        <span className="text-gray-900">
-                          {formatDate(researchPhase.fullPaperEndDate)}
-                        </span>
-                        ) : (
-                        <span className="text-gray-400">--/--/----</span>
-                        )}
-                    </div>
-                    </div>
-                </div>
-                </div>
-
-                {/* Review Phase */}
-                <div>
-                <h4 className="font-medium mb-3 flex items-center gap-2">
-                    🔍 Phản biện
-                    {researchPhase.reviewStartDate && researchPhase.reviewEndDate && (
-                    <span className="text-sm text-purple-600">
-                        ({formatDate(researchPhase.reviewStartDate)} → {formatDate(researchPhase.reviewEndDate)})
-                    </span>
-                    )}
-                </h4>
-                <div className="grid grid-cols-3 gap-4">
-                    <FormInput
-                    label="Ngày bắt đầu"
-                    type="date"
-                    name="reviewStartDate"
-                    value={researchPhase.reviewStartDate}
-                    onChange={(val) => setResearchPhase({ ...researchPhase, reviewStartDate: val })}
-                    />
-                    <FormInput
-                    label="Số ngày"
-                    type="number"
-                    min="1"
-                    value={researchPhase.reviewDuration}
-                    onChange={(val) => setResearchPhase({ ...researchPhase, reviewDuration: Number(val) })}
-                    placeholder="VD: 30 ngày"
-                    />
-                    <div>
-                    <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
-                    <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
-                        {researchPhase.reviewEndDate ? (
-                        <span className="text-gray-900">
-                          {formatDate(researchPhase.reviewEndDate)}
-                        </span>
-                        ) : (
-                        <span className="text-gray-400">--/--/----</span>
-                        )}
-                    </div>
-                    </div>
-                </div>
-                </div>
-
-                {/* Revision Phase with Round Deadlines */}
-                <div>
-                <h4 className="font-medium mb-3 flex items-center gap-2">
-                    ✏️ Chỉnh sửa
-                    {researchPhase.reviseStartDate && researchPhase.reviseEndDate && (
-                    <span className="text-sm text-orange-600">
-                        ({formatDate(researchPhase.reviseStartDate)} → {formatDate(researchPhase.reviseEndDate)})
-                    </span>
-                    )}
-                </h4>
-                <div className="grid grid-cols-3 gap-4 mb-4">
-                    <FormInput
-                    label="Ngày bắt đầu"
-                    type="date"
-                    name="reviseStartDate"
-                    value={researchPhase.reviseStartDate}
-                    onChange={(val) => setResearchPhase({ ...researchPhase, reviseStartDate: val })}
-                    />
-                    <FormInput
-                    label="Số ngày"
-                    type="number"
-                    min="1"
-                    value={researchPhase.reviseDuration}
-                    onChange={(val) => setResearchPhase({ ...researchPhase, reviseDuration: Number(val) })}
-                    placeholder="VD: 15 ngày"
-                    />
-                    <div>
-                    <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
-                    <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
-                        {researchPhase.reviseEndDate ? (
-                        <span className="text-gray-900">
-                          {formatDate(researchPhase.reviseEndDate)}
-                        </span>
-                        ) : (
-                        <span className="text-gray-400">--/--/----</span>
-                        )}
-                    </div>
-                    </div>
-                </div>
-                
-                {/* Revision Round Deadlines */}
-                <div className="pl-4 border-l-2 border-orange-200">
-                    <h5 className="font-medium mb-2">Deadline từng vòng chỉnh sửa ({revisionRoundDeadlines.length})</h5>
-                    
-                    {revisionRoundDeadlines.length > 0 && (
-                    <div className="grid grid-cols-4 gap-2 mb-3">
-                        {revisionRoundDeadlines.map((round, idx) => (
-                        <div key={idx} className="p-2 bg-gray-50 rounded border border-gray-200">
-                            <div className="text-sm font-medium">Vòng {round.roundNumber}</div>
-                            <div className="text-xs text-gray-600">{formatDate(round.endDate)}</div>
-                            <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => setRevisionRoundDeadlines(revisionRoundDeadlines.filter((_, i) => i !== idx))}
-                            className="w-full mt-2"
-                            >
-                            Xóa
-                            </Button>
-                        </div>
-                        ))}
-                    </div>
-                    )}
-                    
-                    <div className="grid grid-cols-3 gap-2">
-                    <FormInput
-                        label="Vòng thứ"
-                        type="number"
-                        name="roundNumber"
-                        value={newRevisionRound.roundNumber}
-                        onChange={(val) => setNewRevisionRound({ ...newRevisionRound, roundNumber: Number(val) })}
-                        min="1"
-                    />
-                    <FormInput
-                        label="Deadline"
-                        type="date"
-                        name="endDate"
-                        value={newRevisionRound.endDate}
-                        onChange={(val) => setNewRevisionRound({ ...newRevisionRound, endDate: val })}
-                    />
-                    <Button onClick={handleAddRevisionRound} className="mt-6">
-                        Thêm vòng
-                    </Button>
-                    </div>
-                </div>
-                </div>
-
-                {/* Camera Ready Phase */}
-                <div>
-                <h4 className="font-medium mb-3 flex items-center gap-2">
-                    📸 Camera Ready
-                    {researchPhase.cameraReadyStartDate && researchPhase.cameraReadyEndDate && (
-                    <span className="text-sm text-red-600">
-                        ({formatDate(researchPhase.cameraReadyStartDate)} → {formatDate(researchPhase.cameraReadyEndDate)})
-                    </span>
-                    )}
-                </h4>
-                <div className="grid grid-cols-3 gap-4">
-                    <FormInput
-                    label="Ngày bắt đầu"
-                    type="date"
-                    name="cameraReadyStartDate"
-                    value={researchPhase.cameraReadyStartDate}
-                    onChange={(val) => setResearchPhase({ ...researchPhase, cameraReadyStartDate: val })}
-                    />
-                    <FormInput
-                    label="Số ngày"
-                    type="number"
-                    min="1"
-                    value={researchPhase.cameraReadyDuration}
-                    onChange={(val) => setResearchPhase({ ...researchPhase, cameraReadyDuration: Number(val) })}
-                    placeholder="VD: 7 ngày"
-                    />
-                    <div>
-                    <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
-                    <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
-                        {researchPhase.cameraReadyEndDate ? (
-                        <span className="text-gray-900">
-                          {formatDate(researchPhase.cameraReadyEndDate)}
-                        </span>
-                        ) : (
-                        <span className="text-gray-400">--/--/----</span>
-                        )}
-                    </div>
-                    </div>
-                </div>
-                </div>
-
-                {/* Settings */}
-                <div>
-                <h4 className="font-medium mb-3">⚙️ Cài đặt</h4>
-                <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                    <input
-                        type="checkbox"
-                        id="isWaitlist"
-                        checked={researchPhase.isWaitlist}
-                        onChange={(e) => setResearchPhase({ ...researchPhase, isWaitlist: e.target.checked })}
-                        className="w-4 h-4"
-                    />
-                    <label htmlFor="isWaitlist" className="text-sm font-medium">
-                        Cho phép danh sách chờ
-                    </label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                    <input
-                        type="checkbox"
-                        id="isActive"
-                        checked={researchPhase.isActive}
-                        onChange={(e) => setResearchPhase({ ...researchPhase, isActive: e.target.checked })}
-                        className="w-4 h-4"
-                    />
-                    <label htmlFor="isActive" className="text-sm font-medium">
-                        Kích hoạt timeline
-                    </label>
-                    </div>
-                </div>
-                </div>
+              </div>
             </div>
+          </div>
+
+          {/* Full Paper Phase */}
+          <div>
+            <h4 className="font-medium mb-3 flex items-center gap-2">
+              📄 Nộp bài full paper
+              {activePhase.fullPaperStartDate && activePhase.fullPaperEndDate && (
+                <span className="text-sm text-green-600">
+                  ({formatDate(activePhase.fullPaperStartDate)} → {formatDate(activePhase.fullPaperEndDate)})
+                </span>
+              )}
+            </h4>
+            <div className="grid grid-cols-3 gap-4">
+              <FormInput
+                label="Ngày bắt đầu"
+                type="date"
+                name="fullPaperStartDate"
+                value={activePhase.fullPaperStartDate}
+                onChange={(val) =>
+                  updateActivePhase({ fullPaperStartDate: val })
+                }
+                required
+              />
+              <FormInput
+                label="Số ngày"
+                type="number"
+                min="1"
+                value={activePhase.fullPaperDuration}
+                onChange={(val) =>
+                  updateActivePhase({ fullPaperDuration: Number(val) })
+                }
+                placeholder="VD: 60 ngày"
+              />
+              <div>
+                <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
+                <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
+                  {activePhase.fullPaperEndDate ? (
+                    <span className="text-gray-900">
+                      {formatDate(activePhase.fullPaperEndDate)}
+                    </span>
+                  ) : (
+                    <span className="text-gray-400">--/--/----</span>
+                  )}
+                </div>
+              </div>
             </div>
-          {/* STEP 3: PRICE - TODO: Copy from Conference */}
+          </div>
+
+          {/* Review Phase */}
+          <div>
+            <h4 className="font-medium mb-3 flex items-center gap-2">
+              🔍 Phản biện
+              {activePhase.reviewStartDate && activePhase.reviewEndDate && (
+                <span className="text-sm text-purple-600">
+                  ({formatDate(activePhase.reviewStartDate)} → {formatDate(activePhase.reviewEndDate)})
+                </span>
+              )}
+            </h4>
+            <div className="grid grid-cols-3 gap-4">
+              <FormInput
+                label="Ngày bắt đầu"
+                type="date"
+                name="reviewStartDate"
+                value={activePhase.reviewStartDate}
+                onChange={(val) =>
+                  updateActivePhase({ reviewStartDate: val })
+                }
+              />
+              <FormInput
+                label="Số ngày"
+                type="number"
+                min="1"
+                value={activePhase.reviewDuration}
+                onChange={(val) =>
+                  updateActivePhase({ reviewDuration: Number(val) })
+                }
+                placeholder="VD: 30 ngày"
+              />
+              <div>
+                <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
+                <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
+                  {activePhase.reviewEndDate ? (
+                    <span className="text-gray-900">
+                      {formatDate(activePhase.reviewEndDate)}
+                    </span>
+                  ) : (
+                    <span className="text-gray-400">--/--/----</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Revision Phase with Round Deadlines */}
+          <div>
+            <h4 className="font-medium mb-3 flex items-center gap-2">
+              ✏️ Chỉnh sửa
+              {activePhase.reviseStartDate && activePhase.reviseEndDate && (
+                <span className="text-sm text-orange-600">
+                  ({formatDate(activePhase.reviseStartDate)} → {formatDate(activePhase.reviseEndDate)})
+                </span>
+              )}
+            </h4>
+            <div className="grid grid-cols-3 gap-4 mb-4">
+              <FormInput
+                label="Ngày bắt đầu"
+                type="date"
+                name="reviseStartDate"
+                value={activePhase.reviseStartDate}
+                onChange={(val) =>
+                  updateActivePhase({ reviseStartDate: val })
+                }
+              />
+              <FormInput
+                label="Số ngày"
+                type="number"
+                min="1"
+                value={activePhase.reviseDuration}
+                onChange={(val) =>
+                  updateActivePhase({ reviseDuration: Number(val) })
+                }
+                placeholder="VD: 15 ngày"
+              />
+              <div>
+                <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
+                <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
+                  {activePhase.reviseEndDate ? (
+                    <span className="text-gray-900">
+                      {formatDate(activePhase.reviseEndDate)}
+                    </span>
+                  ) : (
+                    <span className="text-gray-400">--/--/----</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Revision Round Deadlines */}
+            <div className="pl-4 border-l-2 border-orange-200">
+              <h5 className="font-medium mb-2">
+                Deadline từng vòng chỉnh sửa ({activePhase.revisionRoundDeadlines.length})
+              </h5>
+
+              {activePhase.revisionRoundDeadlines.length > 0 && (
+                <div className="grid grid-cols-4 gap-2 mb-3">
+                  {activePhase.revisionRoundDeadlines.map((round, idx) => (
+                    <div key={idx} className="p-2 bg-gray-50 rounded border border-gray-200">
+                      <div className="text-sm font-medium">Vòng {round.roundNumber}</div>
+                      <div className="text-xs text-gray-600">
+                        {formatDate(round.endSubmissionDate)}
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() =>
+                          updateDeadline(
+                            activePhase.revisionRoundDeadlines.filter((_, i) => i !== idx)
+                          )
+                        }
+                        className="w-full mt-2"
+                      >
+                        Xóa
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="grid grid-cols-4 gap-2">
+                <FormInput
+                  label="Vòng thứ"
+                  type="number"
+                  min="1"
+                  value={newRevisionRound.roundNumber}
+                  onChange={(val) =>
+                    setNewRevisionRound({ ...newRevisionRound, roundNumber: Number(val) })
+                  }
+                />
+                <FormInput
+                  label="Ngày bắt đầu"
+                  type="date"
+                  value={newRevisionRound.startDate}
+                  onChange={(val) =>
+                    setNewRevisionRound({ ...newRevisionRound, startDate: val })
+                  }
+                />
+                <FormInput
+                  label="Số ngày"
+                  type="number"
+                  min="1"
+                  value={newRevisionRound.durationInDays}
+                  onChange={(val) =>
+                    setNewRevisionRound({ ...newRevisionRound, durationInDays: Number(val) })
+                  }
+                />
+                <div>
+                  <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
+                  <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
+                    {newRevisionRound.startDate && newRevisionRound.durationInDays > 0 ? (
+                      <span className="text-gray-900">
+                        {formatDate(
+                          calculateEndDate(newRevisionRound.startDate, newRevisionRound.durationInDays)
+                        )}
+                      </span>
+                    ) : (
+                      <span className="text-gray-400">--/--/----</span>
+                    )}
+                  </div>
+                </div>
+                <Button
+                  onClick={() => {
+                    const { roundNumber, startDate, durationInDays } = newRevisionRound;
+                    if (!startDate || durationInDays <= 0) return;
+                    const endDate = calculateEndDate(startDate, durationInDays);
+                    const newRound: RevisionRoundDeadline = {
+                      roundNumber,
+                      startSubmissionDate: startDate,
+                      endSubmissionDate: endDate,
+                    };
+                    updateDeadline([...activePhase.revisionRoundDeadlines, newRound]);
+                    setNewRevisionRound({
+                      roundNumber: activePhase.revisionRoundDeadlines.length + 2,
+                      startDate: "",
+                      durationInDays: 3,
+                    });
+                    toast.success("Đã thêm vòng chỉnh sửa!");
+                  }}
+                  className="mt-6"
+                >
+                  Thêm vòng
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Camera Ready Phase */}
+          <div>
+            <h4 className="font-medium mb-3 flex items-center gap-2">
+              📸 Camera Ready
+              {activePhase.cameraReadyStartDate && activePhase.cameraReadyEndDate && (
+                <span className="text-sm text-red-600">
+                  ({formatDate(activePhase.cameraReadyStartDate)} → {formatDate(activePhase.cameraReadyEndDate)})
+                </span>
+              )}
+            </h4>
+            <div className="grid grid-cols-3 gap-4">
+              <FormInput
+                label="Ngày bắt đầu"
+                type="date"
+                name="cameraReadyStartDate"
+                value={activePhase.cameraReadyStartDate}
+                onChange={(val) =>
+                  updateActivePhase({ cameraReadyStartDate: val })
+                }
+              />
+              <FormInput
+                label="Số ngày"
+                type="number"
+                min="1"
+                value={activePhase.cameraReadyDuration}
+                onChange={(val) =>
+                  updateActivePhase({ cameraReadyDuration: Number(val) })
+                }
+                placeholder="VD: 7 ngày"
+              />
+              <div>
+                <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
+                <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
+                  {activePhase.cameraReadyEndDate ? (
+                    <span className="text-gray-900">
+                      {formatDate(activePhase.cameraReadyEndDate)}
+                    </span>
+                  ) : (
+                    <span className="text-gray-400">--/--/----</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      );
+    })()}
+  </div>
+</div>
 {/* STEP 3: PRICE */}
 <div className="bg-white border rounded-lg p-6 mb-6">
   <h3 className="text-lg font-semibold mb-4">4. Giá vé</h3>
@@ -1833,18 +2220,24 @@ const handleAddRefundPolicy = () => {
 
   <div className="border p-4 rounded">
     <h4 className="font-medium mb-3">Thêm vé mới</h4>
-      {researchPhase.registrationStartDate && researchPhase.registrationEndDate && (
-    <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-      <div className="text-sm text-amber-800">
-        <strong>Thời gian đăng ký:</strong>{" "}            
-        {formatDate(researchPhase.registrationStartDate)} -{" "}
-        {formatDate(researchPhase.registrationEndDate)}
-      </div>
-      <div className="text-xs text-amber-600 mt-1">
-        * Vé tác giả phải bán trong khoảng thời gian này
-      </div>
-    </div>
-  )}
+    {(() => {
+      const mainPhase = researchPhases.find(p => !p.isWaitlist);
+      if (mainPhase?.registrationStartDate && mainPhase?.registrationEndDate) {
+        return (
+          <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="text-sm text-amber-800">
+              <strong>Thời gian đăng ký:</strong>{" "}
+              {formatDate(mainPhase.registrationStartDate)} –{" "}
+              {formatDate(mainPhase.registrationEndDate)}
+            </div>
+            <div className="text-xs text-amber-600 mt-1">
+              * Vé tác giả phải bán trong khoảng thời gian này
+            </div>
+          </div>
+        );
+      }
+      return null;
+    })()}
     <FormInput
       label="Tên vé"
       value={newTicket.ticketName}

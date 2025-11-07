@@ -170,9 +170,11 @@ export interface FullPaperA {
   reviewStatusName: string;
   fullPaperUrl: string;
   isAllSubmittedFullPaperReview: boolean;
-
-  title:string;
-  description:string;
+  title: string;
+  description: string;
+  fullPaperStartDate: string | null;
+  fullPaperEndDate: string | null;
+  fullPaperReviews: FullPaperReview[];
 }
 
 export interface PaperDetailForReviewer {
@@ -207,6 +209,7 @@ export interface FullPaperReview {
   fullPaperReviewId: string;
   globalStatusId: string;
   globalStatusName: string;
+  reviewStatusName: string;
   note: string;
   createdAt: string | null;
   feedbackToAuthor: string;

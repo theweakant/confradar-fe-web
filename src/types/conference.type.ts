@@ -292,7 +292,8 @@ export interface ConferenceResearchDetailData {
 //RESEARCH PHASE STEP
 export interface RevisionRoundDeadline {
   revisionRoundDeadlineId?: string;
-  endDate: string; // ISO date
+  startSubmissionDate:string;
+  endSubmissionDate:string;
   roundNumber: number;
 }
 
