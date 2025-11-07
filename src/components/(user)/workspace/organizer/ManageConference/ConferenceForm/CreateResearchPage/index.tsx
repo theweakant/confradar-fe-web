@@ -712,32 +712,25 @@ const handleFinalSubmit = async () => {
     // BƯỚC 4: CÁC API CÒN LẠI (SONG SONG)
     // ============================================
     const sessionPromise = sessions.length > 0 ? (() => {
-      const formattedSessions = sessions.map((s) => {
-        const startDateTime = new Date(s.startTime);
-        const endDateTime = new Date(s.endTime);
-        
-        const startTime = startDateTime.toTimeString().slice(0, 8);
-        const endTime = endDateTime.toTimeString().slice(0, 8);
-        
-        return {
-          title: s.title,
-          description: s.description,
-          date: s.date,
-          startTime: startTime,
-          endTime: endTime,
-          roomId: s.roomId,
-          speaker: s.speaker.map(sp => ({
-            name: sp.name,
-            description: sp.description,
-            image: sp.image instanceof File ? sp.image : undefined,
-            imageUrl: typeof sp.image === 'string' ? sp.image : undefined,
-          })),
-          sessionMedias: (s.sessionMedias || []).map(media => ({
-            mediaFile: media.mediaFile instanceof File ? media.mediaFile : undefined,
-            mediaUrl: typeof media.mediaFile === 'string' ? media.mediaFile : undefined,
-          })),
-        };
-      });
+      const formattedSessions = sessions.map((s) => ({
+        title: s.title,
+        description: s.description,
+        date: s.date,
+        startTime: s.startTime,  // ✅ Bỏ parse new Date()
+        endTime: s.endTime,      // ✅ Bỏ parse new Date()
+        roomId: s.roomId,
+        speaker: (s.speaker || []).map(sp => ({
+          name: sp.name,
+          description: sp.description,
+          image: sp.image instanceof File ? sp.image : undefined,
+          imageUrl: typeof sp.image === 'string' ? sp.image : undefined,
+        })),
+        sessionMedias: (s.sessionMedias || []).map(media => ({
+          mediaFile: media.mediaFile instanceof File ? media.mediaFile : undefined,
+          mediaUrl: typeof media.mediaFile === 'string' ? media.mediaFile : undefined,
+        })),
+      }));
+      
       return createSessions({ conferenceId, data: { sessions: formattedSessions } }).unwrap();
     })() : Promise.resolve();
 
@@ -1161,8 +1154,31 @@ const handleAddTicket = () => {
       }
     }
 
-    setSessions([...sessions, newSession]);
-    setNewSession({
+      let formattedStartTime = newSession.startTime;
+      let formattedEndTime = newSession.endTime;
+
+      if (newSession.startTime.includes('T')) {
+        const startDate = new Date(newSession.startTime);
+        formattedStartTime = startDate.toTimeString().slice(0, 8);
+      } else if (newSession.startTime.length === 5) {
+        formattedStartTime = `${newSession.startTime}:00`;
+      }
+
+      if (newSession.endTime.includes('T')) {
+        const endDate = new Date(newSession.endTime);
+        formattedEndTime = endDate.toTimeString().slice(0, 8);
+      } else if (newSession.endTime.length === 5) {
+        formattedEndTime = `${newSession.endTime}:00`;
+      }
+
+      const sessionToAdd = {
+        ...newSession,
+        startTime: formattedStartTime,
+        endTime: formattedEndTime,
+      };
+
+      setSessions([...sessions, sessionToAdd]);
+      setNewSession({
       title: "",
       description: "",
       date: "",
@@ -1203,7 +1219,6 @@ const handleAddRefundPolicy = () => {
   const saleStart = new Date(basicForm.ticketSaleStart);
   const saleEnd = new Date(basicForm.ticketSaleEnd);
 
-  // ✅ FIX: Hạn hoàn tiền phải SAU ngày bắt đầu bán vé
   if (deadline <= saleStart) {
     toast.error(
       `❌ Hạn hoàn tiền (${formatDate(newRefundPolicy.refundDeadline)}) phải SAU ngày bắt đầu bán vé (${formatDate(basicForm.ticketSaleStart)})!`
@@ -1211,7 +1226,6 @@ const handleAddRefundPolicy = () => {
     return;
   }
 
-  // ✅ FIX: Hạn hoàn tiền phải TRƯỚC ngày đóng bán vé
   if (deadline >= saleEnd) {
     toast.error(
       `❌ Hạn hoàn tiền (${formatDate(newRefundPolicy.refundDeadline)}) phải TRƯỚC ngày đóng bán vé (${formatDate(basicForm.ticketSaleEnd)})!`
@@ -1367,6 +1381,9 @@ const handleAddRefundPolicy = () => {
               type="date"
               value={basicForm.ticketSaleStart}
               onChange={(val) => setBasicForm({ ...basicForm, ticketSaleStart: val })}
+              max={basicForm.startDate 
+              ? new Date(new Date(basicForm.startDate).getTime() - 86400000).toISOString().split('T')[0]
+              : undefined}
               required
               disabled={basicFormCompleted}
             />
@@ -1685,892 +1702,908 @@ const handleAddRefundPolicy = () => {
             </div>
             </div>
           {/* STEP 3: RESEARCH PHASE/TIMELINE */}
-<div className="bg-white border rounded-lg p-6 mb-6">
-  <h3 className="text-lg font-semibold mb-4">3. Timeline & Giai đoạn</h3>
-  {basicForm.startDate && basicForm.endDate && (
-    <span className="text-sm text-green-600">
-      Ngày tổ chức ({formatDate(basicForm.startDate)} → {formatDate(basicForm.endDate)}) |
-      Ngày bán vé ({formatDate(basicForm.ticketSaleStart)} → {formatDate(basicForm.ticketSaleEnd)})
-    </span>
-  )}
-  <div className="space-y-6">
-    {/* Tab switching */}
-    <div>
-      <h4 className="font-medium mb-3">⚙️ Chọn timeline</h4>
-      <div className="flex gap-2 mb-4">
-        <Button
-          variant={researchPhases[0].isActive ? "default" : "outline"}
-          onClick={() => {
-            const updated = [...researchPhases];
-            updated[0] = { ...updated[0], isActive: true };
-            updated[1] = { ...updated[1], isActive: false };
-            setResearchPhases(updated);
-          }}
-        >
-          Timeline chính
-        </Button>
-        <Button
-          variant={researchPhases[1].isActive ? "default" : "outline"}
-          onClick={() => {
-            const updated = [...researchPhases];
-            updated[0] = { ...updated[0], isActive: false };
-            updated[1] = { ...updated[1], isActive: true };
-            setResearchPhases(updated);
-          }}
-        >
-          Waitlist Timeline
-        </Button>
-      </div>
-
-      {/* Nút tạo waitlist */}
-
-      {!researchPhases[1].isActive && (
-        <div className="mt-2 flex gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              // Copy giống main
-              const main = researchPhases[0];
-              const copiedWaitlist: ResearchPhase = {
-                ...main,
-                isWaitlist: true,
-                isActive: true,
-              };
-              setResearchPhases([main, copiedWaitlist]);
-            }}
-          >
-            Tạo waitlist timeline tương tự
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              // Tạo mới trống
-              const emptyWaitlist: ResearchPhase = {
-                registrationStartDate: "",
-                registrationEndDate: "",
-                registrationDuration: 1,
-                fullPaperStartDate: "",
-                fullPaperEndDate: "",
-                fullPaperDuration: 1,
-                reviewStartDate: "",
-                reviewEndDate: "",
-                reviewDuration: 1,
-                reviseStartDate: "",
-                reviseEndDate: "",
-                reviseDuration: 1,
-                cameraReadyStartDate: "",
-                cameraReadyEndDate: "",
-                cameraReadyDuration: 1,
-                isWaitlist: true,
-                isActive: true,
-                revisionRoundDeadlines: [],
-              };
-              setResearchPhases([researchPhases[0], emptyWaitlist]);
-            }}
-          >
-            Tạo waitlist timeline mới
-          </Button>
-        </div>
-      )}
-    </div>
-
-    {/* === RENDER ACTIVE PHASE === */}
-    {(() => {
-      const activePhase = researchPhases.find(p => p.isActive) || researchPhases[0];
-
-      const updateActivePhase = (updates: Partial<ResearchPhase>) => {
-        setResearchPhases(prev =>
-          prev.map(p => (p.isActive ? { ...p, ...updates } : p))
-        );
-      };
-
-      const updateDeadline = (newDeadlines: RevisionRoundDeadline[]) => {
-        setResearchPhases(prev =>
-          prev.map(p => (p.isActive ? { ...p, revisionRoundDeadlines: newDeadlines } : p))
-        );
-      };
-
-      return (
-        <>
-          {/* Registration Phase */}
-          <div>
-            <h4 className="font-medium mb-3 flex items-center gap-2">
-              📝 Đăng ký tham dự
-              {activePhase.registrationStartDate && activePhase.registrationEndDate && (
-                <span className="text-sm text-blue-600">
-                  ({formatDate(activePhase.registrationStartDate)} → {formatDate(activePhase.registrationEndDate)})
-                </span>
-              )}
-            </h4>
-            <div className="grid grid-cols-3 gap-4">
-              <FormInput
-                label="Ngày bắt đầu"
-                type="date"
-                name="registrationStartDate"
-                value={activePhase.registrationStartDate}
-                onChange={(val) =>
-                  updateActivePhase({ registrationStartDate: val })
-                }
-                required
-              />
-              <FormInput
-                label="Số ngày"
-                type="number"
-                min="1"
-                value={activePhase.registrationDuration}
-                onChange={(val) =>
-                  updateActivePhase({ registrationDuration: Number(val) })
-                }
-                placeholder="VD: 30 ngày"
-              />
+          <div className="bg-white border rounded-lg p-6 mb-6">
+            <h3 className="text-lg font-semibold mb-4">3. Timeline & Giai đoạn</h3>
+            {basicForm.startDate && basicForm.endDate && (
+              <span className="text-sm text-green-600">
+                Ngày tổ chức ({formatDate(basicForm.startDate)} → {formatDate(basicForm.endDate)}) |
+                Ngày bán vé ({formatDate(basicForm.ticketSaleStart)} → {formatDate(basicForm.ticketSaleEnd)})
+              </span>
+            )}
+            <div className="space-y-6">
+              {/* Tab switching */}
               <div>
-                <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
-                <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
-                  {activePhase.registrationEndDate ? (
-                    <span className="text-gray-900">
-                      {formatDate(activePhase.registrationEndDate)}
-                    </span>
-                  ) : (
-                    <span className="text-gray-400">--/--/----</span>
-                  )}
+                <h4 className="font-medium mb-3">⚙️ Chọn timeline</h4>
+                <div className="flex gap-2 mb-4">
+                  <Button
+                    variant={researchPhases[0].isActive ? "default" : "outline"}
+                    onClick={() => {
+                      const updated = [...researchPhases];
+                      updated[0] = { ...updated[0], isActive: true };
+                      updated[1] = { ...updated[1], isActive: false };
+                      setResearchPhases(updated);
+                    }}
+                  >
+                    Timeline chính
+                  </Button>
+                  <Button
+                    variant={researchPhases[1].isActive ? "default" : "outline"}
+                    onClick={() => {
+                      const updated = [...researchPhases];
+                      updated[0] = { ...updated[0], isActive: false };
+                      updated[1] = { ...updated[1], isActive: true };
+                      setResearchPhases(updated);
+                    }}
+                  >
+                    Waitlist Timeline
+                  </Button>
                 </div>
-              </div>
-            </div>
-          </div>
 
-          {/* Full Paper Phase */}
-          <div>
-            <h4 className="font-medium mb-3 flex items-center gap-2">
-              📄 Nộp bài full paper
-              {activePhase.fullPaperStartDate && activePhase.fullPaperEndDate && (
-                <span className="text-sm text-green-600">
-                  ({formatDate(activePhase.fullPaperStartDate)} → {formatDate(activePhase.fullPaperEndDate)})
-                </span>
-              )}
-            </h4>
-            <div className="grid grid-cols-3 gap-4">
-              <FormInput
-                label="Ngày bắt đầu"
-                type="date"
-                name="fullPaperStartDate"
-                value={activePhase.fullPaperStartDate}
-                onChange={(val) =>
-                  updateActivePhase({ fullPaperStartDate: val })
-                }
-                required
-              />
-              <FormInput
-                label="Số ngày"
-                type="number"
-                min="1"
-                value={activePhase.fullPaperDuration}
-                onChange={(val) =>
-                  updateActivePhase({ fullPaperDuration: Number(val) })
-                }
-                placeholder="VD: 60 ngày"
-              />
-              <div>
-                <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
-                <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
-                  {activePhase.fullPaperEndDate ? (
-                    <span className="text-gray-900">
-                      {formatDate(activePhase.fullPaperEndDate)}
-                    </span>
-                  ) : (
-                    <span className="text-gray-400">--/--/----</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
+                {/* Nút tạo waitlist */}
 
-          {/* Review Phase */}
-          <div>
-            <h4 className="font-medium mb-3 flex items-center gap-2">
-              🔍 Phản biện
-              {activePhase.reviewStartDate && activePhase.reviewEndDate && (
-                <span className="text-sm text-purple-600">
-                  ({formatDate(activePhase.reviewStartDate)} → {formatDate(activePhase.reviewEndDate)})
-                </span>
-              )}
-            </h4>
-            <div className="grid grid-cols-3 gap-4">
-              <FormInput
-                label="Ngày bắt đầu"
-                type="date"
-                name="reviewStartDate"
-                value={activePhase.reviewStartDate}
-                onChange={(val) =>
-                  updateActivePhase({ reviewStartDate: val })
-                }
-              />
-              <FormInput
-                label="Số ngày"
-                type="number"
-                min="1"
-                value={activePhase.reviewDuration}
-                onChange={(val) =>
-                  updateActivePhase({ reviewDuration: Number(val) })
-                }
-                placeholder="VD: 30 ngày"
-              />
-              <div>
-                <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
-                <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
-                  {activePhase.reviewEndDate ? (
-                    <span className="text-gray-900">
-                      {formatDate(activePhase.reviewEndDate)}
-                    </span>
-                  ) : (
-                    <span className="text-gray-400">--/--/----</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Revision Phase with Round Deadlines */}
-          <div>
-            <h4 className="font-medium mb-3 flex items-center gap-2">
-              ✏️ Chỉnh sửa
-              {activePhase.reviseStartDate && activePhase.reviseEndDate && (
-                <span className="text-sm text-orange-600">
-                  ({formatDate(activePhase.reviseStartDate)} → {formatDate(activePhase.reviseEndDate)})
-                </span>
-              )}
-            </h4>
-            <div className="grid grid-cols-3 gap-4 mb-4">
-              <FormInput
-                label="Ngày bắt đầu"
-                type="date"
-                name="reviseStartDate"
-                value={activePhase.reviseStartDate}
-                onChange={(val) =>
-                  updateActivePhase({ reviseStartDate: val })
-                }
-              />
-              <FormInput
-                label="Số ngày"
-                type="number"
-                min="1"
-                value={activePhase.reviseDuration}
-                onChange={(val) =>
-                  updateActivePhase({ reviseDuration: Number(val) })
-                }
-                placeholder="VD: 15 ngày"
-              />
-              <div>
-                <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
-                <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
-                  {activePhase.reviseEndDate ? (
-                    <span className="text-gray-900">
-                      {formatDate(activePhase.reviseEndDate)}
-                    </span>
-                  ) : (
-                    <span className="text-gray-400">--/--/----</span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Revision Round Deadlines */}
-            <div className="pl-4 border-l-2 border-orange-200">
-              <h5 className="font-medium mb-2">
-                Deadline từng vòng chỉnh sửa ({activePhase.revisionRoundDeadlines.length})
-              </h5>
-
-              {activePhase.revisionRoundDeadlines.length > 0 && (
-                <div className="grid grid-cols-4 gap-2 mb-3">
-                  {activePhase.revisionRoundDeadlines.map((round, idx) => (
-                    <div key={idx} className="p-2 bg-gray-50 rounded border border-gray-200">
-                      <div className="text-sm font-medium">Vòng {round.roundNumber}</div>
-                      <div className="text-xs text-gray-600">
-                        {formatDate(round.endSubmissionDate)}
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() =>
-                          updateDeadline(
-                            activePhase.revisionRoundDeadlines.filter((_, i) => i !== idx)
-                          )
-                        }
-                        className="w-full mt-2"
-                      >
-                        Xóa
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="grid grid-cols-4 gap-2">
-                <FormInput
-                  label="Vòng thứ"
-                  type="number"
-                  min="1"
-                  value={newRevisionRound.roundNumber}
-                  onChange={(val) =>
-                    setNewRevisionRound({ ...newRevisionRound, roundNumber: Number(val) })
-                  }
-                />
-                <FormInput
-                  label="Ngày bắt đầu"
-                  type="date"
-                  value={newRevisionRound.startDate}
-                  onChange={(val) =>
-                    setNewRevisionRound({ ...newRevisionRound, startDate: val })
-                  }
-                />
-                <FormInput
-                  label="Số ngày"
-                  type="number"
-                  min="1"
-                  value={newRevisionRound.durationInDays}
-                  onChange={(val) =>
-                    setNewRevisionRound({ ...newRevisionRound, durationInDays: Number(val) })
-                  }
-                />
-                <div>
-                  <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
-                  <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
-                    {newRevisionRound.startDate && newRevisionRound.durationInDays > 0 ? (
-                      <span className="text-gray-900">
-                        {formatDate(
-                          calculateEndDate(newRevisionRound.startDate, newRevisionRound.durationInDays)
-                        )}
-                      </span>
-                    ) : (
-                      <span className="text-gray-400">--/--/----</span>
-                    )}
+                {!researchPhases[1].isActive && (
+                  <div className="mt-2 flex gap-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        // Copy giống main
+                        const main = researchPhases[0];
+                        const copiedWaitlist: ResearchPhase = {
+                          ...main,
+                          isWaitlist: true,
+                          isActive: true,
+                        };
+                        setResearchPhases([main, copiedWaitlist]);
+                      }}
+                    >
+                      Tạo waitlist timeline tương tự
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        // Tạo mới trống
+                        const emptyWaitlist: ResearchPhase = {
+                          registrationStartDate: "",
+                          registrationEndDate: "",
+                          registrationDuration: 1,
+                          fullPaperStartDate: "",
+                          fullPaperEndDate: "",
+                          fullPaperDuration: 1,
+                          reviewStartDate: "",
+                          reviewEndDate: "",
+                          reviewDuration: 1,
+                          reviseStartDate: "",
+                          reviseEndDate: "",
+                          reviseDuration: 1,
+                          cameraReadyStartDate: "",
+                          cameraReadyEndDate: "",
+                          cameraReadyDuration: 1,
+                          isWaitlist: true,
+                          isActive: true,
+                          revisionRoundDeadlines: [],
+                        };
+                        setResearchPhases([researchPhases[0], emptyWaitlist]);
+                      }}
+                    >
+                      Tạo waitlist timeline mới
+                    </Button>
                   </div>
-                </div>
-                <Button
-                  onClick={() => {
-                    const { roundNumber, startDate, durationInDays } = newRevisionRound;
-                    if (!startDate || durationInDays <= 0) return;
-                    const endDate = calculateEndDate(startDate, durationInDays);
-                    const newRound: RevisionRoundDeadline = {
-                      roundNumber,
-                      startSubmissionDate: startDate,
-                      endSubmissionDate: endDate,
-                    };
-                    updateDeadline([...activePhase.revisionRoundDeadlines, newRound]);
-                    setNewRevisionRound({
-                      roundNumber: activePhase.revisionRoundDeadlines.length + 2,
-                      startDate: "",
-                      durationInDays: 3,
-                    });
-                    toast.success("Đã thêm vòng chỉnh sửa!");
-                  }}
-                  className="mt-6"
-                >
-                  Thêm vòng
-                </Button>
+                )}
               </div>
-            </div>
-          </div>
 
-          {/* Camera Ready Phase */}
-          <div>
-            <h4 className="font-medium mb-3 flex items-center gap-2">
-              📸 Camera Ready
-              {activePhase.cameraReadyStartDate && activePhase.cameraReadyEndDate && (
-                <span className="text-sm text-red-600">
-                  ({formatDate(activePhase.cameraReadyStartDate)} → {formatDate(activePhase.cameraReadyEndDate)})
-                </span>
-              )}
-            </h4>
-            <div className="grid grid-cols-3 gap-4">
-              <FormInput
-                label="Ngày bắt đầu"
-                type="date"
-                name="cameraReadyStartDate"
-                value={activePhase.cameraReadyStartDate}
-                onChange={(val) =>
-                  updateActivePhase({ cameraReadyStartDate: val })
-                }
-              />
-              <FormInput
-                label="Số ngày"
-                type="number"
-                min="1"
-                value={activePhase.cameraReadyDuration}
-                onChange={(val) =>
-                  updateActivePhase({ cameraReadyDuration: Number(val) })
-                }
-                placeholder="VD: 7 ngày"
-              />
-              <div>
-                <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
-                <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
-                  {activePhase.cameraReadyEndDate ? (
-                    <span className="text-gray-900">
-                      {formatDate(activePhase.cameraReadyEndDate)}
-                    </span>
-                  ) : (
-                    <span className="text-gray-400">--/--/----</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </>
-      );
-    })()}
-  </div>
-</div>
-{/* STEP 3: PRICE */}
-<div className="bg-white border rounded-lg p-6 mb-6">
-  <h3 className="text-lg font-semibold mb-4">4. Giá vé</h3>
-  
-  <div className="border p-4 rounded mb-4">
-    <h4 className="font-medium mb-3 text-blue-600">
-      Danh sách vé ({tickets.length})
-    </h4>
+              {/* === RENDER ACTIVE PHASE === */}
+              {(() => {
+                const activePhase = researchPhases.find(p => p.isActive) || researchPhases[0];
 
-    {tickets.map((t, idx) => (
-      <div
-        key={t.ticketId || idx}
-        className="border rounded-lg p-4 mb-3 bg-white shadow-sm hover:shadow-md transition-all duration-200"
-      >
-        {/* Header */}
-        <div className="flex justify-between items-start mb-3 border-b pb-2">
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-base text-gray-800">{t.ticketName}</h3>
-              {t.isAuthor && (
-                <span className="bg-blue-600 text-white text-xs font-semibold px-2 py-0.5 rounded">
-                  Vé tác giả
-                </span>
-              )}
-            </div>
-            <p className="text-xs text-gray-500 mt-0.5">
-              {formatDate(t.phases?.[0]?.startDate)} -{" "}
-              {formatDate(t.phases?.[t.phases.length - 1]?.endDate)}
-            </p>
-          </div>
-          <div className="text-right">
-            <div className="text-lg font-bold text-blue-600">
-              {formatCurrency(t.ticketPrice)}
-            </div>
-            <div className="text-xs text-gray-500">Số lượng: {t.totalSlot}</div>
-          </div>
-        </div>
+                const updateActivePhase = (updates: Partial<ResearchPhase>) => {
+                  setResearchPhases(prev =>
+                    prev.map(p => (p.isActive ? { ...p, ...updates } : p))
+                  );
+                };
 
-        {/* Phases */}
-        {t.phases && t.phases.length > 0 && (
-          <div className="mt-2">
-            <div className="text-xs font-medium text-gray-600 mb-1.5">
-              Giai đoạn giá ({t.phases.length}):
-            </div>
-
-            <div className="grid grid-cols-5 gap-2">
-              {t.phases.map((p, pi) => {
-                const isIncrease = p.applyPercent > 100;
-                const percentDisplay = isIncrease
-                  ? `+${p.applyPercent - 100}%`
-                  : `-${100 - p.applyPercent}%`;
+                const updateDeadline = (newDeadlines: RevisionRoundDeadline[]) => {
+                  setResearchPhases(prev =>
+                    prev.map(p => (p.isActive ? { ...p, revisionRoundDeadlines: newDeadlines } : p))
+                  );
+                };
 
                 return (
-                  <div
-                    key={pi}
-                    className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-md p-2 border border-gray-200 hover:border-blue-300 transition-colors"
-                  >
-                    <div
-                      className="text-xs font-semibold text-gray-800 mb-1 truncate"
-                      title={p.phaseName}
-                    >
-                      {p.phaseName}
+                  <>
+                    {/* Registration Phase */}
+                    <div>
+                      <h4 className="font-medium mb-3 flex items-center gap-2">
+                        📝 Đăng ký tham dự
+                        {activePhase.registrationStartDate && activePhase.registrationEndDate && (
+                          <span className="text-sm text-blue-600">
+                            ({formatDate(activePhase.registrationStartDate)} → {formatDate(activePhase.registrationEndDate)})
+                          </span>
+                        )}
+                      </h4>
+                      <div className="grid grid-cols-3 gap-4">
+                        <FormInput
+                          label="Ngày bắt đầu"
+                          type="date"
+                          name="registrationStartDate"
+                          value={activePhase.registrationStartDate}
+                          onChange={(val) =>
+                            updateActivePhase({ registrationStartDate: val })
+                          }
+                          max={basicForm.ticketSaleStart 
+                          ? new Date(new Date(basicForm.ticketSaleStart).getTime() - 86400000).toISOString().split('T')[0]
+                          : undefined}
+                          required
+                        />
+                        <FormInput
+                          label="Số ngày"
+                          type="number"
+                          min="1"
+                          value={activePhase.registrationDuration}
+                          onChange={(val) =>
+                            updateActivePhase({ registrationDuration: Number(val) })
+                          }
+                          placeholder="VD: 30 ngày"
+                        />
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
+                          <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
+                            {activePhase.registrationEndDate ? (
+                              <span className="text-gray-900">
+                                {formatDate(activePhase.registrationEndDate)}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400">--/--/----</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-[10px] text-gray-500 mb-1 leading-tight">
-                      {formatDate(p.startDate)} - {formatDate(p.endDate)}
+
+                    {/* Full Paper Phase */}
+                    <div>
+                      <h4 className="font-medium mb-3 flex items-center gap-2">
+                        📄 Nộp bài full paper
+                        {activePhase.fullPaperStartDate && activePhase.fullPaperEndDate && (
+                          <span className="text-sm text-green-600">
+                            ({formatDate(activePhase.fullPaperStartDate)} → {formatDate(activePhase.fullPaperEndDate)})
+                          </span>
+                        )}
+                      </h4>
+                      <div className="grid grid-cols-3 gap-4">
+                        <FormInput
+                          label="Ngày bắt đầu"
+                          type="date"
+                          name="fullPaperStartDate"
+                          value={activePhase.fullPaperStartDate}
+                          onChange={(val) =>
+                            updateActivePhase({ fullPaperStartDate: val })
+                          }
+                          min={activePhase.registrationEndDate || undefined}
+                          required
+                        />
+                        <FormInput
+                          label="Số ngày"
+                          type="number"
+                          min="1"
+                          value={activePhase.fullPaperDuration}
+                          onChange={(val) =>
+                            updateActivePhase({ fullPaperDuration: Number(val) })
+                          }
+                          placeholder="VD: 60 ngày"
+                        />
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
+                          <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
+                            {activePhase.fullPaperEndDate ? (
+                              <span className="text-gray-900">
+                                {formatDate(activePhase.fullPaperEndDate)}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400">--/--/----</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-600">Tổng: {p.totalslot}</span>
-                      <span
-                        className={`font-bold ${
-                          isIncrease ? "text-red-600" : "text-green-600"
-                        }`}
-                      >
-                        {percentDisplay}
-                      </span>
+
+                    {/* Review Phase */}
+                    <div>
+                      <h4 className="font-medium mb-3 flex items-center gap-2">
+                        🔍 Phản biện
+                        {activePhase.reviewStartDate && activePhase.reviewEndDate && (
+                          <span className="text-sm text-purple-600">
+                            ({formatDate(activePhase.reviewStartDate)} → {formatDate(activePhase.reviewEndDate)})
+                          </span>
+                        )}
+                      </h4>
+                      <div className="grid grid-cols-3 gap-4">
+                        <FormInput
+                          label="Ngày bắt đầu"
+                          type="date"
+                          name="reviewStartDate"
+                          value={activePhase.reviewStartDate}
+                          onChange={(val) =>
+                            updateActivePhase({ reviewStartDate: val })
+                          }
+                          min={activePhase.fullPaperEndDate || undefined}
+                        />
+                        <FormInput
+                          label="Số ngày"
+                          type="number"
+                          min="1"
+                          value={activePhase.reviewDuration}
+                          onChange={(val) =>
+                            updateActivePhase({ reviewDuration: Number(val) })
+                          }
+                          placeholder="VD: 30 ngày"
+                        />
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
+                          <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
+                            {activePhase.reviewEndDate ? (
+                              <span className="text-gray-900">
+                                {formatDate(activePhase.reviewEndDate)}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400">--/--/----</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+
+                    {/* Revision Phase with Round Deadlines */}
+                    <div>
+                      <h4 className="font-medium mb-3 flex items-center gap-2">
+                        ✏️ Chỉnh sửa
+                        {activePhase.reviseStartDate && activePhase.reviseEndDate && (
+                          <span className="text-sm text-orange-600">
+                            ({formatDate(activePhase.reviseStartDate)} → {formatDate(activePhase.reviseEndDate)})
+                          </span>
+                        )}
+                      </h4>
+                      <div className="grid grid-cols-3 gap-4 mb-4">
+                        <FormInput
+                          label="Ngày bắt đầu"
+                          type="date"
+                          name="reviseStartDate"
+                          value={activePhase.reviseStartDate}
+                          onChange={(val) =>
+                            updateActivePhase({ reviseStartDate: val })
+                          }
+                          min={activePhase.reviewEndDate || undefined}
+                        />
+                        <FormInput
+                          label="Số ngày"
+                          type="number"
+                          min="1"
+                          value={activePhase.reviseDuration}
+                          onChange={(val) =>
+                            updateActivePhase({ reviseDuration: Number(val) })
+                          }
+                          placeholder="VD: 15 ngày"
+                        />
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
+                          <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
+                            {activePhase.reviseEndDate ? (
+                              <span className="text-gray-900">
+                                {formatDate(activePhase.reviseEndDate)}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400">--/--/----</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Revision Round Deadlines */}
+                      <div className="pl-4 border-l-2 border-orange-200">
+                        <h5 className="font-medium mb-2">
+                          Deadline từng vòng chỉnh sửa ({activePhase.revisionRoundDeadlines.length})
+                        </h5>
+
+                        {activePhase.revisionRoundDeadlines.length > 0 && (
+                          <div className="grid grid-cols-4 gap-2 mb-3">
+                            {activePhase.revisionRoundDeadlines.map((round, idx) => (
+                              <div key={idx} className="p-2 bg-gray-50 rounded border border-gray-200">
+                                <div className="text-sm font-medium">Vòng {round.roundNumber}</div>
+                                <div className="text-xs text-gray-600">
+                                  {formatDate(round.endSubmissionDate)}
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() =>
+                                    updateDeadline(
+                                      activePhase.revisionRoundDeadlines.filter((_, i) => i !== idx)
+                                    )
+                                  }
+                                  className="w-full mt-2"
+                                >
+                                  Xóa
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-4 gap-2">
+                          <FormInput
+                            label="Vòng thứ"
+                            type="number"
+                            min="1"
+                            value={newRevisionRound.roundNumber}
+                            onChange={(val) =>
+                              setNewRevisionRound({ ...newRevisionRound, roundNumber: Number(val) })
+                            }
+                          />
+                          <FormInput
+                            label="Ngày bắt đầu"
+                            type="date"
+                            value={newRevisionRound.startDate}
+                            onChange={(val) =>
+                              setNewRevisionRound({ ...newRevisionRound, startDate: val })
+                            }
+                            min={activePhase.reviseStartDate || undefined}
+                            max={activePhase.reviseEndDate || undefined}
+                          />
+                          <FormInput
+                            label="Số ngày"
+                            type="number"
+                            min="1"
+                            value={newRevisionRound.durationInDays}
+                            onChange={(val) =>
+                              setNewRevisionRound({ ...newRevisionRound, durationInDays: Number(val) })
+                            }
+                          />
+                          <div>
+                            <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
+                            <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
+                              {newRevisionRound.startDate && newRevisionRound.durationInDays > 0 ? (
+                                <span className="text-gray-900">
+                                  {formatDate(
+                                    calculateEndDate(newRevisionRound.startDate, newRevisionRound.durationInDays)
+                                  )}
+                                </span>
+                              ) : (
+                                <span className="text-gray-400">--/--/----</span>
+                              )}
+                            </div>
+                          </div>
+                          <Button
+                            onClick={() => {
+                              const { roundNumber, startDate, durationInDays } = newRevisionRound;
+                              if (!startDate || durationInDays <= 0) return;
+                              const endDate = calculateEndDate(startDate, durationInDays);
+                              const newRound: RevisionRoundDeadline = {
+                                roundNumber,
+                                startSubmissionDate: startDate,
+                                endSubmissionDate: endDate,
+                              };
+                              updateDeadline([...activePhase.revisionRoundDeadlines, newRound]);
+                              setNewRevisionRound({
+                                roundNumber: activePhase.revisionRoundDeadlines.length + 2,
+                                startDate: "",
+                                durationInDays: 3,
+                              });
+                              toast.success("Đã thêm vòng chỉnh sửa!");
+                            }}
+                            className="mt-6"
+                          >
+                            Thêm vòng
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Camera Ready Phase */}
+                    <div>
+                      <h4 className="font-medium mb-3 flex items-center gap-2">
+                        📸 Camera Ready
+                        {activePhase.cameraReadyStartDate && activePhase.cameraReadyEndDate && (
+                          <span className="text-sm text-red-600">
+                            ({formatDate(activePhase.cameraReadyStartDate)} → {formatDate(activePhase.cameraReadyEndDate)})
+                          </span>
+                        )}
+                      </h4>
+                      <div className="grid grid-cols-3 gap-4">
+                        <FormInput
+                          label="Ngày bắt đầu"
+                          type="date"
+                          name="cameraReadyStartDate"
+                          value={activePhase.cameraReadyStartDate}
+                          onChange={(val) =>
+                            updateActivePhase({ cameraReadyStartDate: val })
+                          }
+                          min={activePhase.reviseEndDate || undefined}
+                          max={basicForm.ticketSaleStart 
+                            ? new Date(new Date(basicForm.ticketSaleStart).getTime() - 86400000).toISOString().split('T')[0]
+                            : undefined}
+                        />
+                        
+                        <FormInput
+                          label="Số ngày"
+                          type="number"
+                          min="1"
+                          value={activePhase.cameraReadyDuration}
+                          onChange={(val) =>
+                            updateActivePhase({ cameraReadyDuration: Number(val) })
+                          }
+                          placeholder="VD: 7 ngày"
+                        />
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
+                          <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
+                            {activePhase.cameraReadyEndDate ? (
+                              <span className="text-gray-900">
+                                {formatDate(activePhase.cameraReadyEndDate)}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400">--/--/----</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </>
                 );
-              })}
+              })()}
             </div>
           </div>
-        )}
+            {/* STEP: PRICE */}
+          <div className="bg-white border rounded-lg p-6 mb-6">
+            <h3 className="text-lg font-semibold mb-4">4. Giá vé</h3>
+            
+            <div className="border p-4 rounded mb-4">
+              <h4 className="font-medium mb-3 text-blue-600">
+                Danh sách vé ({tickets.length})
+              </h4>
 
-        {/* Action Button */}
-        <Button
-          size="sm"
-          variant="destructive"
-          onClick={() => setTickets(tickets.filter((_, i) => i !== idx))}
-          className="w-full bg-red-500 hover:bg-red-600 text-white font-medium text-sm py-1.5 mt-3"
-        >
-          Xóa vé
-        </Button>
-      </div>
-    ))}
-  </div>
-
-  <div className="border p-4 rounded">
-    <h4 className="font-medium mb-3">Thêm vé mới</h4>
-    {(() => {
-      const mainPhase = researchPhases.find(p => !p.isWaitlist);
-      if (mainPhase?.registrationStartDate && mainPhase?.registrationEndDate) {
-        return (
-          <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <div className="text-sm text-amber-800">
-              <strong>Thời gian đăng ký:</strong>{" "}
-              {formatDate(mainPhase.registrationStartDate)} –{" "}
-              {formatDate(mainPhase.registrationEndDate)}
-            </div>
-            <div className="text-xs text-amber-600 mt-1">
-              * Vé tác giả phải bán trong khoảng thời gian này
-            </div>
-          </div>
-        );
-      }
-      return null;
-    })()}
-    <FormInput
-      label="Tên vé"
-      value={newTicket.ticketName}
-      onChange={(val) => setNewTicket({ ...newTicket, ticketName: val })}
-      placeholder="Vé cơ bản, tiêu chuẩn, nâng cao ..."
-    />
-    <FormTextArea
-      label="Mô tả"
-      value={newTicket.ticketDescription}
-      onChange={(val) => setNewTicket({ ...newTicket, ticketDescription: val })}
-      rows={2}
-    />
-    
-    {/* CHECKBOX isAuthor */}
-    <div className="flex items-center gap-2 mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-      <input
-        type="checkbox"
-        id="isAuthor"
-        checked={newTicket.isAuthor}
-        onChange={(e) => setNewTicket({ ...newTicket, isAuthor: e.target.checked })}
-        className="w-4 h-4 text-blue-600"
-      />
-      <label htmlFor="isAuthor" className="text-sm font-medium text-blue-900">
-        Đây là vé dành cho tác giả (bắt buộc ít nhất 1 loại)
-      </label>
-    </div>
-    
-    <div className="grid grid-cols-2 gap-3 mt-3">
-      <FormInput
-        label="Giá vé gốc (VND)"
-        type="number"
-        value={newTicket.ticketPrice}
-        onChange={(val) => setNewTicket({ ...newTicket, ticketPrice: Number(val) })}
-        placeholder="500000"
-      />
-      <FormInput
-        label="Tổng số lượng"
-        type="number"
-        value={newTicket.totalSlot}
-        onChange={(val) => setNewTicket({ ...newTicket, totalSlot: Number(val) })}
-        placeholder="100"
-      />
-    </div>
-
-    <div className="mt-4 border-t pt-3">
-      <h5 className="font-medium mb-2 flex items-center gap-2">
-        Giai đoạn giá ({newTicket.phases.length})
-        {basicForm.ticketSaleStart && basicForm.ticketSaleEnd && (
-          <span className="text-sm text-blue-600">         
-            {formatDate(basicForm.ticketSaleStart)} → {formatDate(basicForm.ticketSaleEnd)}
-          </span>
-        )}
-      </h5>
-      
-      {newTicket.phases.length > 0 ? (
-        <div className="mt-2">
-          <div className="grid grid-cols-3 gap-2">
-            {newTicket.phases.map((p, idx) => {
-              const isIncrease = p.applyPercent > 100;
-              const percentDisplay = isIncrease
-                ? `+${p.applyPercent - 100}%`
-                : `-${100 - p.applyPercent}%`;
-              const adjustedPrice = newTicket.ticketPrice * (p.applyPercent / 100);
-
-              return (
+              {tickets.map((t, idx) => (
                 <div
-                  key={idx}
-                  className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-md p-2 border border-gray-200 relative"
+                  key={t.ticketId || idx}
+                  className="border rounded-lg p-4 mb-3 bg-white shadow-sm hover:shadow-md transition-all duration-200"
                 >
-                  <button
-                    type="button"
-                    onClick={() => handleRemovePhaseFromTicket(idx)}
-                    className="absolute top-1 right-1 text-red-500 hover:text-red-700 text-xs font-bold"
-                    title="Xóa giai đoạn"
-                  >
-                    ✕
-                  </button>
+                  {/* Header */}
+                  <div className="flex justify-between items-start mb-3 border-b pb-2">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-base text-gray-800">{t.ticketName}</h3>
+                        {t.isAuthor && (
+                          <span className="bg-blue-600 text-white text-xs font-semibold px-2 py-0.5 rounded">
+                            Vé tác giả
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {formatDate(t.phases?.[0]?.startDate)} -{" "}
+                        {formatDate(t.phases?.[t.phases.length - 1]?.endDate)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-blue-600">
+                        {formatCurrency(t.ticketPrice)}
+                      </div>
+                      <div className="text-xs text-gray-500">Số lượng: {t.totalSlot}</div>
+                    </div>
+                  </div>
 
-                  <div className="text-xs font-semibold text-gray-800 mb-1 truncate" title={p.phaseName}>
-                    {p.phaseName}
-                  </div>
-                  <div className="text-[10px] text-gray-500 mb-1 leading-tight">
-                    {formatDate(p.startDate)} - {formatDate(p.endDate)}
-                  </div>
-                  <div className="text-[10px] text-gray-600 mb-1">
-                    Giá: {formatCurrency(adjustedPrice)}
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-600">SL: {p.totalslot}</span>
-                    <span
-                      className={`font-bold ${
-                        isIncrease ? "text-red-600" : "text-green-600"
-                      }`}
-                    >
-                      {percentDisplay}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      ) : (
-        <p className="text-sm text-gray-500 italic">Chưa có giai đoạn nào được thêm.</p>
-      )}
+                  {/* Phases */}
+                  {t.phases && t.phases.length > 0 && (
+                    <div className="mt-2">
+                      <div className="text-xs font-medium text-gray-600 mb-1.5">
+                        Giai đoạn giá ({t.phases.length}):
+                      </div>
 
-      <Button 
-        size="sm" 
-        onClick={() => setIsPhaseModalOpen(true)}
-        className="w-full mt-2"
-        variant="outline"
-      >
-        Thêm giai đoạn giá
-      </Button>
-      
-      {/* Modal thêm giai đoạn */}
-      {isPhaseModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Thêm giai đoạn giá</h3>
-              <button
-                onClick={() => setIsPhaseModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                ✕
-              </button>
-            </div>
+                      <div className="grid grid-cols-5 gap-2">
+                        {t.phases.map((p, pi) => {
+                          const isIncrease = p.applyPercent > 100;
+                          const percentDisplay = isIncrease
+                            ? `+${p.applyPercent - 100}%`
+                            : `-${100 - p.applyPercent}%`;
 
-            <div className="space-y-4">
-              <FormInput
-                label="Tên giai đoạn"
-                value={newPhase.phaseName}
-                onChange={(val) => setNewPhase({ ...newPhase, phaseName: val })}
-                placeholder="VD: Early Bird, Standard, Late..."
-              />
-              
-              <div className="space-y-2">
-                <label className="block text-sm font-medium">Điều chỉnh giá</label>
-                <div className="flex items-end gap-3">
-                  <div className="w-24">
-                    <FormInput
-                      label=""
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={newPhase.percentValue}
-                      onChange={(val) => setNewPhase({ ...newPhase, percentValue: Number(val) })}
-                      placeholder=""
-                    />
-                  </div>
-                  <div className="flex gap-3">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="percentType"
-                        value="increase"
-                        checked={newPhase.percentType === 'increase'}
-                        onChange={() => setNewPhase({ ...newPhase, percentType: 'increase' })}
-                        className="w-4 h-4"
-                      />
-                      <span className="text-sm text-red-600 font-medium">Tăng</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="percentType"
-                        value="decrease"
-                        checked={newPhase.percentType === 'decrease'}
-                        onChange={() => setNewPhase({ ...newPhase, percentType: 'decrease' })}
-                        className="w-4 h-4"
-                      />
-                      <span className="text-sm text-green-600 font-medium">Giảm</span>
-                    </label>
-                  </div>    
-                  {newTicket.ticketPrice > 0 && newPhase.percentValue > 0 && (
-                    <div className="text-sm bg-gray-50 p-2 rounded">
-                      <strong
-                        className={
-                          newPhase.percentType === 'increase' ? 'text-red-600' : 'text-green-600'
-                        }
-                      >
-                        {(
-                          newTicket.ticketPrice *
-                          (newPhase.percentType === 'increase'
-                            ? (100 + newPhase.percentValue) / 100
-                            : (100 - newPhase.percentValue) / 100)
-                        ).toLocaleString()}{' '}
-                        VND
-                      </strong>
-                      {' '}({newPhase.percentType === 'increase' ? '+' : '-'}
-                      {newPhase.percentValue}%)
+                          return (
+                            <div
+                              key={pi}
+                              className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-md p-2 border border-gray-200 hover:border-blue-300 transition-colors"
+                            >
+                              <div
+                                className="text-xs font-semibold text-gray-800 mb-1 truncate"
+                                title={p.phaseName}
+                              >
+                                {p.phaseName}
+                              </div>
+                              <div className="text-[10px] text-gray-500 mb-1 leading-tight">
+                                {formatDate(p.startDate)} - {formatDate(p.endDate)}
+                              </div>
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-gray-600">Tổng: {p.totalslot}</span>
+                                <span
+                                  className={`font-bold ${
+                                    isIncrease ? "text-red-600" : "text-green-600"
+                                  }`}
+                                >
+                                  {percentDisplay}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
+
+                  {/* Action Button */}
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => setTickets(tickets.filter((_, i) => i !== idx))}
+                    className="w-full bg-red-500 hover:bg-red-600 text-white font-medium text-sm py-1.5 mt-3"
+                  >
+                    Xóa vé
+                  </Button>
                 </div>
+              ))}
+            </div>
+
+            <div className="border p-4 rounded">
+              <h4 className="font-medium mb-3">Thêm vé mới</h4>
+              {(() => {
+                const mainPhase = researchPhases.find(p => !p.isWaitlist);
+                if (mainPhase?.registrationStartDate && mainPhase?.registrationEndDate) {
+                  return (
+                    <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                      <div className="text-sm text-amber-800">
+                        <strong>Thời gian đăng ký:</strong>{" "}
+                        {formatDate(mainPhase.registrationStartDate)} –{" "}
+                        {formatDate(mainPhase.registrationEndDate)}
+                      </div>
+                      <div className="text-xs text-amber-600 mt-1">
+                        * Vé tác giả phải bán trong khoảng thời gian này
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+              <FormInput
+                label="Tên vé"
+                value={newTicket.ticketName}
+                onChange={(val) => setNewTicket({ ...newTicket, ticketName: val })}
+                placeholder="Vé cơ bản, tiêu chuẩn, nâng cao ..."
+              />
+              <FormTextArea
+                label="Mô tả"
+                value={newTicket.ticketDescription}
+                onChange={(val) => setNewTicket({ ...newTicket, ticketDescription: val })}
+                rows={2}
+              />
+              
+              {/* CHECKBOX isAuthor */}
+              <div className="flex items-center gap-2 mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <input
+                  type="checkbox"
+                  id="isAuthor"
+                  checked={newTicket.isAuthor}
+                  onChange={(e) => setNewTicket({ ...newTicket, isAuthor: e.target.checked })}
+                  className="w-4 h-4 text-blue-600"
+                />
+                <label htmlFor="isAuthor" className="text-sm font-medium text-blue-900">
+                  Đây là vé dành cho tác giả (bắt buộc ít nhất 1 loại)
+                </label>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3 mt-3">
+                <FormInput
+                  label="Giá vé gốc (VND)"
+                  type="number"
+                  value={newTicket.ticketPrice}
+                  onChange={(val) => setNewTicket({ ...newTicket, ticketPrice: Number(val) })}
+                  placeholder="500000"
+                />
+                <FormInput
+                  label="Tổng số lượng"
+                  type="number"
+                  value={newTicket.totalSlot}
+                  onChange={(val) => setNewTicket({ ...newTicket, totalSlot: Number(val) })}
+                  placeholder="100"
+                />
               </div>
 
-              <div className="grid grid-cols-4 gap-3">
-                <div>
-                  <FormInput
-                    label="Ngày bắt đầu"
-                    type="date"
-                    value={newPhase.startDate}
-                    onChange={(val) => setNewPhase({ ...newPhase, startDate: val })}
-                  />
-                </div>
+              <div className="mt-4 border-t pt-3">
+                <h5 className="font-medium mb-2 flex items-center gap-2">
+                  Giai đoạn giá ({newTicket.phases.length})
+                  {basicForm.ticketSaleStart && basicForm.ticketSaleEnd && (
+                    <span className="text-sm text-blue-600">         
+                      {formatDate(basicForm.ticketSaleStart)} → {formatDate(basicForm.ticketSaleEnd)}
+                    </span>
+                  )}
+                </h5>
+                
+                {newTicket.phases.length > 0 ? (
+                  <div className="mt-2">
+                    <div className="grid grid-cols-3 gap-2">
+                      {newTicket.phases.map((p, idx) => {
+                        const isIncrease = p.applyPercent > 100;
+                        const percentDisplay = isIncrease
+                          ? `+${p.applyPercent - 100}%`
+                          : `-${100 - p.applyPercent}%`;
+                        const adjustedPrice = newTicket.ticketPrice * (p.applyPercent / 100);
 
-                <FormInput
-                  label="Số ngày"
-                  type="number"
-                  min="1"
-                  value={newPhase.durationInDays}
-                  onChange={(val) => setNewPhase({ ...newPhase, durationInDays: Number(val) })}
-                />
+                        return (
+                          <div
+                            key={idx}
+                            className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-md p-2 border border-gray-200 relative"
+                          >
+                            <button
+                              type="button"
+                              onClick={() => handleRemovePhaseFromTicket(idx)}
+                              className="absolute top-1 right-1 text-red-500 hover:text-red-700 text-xs font-bold"
+                              title="Xóa giai đoạn"
+                            >
+                              ✕
+                            </button>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
-                  <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
-                    {newPhase.startDate && newPhase.durationInDays > 0 ? (
-                      <span className="text-gray-900">
-                        {formatDate(calculatePhaseEndDate(newPhase.startDate, newPhase.durationInDays))}
-                      </span>
-                    ) : (
-                      <span className="text-gray-400">--/--/----</span>
-                    )}
+                            <div className="text-xs font-semibold text-gray-800 mb-1 truncate" title={p.phaseName}>
+                              {p.phaseName}
+                            </div>
+                            <div className="text-[10px] text-gray-500 mb-1 leading-tight">
+                              {formatDate(p.startDate)} - {formatDate(p.endDate)}
+                            </div>
+                            <div className="text-[10px] text-gray-600 mb-1">
+                              Giá: {formatCurrency(adjustedPrice)}
+                            </div>
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-gray-600">SL: {p.totalslot}</span>
+                              <span
+                                className={`font-bold ${
+                                  isIncrease ? "text-red-600" : "text-green-600"
+                                }`}
+                              >
+                                {percentDisplay}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <p className="text-sm text-gray-500 italic">Chưa có giai đoạn nào được thêm.</p>
+                )}
 
-                <FormInput
-                  label="Số lượng vé"
-                  type="number"
-                  value={newPhase.totalslot}
-                  onChange={(val) => setNewPhase({ ...newPhase, totalslot: Number(val) })}
-                  placeholder={`Tối đa: ${newTicket.totalSlot - newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0)}`}
-                />
-              </div>
-
-              <div className="flex gap-3 mt-6">
                 <Button 
-                  onClick={() => setIsPhaseModalOpen(false)}
+                  size="sm" 
+                  onClick={() => setIsPhaseModalOpen(true)}
+                  className="w-full mt-2"
                   variant="outline"
-                  className="flex-1"
                 >
-                  Hủy
+                  Thêm giai đoạn giá
                 </Button>
-                <Button 
-                  onClick={handleAddPhaseToNewTicket}
-                  className="flex-1"
-                >
-                  Thêm giai đoạn
-                </Button>
+                
+                {/* Modal thêm giai đoạn */}
+                {isPhaseModalOpen && (
+                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-semibold">Thêm giai đoạn giá</h3>
+                        <button
+                          onClick={() => setIsPhaseModalOpen(false)}
+                          className="text-gray-400 hover:text-gray-600"
+                        >
+                          ✕
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        <FormInput
+                          label="Tên giai đoạn"
+                          value={newPhase.phaseName}
+                          onChange={(val) => setNewPhase({ ...newPhase, phaseName: val })}
+                          placeholder="VD: Early Bird, Standard, Late..."
+                        />
+                        
+                        <div className="space-y-2">
+                          <label className="block text-sm font-medium">Điều chỉnh giá</label>
+                          <div className="flex items-end gap-3">
+                            <div className="w-24">
+                              <FormInput
+                                label=""
+                                type="number"
+                                min="0"
+                                max="100"
+                                value={newPhase.percentValue}
+                                onChange={(val) => setNewPhase({ ...newPhase, percentValue: Number(val) })}
+                                placeholder=""
+                              />
+                            </div>
+                            <div className="flex gap-3">
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="radio"
+                                  name="percentType"
+                                  value="increase"
+                                  checked={newPhase.percentType === 'increase'}
+                                  onChange={() => setNewPhase({ ...newPhase, percentType: 'increase' })}
+                                  className="w-4 h-4"
+                                />
+                                <span className="text-sm text-red-600 font-medium">Tăng</span>
+                              </label>
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="radio"
+                                  name="percentType"
+                                  value="decrease"
+                                  checked={newPhase.percentType === 'decrease'}
+                                  onChange={() => setNewPhase({ ...newPhase, percentType: 'decrease' })}
+                                  className="w-4 h-4"
+                                />
+                                <span className="text-sm text-green-600 font-medium">Giảm</span>
+                              </label>
+                            </div>    
+                            {newTicket.ticketPrice > 0 && newPhase.percentValue > 0 && (
+                              <div className="text-sm bg-gray-50 p-2 rounded">
+                                <strong
+                                  className={
+                                    newPhase.percentType === 'increase' ? 'text-red-600' : 'text-green-600'
+                                  }
+                                >
+                                  {(
+                                    newTicket.ticketPrice *
+                                    (newPhase.percentType === 'increase'
+                                      ? (100 + newPhase.percentValue) / 100
+                                      : (100 - newPhase.percentValue) / 100)
+                                  ).toLocaleString()}{' '}
+                                  VND
+                                </strong>
+                                {' '}({newPhase.percentType === 'increase' ? '+' : '-'}
+                                {newPhase.percentValue}%)
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-4 gap-3">
+                          <div>
+                            <FormInput
+                              label="Ngày bắt đầu"
+                              type="date"
+                              value={newPhase.startDate}
+                              onChange={(val) => setNewPhase({ ...newPhase, startDate: val })}
+                              min={newTicket.isAuthor 
+                              ? researchPhases.find(p => !p.isWaitlist)?.registrationStartDate
+                              : basicForm.ticketSaleStart}
+                            max={newTicket.isAuthor 
+                              ? researchPhases.find(p => !p.isWaitlist)?.registrationEndDate
+                              : basicForm.ticketSaleEnd}
+                            />
+                          </div>
+
+                          <FormInput
+                            label="Số ngày"
+                            type="number"
+                            min="1"
+                            value={newPhase.durationInDays}
+                            onChange={(val) => setNewPhase({ ...newPhase, durationInDays: Number(val) })}
+                          />
+
+                          <div>
+                            <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
+                            <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
+                              {newPhase.startDate && newPhase.durationInDays > 0 ? (
+                                <span className="text-gray-900">
+                                  {formatDate(calculatePhaseEndDate(newPhase.startDate, newPhase.durationInDays))}
+                                </span>
+                              ) : (
+                                <span className="text-gray-400">--/--/----</span>
+                              )}
+                            </div>
+                          </div>
+
+                          <FormInput
+                            label="Số lượng vé"
+                            type="number"
+                            value={newPhase.totalslot}
+                            onChange={(val) => setNewPhase({ ...newPhase, totalslot: Number(val) })}
+                            placeholder={`Tối đa: ${newTicket.totalSlot - newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0)}`}
+                          />
+                        </div>
+
+                        <div className="flex gap-3 mt-6">
+                          <Button 
+                            onClick={() => setIsPhaseModalOpen(false)}
+                            variant="outline"
+                            className="flex-1"
+                          >
+                            Hủy
+                          </Button>
+                          <Button 
+                            onClick={handleAddPhaseToNewTicket}
+                            className="flex-1"
+                          >
+                            Thêm giai đoạn
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
+
+              <Button className="mt-4 w-full" onClick={handleAddTicket}>
+                Thêm vé
+              </Button>
             </div>
           </div>
-        </div>
-      )}
-    </div>
-
-    <Button className="mt-4 w-full" onClick={handleAddTicket}>
-      Thêm vé
-    </Button>
-  </div>
-</div>
 
 
 
-          {/* STEP 5: SESSIONS - TODO: Copy from Conference */}
+          {/* STEP 5: SESSIONS */}
           <div className="bg-white border rounded-lg p-6 mb-6">
             <h3 className="text-lg font-semibold mb-4">5. Phiên họp (Tùy chọn)</h3>
             
+            {/* Danh sách sessions hiện có */}
             <div className="space-y-2 mb-4">
               {sessions.length === 0 ? (
                 <div className="p-3 bg-gray-50 text-gray-600 rounded text-sm">
                   Chưa có phiên họp nào. Bạn có thể bỏ qua hoặc thêm phiên họp mới bên dưới.
                 </div>
               ) : (
-                sessions.map((s, idx) => {
-                  const room = roomsData?.data.find(
-                    (r: RoomInfoResponse) => r.roomId === s.roomId
-                  );
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {sessions.map((s, idx) => {
+                    const room = roomsData?.data.find(
+                      (r: RoomInfoResponse) => r.roomId === s.roomId
+                    );
 
-                  return (
-                    <div key={idx} className="p-3 bg-white rounded">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-            {sessions.map((s, idx) => (
-              <div
-                key={idx}
-                className="relative bg-white border border-gray-300 rounded-xl p-4 shadow-sm flex flex-col justify-between"
-              >
-                <div>
-                  <div className="font-semibold text-gray-900">{s.title}</div>
+                    return (
+                      <div
+                        key={idx}
+                        className="relative bg-white border border-gray-300 rounded-xl p-4 shadow-sm flex flex-col justify-between"
+                      >
+                        <div>
+                          <div className="font-semibold text-gray-900">{s.title}</div>
 
-                  <div className="text-sm text-gray-600 mt-1">
-                    {formatTimeDate(s.startTime)} - {formatTimeDate(s.endTime)}
-                  </div>
+                          <div className="text-sm text-gray-600 mt-1">
+                            {formatTimeDate(s.startTime)} - {formatTimeDate(s.endTime)}
+                          </div>
 
-                  {room && (
-                    <div className="text-xs text-gray-500 mt-1">
-                      Phòng: <span className="font-medium">{room.number}</span> - {room.displayName}
-                    </div>
-                  )}
+                          {room && (
+                            <div className="text-xs text-gray-500 mt-1">
+                              Phòng: <span className="font-medium">{room.number}</span> - {room.displayName}
+                            </div>
+                          )}
+                        </div>
 
+                        {/* Action buttons */}
+                        <div className="flex justify-end gap-2 mt-4">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setNewSession(s);
+                              setSessions(sessions.filter((_, i) => i !== idx));
+                            }}
+                          >
+                            Sửa
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => setSessions(sessions.filter((_, i) => i !== idx))}
+                          >
+                            Xóa
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-
-                {/* Action buttons */}
-                <div className="flex justify-end gap-2 mt-4">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setNewSession(s);
-                      setSessions(sessions.filter((_, i) => i !== idx));
-                    }}
-                  >
-                    Sửa
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => setSessions(sessions.filter((_, i) => i !== idx))}
-                  >
-                    Xóa
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-                    </div>
-                  );
-                })
               )}
             </div>
 
+            {/* Form thêm phiên họp mới */}
             <div className="border p-4 rounded space-y-3">
               <h4 className="font-medium flex items-center gap-2">
                 Thêm phiên họp mới
@@ -2579,7 +2612,8 @@ const handleAddRefundPolicy = () => {
                     ({formatDate(basicForm.startDate)} → {formatDate(basicForm.endDate)})
                   </span>
                 )}
-              </h4>                
+              </h4>
+
               <FormInput
                 label="Tiêu đề"
                 value={newSession.title}
@@ -2595,30 +2629,38 @@ const handleAddRefundPolicy = () => {
               />
 
               <div className="grid grid-cols-3 gap-3">
-                <FormInput
-                  label="Ngày"
-                  type="date"
-                  value={newSession.date}
-                  onChange={(val) => setNewSession({ ...newSession, date: val })}
-                  required
-                />
+                {/* Ngày */}
+                <div>
+                  <FormInput
+                    label="Ngày"
+                    type="date"
+                    value={newSession.date}
+                    onChange={(val) => setNewSession({ ...newSession, date: val })}
+                    min={basicForm.startDate || undefined}
+                    max={basicForm.endDate || undefined}
+                    required
+                  />
 
+                </div>
+
+                {/* Thời gian bắt đầu */}
                 <FormInput
                   label="Thời gian bắt đầu"
-                  type="time" 
-                  value={newSession.startTime}
+                  type="time"
+                  value={newSession.startTime ? newSession.startTime.split('T')[1]?.slice(0, 5) : ''}
                   onChange={(val) => {
                     if (newSession.date) {
-                      const datetime = `${newSession.date}T${val}`;
+                      const datetime = `${newSession.date}T${val}:00`;
                       setNewSession({ ...newSession, startTime: datetime });
                     } else {
                       toast.error("Vui lòng chọn ngày trước!");
                     }
                   }}
                   required
-                  disabled={!newSession.date}  
+                  disabled={!newSession.date}
                 />
 
+                {/* Thời lượng */}
                 <FormInput
                   label="Thời lượng (giờ)"
                   type="number"
@@ -2631,13 +2673,12 @@ const handleAddRefundPolicy = () => {
                 />
               </div>
 
-              {/* Preview time */}
+              {/* Preview thời gian */}
               {newSession.startTime && newSession.endTime && (
                 <div className="bg-blue-50 p-3 rounded space-y-1">
                   <div className="text-sm text-gray-700">
                     <span className="font-medium">Bắt đầu:</span>{" "}
                     {formatTimeDate(newSession.startTime)}
-
                   </div>
                   <div className="text-sm text-gray-700">
                     <span className="font-medium">Kết thúc:</span>{" "}
@@ -2654,7 +2695,6 @@ const handleAddRefundPolicy = () => {
                 required
                 disabled={isRoomsLoading}
               />
-
 
               <Button 
                 onClick={handleAddSession}
@@ -2810,11 +2850,9 @@ const handleAddRefundPolicy = () => {
 <div className="border p-4 rounded space-y-3 bg-gray-50">
   <h5 className="font-medium">Thêm chính sách hoàn tiền mới</h5>
   
-  {/* ✅ THÊM: Hiển thị khoảng thời gian hợp lệ */}
   {basicForm.ticketSaleStart && basicForm.ticketSaleEnd && (
     <div className="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 rounded">
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-xl">📅</span>
         <strong className="text-blue-900">Khoảng thời gian hợp lệ:</strong>
       </div>
       <div className="text-sm text-blue-800 space-y-1">
@@ -2828,7 +2866,6 @@ const handleAddRefundPolicy = () => {
           </span>
         </div>
         <div className="text-xs text-blue-600 mt-2 flex items-start gap-1">
-          <span>⚠️</span>
           <span>Hạn hoàn tiền phải nằm <strong>TRONG</strong> khoảng thời gian này (không bằng đầu/cuối)</span>
         </div>
       </div>
@@ -2868,20 +2905,19 @@ const handleAddRefundPolicy = () => {
           ? new Date(new Date(basicForm.ticketSaleEnd).getTime() - 86400000).toISOString().split('T')[0]
           : undefined}
       />
-      {/* ✅ THÊM: Preview validation realtime */}
       {newRefundPolicy.refundDeadline && basicForm.ticketSaleStart && basicForm.ticketSaleEnd && (
         <div className="mt-1 text-xs">
           {new Date(newRefundPolicy.refundDeadline) <= new Date(basicForm.ticketSaleStart) ? (
             <span className="text-red-600 flex items-center gap-1">
-              <span>❌</span> Quá sớm! Phải sau {formatDate(basicForm.ticketSaleStart)}
+               Quá sớm! Phải sau {formatDate(basicForm.ticketSaleStart)}
             </span>
           ) : new Date(newRefundPolicy.refundDeadline) >= new Date(basicForm.ticketSaleEnd) ? (
             <span className="text-red-600 flex items-center gap-1">
-              <span>❌</span> Quá muộn! Phải trước {formatDate(basicForm.ticketSaleEnd)}
+               Quá muộn! Phải trước {formatDate(basicForm.ticketSaleEnd)}
             </span>
           ) : (
             <span className="text-green-600 flex items-center gap-1">
-              <span>✅</span> Hợp lệ
+               Hợp lệ
             </span>
           )}
         </div>
@@ -2889,25 +2925,24 @@ const handleAddRefundPolicy = () => {
     </div>
   </div>
 
-  {/* ✅ CẬP NHẬT: Ví dụ rõ ràng hơn */}
-  <div className="text-xs text-gray-700 bg-white p-3 rounded border border-gray-200">
-    <div className="font-semibold mb-2 flex items-center gap-2">
-      <span></span> Ví dụ thực tế:
-    </div>
-    <div className="space-y-1 ml-6">
-      <div>• <strong>Thứ tự 1:</strong> Hoàn 80% nếu hủy trước 20/12/2025</div>
-      <div>• <strong>Thứ tự 2:</strong> Hoàn 50% nếu hủy trước 22/12/2025</div>
-      <div>• <strong>Thứ tự 3:</strong> Hoàn 20% nếu hủy trước 23/12/2025</div>
-    </div>
-    <div className="text-xs text-amber-700 mt-2 bg-amber-50 p-2 rounded">
-      Deadline càng gần ngày đóng bán vé → % hoàn tiền càng thấp
-    </div>
-  </div>
+            <div className="text-xs text-gray-700 bg-white p-3 rounded border border-gray-200">
+              <div className="font-semibold mb-2 flex items-center gap-2">
+                <span></span> Ví dụ thực tế:
+              </div>
+              <div className="space-y-1 ml-6">
+                <div>• <strong>Thứ tự 1:</strong> Hoàn 80% nếu hủy trước 20/12/2025</div>
+                <div>• <strong>Thứ tự 2:</strong> Hoàn 50% nếu hủy trước 22/12/2025</div>
+                <div>• <strong>Thứ tự 3:</strong> Hoàn 20% nếu hủy trước 23/12/2025</div>
+              </div>
+              <div className="text-xs text-amber-700 mt-2 bg-amber-50 p-2 rounded">
+                Deadline càng gần ngày đóng bán vé → % hoàn tiền càng thấp
+              </div>
+            </div>
 
-  <Button onClick={handleAddRefundPolicy} className="w-full">
-    Thêm chính sách hoàn tiền
-  </Button>
-</div>
+            <Button onClick={handleAddRefundPolicy} className="w-full">
+              Thêm chính sách hoàn tiền
+            </Button>
+          </div>
             </div>
           </div>
 
