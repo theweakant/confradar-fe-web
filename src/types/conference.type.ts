@@ -457,7 +457,7 @@ export interface TechnicalConferenceDetailResponse {
   sponsors?: SponsorResponse[];
   sessions?: TechnicalConferenceSessionResponse[];
   conferencePrices?: ConferencePriceResponse[];
-  conferenceTimelines?: unknown[]
+  conferenceTimelines?: ConferenceTimelineResponse[]
 
 }
 
@@ -506,6 +506,8 @@ export interface ResearchConferenceDetailResponse {
   refundPolicies?: RefundPolicyResponse[];
   conferenceMedia?: ConferenceMediaResponse[];
   conferencePrices?: ConferencePriceResponse[];
+  conferenceTimelines?: ConferenceTimelineResponse[]
+
 }
 
 export interface ConferencePolicyResponse {
@@ -550,6 +552,7 @@ export interface TechnicalConferenceSessionResponse {
   conferenceSessionId: string;
   title: string;
   description?: string;
+  date?:string;
   startTime?: string;
   endTime?: string;
   sessionDate?: string;
@@ -640,6 +643,18 @@ export interface RefundPolicyResponse {
   percentRefund?: number;
   refundDeadline?: string;
   refundOrder?: number;
+}
+
+export interface ConferenceTimelineResponse {
+  conferenceTimelineId: string;
+  conferenceId: string;
+  changeDate: string; 
+  previousStatusId: string;
+  afterwardStatusId: string;
+  reason: string | null;
+  previousStatusName: string;
+  afterwardStatusName: string;
+  conferenceName: string;
 }
 
 export interface FavouriteConferenceDetailResponse {

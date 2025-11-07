@@ -31,6 +31,29 @@ import { useGetAllConferenceStatusesQuery } from "@/redux/services/status.servic
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 
+import type { 
+  TechnicalConferenceDetailResponse,
+  ResearchConferenceDetailResponse,
+  RefundPolicyResponse,
+  ConferenceMediaResponse,
+  ConferencePolicyResponse,
+  SponsorResponse,
+  ConferencePriceResponse,
+  ConferencePricePhaseResponse,
+  RevisionRoundDeadlineResponse,
+  ConferenceTimelineResponse
+} from '@/types/conference.type';
+
+type CommonConference = TechnicalConferenceDetailResponse | ResearchConferenceDetailResponse;
+
+interface InformationTabProps {
+  conference: CommonConference;
+  conferenceType?: "technical" | "research" | null;
+  getCategoryName: (id: string) => string;
+  getStatusName: (statusId: string) => string;
+  getCityName: (cityId: string) => string;
+  currentStatusName: string;
+}
 
 export default function ConferenceDetailPage() {
   const router = useRouter();
@@ -320,7 +343,7 @@ const updateRoute = conference.isResearchConference === true
             <ResearchMaterialsTab conference={conference} />
           )}
           {activeTab === "research-info" && conferenceType === "research" && (
-            <ResearchInfoTab conference={conference} />
+            <ResearchInfoTab conference={conference as ResearchConferenceDetailResponse} />
           )}
           {activeTab === "sponsors-media" && <SponsorsMediaTab conference={conference} />}
         </div>
@@ -331,7 +354,7 @@ const updateRoute = conference.isResearchConference === true
 
 
 // Information Tab 
-function InformationTab({ conference, getCategoryName, getStatusName, getCityName, currentStatusName  }: any) {
+function InformationTab({ conference, conferenceType, getCategoryName, getStatusName, getCityName, currentStatusName  }: InformationTabProps) {
   return (
     <div className="space-y-6">
   <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
@@ -420,7 +443,7 @@ function InformationTab({ conference, getCategoryName, getStatusName, getCityNam
       )}
 
 
-{conference.conferenceTimelines && conference.conferenceTimelines.length > 0 && (
+    {conferenceType === "technical" && conference.conferenceTimelines && conference.conferenceTimelines.length > 0 && (
         <div className="bg-card border border-border rounded-lg p-6 space-y-4">
           <div className="flex items-start justify-between mb-4">
             <div>
@@ -573,8 +596,8 @@ function InformationTab({ conference, getCategoryName, getStatusName, getCityNam
 
           {/* Timeline History */}
           <div className="space-y-3">
-            {conference.conferenceTimelines.map((timeline: any, index: number) => {
-              const isLast = index === conference.conferenceTimelines.length - 1;
+            {conference.conferenceTimelines.map((timeline: ConferenceTimelineResponse, index: number) => {
+              const isLast = index === (conference.conferenceTimelines?.length ?? 0) - 1;
               
               return (
                 <div key={timeline.conferenceTimelineId} className="relative">
@@ -586,7 +609,9 @@ function InformationTab({ conference, getCategoryName, getStatusName, getCityNam
                     <div className="flex items-start gap-4">
                       <div className="flex-shrink-0 mt-1">
                         <div className="w-10 h-10 rounded-full bg-primary/10 border-2 border-primary flex items-center justify-center">
-                          <span className="text-xs font-bold text-primary">{conference.conferenceTimelines.length - index}</span>
+                          <span className="text-xs font-bold text-primary">
+                            {(conference.conferenceTimelines?.length ?? 0) - index}
+                          </span>
                         </div>
                       </div>
                       
@@ -619,8 +644,11 @@ function InformationTab({ conference, getCategoryName, getStatusName, getCityNam
   )
 }
 
+interface PriceTabProps {
+  conference: CommonConference;
+}
 // // Price Tab Component
-function PriceTab({ conference }: any) {
+function PriceTab({ conference }: PriceTabProps ) {
   return (
     <div className="space-y-6">
       <div className="mb-8">
@@ -630,7 +658,7 @@ function PriceTab({ conference }: any) {
 
       {conference.conferencePrices && conference.conferencePrices.length > 0 ? (
         <div className="space-y-5">
-          {conference.conferencePrices.map((price: any) => (
+          {conference.conferencePrices.map((price: ConferencePriceResponse) => (
             <div
               key={price.conferencePriceId}
               className="border border-border rounded-lg bg-card p-6 hover:border-primary/50 transition-colors"
@@ -669,7 +697,7 @@ function PriceTab({ conference }: any) {
 
                     {/* Grid 3 phase / row */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {price.pricePhases.map((phase: any) => (
+                      {price.pricePhases.map((phase: ConferencePricePhaseResponse) => (
                         <div
                           key={phase.phaseName}
                           className="bg-background border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors text-xs md:text-sm flex flex-col justify-between"
@@ -722,8 +750,11 @@ function PriceTab({ conference }: any) {
   );
 }
 
+interface RefundPolicyTabProps {
+  conference: CommonConference;
+}
 // Refund & Policy Tab Component
-function RefundPolicyTab({ conference }: any) {
+function RefundPolicyTab({ conference }: RefundPolicyTabProps) {
   return (
     <div className="space-y-8">
       <h2 className="text-2xl font-bold text-foreground mb-6">
@@ -739,7 +770,7 @@ function RefundPolicyTab({ conference }: any) {
 
         {conference.refundPolicies && conference.refundPolicies.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {conference.refundPolicies.map((policy: any, index: number) => (
+            {conference.refundPolicies.map((policy: RefundPolicyResponse, index: number) => (
               <div
                 key={index}
                 className="bg-green-50 border border-green-200 rounded-lg p-4 hover:shadow-sm transition text-sm"
@@ -778,7 +809,7 @@ function RefundPolicyTab({ conference }: any) {
 
         {conference.policies && conference.policies.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {conference.policies.map((policy: any) => (
+            {conference.policies.map((policy: ConferencePolicyResponse) => (
               <div
                 key={policy.policyId}
                 className="bg-blue-50 border border-blue-200 rounded-lg p-4 hover:shadow-sm transition"
@@ -805,9 +836,19 @@ function RefundPolicyTab({ conference }: any) {
   );
 }
 
+
+interface SessionTabProps {
+  conference: CommonConference;
+  conferenceType?: "technical" | "research" | null;
+}
+
 // Session Tab Component
-function SessionTab({ conference, conferenceType }: any) {
-  const sessions = conferenceType === "research" ? conference.researchSessions : conference.sessions
+// Session Tab Component
+function SessionTab({ conference, conferenceType }: SessionTabProps) {
+  const sessions =
+    conferenceType === "research"
+      ? (conference as ResearchConferenceDetailResponse).researchSessions
+      : (conference as TechnicalConferenceDetailResponse).sessions
   const [expandedSessions, setExpandedSessions] = useState<Set<string>>(new Set())
 
   const toggleSession = (sessionId: string) => {
@@ -820,9 +861,14 @@ function SessionTab({ conference, conferenceType }: any) {
     setExpandedSessions(newExpanded)
   }
 
+  // Extract researchPhase to avoid repetitive type casting
+  const researchPhase = conferenceType === "research" 
+    ? (conference as ResearchConferenceDetailResponse).researchPhase 
+    : null
+
   return (
     <div className="space-y-4 p-4">
-      {conferenceType === "research" && conference.researchPhase && (
+      {conferenceType === "research" && researchPhase && (
         <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
           <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
             <Calendar className="w-5 h-5 text-blue-600" />
@@ -831,32 +877,32 @@ function SessionTab({ conference, conferenceType }: any) {
 
           {/* Main Phase Timeline */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
-            <InfoField label="Đăng ký" value={formatDate(conference.researchPhase.registrationStartDate)} />
-            <InfoField label="Nộp bài" value={formatDate(conference.researchPhase.fullPaperStartDate)} />
-            <InfoField label="Đánh giá" value={formatDate(conference.researchPhase.reviewStartDate)} />
-            <InfoField label="Chỉnh sửa" value={formatDate(conference.researchPhase.reviseStartDate)} />
-            <InfoField label="Camera Ready" value={formatDate(conference.researchPhase.cameraReadyStartDate)} />
+            <InfoField label="Đăng ký" value={formatDate(researchPhase.registrationStartDate)} />
+            <InfoField label="Nộp bài" value={formatDate(researchPhase.fullPaperStartDate)} />
+            <InfoField label="Đánh giá" value={formatDate(researchPhase.reviewStartDate)} />
+            <InfoField label="Chỉnh sửa" value={formatDate(researchPhase.reviseStartDate)} />
+            <InfoField label="Camera Ready" value={formatDate(researchPhase.cameraReadyStartDate)} />
             <div className="flex gap-2 items-center">
               <span
                 className={`px-2 py-1 rounded text-xs font-medium ${
-                  conference.researchPhase.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
+                  researchPhase.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
                 }`}
               >
-                {conference.researchPhase.isActive ? "✓ Đang diễn ra" : "✗ Không hoạt động"}
+                {researchPhase.isActive ? "✓ Đang diễn ra" : "✗ Không hoạt động"}
               </span>
             </div>
           </div>
 
-          {conference.researchPhase.revisionRoundDeadlines &&
-            conference.researchPhase.revisionRoundDeadlines.length > 0 && (
+          {researchPhase.revisionRoundDeadlines &&
+            researchPhase.revisionRoundDeadlines.length > 0 && (
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="revision-rounds" className="border border-blue-200">
                   <AccordionTrigger className="text-sm font-semibold text-gray-900 py-2 px-3 hover:bg-blue-100">
-                    Các Vòng Chỉnh Sửa ({conference.researchPhase.revisionRoundDeadlines.length})
+                    Các Vòng Chỉnh Sửa ({researchPhase.revisionRoundDeadlines.length})
                   </AccordionTrigger>
                   <AccordionContent className="pt-3">
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                      {conference.researchPhase.revisionRoundDeadlines.map((deadline: any) => (
+                      {researchPhase.revisionRoundDeadlines.map((deadline: RevisionRoundDeadlineResponse) => (
                         <div
                           key={deadline.revisionRoundDeadlineId}
                           className="bg-white border border-blue-100 rounded p-2"
@@ -878,7 +924,7 @@ function SessionTab({ conference, conferenceType }: any) {
       <div className="space-y-2">
         <h2 className="text-lg font-bold text-gray-900 mb-3">Lịch Các Phiên Họp</h2>
         {sessions && sessions.length > 0 ? (
-          sessions.map((session: any, index: number) => (
+          sessions.map((session, index) => (
             <div
               key={session.conferenceSessionId || index}
               className="border border-gray-200 rounded-lg overflow-hidden bg-white hover:shadow-md transition-shadow"
@@ -931,13 +977,13 @@ function SessionTab({ conference, conferenceType }: any) {
                     <div className="pt-2 border-t border-gray-300">
                       <h4 className="text-xs font-semibold text-gray-900 mb-2">Tài Liệu Phiên Họp</h4>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                        {session.sessionMedia.map((media: any, idx: number) => (
+                        {session.sessionMedia?.map((media, idx) => (
                           <div key={idx} className="relative h-24 rounded overflow-hidden border border-gray-300">
                             <Image
                               src={
-                                media.mediaUrl?.startsWith("http")
-                                  ? media.mediaUrl
-                                  : `https://minio-api.confradar.io.vn/${media.mediaUrl}`
+                                media.conferenceSessionMediaUrl?.startsWith("http")
+                                  ? media.conferenceSessionMediaUrl
+                                  : `https://minio-api.confradar.io.vn/${media.conferenceSessionMediaUrl}`
                               }
                               alt={`Tài liệu ${idx + 1}`}
                               fill
@@ -960,8 +1006,11 @@ function SessionTab({ conference, conferenceType }: any) {
   )
 }
 
+interface SponsorsMediaTabProps {
+  conference: CommonConference;
+}
 // Sponsors & Media Tab Component
-function SponsorsMediaTab({ conference }: any) {
+function SponsorsMediaTab({ conference }: SponsorsMediaTabProps) {
   return (
     <div className="space-y-8">
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Sponsors & Media</h2>
@@ -974,13 +1023,13 @@ function SponsorsMediaTab({ conference }: any) {
         </h3>
         {conference.sponsors && conference.sponsors.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {conference.sponsors.map((sponsor: any, index: number) => (
+            {conference.sponsors.map((sponsor: SponsorResponse, index: number) => (
             <div key={sponsor.sponsorId || index} className="bg-gradient-to-br from-yellow-50 to-white border-2 border-yellow-200 rounded-xl p-4 hover:shadow-md transition-shadow">
               {sponsor.imageUrl && (
                 <div className="relative h-32 w-full mb-3 rounded-lg overflow-hidden bg-white">
                   <Image
                     src={sponsor.imageUrl}
-                    alt={sponsor.name}
+                    alt={sponsor.name?? "N/A"}
                     fill
                     className="object-contain p-2"
                   />
@@ -1004,7 +1053,7 @@ function SponsorsMediaTab({ conference }: any) {
         </h3>
         {conference.conferenceMedia && conference.conferenceMedia.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {conference.conferenceMedia.map((media: any, index: number) => (
+          {conference.conferenceMedia.map((media: ConferenceMediaResponse, index: number) => (
             <div key={media.mediaId || index} className="space-y-2">
               <div className="relative h-48 rounded-lg overflow-hidden group">
                 <Image
@@ -1029,8 +1078,24 @@ function SponsorsMediaTab({ conference }: any) {
   );
 }
 
+interface ResearchMaterialsTabProps {
+  conference: CommonConference;
+}
+
 // Research Materials Tab Component
-function ResearchMaterialsTab({ conference }: any) {
+function ResearchMaterialsTab({ conference }: ResearchMaterialsTabProps) {
+  const isResearchConference = (conf: CommonConference): conf is ResearchConferenceDetailResponse => {
+    return 'rankingCategoryId' in conf;
+  };
+
+  if (!isResearchConference(conference)) {
+    return (
+      <div className="space-y-8 p-6">
+        <p className="text-gray-500 text-center py-8">Research materials are only available for research conferences.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Research Materials & Resources</h2>
@@ -1052,7 +1117,7 @@ function ResearchMaterialsTab({ conference }: any) {
         </h3>
         {conference.rankingFileUrls && conference.rankingFileUrls.length > 0 ? (
           <div className="space-y-3">
-            {conference.rankingFileUrls.map((file: any, index: number) => (
+            {conference.rankingFileUrls.map((file, index) => (
               <div key={file.rankingFileUrlId || index} className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center justify-between hover:shadow-md transition-shadow">
                 <div className="flex-1">
                   <InfoField label="File ID" value={file.rankingFileUrlId} />
@@ -1083,7 +1148,7 @@ function ResearchMaterialsTab({ conference }: any) {
         </h3>
         {conference.materialDownloads && conference.materialDownloads.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {conference.materialDownloads.map((material: any, index: number) => (
+            {conference.materialDownloads.map((material, index) => (
               <div key={material.materialDownloadId || index} className="bg-purple-50 border border-purple-200 rounded-lg p-5 hover:shadow-md transition-shadow">
                 <div className="flex items-start gap-3 mb-3">
                   <div className="p-2 bg-purple-100 rounded-lg">
@@ -1120,7 +1185,7 @@ function ResearchMaterialsTab({ conference }: any) {
         </h3>
         {conference.rankingReferenceUrls && conference.rankingReferenceUrls.length > 0 ? (
           <div className="space-y-3">
-            {conference.rankingReferenceUrls.map((reference: any, index: number) => (
+            {conference.rankingReferenceUrls.map((reference, index) => (
               <div key={reference.referenceUrlId || index} className="bg-orange-50 border border-orange-200 rounded-lg p-4 flex items-center justify-between hover:shadow-md transition-shadow">
                 <div className="flex-1">
                   <InfoField label="Reference ID" value={reference.referenceUrlId} />
@@ -1146,8 +1211,11 @@ function ResearchMaterialsTab({ conference }: any) {
   );
 }
 
+interface ResearchInfoTabProps {
+  conference: ResearchConferenceDetailResponse;
+}
 // Research Info Tab Component
-function ResearchInfoTab({ conference }: any) {
+function ResearchInfoTab({ conference }: ResearchInfoTabProps ) {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Research Conference Information</h2>
@@ -1246,7 +1314,7 @@ function ResearchInfoTab({ conference }: any) {
                 <div className="mt-3 pt-3 border-t border-yellow-300">
                   <p className="text-xs font-semibold text-yellow-900 mb-2">Revision Rounds:</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {conference.researchPhase.revisionRoundDeadlines.map((deadline: any) => (
+                    {conference.researchPhase.revisionRoundDeadlines.map((deadline: RevisionRoundDeadlineResponse) => (
                       <div key={deadline.revisionRoundDeadlineId} className="bg-white border border-yellow-200 rounded p-2">
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-semibold text-yellow-900">Round {deadline.roundNumber}</span>
@@ -1308,8 +1376,13 @@ function ResearchInfoTab({ conference }: any) {
   );
 }
 
+interface InfoFieldProps {
+  label: string;
+  value: string | number | boolean | null | undefined;
+  className?: string;
+}
 // Reusable Info Field Component
-function InfoField({ label, value, className = "" }: { label: string; value: any; className?: string }) {
+function InfoField({ label, value, className = "" }: InfoFieldProps) {
   return (
     <div className={`${className}`}>
       <p className="text-xs font-medium text-gray-500 mb-1">{label}</p>
