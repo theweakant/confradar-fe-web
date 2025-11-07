@@ -17,6 +17,7 @@ import FeedbackTab from './FeedbackTab';
 import ResearchPaperInformationTab from './ResearchPaperInformationTab';
 import ConferencePriceTab from './ConferencePriceTab';
 import SponsorCarousel from './SponsorCarousel';
+import PolicyTab from './PolicyTab';
 
 interface ImageModalProps {
   image: string;
@@ -282,6 +283,15 @@ const ConferenceDetail = () => {
                   </button>
                 )}
                 <button
+                  onClick={() => setActiveTab('policy')}
+                  className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === 'policy'
+                    ? 'text-blue-500 border-b-2 border-coral-500'
+                    : 'text-white/70 hover:text-white'
+                    }`}
+                >
+                  Chính sách & Hoàn tiền
+                </button>
+                <button
                   onClick={() => setActiveTab('feedback')}
                   className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === 'feedback'
                     ? 'text-blue-500 border-b-2 border-coral-500'
@@ -325,6 +335,13 @@ const ConferenceDetail = () => {
                     conference={researchConference}
                     formatDate={formatDate}
                     formatTime={formatTime}
+                  />
+                )}
+
+                {/* Policy Tab */}
+                {activeTab === 'policy' && (
+                  <PolicyTab
+                    conference={conference}
                   />
                 )}
 
