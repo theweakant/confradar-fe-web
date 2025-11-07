@@ -48,7 +48,7 @@ const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({ paperId, cameraRead
             // Reload page to refresh data
             window.location.reload();
         } catch (error: unknown) {
-            let errorMessage = "Có lỗi xảy ra khi nộp camera-ready";
+            const errorMessage = "Có lỗi xảy ra khi nộp camera-ready";
 
             // if (error?.data?.Message) {
             //     errorMessage = error.data.Message;

@@ -90,7 +90,7 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
             setDescription("");
             setSelectedCoauthors([]);
         } catch (error: unknown) {
-            let errorMessage = "Có lỗi xảy ra khi nộp abstract";
+            const errorMessage = "Có lỗi xảy ra khi nộp abstract";
 
             // if (error?.data?.Message) {
             //     errorMessage = error.data.Message;
