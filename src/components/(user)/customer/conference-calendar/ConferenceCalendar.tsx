@@ -1,4 +1,4 @@
-import React, { useState, useRef, Fragment } from 'react';
+import React, { useState, useRef, Fragment, useEffect } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -27,12 +27,21 @@ const ConferenceCalendar: React.FC = () => {
     const calendarRef = useRef<FullCalendar | null>(null);
     const conferenceListRef = useRef<HTMLDivElement>(null);
 
-    // API call to get conferences using useConference hook
+    // const {
+    //     ownConferencesForSchedule: conferences,
+    //     ownConferencesForScheduleLoading: isLoading,
+    //     ownConferencesForScheduleError: error
+    // } = useConference();
     const {
-        ownConferencesForSchedule: conferences,
+        lazyOwnConferencesForSchedule: conferences,
+        fetchOwnConferencesForSchedule,
         ownConferencesForScheduleLoading: isLoading,
         ownConferencesForScheduleError: error
     } = useConference();
+
+    useEffect(() => {
+        fetchOwnConferencesForSchedule();
+    }, [fetchOwnConferencesForSchedule]);
 
     const calendarEvents = (conferences || []).flatMap(conf => [
         {

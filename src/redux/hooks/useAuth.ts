@@ -35,11 +35,8 @@ export const useAuth = () => {
 
       let role: string | null = null
 
-      if (Array.isArray(rawRole)) {
-        role = getCustomerRole(accessToken)
-      } else if (typeof rawRole === "string") {
-        role = rawRole
-      }
+      const customerRole = getCustomerRole(accessToken)
+      role = customerRole || (rawRole.length > 0 ? rawRole[0] : null)
 
       const userInfo = { userId, email, role }
 

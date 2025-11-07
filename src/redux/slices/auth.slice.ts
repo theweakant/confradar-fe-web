@@ -39,12 +39,8 @@ const authSlice = createSlice({
       const rawRole = getRolesFromToken(accessToken)
       let role: string | null = null
 
-      // 🟩 Phân nhánh logic role giống useAuth
-      if (Array.isArray(rawRole)) {
-        role = getCustomerRole(accessToken)
-      } else if (typeof rawRole === "string") {
-        role = rawRole
-      }
+      const customerRole = getCustomerRole(accessToken)
+      role = customerRole || (rawRole.length > 0 ? rawRole[0] : null)
       // const role = getRoleFromToken(accessToken)
       // console.log("🟢 Decoded role:", role)
       state.user = user

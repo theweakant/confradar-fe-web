@@ -13,14 +13,24 @@ import { useRouter } from "next/navigation";
 
 export default function FavoriteConferences() {
   const router = useRouter();
+  // const {
+  //   favouriteConferences,
+  //   favouriteConferencesLoading,
+  //   favouriteConferencesError,
+  //   removeFavourite,
+  //   deletingFromFavourite,
+  //   refetchFavouriteConferences
+  // } = useConference();
+
   const {
-    favouriteConferences,
+    lazyFavouriteConferences,
+    fetchFavouriteConferences,
     favouriteConferencesLoading,
     favouriteConferencesError,
     removeFavourite,
     deletingFromFavourite,
-    refetchFavouriteConferences
   } = useConference();
+
 
   const [sortedConferences, setSortedConferences] = useState<FavouriteConferenceDetailResponse[]>([]);
   const [activeFilter, setActiveFilter] = useState("most-popular");
@@ -33,14 +43,18 @@ export default function FavoriteConferences() {
     { id: "favorite-date", label: "Thêm yêu thích gần đây", active: activeFilter === "favorite-date" },
   ];
 
+  useEffect(() => {
+    fetchFavouriteConferences();
+  }, [fetchFavouriteConferences]);
+
   // Sort conferences based on active filter
   useEffect(() => {
-    if (!favouriteConferences) {
+    if (!lazyFavouriteConferences) {
       setSortedConferences([]);
       return;
     }
 
-    const sorted = [...favouriteConferences].sort((a, b) => {
+    const sorted = [...lazyFavouriteConferences].sort((a, b) => {
       switch (activeFilter) {
         case "start-date-desc":
           return new Date(b.conferenceStartDate || '').getTime() - new Date(a.conferenceStartDate || '').getTime();
@@ -56,7 +70,7 @@ export default function FavoriteConferences() {
     });
 
     setSortedConferences(sorted);
-  }, [favouriteConferences, activeFilter]);
+  }, [lazyFavouriteConferences, activeFilter]);
 
   // Format date function
   const formatDate = (dateString?: string): string => {
@@ -78,7 +92,7 @@ export default function FavoriteConferences() {
     try {
       await removeFavourite(conferenceId);
       toast.success('Đã bỏ khỏi danh sách yêu thích');
-      refetchFavouriteConferences();
+      fetchFavouriteConferences();
     } catch (error) {
       toast.error('Có lỗi xảy ra, vui lòng thử lại');
       console.error('Remove favorite error:', error);
@@ -116,7 +130,7 @@ export default function FavoriteConferences() {
             {favouriteConferencesError.data?.Message}
           </p>
           <Button
-            onClick={() => refetchFavouriteConferences()}
+            onClick={() => fetchFavouriteConferences()}
             variant="outline"
             className="border-gray-600 text-gray-300 hover:bg-gray-700"
           >

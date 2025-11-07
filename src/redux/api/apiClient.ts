@@ -46,16 +46,16 @@ export const apiClient: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryE
   if (result.error && result.error.status === 401) {
     const refreshToken = getRefreshToken()
     const accessToken = getAccessToken()
-    
+
     if (!refreshToken || !accessToken) {
       toast.error("Phiên đăng nhập đã hết hạn", {
         description: "Vui lòng đăng nhập lại"
       })
       clearTokens()
-      window.location.href = "/auth/login"
+      // window.location.href = "/auth/login"
       return result
     }
-    
+
     const refreshResult = await rawBaseQuery(
       {
         url: endpoint.AUTH.REFRESH,
@@ -74,7 +74,7 @@ export const apiClient: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryE
         accessToken: string
         refreshToken: string
       }>
-      
+
       if (response.success && response.data) {
         setTokens(response.data.accessToken, response.data.refreshToken)
         result = await rawBaseQuery(args, api, extraOptions)
