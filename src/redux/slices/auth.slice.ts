@@ -1,7 +1,7 @@
 // redux/slices/auth.slice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
-import { setTokens, clearTokens, getRoleFromToken } from "../utils/token"
-import {UserProfileResponse, AuthUser} from "@/types/user.type"
+import { setTokens, clearTokens, getRolesFromToken, getCustomerRole } from "../utils/token"
+import { UserProfileResponse, AuthUser } from "@/types/user.type"
 
 export interface AuthState {
   user: UserProfileResponse | AuthUser | null
@@ -9,15 +9,15 @@ export interface AuthState {
   refreshToken: string | null
   role: string | null
   loading: boolean
-  isRegistered: boolean 
+  isRegistered: boolean
 }
- const initialState: AuthState = {
+const initialState: AuthState = {
   user: null,
   accessToken: null,
   refreshToken: null,
   role: null,
   loading: false,
-  isRegistered: false, 
+  isRegistered: false,
 }
 
 const authSlice = createSlice({
@@ -35,12 +35,23 @@ const authSlice = createSlice({
       action: PayloadAction<{ user: UserProfileResponse | AuthUser; accessToken: string; refreshToken: string }>
     ) => {
       const { user, accessToken, refreshToken } = action.payload
+
+      const rawRole = getRolesFromToken(accessToken)
+      let role: string | null = null
+
+      // 🟩 Phân nhánh logic role giống useAuth
+      if (Array.isArray(rawRole)) {
+        role = getCustomerRole(accessToken)
+      } else if (typeof rawRole === "string") {
+        role = rawRole
+      }
       // const role = getRoleFromToken(accessToken)
       // console.log("🟢 Decoded role:", role)
       state.user = user
       state.accessToken = accessToken
       state.refreshToken = refreshToken
-      state.role = getRoleFromToken(accessToken) || null
+      // state.role = getRoleFromToken(accessToken) || null
+      state.role = role || null
       setTokens(accessToken, refreshToken)
       state.loading = false
     },
