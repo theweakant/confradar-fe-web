@@ -15,7 +15,7 @@ import {
     useLazyListCustomerWaitListQuery,
     useLazyListSubmittedPapersForCustomerQuery,
 } from "@/redux/services/paper.service";
-import { parseApiError } from "@/redux/utils/api";
+import { parseApiError } from "@/helper/api";
 import type { ApiResponse } from "@/types/api.type";
 import type { AvailableCustomerResponse, CreateAbstractRequest, CreateCameraReadyRequest, CreateFullPaperRequest, CreateRevisionPaperSubmissionRequest, CreateRevisionPaperSubmissionResponse, PaperCustomer, PaperDetailResponse, PaperPhase } from "@/types/paper.type";
 import { LeaveWaitListRequest } from "@/types/waitlist.type";

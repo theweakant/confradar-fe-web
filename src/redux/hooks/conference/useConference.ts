@@ -1,6 +1,6 @@
 // import { useGetAllConferencesWithPricesPaginationQuery, useGetConferenceByIdQuery, useLazyGetAllConferencesWithPricesPaginationQuery, useLazyGetConferenceByIdQuery } from '@/redux/services/conference.service';
 import { useAddToFavouriteMutation, useDeleteFromFavouriteMutation, useGetAllConferencesPaginationQuery, useGetOwnConferencesForScheduleQuery, useGetOwnFavouriteConferencesQuery, useGetResearchConferenceDetailQuery, useGetTechnicalConferenceDetailQuery, useLazyGetAllConferencesPaginationQuery, useLazyGetAllConferencesWithPricesPaginationQuery, useLazyGetConferencesByStatusQuery, useLazyGetOwnConferencesForScheduleQuery, useLazyGetOwnFavouriteConferencesQuery } from '@/redux/services/conference.service';
-import { parseApiError } from '@/redux/utils/api';
+import { parseApiError } from '@/helper/api';
 import { AddedFavouriteConferenceResponse, ConferenceDetailForScheduleResponse, ConferenceResponse, DeletedFavouriteConferenceResponse, FavouriteConferenceDetailResponse } from '@/types/conference.type';
 import { useCallback } from 'react';
 

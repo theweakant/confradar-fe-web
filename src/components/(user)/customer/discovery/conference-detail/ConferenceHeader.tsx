@@ -1,7 +1,7 @@
 import { MapPin, Calendar, Star } from 'lucide-react';
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { ConferencePriceResponse, ResearchConferenceDetailResponse, TechnicalConferenceDetailResponse } from "@/types/conference.type";
-import { getCurrentPrice } from "@/utils/conferenceUtils";
+import { getCurrentPrice } from "@/helper/conference";
 import React, { useEffect, useState } from 'react';
 import { useTransaction } from '@/redux/hooks/transaction/useTransaction';
 import { useConference } from '@/redux/hooks/conference/useConference';
@@ -48,27 +48,26 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
     setShowPaymentMethods,
 }) => {
     const {
-        favouriteConferences,
+        lazyFavouriteConferences,
         addFavourite,
         removeFavourite,
         addingToFavourite,
         deletingFromFavourite,
-        refetchFavouriteConferences
+        fetchFavouriteConferences
     } = useConference();
 
     const [isFavorite, setIsFavorite] = useState(false);
 
     // Check if current conference is in favorites
     useEffect(() => {
-        if (favouriteConferences && conference.conferenceId) {
-            const isInFavorites = favouriteConferences.some(
+        if (lazyFavouriteConferences && conference.conferenceId) {
+            const isInFavorites = lazyFavouriteConferences.some(
                 fav => fav.conferenceId === conference.conferenceId
             );
             setIsFavorite(isInFavorites);
         }
-    }, [favouriteConferences, conference.conferenceId]);
+    }, [lazyFavouriteConferences, conference.conferenceId]);
 
-    // Handle favorite toggle
     const handleFavoriteToggle = async () => {
         if (!conference.conferenceId || !accessToken) {
             toast.error('Vui lòng đăng nhập để sử dụng tính năng này');
@@ -84,7 +83,7 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                 toast.success('Đã thêm vào danh sách yêu thích');
             }
             // Refetch favorites to update the list
-            refetchFavouriteConferences();
+            fetchFavouriteConferences();
         } catch (error) {
             toast.error('Có lỗi xảy ra, vui lòng thử lại');
             console.error('Favorite toggle error:', error);
@@ -178,10 +177,10 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                         const now = new Date();
                         const ticketSaleStart = conference.ticketSaleStart ? new Date(conference.ticketSaleStart) : null;
                         const ticketSaleEnd = conference.ticketSaleEnd ? new Date(conference.ticketSaleEnd) : null;
-                        
+
                         const isBeforeSale = ticketSaleStart && now < ticketSaleStart;
                         const isAfterSale = ticketSaleEnd && now > ticketSaleEnd;
-                        
+
                         if (isBeforeSale) {
                             return (
                                 <div>
@@ -198,7 +197,7 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                                 </div>
                             );
                         }
-                        
+
                         if (isAfterSale) {
                             return (
                                 <button
@@ -210,7 +209,7 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                                 </button>
                             );
                         }
-                        
+
                         return (
                             <button
                                 onClick={() => setIsDialogOpen(true)}

@@ -15,7 +15,7 @@ import SearchFilter from './SearchFilter';
 import ConferenceList from './ConferenceList';
 import Pagination from './Pagination';
 import { SortOption } from '@/types/ui-type/conference-browser.type';
-import { getCurrentPrice } from '@/utils/conferenceUtils';
+import { getCurrentPrice } from '@/helper/conference';
 
 
 interface SearchSortFilterConferenceProps {
