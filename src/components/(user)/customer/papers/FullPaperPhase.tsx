@@ -48,7 +48,7 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper }) =
             // Reload page to refresh data
             window.location.reload();
         } catch (error: unknown) {
-            let errorMessage = "Có lỗi xảy ra khi nộp full paper";
+            const errorMessage = "Có lỗi xảy ra khi nộp full paper";
 
             // if (error?.data?.Message) {
             //     errorMessage = error.data.Message;

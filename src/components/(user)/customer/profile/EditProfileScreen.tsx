@@ -96,7 +96,7 @@ const EditProfileScreen: React.FC = () => {
       setIsEditDialogOpen(false)
       setAvatarFile(null)
     } catch (error: unknown) {
-      let errorMessage = "Có lỗi xảy ra khi cập nhật hồ sơ"
+      const errorMessage = "Có lỗi xảy ra khi cập nhật hồ sơ"
 
       // if (error?.data?.Message) {
       //   errorMessage = error.data.Message
@@ -139,7 +139,7 @@ const EditProfileScreen: React.FC = () => {
       setIsChangePassDialogOpen(false)
       setPasswordData({ oldPassword: '', newPassword: '', confirmNewPassword: '' })
     } catch (error: unknown) {
-      let errorMessage = "Có lỗi xảy ra khi đổi mật khẩu"
+      const errorMessage = "Có lỗi xảy ra khi đổi mật khẩu"
 
       // if (error?.data?.Message) {
       //   errorMessage = error.data.Message

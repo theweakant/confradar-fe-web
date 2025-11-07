@@ -48,7 +48,7 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
             setDescription("");
             window.location.reload();
         } catch (error: unknown) {
-            let errorMessage = "Có lỗi xảy ra khi nộp revision paper";
+            const errorMessage = "Có lỗi xảy ra khi nộp revision paper";
 
             // if (error?.data?.Message) {
             //     errorMessage = error.data.Message;
@@ -93,7 +93,7 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
             // Reload page to refresh data
             // window.location.reload();
         } catch (error: unknown) {
-            let errorMessage = "Có lỗi xảy ra khi gửi phản hồi";
+            const errorMessage = "Có lỗi xảy ra khi gửi phản hồi";
 
             // if (error?.data?.Message) {
             //     errorMessage = error.data.Message;
