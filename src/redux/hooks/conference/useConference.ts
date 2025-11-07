@@ -1,11 +1,10 @@
 // import { useGetAllConferencesWithPricesPaginationQuery, useGetConferenceByIdQuery, useLazyGetAllConferencesWithPricesPaginationQuery, useLazyGetConferenceByIdQuery } from '@/redux/services/conference.service';
 import { useAddToFavouriteMutation, useDeleteFromFavouriteMutation, useGetAllConferencesPaginationQuery, useGetOwnConferencesForScheduleQuery, useGetOwnFavouriteConferencesQuery, useGetResearchConferenceDetailQuery, useGetTechnicalConferenceDetailQuery, useLazyGetAllConferencesPaginationQuery, useLazyGetAllConferencesWithPricesPaginationQuery, useLazyGetConferencesByStatusQuery, useLazyGetOwnConferencesForScheduleQuery, useLazyGetOwnFavouriteConferencesQuery } from '@/redux/services/conference.service';
-import { parseApiError } from '@/redux/utils/api';
+import { parseApiError } from '@/helper/api';
 import { AddedFavouriteConferenceResponse, ConferenceDetailForScheduleResponse, ConferenceResponse, DeletedFavouriteConferenceResponse, FavouriteConferenceDetailResponse } from '@/types/conference.type';
 import { useCallback } from 'react';
 
 export const useConference = (params?: { page?: number; pageSize?: number; id?: string }) => {
-    // Auto-fetch default paginated list
     const {
         data: defaultConferencesData,
         error: defaultConferencesError,
@@ -46,13 +45,13 @@ export const useConference = (params?: { page?: number; pageSize?: number; id?: 
         useLazyGetConferencesByStatusQuery();
 
 
-    const {
-        data: favouriteConferencesData,
-        error: favouriteConferencesError,
-        isLoading: favouriteConferencesLoading,
-        isFetching: favouriteConferencesFetching,
-        refetch: refetchFavouriteConferences,
-    } = useGetOwnFavouriteConferencesQuery();
+    // const {
+    //     data: favouriteConferencesData,
+    //     error: favouriteConferencesError,
+    //     isLoading: favouriteConferencesLoading,
+    //     isFetching: favouriteConferencesFetching,
+    //     refetch: refetchFavouriteConferences,
+    // } = useGetOwnFavouriteConferencesQuery();
 
     const [triggerGetFavourites, {
         data: lazyFavouritesData,
@@ -60,13 +59,13 @@ export const useConference = (params?: { page?: number; pageSize?: number; id?: 
         isLoading: lazyFavouritesLoading
     }] = useLazyGetOwnFavouriteConferencesQuery();
 
-    const {
-        data: ownConferencesScheduleData,
-        error: ownConferencesScheduleError,
-        isLoading: ownConferencesScheduleLoading,
-        isFetching: ownConferencesScheduleFetching,
-        refetch: refetchOwnConferencesSchedule,
-    } = useGetOwnConferencesForScheduleQuery();
+    // const {
+    //     data: ownConferencesScheduleData,
+    //     error: ownConferencesScheduleError,
+    //     isLoading: ownConferencesScheduleLoading,
+    //     isFetching: ownConferencesScheduleFetching,
+    //     refetch: refetchOwnConferencesSchedule,
+    // } = useGetOwnConferencesForScheduleQuery();
 
     const [triggerGetOwnConferencesSchedule, {
         data: lazyOwnConferencesScheduleData,
@@ -160,14 +159,19 @@ export const useConference = (params?: { page?: number; pageSize?: number; id?: 
         researchConferenceError: parseApiError(researchConferenceError),
 
         // Favourite conferences
-        favouriteConferences: favouriteConferencesData?.data,
+        // favouriteConferences: favouriteConferencesData?.data,
         lazyFavouriteConferences: lazyFavouritesData?.data,
         fetchFavouriteConferences,
-        refetchFavouriteConferences,
-        favouriteConferencesLoading: favouriteConferencesLoading || favouriteConferencesFetching || lazyFavouritesLoading,
+        // refetchFavouriteConferences,
+        favouriteConferencesLoading: lazyFavouritesLoading,
         favouriteConferencesError: parseApiError<FavouriteConferenceDetailResponse[]>(
-            favouriteConferencesError || lazyFavouritesError
+            lazyFavouritesError
         ),
+
+        //   favouriteConferencesLoading: favouriteConferencesLoading || favouriteConferencesFetching || lazyFavouritesLoading,
+        // favouriteConferencesError: parseApiError<FavouriteConferenceDetailResponse[]>(
+        //     favouriteConferencesError || lazyFavouritesError
+        // ),
 
         // Favourite mutations
         addFavourite,
@@ -178,15 +182,21 @@ export const useConference = (params?: { page?: number; pageSize?: number; id?: 
         deleteFromFavouriteError: parseApiError<DeletedFavouriteConferenceResponse>(deleteFromFavouriteError),
 
         // --- Own Conferences for Schedule ---
-        ownConferencesForSchedule: ownConferencesScheduleData?.data,
+        // ownConferencesForSchedule: ownConferencesScheduleData?.data,
         lazyOwnConferencesForSchedule: lazyOwnConferencesScheduleData?.data,
         fetchOwnConferencesForSchedule,
-        refetchOwnConferencesSchedule,
+        // refetchOwnConferencesSchedule,
         ownConferencesForScheduleLoading:
-            ownConferencesScheduleLoading || ownConferencesScheduleFetching || lazyOwnConferencesScheduleLoading,
+            lazyOwnConferencesScheduleLoading,
         ownConferencesForScheduleError: parseApiError<ConferenceDetailForScheduleResponse[]>(
-            ownConferencesScheduleError || lazyOwnConferencesScheduleError
+            lazyOwnConferencesScheduleError
         ),
+
+        //   ownConferencesForScheduleLoading:
+        //     ownConferencesScheduleLoading || ownConferencesScheduleFetching || lazyOwnConferencesScheduleLoading,
+        // ownConferencesForScheduleError: parseApiError<ConferenceDetailForScheduleResponse[]>(
+        //     ownConferencesScheduleError || lazyOwnConferencesScheduleError
+        // ),
     };
 };
 

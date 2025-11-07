@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { usePaperCustomer } from "@/redux/hooks/paper/usePaper";
 import { CustomerWaitListResponse } from "@/types/waitlist.type";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 export default function CustomerWaitlist() {
-    const { waitLists, handleLeaveWaitList, waitListLoading, leavingWaitListLoading, waitListError, leaveWaitListError } = usePaperCustomer();
+    const { waitLists, fetchWaitList, handleLeaveWaitList, waitListLoading, leavingWaitListLoading, waitListError, leaveWaitListError } = usePaperCustomer();
     const [activeFilter, setActiveFilter] = useState("most-recent");
     const [sortedWaitlists, setSortedWaitlists] = useState<CustomerWaitListResponse[]>([]);
 
@@ -22,7 +22,7 @@ export default function CustomerWaitlist() {
     ];
 
     // Sort waitlists based on active filter
-    React.useEffect(() => {
+    useEffect(() => {
         if (!waitLists) return;
 
         const sorted = [...waitLists];
@@ -49,6 +49,10 @@ export default function CustomerWaitlist() {
 
         setSortedWaitlists(sorted);
     }, [waitLists, activeFilter]);
+
+    useEffect(() => {
+        fetchWaitList();
+    }, [fetchWaitList]);
 
     const waitlistConferences = sortedWaitlists;
 
@@ -82,11 +86,9 @@ export default function CustomerWaitlist() {
 
         try {
             await handleLeaveWaitList(conferenceId);
-            // Note: The hook should automatically refetch the waitlist data after successful removal
-            // If not, you might need to manually trigger a refetch or update local state
+            await fetchWaitList();
         } catch (error) {
             console.error("Error leaving waitlist:", error);
-            // Handle error (show toast notification, etc.)
         }
     };
 

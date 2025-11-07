@@ -12,19 +12,30 @@ import {
     useListCustomerWaitListQuery,
     useAddToWaitListMutation,
     useLeaveWaitListMutation,
+    useLazyListCustomerWaitListQuery,
+    useLazyListSubmittedPapersForCustomerQuery,
 } from "@/redux/services/paper.service";
-import { parseApiError } from "@/redux/utils/api";
+import { parseApiError } from "@/helper/api";
 import type { ApiResponse } from "@/types/api.type";
 import type { AvailableCustomerResponse, CreateAbstractRequest, CreateCameraReadyRequest, CreateFullPaperRequest, CreateRevisionPaperSubmissionRequest, CreateRevisionPaperSubmissionResponse, PaperCustomer, PaperDetailResponse, PaperPhase } from "@/types/paper.type";
 import { LeaveWaitListRequest } from "@/types/waitlist.type";
 import { useCallback } from "react";
 
 export const usePaperCustomer = () => {
-    const {
-        data: submittedPapersData,
-        isLoading: submittedPapersLoading,
-        error: submittedPapersRawError,
-    } = useListSubmittedPapersForCustomerQuery();
+    // const {
+    //     data: submittedPapersData,
+    //     isLoading: submittedPapersLoading,
+    //     error: submittedPapersRawError,
+    // } = useListSubmittedPapersForCustomerQuery();
+
+    const [
+        getSubmittedPapers,
+        {
+            data: submittedPapersData,
+            isLoading: submittedPapersLoading,
+            error: submittedPapersRawError,
+        },
+    ] = useLazyListSubmittedPapersForCustomerQuery();
 
     const [
         getPaperDetailCustomer,
@@ -71,11 +82,20 @@ export const usePaperCustomer = () => {
     const [submitCameraReady, { isLoading: submitCameraReadyLoading, error: submitCameraReadyRawError }] =
         useSubmitCameraReadyMutation();
 
-    const {
-        data: waitListData,
-        isLoading: waitListLoading,
-        error: waitListRawError,
-    } = useListCustomerWaitListQuery();
+    // const {
+    //     data: waitListData,
+    //     isLoading: waitListLoading,
+    //     error: waitListRawError,
+    // } = useListCustomerWaitListQuery();
+
+    const [
+        getWaitList,
+        {
+            data: waitListData,
+            isLoading: waitListLoading,
+            error: waitListRawError,
+        },
+    ] = useLazyListCustomerWaitListQuery();
 
     const [addToWaitList, { isLoading: addingToWaitListLoading, error: addToWaitListRawError }] =
         useAddToWaitListMutation();
@@ -97,6 +117,16 @@ export const usePaperCustomer = () => {
     const waitListError = parseApiError<string>(waitListRawError);
     const addToWaitListError = parseApiError<string>(addToWaitListRawError);
     const leaveWaitListError = parseApiError<string>(leaveWaitListRawError);
+
+
+    const fetchSubmittedPapers = useCallback(async (): Promise<ApiResponse<PaperCustomer[]>> => {
+        try {
+            const result = await getSubmittedPapers().unwrap();
+            return result;
+        } catch (error) {
+            throw error;
+        }
+    }, [getSubmittedPapers]);
 
     const fetchPaperDetail = useCallback(async (
         paperId: string
@@ -191,6 +221,18 @@ export const usePaperCustomer = () => {
         }
     };
 
+    const fetchWaitList = useCallback(
+        async () => {
+            try {
+                const result = await getWaitList().unwrap();
+                return result;
+            } catch (error) {
+                throw error;
+            }
+        },
+        [getWaitList]
+    );
+
     const handleAddToWaitList = useCallback(
         async (conferenceId: string): Promise<ApiResponse<boolean>> => {
             try {
@@ -240,6 +282,7 @@ export const usePaperCustomer = () => {
         availableCustomers: availableCustomersData?.data || lazyAvailableCustomersData?.data || [],
         waitLists: waitListData?.data || [],
 
+        fetchSubmittedPapers,
         fetchPaperDetail,
         fetchAvailableCustomers,
         handleSubmitAbstract,
@@ -247,6 +290,7 @@ export const usePaperCustomer = () => {
         handleSubmitPaperRevision,
         handleSubmitPaperRevisionResponse,
         handleSubmitCameraReady,
+        fetchWaitList,
         handleAddToWaitList,
         handleLeaveWaitList,
 

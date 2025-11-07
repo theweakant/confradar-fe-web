@@ -3,7 +3,7 @@
 import { useLoginMutation } from "../services/auth.service"
 import { useAppDispatch, useAppSelector } from "./hooks"
 import { setCredentials, logout, startLoading, stopLoading } from "../slices/auth.slice"
-import { decodeToken, getRoleFromToken } from "../utils/token"
+import { decodeToken, getCustomerRole, getRolesFromToken } from "../utils/token"
 import { toast } from "sonner"
 import { ApiResponse } from "@/types/api.type"
 
@@ -15,7 +15,7 @@ type LoginResult = {
 
 export const useAuth = () => {
   const dispatch = useAppDispatch()
-  const { user, accessToken, role, loading } = useAppSelector((state) => state.auth) 
+  const { user, accessToken, role, loading } = useAppSelector((state) => state.auth)
   const [loginMutation] = useLoginMutation()
 
   const login = async (
@@ -29,9 +29,14 @@ export const useAuth = () => {
       if (!accessToken) throw new Error("Access token missing")
 
       const decoded = decodeToken(accessToken)
-      const role = getRoleFromToken(accessToken)
+      const rawRole = getRolesFromToken(accessToken)
       const email = decoded?.email || credentials.email
-      const userId = decoded?.sub || "" 
+      const userId = decoded?.sub || ""
+
+      let role: string | null = null
+
+      const customerRole = getCustomerRole(accessToken)
+      role = customerRole || (rawRole.length > 0 ? rawRole[0] : null)
 
       const userInfo = { userId, email, role }
 
@@ -45,8 +50,8 @@ export const useAuth = () => {
         err instanceof Error
           ? err.message
           : err?.message ||
-            err?.errors?.message ||
-            "Đăng nhập thất bại, vui lòng thử lại."
+          err?.errors?.message ||
+          "Đăng nhập thất bại, vui lòng thử lại."
 
       console.error("Login failed:", error)
       toast.error(message)
@@ -60,7 +65,7 @@ export const useAuth = () => {
 
   return {
     user,
-    role, 
+    role,
     token: accessToken,
     loading,
     isAuthenticated: !!accessToken,

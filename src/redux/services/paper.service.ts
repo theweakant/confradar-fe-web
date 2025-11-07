@@ -413,6 +413,7 @@ export const {
 
   //SON
   useListSubmittedPapersForCustomerQuery,
+  useLazyListSubmittedPapersForCustomerQuery,
   useGetPaperDetailCustomerQuery,
   useLazyGetPaperDetailCustomerQuery,
   useListPaperPhasesQuery,
@@ -424,6 +425,7 @@ export const {
   useSubmitPaperRevisionResponseMutation,
   useSubmitCameraReadyMutation,
   useListCustomerWaitListQuery,
+  useLazyListCustomerWaitListQuery,
   useAddToWaitListMutation,
   useLeaveWaitListMutation,
 } = paperApi;

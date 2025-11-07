@@ -23,7 +23,19 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
     <div>
       <h2 className="text-2xl font-bold text-white mb-6">Lịch trình Sessions</h2>
       <div className="space-y-4">
-        {sessions.length > 0 ? sessions.map((session, index) => {
+        {sessions.length > 0 ? [...sessions]
+          .sort((a, b) => {
+            // Sort by date first
+            const dateA = new Date(('date' in a ? a.date : a.startTime) || '').getTime();
+            const dateB = new Date(('date' in b ? b.date : b.startTime) || '').getTime();
+            if (dateA !== dateB) return dateA - dateB;
+            
+            // Then sort by start time
+            const timeA = new Date(a.startTime || '').getTime();
+            const timeB = new Date(b.startTime || '').getTime();
+            return timeA - timeB;
+          })
+          .map((session, index) => {
           if (isResearch) {
             const s = session as ResearchConferenceSessionResponse;
               return (

@@ -84,14 +84,61 @@ const ResearchPaperInformationTab: React.FC<ResearchPaperInformationTabProps> = 
                             )}
                         </div>
                         
+                        {/* Additional Research Phase Info */}
+                        <div className="mt-4 pt-4 border-t border-white/20">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <span className="text-white/70 text-sm">Phase ID:</span>
+                                    <p className="text-white font-medium">{conference.researchPhase.researchConferencePhaseId || 'Chưa có ID phase'}</p>
+                                </div>
+                                <div>
+                                    <span className="text-white/70 text-sm">Conference ID:</span>
+                                    <p className="text-white font-medium">{conference.researchPhase.conferenceId || 'Chưa có Conference ID'}</p>
+                                </div>
+                                <div>
+                                    <span className="text-white/70 text-sm">Waitlist Status:</span>
+                                    <p className="text-white font-medium">
+                                        {conference.researchPhase.isWaitlist !== undefined 
+                                            ? (conference.researchPhase.isWaitlist ? 'Có danh sách chờ' : 'Không có danh sách chờ')
+                                            : 'Chưa xác định'
+                                        }
+                                    </p>
+                                </div>
+                                <div>
+                                    <span className="text-white/70 text-sm">Active Status:</span>
+                                    <p className="text-white font-medium">
+                                        {conference.researchPhase.isActive !== undefined 
+                                            ? (conference.researchPhase.isActive ? 'Đang hoạt động' : 'Không hoạt động')
+                                            : 'Chưa xác định'
+                                        }
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Revision Round Deadlines */}
                         {conference.researchPhase.revisionRoundDeadlines && conference.researchPhase.revisionRoundDeadlines.length > 0 && (
                             <div className="mt-4">
                                 <h4 className="text-white font-medium mb-2">Revision Rounds</h4>
                                 <div className="space-y-2">
-                                    {conference.researchPhase.revisionRoundDeadlines.map((round, index) => (
-                                        <div key={round.revisionRoundDeadlineId || index} className="text-white/80 text-sm">
-                                            Round {round.roundNumber}: {formatDate(round.endDate)}
+                                    {conference.researchPhase.revisionRoundDeadlines
+                                        .sort((a, b) => (a.roundNumber || 0) - (b.roundNumber || 0))
+                                        .map((round, index) => (
+                                        <div key={round.revisionRoundDeadlineId || index} className="bg-white/10 rounded p-2">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-white font-medium">Round {round.roundNumber}</span>
+                                                <span className="text-white/80 text-sm">{formatDate(round.endDate)}</span>
+                                            </div>
+                                            {round.revisionRoundDeadlineId && (
+                                                <div className="text-white/60 text-xs mt-1">
+                                                    ID: {round.revisionRoundDeadlineId}
+                                                </div>
+                                            )}
+                                            {round.researchConferencePhaseId && (
+                                                <div className="text-white/60 text-xs">
+                                                    Phase ID: {round.researchConferencePhaseId}
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -198,12 +245,48 @@ const ResearchPaperInformationTab: React.FC<ResearchPaperInformationTabProps> = 
                 <div className="mb-8">
                     <h3 className="text-xl font-semibold text-white mb-4">Research Sessions</h3>
                     <div className="space-y-4">
-                        {conference.researchSessions.map((session) => (
+                        {conference.researchSessions
+                            .sort((a, b) => {
+                                const dateA = new Date(a.date || '').getTime();
+                                const dateB = new Date(b.date || '').getTime();
+                                if (dateA !== dateB) return dateA - dateB;
+                                
+                                const timeA = new Date(a.startTime || '').getTime();
+                                const timeB = new Date(b.startTime || '').getTime();
+                                return timeA - timeB;
+                            })
+                            .map((session) => (
                             <div key={session.conferenceSessionId} className="bg-white/20 backdrop-blur-md rounded-xl p-6">
-                                <h4 className="text-xl font-bold text-white mb-2">{session.title}</h4>
+                                <h4 className="text-xl font-bold text-white mb-2">{session.title || 'Chưa có tiêu đề session'}</h4>
                                 {session.description && (
                                     <p className="text-white/80 text-sm mb-3">{session.description}</p>
                                 )}
+                                
+                                {/* Session Details Grid */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <span className="text-white/70 text-sm">Session ID:</span>
+                                        <p className="text-white font-medium">{session.conferenceSessionId}</p>
+                                    </div>
+                                    <div>
+                                        <span className="text-white/70 text-sm">Conference ID:</span>
+                                        <p className="text-white font-medium">{session.conferenceId || 'Chưa có Conference ID'}</p>
+                                    </div>
+                                    <div>
+                                        <span className="text-white/70 text-sm">Room ID:</span>
+                                        <p className="text-white font-medium">{session.roomId || 'Chưa có Room ID'}</p>
+                                    </div>
+                                    {session.room && (
+                                        <div>
+                                            <span className="text-white/70 text-sm">Room Info:</span>
+                                            <p className="text-white font-medium">
+                                                {session.room.displayName || session.room.number || 'Chưa có thông tin phòng'}
+                                                {session.room.destinationId && ` (Destination: ${session.room.destinationId})`}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+
                                 <div className="flex flex-wrap gap-4 text-sm text-white/70 mb-3">
                                     {session.date && (
                                         <div className="flex items-center gap-1">
@@ -223,18 +306,24 @@ const ResearchPaperInformationTab: React.FC<ResearchPaperInformationTabProps> = 
                                 {session.sessionMedia && session.sessionMedia.length > 0 && (
                                     <div className="mt-3">
                                         <p className="text-white font-medium mb-2">Session Media:</p>
-                                        <div className="flex flex-wrap gap-2">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                             {session.sessionMedia.map((media, index) => (
-                                                <a
-                                                    key={media.mediaId || index}
-                                                    href={media.mediaUrl}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1"
-                                                >
-                                                    <ExternalLink className="w-3 h-3" />
-                                                    Media {index + 1}
-                                                </a>
+                                                <div key={media.conferenceSessionMediaId || index} className="bg-white/10 rounded p-2">
+                                                    <div className="text-white/70 text-xs mb-1">
+                                                        Media ID: {media.conferenceSessionMediaId || 'N/A'}
+                                                    </div>
+                                                    {media.conferenceSessionMediaUrl && (
+                                                        <a
+                                                            href={media.conferenceSessionMediaUrl}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1"
+                                                        >
+                                                            <ExternalLink className="w-3 h-3" />
+                                                            View Media {index + 1}
+                                                        </a>
+                                                    )}
+                                                </div>
                                             ))}
                                         </div>
                                     </div>

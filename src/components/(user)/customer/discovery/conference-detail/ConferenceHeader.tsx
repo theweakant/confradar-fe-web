@@ -1,7 +1,7 @@
 import { MapPin, Calendar, Star } from 'lucide-react';
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { ConferencePriceResponse, ResearchConferenceDetailResponse, TechnicalConferenceDetailResponse } from "@/types/conference.type";
-import { getCurrentPrice } from "@/utils/conferenceUtils";
+import { getCurrentPrice } from "@/helper/conference";
 import React, { useEffect, useState } from 'react';
 import { useTransaction } from '@/redux/hooks/transaction/useTransaction';
 import { useConference } from '@/redux/hooks/conference/useConference';
@@ -48,27 +48,26 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
     setShowPaymentMethods,
 }) => {
     const {
-        favouriteConferences,
+        lazyFavouriteConferences,
         addFavourite,
         removeFavourite,
         addingToFavourite,
         deletingFromFavourite,
-        refetchFavouriteConferences
+        fetchFavouriteConferences
     } = useConference();
 
     const [isFavorite, setIsFavorite] = useState(false);
 
     // Check if current conference is in favorites
     useEffect(() => {
-        if (favouriteConferences && conference.conferenceId) {
-            const isInFavorites = favouriteConferences.some(
+        if (lazyFavouriteConferences && conference.conferenceId) {
+            const isInFavorites = lazyFavouriteConferences.some(
                 fav => fav.conferenceId === conference.conferenceId
             );
             setIsFavorite(isInFavorites);
         }
-    }, [favouriteConferences, conference.conferenceId]);
+    }, [lazyFavouriteConferences, conference.conferenceId]);
 
-    // Handle favorite toggle
     const handleFavoriteToggle = async () => {
         if (!conference.conferenceId || !accessToken) {
             toast.error('Vui lòng đăng nhập để sử dụng tính năng này');
@@ -84,7 +83,7 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                 toast.success('Đã thêm vào danh sách yêu thích');
             }
             // Refetch favorites to update the list
-            refetchFavouriteConferences();
+            fetchFavouriteConferences();
         } catch (error) {
             toast.error('Có lỗi xảy ra, vui lòng thử lại');
             console.error('Favorite toggle error:', error);
@@ -174,17 +173,56 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                     <p className="text-white text-sm mb-4">
                         Nhấn để chọn khung giá vé và thanh toán
                     </p>
-                    <button
-                        onClick={() => setIsDialogOpen(true)}
-                        // className="w-full bg-black hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-                        className="w-full bg-gradient-to-r from-sky-500 via-indigo-500 to-violet-500 
-             hover:from-sky-400 hover:via-indigo-400 hover:to-violet-400
-             text-white px-6 py-3 rounded-lg font-semibold
-             shadow-lg shadow-indigo-500/30 transition-all duration-300
-             hover:scale-[1.02]"
-                    >
-                        Mở chọn vé
-                    </button>
+                    {(() => {
+                        const now = new Date();
+                        const ticketSaleStart = conference.ticketSaleStart ? new Date(conference.ticketSaleStart) : null;
+                        const ticketSaleEnd = conference.ticketSaleEnd ? new Date(conference.ticketSaleEnd) : null;
+
+                        const isBeforeSale = ticketSaleStart && now < ticketSaleStart;
+                        const isAfterSale = ticketSaleEnd && now > ticketSaleEnd;
+
+                        if (isBeforeSale) {
+                            return (
+                                <div>
+                                    <button
+                                        disabled
+                                        className="w-full bg-gray-500/50 text-white/70 px-6 py-3 rounded-lg font-semibold
+                                         cursor-not-allowed opacity-60"
+                                    >
+                                        Chưa đến lúc mở bán vé
+                                    </button>
+                                    <p className="text-white/60 text-xs mt-2 text-center">
+                                        Ngày bắt đầu bán vé: {formatDate(conference.ticketSaleStart)}
+                                    </p>
+                                </div>
+                            );
+                        }
+
+                        if (isAfterSale) {
+                            return (
+                                <button
+                                    disabled
+                                    className="w-full bg-red-500/50 text-white/70 px-6 py-3 rounded-lg font-semibold
+                                     cursor-not-allowed opacity-60"
+                                >
+                                    Đã hết thời gian bán vé
+                                </button>
+                            );
+                        }
+
+                        return (
+                            <button
+                                onClick={() => setIsDialogOpen(true)}
+                                className="w-full bg-gradient-to-r from-sky-500 via-indigo-500 to-violet-500 
+                                 hover:from-sky-400 hover:via-indigo-400 hover:to-violet-400
+                                 text-white px-6 py-3 rounded-lg font-semibold
+                                 shadow-lg shadow-indigo-500/30 transition-all duration-300
+                                 hover:scale-[1.02]"
+                            >
+                                Mở chọn vé
+                            </button>
+                        );
+                    })()}
                 </div>
 
                 {/* Ticket Selection Dialog */}

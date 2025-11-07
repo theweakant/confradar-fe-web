@@ -1,5 +1,5 @@
 import { useGetOwnPaidTicketsQuery, useLazyGetOwnPaidTicketsQuery } from '@/redux/services/ticket.service';
-import { parseApiError } from '@/redux/utils/api';
+import { parseApiError } from '@/helper/api';
 
 export const useTicket = (filters?: {
     keyword?: string;

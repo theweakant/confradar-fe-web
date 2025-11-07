@@ -7,6 +7,7 @@ import { FileText, BookOpen, Calendar, Clock, ExternalLink, AlertCircle } from "
 import { usePaperCustomer } from "@/redux/hooks/paper/usePaper";
 import type { PaperCustomer } from "@/types/paper.type";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 function PaperCard({ paper }: { paper: PaperCustomer }) {
     const router = useRouter();
@@ -104,8 +105,14 @@ function CustomerPaperList() {
     const {
         submittedPapers,
         loading,
-        submittedPapersError
+        submittedPapersError,
+        fetchSubmittedPapers,
     } = usePaperCustomer();
+
+    useEffect(() => {
+        fetchSubmittedPapers();
+    }, [fetchSubmittedPapers]);
+
 
     const getErrorMessage = (): string => {
         if (!submittedPapersError) return "";

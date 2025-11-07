@@ -1,5 +1,6 @@
 // redux/utils/token.ts
-import {jwtDecode} from "jwt-decode"
+import { ROLES } from "@/constants/roles"
+import { jwtDecode } from "jwt-decode"
 
 
 const ACCESS_TOKEN_KEY = "access_token"
@@ -24,7 +25,7 @@ interface DecodedToken {
   exp: number
   iss: string
   aud: string
-  "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": string
+  "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": string | string[]
 }
 
 export const decodeToken = (token: string): DecodedToken | null => {
@@ -36,10 +37,36 @@ export const decodeToken = (token: string): DecodedToken | null => {
   }
 }
 
-export const getRoleFromToken = (token: string): string | null => {
+// export const getRoleFromToken = (token: string): string | null => {
+//   const decoded = decodeToken(token)
+//   if (!decoded) return null
+//   return decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]
+// }
+
+export const getRolesFromToken = (token: string): string[] => {
   const decoded = decodeToken(token)
-  if (!decoded) return null
-  return decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]
+  if (!decoded) return []
+
+  const roles = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]
+
+  if (Array.isArray(roles)) return roles
+  if (typeof roles === "string") return [roles]
+  return []
+}
+
+export const getCustomerRole = (token: string): string | null => {
+  const roles = getRolesFromToken(token)
+
+  const normalizedRoles = roles.map(r => r.toLowerCase().replace(/\s+/g, ""))
+  const hasCustomer = normalizedRoles.includes(ROLES.CUSTOMER)
+
+  if (!hasCustomer) return null
+
+  const originalRole = roles.find(
+    r => r.toLowerCase().replace(/\s+/g, "") === ROLES.CUSTOMER
+  )
+
+  return originalRole || null
 }
 
 

@@ -1,5 +1,5 @@
 import { useCreatePaymentForResearchPaperMutation, useCreatePaymentForTechMutation, useGetAllPaymentMethodsQuery, useLazyGetAllPaymentMethodsQuery, useLazyGetOwnTransactionQuery } from "@/redux/services/transaction.service";
-import { parseApiError } from "@/redux/utils/api";
+import { parseApiError } from "@/helper/api";
 import { ApiResponse } from "@/types/api.type";
 import { CreatePaperPaymentRequest, CreateTechPaymentRequest, GeneralPaymentResultResponse, PaymentMethod } from "@/types/transaction.type";
 

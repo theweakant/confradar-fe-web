@@ -151,14 +151,20 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
                             </p>
                         )}
                         {abstract.fileUrl && (
-                            <a
-                                href={abstract.fileUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-400 hover:text-blue-300 text-sm underline mt-2 inline-block"
-                            >
-                                Xem file abstract →
-                            </a>
+                            <iframe
+                                src={abstract.fileUrl}
+                                width="100%"
+                                height="600px"
+                                style={{ border: 'none' }}
+                            />
+                            // <a
+                            //     href={abstract.fileUrl}
+                            //     target="_blank"
+                            //     rel="noopener noreferrer"
+                            //     className="text-blue-400 hover:text-blue-300 text-sm underline mt-2 inline-block"
+                            // >
+                            //     Xem file abstract →
+                            // </a>
                         )}
                     </div>
                 </div>
