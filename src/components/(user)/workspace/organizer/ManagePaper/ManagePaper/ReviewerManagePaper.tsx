@@ -21,7 +21,6 @@ import { useListUnassignAbstractsQuery } from "@/redux/services/paper.service";
 import { useGetReviewersListQuery } from "@/redux/services/user.service";
 
 export default function ReviewerManagePage() {
-  // ✅ API queries
   const {
     data: papersData,
     isLoading: papersLoading,
@@ -91,17 +90,10 @@ export default function ReviewerManagePage() {
                   variant="outline"
                 >
                   <ScanEye className="w-5 h-5" />
-                  Xem danh sách bài báo đang chờ
+                  Xem danh sách Abstract đang chờ
                 </Button>
               </Link>   
 
-              {/* <Button
-                className="flex items-center gap-2 whitespace-nowrap"
-                onClick={() => setShowCameraReady(true)}
-              >
-                <UserPlus className="w-5 h-5" />
-                Duyệt Camera Ready
-              </Button> */}
             </div>
           </div>
         </div>
