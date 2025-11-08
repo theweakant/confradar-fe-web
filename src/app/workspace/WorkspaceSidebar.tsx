@@ -57,7 +57,6 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
     ],
     [ROLES.COLLABORATOR]: [
       { label: "Tổng quan", href: "/workspace/collaborator", icon: LayoutDashboard },
-      { label: "Tài trợ", href: "/workspace/collaborator/sponsorships", icon: Building2 },
       { label: "Hội thảo", href: "/workspace/collaborator/manage-conference", icon: Calendar },
       { label: "Phân tích", href: "/workspace/collaborator/analytics", icon: FileText },
       { label: "Cài đặt", href: "/workspace/collaborator/settings", icon: Settings },

@@ -1,7 +1,11 @@
 "use client"
 import { useRouter } from "next/navigation";
+
+
+
 import {X } from "lucide-react";
 import { useState, useEffect } from "react";
+import { DatePickerInput } from "@/components/atoms/DatePickerInput";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/molecules/FormInput";
 import { FormSelect } from "@/components/molecules/FormSelect";
@@ -27,6 +31,13 @@ import {
   setConferenceId,
   setConferenceBasicData,
   resetWizard,
+  markStepCompleted,
+  nextStep,
+  prevStep,
+
+  setMode,
+  goToStep
+
 } from "@/redux/slices/conferenceStep.slice";
 import type {
   ConferenceBasicForm,
@@ -45,7 +56,7 @@ import type {
 import { toast } from "sonner";
 
 import {ImageUpload} from "@/components/atoms/ImageUpload";
-import {formatDate, formatCurrency, formatTimeDate} from "@/helper/format"
+import {formatDate, formatCurrency, formatTimeDate,  parseDate, formatDateToAPI} from "@/helper/format"
 
 const TARGET_OPTIONS = [
   { value: "Học sinh", label: "Học sinh" },
@@ -63,6 +74,8 @@ export default function CreateConferenceStepPage() {
   );
 
   const conferenceId = reduxConferenceId;
+
+
 
   const [createBasic] = useCreateBasicConferenceMutation();
   const [createPrice] = useCreateConferencePriceMutation();
@@ -94,9 +107,10 @@ export default function CreateConferenceStepPage() {
       label: city.cityName || "N/A",
     })) || [];
 
- 
+  const currentStep = useAppSelector((state) => state.conferenceStep.currentStep);
+  const completedSteps = useAppSelector((state) => state.conferenceStep.completedSteps);
+  const mode = useAppSelector((state) => state.conferenceStep.mode); 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [basicFormCompleted, setBasicFormCompleted] = useState(false);
   const [isPhaseModalOpen, setIsPhaseModalOpen] = useState(false);
   const [isSpeakerModalOpen, setIsSpeakerModalOpen] = useState(false);
 
@@ -121,6 +135,15 @@ export default function CreateConferenceStepPage() {
     targetAudienceTechnicalConference: "",
   });
 
+  useEffect(() => {
+  dispatch(setMode('create'));
+  dispatch(goToStep(1));
+  
+  return () => {
+    dispatch(resetWizard());
+  };
+}, [dispatch]);
+
 useEffect(() => {
   if (basicForm.startDate && basicForm.dateRange && basicForm.dateRange > 0) {
     const start = new Date(basicForm.startDate);
@@ -140,6 +163,8 @@ useEffect(() => {
     setBasicForm(prev => ({ ...prev, ticketSaleEnd }));
   }
 }, [basicForm.ticketSaleStart, basicForm.ticketSaleDuration]);
+
+
 
   // Step 2: Price
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -162,10 +187,17 @@ useEffect(() => {
     phaseName: "",
     percentValue: 0,
     percentType: 'increase',
-    startDate: "",
+    startDate: basicForm.ticketSaleStart,
     durationInDays: 1,
     totalslot: 0,
   });
+  const [editingPhase, setEditingPhase] = useState<{
+    ticketIndex: number;
+    phaseIndex: number;
+    data: Phase;
+  } | null>(null);
+  const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
+  const [editingTicketIndex, setEditingTicketIndex] = useState<number | null>(null);  
 
   // Step 3: Sessions
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -254,136 +286,275 @@ useEffect(() => {
   };
 
   // Handle Step 1 Submit
-  const handleBasicSubmit = async () => {
-    if (!validateBasicForm()) return;
+const handleBasicSubmit = async () => {
+  if (!validateBasicForm()) return;
 
-    try {
-      setIsSubmitting(true);
-      const result = await createBasic(basicForm).unwrap();
-      const confId = result.data.conferenceId;
+  try {
+    setIsSubmitting(true);
+    const result = await createBasic(basicForm).unwrap();
+    const confId = result.data.conferenceId;
 
-      dispatch(setConferenceId(confId));
-      dispatch(setConferenceBasicData(result.data));
-      setBasicFormCompleted(true);
-      
-      toast.success("Tạo thông tin cơ bản thành công! Vui lòng điền các thông tin còn lại.");
-    } catch (error) {
-      const apiError = error as { data?: ApiError };
-      console.error("Failed to create basic info:", error);
-      toast.error(apiError?.data?.Message || "Tạo thông tin cơ bản thất bại!");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Handle Final Submit (All Steps)
-  const handleFinalSubmit = async () => {
-    if (!conferenceId) {
-      toast.error("Không tìm thấy conference ID!");
-      return;
-    }
-
-    if (tickets.length === 0) {
-      toast.error("Vui lòng thêm ít nhất 1 loại vé!");
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-
-      // Step 2: Price
-      const priceData: ConferencePriceData = {
-        typeOfTicket: tickets.map(ticket => ({
-          ticketPrice: parseFloat(ticket.ticketPrice.toFixed(2)),
-          ticketName: ticket.ticketName,
-          ticketDescription: ticket.ticketDescription,
-          isAuthor: ticket.isAuthor ?? false,
-          totalSlot: ticket.totalSlot,
-          phases: (ticket.phases || []).map(phase => ({
-            phaseName: phase.phaseName,
-            applyPercent: parseFloat(phase.applyPercent.toFixed(2)),
-            startDate: phase.startDate,
-            endDate: phase.endDate,
-            totalslot: phase.totalslot
-          }))
-        }))
-      };
-
-      // Step 3: Sessions
-const formattedSessions = sessions.map((s) => {
-  const startDateTime = new Date(s.startTime);
-  const endDateTime = new Date(s.endTime);
-  
-  const startTime = startDateTime.toTimeString().slice(0, 8); 
-  const endTime = endDateTime.toTimeString().slice(0, 8);    
-  
-  // Validate duration (ít nhất 30 phút)
-  const durationMinutes = (endDateTime.getTime() - startDateTime.getTime()) / (1000 * 60);
-  if (durationMinutes < 30) {
-    console.warn(`Session "${s.title}" duration is ${durationMinutes} minutes (< 30 min)`);
+    dispatch(setConferenceId(confId));
+    dispatch(setConferenceBasicData(result.data));
+    dispatch(markStepCompleted(1));
+    dispatch(nextStep());
+    
+    toast.success("Tạo thông tin cơ bản thành công!");
+  } catch (error) {
+    const apiError = error as { data?: ApiError };
+    console.error("Failed to create basic info:", error);
+    toast.error(apiError?.data?.Message || "Tạo thông tin cơ bản thất bại!");
+  } finally {
+    setIsSubmitting(false);
   }
-  
-  return {
-    title: s.title,
-    description: s.description,
-    date: s.date,
-    startTime: startTime,
-    endTime: endTime,
-    roomId: s.roomId,
-    speaker: s.speaker.map(sp => ({
-      name: sp.name,
-      description: sp.description,
-      image: sp.image instanceof File ? sp.image : undefined,
-      imageUrl: typeof sp.image === 'string' ? sp.image : undefined,
-    })),
-    sessionMedias: (s.sessionMedias || []).map(media => ({
-      mediaFile: media.mediaFile instanceof File ? media.mediaFile : undefined,
-      mediaUrl: typeof media.mediaFile === 'string' ? media.mediaFile : undefined,
-    })),
-  };
-});
-      const sessionData: ConferenceSessionData = { sessions: formattedSessions };
+};
 
-      // Execute all API calls
-      await Promise.all([
-        createPrice({ conferenceId, data: priceData }).unwrap(),
-        sessions.length > 0 ? createSessions({ conferenceId, data: sessionData }).unwrap() : Promise.resolve(),
-        policies.length > 0 ? createPolicies({ conferenceId, data: { policies } }).unwrap() : Promise.resolve(),
-        refundPolicies.length > 0 ? createRefundPolicies({ conferenceId, data: { refundPolicies } }).unwrap() : Promise.resolve(), 
-        mediaList.length > 0 ? createMedia({ conferenceId, data: { media: mediaList } }).unwrap() : Promise.resolve(),
-        sponsors.length > 0 ? createSponsors({ conferenceId, data: { sponsors } }).unwrap() : Promise.resolve(),
-      ]);
+// Thêm handler cho step 2 (Price)
+const handlePriceSubmit = async () => {
+  if (!conferenceId) {
+    toast.error("Không tìm thấy conference ID!");
+    return;
+  }
 
-      toast.success("Tạo hội thảo thành công!");
-      dispatch(resetWizard());
-      router.push(`/workspace/collaborator/manage-conference`);
-    } catch (error) {
-      const apiError = error as { data?: ApiError };
-      console.error("Failed to create conference:", error);
-      toast.error(apiError?.data?.Message || "Tạo hội thảo thất bại!");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  if (tickets.length === 0) {
+    toast.error("Vui lòng thêm ít nhất 1 loại vé!");
+    return;
+  }
+
+  try {
+    setIsSubmitting(true);
+
+    const priceData: ConferencePriceData = {
+      typeOfTicket: tickets.map(ticket => ({
+        ticketPrice: parseFloat(ticket.ticketPrice.toFixed(2)),
+        ticketName: ticket.ticketName,
+        ticketDescription: ticket.ticketDescription,
+        isAuthor: ticket.isAuthor ?? false,
+        totalSlot: ticket.totalSlot,
+        phases: (ticket.phases || []).map(phase => ({
+          phaseName: phase.phaseName,
+          applyPercent: parseFloat(phase.applyPercent.toFixed(2)),
+          startDate: phase.startDate,
+          endDate: phase.endDate,
+          totalslot: phase.totalslot
+        }))
+      }))
+    };
+
+    await createPrice({ conferenceId, data: priceData }).unwrap();
+    
+    dispatch(markStepCompleted(2));
+    dispatch(nextStep());
+    toast.success("Lưu thông tin giá vé thành công!");
+  } catch (error) {
+    const apiError = error as { data?: ApiError };
+    console.error("Failed to create price:", error);
+    toast.error(apiError?.data?.Message || "Lưu giá vé thất bại!");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+const handleSessionsSubmit = async () => {
+  if (!conferenceId) {
+    toast.error("Không tìm thấy conference ID!");
+    return;
+  }
+
+  // Nếu không có session nào → cho phép bỏ qua
+  if (sessions.length === 0) {
+    dispatch(markStepCompleted(3));
+    dispatch(nextStep());
+    toast.info("Đã bỏ qua phần phiên họp");
+    return;
+  }
+
+  const eventStartDate = basicForm.startDate; 
+  const eventEndDate = basicForm.endDate;     
+
+  if (!eventStartDate || !eventEndDate) {
+    toast.error("Thiếu thông tin ngày bắt đầu/kết thúc sự kiện!");
+    return;
+  }
+
+  const hasSessionOnStartDay = sessions.some(s => s.date === eventStartDate);
+  const hasSessionOnEndDay = sessions.some(s => s.date === eventEndDate);
+
+  if (!hasSessionOnStartDay || !hasSessionOnEndDay) {
+    toast.error("Phải có ít nhất 1 phiên họp vào ngày bắt đầu và 1 phiên họp vào ngày kết thúc hội thảo!");
+    return;
+  }
+
+  try {
+    setIsSubmitting(true);
+
+    const formattedSessions = sessions.map((s) => {
+      const startDateTime = new Date(s.startTime);
+      const endDateTime = new Date(s.endTime);
+      const startTime = startDateTime.toTimeString().slice(0, 8);
+      const endTime = endDateTime.toTimeString().slice(0, 8);
+
+      return {
+        title: s.title,
+        description: s.description,
+        date: s.date,
+        startTime: startTime,
+        endTime: endTime,
+        roomId: s.roomId,
+        speaker: s.speaker.map(sp => ({
+          name: sp.name,
+          description: sp.description,
+          image: sp.image instanceof File ? sp.image : undefined,
+          imageUrl: typeof sp.image === 'string' ? sp.image : undefined,
+        })),
+        sessionMedias: (s.sessionMedias || []).map(media => ({
+          mediaFile: media.mediaFile instanceof File ? media.mediaFile : undefined,
+          mediaUrl: typeof media.mediaFile === 'string' ? media.mediaFile : undefined,
+        })),
+      };
+    });
+
+    const sessionData: ConferenceSessionData = { sessions: formattedSessions };
+    await createSessions({ conferenceId, data: sessionData }).unwrap();
+
+    dispatch(markStepCompleted(3));
+    dispatch(nextStep());
+    toast.success("Lưu phiên họp thành công!");
+  } catch (error) {
+    const apiError = error as { data?: ApiError };
+    console.error("Failed to create sessions:", error);
+    toast.error(apiError?.data?.Message || "Lưu phiên họp thất bại!");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+// Thêm handler cho step 4 (Policies)
+const handlePoliciesSubmit = async () => {
+  if (!conferenceId) {
+    toast.error("Không tìm thấy conference ID!");
+    return;
+  }
+
+  // Policies là optional
+  if (policies.length === 0 && refundPolicies.length === 0) {
+    dispatch(markStepCompleted(4));
+    dispatch(nextStep());
+    toast.info("Đã bỏ qua phần chính sách");
+    return;
+  }
+
+  try {
+    setIsSubmitting(true);
+
+    await Promise.all([
+      policies.length > 0 ? createPolicies({ conferenceId, data: { policies } }).unwrap() : Promise.resolve(),
+      refundPolicies.length > 0 ? createRefundPolicies({ conferenceId, data: { refundPolicies } }).unwrap() : Promise.resolve(),
+    ]);
+    
+    dispatch(markStepCompleted(4));
+    dispatch(nextStep());
+    toast.success("Lưu chính sách thành công!");
+  } catch (error) {
+    const apiError = error as { data?: ApiError };
+    console.error("Failed to create policies:", error);
+    toast.error(apiError?.data?.Message || "Lưu chính sách thất bại!");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+
+const handleMediaSubmit = async () => {
+  if (!conferenceId) {
+    toast.error("Không tìm thấy conference ID!");
+    return;
+  }
+
+  // Media là optional
+  if (mediaList.length === 0) {
+    dispatch(markStepCompleted(5));
+    dispatch(nextStep());
+    toast.info("Đã bỏ qua phần media");
+    return;
+  }
+
+  try {
+    setIsSubmitting(true);
+
+    await createMedia({ conferenceId, data: { media: mediaList } }).unwrap();
+    
+    dispatch(markStepCompleted(5));
+    dispatch(nextStep());
+    toast.success("Lưu media thành công!");
+  } catch (error) {
+    const apiError = error as { data?: ApiError };
+    console.error("Failed to create media:", error);
+    toast.error(apiError?.data?.Message || "Lưu media thất bại!");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+const handleFinalSubmit = async () => {
+  if (!conferenceId) {
+    toast.error("Không tìm thấy conference ID!");
+    return;
+  }
+
+    if (sponsors.length === 0) {
+    dispatch(markStepCompleted(6));
+    toast.success("Tạo hội thảo thành công!");
+    dispatch(resetWizard());
+    router.push(`/workspace/collaborator/manage-conference`);
+    return;
+  }
+
+  try {
+    setIsSubmitting(true);
+
+    await createSponsors({ conferenceId, data: { sponsors } }).unwrap();
+    
+    dispatch(markStepCompleted(6));
+    toast.success("Tạo hội thảo thành công!");
+    dispatch(resetWizard());
+    router.push(`/workspace/collaborator/manage-conference`);
+  } catch (error) {
+    const apiError = error as { data?: ApiError };
+    console.error("Failed to create sponsors:", error);
+    toast.error(apiError?.data?.Message || "Lưu nhà tài trợ thất bại!");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+const handlePrevStep = () => {
+  dispatch(prevStep());
+};
+
+const handleNextStepPreview = () => {
+  dispatch(nextStep());
+};
+
+const handleGoToStep = (step: number) => {
+  dispatch(goToStep(step));
+};
+
 
 const handleAddPhaseToNewTicket = () => {
   const { phaseName, percentValue, percentType, startDate, durationInDays, totalslot } = newPhase;
-  
   if (!phaseName.trim()) {
     toast.error("Vui lòng nhập tên giai đoạn!");
     return;
   }
-  
   if (!startDate) {
     toast.error("Vui lòng chọn ngày bắt đầu!");
     return;
   }
-  
   if (totalslot <= 0) {
     toast.error("Số lượng phải lớn hơn 0!");
     return;
   }
-
   if (!basicForm.ticketSaleStart || !basicForm.ticketSaleEnd) {
     toast.error("Không tìm thấy thông tin thời gian bán vé!");
     return;
@@ -392,7 +563,6 @@ const handleAddPhaseToNewTicket = () => {
   const saleStart = new Date(basicForm.ticketSaleStart);
   const saleEnd = new Date(basicForm.ticketSaleEnd);
   const phaseStart = new Date(startDate);
-  
   const phaseEnd = new Date(phaseStart);
   phaseEnd.setDate(phaseStart.getDate() + durationInDays - 1);
 
@@ -402,7 +572,6 @@ const handleAddPhaseToNewTicket = () => {
     );
     return;
   }
-
   if (phaseEnd > saleEnd) {
     toast.error(
       `Ngày kết thúc giai đoạn (${phaseEnd.toLocaleDateString('vi-VN')}) vượt quá thời gian bán vé!`
@@ -410,44 +579,74 @@ const handleAddPhaseToNewTicket = () => {
     return;
   }
 
-  const currentPhasesTotal = newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0);
-  if (currentPhasesTotal + totalslot > newTicket.totalSlot) {
-    toast.error(
-      `Tổng slot các giai đoạn (${currentPhasesTotal + totalslot}) vượt quá tổng slot vé (${newTicket.totalSlot})!`
+  // Nếu đang chỉnh sửa
+  if (editingPhase) {
+    const updatedTickets = [...tickets];
+    const { ticketIndex, phaseIndex } = editingPhase;
+
+    // Kiểm tra trùng thời gian (ngoại trừ chính phase đang chỉnh sửa)
+    const hasOverlap = updatedTickets[ticketIndex].phases.some((p, idx) => 
+      idx !== phaseIndex && 
+      phaseStart <= new Date(p.endDate) && 
+      phaseEnd >= new Date(p.startDate)
     );
-    return;
+    if (hasOverlap) {
+      toast.error("Giai đoạn này bị trùng thời gian với giai đoạn khác!");
+      return;
+    }
+
+    const applyPercent = percentType === 'increase'
+      ? 100 + percentValue
+      : 100 - percentValue;
+
+    updatedTickets[ticketIndex].phases[phaseIndex] = {
+      ...updatedTickets[ticketIndex].phases[phaseIndex],
+      phaseName,
+      applyPercent,
+      startDate,
+      endDate: phaseEnd.toISOString().split("T")[0],
+      totalslot,
+    };
+
+    setTickets(updatedTickets);
+    toast.success("Cập nhật giai đoạn thành công!");
+  } else {
+    // Thêm mới
+    const currentPhasesTotal = newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0);
+    if (currentPhasesTotal + totalslot > newTicket.totalSlot) {
+      toast.error(
+        `Tổng slot các giai đoạn (${currentPhasesTotal + totalslot}) vượt quá tổng slot vé (${newTicket.totalSlot})!`
+      );
+      return;
+    }
+
+    const hasOverlap = newTicket.phases.some(p => {
+      const pStart = new Date(p.startDate);
+      const pEnd = new Date(p.endDate);
+      return phaseStart <= pEnd && phaseEnd >= pStart;
+    });
+    if (hasOverlap) {
+      toast.error("Giai đoạn này bị trùng thời gian với giai đoạn khác!");
+      return;
+    }
+
+    const applyPercent = percentType === 'increase'
+      ? 100 + percentValue
+      : 100 - percentValue;
+    const phase: Phase = {
+      phaseName,
+      applyPercent,
+      startDate,
+      endDate: phaseEnd.toISOString().split("T")[0],
+      totalslot,
+    };
+
+    setNewTicket(prev => ({
+      ...prev,
+      phases: [...prev.phases, phase],
+    }));
+    toast.success("Đã thêm giai đoạn!");
   }
-
-  // Check overlap
-  const hasOverlap = newTicket.phases.some(p => {
-    const pStart = new Date(p.startDate);
-    const pEnd = new Date(p.endDate);
-    return (phaseStart <= pEnd && phaseEnd >= pStart);
-  });
-
-  if (hasOverlap) {
-    toast.error("Giai đoạn này bị trùng thời gian với giai đoạn khác!");
-    return;
-  }
-
-  const endDate = phaseEnd.toISOString().split("T")[0];
-  
-  const applyPercent = percentType === 'increase' 
-    ? 100 + percentValue  
-    : 100 - percentValue;
-    
-  const phase: Phase = {
-    phaseName,
-    applyPercent,
-    startDate,
-    endDate,
-    totalslot,
-  };
-
-  setNewTicket(prev => ({
-    ...prev,
-    phases: [...prev.phases, phase],
-  }));
 
   setNewPhase({
     phaseName: "",
@@ -457,9 +656,8 @@ const handleAddPhaseToNewTicket = () => {
     durationInDays: 1,
     totalslot: 0,
   });
-  
-  setIsPhaseModalOpen(false); 
-  toast.success("Đã thêm giai đoạn!");
+  setEditingPhase(null);
+  setIsPhaseModalOpen(false);
 };
 
   const handleRemovePhaseFromTicket = (phaseIndex: number) => {
@@ -469,46 +667,97 @@ const handleAddPhaseToNewTicket = () => {
     }));
     toast.success("Đã xóa giai đoạn!");
   };
+  const handleEditPhase = (ticketIndex: number, phaseIndex: number) => {
+  const phase = tickets[ticketIndex].phases[phaseIndex];
+  if (!phase) return;
 
-  const handleAddTicket = () => {
-    if (!newTicket.ticketName.trim()) {
-      toast.error("Vui lòng nhập tên vé!");
+  const percentValue = phase.applyPercent > 100
+    ? phase.applyPercent - 100
+    : 100 - phase.applyPercent;
+  const percentType = phase.applyPercent > 100 ? 'increase' : 'decrease';
+
+  const start = new Date(phase.startDate);
+  const end = new Date(phase.endDate);
+  const durationInDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+  setNewPhase({
+    phaseName: phase.phaseName,
+    percentValue,
+    percentType,
+    startDate: phase.startDate,
+    durationInDays,
+    totalslot: phase.totalslot,
+  });
+
+  setEditingPhase({ ticketIndex, phaseIndex, data: phase });
+  setIsPhaseModalOpen(true);
+};
+
+const handleAddTicket = () => {
+  if (!newTicket.ticketName.trim()) {
+    toast.error("Vui lòng nhập tên vé!");
+    return;
+  }
+  if (newTicket.ticketPrice <= 0) {
+    toast.error("Giá vé phải lớn hơn 0!");
+    return;
+  }
+  if (newTicket.totalSlot <= 0) {
+    toast.error("Số lượng vé phải lớn hơn 0!");
+    return;
+  }
+  if (newTicket.phases.length > 0) {
+    const totalPhaseSlots = newTicket.phases.reduce(
+      (sum, p) => sum + p.totalslot,
+      0
+    );
+    if (totalPhaseSlots !== newTicket.totalSlot) {
+      toast.error(
+        `Tổng slot các giai đoạn (${totalPhaseSlots}) phải bằng tổng slot vé (${newTicket.totalSlot})!`
+      );
       return;
     }
-    
-    if (newTicket.ticketPrice <= 0) {
-      toast.error("Giá vé phải lớn hơn 0!");
-      return;
-    }
-    
-    if (newTicket.totalSlot <= 0) {
-      toast.error("Số lượng vé phải lớn hơn 0!");
-      return;
-    }
+  }
 
-    if (newTicket.phases.length > 0) {
-      const totalPhaseSlots = newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0);
-      if (totalPhaseSlots !== newTicket.totalSlot) {
-        toast.error(
-          `Tổng slot các giai đoạn (${totalPhaseSlots}) phải bằng tổng slot vé (${newTicket.totalSlot})!`
-        );
-        return;
-      }
-    }
-
-    setTickets([...tickets, { ...newTicket, isAuthor: false }]);
-    setNewTicket({
-      ticketPrice: 0,
-      ticketName: "",
-      ticketDescription: "",
+  if (editingTicketIndex !== null) {
+    const updatedTickets = [...tickets];
+    updatedTickets[editingTicketIndex] = {
+      ...newTicket,
+      ticketId: updatedTickets[editingTicketIndex]?.ticketId,
       isAuthor: false,
-      totalSlot: 0,
-      phases: [],
-    });
-    
+    };
+    setTickets(updatedTickets);
+    toast.success("Cập nhật vé thành công!");
+  } else {
+    setTickets([...tickets, { ...newTicket, isAuthor: false }]);
     toast.success("Đã thêm vé!");
-  };
+  }
 
+  // Reset form
+  setNewTicket({
+    ticketPrice: 0,
+    ticketName: "",
+    ticketDescription: "",
+    isAuthor: false,
+    totalSlot: 0,
+    phases: [],
+  });
+  setEditingTicket(null);
+  setEditingTicketIndex(null);
+};
+const handleEditTicket = (ticket: Ticket, index: number) => {
+  setNewTicket({
+    ticketPrice: ticket.ticketPrice,
+    ticketName: ticket.ticketName,
+    ticketDescription: ticket.ticketDescription || "",
+    isAuthor: ticket.isAuthor ?? false,
+    totalSlot: ticket.totalSlot,
+    phases: ticket.phases || [],
+  });
+  setEditingTicket(ticket);
+  setEditingTicketIndex(index);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
 const handleAddSession = () => {
   if (!newSession.title || newSession.speaker.length === 0) {
     toast.error("Vui lòng nhập tiêu đề và ít nhất 1 diễn giả!");
@@ -648,7 +897,46 @@ const handleAddSession = () => {
         <h1 className="text-2xl font-bold text-gray-900">Tạo hội thảo mới</h1>
         <p className="text-gray-600 mt-1">Điền đầy đủ thông tin để tạo hội thảo</p>
       </div>
-
+<div className="mb-8">
+  <div className="flex items-center justify-between mb-3">
+    {[1, 2, 3, 4, 5, 6].map((step) => {
+      const isCompleted = completedSteps.includes(step);
+      const isCurrent = currentStep === step;
+      const isAccessible = isCompleted || step <= currentStep;
+      
+      return (
+        <div key={step} className="flex items-center flex-1 last:flex-none">
+          <button
+            onClick={() => isAccessible && handleGoToStep(step)}
+            disabled={!isAccessible}
+            className={`
+              w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all
+              ${isCurrent ? 'bg-blue-600 text-white ring-4 ring-blue-200' : ''}
+              ${isCompleted && !isCurrent ? 'bg-green-600 text-white' : ''}
+              ${!isCompleted && !isCurrent ? 'bg-gray-200 text-gray-500' : ''}
+              ${isAccessible ? 'cursor-pointer hover:scale-110' : 'cursor-not-allowed'}
+            `}
+          >
+            {isCompleted ? '✓' : step}
+          </button>
+          {step < 6 && (
+            <div className={`flex-1 h-1 mx-2 ${isCompleted ? 'bg-green-600' : 'bg-gray-200'}`} />
+          )}
+        </div>
+      );
+    })}
+  </div>
+  
+  {/* Step Labels */}
+  <div className="flex justify-between">
+    <span className={`text-sm ${currentStep === 1 ? 'font-semibold text-blue-600' : 'text-gray-500'}`} style={{width: '40px', textAlign: 'center'}}>Thông tin</span>
+    <span className={`text-sm ${currentStep === 2 ? 'font-semibold text-blue-600' : 'text-gray-500'}`} style={{width: '40px', textAlign: 'center'}}>Giá vé</span>
+    <span className={`text-sm ${currentStep === 3 ? 'font-semibold text-blue-600' : 'text-gray-500'}`} style={{width: '40px', textAlign: 'center'}}>Phiên họp</span>
+    <span className={`text-sm ${currentStep === 4 ? 'font-semibold text-blue-600' : 'text-gray-500'}`} style={{width: '40px', textAlign: 'center'}}>Chính sách</span>
+    <span className={`text-sm ${currentStep === 5 ? 'font-semibold text-blue-600' : 'text-gray-500'}`} style={{width: '40px', textAlign: 'center'}}>Media</span>
+    <span className={`text-sm ${currentStep === 6 ? 'font-semibold text-blue-600' : 'text-gray-500'}`} style={{width: '40px', textAlign: 'center'}}>Tài trợ</span>
+  </div>
+</div>
       {isSubmitting && (
         <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
           <div className="flex items-center gap-2">
@@ -660,11 +948,12 @@ const handleAddSession = () => {
         </div>
       )}
 
-      {/* STEP 1: BASIC INFO - Always visible */}
+      {/* STEP 1: BASIC INFO*/}
+    {currentStep === 1 && (
       <div className="bg-white border rounded-lg p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">1. Thông tin cơ bản</h3>
-          {basicFormCompleted && (
+          {completedSteps.includes(1) &&  (
             <span className="text-sm text-green-600 font-medium">✓ Đã hoàn thành</span>
           )}
         </div>
@@ -676,29 +965,21 @@ const handleAddSession = () => {
             value={basicForm.conferenceName}
             onChange={(val) => setBasicForm({ ...basicForm, conferenceName: val })}
             required
-            disabled={basicFormCompleted}
           />
           <FormTextArea
             label="Mô tả"
             value={basicForm.description ?? ""}
             onChange={(val) => setBasicForm({ ...basicForm, description: val })}
             rows={3}
-            disabled={basicFormCompleted}
           />
 
 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
   <div>
-    <label className="block text-sm font-medium mb-2">
-      Ngày bắt đầu *
-    </label>
-    <input
-      type="date"
+    <DatePickerInput
+      label="Ngày bắt đầu"
       value={basicForm.startDate}
-      onChange={(e) => setBasicForm({ ...basicForm, startDate: e.target.value })}
+      onChange={(val) => setBasicForm({ ...basicForm, startDate: val })}
       required
-      className="w-full px-3 py-2 border rounded-lg"
-      disabled={basicFormCompleted}
-
     />
   </div>
 
@@ -713,7 +994,6 @@ const handleAddSession = () => {
       required
       placeholder="VD: 3 ngày"
       className="w-full px-3 py-2 border rounded-lg"
-      disabled={basicFormCompleted}
 
     />
   </div>
@@ -736,15 +1016,12 @@ const handleAddSession = () => {
 
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FormInput
-                      label="Ngày bắt đầu bán vé"
-                      type="date"
-                      value={basicForm.ticketSaleStart}
-                      onChange={(val) => setBasicForm({ ...basicForm, ticketSaleStart: val })}
-                      required
-                      disabled={basicFormCompleted}
-
-                    />
+                        <DatePickerInput
+                          label="Ngày bắt đầu bán vé"
+                          value={basicForm.ticketSaleStart}
+                          onChange={(val) => setBasicForm({ ...basicForm, ticketSaleStart: val })}
+                          required
+                        />
                     
                     <FormInput
                       label="Số ngày bán vé"
@@ -754,8 +1031,7 @@ const handleAddSession = () => {
                       onChange={(val) => setBasicForm({ ...basicForm, ticketSaleDuration: Number(val) })}
                       required
                       placeholder="VD: 30 ngày"
-                      disabled={basicFormCompleted}
-
+          
                     />
           
                     <div>
@@ -782,7 +1058,6 @@ const handleAddSession = () => {
             type="number"
             value={basicForm.totalSlot}
             onChange={(val) => setBasicForm({ ...basicForm, totalSlot: Number(val) })}
-            disabled={basicFormCompleted}
           />
           <FormSelect
             label="Danh mục"
@@ -791,7 +1066,7 @@ const handleAddSession = () => {
             onChange={(val) => setBasicForm({ ...basicForm, conferenceCategoryId: val })}
             options={categoryOptions}
             required
-            disabled={isCategoriesLoading || basicFormCompleted}
+            disabled={isCategoriesLoading }
           />
         </div>
 
@@ -802,7 +1077,6 @@ const handleAddSession = () => {
           name="address"
           value={basicForm.address}
           onChange={(val) => setBasicForm({ ...basicForm, address: val })}
-          disabled={basicFormCompleted}
         />
         <FormSelect
           label="Thành phố"
@@ -811,7 +1085,7 @@ const handleAddSession = () => {
           onChange={(val) => setBasicForm({ ...basicForm, cityId: val })}
           options={cityOptions}
           required
-          disabled={isCitiesLoading || basicFormCompleted}
+          disabled={isCitiesLoading}
         />
       </div>
 
@@ -822,15 +1096,13 @@ const handleAddSession = () => {
             value={basicForm.targetAudienceTechnicalConference}
             onChange={(val) => setBasicForm({ ...basicForm, targetAudienceTechnicalConference: val })}
             options={TARGET_OPTIONS}
-            disabled={basicFormCompleted}
           />
           {basicForm.targetAudienceTechnicalConference === "Khác" && (
             <FormInput
               label="Nhập đối tượng khác"
               value={basicForm.customTarget || ""}
               onChange={(val) => setBasicForm({ ...basicForm, customTarget: val })}
-              disabled={basicFormCompleted}
-            />
+              />
           )}
         </div>
 
@@ -842,23 +1114,32 @@ const handleAddSession = () => {
             onChange={(file) => setBasicForm({ ...basicForm, bannerImageFile: file as File | null })}
           />
 
-          {!basicFormCompleted && (
+        <div className="flex gap-3 mt-6">
+          <Button
+            onClick={handleBasicSubmit}
+            disabled={isSubmitting || completedSteps.includes(1)}
+            className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
+          >
+            {isSubmitting ? "Đang lưu..." : completedSteps.includes(1) ? "Đã lưu" : "Lưu và tiếp tục"}
+          </Button>
+          
+          {completedSteps.includes(1) && (
             <Button
-              onClick={handleBasicSubmit}
-              disabled={isSubmitting}
-              className="w-full bg-blue-600 text-white hover:bg-blue-700"
+              onClick={handleNextStepPreview}
+              className="flex-1 bg-green-600 text-white hover:bg-green-700"
             >
-              {isSubmitting ? "Đang lưu..." : "Tạo thông tin cơ bản để tiếp tục"}
+              Tiếp tục →
             </Button>
           )}
         </div>
+        </div>
       </div>
 
-      {/* REMAINING STEPS - Only show after Step 1 is completed */}
-      {basicFormCompleted && (
-        <>
 
-          {/* STEP 2: PRICE */}
+    )}
+
+    {/* STEP 2: PRICE */}
+    {currentStep === 2 && (
           <div className="bg-white border rounded-lg p-6 mb-6">
             <h3 className="text-lg font-semibold mb-4">2. Giá vé</h3>
             
@@ -902,11 +1183,13 @@ const handleAddSession = () => {
                         const percentDisplay = isIncrease
                           ? `+${p.applyPercent - 100}%`
                           : `-${100 - p.applyPercent}%`;
+                        const adjustedPrice = t.ticketPrice * (p.applyPercent / 100); 
 
                         return (
                           <div
                             key={pi}
                             className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-md p-2 border border-gray-200 hover:border-blue-300 transition-colors"
+                            onClick={() => handleEditPhase(tickets.indexOf(t), pi)} // ← Thêm dòng này
                           >
                             <div
                               className="text-xs font-semibold text-gray-800 mb-1 truncate"
@@ -917,6 +1200,9 @@ const handleAddSession = () => {
                             <div className="text-[10px] text-gray-500 mb-1 leading-tight">
                               {formatDate(p.startDate)} - {formatDate(p.endDate)}
                             </div>
+                            <div className="text-[10px] text-gray-600 mb-1 font-medium">
+                              Giá: {formatCurrency(adjustedPrice)}
+                            </div>                            
                             <div className="flex items-center justify-between text-xs">
                               <span className="text-gray-600">Tổng: {p.totalslot}</span>
                               <span
@@ -935,14 +1221,24 @@ const handleAddSession = () => {
                 )}
 
                 {/* Action Button */}
+              <div className="flex gap-2 mt-3">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleEditTicket(t, idx)}
+                  className="flex-1"
+                >
+                  Sửa vé
+                </Button>
                 <Button
                   size="sm"
                   variant="destructive"
                   onClick={() => setTickets(tickets.filter((_, i) => i !== idx))}
-                  className="w-full bg-red-500 hover:bg-red-600 text-white font-medium text-sm py-1.5 mt-3"
+                  className="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium text-sm py-1.5"
                 >
                   Xóa vé
                 </Button>
+              </div>
               </div>
             ))}
 
@@ -972,7 +1268,7 @@ const handleAddSession = () => {
                   placeholder="500000"
                 />
                 <FormInput
-                  label="Tổng số lượng"
+                  label={`Tổng số lượng vé (Sức chứa: ${basicForm.totalSlot})`}
                   type="number"
                   value={newTicket.totalSlot}
                   onChange={(val) => setNewTicket({ ...newTicket, totalSlot: Number(val) })}
@@ -1050,26 +1346,34 @@ const handleAddSession = () => {
                   >
                     Thêm giai đoạn giá
                 </Button>
-                  {/* Modal thêm giai đoạn - Đặt sau div border p-4 rounded của "Thêm vé mới" */}
                   {isPhaseModalOpen && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                       <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-                        <div className="flex justify-between items-center mb-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
                           <h3 className="text-lg font-semibold">Thêm giai đoạn giá</h3>
-                          <button
-                            onClick={() => setIsPhaseModalOpen(false)}
-                            className="text-gray-400 hover:text-gray-600"
-                          >
-                            ✕
-                          </button>
+                          {basicForm.ticketSaleStart && basicForm.ticketSaleEnd && (
+                            <span className="text-sm text-blue-600">
+                              ({new Date(basicForm.ticketSaleStart).toLocaleDateString('vi-VN')} →{' '}
+                              {new Date(basicForm.ticketSaleEnd).toLocaleDateString('vi-VN')})
+                            </span>
+                          )}
                         </div>
+                        <button
+                          onClick={() => setIsPhaseModalOpen(false)}
+                          className="text-gray-400 hover:text-gray-600 text-lg leading-none"
+                        >
+                          ✕
+                        </button>
+                      </div>
+
 
                         <div className="space-y-4">
                           <FormInput
                             label="Tên giai đoạn"
                             value={newPhase.phaseName}
                             onChange={(val) => setNewPhase({ ...newPhase, phaseName: val })}
-                            placeholder="VD: Early Bird, Standard, Late..."
+                            placeholder="Early Bird, Standard, Late..."
                           />
                           
                           <div className="space-y-2">
@@ -1134,12 +1438,15 @@ const handleAddSession = () => {
 
                           <div className="grid grid-cols-4 gap-3">
                             <div>
-                              <FormInput
-                                label="Ngày bắt đầu"
-                                type="date"
-                                value={newPhase.startDate}
-                                onChange={(val) => setNewPhase({ ...newPhase, startDate: val })}
-                              />
+
+                                <DatePickerInput
+                                  label="Ngày bắt đầu"
+                                  value={newPhase.startDate}
+                                  onChange={(val) => setNewPhase({ ...newPhase, startDate: val })}
+                                  minDate={basicForm.ticketSaleStart}
+                                  maxDate={basicForm.ticketSaleEnd}
+                                  required
+                                />
                             </div>
 
                             <FormInput
@@ -1147,6 +1454,8 @@ const handleAddSession = () => {
                               type="number"
                               min="1"
                               value={newPhase.durationInDays}
+                              max={basicForm.ticketSaleEnd}
+
                               onChange={(val) => setNewPhase({ ...newPhase, durationInDays: Number(val) })}
                             />
 
@@ -1162,10 +1471,11 @@ const handleAddSession = () => {
                                 )}
                               </div>
                             </div>
-
                             <FormInput
-                              label="Số lượng vé"
+                              label={`Số lượng (Tổng: ${newTicket.totalSlot})`}
                               type="number"
+                              min="1"
+                              max={newTicket.totalSlot - newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0)}
                               value={newPhase.totalslot}
                               onChange={(val) => setNewPhase({ ...newPhase, totalslot: Number(val) })}
                               placeholder={`Tối đa: ${newTicket.totalSlot - newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0)}`}
@@ -1197,10 +1507,46 @@ const handleAddSession = () => {
                 Thêm vé
               </Button>
             </div>
+
+
+                    <div className="flex gap-3 mt-6">
+                <Button
+                  onClick={handlePrevStep}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  ← Quay lại
+                </Button>
+                
+                <Button
+                  onClick={handlePriceSubmit}
+                  disabled={isSubmitting || completedSteps.includes(2) || tickets.length === 0}
+                  className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
+                >
+                  {isSubmitting ? "Đang lưu..." : completedSteps.includes(2) ? "Đã lưu" : "Lưu và tiếp tục"}
+                </Button>
+                
+                {completedSteps.includes(2) && (
+                  <Button
+                    onClick={handleNextStepPreview}
+                    className="flex-1 bg-green-600 text-white hover:bg-green-700"
+                  >
+                    Tiếp tục →
+                  </Button>
+                )}
+        </div>
           </div>
 
+    )}
+
+     
+
+
+
           {/* STEP 3: SESSIONS */}
-          <div className="bg-white border rounded-lg p-6 mb-6">
+
+              {currentStep === 3 && (          
+            <div className="bg-white border rounded-lg p-6 mb-6">
             <h3 className="text-lg font-semibold mb-4">3. Phiên họp (Tùy chọn)</h3>
             
             <div className="space-y-2 mb-4">
@@ -1209,74 +1555,70 @@ const handleAddSession = () => {
                   Chưa có phiên họp nào. Bạn có thể bỏ qua hoặc thêm phiên họp mới bên dưới.
                 </div>
               ) : (
-                sessions.map((s, idx) => {
-                  const room = roomsData?.data.find(
-                    (r: RoomInfoResponse) => r.roomId === s.roomId
-                  );
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                  {sessions.map((s, idx) => {
+                    const room = roomsData?.data.find(
+                      (r: RoomInfoResponse) => r.roomId === s.roomId
+                    );
 
-                  return (
-                    <div key={idx} className="p-3 bg-white rounded">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-            {sessions.map((s, idx) => (
-              <div
-                key={idx}
-                className="relative bg-white border border-gray-300 rounded-xl p-4 shadow-sm flex flex-col justify-between"
-              >
-                <div>
-                  <div className="font-semibold text-gray-900">{s.title}</div>
+                    return (
+                      <div
+                        key={idx}
+                        className="relative bg-white border border-gray-300 rounded-xl p-4 shadow-sm flex flex-col justify-between"
+                      >
+                        <div>
+                          <div className="font-semibold text-gray-900">{s.title}</div>
 
-                  <div className="text-sm text-gray-600 mt-1">
-                    {formatTimeDate(s.startTime)} - {formatTimeDate(s.endTime)}
-                  </div>
+                          <div className="text-sm text-gray-600 mt-1">
+                            {formatTimeDate(s.startTime)} - {formatTimeDate(s.endTime)}
+                          </div>
 
-                  {room && (
-                    <div className="text-xs text-gray-500 mt-1">
-                      Phòng: <span className="font-medium">{room.number}</span> - {room.displayName}
-                    </div>
-                  )}
+                          {room && (
+                            <div className="text-xs text-gray-500 mt-1">
+                              Phòng: <span className="font-medium">{room.number}</span> - {room.displayName}
+                            </div>
+                          )}
 
-                  {s.speaker.length > 0 && (
-                    <div className="mt-3">
-                      <div className="text-sm font-medium text-gray-800 mb-1">Diễn giả:</div>
-                      <ul className="space-y-1 text-sm text-gray-600">
-                        {s.speaker.map((spk, spkIdx) => (
-                          <li key={spkIdx} className="ml-2">
-                            <span className="font-medium">{spk.name}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                          {s.speaker.length > 0 && (
+                            <div className="mt-3">
+                              <div className="text-sm font-medium text-gray-800 mb-1">Diễn giả:</div>
+                              <ul className="space-y-1 text-sm text-gray-600">
+                                {s.speaker.map((spk, spkIdx) => (
+                                  <li key={spkIdx} className="ml-2">
+                                    <span className="font-medium">{spk.name}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Action buttons */}
+                        <div className="flex justify-end gap-2 mt-4">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setNewSession(s);
+                              setSessions(sessions.filter((_, i) => i !== idx));
+                            }}
+                          >
+                            Sửa
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => setSessions(sessions.filter((_, i) => i !== idx))}>
+                            Xóa
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-
-                {/* Action buttons */}
-                <div className="flex justify-end gap-2 mt-4">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setNewSession(s);
-                      setSessions(sessions.filter((_, i) => i !== idx));
-                    }}
-                  >
-                    Sửa
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => setSessions(sessions.filter((_, i) => i !== idx))}
-                  >
-                    Xóa
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-                    </div>
-                  );
-                })
               )}
             </div>
+
 
             <div className="border p-4 rounded space-y-3">
               <h4 className="font-medium flex items-center gap-2">
@@ -1302,13 +1644,14 @@ const handleAddSession = () => {
               />
 
               <div className="grid grid-cols-3 gap-3">
-                <FormInput
-                  label="Ngày"
-                  type="date"
-                  value={newSession.date}
-                  onChange={(val) => setNewSession({ ...newSession, date: val })}
-                  required
-                />
+                                <DatePickerInput
+                                  label="Ngày bắt đầu session"
+                                  value={newSession.date}
+                                  onChange={(val) => setNewSession({ ...newSession, date: val })}
+                                  minDate={basicForm.startDate}
+                                  maxDate={basicForm.endDate}
+                                  required
+                                />
 
                 <FormInput
                   label="Thời gian bắt đầu"
@@ -1429,7 +1772,38 @@ const handleAddSession = () => {
                 Thêm phiên họp
               </Button>
             </div>
+
+        <div className="flex gap-3 mt-6">
+          <Button
+            onClick={handlePrevStep}
+            variant="outline"
+            className="flex-1"
+          >
+            ← Quay lại
+          </Button>
+          
+          <Button
+                onClick={handleSessionsSubmit}
+                disabled={isSubmitting || completedSteps.includes(3)}
+                className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
+              >
+                {isSubmitting ? "Đang lưu..." : completedSteps.includes(3) ? "Đã lưu" : sessions.length > 0 ? "Lưu và tiếp tục" : "Bỏ qua"}
+              </Button>
+              
+              {completedSteps.includes(3) && (
+                <Button
+                  onClick={handleNextStepPreview}
+                  className="flex-1 bg-green-600 text-white hover:bg-green-700"
+                >
+                  Tiếp tục →
+                </Button>
+              )}
+            </div>
           </div>
+        
+        )}
+
+
 
           {/* Modal thêm diễn giả */}
           {isSpeakerModalOpen && (
@@ -1510,6 +1884,9 @@ const handleAddSession = () => {
           )}
 
           {/* STEP 4: POLICIES */}
+
+
+              {currentStep === 4 && (
           <div className="bg-white border rounded-lg p-6 mb-6">
             <h3 className="text-lg font-semibold mb-4">4. Chính sách (Tùy chọn)</h3>
             
@@ -1586,6 +1963,7 @@ const handleAddSession = () => {
                 {basicForm.startDate && (
                   <span className="text-sm text-blue-600">
                     (Trước ngày {new Date(basicForm.startDate).toLocaleDateString('vi-VN')})
+                    (Trong thời gian bán vé  {new Date(basicForm.ticketSaleStart).toLocaleDateString('vi-VN')}- {new Date(basicForm.ticketSaleEnd).toLocaleDateString('vi-VN')})
                   </span>
                 )}
               </h4>
@@ -1677,6 +2055,8 @@ const handleAddSession = () => {
                   <FormInput
                     label="Hạn hoàn tiền"
                     type="date"
+                    min={basicForm.ticketSaleStart || undefined}
+                    max={basicForm.ticketSaleEnd || undefined}
                     value={newRefundPolicy.refundDeadline}
                     onChange={(val) => setNewRefundPolicy({ ...newRefundPolicy, refundDeadline: val })}
                   />
@@ -1691,9 +2071,41 @@ const handleAddSession = () => {
                 </Button>
               </div>
             </div>
+                    {/* Navigation Buttons */}
+        <div className="flex gap-3 mt-6">
+          <Button
+            onClick={handlePrevStep}
+            variant="outline"
+            className="flex-1"
+          >
+            ← Quay lại
+          </Button>
+          
+          <Button
+            onClick={handlePoliciesSubmit}
+            disabled={isSubmitting || completedSteps.includes(4)}
+            className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
+          >
+            {isSubmitting ? "Đang lưu..." : completedSteps.includes(4) ? "Đã lưu" : (policies.length > 0 || refundPolicies.length > 0) ? "Lưu và tiếp tục" : "Bỏ qua"}
+          </Button>
+          
+          {completedSteps.includes(4) && (
+            <Button
+              onClick={handleNextStepPreview}
+              className="flex-1 bg-green-600 text-white hover:bg-green-700"
+            >
+              Tiếp tục →
+            </Button>
+          )}
+        </div>
           </div>
 
+              )}
+
+
           {/* STEP 5: MEDIA */}
+
+              {currentStep === 5 && (
           <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6">
             <h3 className="text-lg font-semibold mb-4">5. Media (Tùy chọn)</h3>
 
@@ -1757,9 +2169,42 @@ const handleAddSession = () => {
               />
               <Button onClick={handleAddMedia}>Thêm media</Button>
             </div>
+                    {/* Navigation Buttons */}
+        <div className="flex gap-3 mt-6">
+          <Button
+            onClick={handlePrevStep}
+            variant="outline"
+            className="flex-1"
+          >
+            ← Quay lại
+          </Button>
+          
+          <Button
+            onClick={handleMediaSubmit}
+            disabled={isSubmitting || completedSteps.includes(5)}
+            className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
+          >
+            {isSubmitting ? "Đang lưu..." : completedSteps.includes(5) ? "Đã lưu" : mediaList.length > 0 ? "Lưu và tiếp tục" : "Bỏ qua"}
+          </Button>
+          
+          {completedSteps.includes(5) && (
+            <Button
+              onClick={handleNextStepPreview}
+              className="flex-1 bg-green-600 text-white hover:bg-green-700"
+            >
+              Tiếp tục →
+            </Button>
+          )}
+        </div>
           </div>
 
+              )}
+
+
           {/* STEP 6: SPONSORS */}
+
+              {currentStep === 6 && (
+
           <div className="bg-white border rounded-lg p-6 mb-6">
             <h3 className="text-lg font-semibold mb-4">6. Nhà tài trợ (Tùy chọn)</h3>
 
@@ -1851,26 +2296,28 @@ const handleAddSession = () => {
                 Thêm nhà tài trợ
               </Button>
             </div>
+                    {/* Navigation Buttons */}
+            <div className="flex gap-3 mt-6">
+              <Button
+                onClick={handlePrevStep}
+                variant="outline"
+                className="flex-1"
+              >
+                ← Quay lại
+              </Button>
+              
+              <Button
+                onClick={handleFinalSubmit}
+                disabled={isSubmitting || completedSteps.includes(6)}
+                className="flex-1 bg-green-600 text-white hover:bg-green-700"
+              >
+                {isSubmitting ? "Đang hoàn tất..." : completedSteps.includes(6) ? "Đã hoàn thành" : sponsors.length > 0 ? "Hoàn tất" : "Hoàn tất (Bỏ qua)"}
+              </Button>
+            </div>
           </div>
+              )}
 
-
-          {/* SUBMIT BUTTON */}
-          <div className="bg-white border rounded-lg p-6">
-            <Button
-              onClick={handleFinalSubmit}
-              disabled={isSubmitting || tickets.length === 0}
-              className="w-full bg-green-600 text-white hover:bg-green-700 h-12 text-lg font-semibold"
-            >
-              {isSubmitting ? "Đang tạo hội thảo..." : "Hoàn tất"}
-            </Button>
-            {tickets.length === 0 && (
-              <p className="text-sm text-red-600 text-center mt-2">
-                * Vui lòng thêm ít nhất 1 loại vé để hoàn thành
-              </p>
-            )}
-          </div>
-        </>
-      )}
+  
     </div>
   );
 }
