@@ -1,6 +1,15 @@
-import React, { useState, useMemo } from 'react';
-import { X, Plus, Clock, MapPin, Users, Image as ImageIcon, Trash2, Save } from 'lucide-react';
-import BaseCalendar, { CalendarEvent, Room } from './BaseCalendar';
+import React, { useState, useMemo } from "react";
+import {
+  X,
+  Plus,
+  Clock,
+  MapPin,
+  Users,
+  Image as ImageIcon,
+  Trash2,
+  Save,
+} from "lucide-react";
+import BaseCalendar, { CalendarEvent, Room } from "./BaseCalendar";
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -10,13 +19,13 @@ export interface Speaker {
   speakerId?: string;
   speakerName: string;
   description?: string;
-  image?: File | string; 
+  image?: File | string;
 }
 
 export interface SessionMedia {
   mediaId?: string;
   mediaFile: File | string; // File for new, string URL for existing
-  mediaType?: 'image' | 'video' | 'document';
+  mediaType?: "image" | "video" | "document";
 }
 
 export interface Session {
@@ -51,137 +60,139 @@ export interface SessionScheduleCalendarProps {
 
 const MOCK_ROOMS: Room[] = [
   {
-    roomId: 'room-1',
-    roomName: 'Hội trường A',
+    roomId: "room-1",
+    roomName: "Hội trường A",
     capacity: 200,
-    floor: '1',
-    building: 'Tòa A',
-    equipment: ['Projector', 'Microphone', 'Sound System']
+    floor: "1",
+    building: "Tòa A",
+    equipment: ["Projector", "Microphone", "Sound System"],
   },
   {
-    roomId: 'room-2',
-    roomName: 'Phòng B201',
+    roomId: "room-2",
+    roomName: "Phòng B201",
     capacity: 50,
-    floor: '2',
-    building: 'Tòa B',
-    equipment: ['Projector', 'Whiteboard']
+    floor: "2",
+    building: "Tòa B",
+    equipment: ["Projector", "Whiteboard"],
   },
   {
-    roomId: 'room-3',
-    roomName: 'Lab C301',
+    roomId: "room-3",
+    roomName: "Lab C301",
     capacity: 30,
-    floor: '3',
-    building: 'Tòa C',
-    equipment: ['Computers', 'Projector']
+    floor: "3",
+    building: "Tòa C",
+    equipment: ["Computers", "Projector"],
   },
   {
-    roomId: 'room-4',
-    roomName: 'Workshop D101',
+    roomId: "room-4",
+    roomName: "Workshop D101",
     capacity: 100,
-    floor: '1',
-    building: 'Tòa D',
-    equipment: ['Stage', 'Sound System', 'Lighting']
-  }
+    floor: "1",
+    building: "Tòa D",
+    equipment: ["Stage", "Sound System", "Lighting"],
+  },
 ];
 
 const MOCK_SESSIONS: Session[] = [
   {
-    sessionId: 'session-1',
-    title: 'Keynote: AI Revolution in Vietnam',
-    description: 'Opening keynote về xu hướng AI tại Việt Nam và khu vực Đông Nam Á',
-    date: '2025-11-15',
-    startTime: '2025-11-15T09:00:00',
-    endTime: '2025-11-15T10:30:00',
-    roomId: 'room-1',
+    sessionId: "session-1",
+    title: "Keynote: AI Revolution in Vietnam",
+    description:
+      "Opening keynote về xu hướng AI tại Việt Nam và khu vực Đông Nam Á",
+    date: "2025-11-15",
+    startTime: "2025-11-15T09:00:00",
+    endTime: "2025-11-15T10:30:00",
+    roomId: "room-1",
     speakers: [
       {
-        speakerId: 'speaker-1',
-        speakerName: 'Dr. Nguyễn Văn A',
-        description: 'AI Research Lead at VinAI',
-        image: 'https://i.pravatar.cc/150?img=1'
-      }
+        speakerId: "speaker-1",
+        speakerName: "Dr. Nguyễn Văn A",
+        description: "AI Research Lead at VinAI",
+        image: "https://i.pravatar.cc/150?img=1",
+      },
     ],
     sessionMedias: [
       {
-        mediaId: 'media-1',
-        mediaFile: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400',
-        mediaType: 'image'
-      }
-    ]
+        mediaId: "media-1",
+        mediaFile:
+          "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400",
+        mediaType: "image",
+      },
+    ],
   },
   {
-    sessionId: 'session-2',
-    title: 'Workshop: Machine Learning Basics',
-    description: 'Hands-on workshop về các kỹ thuật ML cơ bản',
-    date: '2025-11-15',
-    startTime: '2025-11-15T11:00:00',
-    endTime: '2025-11-15T12:30:00',
-    roomId: 'room-3',
+    sessionId: "session-2",
+    title: "Workshop: Machine Learning Basics",
+    description: "Hands-on workshop về các kỹ thuật ML cơ bản",
+    date: "2025-11-15",
+    startTime: "2025-11-15T11:00:00",
+    endTime: "2025-11-15T12:30:00",
+    roomId: "room-3",
     speakers: [
       {
-        speakerId: 'speaker-2',
-        speakerName: 'Trần Thị B',
-        description: 'ML Engineer at FPT Software',
-        image: 'https://i.pravatar.cc/150?img=2'
+        speakerId: "speaker-2",
+        speakerName: "Trần Thị B",
+        description: "ML Engineer at FPT Software",
+        image: "https://i.pravatar.cc/150?img=2",
       },
       {
-        speakerId: 'speaker-3',
-        speakerName: 'Lê Văn C',
-        description: 'Data Scientist',
-        image: 'https://i.pravatar.cc/150?img=3'
-      }
-    ]
+        speakerId: "speaker-3",
+        speakerName: "Lê Văn C",
+        description: "Data Scientist",
+        image: "https://i.pravatar.cc/150?img=3",
+      },
+    ],
   },
   {
-    sessionId: 'session-3',
-    title: 'Panel Discussion: Future of Work',
-    description: 'Thảo luận về tương lai của công việc trong thời đại AI',
-    date: '2025-11-15',
-    startTime: '2025-11-15T14:00:00',
-    endTime: '2025-11-15T15:30:00',
-    roomId: 'room-1',
+    sessionId: "session-3",
+    title: "Panel Discussion: Future of Work",
+    description: "Thảo luận về tương lai của công việc trong thời đại AI",
+    date: "2025-11-15",
+    startTime: "2025-11-15T14:00:00",
+    endTime: "2025-11-15T15:30:00",
+    roomId: "room-1",
     speakers: [
       {
-        speakerId: 'speaker-4',
-        speakerName: 'Phạm Thị D',
-        description: 'CEO of TechCorp',
-        image: 'https://i.pravatar.cc/150?img=4'
+        speakerId: "speaker-4",
+        speakerName: "Phạm Thị D",
+        description: "CEO of TechCorp",
+        image: "https://i.pravatar.cc/150?img=4",
       },
       {
-        speakerId: 'speaker-5',
-        speakerName: 'Hoàng Văn E',
-        description: 'HR Director',
-        image: 'https://i.pravatar.cc/150?img=5'
-      }
-    ]
+        speakerId: "speaker-5",
+        speakerName: "Hoàng Văn E",
+        description: "HR Director",
+        image: "https://i.pravatar.cc/150?img=5",
+      },
+    ],
   },
   {
-    sessionId: 'session-4',
-    title: 'Technical Workshop: Deep Learning',
-    description: 'Advanced workshop về Deep Learning và Neural Networks',
-    date: '2025-11-16',
-    startTime: '2025-11-16T09:00:00',
-    endTime: '2025-11-16T11:00:00',
-    roomId: 'room-2',
+    sessionId: "session-4",
+    title: "Technical Workshop: Deep Learning",
+    description: "Advanced workshop về Deep Learning và Neural Networks",
+    date: "2025-11-16",
+    startTime: "2025-11-16T09:00:00",
+    endTime: "2025-11-16T11:00:00",
+    roomId: "room-2",
     speakers: [
       {
-        speakerId: 'speaker-6',
-        speakerName: 'Ngô Văn F',
-        description: 'Deep Learning Researcher',
-        image: 'https://i.pravatar.cc/150?img=6'
-      }
-    ]
+        speakerId: "speaker-6",
+        speakerName: "Ngô Văn F",
+        description: "Deep Learning Researcher",
+        image: "https://i.pravatar.cc/150?img=6",
+      },
+    ],
   },
   {
-    sessionId: 'session-5',
-    title: 'Networking Session',
-    description: 'Coffee break và networking với các speakers và attendees',
-    date: '2025-11-16',
-    startTime: '2025-11-16T15:00:00',
-    endTime: '2025-11-16T16:00:00',
-    roomId: 'room-4',
-    speakers: []
-  }
+    sessionId: "session-5",
+    title: "Networking Session",
+    description: "Coffee break và networking với các speakers và attendees",
+    date: "2025-11-16",
+    startTime: "2025-11-16T15:00:00",
+    endTime: "2025-11-16T16:00:00",
+    roomId: "room-4",
+    speakers: [],
+  },
 ];
 
 // ============================================================================
@@ -207,43 +218,47 @@ const SessionFormModal: React.FC<SessionFormModalProps> = ({
   rooms,
   selectedDate,
   selectedTime,
-  selectedRoomId
+  selectedRoomId,
 }) => {
   const [formData, setFormData] = useState<Partial<Session>>(() => {
     if (initialData) return initialData;
-    
+
     // Auto-fill from slot selection
     if (selectedDate && selectedTime && selectedRoomId) {
-      const [hours, minutes] = selectedTime.split(':').map(Number);
+      const [hours, minutes] = selectedTime.split(":").map(Number);
       const startDateTime = new Date(selectedDate);
       startDateTime.setHours(hours, minutes, 0, 0);
-      
+
       const endDateTime = new Date(startDateTime);
       endDateTime.setHours(hours + 1, minutes, 0, 0); // Default 1 hour duration
-      
+
       return {
-        date: selectedDate.toISOString().split('T')[0],
+        date: selectedDate.toISOString().split("T")[0],
         startTime: startDateTime.toISOString(),
         endTime: endDateTime.toISOString(),
         roomId: selectedRoomId,
         speakers: [],
-        sessionMedias: []
+        sessionMedias: [],
       };
     }
-    
+
     return { speakers: [], sessionMedias: [] };
   });
 
-  const [speakers, setSpeakers] = useState<Speaker[]>(initialData?.speakers || []);
-  const [newSpeaker, setNewSpeaker] = useState<Speaker>({ speakerName: '' });
-  const [mediaFiles, setMediaFiles] = useState<SessionMedia[]>(initialData?.sessionMedias || []);
+  const [speakers, setSpeakers] = useState<Speaker[]>(
+    initialData?.speakers || [],
+  );
+  const [newSpeaker, setNewSpeaker] = useState<Speaker>({ speakerName: "" });
+  const [mediaFiles, setMediaFiles] = useState<SessionMedia[]>(
+    initialData?.sessionMedias || [],
+  );
 
   if (!open) return null;
 
   const handleAddSpeaker = () => {
     if (newSpeaker.speakerName.trim()) {
       setSpeakers([...speakers, { ...newSpeaker }]);
-      setNewSpeaker({ speakerName: '' });
+      setNewSpeaker({ speakerName: "" });
     }
   };
 
@@ -258,9 +273,11 @@ const SessionFormModal: React.FC<SessionFormModalProps> = ({
   };
 
   const handleMediaUpload = (files: FileList) => {
-    const newMedias = Array.from(files).map(file => ({
+    const newMedias = Array.from(files).map((file) => ({
       mediaFile: file,
-      mediaType: file.type.startsWith('image/') ? 'image' as const : 'document' as const
+      mediaType: file.type.startsWith("image/")
+        ? ("image" as const)
+        : ("document" as const),
     }));
     setMediaFiles([...mediaFiles, ...newMedias]);
   };
@@ -271,18 +288,23 @@ const SessionFormModal: React.FC<SessionFormModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.title || !formData.startTime || !formData.endTime || !formData.roomId) {
-      alert('Vui lòng điền đầy đủ thông tin bắt buộc');
+
+    if (
+      !formData.title ||
+      !formData.startTime ||
+      !formData.endTime ||
+      !formData.roomId
+    ) {
+      alert("Vui lòng điền đầy đủ thông tin bắt buộc");
       return;
     }
 
     onSubmit({
       ...formData,
       speakers,
-      sessionMedias: mediaFiles
+      sessionMedias: mediaFiles,
     } as Session);
-    
+
     onClose();
   };
 
@@ -292,15 +314,21 @@ const SessionFormModal: React.FC<SessionFormModalProps> = ({
         {/* Header */}
         <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 flex items-center justify-between">
           <h2 className="text-xl font-bold">
-            {initialData?.sessionId ? 'Cập nhật Session' : 'Tạo Session mới'}
+            {initialData?.sessionId ? "Cập nhật Session" : "Tạo Session mới"}
           </h2>
-          <button onClick={onClose} className="p-1 hover:bg-blue-800/30 rounded">
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-blue-800/30 rounded"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form Content */}
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+        <form
+          onSubmit={handleSubmit}
+          className="p-6 overflow-y-auto max-h-[calc(90vh-180px)]"
+        >
           {/* Basic Info */}
           <div className="space-y-4 mb-6">
             <div>
@@ -309,8 +337,10 @@ const SessionFormModal: React.FC<SessionFormModalProps> = ({
               </label>
               <input
                 type="text"
-                value={formData.title || ''}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                value={formData.title || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Nhập tiêu đề session"
                 required
@@ -322,8 +352,10 @@ const SessionFormModal: React.FC<SessionFormModalProps> = ({
                 Mô tả
               </label>
               <textarea
-                value={formData.description || ''}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                value={formData.description || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 rows={3}
                 placeholder="Mô tả chi tiết về session"
@@ -339,8 +371,10 @@ const SessionFormModal: React.FC<SessionFormModalProps> = ({
               </label>
               <input
                 type="date"
-                value={formData.date || ''}
-                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                value={formData.date || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, date: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 required
               />
@@ -351,13 +385,15 @@ const SessionFormModal: React.FC<SessionFormModalProps> = ({
                 Phòng <span className="text-red-500">*</span>
               </label>
               <select
-                value={formData.roomId || ''}
-                onChange={(e) => setFormData({ ...formData, roomId: e.target.value })}
+                value={formData.roomId || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, roomId: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 required
               >
                 <option value="">Chọn phòng</option>
-                {rooms.map(room => (
+                {rooms.map((room) => (
                   <option key={room.roomId} value={room.roomId}>
                     {room.roomName} ({room.capacity} người)
                   </option>
@@ -371,8 +407,13 @@ const SessionFormModal: React.FC<SessionFormModalProps> = ({
               </label>
               <input
                 type="datetime-local"
-                value={formData.startTime?.slice(0, 16) || ''}
-                onChange={(e) => setFormData({ ...formData, startTime: new Date(e.target.value).toISOString() })}
+                value={formData.startTime?.slice(0, 16) || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    startTime: new Date(e.target.value).toISOString(),
+                  })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 required
               />
@@ -384,8 +425,13 @@ const SessionFormModal: React.FC<SessionFormModalProps> = ({
               </label>
               <input
                 type="datetime-local"
-                value={formData.endTime?.slice(0, 16) || ''}
-                onChange={(e) => setFormData({ ...formData, endTime: new Date(e.target.value).toISOString() })}
+                value={formData.endTime?.slice(0, 16) || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    endTime: new Date(e.target.value).toISOString(),
+                  })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 required
               />
@@ -402,18 +448,29 @@ const SessionFormModal: React.FC<SessionFormModalProps> = ({
             {/* Speaker List */}
             <div className="space-y-2 mb-3">
               {speakers.map((speaker, index) => (
-                <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <div
+                  key={index}
+                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                >
                   {speaker.image && (
                     <img
-                      src={typeof speaker.image === 'string' ? speaker.image : URL.createObjectURL(speaker.image)}
+                      src={
+                        typeof speaker.image === "string"
+                          ? speaker.image
+                          : URL.createObjectURL(speaker.image)
+                      }
                       alt={speaker.speakerName}
                       className="w-12 h-12 rounded-full object-cover"
                     />
                   )}
                   <div className="flex-1">
-                    <div className="font-medium text-gray-900">{speaker.speakerName}</div>
+                    <div className="font-medium text-gray-900">
+                      {speaker.speakerName}
+                    </div>
                     {speaker.description && (
-                      <div className="text-sm text-gray-600">{speaker.description}</div>
+                      <div className="text-sm text-gray-600">
+                        {speaker.description}
+                      </div>
                     )}
                   </div>
                   <button
@@ -432,14 +489,18 @@ const SessionFormModal: React.FC<SessionFormModalProps> = ({
               <input
                 type="text"
                 value={newSpeaker.speakerName}
-                onChange={(e) => setNewSpeaker({ ...newSpeaker, speakerName: e.target.value })}
+                onChange={(e) =>
+                  setNewSpeaker({ ...newSpeaker, speakerName: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                 placeholder="Tên diễn giả"
               />
               <input
                 type="text"
-                value={newSpeaker.description || ''}
-                onChange={(e) => setNewSpeaker({ ...newSpeaker, description: e.target.value })}
+                value={newSpeaker.description || ""}
+                onChange={(e) =>
+                  setNewSpeaker({ ...newSpeaker, description: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                 placeholder="Chức vụ / Mô tả"
               />
@@ -449,7 +510,10 @@ const SessionFormModal: React.FC<SessionFormModalProps> = ({
                   accept="image/*"
                   onChange={(e) => {
                     if (e.target.files?.[0]) {
-                      setNewSpeaker({ ...newSpeaker, image: e.target.files[0] });
+                      setNewSpeaker({
+                        ...newSpeaker,
+                        image: e.target.files[0],
+                      });
                     }
                   }}
                   className="flex-1 text-sm"
@@ -478,9 +542,13 @@ const SessionFormModal: React.FC<SessionFormModalProps> = ({
               <div className="grid grid-cols-4 gap-2 mb-3">
                 {mediaFiles.map((media, index) => (
                   <div key={index} className="relative group">
-                    {media.mediaType === 'image' && (
+                    {media.mediaType === "image" && (
                       <img
-                        src={typeof media.mediaFile === 'string' ? media.mediaFile : URL.createObjectURL(media.mediaFile)}
+                        src={
+                          typeof media.mediaFile === "string"
+                            ? media.mediaFile
+                            : URL.createObjectURL(media.mediaFile)
+                        }
                         alt="Media"
                         className="w-full h-24 object-cover rounded-lg"
                       />
@@ -502,7 +570,9 @@ const SessionFormModal: React.FC<SessionFormModalProps> = ({
               type="file"
               multiple
               accept="image/*"
-              onChange={(e) => e.target.files && handleMediaUpload(e.target.files)}
+              onChange={(e) =>
+                e.target.files && handleMediaUpload(e.target.files)
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
             />
           </div>
@@ -522,7 +592,7 @@ const SessionFormModal: React.FC<SessionFormModalProps> = ({
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
           >
             <Save className="w-4 h-4" />
-            {initialData?.sessionId ? 'Cập nhật' : 'Tạo mới'}
+            {initialData?.sessionId ? "Cập nhật" : "Tạo mới"}
           </button>
         </div>
       </div>
@@ -542,9 +612,9 @@ const SessionScheduleCalendar: React.FC<SessionScheduleCalendarProps> = ({
   onUpdateSession,
   onDeleteSession,
   isLoading = false,
-  useMockData = false
+  useMockData = false,
 }) => {
-  const sessions = useMockData ? MOCK_SESSIONS : (propSessions || []);
+  const sessions = useMockData ? MOCK_SESSIONS : propSessions || [];
   const rooms = useMockData ? MOCK_ROOMS : propRooms;
 
   const [formOpen, setFormOpen] = useState(false);
@@ -557,17 +627,17 @@ const SessionScheduleCalendar: React.FC<SessionScheduleCalendarProps> = ({
 
   // Convert sessions to calendar events
   const calendarEvents: CalendarEvent[] = useMemo(() => {
-    return sessions.map(session => ({
-      eventId: session.sessionId || '',
+    return sessions.map((session) => ({
+      eventId: session.sessionId || "",
       title: session.title,
       description: session.description,
       startTime: session.startTime,
       endTime: session.endTime,
       roomId: session.roomId,
-      room: rooms.find(r => r.roomId === session.roomId),
-      type: 'session',
-      color: '#3b82f6',
-      metadata: session
+      room: rooms.find((r) => r.roomId === session.roomId),
+      type: "session",
+      color: "#3b82f6",
+      metadata: session,
     }));
   }, [sessions, rooms]);
 
@@ -584,7 +654,7 @@ const SessionScheduleCalendar: React.FC<SessionScheduleCalendarProps> = ({
   };
 
   const handleCreateSession = async (session: Session) => {
-    console.log('Create session:', session);
+    console.log("Create session:", session);
     if (onCreateSession) {
       await onCreateSession(session);
     }
@@ -593,7 +663,7 @@ const SessionScheduleCalendar: React.FC<SessionScheduleCalendarProps> = ({
   };
 
   const handleUpdateSession = async (session: Session) => {
-    console.log('Update session:', session);
+    console.log("Update session:", session);
     if (selectedSession?.sessionId && onUpdateSession) {
       await onUpdateSession(selectedSession.sessionId, session);
     }
@@ -614,7 +684,7 @@ const SessionScheduleCalendar: React.FC<SessionScheduleCalendarProps> = ({
         isLoading={isLoading}
         title="Xếp lịch Session"
         categoryColors={{
-          session: '#3b82f6'
+          session: "#3b82f6",
         }}
       />
 

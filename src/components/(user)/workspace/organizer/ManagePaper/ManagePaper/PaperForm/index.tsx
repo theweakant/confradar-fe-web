@@ -29,11 +29,11 @@ interface PaperFormProps {
   onCancel: () => void;
 }
 
-export function PaperForm({ 
-  paper, 
+export function PaperForm({
+  paper,
   availableReviewers,
-  onSave, 
-  onCancel 
+  onSave,
+  onCancel,
 }: PaperFormProps) {
   const [selectedReviewers, setSelectedReviewers] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
@@ -43,12 +43,12 @@ export function PaperForm({
   const hasConflict = (reviewer: Reviewer): boolean => {
     // Check if reviewer is also an author
     const isAuthor = paper.authors.some(
-      author => author.toLowerCase() === reviewer.name.toLowerCase()
+      (author) => author.toLowerCase() === reviewer.name.toLowerCase(),
     );
-    
+
     // Check if reviewer is the submitter
     const isSubmitter = reviewer.email === paper.submitterEmail;
-    
+
     return isAuthor || isSubmitter;
   };
 
@@ -65,20 +65,26 @@ export function PaperForm({
   // Validate reviewer selection
   const validateReviewer = (reviewerId: string): string[] => {
     const validationErrors: string[] = [];
-    const reviewer = availableReviewers.find(r => r.id === reviewerId);
-    
+    const reviewer = availableReviewers.find((r) => r.id === reviewerId);
+
     if (!reviewer) return validationErrors;
 
     if (hasConflict(reviewer)) {
-      validationErrors.push(`${reviewer.name} có xung đột lợi ích với bài báo này`);
+      validationErrors.push(
+        `${reviewer.name} có xung đột lợi ích với bài báo này`,
+      );
     }
 
     if (isAtMaxCapacity(reviewer)) {
-      validationErrors.push(`${reviewer.name} đã đạt số lượng bài báo tối đa (${reviewer.maxPapers})`);
+      validationErrors.push(
+        `${reviewer.name} đã đạt số lượng bài báo tối đa (${reviewer.maxPapers})`,
+      );
     }
 
     if (isAlreadyAssigned(reviewerId)) {
-      validationErrors.push(`${reviewer.name} đã được giao bài báo này trước đó`);
+      validationErrors.push(
+        `${reviewer.name} đã được giao bài báo này trước đó`,
+      );
     }
 
     return validationErrors;
@@ -100,12 +106,12 @@ export function PaperForm({
       return;
     }
 
-    setSelectedReviewers(prev => [...prev, reviewerId]);
+    setSelectedReviewers((prev) => [...prev, reviewerId]);
     setErrors([]);
   };
 
   const handleRemoveReviewer = (reviewerId: string) => {
-    setSelectedReviewers(prev => prev.filter(id => id !== reviewerId));
+    setSelectedReviewers((prev) => prev.filter((id) => id !== reviewerId));
     setErrors([]);
   };
 
@@ -118,7 +124,7 @@ export function PaperForm({
 
     // Final validation for all selected reviewers
     const allErrors: string[] = [];
-    selectedReviewers.forEach(reviewerId => {
+    selectedReviewers.forEach((reviewerId) => {
       const reviewerErrors = validateReviewer(reviewerId);
       allErrors.push(...reviewerErrors);
     });
@@ -137,19 +143,21 @@ export function PaperForm({
   };
 
   const getReviewerById = (id: string) => {
-    return availableReviewers.find(r => r.id === id);
+    return availableReviewers.find((r) => r.id === id);
   };
 
   // Filter out reviewers with conflicts and those already assigned
-  const validReviewers = availableReviewers.filter(reviewer => {
-    return !hasConflict(reviewer) && 
-           !isAlreadyAssigned(reviewer.id) &&
-           !selectedReviewers.includes(reviewer.id);
+  const validReviewers = availableReviewers.filter((reviewer) => {
+    return (
+      !hasConflict(reviewer) &&
+      !isAlreadyAssigned(reviewer.id) &&
+      !selectedReviewers.includes(reviewer.id)
+    );
   });
 
   const reviewerOptions = [
     { value: "select", label: "-- Chọn reviewer --" },
-    ...validReviewers.map(reviewer => ({
+    ...validReviewers.map((reviewer) => ({
       value: reviewer.id,
       label: `${reviewer.name} (${reviewer.assignedPapers}/${reviewer.maxPapers} bài) - ${reviewer.expertise.join(", ")}`,
     })),
@@ -165,13 +173,15 @@ export function PaperForm({
             <span className="font-medium">Tiêu đề:</span> {paper.title}
           </p>
           <p className="text-sm">
-            <span className="font-medium">Tác giả:</span> {paper.authors.join(", ")}
+            <span className="font-medium">Tác giả:</span>{" "}
+            {paper.authors.join(", ")}
           </p>
           <p className="text-sm">
             <span className="font-medium">Track:</span> {paper.trackName}
           </p>
           <p className="text-sm">
-            <span className="font-medium">Từ khóa:</span> {paper.keywords.join(", ")}
+            <span className="font-medium">Từ khóa:</span>{" "}
+            {paper.keywords.join(", ")}
           </p>
         </div>
       </div>
@@ -187,9 +197,14 @@ export function PaperForm({
             {paper.reviewers.map((reviewerId) => {
               const reviewer = getReviewerById(reviewerId);
               return reviewer ? (
-                <div key={reviewerId} className="flex items-center gap-2 text-sm">
+                <div
+                  key={reviewerId}
+                  className="flex items-center gap-2 text-sm"
+                >
                   <User className="w-4 h-4 text-green-600" />
-                  <span>{reviewer.name} - {reviewer.email}</span>
+                  <span>
+                    {reviewer.name} - {reviewer.email}
+                  </span>
                 </div>
               ) : null;
             })}
@@ -225,11 +240,14 @@ export function PaperForm({
                     className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg"
                   >
                     <div className="flex-1">
-                      <p className="font-medium text-gray-900">{reviewer.name}</p>
+                      <p className="font-medium text-gray-900">
+                        {reviewer.name}
+                      </p>
                       <p className="text-sm text-gray-500">{reviewer.email}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-gray-500">
-                          Đang xử lý: {reviewer.assignedPapers}/{reviewer.maxPapers} bài
+                          Đang xử lý: {reviewer.assignedPapers}/
+                          {reviewer.maxPapers} bài
                         </span>
                         <span className="text-xs text-blue-600">
                           {reviewer.expertise.join(", ")}
@@ -281,12 +299,16 @@ export function PaperForm({
 
         {/* Assignment Rules Info */}
         <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-          <p className="font-medium text-yellow-900 mb-2">Quy tắc giao reviewer</p>
+          <p className="font-medium text-yellow-900 mb-2">
+            Quy tắc giao reviewer
+          </p>
           <ul className="text-sm text-yellow-800 space-y-1 list-disc list-inside">
             <li>Reviewer không được là tác giả của bài báo</li>
             <li>Reviewer không được là người nộp bài</li>
             <li>Reviewer không được vượt quá số lượng bài báo tối đa</li>
-            <li>Không thể giao cùng một reviewer hai lần cho cùng một bài báo</li>
+            <li>
+              Không thể giao cùng một reviewer hai lần cho cùng một bài báo
+            </li>
           </ul>
         </div>
       </div>
@@ -295,15 +317,21 @@ export function PaperForm({
       <div className="grid grid-cols-3 gap-4">
         <div className="p-3 bg-gray-50 rounded-lg">
           <p className="text-sm text-gray-600">Tổng reviewer khả dụng</p>
-          <p className="text-2xl font-bold text-gray-900">{validReviewers.length}</p>
+          <p className="text-2xl font-bold text-gray-900">
+            {validReviewers.length}
+          </p>
         </div>
         <div className="p-3 bg-blue-50 rounded-lg">
           <p className="text-sm text-gray-600">Đã chọn</p>
-          <p className="text-2xl font-bold text-blue-600">{selectedReviewers.length}</p>
+          <p className="text-2xl font-bold text-blue-600">
+            {selectedReviewers.length}
+          </p>
         </div>
         <div className="p-3 bg-green-50 rounded-lg">
           <p className="text-sm text-gray-600">Đã giao trước đó</p>
-          <p className="text-2xl font-bold text-green-600">{paper.reviewers.length}</p>
+          <p className="text-2xl font-bold text-green-600">
+            {paper.reviewers.length}
+          </p>
         </div>
       </div>
 

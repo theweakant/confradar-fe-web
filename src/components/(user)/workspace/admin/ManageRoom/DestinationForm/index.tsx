@@ -3,8 +3,17 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/molecules/FormInput";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { Destination, DestinationFormData } from "@/types/destination.type";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type {
+  Destination,
+  DestinationFormData,
+} from "@/types/destination.type";
 import { validationDestinationRules } from "@/utils/validationRoomRules";
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 
@@ -14,8 +23,13 @@ interface DestinationFormProps {
   onCancel: () => void;
 }
 
-export function DestinationForm({ destination, onSave, onCancel }: DestinationFormProps) {
-  const { data: citiesResponse, isLoading: citiesLoading } = useGetAllCitiesQuery();
+export function DestinationForm({
+  destination,
+  onSave,
+  onCancel,
+}: DestinationFormProps) {
+  const { data: citiesResponse, isLoading: citiesLoading } =
+    useGetAllCitiesQuery();
   const cities = citiesResponse?.data || [];
 
   const [formData, setFormData] = useState<DestinationFormData>({
@@ -25,8 +39,12 @@ export function DestinationForm({ destination, onSave, onCancel }: DestinationFo
     street: destination?.street || "",
   });
 
-  const [errors, setErrors] = useState<Partial<Record<keyof DestinationFormData, string>>>({});
-  const [touched, setTouched] = useState<Set<keyof DestinationFormData>>(new Set());
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof DestinationFormData, string>>
+  >({});
+  const [touched, setTouched] = useState<Set<keyof DestinationFormData>>(
+    new Set(),
+  );
 
   const handleChange = (field: keyof DestinationFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -34,7 +52,10 @@ export function DestinationForm({ destination, onSave, onCancel }: DestinationFo
     setTouched((prev) => new Set(prev).add(field));
   };
 
-  const validateField = (field: keyof DestinationFormData, value: string): boolean => {
+  const validateField = (
+    field: keyof DestinationFormData,
+    value: string,
+  ): boolean => {
     const fieldRules = validationDestinationRules[field as string];
     if (!fieldRules) return true;
 

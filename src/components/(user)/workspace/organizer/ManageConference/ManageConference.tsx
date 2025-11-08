@@ -30,7 +30,7 @@ export default function ManageConference() {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(12);
   const [activeTab, setActiveTab] = useState<TabType>("tech");
-  
+
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
@@ -39,40 +39,48 @@ export default function ManageConference() {
   const [isSelectTypeModalOpen, setIsSelectTypeModalOpen] = useState(false);
 
   // RTK Query cho Tech Conferences
-  const { 
-    data: techConferencesData, 
-    isLoading: techLoading, 
+  const {
+    data: techConferencesData,
+    isLoading: techLoading,
     isError: techError,
-    refetch: refetchTech 
-  } = useGetTechConferencesForCollaboratorAndOrganizerQuery({
-    page,
-    pageSize,
-    ...(filterStatus !== "all" && { conferenceStatusId: filterStatus }),
-    ...(filterCity !== "all" && { cityId: filterCity }),
-    ...(searchQuery && { searchKeyword: searchQuery }),
-  }, {
-    skip: activeTab !== "tech"
-  });
+    refetch: refetchTech,
+  } = useGetTechConferencesForCollaboratorAndOrganizerQuery(
+    {
+      page,
+      pageSize,
+      ...(filterStatus !== "all" && { conferenceStatusId: filterStatus }),
+      ...(filterCity !== "all" && { cityId: filterCity }),
+      ...(searchQuery && { searchKeyword: searchQuery }),
+    },
+    {
+      skip: activeTab !== "tech",
+    },
+  );
 
   // RTK Query cho Research Conferences
-  const { 
-    data: researchConferencesData, 
-    isLoading: researchLoading, 
+  const {
+    data: researchConferencesData,
+    isLoading: researchLoading,
     isError: researchError,
-    refetch: refetchResearch 
-  } = useGetResearchConferencesForOrganizerQuery({
-    page,
-    pageSize,
-    ...(filterStatus !== "all" && { conferenceStatusId: filterStatus }),
-    ...(filterCity !== "all" && { cityId: filterCity }),
-    ...(searchQuery && { searchKeyword: searchQuery }),
-  }, {
-    skip: activeTab !== "research"
-  });
+    refetch: refetchResearch,
+  } = useGetResearchConferencesForOrganizerQuery(
+    {
+      page,
+      pageSize,
+      ...(filterStatus !== "all" && { conferenceStatusId: filterStatus }),
+      ...(filterCity !== "all" && { cityId: filterCity }),
+      ...(searchQuery && { searchKeyword: searchQuery }),
+    },
+    {
+      skip: activeTab !== "research",
+    },
+  );
 
-  const { data: categoriesData, isLoading: categoriesLoading } = useGetAllCategoriesQuery();
+  const { data: categoriesData, isLoading: categoriesLoading } =
+    useGetAllCategoriesQuery();
   const { data: citiesData, isLoading: citiesLoading } = useGetAllCitiesQuery();
-  const { data: statusesData, isLoading: statusesLoading } = useGetAllConferenceStatusesQuery();
+  const { data: statusesData, isLoading: statusesLoading } =
+    useGetAllConferenceStatusesQuery();
 
   // Reset page về 1 khi filter hoặc tab thay đổi
   useEffect(() => {
@@ -84,7 +92,8 @@ export default function ManageConference() {
   }, [searchQuery, filterCategory, filterStatus, filterCity, activeTab]);
 
   // Get data dựa trên active tab
-  const currentData = activeTab === "tech" ? techConferencesData : researchConferencesData;
+  const currentData =
+    activeTab === "tech" ? techConferencesData : researchConferencesData;
   const conferences = currentData?.data?.items || [];
   const totalPages = currentData?.data?.totalPages || 1;
   const totalItems = currentData?.data?.totalCount || 0;
@@ -102,14 +111,14 @@ export default function ManageConference() {
       return conferences;
     }
     return conferences.filter(
-      (conf) => conf.conferenceCategoryId === filterCategory
+      (conf) => conf.conferenceCategoryId === filterCategory,
     );
   }, [conferences, filterCategory]);
 
   // Tạo filter options
   const categoryOptions = useMemo(() => {
     const allOption = { value: "all", label: "Tất cả danh mục" };
-    
+
     const apiCategories = categories.map((category) => ({
       value: category.conferenceCategoryId,
       label: category.conferenceCategoryName || "N/A",
@@ -120,7 +129,7 @@ export default function ManageConference() {
 
   const statusOptions = useMemo(() => {
     const allOption = { value: "all", label: "Tất cả trạng thái" };
-    
+
     const apiStatuses = statuses.map((status) => ({
       value: status.conferenceStatusId,
       label: status.conferenceStatusName || "N/A",
@@ -131,7 +140,7 @@ export default function ManageConference() {
 
   const cityOptions = useMemo(() => {
     const allOption = { value: "all", label: "Tất cả thành phố" };
-    
+
     const apiCities = cities.map((city) => ({
       value: city.cityId,
       label: city.cityName || "N/A",
@@ -146,7 +155,9 @@ export default function ManageConference() {
 
   const handleView = (conference: ConferenceResponse) => {
     if (conference.conferenceId) {
-      router.push(`/workspace/organizer/manage-conference/view-detail/${conference.conferenceId}`);
+      router.push(
+        `/workspace/organizer/manage-conference/view-detail/${conference.conferenceId}`,
+      );
     } else {
       toast.error("Không tìm thấy ID hội thảo");
     }
@@ -154,16 +165,20 @@ export default function ManageConference() {
 
   const handleSelectConferenceType = (type: ConferenceType) => {
     if (type === false) {
-      router.push('/workspace/organizer/manage-conference/create-tech-conference');
+      router.push(
+        "/workspace/organizer/manage-conference/create-tech-conference",
+      );
     } else if (type === true) {
-      router.push('/workspace/organizer/manage-conference/create-research-conference');
+      router.push(
+        "/workspace/organizer/manage-conference/create-research-conference",
+      );
     }
     setIsSelectTypeModalOpen(false);
   };
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleTabChange = (tab: TabType) => {
@@ -189,7 +204,11 @@ export default function ManageConference() {
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4">Không thể tải dữ liệu hội thảo</p>
-          <Button onClick={() => activeTab === "tech" ? refetchTech() : refetchResearch()}>
+          <Button
+            onClick={() =>
+              activeTab === "tech" ? refetchTech() : refetchResearch()
+            }
+          >
             Thử lại
           </Button>
         </div>
@@ -202,7 +221,9 @@ export default function ManageConference() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-gray-900">Quản lý Hội thảo</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Quản lý Hội thảo
+            </h1>
             <Button
               onClick={handleCreate}
               className="flex items-center gap-2 whitespace-nowrap mt-6"
@@ -211,7 +232,9 @@ export default function ManageConference() {
               Thêm hội thảo
             </Button>
           </div>
-          <p className="text-gray-600 mt-2">Quản lý thông tin các hội thảo trên ConfRadar</p>
+          <p className="text-gray-600 mt-2">
+            Quản lý thông tin các hội thảo trên ConfRadar
+          </p>
         </div>
 
         {/* Tab Switcher */}
@@ -279,11 +302,16 @@ export default function ManageConference() {
           <StatCard
             title={`Tổng ${activeTab === "tech" ? "Tech" : "Research"} Conference`}
             value={isLoading ? "..." : filteredConferences.length}
-            icon={activeTab === "tech" ? <Cpu className="w-10 h-10" /> : <Microscope className="w-10 h-10" />}
+            icon={
+              activeTab === "tech" ? (
+                <Cpu className="w-10 h-10" />
+              ) : (
+                <Microscope className="w-10 h-10" />
+              )
+            }
             color={activeTab === "tech" ? "blue" : "green"}
           />
         </div>
-
 
         {activeTab === "tech" && (
           <div className="flex justify-end mb-4">
@@ -348,7 +376,9 @@ export default function ManageConference() {
                   <Cpu className="h-10 w-10 text-blue-600 transition-colors group-hover:text-white" />
                 </div>
                 <div className="text-center">
-                  <h4 className="text-xl font-bold text-gray-900 mb-2">Tech Conference</h4>
+                  <h4 className="text-xl font-bold text-gray-900 mb-2">
+                    Tech Conference
+                  </h4>
                   <p className="text-sm text-gray-600">
                     Hội thảo về công nghệ, lập trình, AI, và các chủ đề kỹ thuật
                   </p>
@@ -365,7 +395,9 @@ export default function ManageConference() {
                   <Microscope className="h-10 w-10 text-green-600 transition-colors group-hover:text-white" />
                 </div>
                 <div className="text-center">
-                  <h4 className="text-xl font-bold text-gray-900 mb-2">Research Conference</h4>
+                  <h4 className="text-xl font-bold text-gray-900 mb-2">
+                    Research Conference
+                  </h4>
                   <p className="text-sm text-gray-600">
                     Hội thảo nghiên cứu khoa học, học thuật và đổi mới
                   </p>
@@ -375,7 +407,6 @@ export default function ManageConference() {
           </div>
         </div>
       </Modal>
-
     </div>
   );
 }

@@ -1,49 +1,54 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 
 interface CardRevealProps {
-  name: string
-  delay: number
-  index: number
-  totalCards: number
+  name: string;
+  delay: number;
+  index: number;
+  totalCards: number;
 }
 
-export function CardReveal({ name, delay, index, totalCards }: CardRevealProps) {
-  const [isVisible, setIsVisible] = useState(false)
+export function CardReveal({
+  name,
+  delay,
+  index,
+  totalCards,
+}: CardRevealProps) {
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setTimeout(() => setIsVisible(true), delay)
+          setTimeout(() => setIsVisible(true), delay);
         }
       },
       { threshold: 0.1 },
-    )
+    );
 
-    const element = document.getElementById("trusted-by-section")
+    const element = document.getElementById("trusted-by-section");
     if (element) {
-      observer.observe(element)
+      observer.observe(element);
     }
 
     return () => {
       if (element) {
-        observer.unobserve(element)
+        observer.unobserve(element);
       }
-    }
-  }, [delay])
+    };
+  }, [delay]);
 
-  const platformRadius = 165
-  const cardRadius = 45
-  const gap = 50
-  const orbitRadius = platformRadius + cardRadius + gap
+  const platformRadius = 165;
+  const cardRadius = 45;
+  const gap = 50;
+  const orbitRadius = platformRadius + cardRadius + gap;
 
-  const angle = (index / totalCards) * 2 * Math.PI - Math.PI / 2
-  const finalLeft = `calc(50% + ${Math.cos(angle) * orbitRadius}px - 65px)`
-  const finalBottom = `calc(50% + ${Math.sin(angle) * orbitRadius}px - 58px)`
+  const angle = (index / totalCards) * 2 * Math.PI - Math.PI / 2;
+  const finalLeft = `calc(50% + ${Math.cos(angle) * orbitRadius}px - 65px)`;
+  const finalBottom = `calc(50% + ${Math.sin(angle) * orbitRadius}px - 58px)`;
 
-  const randomRotation = -15 + ((index * 13) % 30)
+  const randomRotation = -15 + ((index * 13) % 30);
 
   return (
     <div
@@ -105,5 +110,5 @@ export function CardReveal({ name, delay, index, totalCards }: CardRevealProps) 
         }
       `}</style>
     </div>
-  )
+  );
 }

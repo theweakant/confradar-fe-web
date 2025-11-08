@@ -13,4 +13,4 @@ export interface CreateDestinationPayload {
   street: string;
 }
 
-export type DestinationFormData = Omit<Destination, "destinationId">
+export type DestinationFormData = Omit<Destination, "destinationId">;

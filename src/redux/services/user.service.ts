@@ -1,10 +1,17 @@
 // redux/services/user.service.ts
-import { createApi } from "@reduxjs/toolkit/query/react"
-import { apiClient } from "../api/apiClient"
-import { endpoint } from "../api/endpoint"
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { apiClient } from "../api/apiClient";
+import { endpoint } from "../api/endpoint";
 
-import { UserProfileResponse, CollaboratorRequest, UsersListResponse, ReviewerListResponse, ProfileUpdateRequest, ChangePasswordRequest } from "@/types/user.type"
-import { ApiResponse } from "@/types/api.type"
+import {
+  UserProfileResponse,
+  CollaboratorRequest,
+  UsersListResponse,
+  ReviewerListResponse,
+  ProfileUpdateRequest,
+  ChangePasswordRequest,
+} from "@/types/user.type";
+import { ApiResponse } from "@/types/api.type";
 
 export const userApi = createApi({
   reducerPath: "userApi",
@@ -31,8 +38,6 @@ export const userApi = createApi({
       }),
     }),
 
-
-
     // updateProfile: builder.mutation<ApiResponse<UserProfileResponse>, { userId: string; data: Partial<UserProfileResponse> }>({
     //   query: ({ userId, data }) => ({
     //     url: `${endpoint.AUTH.PROFILE}`,
@@ -49,7 +54,8 @@ export const userApi = createApi({
         if (data.phoneNumber) formData.append("PhoneNumber", data.phoneNumber);
         if (data.gender) formData.append("Gender", data.gender);
         if (data.avatarFile) formData.append("AvatarFile", data.avatarFile);
-        if (data.bioDescription) formData.append("BioDescription", data.bioDescription);
+        if (data.bioDescription)
+          formData.append("BioDescription", data.bioDescription);
 
         return {
           url: endpoint.AUTH.UPDATE_PROFILE,
@@ -67,7 +73,10 @@ export const userApi = createApi({
       }),
     }),
 
-    createCollaborator: builder.mutation<ApiResponse<number>, CollaboratorRequest>({
+    createCollaborator: builder.mutation<
+      ApiResponse<number>,
+      CollaboratorRequest
+    >({
       query: (data) => ({
         url: endpoint.AUTH.CREATE_COLLABORATOR,
         method: "POST",
@@ -89,7 +98,7 @@ export const userApi = createApi({
       }),
     }),
   }),
-})
+});
 
 export const {
   useGetProfileByIdQuery,
@@ -100,5 +109,5 @@ export const {
   useCreateCollaboratorMutation,
 
   useSuspendAccountMutation,
-  useActivateAccountMutation
-} = userApi
+  useActivateAccountMutation,
+} = userApi;

@@ -20,7 +20,7 @@ export interface PaginationData<T = unknown> {
   page: number;
   pageSize: number;
   totalPages: number;
-  totalItems?:number;
+  totalItems?: number;
 }
 
 export interface ApiError<T = unknown> {

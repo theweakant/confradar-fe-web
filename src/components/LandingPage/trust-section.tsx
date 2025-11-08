@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { CardReveal } from "@/components/molecules/LandingPage/CardReveal"
+import { Button } from "@/components/ui/button";
+import { CardReveal } from "@/components/molecules/LandingPage/CardReveal";
 
 export default function Home() {
   const items = [
@@ -19,7 +19,7 @@ export default function Home() {
     { name: "Network", delay: 1100 },
     { name: "My Schedule", delay: 1200 },
     { name: "Notifications", delay: 1300 },
-  ]
+  ];
 
   return (
     <section
@@ -73,5 +73,5 @@ export default function Home() {
         </div>
       </div>
     </section>
-  )
+  );
 }

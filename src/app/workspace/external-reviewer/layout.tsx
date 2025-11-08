@@ -1,11 +1,13 @@
-"use client"
+"use client";
 
-import RouteGuard from "@/utils/routeGuard"
+import RouteGuard from "@/utils/routeGuard";
 
-export default function ExternalReviewerLayout({ children }: { children: React.ReactNode }) {
+export default function ExternalReviewerLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <RouteGuard allowedRoles={["ExternalReviewer"]}>
-      {children}
-    </RouteGuard>
-  )
+    <RouteGuard allowedRoles={["ExternalReviewer"]}>{children}</RouteGuard>
+  );
 }

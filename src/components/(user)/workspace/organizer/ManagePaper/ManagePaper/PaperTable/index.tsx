@@ -11,10 +11,7 @@ interface PaperTableProps {
   onView?: (paper: UnassignAbstract) => void;
 }
 
-export function PaperTable({
-  papers,
-  onView,
-}: PaperTableProps) {
+export function PaperTable({ papers, onView }: PaperTableProps) {
   const columns: Column<UnassignAbstract>[] = [
     {
       key: "paperId",

@@ -1,67 +1,83 @@
 // redux/hooks/useAuth.ts
 
-import { useLoginMutation } from "../services/auth.service"
-import { useAppDispatch, useAppSelector } from "./hooks"
-import { setCredentials, logout, startLoading, stopLoading } from "../slices/auth.slice"
-import { decodeToken, getCustomerRole, getRolesFromToken } from "../utils/token"
-import { toast } from "sonner"
-import { ApiResponse } from "@/types/api.type"
+import { useLoginMutation } from "../services/auth.service";
+import { useAppDispatch, useAppSelector } from "./hooks";
+import {
+  setCredentials,
+  logout,
+  startLoading,
+  stopLoading,
+} from "../slices/auth.slice";
+import {
+  decodeToken,
+  getCustomerRole,
+  getRolesFromToken,
+} from "../utils/token";
+import { toast } from "sonner";
+import { ApiResponse } from "@/types/api.type";
 
 type LoginResult = {
-  success: boolean
-  user: { userId: string | null; email: string; role: string | null } | null
-  message?: string
-}
+  success: boolean;
+  user: { userId: string | null; email: string; role: string | null } | null;
+  message?: string;
+};
 
 export const useAuth = () => {
-  const dispatch = useAppDispatch()
-  const { user, accessToken, role, loading } = useAppSelector((state) => state.auth)
-  const [loginMutation] = useLoginMutation()
+  const dispatch = useAppDispatch();
+  const { user, accessToken, role, loading } = useAppSelector(
+    (state) => state.auth,
+  );
+  const [loginMutation] = useLoginMutation();
 
-  const login = async (
-    credentials: { email: string; password: string }
-  ): Promise<LoginResult> => {
+  const login = async (credentials: {
+    email: string;
+    password: string;
+  }): Promise<LoginResult> => {
     try {
-      dispatch(startLoading())
-      const res = await loginMutation(credentials).unwrap()
-      const { accessToken, refreshToken } = res?.data || {}
+      dispatch(startLoading());
+      const res = await loginMutation(credentials).unwrap();
+      const { accessToken, refreshToken } = res?.data || {};
 
-      if (!accessToken) throw new Error("Access token missing")
+      if (!accessToken) throw new Error("Access token missing");
 
-      const decoded = decodeToken(accessToken)
-      const rawRole = getRolesFromToken(accessToken)
-      const email = decoded?.email || credentials.email
-      const userId = decoded?.sub || ""
+      const decoded = decodeToken(accessToken);
+      const rawRole = getRolesFromToken(accessToken);
+      const email = decoded?.email || credentials.email;
+      const userId = decoded?.sub || "";
 
-      let role: string | null = null
+      let role: string | null = null;
 
-      const customerRole = getCustomerRole(accessToken)
-      role = customerRole || (rawRole.length > 0 ? rawRole[0] : null)
+      const customerRole = getCustomerRole(accessToken);
+      role = customerRole || (rawRole.length > 0 ? rawRole[0] : null);
 
-      const userInfo = { userId, email, role }
+      const userInfo = { userId, email, role };
 
-      dispatch(setCredentials({ user: userInfo, accessToken, refreshToken }))
+      dispatch(setCredentials({ user: userInfo, accessToken, refreshToken }));
 
-      return { success: true, user: userInfo, message: "Đăng nhập thành công!" }
+      return {
+        success: true,
+        user: userInfo,
+        message: "Đăng nhập thành công!",
+      };
     } catch (error: unknown) {
-      const err = error as ApiResponse | Error
+      const err = error as ApiResponse | Error;
 
       const message =
         err instanceof Error
           ? err.message
           : err?.message ||
-          err?.errors?.message ||
-          "Đăng nhập thất bại, vui lòng thử lại."
+            err?.errors?.message ||
+            "Đăng nhập thất bại, vui lòng thử lại.";
 
-      console.error("Login failed:", error)
-      toast.error(message)
-      return { success: false, user: null, message }
+      console.error("Login failed:", error);
+      toast.error(message);
+      return { success: false, user: null, message };
     } finally {
-      dispatch(stopLoading())
+      dispatch(stopLoading());
     }
-  }
+  };
 
-  const signout = () => dispatch(logout())
+  const signout = () => dispatch(logout());
 
   return {
     user,
@@ -71,5 +87,5 @@ export const useAuth = () => {
     isAuthenticated: !!accessToken,
     login,
     signout,
-  }
-}
+  };
+};

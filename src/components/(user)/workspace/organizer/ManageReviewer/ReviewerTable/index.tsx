@@ -1,11 +1,5 @@
 import React from "react";
-import { 
-  Pencil, 
-  Trash2, 
-  Eye,
-  Calendar,
-  FileText,
-} from "lucide-react";
+import { Pencil, Trash2, Eye, Calendar, FileText } from "lucide-react";
 
 import { DataTable, Column } from "@/components/molecules/DataTable";
 import { formatDate } from "@/helper/format";
@@ -20,12 +14,7 @@ interface UserTableProps {
   onDelete: (id: string) => void;
 }
 
-export function UserTable({ 
-  users, 
-  onView, 
-  onEdit, 
-  onDelete 
-}: UserTableProps) {
+export function UserTable({ users, onView, onEdit, onDelete }: UserTableProps) {
   const getRoleLabel = (role: string) => {
     const labels: Record<string, string> = {
       customer: "Khách hàng",
@@ -33,36 +22,42 @@ export function UserTable({
       collaborator: "Cộng tác viên",
       localreviewer: "Phản biện nội bộ",
       externalreviewer: "Phản biện bên ngoài",
-      admin: "Quản trị viên"
+      admin: "Quản trị viên",
     };
     return labels[role] || role;
   };
 
-  const getRoleVariant = (role: string): "success" | "danger" | "warning" | "info" => {
-    const variants: Record<string, "success" | "danger" | "warning" | "info"> = {
-      customer: "info",
-      conferenceorganizer: "warning",
-      collaborator: "success",
-      localreviewer: "info",
-      externalreviewer: "warning",
-      admin: "danger"
-    };
+  const getRoleVariant = (
+    role: string,
+  ): "success" | "danger" | "warning" | "info" => {
+    const variants: Record<string, "success" | "danger" | "warning" | "info"> =
+      {
+        customer: "info",
+        conferenceorganizer: "warning",
+        collaborator: "success",
+        localreviewer: "info",
+        externalreviewer: "warning",
+        admin: "danger",
+      };
     return variants[role] || "info";
   };
 
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
       active: "Hoạt động",
-      inactive: "Không hoạt động"
+      inactive: "Không hoạt động",
     };
     return labels[status] || status;
   };
 
-  const getStatusVariant = (status: string): "success" | "danger" | "warning" | "info" => {
-    const variants: Record<string, "success" | "danger" | "warning" | "info"> = {
-      active: "success",
-      inactive: "danger"
-    };
+  const getStatusVariant = (
+    status: string,
+  ): "success" | "danger" | "warning" | "info" => {
+    const variants: Record<string, "success" | "danger" | "warning" | "info"> =
+      {
+        active: "success",
+        inactive: "danger",
+      };
     return variants[status] || "info";
   };
 

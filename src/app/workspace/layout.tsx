@@ -1,28 +1,32 @@
-"use client"
+"use client";
 
-import RouteGuard from "@/utils/routeGuard"
-import WorkspaceSidebar from "./WorkspaceSidebar"
-import { Bell, Search } from "lucide-react"
-import { useAuth } from "@/redux/hooks/useAuth"
-import { useProfile } from "@/redux/hooks/user/useProfile"
+import RouteGuard from "@/utils/routeGuard";
+import WorkspaceSidebar from "./WorkspaceSidebar";
+import { Bell, Search } from "lucide-react";
+import { useAuth } from "@/redux/hooks/useAuth";
+import { useProfile } from "@/redux/hooks/user/useProfile";
 
-export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
-  const { user, role: userRole } = useAuth()
-  const { profile, isLoading } = useProfile()
-  
+export default function WorkspaceLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { user, role: userRole } = useAuth();
+  const { profile, isLoading } = useProfile();
+
   // Lấy role trực tiếp từ useAuth
-  const role = userRole || ""
+  const role = userRole || "";
 
   // Ưu tiên fullName từ profile, fallback về email
-  const fullName = profile?.fullName || user?.email || "User"
-  
+  const fullName = profile?.fullName || user?.email || "User";
+
   // Tạo initials từ fullName
   const initials = fullName
     .split(" ")
-    .map(word => word[0])
+    .map((word) => word[0])
     .join("")
     .toUpperCase()
-    .slice(0, 2)
+    .slice(0, 2);
 
   return (
     <RouteGuard
@@ -45,7 +49,10 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
           <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
             <div className="flex items-center gap-4 flex-1">
               <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <Search
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={20}
+                />
                 <input
                   type="text"
                   placeholder="Tìm kiếm..."
@@ -68,7 +75,9 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
                   <p className="text-xs text-gray-500 capitalize">{role}</p>
                 </div>
                 <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-semibold text-sm">{initials}</span>
+                  <span className="text-white font-semibold text-sm">
+                    {initials}
+                  </span>
                 </div>
               </div>
             </div>
@@ -79,5 +88,5 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
         </div>
       </div>
     </RouteGuard>
-  )
+  );
 }

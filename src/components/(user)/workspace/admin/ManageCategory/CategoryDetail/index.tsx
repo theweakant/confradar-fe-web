@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  FolderOpen,
-  FileText,
-} from "lucide-react";
+import { FolderOpen, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/atoms/StatusBadge";
 import { Category } from "@/types/category.type";
@@ -42,8 +39,12 @@ export function CategoryDetail({ category, onClose }: CategoryDetailProps) {
           <div className="flex items-start gap-3">
             <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-gray-700 mb-1">Tên danh mục</p>
-              <p className="text-gray-900 leading-relaxed">{category.conferenceCategoryName}</p>
+              <p className="text-sm font-medium text-gray-700 mb-1">
+                Tên danh mục
+              </p>
+              <p className="text-gray-900 leading-relaxed">
+                {category.conferenceCategoryName}
+              </p>
             </div>
           </div>
 
@@ -51,7 +52,9 @@ export function CategoryDetail({ category, onClose }: CategoryDetailProps) {
             <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
             <div className="flex-1">
               <p className="text-sm font-medium text-gray-700 mb-1">ID</p>
-              <p className="text-gray-600 text-sm font-mono">{category.conferenceCategoryId}</p>
+              <p className="text-gray-600 text-sm font-mono">
+                {category.conferenceCategoryId}
+              </p>
             </div>
           </div>
         </div>

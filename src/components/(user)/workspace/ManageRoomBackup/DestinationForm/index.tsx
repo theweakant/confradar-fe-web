@@ -3,7 +3,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/molecules/FormInput";
-import type { Destination, DestinationFormData } from "@/types/destination.type";
+import type {
+  Destination,
+  DestinationFormData,
+} from "@/types/destination.type";
 import { validationDestinationRules } from "@/utils/validationRoomRules";
 
 interface DestinationFormProps {
@@ -12,7 +15,11 @@ interface DestinationFormProps {
   onCancel: () => void;
 }
 
-export function DestinationForm({ destination, onSave, onCancel }: DestinationFormProps) {
+export function DestinationForm({
+  destination,
+  onSave,
+  onCancel,
+}: DestinationFormProps) {
   const [formData, setFormData] = useState<DestinationFormData>({
     name: destination?.name || "",
     city: destination?.city || "",
@@ -20,13 +27,23 @@ export function DestinationForm({ destination, onSave, onCancel }: DestinationFo
     street: destination?.street || "",
   });
 
-  const [errors, setErrors] = useState<Partial<Record<keyof DestinationFormData, string>>>({});
-  const [touched, setTouched] = useState<Set<keyof DestinationFormData>>(new Set());
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof DestinationFormData, string>>
+  >({});
+  const [touched, setTouched] = useState<Set<keyof DestinationFormData>>(
+    new Set(),
+  );
 
   // --- Thêm state cho API tỉnh/huyện ---
-  const [provinces, setProvinces] = useState<{ code: number; name: string }[]>([]);
-  const [districts, setDistricts] = useState<{ code: number; name: string }[]>([]);
-  const [selectedProvinceCode, setSelectedProvinceCode] = useState<number | null>(null);
+  const [provinces, setProvinces] = useState<{ code: number; name: string }[]>(
+    [],
+  );
+  const [districts, setDistricts] = useState<{ code: number; name: string }[]>(
+    [],
+  );
+  const [selectedProvinceCode, setSelectedProvinceCode] = useState<
+    number | null
+  >(null);
 
   // Lấy danh sách tỉnh/thành khi mở form
   useEffect(() => {
@@ -39,7 +56,9 @@ export function DestinationForm({ destination, onSave, onCancel }: DestinationFo
   // Khi chọn tỉnh => load quận/huyện tương ứng
   useEffect(() => {
     if (selectedProvinceCode) {
-      fetch(`https://provinces.open-api.vn/api/p/${selectedProvinceCode}?depth=2`)
+      fetch(
+        `https://provinces.open-api.vn/api/p/${selectedProvinceCode}?depth=2`,
+      )
         .then((res) => res.json())
         .then((data) => setDistricts(data.districts || []))
         .catch((err) => console.error("Lỗi tải districts:", err));
@@ -54,7 +73,10 @@ export function DestinationForm({ destination, onSave, onCancel }: DestinationFo
     setTouched((prev) => new Set(prev).add(field));
   };
 
-  const validateField = (field: keyof DestinationFormData, value: string): boolean => {
+  const validateField = (
+    field: keyof DestinationFormData,
+    value: string,
+  ): boolean => {
     const fieldRules = validationDestinationRules[field as string];
     if (!fieldRules) return true;
 
@@ -121,7 +143,9 @@ export function DestinationForm({ destination, onSave, onCancel }: DestinationFo
             className="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300"
             value={formData.city}
             onChange={(e) => {
-              const selectedCode = Number(e.target.selectedOptions[0].getAttribute("data-code"));
+              const selectedCode = Number(
+                e.target.selectedOptions[0].getAttribute("data-code"),
+              );
               setSelectedProvinceCode(selectedCode);
               handleChange("city", e.target.value);
               handleChange("district", ""); // reset huyện khi đổi tỉnh

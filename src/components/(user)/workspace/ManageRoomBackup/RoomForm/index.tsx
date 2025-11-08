@@ -16,14 +16,22 @@ interface RoomFormProps {
   onCancel: () => void;
 }
 
-export function RoomForm({ room, destinations, isLoading, onSave, onCancel }: RoomFormProps) {
+export function RoomForm({
+  room,
+  destinations,
+  isLoading,
+  onSave,
+  onCancel,
+}: RoomFormProps) {
   const [formData, setFormData] = useState<RoomFormData>({
     displayName: room?.displayName || "",
     number: room?.number || "",
     destinationId: room?.destinationId || "",
   });
 
-  const [errors, setErrors] = useState<Partial<Record<keyof RoomFormData, string>>>({});
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof RoomFormData, string>>
+  >({});
   const [touched, setTouched] = useState<Set<keyof RoomFormData>>(new Set());
 
   const handleChange = (field: keyof RoomFormData, value: string) => {
@@ -112,7 +120,9 @@ export function RoomForm({ room, destinations, isLoading, onSave, onCancel }: Ro
           onChange={(value) => handleChange("destinationId", value)}
           options={destinationOptions}
           required
-          error={touched.has("destinationId") ? errors.destinationId : undefined}
+          error={
+            touched.has("destinationId") ? errors.destinationId : undefined
+          }
           disabled={isLoading}
         />
       </div>

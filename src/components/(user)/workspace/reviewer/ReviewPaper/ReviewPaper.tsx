@@ -1,7 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import {  FileText, Download, Eye, History, CheckCircle, XCircle, AlertTriangle, Send } from "lucide-react";
+import {
+  FileText,
+  Download,
+  Eye,
+  History,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  Send,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
@@ -19,10 +28,10 @@ export default function ReviewPaper() {
   const [showPreviousVersion, setShowPreviousVersion] = useState(false);
   const [showSubmitDialog, setShowSubmitDialog] = useState(false);
   const [decision, setDecision] = useState("");
-  
+
   const [reviewData, setReviewData] = useState({
     detailedComments: "",
-    recommendation: ""
+    recommendation: "",
   });
 
   // Mock data
@@ -35,20 +44,23 @@ export default function ReviewPaper() {
     submittedDate: "2024-03-15",
     deadline: "2024-04-30",
     authors: ["John Smith", "Jane Doe", "Robert Brown"],
-    description: "This paper presents a comprehensive study on deep learning approaches for natural language processing. We propose a novel architecture that combines transformer models with attention mechanisms to improve text understanding and generation. Our experiments on multiple benchmark datasets demonstrate state-of-the-art performance with significant improvements in accuracy and efficiency.",
+    description:
+      "This paper presents a comprehensive study on deep learning approaches for natural language processing. We propose a novel architecture that combines transformer models with attention mechanisms to improve text understanding and generation. Our experiments on multiple benchmark datasets demonstrate state-of-the-art performance with significant improvements in accuracy and efficiency.",
     hasRevision: true,
-    pdfUrl: "#"
+    pdfUrl: "#",
   };
 
   const previousVersion = {
     version: "1.0",
     submittedDate: "2024-02-10",
-    changes: "Revised methodology section, added additional experiments, improved clarity in results discussion",
-    reviewFeedback: "The paper needs more experimental validation and clearer explanation of the proposed methodology."
+    changes:
+      "Revised methodology section, added additional experiments, improved clarity in results discussion",
+    reviewFeedback:
+      "The paper needs more experimental validation and clearer explanation of the proposed methodology.",
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setReviewData(prev => ({ ...prev, [field]: value }));
+    setReviewData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmitReview = () => {
@@ -56,7 +68,7 @@ export default function ReviewPaper() {
       toast.error("Vui lòng chọn kết quả đánh giá!");
       return;
     }
-    
+
     // TODO: Submit review to API
     console.log("Submit review:", reviewData);
     toast.success("Đã gửi đánh giá thành công!");
@@ -65,7 +77,7 @@ export default function ReviewPaper() {
 
   const openSubmitDialog = (rec: string) => {
     setDecision(rec);
-    setReviewData(prev => ({ ...prev, recommendation: rec }));
+    setReviewData((prev) => ({ ...prev, recommendation: rec }));
     setShowSubmitDialog(true);
   };
 
@@ -76,8 +88,12 @@ export default function ReviewPaper() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Đánh giá bài báo</h1>
-                <p className="text-sm text-gray-600">Version {paperData.version}</p>
+                <h1 className="text-xl font-bold text-gray-900">
+                  Đánh giá bài báo
+                </h1>
+                <p className="text-sm text-gray-600">
+                  Version {paperData.version}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -103,13 +119,15 @@ export default function ReviewPaper() {
       <div className="max-w-7xl mx-auto p-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
-          <div className={showPreviousVersion ? "lg:col-span-2" : "lg:col-span-3"}>
+          <div
+            className={showPreviousVersion ? "lg:col-span-2" : "lg:col-span-3"}
+          >
             {/* Paper Info */}
             <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 {paperData.title}
               </h2>
-              
+
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
                   <p className="text-sm text-gray-600">Tiêu đề</p>
@@ -133,7 +151,9 @@ export default function ReviewPaper() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Hạn đánh giá</p>
-                  <p className="font-medium text-orange-600">{paperData.deadline}</p>
+                  <p className="font-medium text-orange-600">
+                    {paperData.deadline}
+                  </p>
                 </div>
               </div>
 
@@ -153,7 +173,9 @@ export default function ReviewPaper() {
 
               <div>
                 <p className="text-sm text-gray-600 mb-2">Mô tả</p>
-                <p className="text-gray-700 leading-relaxed">{paperData.description}</p>
+                <p className="text-gray-700 leading-relaxed">
+                  {paperData.description}
+                </p>
               </div>
             </div>
 
@@ -169,7 +191,9 @@ export default function ReviewPaper() {
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center bg-gray-50">
                 <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-600 mb-2">PDF Viewer</p>
-                <p className="text-sm text-gray-500">Nội dung bài báo sẽ hiển thị tại đây</p>
+                <p className="text-sm text-gray-500">
+                  Nội dung bài báo sẽ hiển thị tại đây
+                </p>
               </div>
             </div>
 
@@ -185,7 +209,9 @@ export default function ReviewPaper() {
                   </label>
                   <textarea
                     value={reviewData.detailedComments}
-                    onChange={(e) => handleInputChange("detailedComments", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("detailedComments", e.target.value)
+                    }
                     rows={6}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Nhận xét chi tiết về nội dung, phương pháp, kết quả..."
@@ -195,7 +221,9 @@ export default function ReviewPaper() {
 
               {/* Decision Buttons */}
               <div className="mt-8 pt-6 border-t">
-                <p className="text-sm font-medium text-gray-700 mb-4">Quyết định đánh giá *</p>
+                <p className="text-sm font-medium text-gray-700 mb-4">
+                  Quyết định đánh giá *
+                </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <Button
                     onClick={() => openSubmitDialog("accept")}
@@ -237,7 +265,9 @@ export default function ReviewPaper() {
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Ngày nộp</p>
-                    <p className="font-medium">{previousVersion.submittedDate}</p>
+                    <p className="font-medium">
+                      {previousVersion.submittedDate}
+                    </p>
                   </div>
 
                   <div>
@@ -248,7 +278,9 @@ export default function ReviewPaper() {
                   </div>
 
                   <div>
-                    <p className="text-sm text-gray-600 mb-2">Phản hồi đánh giá trước</p>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Phản hồi đánh giá trước
+                    </p>
                     <p className="text-sm text-gray-700 bg-yellow-50 p-3 rounded-lg">
                       {previousVersion.reviewFeedback}
                     </p>
@@ -261,7 +293,8 @@ export default function ReviewPaper() {
 
                   <div className="pt-4 border-t">
                     <p className="text-xs text-gray-500 mb-2">
-                      So sánh để xem tác giả đã cải thiện những gì dựa trên phản hồi trước đó
+                      So sánh để xem tác giả đã cải thiện những gì dựa trên phản
+                      hồi trước đó
                     </p>
                   </div>
                 </div>
@@ -285,7 +318,8 @@ export default function ReviewPaper() {
               </strong>
               <br />
               <br />
-              Sau khi gửi, bạn không thể chỉnh sửa đánh giá. Vui lòng kiểm tra kỹ trước khi xác nhận.
+              Sau khi gửi, bạn không thể chỉnh sửa đánh giá. Vui lòng kiểm tra
+              kỹ trước khi xác nhận.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

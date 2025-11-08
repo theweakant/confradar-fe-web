@@ -24,8 +24,9 @@ export function RoomDetail({ room, onClose }: RoomDetailProps) {
   const [hasSearched, setHasSearched] = useState(false);
 
   // Only call API when we have both dates and user has searched
-  const shouldFetch = hasSearched && startDate && endDate && activeTab === "sessions";
-  
+  const shouldFetch =
+    hasSearched && startDate && endDate && activeTab === "sessions";
+
   const {
     data: occupationSlotsResponse,
     isLoading: slotsLoading,
@@ -38,7 +39,7 @@ export function RoomDetail({ room, onClose }: RoomDetailProps) {
     },
     {
       skip: !shouldFetch,
-    }
+    },
   );
 
   const occupationSlots = occupationSlotsResponse?.data || [];
@@ -143,7 +144,9 @@ export function RoomDetail({ room, onClose }: RoomDetailProps) {
             <div className="flex items-start gap-3">
               <MapPin className="w-5 h-5 text-blue-600 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-gray-700">Thông tin điểm đến</p>
+                <p className="text-sm font-medium text-gray-700">
+                  Thông tin điểm đến
+                </p>
                 <p className="text-gray-900 italic text-gray-500">
                   (Chưa có thông tin chi tiết — chỉ hiển thị mã điểm đến)
                 </p>
@@ -153,7 +156,9 @@ export function RoomDetail({ room, onClose }: RoomDetailProps) {
             <div className="flex items-start gap-3">
               <Calendar className="w-5 h-5 text-blue-600 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-gray-700">Ngày hiển thị</p>
+                <p className="text-sm font-medium text-gray-700">
+                  Ngày hiển thị
+                </p>
                 <p className="text-gray-900">
                   {formatDate(new Date().toISOString())}
                 </p>
@@ -211,7 +216,7 @@ export function RoomDetail({ room, onClose }: RoomDetailProps) {
               <h4 className="text-lg font-medium text-gray-900">
                 Kết quả tìm kiếm ({occupationSlots.length} session)
               </h4>
-              
+
               {slotsLoading ? (
                 <div className="flex justify-center items-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -243,7 +248,8 @@ export function RoomDetail({ room, onClose }: RoomDetailProps) {
                             <div className="flex items-center gap-1">
                               <Clock className="w-4 h-4" />
                               <span>
-                                {formatDateTime(slot.startTime)} - {formatDateTime(slot.endTime)}
+                                {formatDateTime(slot.startTime)} -{" "}
+                                {formatDateTime(slot.endTime)}
                               </span>
                             </div>
                           </div>

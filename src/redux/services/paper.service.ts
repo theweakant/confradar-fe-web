@@ -8,29 +8,33 @@ import {
   FullPaperReview,
   PendingCameraReady,
   AssignedPaper,
-
   PaperDetailForReviewer,
-
   SubmitFullPaperReviewRequest,
-
   SubmitPaperRevisionReviewRequest, //REVISION
   ListRevisionPaperReview, //REVISION
-  SubmitPaperRevisionFeedbackRequest,  //REVISION
-
-  AvailableCustomerResponse, CreateAbstractRequest, CreateCameraReadyRequest, CreateFullPaperRequest, CreateRevisionPaperSubmissionRequest, CreateRevisionPaperSubmissionResponse, PaperCustomer, PaperDetailResponse, PaperPhase
-
-} from "@/types/paper.type"
-
+  SubmitPaperRevisionFeedbackRequest, //REVISION
+  AvailableCustomerResponse,
+  CreateAbstractRequest,
+  CreateCameraReadyRequest,
+  CreateFullPaperRequest,
+  CreateRevisionPaperSubmissionRequest,
+  CreateRevisionPaperSubmissionResponse,
+  PaperCustomer,
+  PaperDetailResponse,
+  PaperPhase,
+} from "@/types/paper.type";
 
 import type { ApiResponse } from "@/types/api.type";
-import { CustomerWaitListResponse, LeaveWaitListRequest } from "@/types/waitlist.type";
+import {
+  CustomerWaitListResponse,
+  LeaveWaitListRequest,
+} from "@/types/waitlist.type";
 
 export const paperApi = createApi({
   reducerPath: "paperApi",
   baseQuery: apiClient,
   tagTypes: ["Paper"],
   endpoints: (builder) => ({
-
     listAllPapers: builder.query<ApiResponse<ListPaper[]>, void>({
       query: () => ({
         url: endpoint.PAPER.LIST_ALL_PAPERS,
@@ -47,13 +51,15 @@ export const paperApi = createApi({
       providesTags: ["Paper"],
     }),
 
-    listUnassignAbstracts: builder.query<ApiResponse<UnassignAbstract[]>, void>({
-      query: () => ({
-        url: endpoint.PAPER.LIST_UNASSIGN_ABSTRACT,
-        method: "GET",
-      }),
-      providesTags: ["Paper"],
-    }),
+    listUnassignAbstracts: builder.query<ApiResponse<UnassignAbstract[]>, void>(
+      {
+        query: () => ({
+          url: endpoint.PAPER.LIST_UNASSIGN_ABSTRACT,
+          method: "GET",
+        }),
+        providesTags: ["Paper"],
+      },
+    ),
 
     listAssignedPapers: builder.query<ApiResponse<AssignedPaper[]>, void>({
       query: () => ({
@@ -63,7 +69,10 @@ export const paperApi = createApi({
       providesTags: ["Paper"],
     }),
 
-    listPendingCameraReady: builder.query<ApiResponse<PendingCameraReady[]>, void>({
+    listPendingCameraReady: builder.query<
+      ApiResponse<PendingCameraReady[]>,
+      void
+    >({
       query: () => ({
         url: endpoint.PAPER.LIST_PENDING_CAMERA_READY,
         method: "GET",
@@ -107,8 +116,10 @@ export const paperApi = createApi({
       invalidatesTags: ["Paper"],
     }),
 
-
-    getPaperDetailForReviewer: builder.query<ApiResponse<PaperDetailForReviewer>, string>({
+    getPaperDetailForReviewer: builder.query<
+      ApiResponse<PaperDetailForReviewer>,
+      string
+    >({
       query: (paperId) => ({
         url: endpoint.PAPER.GET_PAPER_DETAIL_REVIEWER(paperId),
         method: "GET",
@@ -250,7 +261,10 @@ export const paperApi = createApi({
       providesTags: ["Paper"],
     }),
 
-    submitAbstract: builder.mutation<ApiResponse<number>, CreateAbstractRequest>({
+    submitAbstract: builder.mutation<
+      ApiResponse<number>,
+      CreateAbstractRequest
+    >({
       query: (body) => {
         const formData = new FormData();
         formData.append("abstractFile", body.abstractFile);
@@ -280,7 +294,10 @@ export const paperApi = createApi({
       }),
     }),
 
-    submitFullPaper: builder.mutation<ApiResponse<number>, CreateFullPaperRequest>({
+    submitFullPaper: builder.mutation<
+      ApiResponse<number>,
+      CreateFullPaperRequest
+    >({
       query: (body) => {
         const formData = new FormData();
         formData.append("fullPaperFile", body.fullPaperFile);
@@ -329,7 +346,10 @@ export const paperApi = createApi({
       invalidatesTags: ["Paper"],
     }),
 
-    submitCameraReady: builder.mutation<ApiResponse<string>, CreateCameraReadyRequest>({
+    submitCameraReady: builder.mutation<
+      ApiResponse<string>,
+      CreateCameraReadyRequest
+    >({
       query: (body) => {
         const formData = new FormData();
         formData.append("cameraReadyFile", body.cameraReadyFile);
@@ -357,33 +377,29 @@ export const paperApi = createApi({
       providesTags: ["Paper"],
     }),
 
-    addToWaitList: builder.mutation<
-      ApiResponse<boolean>,
-      LeaveWaitListRequest
-    >({
-      query: (body) => ({
-        url: endpoint.PAPER.ADD_TO_WAITLIST,
-        method: "POST",
-        body,
-      }),
-      invalidatesTags: ["Paper"],
-    }),
+    addToWaitList: builder.mutation<ApiResponse<boolean>, LeaveWaitListRequest>(
+      {
+        query: (body) => ({
+          url: endpoint.PAPER.ADD_TO_WAITLIST,
+          method: "POST",
+          body,
+        }),
+        invalidatesTags: ["Paper"],
+      },
+    ),
 
-    leaveWaitList: builder.mutation<
-      ApiResponse<boolean>,
-      LeaveWaitListRequest
-    >({
-      query: (body) => ({
-        url: endpoint.PAPER.LEAVE_WAITLIST,
-        method: "DELETE",
-        body,
-      }),
-      invalidatesTags: ["Paper"],
-    }),
-
+    leaveWaitList: builder.mutation<ApiResponse<boolean>, LeaveWaitListRequest>(
+      {
+        query: (body) => ({
+          url: endpoint.PAPER.LEAVE_WAITLIST,
+          method: "DELETE",
+          body,
+        }),
+        invalidatesTags: ["Paper"],
+      },
+    ),
   }),
 });
-
 
 export const {
   useListAllPapersQuery,
@@ -403,13 +419,11 @@ export const {
   useListPendingCameraReadyQuery,
   useDecideCameraReadyMutation,
 
-
   //REVISION
   useSubmitPaperRevisionReviewMutation,
   useListRevisionPaperReviewsQuery,
   useDecideRevisionStatusMutation,
   useSubmitPaperRevisionFeedbackMutation,
-
 
   //SON
   useListSubmittedPapersForCustomerQuery,
@@ -429,4 +443,3 @@ export const {
   useAddToWaitListMutation,
   useLeaveWaitListMutation,
 } = paperApi;
-

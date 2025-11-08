@@ -1,11 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {  
-  Plus, 
-  UserCheck, 
-  Shield
-} from "lucide-react";
+import { Plus, UserCheck, Shield } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,32 +21,35 @@ import { Modal } from "@/components/molecules/Modal";
 import { UserDetail } from "@/components/(user)/workspace/organizer/ManageUser/UserDetail/index";
 import { UserForm } from "@/components/(user)/workspace/organizer/ManageUser/UserForm/index";
 import { UserTable } from "@/components/(user)/workspace/organizer/ManageUser/UserTable/index";
-import {  UserProfileResponse, CollaboratorRequest } from "@/types/user.type";
-import { 
-  useGetUsersListQuery, 
-  useGetProfileByIdQuery, 
+import { UserProfileResponse, CollaboratorRequest } from "@/types/user.type";
+import {
+  useGetUsersListQuery,
+  useGetProfileByIdQuery,
   useCreateCollaboratorMutation,
   useSuspendAccountMutation,
-  useActivateAccountMutation
+  useActivateAccountMutation,
 } from "@/redux/services/user.service";
 
 export default function ManageUser() {
   // API: Lấy danh sách users
-  const { 
-    data: usersListData, 
-    isLoading: isLoadingList, 
-    error: errorList, 
-    refetch 
+  const {
+    data: usersListData,
+    isLoading: isLoadingList,
+    error: errorList,
+    refetch,
   } = useGetUsersListQuery();
-  
+
   const users: UserProfileResponse[] = usersListData?.data?.users || [];
 
   // API: Mutation tạo collaborator
-  const [createCollaborator, { isLoading: isCreating }] = useCreateCollaboratorMutation();
-  
+  const [createCollaborator, { isLoading: isCreating }] =
+    useCreateCollaboratorMutation();
+
   // API: Mutation suspend và activate
-  const [suspendAccount, { isLoading: isSuspending }] = useSuspendAccountMutation();
-  const [activateAccount, { isLoading: isActivating }] = useActivateAccountMutation();
+  const [suspendAccount, { isLoading: isSuspending }] =
+    useSuspendAccountMutation();
+  const [activateAccount, { isLoading: isActivating }] =
+    useActivateAccountMutation();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterRole, setFilterRole] = useState("all");
@@ -62,28 +61,26 @@ export default function ManageUser() {
   const [activateUserId, setActivateUserId] = useState<string | null>(null);
 
   // API: Lấy chi tiết user
-  const { 
-    data: userProfileData, 
-    isLoading: isLoadingProfile 
-  } = useGetProfileByIdQuery(
-    viewingUserId || "",
-    { skip: !viewingUserId }
-  );
+  const { data: userProfileData, isLoading: isLoadingProfile } =
+    useGetProfileByIdQuery(viewingUserId || "", { skip: !viewingUserId });
 
-  const viewingUserProfile: UserProfileResponse | undefined = userProfileData?.data;
+  const viewingUserProfile: UserProfileResponse | undefined =
+    userProfileData?.data;
 
   const roleOptions = [
     { value: "all", label: "Tất cả danh mục" },
     { value: "Customer", label: "Khách hàng" },
     { value: "Collaborator", label: "Cộng tác viên" },
-    { value: "Local Reviewer", label: "Người đánh giá địa phương" }
+    { value: "Local Reviewer", label: "Người đánh giá địa phương" },
   ];
 
   const filteredUsers = users.filter((user: UserProfileResponse) => {
-    const matchesSearch = user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRole = filterRole === "all" || user.roles?.includes(filterRole);
-    return matchesSearch && matchesRole ;
+    const matchesSearch =
+      user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesRole =
+      filterRole === "all" || user.roles?.includes(filterRole);
+    return matchesSearch && matchesRole;
   });
 
   const handleCreate = () => {
@@ -99,13 +96,13 @@ export default function ManageUser() {
     try {
       const response = await createCollaborator(data).unwrap();
       toast.success(response.message || "Thêm collaborator thành công!");
-      
+
       setIsFormModalOpen(false);
-      refetch(); 
+      refetch();
     } catch (error: unknown) {
-        const err = error as ApiError;
-        const errorMessage = err?.Message || "Them đối tác thất bại!";
-        toast.error(errorMessage);
+      const err = error as ApiError;
+      const errorMessage = err?.Message || "Them đối tác thất bại!";
+      toast.error(errorMessage);
     }
   };
 
@@ -148,9 +145,9 @@ export default function ManageUser() {
   };
 
   const countByRole = (role: string): number => {
-    return users.filter((u: UserProfileResponse) => u.roles?.includes(role)).length;
+    return users.filter((u: UserProfileResponse) => u.roles?.includes(role))
+      .length;
   };
-
 
   if (isLoadingList) {
     return (
@@ -167,7 +164,9 @@ export default function ManageUser() {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">Không thể tải danh sách người dùng</p>
+          <p className="text-red-600 mb-4">
+            Không thể tải danh sách người dùng
+          </p>
           <Button onClick={() => refetch()}>Thử lại</Button>
         </div>
       </div>
@@ -179,7 +178,9 @@ export default function ManageUser() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-gray-900">Quản lý Người dùng</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Quản lý Người dùng
+            </h1>
             <Button
               onClick={handleCreate}
               className="flex items-center gap-2 whitespace-nowrap mt-6"
@@ -203,7 +204,7 @@ export default function ManageUser() {
               value: filterRole,
               onValueChange: setFilterRole,
               options: roleOptions,
-            }
+            },
           ]}
         />
 
@@ -212,12 +213,13 @@ export default function ManageUser() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Tổng người dùng</p>
-                <p className="text-3xl font-bold text-gray-900">{users.length}</p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {users.length}
+                </p>
               </div>
               <UserCheck className="w-10 h-10 text-blue-500" />
             </div>
           </div>
-
 
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center justify-between">
@@ -278,23 +280,29 @@ export default function ManageUser() {
             }}
           />
         ) : (
-          <p className="text-center text-gray-600 py-8">Không tìm thấy thông tin người dùng</p>
+          <p className="text-center text-gray-600 py-8">
+            Không tìm thấy thông tin người dùng
+          </p>
         )}
       </Modal>
 
       {/* Suspend Confirmation Dialog */}
-      <AlertDialog open={!!suspendUserId} onOpenChange={() => setSuspendUserId(null)}>
+      <AlertDialog
+        open={!!suspendUserId}
+        onOpenChange={() => setSuspendUserId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận tạm ngưng</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn tạm ngưng tài khoản này? Người dùng sẽ không thể đăng nhập cho đến khi được kích hoạt lại.
+              Bạn có chắc chắn muốn tạm ngưng tài khoản này? Người dùng sẽ không
+              thể đăng nhập cho đến khi được kích hoạt lại.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmSuspend} 
+            <AlertDialogAction
+              onClick={confirmSuspend}
               className="bg-orange-600 hover:bg-orange-700"
               disabled={isSuspending}
             >
@@ -305,18 +313,22 @@ export default function ManageUser() {
       </AlertDialog>
 
       {/* Activate Confirmation Dialog */}
-      <AlertDialog open={!!activateUserId} onOpenChange={() => setActivateUserId(null)}>
+      <AlertDialog
+        open={!!activateUserId}
+        onOpenChange={() => setActivateUserId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận kích hoạt</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn kích hoạt lại tài khoản này? Người dùng sẽ có thể đăng nhập và sử dụng hệ thống.
+              Bạn có chắc chắn muốn kích hoạt lại tài khoản này? Người dùng sẽ
+              có thể đăng nhập và sử dụng hệ thống.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmActivate} 
+            <AlertDialogAction
+              onClick={confirmActivate}
               className="bg-green-600 hover:bg-green-700"
               disabled={isActivating}
             >

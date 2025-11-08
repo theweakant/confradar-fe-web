@@ -4,11 +4,7 @@ export interface Category {
   // conferenceCount?:number;
 }
 
-
-export type CategoryFormData = Omit<
-  Category,
-  "conferenceCategoryId"
->;
+export type CategoryFormData = Omit<Category, "conferenceCategoryId">;
 
 export interface CategoryDetailProps {
   category: Category;

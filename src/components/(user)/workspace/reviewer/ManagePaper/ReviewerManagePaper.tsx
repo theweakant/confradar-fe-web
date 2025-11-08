@@ -20,13 +20,16 @@ import CameraReadyList from "@/components/(user)/workspace/reviewer/CameraReadyL
 export default function ReviewerManagePaperPage() {
   const router = useRouter();
 
-  const { data: assignedPapersData, isLoading: loadingPapers, error: papersError } = 
-    useListAssignedPapersQuery();
+  const {
+    data: assignedPapersData,
+    isLoading: loadingPapers,
+    error: papersError,
+  } = useListAssignedPapersQuery();
 
   const assignedPapers = assignedPapersData?.data || [];
 
   const [showCameraReady, setShowCameraReady] = useState(false);
-  
+
   const handleViewPaper = (paper: Paper) => {
     router.push(`/workspace/reviewer/manage-paper/${paper.paperId}`);
   };
@@ -64,15 +67,20 @@ export default function ReviewerManagePaperPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Quản lý Bài báo - Reviewer</h1>
-            <p className="text-gray-600 mt-2">Danh sách các bài báo được giao cho bạn</p>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Quản lý Bài báo - Reviewer
+            </h1>
+            <p className="text-gray-600 mt-2">
+              Danh sách các bài báo được giao cho bạn
+            </p>
           </div>
         </div>
 
         {/* Thống kê số lượng bài báo */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <p className="text-sm text-blue-800">
-            <span className="font-semibold">Tổng số bài báo được giao:</span> {assignedPapers.length}
+            <span className="font-semibold">Tổng số bài báo được giao:</span>{" "}
+            {assignedPapers.length}
           </p>
         </div>
 

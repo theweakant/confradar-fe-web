@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Compass,
   Menu,
@@ -11,11 +11,11 @@ import {
   Bell,
   LogOut,
   FileText,
-  Heart
-} from 'lucide-react';
-import { usePathname, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useAuth } from '@/redux/hooks/useAuth';
+  Heart,
+} from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import { useAuth } from "@/redux/hooks/useAuth";
 
 interface SidebarProps {
   className?: string;
@@ -34,34 +34,84 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
     // { id: '/', label: 'Trang chủ', icon: Home, href: '/customer' },
     // { id: 'home', label: 'Trang chủ', icon: Home, href: '/customer/home' },
     // { id: 'search', label: 'Tìm kiếm', icon: Search, href: '/customer/search' },
-    { id: 'discovery', label: 'Khám phá', icon: Compass, href: '/customer/discovery' },
-    { id: 'ticket', label: 'Vé tham dự hội nghị', icon: Ticket, href: '/customer/tickets' },
-    { id: 'transaction', label: 'Lịch sử giao dịch', icon: Ticket, href: '/customer/transaction-history' },
-    { id: 'paper', label: 'Bài báo của bạn', icon: FileText, href: '/customer/papers' },
-    { id: 'notifications', label: 'Thông báo', icon: Bell, href: '/customer/notifications' },
-    { id: 'profile', label: 'Trang cá nhân', icon: UserCircle, href: '/customer/profile' },
+    {
+      id: "discovery",
+      label: "Khám phá",
+      icon: Compass,
+      href: "/customer/discovery",
+    },
+    {
+      id: "ticket",
+      label: "Vé tham dự hội nghị",
+      icon: Ticket,
+      href: "/customer/tickets",
+    },
+    {
+      id: "transaction",
+      label: "Lịch sử giao dịch",
+      icon: Ticket,
+      href: "/customer/transaction-history",
+    },
+    {
+      id: "paper",
+      label: "Bài báo của bạn",
+      icon: FileText,
+      href: "/customer/papers",
+    },
+    {
+      id: "notifications",
+      label: "Thông báo",
+      icon: Bell,
+      href: "/customer/notifications",
+    },
+    {
+      id: "profile",
+      label: "Trang cá nhân",
+      icon: UserCircle,
+      href: "/customer/profile",
+    },
   ];
 
   const moreItems = [
-    { id: 'favoriteconferences', label: 'Hội nghị yêu thích', icon: Heart, href: '/customer/favorite-conferences' },
-    { id: 'waitlist', label: 'Danh sách chờ nộp bài báo', icon: Bookmark, href: '/customer/customer-waitlist' },
+    {
+      id: "favoriteconferences",
+      label: "Hội nghị yêu thích",
+      icon: Heart,
+      href: "/customer/favorite-conferences",
+    },
+    {
+      id: "waitlist",
+      label: "Danh sách chờ nộp bài báo",
+      icon: Bookmark,
+      href: "/customer/customer-waitlist",
+    },
     // { id: 'history', label: 'Lịch sử', icon: Clock, href: '/customer/history' },
-    { id: 'settings', label: 'Cài đặt', icon: Settings, href: '/customer/settings' },
+    {
+      id: "settings",
+      label: "Cài đặt",
+      icon: Settings,
+      href: "/customer/settings",
+    },
   ];
 
   const handleSignout = () => {
     signout();
-    router.push('/');
+    router.push("/");
   };
 
   return (
-    <aside className={`bg-black text-white border-r border-gray-800 transition-all duration-300 flex flex-col ${isCollapsed ? 'w-16' : 'w-64'} ${className}`}>
+    <aside
+      className={`bg-black text-white border-r border-gray-800 transition-all duration-300 flex flex-col ${isCollapsed ? "w-16" : "w-64"} ${className}`}
+    >
       {/* Header with Logo */}
       <div className="p-4 border-b border-gray-800">
         <div className="flex items-center space-x-3">
           {!isCollapsed && (
             // <div className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
-            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
+            <Link
+              href="/"
+              className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent"
+            >
               ConfRadar
             </Link>
             // </div>
@@ -77,14 +127,16 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
       {/* Navigation Menu */}
       <div
         className="flex-1 overflow-y-auto"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         <nav className="py-4">
           <ul className="space-y-1">
             {menuItems.map((item) => {
               const IconComponent = item.icon;
               // const isActive = activeItem === item.id;
-              const isActive = pathname.startsWith(item.href) || pathname.startsWith(item.href + "/");
+              const isActive =
+                pathname.startsWith(item.href) ||
+                pathname.startsWith(item.href + "/");
 
               return (
                 <li key={item.id}>
@@ -93,8 +145,8 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
                     className={`
                     w-full flex items-center space-x-3 px-4 py-3 
                     hover:bg-gray-900 transition-colors duration-200
-                    ${isActive ? 'bg-gray-900 border-r-2 border-white' : ''}
-                    ${isCollapsed ? 'justify-center' : 'justify-start'}
+                    ${isActive ? "bg-gray-900 border-r-2 border-white" : ""}
+                    ${isCollapsed ? "justify-center" : "justify-start"}
                   `}
                   >
                     {/* <button
@@ -103,10 +155,12 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
                     > */}
                     <IconComponent
                       size={24}
-                      className={`${isActive ? 'text-white' : 'text-gray-300'} hover:text-white transition-colors`}
+                      className={`${isActive ? "text-white" : "text-gray-300"} hover:text-white transition-colors`}
                     />
                     {!isCollapsed && (
-                      <span className={`text-sm font-medium ${isActive ? 'text-white' : 'text-gray-300'} hover:text-white transition-colors`}>
+                      <span
+                        className={`text-sm font-medium ${isActive ? "text-white" : "text-gray-300"} hover:text-white transition-colors`}
+                      >
                         {item.label}
                       </span>
                     )}
@@ -119,8 +173,10 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
 
           {/* More Menu */}
           <div className="mt-8 pt-4 border-t border-gray-800">
-            <div className={`px-4 mb-2 ${isCollapsed ? 'hidden' : 'block'}`}>
-              <span className="text-xs text-gray-500 uppercase tracking-wider">Xem thêm</span>
+            <div className={`px-4 mb-2 ${isCollapsed ? "hidden" : "block"}`}>
+              <span className="text-xs text-gray-500 uppercase tracking-wider">
+                Xem thêm
+              </span>
             </div>
             <ul className="space-y-1">
               {moreItems.map((item) => {
@@ -135,8 +191,8 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
                       className={`
                       w-full flex items-center space-x-3 px-4 py-3 
                       hover:bg-gray-900 transition-colors duration-200
-                      ${isActive ? 'bg-gray-900 border-r-2 border-white' : ''}
-                      ${isCollapsed ? 'justify-center' : 'justify-start'}
+                      ${isActive ? "bg-gray-900 border-r-2 border-white" : ""}
+                      ${isCollapsed ? "justify-center" : "justify-start"}
                     `}
                     >
                       {/* <button
@@ -150,10 +206,12 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
                     > */}
                       <IconComponent
                         size={24}
-                        className={`${isActive ? 'text-white' : 'text-gray-400'} hover:text-white transition-colors`}
+                        className={`${isActive ? "text-white" : "text-gray-400"} hover:text-white transition-colors`}
                       />
                       {!isCollapsed && (
-                        <span className={`text-sm font-medium ${isActive ? 'text-white' : 'text-gray-400'} hover:text-white transition-colors`}>
+                        <span
+                          className={`text-sm font-medium ${isActive ? "text-white" : "text-gray-400"} hover:text-white transition-colors`}
+                        >
                           {item.label}
                         </span>
                       )}
@@ -172,7 +230,7 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
               className={`
               w-full flex items-center space-x-3 px-4 py-3 
               hover:bg-gray-900 transition-colors duration-200
-              ${isCollapsed ? 'justify-center' : 'justify-start'}
+              ${isCollapsed ? "justify-center" : "justify-start"}
             `}
             >
               <Menu
@@ -214,11 +272,13 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
           className={`
             w-full flex items-center space-x-3 px-2 py-2 
             text-gray-400 hover:text-white hover:bg-gray-900 rounded-lg transition-all
-            ${isCollapsed ? 'justify-center' : 'justify-start'}
+            ${isCollapsed ? "justify-center" : "justify-start"}
           `}
         >
           <LogOut size={22} />
-          {!isCollapsed && <span className="text-sm font-medium">Đăng xuất</span>}
+          {!isCollapsed && (
+            <span className="text-sm font-medium">Đăng xuất</span>
+          )}
         </button>
       </div>
     </aside>

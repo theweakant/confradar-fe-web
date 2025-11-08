@@ -1,42 +1,40 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useConference } from '@/redux/hooks/conference/useConference';
-import { useGetAllCategoriesQuery } from '@/redux/services/category.service';
-import { useGetAllCitiesQuery } from '@/redux/services/city.service';
-import { CategoryOption, ConferenceResponse } from '@/types/conference.type';
-import { Category } from '@/types/category.type';
-import { City } from '@/types/city.type';
-import { mockStatusData } from '@/data/mockStatus.data';
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useConference } from "@/redux/hooks/conference/useConference";
+import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
+import { useGetAllCitiesQuery } from "@/redux/services/city.service";
+import { CategoryOption, ConferenceResponse } from "@/types/conference.type";
+import { Category } from "@/types/category.type";
+import { City } from "@/types/city.type";
+import { mockStatusData } from "@/data/mockStatus.data";
 
 import "react-day-picker/style.css";
-import SearchFilter from './SearchFilter';
-import ConferenceList from './ConferenceList';
-import Pagination from './Pagination';
-import { SortOption } from '@/types/ui-type/conference-browser.type';
-import { getCurrentPrice } from '@/helper/conference';
-
+import SearchFilter from "./SearchFilter";
+import ConferenceList from "./ConferenceList";
+import Pagination from "./Pagination";
+import { SortOption } from "@/types/ui-type/conference-browser.type";
+import { getCurrentPrice } from "@/helper/conference";
 
 interface SearchSortFilterConferenceProps {
-  bannerFilter?: 'technical' | 'research' | 'all';
+  bannerFilter?: "technical" | "research" | "all";
 }
-
 
 // const SearchSortFilterConference: React.FC = () => {
 const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
-  bannerFilter = 'all'
+  bannerFilter = "all",
 }) => {
   const router = useRouter();
 
-  const [searchInput, setSearchInput] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedCity, setSelectedCity] = useState('all');
-  const [selectedStatus, setSelectedStatus] = useState('all');
-  const [selectedLocation, setSelectedLocation] = useState('all');
-  const [selectedPrice, setSelectedPrice] = useState('all');
-  const [selectedRating, setSelectedRating] = useState('all');
+  const [searchInput, setSearchInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedCity, setSelectedCity] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedLocation, setSelectedLocation] = useState("all");
+  const [selectedPrice, setSelectedPrice] = useState("all");
+  const [selectedRating, setSelectedRating] = useState("all");
   // const [startDateFilter, setStartDateFilter] = useState<string | null>(null);
   // const [endDateFilter, setEndDateFilter] = useState<string | null>(null);
   const [startDateFilter, setStartDateFilter] = useState<Date | null>(null);
@@ -48,7 +46,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
   // const startDateFilter = dateRange[0];
   // const endDateFilter = dateRange[1];
 
-  const [sortBy, setSortBy] = useState('date');
+  const [sortBy, setSortBy] = useState("date");
   const [currentPage, setCurrentPage] = useState(1);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
@@ -66,14 +64,22 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
     statusConferencesLoading,
     defaultError,
     lazyWithPricesError,
-    statusConferencesError
+    statusConferencesError,
   } = useConference({ page: currentPage, pageSize: itemsPerPage });
 
-  const { data: categoriesData, isLoading: categoriesLoading, error: categoriesError } = useGetAllCategoriesQuery();
-  const { data: citiesData, isLoading: citiesLoading, error: citiesError } = useGetAllCitiesQuery();
+  const {
+    data: categoriesData,
+    isLoading: categoriesLoading,
+    error: categoriesError,
+  } = useGetAllCategoriesQuery();
+  const {
+    data: citiesData,
+    isLoading: citiesLoading,
+    error: citiesError,
+  } = useGetAllCitiesQuery();
 
   const getCurrentConferences = (): ConferenceResponse[] => {
-    if (selectedStatus !== 'all') {
+    if (selectedStatus !== "all") {
       return statusConferences?.items || [];
     } else {
       return lazyConferencesWithPrices?.items || [];
@@ -88,10 +94,10 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
 
   const currentConferences = getCurrentConferences();
 
-  const allPrices = currentConferences.flatMap(conf =>
+  const allPrices = currentConferences.flatMap((conf) =>
     (conf?.conferencePrices ?? [])
-      .map(p => getCurrentPrice(p))
-      .filter(price => typeof price === 'number' && price > 0)
+      .map((p) => getCurrentPrice(p))
+      .filter((price) => typeof price === "number" && price > 0),
   );
   // const allPrices = React.useMemo(() => {
   //   return currentConferences.flatMap(conf =>
@@ -109,23 +115,39 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
 
   const absoluteMaxPrice = allPrices.length ? Math.max(...allPrices) : 0;
 
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, absoluteMaxPrice]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([
+    0,
+    absoluteMaxPrice,
+  ]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedCity, selectedStatus, selectedLocation, selectedPrice, selectedRating, sortBy]);
+  }, [
+    searchQuery,
+    selectedCity,
+    selectedStatus,
+    selectedLocation,
+    selectedPrice,
+    selectedRating,
+    sortBy,
+  ]);
 
   useEffect(() => {
-    const hasFilters = searchQuery || selectedCity !== 'all' || startDateFilter || endDateFilter;
+    const hasFilters =
+      searchQuery || selectedCity !== "all" || startDateFilter || endDateFilter;
 
-    if (selectedStatus !== 'all') {
+    if (selectedStatus !== "all") {
       const params = {
         page: currentPage,
         pageSize: itemsPerPage,
         ...(searchQuery && { searchKeyword: searchQuery }),
-        ...(selectedCity !== 'all' && { cityId: selectedCity }),
-        ...(startDateFilter && { startDate: startDateFilter.toISOString().split('T')[0] }),
-        ...(endDateFilter && { endDate: endDateFilter.toISOString().split('T')[0] })
+        ...(selectedCity !== "all" && { cityId: selectedCity }),
+        ...(startDateFilter && {
+          startDate: startDateFilter.toISOString().split("T")[0],
+        }),
+        ...(endDateFilter && {
+          endDate: endDateFilter.toISOString().split("T")[0],
+        }),
       };
       fetchConferencesByStatus(selectedStatus, params);
     } else {
@@ -133,9 +155,13 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
         page: currentPage,
         pageSize: itemsPerPage,
         ...(searchQuery && { searchKeyword: searchQuery }),
-        ...(selectedCity !== 'all' && { cityId: selectedCity }),
-        ...(startDateFilter && { startDate: startDateFilter.toISOString().split('T')[0] }),
-        ...(endDateFilter && { endDate: endDateFilter.toISOString().split('T')[0] })
+        ...(selectedCity !== "all" && { cityId: selectedCity }),
+        ...(startDateFilter && {
+          startDate: startDateFilter.toISOString().split("T")[0],
+        }),
+        ...(endDateFilter && {
+          endDate: endDateFilter.toISOString().split("T")[0],
+        }),
       };
       fetchConferencesWithPrices(params);
     }
@@ -153,7 +179,16 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
     // else {
     //   fetchDefaultConferences({ page: currentPage, pageSize: itemsPerPage });
     // }
-  }, [currentPage, searchQuery, selectedCity, selectedStatus, startDateFilter, endDateFilter, fetchConferencesWithPrices, fetchConferencesByStatus]);
+  }, [
+    currentPage,
+    searchQuery,
+    selectedCity,
+    selectedStatus,
+    startDateFilter,
+    endDateFilter,
+    fetchConferencesWithPrices,
+    fetchConferencesByStatus,
+  ]);
 
   //   useEffect(() => {
   //   if (absoluteMaxPrice > 0) {
@@ -176,27 +211,27 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
   }, [absoluteMaxPrice]);
 
   const categories: CategoryOption[] = [
-    { value: 'all', label: 'Tất cả danh mục' },
+    { value: "all", label: "Tất cả danh mục" },
     ...(categoriesData?.data?.map((cat: Category) => ({
       value: cat.conferenceCategoryId,
-      label: cat.conferenceCategoryName
-    })) || [])
+      label: cat.conferenceCategoryName,
+    })) || []),
   ];
 
   const cities: { value: string; label: string }[] = [
-    { value: 'all', label: 'Tất cả thành phố' },
+    { value: "all", label: "Tất cả thành phố" },
     ...(citiesData?.data?.map((city: City) => ({
       value: city.cityId,
-      label: city.cityName ?? 'Thành phố không xác định'
-    })) || [])
+      label: city.cityName ?? "Thành phố không xác định",
+    })) || []),
   ];
 
   const statuses: { value: string; label: string }[] = [
-    { value: 'all', label: 'Tất cả trạng thái' },
+    { value: "all", label: "Tất cả trạng thái" },
     ...mockStatusData.map((status) => ({
       value: status.statusId,
-      label: status.name
-    }))
+      label: status.name,
+    })),
   ];
 
   // const locations = [
@@ -208,40 +243,49 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
   // ];
 
   const sortOptions: SortOption[] = [
-    { value: 'date', label: 'Ngày diễn ra' },
-    { value: 'price-low', label: 'Giá thấp đến cao' },
-    { value: 'price-high', label: 'Giá cao đến thấp' },
-    { value: 'attendees-low', label: 'Số người tham gia thấp → cao' },
-    { value: 'attendees-high', label: 'Số người tham gia cao → thấp' },
+    { value: "date", label: "Ngày diễn ra" },
+    { value: "price-low", label: "Giá thấp đến cao" },
+    { value: "price-high", label: "Giá cao đến thấp" },
+    { value: "attendees-low", label: "Số người tham gia thấp → cao" },
+    { value: "attendees-high", label: "Số người tham gia cao → thấp" },
   ];
 
   const getMinPrice = (conf: ConferenceResponse) => {
-    if (!conf.conferencePrices || conf.conferencePrices.length === 0) return null;
-    return Math.min(...conf.conferencePrices.map(p => getCurrentPrice(p)));
+    if (!conf.conferencePrices || conf.conferencePrices.length === 0)
+      return null;
+    return Math.min(...conf.conferencePrices.map((p) => getCurrentPrice(p)));
   };
 
   const getMaxPrice = (conf: ConferenceResponse) => {
-    if (!conf.conferencePrices || conf.conferencePrices.length === 0) return null;
-    return Math.max(...conf.conferencePrices.map(p => getCurrentPrice(p)));
+    if (!conf.conferencePrices || conf.conferencePrices.length === 0)
+      return null;
+    return Math.max(...conf.conferencePrices.map((p) => getCurrentPrice(p)));
   };
 
-  const filteredConferences = currentConferences.filter((conf: ConferenceResponse) => {
-    const confType = conf.isResearchConference ? 'research' : 'technical';
-    const matchesBannerFilter = bannerFilter === 'all' || confType === bannerFilter;
+  const filteredConferences = currentConferences.filter(
+    (conf: ConferenceResponse) => {
+      const confType = conf.isResearchConference ? "research" : "technical";
+      const matchesBannerFilter =
+        bannerFilter === "all" || confType === bannerFilter;
 
-    const matchesCategory = selectedCategory === 'all' || conf.conferenceCategoryId === selectedCategory;
+      const matchesCategory =
+        selectedCategory === "all" ||
+        conf.conferenceCategoryId === selectedCategory;
 
-    const minPrice = getMinPrice(conf);
-    const maxPrice = getMaxPrice(conf);
+      const minPrice = getMinPrice(conf);
+      const maxPrice = getMaxPrice(conf);
 
-    // Nếu priceRange đang active và conference không có giá => loại ra
-    const priceRangeActive = priceRange[0] > 0 || priceRange[1] < absoluteMaxPrice;
-    const matchesPrice = minPrice !== null && maxPrice !== null
-      ? (minPrice <= priceRange[1] && maxPrice >= priceRange[0])
-      : !priceRangeActive // nếu filter không active thì vẫn hiển thị
+      // Nếu priceRange đang active và conference không có giá => loại ra
+      const priceRangeActive =
+        priceRange[0] > 0 || priceRange[1] < absoluteMaxPrice;
+      const matchesPrice =
+        minPrice !== null && maxPrice !== null
+          ? minPrice <= priceRange[1] && maxPrice >= priceRange[0]
+          : !priceRangeActive; // nếu filter không active thì vẫn hiển thị
 
-    return matchesBannerFilter && matchesCategory && matchesPrice;
-  });
+      return matchesBannerFilter && matchesCategory && matchesPrice;
+    },
+  );
 
   // const filteredConferences = currentConferences.filter((conf: ConferenceResponse) => {
   //   const confType = conf.isResearchConference ? 'research' : 'technical';
@@ -281,30 +325,33 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
 
   const sortedConferences = [...filteredConferences].sort((a, b) => {
     switch (sortBy) {
-      case 'price-low': {
+      case "price-low": {
         const aMin = getMinPrice(a) ?? Infinity;
         const bMin = getMinPrice(b) ?? Infinity;
         return aMin - bMin;
       }
-      case 'price-high': {
+      case "price-high": {
         const aMax = getMaxPrice(a) ?? 0;
         const bMax = getMaxPrice(b) ?? 0;
         return bMax - aMax;
       }
-      case 'attendees-low':
+      case "attendees-low":
         return (a.totalSlot ?? 0) - (b.totalSlot ?? 0);
-      case 'attendees-high':
+      case "attendees-high":
         return (b.totalSlot ?? 0) - (a.totalSlot ?? 0);
-      case 'date':
+      case "date":
       default:
-        return new Date(a.startDate || '').getTime() - new Date(b.startDate || '').getTime();
+        return (
+          new Date(a.startDate || "").getTime() -
+          new Date(b.startDate || "").getTime()
+        );
     }
   });
 
   const getPaginationData = () => {
     const filteredCount = sortedConferences.length;
 
-    if (selectedStatus !== 'all') {
+    if (selectedStatus !== "all") {
       const apiResponse = statusConferences;
       if (apiResponse) {
         return {
@@ -312,7 +359,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
           totalCount: filteredCount,
           currentPage: currentPage,
           pageSize: itemsPerPage,
-          paginatedConferences: sortedConferences
+          paginatedConferences: sortedConferences,
         };
       }
     } else {
@@ -323,7 +370,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
           totalCount: filteredCount,
           currentPage: currentPage,
           pageSize: itemsPerPage,
-          paginatedConferences: sortedConferences
+          paginatedConferences: sortedConferences,
         };
       }
       // else if (searchQuery || selectedCity !== 'all' || startDateFilter || endDateFilter) {
@@ -357,16 +404,23 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
       totalCount: filteredCount,
       currentPage: currentPage,
       pageSize: itemsPerPage,
-      paginatedConferences: sortedConferences
+      paginatedConferences: sortedConferences,
     };
   };
 
-  const { totalPages, totalCount, currentPage: serverCurrentPage, pageSize: serverPageSize, paginatedConferences } = getPaginationData();
+  const {
+    totalPages,
+    totalCount,
+    currentPage: serverCurrentPage,
+    pageSize: serverPageSize,
+    paginatedConferences,
+  } = getPaginationData();
 
   const formatDate = (dateString: string) => {
     const d = new Date(dateString);
-    return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1)
-      .toString().padStart(2, '0')}/${d.getFullYear()}`;
+    return `${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1)
+      .toString()
+      .padStart(2, "0")}/${d.getFullYear()}`;
   };
 
   // const DropdownSelect = ({
@@ -416,7 +470,6 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
   return (
     <div className="text-white p-4 pb-12">
       <div className="max-w-6xl mx-auto bg-gray-900/90 backdrop-blur-sm border border-gray-600/50 rounded-2xl p-6 mt-8 shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
-
         <SearchFilter
           searchQuery={searchInput}
           setSearchQuery={setSearchInput}
@@ -447,17 +500,17 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
           openDropdown={openDropdown}
           setOpenDropdown={setOpenDropdown}
           onClearFilters={() => {
-            setSearchInput('');
-            setSearchQuery('');
-            setSelectedCategory('all');
-            setSelectedCity('all');
-            setSelectedStatus('all');
+            setSearchInput("");
+            setSearchQuery("");
+            setSelectedCategory("all");
+            setSelectedCity("all");
+            setSelectedStatus("all");
             setStartDateFilter(null);
             setEndDateFilter(null);
             setPriceRange([0, absoluteMaxPrice]);
-            setSortBy('date');
+            setSortBy("date");
           }}
-        // DropdownSelect={DropdownSelect}
+          // DropdownSelect={DropdownSelect}
         />
 
         <div className="flex justify-between items-center mb-6">
@@ -467,22 +520,27 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
 
           <h2 className="text-xl font-semibold text-white">
             Kết quả hội nghị{" "}
-            {bannerFilter === 'technical'
-              ? 'Kỹ thuật'
-              : bannerFilter === 'research'
-                ? 'Nghiên cứu'
-                : ''}{" "}
+            {bannerFilter === "technical"
+              ? "Kỹ thuật"
+              : bannerFilter === "research"
+                ? "Nghiên cứu"
+                : ""}{" "}
             ({totalCount} hội nghị)
           </h2>
-          {(defaultLoading || lazyWithPricesLoading || statusConferencesLoading) && (
+          {(defaultLoading ||
+            lazyWithPricesLoading ||
+            statusConferencesLoading) && (
             <div className="text-sm text-blue-400">Đang tải...</div>
           )}
           <div className="text-sm text-gray-400">
-            Trang {currentPage} / {totalPages} (Hiển thị {paginatedConferences.length} / {totalCount})
+            Trang {currentPage} / {totalPages} (Hiển thị{" "}
+            {paginatedConferences.length} / {totalCount})
           </div>
         </div>
 
-        {(defaultLoading || lazyWithPricesLoading || statusConferencesLoading) && (
+        {(defaultLoading ||
+          lazyWithPricesLoading ||
+          statusConferencesLoading) && (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
@@ -494,28 +552,42 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
               {/* <p>Có lỗi xảy ra khi tải dữ liệu hội nghị {bannerFilter === 'technical' ? 'kỹ thuật' : 'nghiên cứu'}</p> */}
               <p>
                 Có lỗi xảy ra khi tải dữ liệu hội nghị
-                {bannerFilter === 'all'
-                  ? ''
-                  : bannerFilter === 'technical'
-                    ? ' kỹ thuật'
-                    : ' nghiên cứu'}
+                {bannerFilter === "all"
+                  ? ""
+                  : bannerFilter === "technical"
+                    ? " kỹ thuật"
+                    : " nghiên cứu"}
               </p>
-              <p className="text-sm mt-2">{defaultError?.data?.Message || lazyWithPricesError?.data?.Message || statusConferencesError?.data?.Message}</p>
+              <p className="text-sm mt-2">
+                {defaultError?.data?.Message ||
+                  lazyWithPricesError?.data?.Message ||
+                  statusConferencesError?.data?.Message}
+              </p>
             </div>
           </div>
         )}
 
-        {!defaultLoading && !lazyWithPricesLoading && !statusConferencesLoading &&
-          !defaultError && !lazyWithPricesError && !statusConferencesError &&
+        {!defaultLoading &&
+          !lazyWithPricesLoading &&
+          !statusConferencesLoading &&
+          !defaultError &&
+          !lazyWithPricesError &&
+          !statusConferencesError &&
           totalCount === 0 && (
             <div className="flex justify-center items-center py-12">
               <div className="text-gray-400 text-center">
-                <p>Không tìm thấy hội nghị {bannerFilter === 'all'
-                  ? ''
-                  : bannerFilter === 'technical'
-                    ? ' kỹ thuật'
-                    : ' nghiên cứu'} nào</p>
-                <p className="text-sm mt-2">Hãy thử thay đổi bộ lọc hoặc tìm kiếm với từ khóa khác</p>
+                <p>
+                  Không tìm thấy hội nghị{" "}
+                  {bannerFilter === "all"
+                    ? ""
+                    : bannerFilter === "technical"
+                      ? " kỹ thuật"
+                      : " nghiên cứu"}{" "}
+                  nào
+                </p>
+                <p className="text-sm mt-2">
+                  Hãy thử thay đổi bộ lọc hoặc tìm kiếm với từ khóa khác
+                </p>
               </div>
             </div>
           )}
@@ -528,8 +600,12 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
             formatDate={formatDate}
             // onCardClick={(conferenceId) => router.push(`/customer/discovery/conference-detail/${conferenceId}`)}
             onCardClick={(conference) => {
-              const type = conference.isResearchConference ? 'research' : 'technical';
-              router.push(`/customer/discovery/${type}/${conference.conferenceId}`);
+              const type = conference.isResearchConference
+                ? "research"
+                : "technical";
+              router.push(
+                `/customer/discovery/${type}/${conference.conferenceId}`,
+              );
             }}
           />
         )}

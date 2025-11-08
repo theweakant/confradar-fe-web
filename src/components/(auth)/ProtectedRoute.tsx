@@ -1,36 +1,37 @@
-'use client'
+"use client";
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/redux/hooks/useAuth'
-import { getRouteByRole } from '@/constants/roles' 
-import { AuthUser } from "@/types/user.type"
-
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/redux/hooks/useAuth";
+import { getRouteByRole } from "@/constants/roles";
+import { AuthUser } from "@/types/user.type";
 
 interface ProtectedRouteProps {
-  children: React.ReactNode
-  allowedRoles?: string[]
+  children: React.ReactNode;
+  allowedRoles?: string[];
 }
 
-export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const router = useRouter()
-  const { user, isAuthenticated, loading } = useAuth()
-  const role = (user as AuthUser)?.role
-
+export function ProtectedRoute({
+  children,
+  allowedRoles,
+}: ProtectedRouteProps) {
+  const router = useRouter();
+  const { user, isAuthenticated, loading } = useAuth();
+  const role = (user as AuthUser)?.role;
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      router.push('/auth/login')
-      return
+      router.push("/auth/login");
+      return;
     }
 
     if (!loading && isAuthenticated && allowedRoles && role) {
       if (!allowedRoles.includes(role)) {
-        const correctRoute = getRouteByRole(role)
-        router.push(correctRoute)
+        const correctRoute = getRouteByRole(role);
+        router.push(correctRoute);
       }
     }
-  }, [isAuthenticated, loading, user, allowedRoles, router])
+  }, [isAuthenticated, loading, user, allowedRoles, router]);
 
   if (loading) {
     return (
@@ -40,12 +41,12 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
           <p className="mt-4 text-gray-600">Đang tải...</p>
         </div>
       </div>
-    )
+    );
   }
 
-  if (!isAuthenticated) return null
+  if (!isAuthenticated) return null;
 
-  if (allowedRoles && role && !allowedRoles.includes(role)) return null
+  if (allowedRoles && role && !allowedRoles.includes(role)) return null;
 
-  return <>{children}</>
+  return <>{children}</>;
 }

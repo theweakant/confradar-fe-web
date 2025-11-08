@@ -26,8 +26,6 @@ export const categoryApi = createApi({
       providesTags: ["Category"],
     }),
 
-
- 
     createCategory: builder.mutation<ApiResponse<string>, CategoryFormData>({
       query: (body) => ({
         url: endpoint.CATEGORY.CREATE,
@@ -37,8 +35,10 @@ export const categoryApi = createApi({
       invalidatesTags: ["Category"],
     }),
 
-
-    updateCategory: builder.mutation<ApiResponse<string>, { id: string; data: CategoryFormData }>({
+    updateCategory: builder.mutation<
+      ApiResponse<string>,
+      { id: string; data: CategoryFormData }
+    >({
       query: ({ id, data }) => ({
         url: `${endpoint.CATEGORY.UPDATE}/${id}`,
         method: "PUT",
@@ -47,7 +47,6 @@ export const categoryApi = createApi({
       invalidatesTags: ["Category"],
     }),
 
- 
     deleteCategory: builder.mutation<ApiResponse<string>, string>({
       query: (id) => ({
         url: `${endpoint.CATEGORY.DELETE}/${id}`,
@@ -56,14 +55,16 @@ export const categoryApi = createApi({
       invalidatesTags: ["Category"],
     }),
 
-
-    getAllRankingCategories: builder.query<ApiResponse<ConferenceRanking[]>, void>({
+    getAllRankingCategories: builder.query<
+      ApiResponse<ConferenceRanking[]>,
+      void
+    >({
       query: () => ({
         url: endpoint.RANKING_CONFERENCE.LIST,
         method: "GET",
       }),
       providesTags: ["Category"],
-    }),    
+    }),
   }),
 });
 
@@ -74,5 +75,5 @@ export const {
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
 
-  useGetAllRankingCategoriesQuery
+  useGetAllRankingCategoriesQuery,
 } = categoryApi;

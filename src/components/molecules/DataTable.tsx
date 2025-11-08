@@ -39,8 +39,8 @@ export function DataTable<T>({
         <TableHeader>
           <TableRow>
             {columns.map((column) => (
-              <TableHead 
-                key={column.key} 
+              <TableHead
+                key={column.key}
                 className={`font-semibold ${column.className || ""}`}
               >
                 {column.header}
@@ -51,8 +51,8 @@ export function DataTable<T>({
         <TableBody>
           {safeData.length === 0 ? (
             <TableRow>
-              <TableCell 
-                colSpan={columns.length} 
+              <TableCell
+                colSpan={columns.length}
                 className="text-center text-gray-500 py-12"
               >
                 {emptyMessage}
@@ -60,7 +60,7 @@ export function DataTable<T>({
             </TableRow>
           ) : (
             safeData.map((item) => (
-              <TableRow 
+              <TableRow
                 key={keyExtractor(item)}
                 onClick={() => onRowClick?.(item)}
                 className={onRowClick ? "cursor-pointer hover:bg-gray-50" : ""}

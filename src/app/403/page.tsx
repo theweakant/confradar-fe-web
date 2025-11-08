@@ -1,26 +1,26 @@
-"use client"
+"use client";
 
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function ForbiddenPage() {
-  const router = useRouter()
-  const [countdown, setCountdown] = useState(10)
+  const router = useRouter();
+  const [countdown, setCountdown] = useState(10);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
-          clearInterval(timer)
-          router.push("/auth/login")
-          return 0
+          clearInterval(timer);
+          router.push("/auth/login");
+          return 0;
         }
-        return prev - 1
-      })
-    }, 1000)
+        return prev - 1;
+      });
+    }, 1000);
 
-    return () => clearInterval(timer)
-  }, [router])
+    return () => clearInterval(timer);
+  }, [router]);
 
   return (
     <div className="flex flex-col items-center justify-center h-screen text-center px-4">
@@ -30,7 +30,8 @@ export default function ForbiddenPage() {
       </p>
 
       <p className="mt-4 text-gray-500 text-sm">
-        Redirecting to login in <span className="font-semibold">{countdown}</span> seconds...
+        Redirecting to login in{" "}
+        <span className="font-semibold">{countdown}</span> seconds...
       </p>
 
       <div className="mt-6 flex gap-3">
@@ -48,5 +49,5 @@ export default function ForbiddenPage() {
         </button>
       </div>
     </div>
-  )
+  );
 }

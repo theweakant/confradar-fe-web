@@ -1,12 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {  
-  Plus, 
-  UserCheck, 
-  UserX,
-  Users
-} from "lucide-react";
+import { Plus, UserCheck, UserX, Users } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,9 +26,9 @@ import { User, UserFormData } from "@/types/user.type";
 export default function ManageReviewer() {
   // Filter only reviewers from mockUsers
   const initialReviewers = mockUsers.filter(
-    user => user.role === "localreviewer" || user.role === "externalreviewer"
+    (user) => user.role === "localreviewer" || user.role === "externalreviewer",
   );
-  
+
   const [reviewers, setReviewers] = useState<User[]>(initialReviewers);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -49,20 +44,22 @@ export default function ManageReviewer() {
   const roleOptions = [
     { value: "all", label: "Tất cả loại" },
     { value: "localreviewer", label: "Phản biện nội bộ" },
-    { value: "externalreviewer", label: "Phản biện bên ngoài" }
+    { value: "externalreviewer", label: "Phản biện bên ngoài" },
   ];
-  
+
   const statusOptions = [
     { value: "all", label: "Tất cả trạng thái" },
     { value: "active", label: "Hoạt động" },
-    { value: "inactive", label: "Không hoạt động" }
+    { value: "inactive", label: "Không hoạt động" },
   ];
 
-  const filteredReviewers = reviewers.filter(reviewer => {
-    const matchesSearch = reviewer.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         reviewer.email.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredReviewers = reviewers.filter((reviewer) => {
+    const matchesSearch =
+      reviewer.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      reviewer.email.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole = filterRole === "all" || reviewer.role === filterRole;
-    const matchesStatus = filterStatus === "all" || reviewer.status === filterStatus;
+    const matchesStatus =
+      filterStatus === "all" || reviewer.status === filterStatus;
     return matchesSearch && matchesRole && matchesStatus;
   });
 
@@ -83,11 +80,11 @@ export default function ManageReviewer() {
 
   const handleSave = (data: UserFormData) => {
     if (editingReviewer) {
-      setReviewers(prev => prev.map(r => 
-        r.userId === editingReviewer.userId 
-          ? { ...r, ...data }
-          : r
-      ));
+      setReviewers((prev) =>
+        prev.map((r) =>
+          r.userId === editingReviewer.userId ? { ...r, ...data } : r,
+        ),
+      );
       toast.success("Cập nhật phản biện thành công!");
     } else {
       const newReviewer: User = {
@@ -95,9 +92,9 @@ export default function ManageReviewer() {
         userId: Date.now().toString(),
         status: "active",
         registeredConferences: 0,
-        joinedDate: new Date().toISOString().split('T')[0]
+        joinedDate: new Date().toISOString().split("T")[0],
       };
-      setReviewers(prev => [...prev, newReviewer]);
+      setReviewers((prev) => [...prev, newReviewer]);
       toast.success("Thêm phản biện thành công!");
     }
     setIsFormModalOpen(false);
@@ -110,7 +107,7 @@ export default function ManageReviewer() {
 
   const confirmDelete = () => {
     if (deleteReviewerId) {
-      setReviewers(prev => prev.filter(r => r.userId !== deleteReviewerId));
+      setReviewers((prev) => prev.filter((r) => r.userId !== deleteReviewerId));
       toast.success("Xóa phản biện thành công!");
       setDeleteReviewerId(null);
     }
@@ -121,7 +118,9 @@ export default function ManageReviewer() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-gray-900">Quản lý Reviewer</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Quản lý Reviewer
+            </h1>
             <Button
               onClick={handleCreate}
               className="flex items-center gap-2 whitespace-nowrap mt-6"
@@ -158,7 +157,9 @@ export default function ManageReviewer() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Tổng reviewers</p>
-                <p className="text-3xl font-bold text-gray-900">{reviewers.length}</p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {reviewers.length}
+                </p>
               </div>
               <Users className="w-10 h-10 text-blue-500" />
             </div>
@@ -169,7 +170,7 @@ export default function ManageReviewer() {
               <div>
                 <p className="text-sm text-gray-600 mb-1">Đang hoạt động</p>
                 <p className="text-3xl font-bold text-green-600">
-                  {reviewers.filter(r => r.status === "active").length}
+                  {reviewers.filter((r) => r.status === "active").length}
                 </p>
               </div>
               <UserCheck className="w-10 h-10 text-green-500" />
@@ -181,7 +182,7 @@ export default function ManageReviewer() {
               <div>
                 <p className="text-sm text-gray-600 mb-1">Phản biện nội bộ</p>
                 <p className="text-3xl font-bold text-purple-600">
-                  {reviewers.filter(r => r.role === "localreviewer").length}
+                  {reviewers.filter((r) => r.role === "localreviewer").length}
                 </p>
               </div>
               <Users className="w-10 h-10 text-purple-500" />
@@ -191,9 +192,14 @@ export default function ManageReviewer() {
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Phản biện bên ngoài</p>
+                <p className="text-sm text-gray-600 mb-1">
+                  Phản biện bên ngoài
+                </p>
                 <p className="text-3xl font-bold text-orange-600">
-                  {reviewers.filter(r => r.role === "externalreviewer").length}
+                  {
+                    reviewers.filter((r) => r.role === "externalreviewer")
+                      .length
+                  }
                 </p>
               </div>
               <UserX className="w-10 h-10 text-orange-500" />
@@ -217,7 +223,7 @@ export default function ManageReviewer() {
         onClose={() => {
           setIsFormModalOpen(false);
           setEditingReviewer(null);
-        }} 
+        }}
         title={editingReviewer ? "Chỉnh sửa reviewer" : "Thêm reviewer mới"}
       >
         <ReviewerForm
@@ -251,17 +257,24 @@ export default function ManageReviewer() {
       </Modal>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteReviewerId} onOpenChange={() => setDeleteReviewerId(null)}>
+      <AlertDialog
+        open={!!deleteReviewerId}
+        onOpenChange={() => setDeleteReviewerId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa reviewer này? Hành động này không thể hoàn tác.
+              Bạn có chắc chắn muốn xóa reviewer này? Hành động này không thể
+              hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
               Xóa
             </AlertDialogAction>
           </AlertDialogFooter>

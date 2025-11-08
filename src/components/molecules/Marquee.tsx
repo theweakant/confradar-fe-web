@@ -1,22 +1,28 @@
-"use client"
+"use client";
 
-import type { CSSProperties } from "react"
-import { cn } from "@/utils/utils"
+import type { CSSProperties } from "react";
+import { cn } from "@/utils/utils";
 
 interface MarqueeProps {
-  text: string | string[]
-  speed?: number
-  className?: string
-  textClassName?: string
-  separator?: string
+  text: string | string[];
+  speed?: number;
+  className?: string;
+  textClassName?: string;
+  separator?: string;
 }
 
-export function Marquee({ text, speed = 30, className, textClassName, separator = " • " }: MarqueeProps) {
-  const textArray = Array.isArray(text) ? text : [text]
-  const content = textArray.join(separator)
+export function Marquee({
+  text,
+  speed = 30,
+  className,
+  textClassName,
+  separator = " • ",
+}: MarqueeProps) {
+  const textArray = Array.isArray(text) ? text : [text];
+  const content = textArray.join(separator);
 
   // Duplicate content for seamless loop
-  const duplicatedContent = `${content}${separator}${content}${separator}`
+  const duplicatedContent = `${content}${separator}${content}${separator}`;
 
   return (
     <div className={cn("relative overflow-hidden w-full", className)}>
@@ -28,7 +34,9 @@ export function Marquee({ text, speed = 30, className, textClassName, separator 
           } as CSSProperties
         }
       >
-        <span className={cn("inline-block", textClassName)}>{duplicatedContent}</span>
+        <span className={cn("inline-block", textClassName)}>
+          {duplicatedContent}
+        </span>
       </div>
       <style jsx>{`
         @keyframes marquee {
@@ -41,5 +49,5 @@ export function Marquee({ text, speed = 30, className, textClassName, separator 
         }
       `}</style>
     </div>
-  )
+  );
 }

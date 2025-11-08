@@ -26,7 +26,7 @@ export function RequestForm({ onSave, onCancel }: RequestFormProps) {
     Partial<Record<keyof CreateRequestDto, string>>
   >({});
   const [touched, setTouched] = useState<Set<keyof CreateRequestDto>>(
-    new Set()
+    new Set(),
   );
 
   const handleChange = (field: keyof CreateRequestDto, value: string) => {
@@ -37,7 +37,7 @@ export function RequestForm({ onSave, onCancel }: RequestFormProps) {
 
   const validateField = (
     field: keyof CreateRequestDto,
-    value: string
+    value: string,
   ): boolean => {
     let errorMessage = "";
 
@@ -107,9 +107,13 @@ export function RequestForm({ onSave, onCancel }: RequestFormProps) {
           name="conferenceName"
           value={formData.conferenceName}
           onChange={(value) => handleChange("conferenceName", value)}
-          onBlur={() => validateField("conferenceName", formData.conferenceName)}
+          onBlur={() =>
+            validateField("conferenceName", formData.conferenceName)
+          }
           required
-          error={touched.has("conferenceName") ? errors.conferenceName : undefined}
+          error={
+            touched.has("conferenceName") ? errors.conferenceName : undefined
+          }
           success={touched.has("conferenceName") && !errors.conferenceName}
           placeholder="VD: Tech Conference 2024"
         />

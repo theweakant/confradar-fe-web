@@ -1,20 +1,36 @@
-"use client"
+"use client";
 
-import { useRouter } from "next/navigation"
-import Image from "next/image"
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2, User, Mail, Lock, Phone, Calendar, Users, Upload, X } from "lucide-react"
-import { useRegisterMutation } from "@/redux/services/auth.service"
-import { toast } from "sonner"
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Loader2,
+  User,
+  Mail,
+  Lock,
+  Phone,
+  Calendar,
+  Users,
+  Upload,
+  X,
+} from "lucide-react";
+import { useRegisterMutation } from "@/redux/services/auth.service";
+import { toast } from "sonner";
 
 export default function Register() {
-  const router = useRouter()
-  const [registerUser] = useRegisterMutation()
+  const router = useRouter();
+  const [registerUser] = useRegisterMutation();
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -25,86 +41,86 @@ export default function Register() {
     gender: "",
     birthday: "",
     bioDescription: "",
-  })
+  });
 
-  const [avatarFile, setAvatarFile] = useState<File | null>(null)
-  const [avatarPreview, setAvatarPreview] = useState<string>("")
-  const [isLoading, setIsLoading] = useState(false)
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-  }
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
       // Validate file type
       if (!file.type.startsWith("image/")) {
-        toast.error("Vui lòng chọn file ảnh")
-        return
+        toast.error("Vui lòng chọn file ảnh");
+        return;
       }
 
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("Kích thước ảnh không được vượt quá 5MB")
-        return
+        toast.error("Kích thước ảnh không được vượt quá 5MB");
+        return;
       }
 
-      setAvatarFile(file)
-      
+      setAvatarFile(file);
+
       // Create preview
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onloadend = () => {
-        setAvatarPreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   const removeAvatar = () => {
-    setAvatarFile(null)
-    setAvatarPreview("")
-  }
+    setAvatarFile(null);
+    setAvatarPreview("");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
-      toast.error("Mật khẩu xác nhận không khớp")
-      return
+      toast.error("Mật khẩu xác nhận không khớp");
+      return;
     }
 
     try {
-      setIsLoading(true)
+      setIsLoading(true);
 
-      const body = new FormData()
-      body.append("fullName", formData.fullName)
-      body.append("email", formData.email)
-      body.append("password", formData.password)
-      body.append("confirmPassword", formData.confirmPassword)
-      body.append("phoneNumber", formData.phoneNumber)
-      body.append("gender", formData.gender || "Other")
-      body.append("birthday", formData.birthday || "2000-01-01")
-      body.append("bioDescription", formData.bioDescription)
-      
+      const body = new FormData();
+      body.append("fullName", formData.fullName);
+      body.append("email", formData.email);
+      body.append("password", formData.password);
+      body.append("confirmPassword", formData.confirmPassword);
+      body.append("phoneNumber", formData.phoneNumber);
+      body.append("gender", formData.gender || "Other");
+      body.append("birthday", formData.birthday || "2000-01-01");
+      body.append("bioDescription", formData.bioDescription);
+
       // Append avatar file if exists
       if (avatarFile) {
-        body.append("avatarFile", avatarFile)
+        body.append("avatarFile", avatarFile);
       } else {
-        body.append("avatarFile", "")
+        body.append("avatarFile", "");
       }
 
-      await registerUser(body).unwrap()
+      await registerUser(body).unwrap();
 
-      toast.success("Đăng ký thành công. Vui lòng kiểm tra Mail của bạn!")
-      router.push("/auth/login")
+      toast.success("Đăng ký thành công. Vui lòng kiểm tra Mail của bạn!");
+      router.push("/auth/login");
     } catch (error) {
-      console.error("Register error:", error)
-      toast.error("Đăng ký thất bại. Vui lòng thử lại!")
+      console.error("Register error:", error);
+      toast.error("Đăng ký thất bại. Vui lòng thử lại!");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex">
@@ -112,8 +128,12 @@ export default function Register() {
       <div className="w-full lg:w-2/5 flex items-center justify-center p-6 bg-background">
         <Card className="w-full max-w-md border-0 shadow-none">
           <CardHeader className="space-y-1 text-center pb-4">
-            <CardTitle className="text-2xl font-bold text-balance">Tham Gia Cộng Đồng ConfRadar</CardTitle>
-            <p className="text-sm text-muted-foreground">Khám phá các hội nghị và hội thảo hàng đầu</p>
+            <CardTitle className="text-2xl font-bold text-balance">
+              Tham Gia Cộng Đồng ConfRadar
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Khám phá các hội nghị và hội thảo hàng đầu
+            </p>
           </CardHeader>
 
           <CardContent>
@@ -183,7 +203,9 @@ export default function Register() {
                     type="text"
                     placeholder="Nhập họ tên"
                     value={formData.fullName}
-                    onChange={(e) => handleInputChange("fullName", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("fullName", e.target.value)
+                    }
                     disabled={isLoading}
                     className="pl-9 h-9 text-sm"
                     required
@@ -223,7 +245,9 @@ export default function Register() {
                     type="password"
                     placeholder="Tạo mật khẩu"
                     value={formData.password}
-                    onChange={(e) => handleInputChange("password", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("password", e.target.value)
+                    }
                     disabled={isLoading}
                     className="pl-9 h-9 text-sm"
                     required
@@ -233,7 +257,10 @@ export default function Register() {
 
               {/* Confirm Password */}
               <div className="space-y-1">
-                <Label htmlFor="confirmPassword" className="text-xs font-medium">
+                <Label
+                  htmlFor="confirmPassword"
+                  className="text-xs font-medium"
+                >
                   Nhập lại mật khẩu <span className="text-destructive">*</span>
                 </Label>
                 <div className="relative">
@@ -243,7 +270,9 @@ export default function Register() {
                     type="password"
                     placeholder="Nhập lại mật khẩu"
                     value={formData.confirmPassword}
-                    onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("confirmPassword", e.target.value)
+                    }
                     disabled={isLoading}
                     className="pl-9 h-9 text-sm"
                     required
@@ -259,7 +288,9 @@ export default function Register() {
                   </Label>
                   <Select
                     value={formData.gender}
-                    onValueChange={(value) => handleInputChange("gender", value)}
+                    onValueChange={(value) =>
+                      handleInputChange("gender", value)
+                    }
                     disabled={isLoading}
                   >
                     <SelectTrigger className="h-9 text-sm">
@@ -283,7 +314,9 @@ export default function Register() {
                       id="birthday"
                       type="date"
                       value={formData.birthday}
-                      onChange={(e) => handleInputChange("birthday", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("birthday", e.target.value)
+                      }
                       disabled={isLoading}
                       className="pl-9 h-9 text-sm"
                     />
@@ -303,7 +336,9 @@ export default function Register() {
                     type="tel"
                     placeholder="Số điện thoại"
                     value={formData.phoneNumber}
-                    onChange={(e) => handleInputChange("phoneNumber", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("phoneNumber", e.target.value)
+                    }
                     disabled={isLoading}
                     className="pl-9 h-9 text-sm"
                   />
@@ -359,16 +394,18 @@ export default function Register() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-12 text-white">
-          <h2 className="text-4xl font-bold mb-4 text-balance">Kết Nối Với Các Chuyên Gia Hàng Đầu</h2>
+          <h2 className="text-4xl font-bold mb-4 text-balance">
+            Kết Nối Với Các Chuyên Gia Hàng Đầu
+          </h2>
           <p className="text-lg text-white/90 max-w-2xl text-pretty">
-            Tham gia cộng đồng ConfRadar để khám phá và đăng ký các hội nghị, hội thảo chuyên nghiệp trong lĩnh vực của bạn.
+            Tham gia cộng đồng ConfRadar để khám phá và đăng ký các hội nghị,
+            hội thảo chuyên nghiệp trong lĩnh vực của bạn.
           </p>
         </div>
       </div>
     </div>
-  )
+  );
 }
-
 
 // "use client"
 
@@ -428,7 +465,7 @@ export default function Register() {
 //       }
 
 //       setAvatarFile(file)
-      
+
 //       // Create preview
 //       const reader = new FileReader()
 //       reader.onloadend = () => {
@@ -474,7 +511,7 @@ export default function Register() {
 //       body.append("gender", formData.gender || "Other")
 //       body.append("birthday", formData.birthday || "2000-01-01")
 //       body.append("bioDescription", formData.bioDescription)
-      
+
 //       // Append avatar file if exists
 //       if (avatarFile) {
 //         body.append("avatarFile", avatarFile)

@@ -1,7 +1,7 @@
 import React from "react";
-import { 
-  Pencil, 
-  Trash2, 
+import {
+  Pencil,
+  Trash2,
   Eye,
   Calendar,
   FileText,
@@ -11,7 +11,7 @@ import {
 import { DataTable, Column } from "@/components/molecules/DataTable";
 import { formatDate } from "@/helper/format";
 import { StatusBadge } from "@/components/atoms/StatusBadge";
-import { User } from "@/types/user.type";
+import { User } from "../ManageUser";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,43 +26,44 @@ interface UserTableProps {
   onDelete: (id: string) => void;
 }
 
-export function UserTable({ 
-  users, 
-  onView, 
-  onEdit, 
-  onDelete 
-}: UserTableProps) {
+export function UserTable({ users, onView, onEdit, onDelete }: UserTableProps) {
   const getRoleLabel = (role: string) => {
     const labels: Record<string, string> = {
       admin: "Quản trị viên",
       organizer: "Tổ chức",
-      attendee: "Người tham dự"
+      attendee: "Người tham dự",
     };
     return labels[role] || role;
   };
 
-  const getRoleVariant = (role: string): "success" | "danger" | "warning" | "info" => {
-    const variants: Record<string, "success" | "danger" | "warning" | "info"> = {
-      admin: "danger",
-      organizer: "info",
-      attendee: "success"
-    };
+  const getRoleVariant = (
+    role: string,
+  ): "success" | "danger" | "warning" | "info" => {
+    const variants: Record<string, "success" | "danger" | "warning" | "info"> =
+      {
+        admin: "danger",
+        organizer: "info",
+        attendee: "success",
+      };
     return variants[role] || "info";
   };
 
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
       active: "Hoạt động",
-      inactive: "Không hoạt động"
+      inactive: "Không hoạt động",
     };
     return labels[status] || status;
   };
 
-  const getStatusVariant = (status: string): "success" | "danger" | "warning" | "info" => {
-    const variants: Record<string, "success" | "danger" | "warning" | "info"> = {
-      active: "success",
-      inactive: "danger"
-    };
+  const getStatusVariant = (
+    status: string,
+  ): "success" | "danger" | "warning" | "info" => {
+    const variants: Record<string, "success" | "danger" | "warning" | "info"> =
+      {
+        active: "success",
+        inactive: "danger",
+      };
     return variants[status] || "info";
   };
 

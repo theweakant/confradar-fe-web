@@ -17,16 +17,13 @@ const categorySlice = createSlice({
   name: "category",
   initialState,
   reducers: {
-
     setCategories: (state, action: PayloadAction<Category[]>) => {
       state.list = action.payload;
     },
 
-
     setSelectedCategory: (state, action: PayloadAction<Category | null>) => {
       state.selected = action.payload;
     },
-
 
     startLoading: (state) => {
       state.loading = true;

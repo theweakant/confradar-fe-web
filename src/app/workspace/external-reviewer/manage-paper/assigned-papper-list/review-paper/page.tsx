@@ -2,4 +2,4 @@ import ReviewPaper from "@/components/(user)/workspace/reviewer/ReviewPaper/Revi
 
 export default function ReviewPaperPage() {
   return <ReviewPaper />;
-}   
+}

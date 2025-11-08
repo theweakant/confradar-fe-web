@@ -48,7 +48,7 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
   conference,
 }) => {
   const { role } = useAuth();
-    const { data: statusData, refetch } = useGetAllConferenceStatusesQuery();
+  const { data: statusData, refetch } = useGetAllConferenceStatusesQuery();
   const [updateStatus, { isLoading }] = useUpdateOwnConferenceStatusMutation();
 
   const [newStatus, setNewStatus] = useState<string>("");
@@ -59,32 +59,31 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
     if (!statusId || !statusData?.data) return "N/A";
 
     const matchedStatus = statusData.data.find(
-      (s: ConferenceStatus) => s.conferenceStatusId === statusId
+      (s: ConferenceStatus) => s.conferenceStatusId === statusId,
     );
     return matchedStatus?.conferenceStatusName || "N/A";
   }, [conference?.conferenceStatusId, statusData]);
 
   const normalizedCurrentStatus = normalizeStatus(currentStatus);
 
-    const getStatusColor = (status: string): string => {
+  const getStatusColor = (status: string): string => {
     const normalized = normalizeStatus(status);
 
     switch (normalized) {
-        case "preparing":
+      case "preparing":
         return "text-yellow-600 bg-yellow-100 border border-yellow-300";
-        case "ready":
+      case "ready":
         return "text-blue-600 bg-blue-100 border border-blue-300";
-        case "completed":
+      case "completed":
         return "text-green-600 bg-green-100 border border-green-300";
-        case "onhold":
+      case "onhold":
         return "text-orange-600 bg-orange-100 border border-orange-300";
-        case "canceled":
+      case "canceled":
         return "text-red-600 bg-red-100 border border-red-300";
-        default:
+      default:
         return "text-gray-600 bg-gray-100 border border-gray-300";
     }
-    };
-
+  };
 
   const availableStatuses = useMemo<string[]>(() => {
     if (!role || normalizedCurrentStatus === "unknown") return [];
@@ -111,10 +110,10 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
     if (!newStatus) return toast.error("Vui lòng chọn trạng thái mới");
 
     try {
-       if (!conference?.conferenceId) {
+      if (!conference?.conferenceId) {
         toast.error("Không tìm thấy mã hội thảo.");
         return;
-        } 
+      }
 
       const res: ApiResponse = await updateStatus({
         confid: conference.conferenceId,
@@ -127,7 +126,7 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
         await refetch();
         setNewStatus("");
         setReason("");
-        onClose();;
+        onClose();
       } else {
         toast.error(res.message || "Cập nhật thất bại");
       }
@@ -148,11 +147,12 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
           <div>
             <Label className="text-sm font-medium">Trạng thái hiện tại</Label>
-            <p className={`text-sm font-semibold mt-3 px-2 py-1 rounded-md inline-block ${getStatusColor(
-                currentStatus
-            )}`}
+            <p
+              className={`text-sm font-semibold mt-3 px-2 py-1 rounded-md inline-block ${getStatusColor(
+                currentStatus,
+              )}`}
             >
-            {currentStatus}
+              {currentStatus}
             </p>
           </div>
 

@@ -4,11 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 import Link from "next/link";
-import { 
-  Plus,  
-  Calendar,
-  Loader2
-} from "lucide-react";
+import { Plus, Calendar, Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,15 +25,10 @@ import { SearchFilter } from "@/components/molecules/SearchFilter";
 import { ConferenceTable } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceTable";
 import { Conference } from "@/types/conference.type";
 
-import { 
-  useGetTechConferencesForCollaboratorAndOrganizerQuery, 
-} from "@/redux/services/conference.service"; 
-import { 
-  useGetAllConferenceStatusesQuery, 
-} from "@/redux/services/status.service"; 
-import { useGetAllCitiesQuery } from "@/redux/services/city.service"; 
+import { useGetTechConferencesForCollaboratorAndOrganizerQuery } from "@/redux/services/conference.service";
+import { useGetAllConferenceStatusesQuery } from "@/redux/services/status.service";
+import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
-
 
 import ConferenceCalendar from "@/components/molecules/Calendar/index";
 import SessionScheduleCalendar from "@/components/molecules/Calendar/SessionScheduleCalendar";
@@ -52,29 +43,35 @@ export default function ManageConference() {
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterCity, setFilterCity] = useState("all");
-  const [deleteConferenceId, setDeleteConferenceId] = useState<string | null>(null);
+  const [deleteConferenceId, setDeleteConferenceId] = useState<string | null>(
+    null,
+  );
   const [showCalendarDialog, setShowCalendarDialog] = useState(false);
-  const [calendarType, setCalendarType] = useState<'conference' | 'session' | 'paper'>('conference');
-
+  const [calendarType, setCalendarType] = useState<
+    "conference" | "session" | "paper"
+  >("conference");
 
   // RTK Query hooks
-  const { data, isLoading, isFetching, error, refetch } = useGetTechConferencesForCollaboratorAndOrganizerQuery({
-    page,
-    pageSize,
-    ...(filterCategory !== "all" && { conferenceCategoryId: filterCategory }), 
-    ...(filterStatus !== "all" && { conferenceStatusId: filterStatus }),
-    ...(searchQuery && { searchKeyword: searchQuery }),
-    ...(filterCity !== "all" && { cityId: filterCity }),
-  });
+  const { data, isLoading, isFetching, error, refetch } =
+    useGetTechConferencesForCollaboratorAndOrganizerQuery({
+      page,
+      pageSize,
+      ...(filterCategory !== "all" && { conferenceCategoryId: filterCategory }),
+      ...(filterStatus !== "all" && { conferenceStatusId: filterStatus }),
+      ...(searchQuery && { searchKeyword: searchQuery }),
+      ...(filterCity !== "all" && { cityId: filterCity }),
+    });
 
   const { data: citiesData, isLoading: citiesLoading } = useGetAllCitiesQuery();
-  const { data: statusesData, isLoading: statusesLoading } = useGetAllConferenceStatusesQuery();
-  const { data: categoriesData, isLoading: categoriesLoading } = useGetAllCategoriesQuery();
+  const { data: statusesData, isLoading: statusesLoading } =
+    useGetAllConferenceStatusesQuery();
+  const { data: categoriesData, isLoading: categoriesLoading } =
+    useGetAllCategoriesQuery();
 
   const conferences = (data?.data?.items || []).slice().sort((a, b) => {
     const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
     const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-    return dateB - dateA; 
+    return dateB - dateA;
   });
   const totalConferences = data?.data?.totalCount || 0;
   const totalPages = data?.data?.totalPages || 1;
@@ -83,24 +80,24 @@ export default function ManageConference() {
   const statuses = statusesData?.data || [];
   const categories = categoriesData?.data || [];
 
-const handleOpenCalendar = (type: 'conference' | 'session' | 'paper') => {
-  console.log('Opening calendar:', type); // Debug log
-  setCalendarType(type);
-  setShowCalendarDialog(true);
-  console.log('showCalendarDialog:', true); // Debug log
-};
+  const handleOpenCalendar = (type: "conference" | "session" | "paper") => {
+    console.log("Opening calendar:", type); // Debug log
+    setCalendarType(type);
+    setShowCalendarDialog(true);
+    console.log("showCalendarDialog:", true); // Debug log
+  };
 
-  const conferencesWithCategory = conferences.map(conf => ({
+  const conferencesWithCategory = conferences.map((conf) => ({
     ...conf,
+    sessions: conf.sessions ?? [],
     conferenceCategoryName: categories.find(
-      cat => cat.conferenceCategoryId === conf.conferenceCategoryId
+      (cat) => cat.conferenceCategoryId === conf.conferenceCategoryId,
     )?.conferenceCategoryName,
-    
   }));
 
   const categoryOptions = [
     { value: "all", label: "Tất cả danh mục" },
-    ...categories.map(category => ({
+    ...categories.map((category) => ({
       value: category.conferenceCategoryId,
       label: category.conferenceCategoryName || "N/A",
     })),
@@ -108,7 +105,7 @@ const handleOpenCalendar = (type: 'conference' | 'session' | 'paper') => {
 
   const statusOptions = [
     { value: "all", label: "Tất cả trạng thái" },
-    ...statuses.map(status => ({
+    ...statuses.map((status) => ({
       value: status.conferenceStatusId,
       label: status.conferenceStatusName || "N/A",
     })),
@@ -116,7 +113,7 @@ const handleOpenCalendar = (type: 'conference' | 'session' | 'paper') => {
 
   const cityOptions = [
     { value: "all", label: "Tất cả thành phố" },
-    ...cities.map(city => ({
+    ...cities.map((city) => ({
       value: city.cityId,
       label: city.cityName || "N/A",
     })),
@@ -124,14 +121,16 @@ const handleOpenCalendar = (type: 'conference' | 'session' | 'paper') => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setPage(1); 
+      setPage(1);
     }, 500);
 
     return () => clearTimeout(timer);
   }, [searchQuery, filterStatus, filterCity, filterCategory]);
 
   const handleView = (conference: Conference) => {
-    router.push(`/workspace/collaborator/manage-conference/view-detail/${conference.conferenceId}`);
+    router.push(
+      `/workspace/collaborator/manage-conference/view-detail/${conference.conferenceId}`,
+    );
   };
 
   const handleDelete = (id: string) => {
@@ -172,59 +171,61 @@ const handleOpenCalendar = (type: 'conference' | 'session' | 'paper') => {
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
             <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-bold text-gray-900">Quản lý Hội thảo</h1>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Quản lý Hội thảo
+              </h1>
 
-<div className="flex items-center gap-3">
-  <Button 
-    variant="outline" 
-    className="flex items-center gap-2 whitespace-nowrap"
-    onClick={() => {
-      setCalendarType('conference');
-      setShowCalendarDialog(true);
-    }}
-  >
-    <Calendar className="w-5 h-5" />
-    Xem Lịch Hội nghị
-  </Button>
-  
-  <Button 
-    variant="outline" 
-    className="flex items-center gap-2 whitespace-nowrap border-blue-300 text-blue-700 hover:bg-blue-50"
-    // onClick={() => {
-    //   setCalendarType('session');
-    //   setShowCalendarDialog(true);
-    // }}
-     onClick={() => handleOpenCalendar('session')}
-  >
-    <Calendar className="w-5 h-5" />
-    Session Calendar
-  </Button>
-  
-  <Button 
-    variant="outline" 
-    className="flex items-center gap-2 whitespace-nowrap border-green-300 text-green-700 hover:bg-green-50"
-    onClick={() => {
-      setCalendarType('paper');
-      setShowCalendarDialog(true);
-    }}
-  >
-    <Calendar className="w-5 h-5" />
-    Paper Calendar
-  </Button>
-  
-  <Link href="/workspace/collaborator/manage-conference/create-tech-conference">
-    <Button className="flex items-center gap-2 whitespace-nowrap">
-      <Plus className="w-5 h-5" />
-      Thêm hội thảo
-    </Button>
-  </Link>
-</div>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2 whitespace-nowrap"
+                  onClick={() => {
+                    setCalendarType("conference");
+                    setShowCalendarDialog(true);
+                  }}
+                >
+                  <Calendar className="w-5 h-5" />
+                  Xem Lịch Hội nghị
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2 whitespace-nowrap border-blue-300 text-blue-700 hover:bg-blue-50"
+                  // onClick={() => {
+                  //   setCalendarType('session');
+                  //   setShowCalendarDialog(true);
+                  // }}
+                  onClick={() => handleOpenCalendar("session")}
+                >
+                  <Calendar className="w-5 h-5" />
+                  Session Calendar
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2 whitespace-nowrap border-green-300 text-green-700 hover:bg-green-50"
+                  onClick={() => {
+                    setCalendarType("paper");
+                    setShowCalendarDialog(true);
+                  }}
+                >
+                  <Calendar className="w-5 h-5" />
+                  Paper Calendar
+                </Button>
+
+                <Link href="/workspace/collaborator/manage-conference/create-tech-conference">
+                  <Button className="flex items-center gap-2 whitespace-nowrap">
+                    <Plus className="w-5 h-5" />
+                    Thêm hội thảo
+                  </Button>
+                </Link>
+              </div>
             </div>
             <p className="text-gray-600 mt-2">
               Quản lý thông tin các hội thảo trên ConfRadar
             </p>
           </div>
-          
+
           <SearchFilter
             searchValue={searchQuery}
             onSearchChange={setSearchQuery}
@@ -256,18 +257,18 @@ const handleOpenCalendar = (type: 'conference' | 'session' | 'paper') => {
               color="blue"
             />
           </div>
-          
+
           <div className="flex justify-end mb-4">
             <Link href="/workspace/collaborator/manage-conference/view-draft-list">
               <Button
                 variant="link"
                 className="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1.5"
               >
-                Xem Draft 
+                Xem Draft
               </Button>
             </Link>
           </div>
-          
+
           {isLoading || isFetching ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
@@ -295,11 +296,11 @@ const handleOpenCalendar = (type: 'conference' | 'session' | 'paper') => {
                   >
                     Trước
                   </Button>
-                  
+
                   <span className="px-4 py-2 text-sm text-gray-700">
                     Trang {page} / {totalPages}
                   </span>
-                  
+
                   <Button
                     variant="outline"
                     onClick={() => handlePageChange(page + 1)}
@@ -314,111 +315,129 @@ const handleOpenCalendar = (type: 'conference' | 'session' | 'paper') => {
         </div>
       </div>
 
+      {showCalendarDialog && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-7xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    {calendarType === "conference" &&
+                      "Lịch Hội nghị & Hội thảo"}
+                    {calendarType === "session" && "Session Schedule Calendar"}
+                    {calendarType === "paper" && "Paper Schedule Calendar"}
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {calendarType === "conference" &&
+                      "Theo dõi và quản lý các sự kiện sắp tới"}
+                    {calendarType === "session" &&
+                      "Manage session schedules and timings"}
+                    {calendarType === "paper" &&
+                      "Schedule and manage paper presentations"}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowCalendarDialog(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
 
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {calendarType === "conference" && (
+                <ConferenceCalendar
+                  conferences={conferencesWithCategory}
+                  onClose={() => setShowCalendarDialog(false)}
+                  isLoading={isLoading || isFetching}
+                  title="Lịch Hội nghị & Hội thảo"
+                  subtitle="Theo dõi và quản lý các sự kiện sắp tới"
+                />
+              )}
 
-{showCalendarDialog && (
-  <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-    <div className="bg-white rounded-lg shadow-xl max-w-7xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-      {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-200">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">
-              {calendarType === 'conference' && 'Lịch Hội nghị & Hội thảo'}
-              {calendarType === 'session' && 'Session Schedule Calendar'}
-              {calendarType === 'paper' && 'Paper Schedule Calendar'}
-            </h2>
-            <p className="text-sm text-gray-500 mt-1">
-              {calendarType === 'conference' && 'Theo dõi và quản lý các sự kiện sắp tới'}
-              {calendarType === 'session' && 'Manage session schedules and timings'}
-              {calendarType === 'paper' && 'Schedule and manage paper presentations'}
-            </p>
+              {calendarType === "session" && (
+                <SessionScheduleCalendar
+                  conferenceId="current-conference-id"
+                  rooms={[]}
+                  sessions={[]}
+                  useMockData={true}
+                  onCreateSession={async (session) => {
+                    console.log("Create session:", session);
+                    toast.success("Session created successfully!");
+                  }}
+                  onUpdateSession={async (id, session) => {
+                    console.log("Update session:", id, session);
+                    toast.success("Session updated successfully!");
+                  }}
+                />
+              )}
+
+              {calendarType === "paper" && (
+                <PaperScheduleCalendar
+                  conferenceId="current-conference-id"
+                  papers={[]}
+                  presentations={[]}
+                  rooms={[]}
+                  useMockData={true}
+                  onSchedulePaper={async (presentation) => {
+                    console.log("Schedule paper:", presentation);
+                    toast.success("Paper scheduled successfully!");
+                  }}
+                  onUpdatePresentation={async (id, presentation) => {
+                    console.log("Update presentation:", id, presentation);
+                    toast.success("Presentation updated successfully!");
+                  }}
+                />
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setShowCalendarDialog(false)}
+              >
+                Đóng
+              </Button>
+            </div>
           </div>
-          <button
-            onClick={() => setShowCalendarDialog(false)}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
         </div>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">
-        {calendarType === 'conference' && (
-          <ConferenceCalendar
-            conferences={conferencesWithCategory}
-            onClose={() => setShowCalendarDialog(false)}
-            isLoading={isLoading || isFetching}
-            title="Lịch Hội nghị & Hội thảo"
-            subtitle="Theo dõi và quản lý các sự kiện sắp tới"
-            useMockData={true}
-          />
-        )}
-        
-        {calendarType === 'session' && (
-          <SessionScheduleCalendar
-            conferenceId="current-conference-id" 
-            rooms={[]}
-            sessions={[]}
-            useMockData={true}
-            onCreateSession={async (session) => {
-              console.log('Create session:', session);
-              toast.success('Session created successfully!');
-            }}
-            onUpdateSession={async (id, session) => {
-              console.log('Update session:', id, session);
-              toast.success('Session updated successfully!');
-            }}
-          />
-        )}
-        
-        {calendarType === 'paper' && (
-          <PaperScheduleCalendar
-            conferenceId="current-conference-id" 
-            papers={[]}
-            presentations={[]}
-            rooms={[]}
-            useMockData={true}
-            onSchedulePaper={async (presentation) => {
-              console.log('Schedule paper:', presentation);
-              toast.success('Paper scheduled successfully!');
-            }}
-            onUpdatePresentation={async (id, presentation) => {
-              console.log('Update presentation:', id, presentation);
-              toast.success('Presentation updated successfully!');
-            }}
-          />
-        )}
-      </div>
-
-      {/* Footer */}
-      <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
-        <Button 
-          variant="outline"
-          onClick={() => setShowCalendarDialog(false)}
-        >
-          Đóng
-        </Button>
-      </div>
-    </div>
-  </div>
-)}
+      )}
 
       {/* Alert Dialog */}
-      <AlertDialog open={!!deleteConferenceId} onOpenChange={() => setDeleteConferenceId(null)}>
+      <AlertDialog
+        open={!!deleteConferenceId}
+        onOpenChange={() => setDeleteConferenceId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa hội thảo này? Hành động này không thể hoàn tác và sẽ xóa tất cả các đăng ký liên quan.
+              Bạn có chắc chắn muốn xóa hội thảo này? Hành động này không thể
+              hoàn tác và sẽ xóa tất cả các đăng ký liên quan.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
               Xóa
             </AlertDialogAction>
           </AlertDialogFooter>

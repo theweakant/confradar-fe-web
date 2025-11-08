@@ -50,34 +50,47 @@ export function ReviewerForm({ user, onSave, onCancel }: ReviewerFormProps) {
     assignedConferences: [],
   });
 
-  const [errors, setErrors] = useState<Partial<Record<keyof ReviewerFormData, string>>>({});
-  const [touched, setTouched] = useState<Set<keyof ReviewerFormData>>(new Set());
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof ReviewerFormData, string>>
+  >({});
+  const [touched, setTouched] = useState<Set<keyof ReviewerFormData>>(
+    new Set(),
+  );
 
   const handleChange = (
-    field: keyof ReviewerFormData, 
-    value: string | boolean | File | null | string[]
+    field: keyof ReviewerFormData,
+    value: string | boolean | File | null | string[],
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       validateField(field, value);
     }
     setTouched((prev) => new Set(prev).add(field));
   };
 
-  const validateField = (field: keyof ReviewerFormData, value: string): boolean => {
+  const validateField = (
+    field: keyof ReviewerFormData,
+    value: string,
+  ): boolean => {
     if (typeof field !== "string") return true;
-    
+
     // Custom validation for password fields
     if (field === "password" && !user) {
       if (!value || value.length < 6) {
-        setErrors((prev) => ({ ...prev, [field]: "Mật khẩu phải có ít nhất 6 ký tự" }));
+        setErrors((prev) => ({
+          ...prev,
+          [field]: "Mật khẩu phải có ít nhất 6 ký tự",
+        }));
         return false;
       }
     }
-    
+
     if (field === "confirmPassword") {
       if (value !== formData.password) {
-        setErrors((prev) => ({ ...prev, [field]: "Mật khẩu xác nhận không khớp" }));
+        setErrors((prev) => ({
+          ...prev,
+          [field]: "Mật khẩu xác nhận không khớp",
+        }));
         return false;
       }
     }
@@ -102,21 +115,31 @@ export function ReviewerForm({ user, onSave, onCancel }: ReviewerFormProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      const allowedTypes = [
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ];
       if (!allowedTypes.includes(file.type)) {
-        setErrors((prev) => ({ ...prev, contractFile: 'Chỉ chấp nhận file PDF hoặc Word' }));
+        setErrors((prev) => ({
+          ...prev,
+          contractFile: "Chỉ chấp nhận file PDF hoặc Word",
+        }));
         return;
       }
-      
+
       if (file.size > 5 * 1024 * 1024) {
-        setErrors((prev) => ({ ...prev, contractFile: 'Kích thước file không được vượt quá 5MB' }));
+        setErrors((prev) => ({
+          ...prev,
+          contractFile: "Kích thước file không được vượt quá 5MB",
+        }));
         return;
       }
 
       setFormData((prev) => ({
         ...prev,
         contractFile: file,
-        contractFileName: file.name
+        contractFileName: file.name,
       }));
       setErrors((prev) => ({ ...prev, contractFile: "" }));
     }
@@ -126,7 +149,7 @@ export function ReviewerForm({ user, onSave, onCancel }: ReviewerFormProps) {
     setFormData((prev) => ({
       ...prev,
       contractFile: null,
-      contractFileName: ""
+      contractFileName: "",
     }));
   };
 
@@ -134,7 +157,7 @@ export function ReviewerForm({ user, onSave, onCancel }: ReviewerFormProps) {
     setFormData((prev) => {
       const current = prev.assignedConferences || [];
       const newAssigned = current.includes(conferenceId)
-        ? current.filter(id => id !== conferenceId)
+        ? current.filter((id) => id !== conferenceId)
         : [...current, conferenceId];
       return { ...prev, assignedConferences: newAssigned };
     });
@@ -142,16 +165,20 @@ export function ReviewerForm({ user, onSave, onCancel }: ReviewerFormProps) {
 
   const validate = (): boolean => {
     let isValid = true;
-    const requiredFields: Array<keyof ReviewerFormData> = ['fullName', 'email', 'expertise'];
-    
+    const requiredFields: Array<keyof ReviewerFormData> = [
+      "fullName",
+      "email",
+      "expertise",
+    ];
+
     // Only require password for new users
     if (!user) {
-      requiredFields.push('password', 'confirmPassword');
+      requiredFields.push("password", "confirmPassword");
     }
 
     requiredFields.forEach((field) => {
       const fieldValue = formData[field] as string;
-      const fieldIsValid = validateField(field, fieldValue || '');
+      const fieldIsValid = validateField(field, fieldValue || "");
 
       if (!fieldIsValid || !fieldValue) {
         isValid = false;
@@ -164,7 +191,10 @@ export function ReviewerForm({ user, onSave, onCancel }: ReviewerFormProps) {
       const start = new Date(formData.startDate);
       const end = new Date(formData.endDate);
       if (end < start) {
-        setErrors((prev) => ({ ...prev, endDate: 'Ngày kết thúc phải sau ngày bắt đầu' }));
+        setErrors((prev) => ({
+          ...prev,
+          endDate: "Ngày kết thúc phải sau ngày bắt đầu",
+        }));
         isValid = false;
       }
     }
@@ -190,7 +220,7 @@ export function ReviewerForm({ user, onSave, onCancel }: ReviewerFormProps) {
         <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
           Thông tin Tài khoản
         </h3>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
             <FormInput
@@ -229,7 +259,9 @@ export function ReviewerForm({ user, onSave, onCancel }: ReviewerFormProps) {
                 type="password"
                 value={formData.password || ""}
                 onChange={(value: string) => handleChange("password", value)}
-                onBlur={() => validateField("password", formData.password || "")}
+                onBlur={() =>
+                  validateField("password", formData.password || "")
+                }
                 required
                 error={touched.has("password") ? errors.password : undefined}
                 success={touched.has("password") && !errors.password}
@@ -241,11 +273,24 @@ export function ReviewerForm({ user, onSave, onCancel }: ReviewerFormProps) {
                 name="confirmPassword"
                 type="password"
                 value={formData.confirmPassword || ""}
-                onChange={(value: string) => handleChange("confirmPassword", value)}
-                onBlur={() => validateField("confirmPassword", formData.confirmPassword || "")}
+                onChange={(value: string) =>
+                  handleChange("confirmPassword", value)
+                }
+                onBlur={() =>
+                  validateField(
+                    "confirmPassword",
+                    formData.confirmPassword || "",
+                  )
+                }
                 required
-                error={touched.has("confirmPassword") ? errors.confirmPassword : undefined}
-                success={touched.has("confirmPassword") && !errors.confirmPassword}
+                error={
+                  touched.has("confirmPassword")
+                    ? errors.confirmPassword
+                    : undefined
+                }
+                success={
+                  touched.has("confirmPassword") && !errors.confirmPassword
+                }
                 placeholder="Nhập lại mật khẩu"
               />
             </>
@@ -258,7 +303,7 @@ export function ReviewerForm({ user, onSave, onCancel }: ReviewerFormProps) {
         <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
           Thông tin Reviewer
         </h3>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
             <FormInput
@@ -320,7 +365,9 @@ export function ReviewerForm({ user, onSave, onCancel }: ReviewerFormProps) {
                 <input
                   type="checkbox"
                   id={conference.value}
-                  checked={formData.assignedConferences?.includes(conference.value)}
+                  checked={formData.assignedConferences?.includes(
+                    conference.value,
+                  )}
                   onChange={() => toggleConference(conference.value)}
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
@@ -334,13 +381,15 @@ export function ReviewerForm({ user, onSave, onCancel }: ReviewerFormProps) {
             ))}
           </div>
 
-          {formData.assignedConferences && formData.assignedConferences.length > 0 && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-2">
-              <p className="text-sm text-blue-800">
-                <span className="font-semibold">Đã chọn:</span> {formData.assignedConferences.length} hội nghị
-              </p>
-            </div>
-          )}
+          {formData.assignedConferences &&
+            formData.assignedConferences.length > 0 && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-2">
+                <p className="text-sm text-blue-800">
+                  <span className="font-semibold">Đã chọn:</span>{" "}
+                  {formData.assignedConferences.length} hội nghị
+                </p>
+              </div>
+            )}
         </div>
 
         {/* Contract File Upload */}
@@ -348,7 +397,7 @@ export function ReviewerForm({ user, onSave, onCancel }: ReviewerFormProps) {
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Upload hợp đồng
           </label>
-          
+
           {!formData.contractFileName ? (
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors">
               <input
@@ -380,7 +429,9 @@ export function ReviewerForm({ user, onSave, onCancel }: ReviewerFormProps) {
                     {formData.contractFileName}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {formData.contractFile ? `${(formData.contractFile.size / 1024).toFixed(2)} KB` : ''}
+                    {formData.contractFile
+                      ? `${(formData.contractFile.size / 1024).toFixed(2)} KB`
+                      : ""}
                   </p>
                 </div>
               </div>
@@ -393,7 +444,7 @@ export function ReviewerForm({ user, onSave, onCancel }: ReviewerFormProps) {
               </button>
             </div>
           )}
-          
+
           {errors.contractFile && (
             <p className="text-sm text-red-500 mt-1">{errors.contractFile}</p>
           )}

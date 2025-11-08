@@ -1,22 +1,25 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+"use client";
+import React, { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 
-import Slider from 'rc-slider';
-import 'rc-slider/assets/index.css';
-import AbstractPhase from './AbstractPhase';
-import FullPaperPhase from './FullPaperPhase';
-import RevisionPhase from './RevisionPhase';
-import CameraReadyPhase from './CameraReadyPhase';
-import { usePaperCustomer } from '@/redux/hooks/paper/usePaper';
-import type { PaperPhase, PaperDetailResponse } from '@/types/paper.type';
+import Slider from "rc-slider";
+import "rc-slider/assets/index.css";
+import AbstractPhase from "./AbstractPhase";
+import FullPaperPhase from "./FullPaperPhase";
+import RevisionPhase from "./RevisionPhase";
+import CameraReadyPhase from "./CameraReadyPhase";
+import { usePaperCustomer } from "@/redux/hooks/paper/usePaper";
+import type { PaperPhase, PaperDetailResponse } from "@/types/paper.type";
 
 const PaperTracking = () => {
   const [currentStage, setCurrentStage] = useState<number>(1);
   const [maxReachedStage, setMaxReachedStage] = useState<number>(1);
 
-  const [paperDetail, setPaperDetail] = useState<PaperDetailResponse | null>(null);
-  const [isLoadingPaperDetail, setIsLoadingPaperDetail] = useState<boolean>(false);
+  const [paperDetail, setPaperDetail] = useState<PaperDetailResponse | null>(
+    null,
+  );
+  const [isLoadingPaperDetail, setIsLoadingPaperDetail] =
+    useState<boolean>(false);
   const [paperDetailError, setPaperDetailError] = useState<string | null>(null);
 
   const params = useParams();
@@ -26,7 +29,7 @@ const PaperTracking = () => {
     paperPhases,
     paperPhasesError,
     fetchPaperDetail,
-    loading: paperPhasesLoading
+    loading: paperPhasesLoading,
   } = usePaperCustomer();
 
   useEffect(() => {
@@ -64,7 +67,9 @@ const PaperTracking = () => {
       // );
 
       const currentPhaseIndex = stages.findIndex(
-        obj => obj.label.toLowerCase() === paperDetail.currentPhase!.phaseName?.toLowerCase()
+        (obj) =>
+          obj.label.toLowerCase() ===
+          paperDetail.currentPhase!.phaseName?.toLowerCase(),
       );
 
       if (currentPhaseIndex !== -1) {
@@ -75,10 +80,10 @@ const PaperTracking = () => {
   }, [paperPhases, paperDetail]);
 
   const stages = [
-    { id: 1, label: 'Abstract' },
-    { id: 2, label: 'FullPaper' },
-    { id: 3, label: 'Revise' },
-    { id: 4, label: 'CameraReady' },
+    { id: 1, label: "Abstract" },
+    { id: 2, label: "FullPaper" },
+    { id: 3, label: "Revise" },
+    { id: 4, label: "CameraReady" },
   ];
 
   // const stages = paperPhases.length > 0
@@ -103,7 +108,9 @@ const PaperTracking = () => {
 
     if (paperPhasesError.data?.Errors) {
       const errors = Object.values(paperPhasesError.data.Errors);
-      return errors.length > 0 ? errors[0] : "Có lỗi xảy ra khi tải danh sách phases";
+      return errors.length > 0
+        ? errors[0]
+        : "Có lỗi xảy ra khi tải danh sách phases";
     }
 
     return "Có lỗi xảy ra khi tải danh sách phases";
@@ -171,11 +178,15 @@ const PaperTracking = () => {
             <div className="mb-8">
               <h2 className="text-2xl font-bold mb-2">Theo dõi bài báo</h2>
               <p className="text-gray-400">
-                {paperId ? `Paper ID: ${paperId}` : "Theo dõi tiến độ bài báo của bạn. Nhấn nút Tiếp tục theo dõi để xem chi tiết hoặc sử dụng thanh tiến độ bên dưới."}
+                {paperId
+                  ? `Paper ID: ${paperId}`
+                  : "Theo dõi tiến độ bài báo của bạn. Nhấn nút Tiếp tục theo dõi để xem chi tiết hoặc sử dụng thanh tiến độ bên dưới."}
               </p>
               {paperDetail?.currentPhase && (
                 <p className="text-blue-400 text-sm mt-1">
-                  Giai đoạn hiện tại: {paperDetail.currentPhase.phaseName || paperDetail.currentPhase.paperPhaseId}
+                  Giai đoạn hiện tại:{" "}
+                  {paperDetail.currentPhase.phaseName ||
+                    paperDetail.currentPhase.paperPhaseId}
                 </p>
               )}
             </div>
@@ -189,172 +200,242 @@ const PaperTracking = () => {
               </div>
             )}
 
-            {!paperPhasesLoading && !isLoadingPaperDetail && (paperPhasesError || paperDetailError) && (
-              <div className="bg-red-900/20 border border-red-700 rounded-xl p-6 mb-10">
-                <h3 className="text-red-400 font-semibold mb-2">Lỗi tải dữ liệu</h3>
-                {paperPhasesError && (
-                  <p className="text-red-300 text-sm mb-2">
-                    Phases: {getPaperPhasesErrorMessage()}
-                  </p>
-                )}
-                {paperDetailError && (
-                  <p className="text-red-300 text-sm">
-                    Paper Detail: {paperDetailError}
-                  </p>
-                )}
-                <button
-                  className="mt-4 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                  onClick={() => window.location.reload()}
-                >
-                  Thử lại
-                </button>
-              </div>
-            )}
+            {!paperPhasesLoading &&
+              !isLoadingPaperDetail &&
+              (paperPhasesError || paperDetailError) && (
+                <div className="bg-red-900/20 border border-red-700 rounded-xl p-6 mb-10">
+                  <h3 className="text-red-400 font-semibold mb-2">
+                    Lỗi tải dữ liệu
+                  </h3>
+                  {paperPhasesError && (
+                    <p className="text-red-300 text-sm mb-2">
+                      Phases: {getPaperPhasesErrorMessage()}
+                    </p>
+                  )}
+                  {paperDetailError && (
+                    <p className="text-red-300 text-sm">
+                      Paper Detail: {paperDetailError}
+                    </p>
+                  )}
+                  <button
+                    className="mt-4 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    onClick={() => window.location.reload()}
+                  >
+                    Thử lại
+                  </button>
+                </div>
+              )}
 
             {!paperId && !paperPhasesLoading && (
               <div className="bg-yellow-900/20 border border-yellow-700 rounded-xl p-6 mb-10">
-                <h3 className="text-yellow-400 font-semibold mb-2">Thiếu thông tin</h3>
+                <h3 className="text-yellow-400 font-semibold mb-2">
+                  Thiếu thông tin
+                </h3>
                 <p className="text-yellow-300 text-sm">
-                  Không tìm thấy Paper ID trong URL. Vui lòng kiểm tra lại đường dẫn.
+                  Không tìm thấy Paper ID trong URL. Vui lòng kiểm tra lại đường
+                  dẫn.
                 </p>
               </div>
             )}
 
-            {!paperPhasesLoading && !isLoadingPaperDetail && paperPhases.length > 0 && (
-              <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 mb-10">
-                <h3 className="text-lg font-semibold mb-4">Các giai đoạn bài báo</h3>
+            {!paperPhasesLoading &&
+              !isLoadingPaperDetail &&
+              paperPhases.length > 0 && (
+                <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 mb-10">
+                  <h3 className="text-lg font-semibold mb-4">
+                    Các giai đoạn bài báo
+                  </h3>
 
-                <div className="px-6">
-                  <Slider
-                    min={1}
-                    max={stages.length}
-                    step={1}
-                    marks={stages.reduce((acc, stage) => {
-                      acc[stage.id] = <span className="text-xs text-gray-300">{stage.label}</span>;
-                      return acc;
-                    }, {} as Record<number, React.ReactNode>)}
-                    value={currentStage}
-                    onBeforeChange={(value) => {
-                      if (typeof value !== 'number') return;
+                  <div className="px-6">
+                    <Slider
+                      min={1}
+                      max={stages.length}
+                      step={1}
+                      marks={stages.reduce(
+                        (acc, stage) => {
+                          acc[stage.id] = (
+                            <span className="text-xs text-gray-300">
+                              {stage.label}
+                            </span>
+                          );
+                          return acc;
+                        },
+                        {} as Record<number, React.ReactNode>,
+                      )}
+                      value={currentStage}
+                      onBeforeChange={(value) => {
+                        if (typeof value !== "number") return;
 
-                      if (value > maxReachedStage) {
-                        alert("Bạn không thể bỏ qua giai đoạn hiện tại.");
-                        return;
-                      }
+                        if (value > maxReachedStage) {
+                          alert("Bạn không thể bỏ qua giai đoạn hiện tại.");
+                          return;
+                        }
 
-                      setCurrentStage(value);
-                    }}
-                    // onChange={(value) => {
-                    //   if (typeof value === 'number') {
-                    //     // 🔹 Chỉ cho phép chọn giai đoạn hiện tại hoặc trước đó
-                    //     if (value <= currentStage) {
-                    //       setCurrentStage(value);
-                    //     }
-                    //   }
-                    // }}
-                    // onChange={(value) => {
-                    //   if (typeof value === 'number') setCurrentStage(value);
-                    // }}
-                    trackStyle={[{ backgroundColor: '#2563eb', height: 8 }]}
-                    handleStyle={{
-                      borderColor: '#3b82f6',
-                      height: 20,
-                      width: 20,
-                      marginTop: -9,
-                      backgroundColor: '#60a5fa',
-                    }}
-                    railStyle={{ backgroundColor: '#374151', height: 8 }}
-                  />
-                </div>
+                        setCurrentStage(value);
+                      }}
+                      // onChange={(value) => {
+                      //   if (typeof value === 'number') {
+                      //     // 🔹 Chỉ cho phép chọn giai đoạn hiện tại hoặc trước đó
+                      //     if (value <= currentStage) {
+                      //       setCurrentStage(value);
+                      //     }
+                      //   }
+                      // }}
+                      // onChange={(value) => {
+                      //   if (typeof value === 'number') setCurrentStage(value);
+                      // }}
+                      trackStyle={[{ backgroundColor: "#2563eb", height: 8 }]}
+                      handleStyle={{
+                        borderColor: "#3b82f6",
+                        height: 20,
+                        width: 20,
+                        marginTop: -9,
+                        backgroundColor: "#60a5fa",
+                      }}
+                      railStyle={{ backgroundColor: "#374151", height: 8 }}
+                    />
+                  </div>
 
-                <div className="mt-4 text-sm text-gray-400 text-center">
-                  Giai đoạn hiện tại:{" "}
-                  <span className="text-blue-400 font-semibold">
-                    {stages.find((s) => s.id === currentStage)?.label}
-                  </span>
-                  {paperDetail?.currentPhase && (
-                    <span className="text-gray-500 ml-2">
-                      (ID: {paperDetail.currentPhase.paperPhaseId})
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Paper Overview */}
-            {!paperPhasesLoading && !isLoadingPaperDetail && !paperPhasesError && !paperDetailError && paperDetail && (
-              <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 mt-8">
-                <h2 className="text-xl font-bold mb-4 text-white">Thông tin tổng quan bài báo</h2>
-                <div className="space-y-3">
-                  <p className="text-gray-300">
-                    <span className="font-medium text-white">Paper ID:</span> {paperDetail.paperId}
-                  </p>
-                  {paperDetail.title && (
-                    <p className="text-gray-300">
-                      <span className="font-medium text-white">Tiêu đề:</span> {paperDetail.title}
-                    </p>
-                  )}
-                  {paperDetail.description && (
-                    <p className="text-gray-300">
-                      <span className="font-medium text-white">Mô tả:</span> {paperDetail.description}
-                    </p>
-                  )}
-                  {paperDetail.currentPhase && (
-                    <p className="text-gray-300">
-                      <span className="font-medium text-white">Giai đoạn hiện tại:</span> {paperDetail.currentPhase.phaseName || 'Chưa xác định'}
-                    </p>
-                  )}
-                  {paperDetail.rootAuthor && (
-                    <p className="text-gray-300">
-                      <span className="font-medium text-white">Tác giả chính:</span> {paperDetail.rootAuthor.fullName}
-                    </p>
-                  )}
-                  {paperDetail.coAuthors && paperDetail.coAuthors.length > 0 && (
-                    <div className="text-gray-300">
-                      <span className="font-medium text-white">Đồng tác giả:</span>
-                      <ul className="ml-4 mt-1">
-                        {paperDetail.coAuthors.map((author, index) => (
-                          <li key={author.userId} className="text-sm">
-                            • {author.fullName}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {paperDetail.created && (
-                    <p className="text-gray-300">
-                      <span className="font-medium text-white">Ngày tạo:</span> {new Date(paperDetail.created).toLocaleDateString('vi-VN')}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {!paperPhasesLoading && !isLoadingPaperDetail && !paperPhasesError && !paperDetailError && paperPhases.length > 0 && (
-              <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 mt-8">
-                {currentStage === 1 && <AbstractPhase paperId={paperId} abstract={paperDetail?.abstract || null} />}
-                {currentStage === 2 && <FullPaperPhase paperId={paperId} fullPaper={paperDetail?.fullPaper || null} />}
-                {currentStage === 3 && <RevisionPhase paperId={paperId} revisionPaper={paperDetail?.revisionPaper || null} />}
-                {currentStage === 4 && <CameraReadyPhase paperId={paperId} cameraReady={paperDetail?.cameraReady || null} />}
-
-                {currentStage > 4 && (
-                  <div className="text-center py-8">
-                    <h3 className="text-lg font-semibold text-white mb-2">
+                  <div className="mt-4 text-sm text-gray-400 text-center">
+                    Giai đoạn hiện tại:{" "}
+                    <span className="text-blue-400 font-semibold">
                       {stages.find((s) => s.id === currentStage)?.label}
-                    </h3>
-                    <p className="text-gray-400">
-                      Giai đoạn này chưa có component hiển thị cụ thể.
-                    </p>
+                    </span>
                     {paperDetail?.currentPhase && (
-                      <div className="mt-4 text-sm text-gray-500">
-                        <p>Phase ID: {paperDetail.currentPhase.paperPhaseId}</p>
-                        <p>Phase Name: {paperDetail.currentPhase.phaseName || 'N/A'}</p>
-                      </div>
+                      <span className="text-gray-500 ml-2">
+                        (ID: {paperDetail.currentPhase.paperPhaseId})
+                      </span>
                     )}
                   </div>
-                )}
-              </div>
-            )}
+                </div>
+              )}
+
+            {/* Paper Overview */}
+            {!paperPhasesLoading &&
+              !isLoadingPaperDetail &&
+              !paperPhasesError &&
+              !paperDetailError &&
+              paperDetail && (
+                <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 mt-8">
+                  <h2 className="text-xl font-bold mb-4 text-white">
+                    Thông tin tổng quan bài báo
+                  </h2>
+                  <div className="space-y-3">
+                    <p className="text-gray-300">
+                      <span className="font-medium text-white">Paper ID:</span>{" "}
+                      {paperDetail.paperId}
+                    </p>
+                    {paperDetail.title && (
+                      <p className="text-gray-300">
+                        <span className="font-medium text-white">Tiêu đề:</span>{" "}
+                        {paperDetail.title}
+                      </p>
+                    )}
+                    {paperDetail.description && (
+                      <p className="text-gray-300">
+                        <span className="font-medium text-white">Mô tả:</span>{" "}
+                        {paperDetail.description}
+                      </p>
+                    )}
+                    {paperDetail.currentPhase && (
+                      <p className="text-gray-300">
+                        <span className="font-medium text-white">
+                          Giai đoạn hiện tại:
+                        </span>{" "}
+                        {paperDetail.currentPhase.phaseName || "Chưa xác định"}
+                      </p>
+                    )}
+                    {paperDetail.rootAuthor && (
+                      <p className="text-gray-300">
+                        <span className="font-medium text-white">
+                          Tác giả chính:
+                        </span>{" "}
+                        {paperDetail.rootAuthor.fullName}
+                      </p>
+                    )}
+                    {paperDetail.coAuthors &&
+                      paperDetail.coAuthors.length > 0 && (
+                        <div className="text-gray-300">
+                          <span className="font-medium text-white">
+                            Đồng tác giả:
+                          </span>
+                          <ul className="ml-4 mt-1">
+                            {paperDetail.coAuthors.map((author, index) => (
+                              <li key={author.userId} className="text-sm">
+                                • {author.fullName}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    {paperDetail.created && (
+                      <p className="text-gray-300">
+                        <span className="font-medium text-white">
+                          Ngày tạo:
+                        </span>{" "}
+                        {new Date(paperDetail.created).toLocaleDateString(
+                          "vi-VN",
+                        )}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+            {!paperPhasesLoading &&
+              !isLoadingPaperDetail &&
+              !paperPhasesError &&
+              !paperDetailError &&
+              paperPhases.length > 0 && (
+                <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 mt-8">
+                  {currentStage === 1 && (
+                    <AbstractPhase
+                      paperId={paperId}
+                      abstract={paperDetail?.abstract || null}
+                    />
+                  )}
+                  {currentStage === 2 && (
+                    <FullPaperPhase
+                      paperId={paperId}
+                      fullPaper={paperDetail?.fullPaper || null}
+                    />
+                  )}
+                  {currentStage === 3 && (
+                    <RevisionPhase
+                      paperId={paperId}
+                      revisionPaper={paperDetail?.revisionPaper || null}
+                    />
+                  )}
+                  {currentStage === 4 && (
+                    <CameraReadyPhase
+                      paperId={paperId}
+                      cameraReady={paperDetail?.cameraReady || null}
+                    />
+                  )}
+
+                  {currentStage > 4 && (
+                    <div className="text-center py-8">
+                      <h3 className="text-lg font-semibold text-white mb-2">
+                        {stages.find((s) => s.id === currentStage)?.label}
+                      </h3>
+                      <p className="text-gray-400">
+                        Giai đoạn này chưa có component hiển thị cụ thể.
+                      </p>
+                      {paperDetail?.currentPhase && (
+                        <div className="mt-4 text-sm text-gray-500">
+                          <p>
+                            Phase ID: {paperDetail.currentPhase.paperPhaseId}
+                          </p>
+                          <p>
+                            Phase Name:{" "}
+                            {paperDetail.currentPhase.phaseName || "N/A"}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
           </div>
         </main>
       </div>

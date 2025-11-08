@@ -3,11 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { 
-  ArrowLeft,
-  Calendar,
-  Loader2
-} from "lucide-react";
+import { ArrowLeft, Calendar, Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,13 +25,9 @@ import { ConferenceTable } from "@/components/(user)/workspace/collaborator/Mana
 import { Conference } from "@/types/conference.type";
 
 // Import your RTK Query hooks
-import { 
-  useGetTechConferencesForCollaboratorAndOrganizerQuery, 
-} from "@/redux/services/conference.service"; 
-import { 
-  useGetAllConferenceStatusesQuery, 
-} from "@/redux/services/status.service"; 
-import { useGetAllCitiesQuery } from "@/redux/services/city.service"; 
+import { useGetTechConferencesForCollaboratorAndOrganizerQuery } from "@/redux/services/conference.service";
+import { useGetAllConferenceStatusesQuery } from "@/redux/services/status.service";
+import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 
 export default function DraftConferenceListPage() {
@@ -46,19 +38,23 @@ export default function DraftConferenceListPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterCity, setFilterCity] = useState("all");
-  const [deleteConferenceId, setDeleteConferenceId] = useState<string | null>(null);
+  const [deleteConferenceId, setDeleteConferenceId] = useState<string | null>(
+    null,
+  );
   const [pendingStatusId, setPendingStatusId] = useState<string | null>(null);
 
   // Get statuses first to find Pending status ID
-  const { data: statusesData, isLoading: statusesLoading } = useGetAllConferenceStatusesQuery();
+  const { data: statusesData, isLoading: statusesLoading } =
+    useGetAllConferenceStatusesQuery();
   const statuses = statusesData?.data || [];
 
   // Find Pending status ID
   useEffect(() => {
     if (statuses.length > 0) {
       const pendingStatus = statuses.find(
-        status => status.conferenceStatusName?.toLowerCase() === 'pending' || 
-                  status.conferenceStatusName?.toLowerCase() === 'draft'
+        (status) =>
+          status.conferenceStatusName?.toLowerCase() === "pending" ||
+          status.conferenceStatusName?.toLowerCase() === "draft",
       );
       if (pendingStatus) {
         setPendingStatusId(pendingStatus.conferenceStatusId);
@@ -67,24 +63,31 @@ export default function DraftConferenceListPage() {
   }, [statuses]);
 
   // RTK Query hooks - automatically filter by Pending status
-  const { data, isLoading, isFetching, error, refetch } = useGetTechConferencesForCollaboratorAndOrganizerQuery({
-    page,
-    pageSize,
-    ...(filterCategory !== "all" && { conferenceCategoryId: filterCategory }), 
-    ...(pendingStatusId && { conferenceStatusId: pendingStatusId }), // Auto filter by Pending
-    ...(searchQuery && { searchKeyword: searchQuery }),
-    ...(filterCity !== "all" && { cityId: filterCity }),
-  }, {
-    skip: !pendingStatusId // Wait until we have the status ID
-  });
+  const { data, isLoading, isFetching, error, refetch } =
+    useGetTechConferencesForCollaboratorAndOrganizerQuery(
+      {
+        page,
+        pageSize,
+        ...(filterCategory !== "all" && {
+          conferenceCategoryId: filterCategory,
+        }),
+        ...(pendingStatusId && { conferenceStatusId: pendingStatusId }), // Auto filter by Pending
+        ...(searchQuery && { searchKeyword: searchQuery }),
+        ...(filterCity !== "all" && { cityId: filterCity }),
+      },
+      {
+        skip: !pendingStatusId, // Wait until we have the status ID
+      },
+    );
 
   const { data: citiesData, isLoading: citiesLoading } = useGetAllCitiesQuery();
-  const { data: categoriesData, isLoading: categoriesLoading } = useGetAllCategoriesQuery();
+  const { data: categoriesData, isLoading: categoriesLoading } =
+    useGetAllCategoriesQuery();
 
   const conferences = (data?.data?.items || []).slice().sort((a, b) => {
     const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
     const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-    return dateB - dateA; 
+    return dateB - dateA;
   });
   const totalConferences = data?.data?.totalCount || 0;
   const totalPages = data?.data?.totalPages || 1;
@@ -94,7 +97,7 @@ export default function DraftConferenceListPage() {
 
   const categoryOptions = [
     { value: "all", label: "Tất cả danh mục" },
-    ...categories.map(category => ({
+    ...categories.map((category) => ({
       value: category.conferenceCategoryId,
       label: category.conferenceCategoryName || "N/A",
     })),
@@ -102,7 +105,7 @@ export default function DraftConferenceListPage() {
 
   const cityOptions = [
     { value: "all", label: "Tất cả thành phố" },
-    ...cities.map(city => ({
+    ...cities.map((city) => ({
       value: city.cityId,
       label: city.cityName || "N/A",
     })),
@@ -110,7 +113,7 @@ export default function DraftConferenceListPage() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setPage(1); 
+      setPage(1);
     }, 500);
 
     return () => clearTimeout(timer);
@@ -118,7 +121,9 @@ export default function DraftConferenceListPage() {
 
   const handleView = (conference: Conference) => {
     // Navigate to update page instead of view detail
-    router.push(`/workspace/collaborator/manage-conference/update-tech-conference/${conference.conferenceId}`);
+    router.push(
+      `/workspace/collaborator/manage-conference/update-tech-conference/${conference.conferenceId}`,
+    );
   };
 
   const handleDelete = (id: string) => {
@@ -165,7 +170,9 @@ export default function DraftConferenceListPage() {
                     <ArrowLeft className="w-5 h-5" />
                   </Button>
                 </Link>
-                <h1 className="text-3xl font-bold text-gray-900">Bản nháp Hội thảo</h1>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  Bản nháp Hội thảo
+                </h1>
               </div>
               <p className="text-gray-600 ml-14">
                 Quản lý các bản nháp hội thảo đang chờ hoàn thiện
@@ -173,7 +180,7 @@ export default function DraftConferenceListPage() {
             </div>
           </div>
         </div>
-        
+
         <SearchFilter
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
@@ -225,7 +232,9 @@ export default function DraftConferenceListPage() {
               conferences={conferences}
               onView={handleView}
               onEdit={(conference) => {
-                router.push(`/workspace/collaborator/manage-conference/update-tech-conference/${conference.conferenceId}`);
+                router.push(
+                  `/workspace/collaborator/manage-conference/update-tech-conference/${conference.conferenceId}`,
+                );
               }}
               onDelete={handleDelete}
               statuses={statuses}
@@ -241,11 +250,11 @@ export default function DraftConferenceListPage() {
                 >
                   Trước
                 </Button>
-                
+
                 <span className="px-4 py-2 text-sm text-gray-700">
                   Trang {page} / {totalPages}
                 </span>
-                
+
                 <Button
                   variant="outline"
                   onClick={() => handlePageChange(page + 1)}
@@ -259,17 +268,24 @@ export default function DraftConferenceListPage() {
         )}
       </div>
 
-      <AlertDialog open={!!deleteConferenceId} onOpenChange={() => setDeleteConferenceId(null)}>
+      <AlertDialog
+        open={!!deleteConferenceId}
+        onOpenChange={() => setDeleteConferenceId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận xóa bản nháp</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa bản nháp này? Hành động này không thể hoàn tác.
+              Bạn có chắc chắn muốn xóa bản nháp này? Hành động này không thể
+              hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
               Xóa
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -4,7 +4,6 @@ export interface Paper {
   paperId: string;
 }
 
-
 export interface ListPaper {
   paperId: string;
   currentPhase: {
@@ -17,9 +16,9 @@ export interface ListPaper {
     globalStatusName: string | null;
     abstractUrl: string;
   } | null;
-  fullPaper: unknown  | null;
-  revisionPaper: unknown  | null;
-  cameraReady: CameraReadyA  | null;
+  fullPaper: unknown | null;
+  revisionPaper: unknown | null;
+  cameraReady: CameraReadyA | null;
 }
 
 export interface UnassignAbstract {
@@ -31,17 +30,17 @@ export interface UnassignAbstract {
 }
 
 export interface PendingAbstract {
-  abstractId: string
-  abstractUrl: string
-  paperId: string
-  presenterId: string
-  presenterName: string
-  avatarUrl: string
-  conferenceId: string
-  conferenceName: string
-  globalStatusId: string
-  globalStatusName: string
-  createdAt: string
+  abstractId: string;
+  abstractUrl: string;
+  paperId: string;
+  presenterId: string;
+  presenterName: string;
+  avatarUrl: string;
+  conferenceId: string;
+  conferenceName: string;
+  globalStatusId: string;
+  globalStatusName: string;
+  createdAt: string;
 }
 
 // Paper đã được assign cho reviewer
@@ -55,11 +54,11 @@ export interface AssignedPaper {
   conferenceId: string;
   paperPhaseId: string;
   createdAt: string;
-  cameraReady: CameraReadyA   | null;
-  conference: unknown  | null;
-  paperAuthors: unknown [];
-  paperPhase: unknown  | null;
-  presenter: unknown  | null;
+  cameraReady: CameraReadyA | null;
+  conference: unknown | null;
+  paperAuthors: unknown[];
+  paperPhase: unknown | null;
+  presenter: unknown | null;
 }
 
 //------------------------------------------
@@ -121,7 +120,7 @@ export interface RevisionPaperSubmission {
   revisionPaperUrl: string;
   revisionPaperId: string;
   revisionDeadlineRoundId: string;
-  startDate:string;
+  startDate: string;
   endDate: string;
   roundNumber: number;
   revisionSubmissionFeedbacks: RevisionSubmissionFeedbackA[];
@@ -143,7 +142,6 @@ export interface RevisionPaperA {
   isAllSubmittedRevisionPaperReview: boolean;
   isAnsweredAllDiscussion: boolean;
   revisionPaperSubmissions: RevisionPaperSubmission[];
-
 }
 
 export interface CurrentResearchConferencePhase {
@@ -189,9 +187,7 @@ export interface PaperDetailForReviewer {
   } | null;
 
   currentResearchConferencePhase?: CurrentResearchConferencePhase | null;
-
 }
-
 
 //--------------------------------------------------------
 //SUBMIT FULL PAPER REVIEW
@@ -235,17 +231,17 @@ export interface SubmitPaperRevisionReviewRequest {
 //--------------------------------------------------------
 //LIST REVISION PAPER REVIEW
 export interface ListRevisionPaperReview {
-  revisionPaperReviewId: string
-  globalStatusId: string
-  globalStatusName: string
-  note: string
-  createdAt: string | null
-  feedbackToAuthor: string
-  feedbackMaterialUrl: string
-  reviewerId: string | null
-  reviewerName: string | null
-  reviewerAvatarUrl: string | null
-  revisionPaperId: string
+  revisionPaperReviewId: string;
+  globalStatusId: string;
+  globalStatusName: string;
+  note: string;
+  createdAt: string | null;
+  feedbackToAuthor: string;
+  feedbackMaterialUrl: string;
+  reviewerId: string | null;
+  reviewerName: string | null;
+  reviewerAvatarUrl: string | null;
+  revisionPaperId: string;
 }
 
 //--------------------------------------------------------
@@ -260,9 +256,6 @@ export interface SubmitPaperRevisionFeedbackRequest {
   paperId: string;
   feedbacks: RevisionFeedback[];
 }
-
-
-
 
 //CUSTOMER PAPER TYPE
 export interface PaperCustomer {
@@ -285,14 +278,13 @@ export interface PaperCustomer {
   // presenter?: User | null;
 }
 
-
 export interface PaperDetailResponse {
   paperId: string;
   title?: string;
   description?: string;
   currentPhase: PaperPhase;
   rootAuthor: Author;
-  coAuthors: Author[]
+  coAuthors: Author[];
   abstract?: Abstract | null;
   fullPaper?: FullPaper | null;
   revisionPaper?: RevisionPaper | null;
@@ -370,8 +362,6 @@ export interface RevisionSubmissionFeedback {
   // revisionRound?: number | null;
   // globalStatusId?: string | null;
 }
-
-
 
 export interface RevisionReview {
   reviewId: string;

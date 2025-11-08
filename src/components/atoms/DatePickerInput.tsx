@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { forwardRef } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -29,7 +29,7 @@ export const DatePickerInput = forwardRef<HTMLDivElement, DatePickerInputProps>(
       maxDate,
       className = "",
     },
-    ref
+    ref,
   ) => {
     return (
       <div ref={ref} className={className}>
@@ -51,7 +51,7 @@ export const DatePickerInput = forwardRef<HTMLDivElement, DatePickerInputProps>(
         />
       </div>
     );
-  }
+  },
 );
 
 DatePickerInput.displayName = "DatePickerInput";

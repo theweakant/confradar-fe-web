@@ -1,5 +1,5 @@
-import { TypewriterHeadline } from "@/components/molecules/LandingPage/TypeWriter"
-import { Button } from "@/components/ui/button"
+import { TypewriterHeadline } from "@/components/molecules/LandingPage/TypeWriter";
+import { Button } from "@/components/ui/button";
 
 export default function ExploreConferences() {
   return (
@@ -10,7 +10,9 @@ export default function ExploreConferences() {
       {/* Content */}
       <div className="relative z-10 max-w-6xl mx-auto text-center">
         {/* Small label */}
-        <p className="text-zinc-400 text-sm font-medium tracking-widest uppercase mb-8">ConfRadar</p>
+        <p className="text-zinc-400 text-sm font-medium tracking-widest uppercase mb-8">
+          ConfRadar
+        </p>
 
         {/* Typewriter headline */}
         <TypewriterHeadline
@@ -32,5 +34,5 @@ export default function ExploreConferences() {
         </Button>
       </div>
     </section>
-  )
+  );
 }

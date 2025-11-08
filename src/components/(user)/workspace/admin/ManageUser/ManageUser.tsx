@@ -1,12 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {  
-  Plus, 
-  UserCheck, 
-  UserX,
-  Shield
-} from "lucide-react";
+import { Plus, UserCheck, UserX, Shield } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,8 +21,33 @@ import { Modal } from "@/components/molecules/Modal";
 import { UserDetail } from "@/components/(user)/workspace/admin/ManageUser/UserDetail/index";
 import { UserForm } from "@/components/(user)/workspace/admin/ManageUser/UserForm/index";
 import { UserTable } from "@/components/(user)/workspace/admin/ManageUser/UserTable/index";
-import { User, UserFormData } from "@/types/user.type";
+import { MockUser } from "@/components/(user)/workspace/admin/ManageUser/UserDetail/index";
 
+export interface User {
+  userId: string;
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  role:
+    | "admin"
+    | "organizer"
+    | "reviewer"
+    | "collaborator"
+    | "guest"
+    | "user"
+    | string;
+  status: "active" | "inactive" | string;
+  registeredConferences: number;
+  joinedDate: string;
+}
+
+export interface UserFormData {
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  role: string;
+  status?: string;
+}
 
 export default function ManageUser() {
   const [users, setUsers] = useState<User[]>(mockUsers);
@@ -48,21 +68,23 @@ export default function ManageUser() {
     { value: "organizer", label: "Người tổ chức" },
     { value: "reviewer", label: "Người đánh giá" },
     { value: "collaborator", label: "Cộng tác viên" },
-    { value: "guest", label: "Khách" }
+    { value: "guest", label: "Khách" },
   ];
-  
+
   const statusOptions = [
     { value: "all", label: "Tất cả trạng thái" },
     { value: "active", label: "Hoạt động" },
-    { value: "inactive", label: "Không hoạt động" }
+    { value: "inactive", label: "Không hoạt động" },
   ];
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         user.phoneNumber.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
+      user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.phoneNumber.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole = filterRole === "all" || user.role === filterRole;
-    const matchesStatus = filterStatus === "all" || user.status === filterStatus;
+    const matchesStatus =
+      filterStatus === "all" || user.status === filterStatus;
     return matchesSearch && matchesRole && matchesStatus;
   });
 
@@ -81,28 +103,28 @@ export default function ManageUser() {
     setIsFormModalOpen(true);
   };
 
-const handleSave = (data: UserFormData) => {
-  if (editingUser) {
-    setUsers(prev => prev.map(u => 
-      u.userId === editingUser.userId 
-        ? { ...u, ...data }
-        : u
-    ));
-    toast.success("Cập nhật người dùng thành công!");
-  } else {
-    const newUser: User = {
-      ...data,
-      userId: Date.now().toString(),
-      status: "active",
-      registeredConferences: 0,
-      joinedDate: new Date().toISOString().split('T')[0]
-    };
-    setUsers(prev => [...prev, newUser]);
-    toast.success("Thêm người dùng thành công!");
-  }
-  setIsFormModalOpen(false);
-  setEditingUser(null);
-};
+  const handleSave = (data: UserFormData) => {
+    if (editingUser) {
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.userId === editingUser.userId ? { ...u, ...data } : u,
+        ),
+      );
+      toast.success("Cập nhật người dùng thành công!");
+    } else {
+      const newUser: User = {
+        ...data,
+        userId: Date.now().toString(),
+        status: "active",
+        registeredConferences: 0,
+        joinedDate: new Date().toISOString().split("T")[0],
+      };
+      setUsers((prev) => [...prev, newUser]);
+      toast.success("Thêm người dùng thành công!");
+    }
+    setIsFormModalOpen(false);
+    setEditingUser(null);
+  };
 
   const handleDelete = (id: string) => {
     setDeleteUserId(id);
@@ -110,7 +132,7 @@ const handleSave = (data: UserFormData) => {
 
   const confirmDelete = () => {
     if (deleteUserId) {
-      setUsers(prev => prev.filter(u => u.userId !== deleteUserId));
+      setUsers((prev) => prev.filter((u) => u.userId !== deleteUserId));
       toast.success("Xóa người dùng thành công!");
       setDeleteUserId(null);
     }
@@ -121,7 +143,9 @@ const handleSave = (data: UserFormData) => {
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-gray-900">Quản lý Người dùng</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Quản lý Người dùng
+            </h1>
             <Button
               onClick={handleCreate}
               className="flex items-center gap-2 whitespace-nowrap mt-6"
@@ -152,13 +176,15 @@ const handleSave = (data: UserFormData) => {
             },
           ]}
         />
-        
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Tổng người dùng</p>
-                <p className="text-3xl font-bold text-gray-900">{users.length}</p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {users.length}
+                </p>
               </div>
               <UserCheck className="w-10 h-10 text-blue-500" />
             </div>
@@ -169,7 +195,7 @@ const handleSave = (data: UserFormData) => {
               <div>
                 <p className="text-sm text-gray-600 mb-1">Đang hoạt động</p>
                 <p className="text-3xl font-bold text-green-600">
-                  {users.filter(u => u.status === "active").length}
+                  {users.filter((u) => u.status === "active").length}
                 </p>
               </div>
               <UserCheck className="w-10 h-10 text-green-500" />
@@ -181,7 +207,7 @@ const handleSave = (data: UserFormData) => {
               <div>
                 <p className="text-sm text-gray-600 mb-1">Không hoạt động</p>
                 <p className="text-3xl font-bold text-red-600">
-                  {users.filter(u => u.status === "inactive").length}
+                  {users.filter((u) => u.status === "inactive").length}
                 </p>
               </div>
               <UserX className="w-10 h-10 text-red-500" />
@@ -193,7 +219,7 @@ const handleSave = (data: UserFormData) => {
               <div>
                 <p className="text-sm text-gray-600 mb-1">Quản trị viên</p>
                 <p className="text-3xl font-bold text-purple-600">
-                  {users.filter(u => u.role === "admin").length}
+                  {users.filter((u) => u.role === "admin").length}
                 </p>
               </div>
               <Shield className="w-10 h-10 text-purple-500" />
@@ -241,7 +267,7 @@ const handleSave = (data: UserFormData) => {
       >
         {viewingUser && (
           <UserDetail
-            user={viewingUser}
+            user={viewingUser as unknown as MockUser}
             onClose={() => {
               setIsDetailModalOpen(false);
               setViewingUser(null);
@@ -251,17 +277,24 @@ const handleSave = (data: UserFormData) => {
       </Modal>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteUserId} onOpenChange={() => setDeleteUserId(null)}>
+      <AlertDialog
+        open={!!deleteUserId}
+        onOpenChange={() => setDeleteUserId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa người dùng này? Hành động này không thể hoàn tác.
+              Bạn có chắc chắn muốn xóa người dùng này? Hành động này không thể
+              hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
               Xóa
             </AlertDialogAction>
           </AlertDialogFooter>

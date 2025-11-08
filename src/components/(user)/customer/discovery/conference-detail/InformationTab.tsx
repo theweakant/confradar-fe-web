@@ -1,222 +1,357 @@
-import Image from 'next/image';
-import { ResearchConferenceDetailResponse, TechnicalConferenceDetailResponse } from "@/types/conference.type";
+import Image from "next/image";
+import {
+  ResearchConferenceDetailResponse,
+  TechnicalConferenceDetailResponse,
+} from "@/types/conference.type";
 
 // Information Tab Component
 interface InformationTabProps {
-    conference: TechnicalConferenceDetailResponse | ResearchConferenceDetailResponse;
-    setSelectedImage: (image: string | null) => void;
+  conference:
+    | TechnicalConferenceDetailResponse
+    | ResearchConferenceDetailResponse;
+  setSelectedImage: (image: string | null) => void;
 }
 
 const InformationTab: React.FC<InformationTabProps> = ({
-    conference,
-    setSelectedImage
+  conference,
+  setSelectedImage,
 }) => {
-    const isResearch = conference.isResearchConference === true;
+  const isResearch = conference.isResearchConference === true;
 
-    // const mediaList = isResearch ? (conference as ResearchConferenceDetailResponse).conferenceMedia || [] : (conference as TechnicalConferenceDetailResponse).conferenceMedia || [];
-    const mediaList = conference.conferenceMedia || [];
-    const sponsorsList = conference.sponsors || [];
+  // const mediaList = isResearch ? (conference as ResearchConferenceDetailResponse).conferenceMedia || [] : (conference as TechnicalConferenceDetailResponse).conferenceMedia || [];
+  const mediaList = conference.conferenceMedia || [];
+  const sponsorsList = conference.sponsors || [];
 
+  return (
+    <div>
+      <h2 className="text-2xl font-bold text-white mb-6">Thông tin chi tiết</h2>
 
-    return (
-        <div>
-            <h2 className="text-2xl font-bold text-white mb-6">Thông tin chi tiết</h2>
-
-            {/* Basic Conference Information */}
-            <div className="mb-8">
-                <h3 className="text-xl font-semibold text-white mb-4">Thông tin cơ bản</h3>
-                <div className="bg-white/20 backdrop-blur-md rounded-lg p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <span className="text-white/70 text-sm">Conference ID:</span>
-                        <p className="text-white font-medium">{conference.conferenceId || 'Chưa có ID'}</p>
-                    </div>
-                    <div>
-                        <span className="text-white/70 text-sm">Conference Name:</span>
-                        <p className="text-white font-medium">{conference.conferenceName || 'Chưa có tên hội nghị'}</p>
-                    </div>
-                    <div className="col-span-full">
-                        <span className="text-white/70 text-sm">Description:</span>
-                        <p className="text-white mt-1">{conference.description || 'Chưa có mô tả'}</p>
-                    </div>
-                    <div>
-                        <span className="text-white/70 text-sm">Start Date:</span>
-                        <p className="text-white font-medium">{conference.startDate ? new Date(conference.startDate).toLocaleDateString('vi-VN') : 'Chưa xác định'}</p>
-                    </div>
-                    <div>
-                        <span className="text-white/70 text-sm">End Date:</span>
-                        <p className="text-white font-medium">{conference.endDate ? new Date(conference.endDate).toLocaleDateString('vi-VN') : 'Chưa xác định'}</p>
-                    </div>
-                    <div>
-                        <span className="text-white/70 text-sm">Total Slots:</span>
-                        <p className="text-white font-medium">{conference.totalSlot !== undefined ? conference.totalSlot : 'Chưa xác định'}</p>
-                    </div>
-                    <div>
-                        <span className="text-white/70 text-sm">Available Slots:</span>
-                        <p className="text-white font-medium">{conference.availableSlot !== undefined ? conference.availableSlot : 'Chưa xác định'}</p>
-                    </div>
-                    <div>
-                        <span className="text-white/70 text-sm">Address:</span>
-                        <p className="text-white font-medium">{conference.address || 'Chưa có địa chỉ'}</p>
-                    </div>
-                    <div>
-                        <span className="text-white/70 text-sm">Created At:</span>
-                        <p className="text-white font-medium">{conference.createdAt ? new Date(conference.createdAt).toLocaleDateString('vi-VN') : 'Chưa xác định'}</p>
-                    </div>
-                    <div>
-                        <span className="text-white/70 text-sm">Ticket Sale Start:</span>
-                        <p className="text-white font-medium">{conference.ticketSaleStart ? new Date(conference.ticketSaleStart).toLocaleDateString('vi-VN') : 'Chưa xác định'}</p>
-                    </div>
-                    <div>
-                        <span className="text-white/70 text-sm">Ticket Sale End:</span>
-                        <p className="text-white font-medium">{conference.ticketSaleEnd ? new Date(conference.ticketSaleEnd).toLocaleDateString('vi-VN') : 'Chưa xác định'}</p>
-                    </div>
-                    <div>
-                        <span className="text-white/70 text-sm">Internal Hosted:</span>
-                        <p className="text-white font-medium">{conference.isInternalHosted !== undefined ? (conference.isInternalHosted ? 'Có' : 'Không') : 'Chưa xác định'}</p>
-                    </div>
-                    <div>
-                        <span className="text-white/70 text-sm">Research Conference:</span>
-                        <p className="text-white font-medium">{conference.isResearchConference !== undefined ? (conference.isResearchConference ? 'Có' : 'Không') : 'Chưa xác định'}</p>
-                    </div>
-                    <div>
-                        <span className="text-white/70 text-sm">City ID:</span>
-                        <p className="text-white font-medium">{conference.cityId || 'Chưa có City ID'}</p>
-                    </div>
-                    <div>
-                        <span className="text-white/70 text-sm">Conference Category ID:</span>
-                        <p className="text-white font-medium">{conference.conferenceCategoryId || 'Chưa có Category ID'}</p>
-                    </div>
-                    <div>
-                        <span className="text-white/70 text-sm">Conference Status ID:</span>
-                        <p className="text-white font-medium">{conference.conferenceStatusId || 'Chưa có Status ID'}</p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Research Conference */}
-            {isResearch && (
-                <div className="mb-8">
-                    <h3 className="text-xl font-semibold text-white mb-4">Research Conference Details</h3>
-                    <div className="bg-white/20 backdrop-blur-md rounded-lg p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <span className="text-white/70 text-sm">Conference Name:</span>
-                            <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).name || 'Chưa có tên hội nghị nghiên cứu'}</p>
-                        </div>
-                        <div>
-                            <span className="text-white/70 text-sm">Paper Format:</span>
-                            <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).paperFormat || 'Chưa có thông tin về định dạng bài báo'}</p>
-                        </div>
-                        <div>
-                            <span className="text-white/70 text-sm">Papers Accepted:</span>
-                            <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).numberPaperAccept !== undefined ? (conference as ResearchConferenceDetailResponse).numberPaperAccept : 'Chưa xác định số lượng bài báo được chấp nhận'}</p>
-                        </div>
-                        <div>
-                            <span className="text-white/70 text-sm">Revision Attempts Allowed:</span>
-                            <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).revisionAttemptAllowed !== undefined ? (conference as ResearchConferenceDetailResponse).revisionAttemptAllowed : 'Chưa xác định số lần sửa đổi cho phép'}</p>
-                        </div>
-                        <div>
-                            <span className="text-white/70 text-sm">Allow Listeners:</span>
-                            <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).allowListener !== undefined ? ((conference as ResearchConferenceDetailResponse).allowListener ? 'Có' : 'Không') : 'Chưa xác định chính sách người nghe'}</p>
-                        </div>
-                        <div>
-                            <span className="text-white/70 text-sm">Rank Value:</span>
-                            <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).rankValue || 'Chưa có thông tin về giá trị xếp hạng'}</p>
-                        </div>
-                        <div>
-                            <span className="text-white/70 text-sm">Rank Year:</span>
-                            <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).rankYear || 'Chưa có thông tin về năm xếp hạng'}</p>
-                        </div>
-                        <div>
-                            <span className="text-white/70 text-sm">Review Fee:</span>
-                            <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).reviewFee !== undefined ? `${(conference as ResearchConferenceDetailResponse).reviewFee?.toLocaleString('vi-VN')}₫` : 'Phí đánh giá bài báo chưa xác định'}</p>
-                        </div>
-                        <div>
-                            <span className="text-white/70 text-sm">Ranking Category ID:</span>
-                            <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).rankingCategoryId || 'Chưa có ID danh mục xếp hạng'}</p>
-                        </div>
-                        <div>
-                            <span className="text-white/70 text-sm">Ranking Category Name:</span>
-                            <p className="text-white font-medium">{(conference as ResearchConferenceDetailResponse).rankingCategoryName || 'Chưa có thông tin về danh mục xếp hạng'}</p>
-                        </div>
-                        <div className="col-span-full">
-                            <span className="text-white/70 text-sm">Ranking Description:</span>
-                            <p className="text-white mt-1">{(conference as ResearchConferenceDetailResponse).rankingDescription || 'Chưa có mô tả về xếp hạng'}</p>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Technical Conference */}
-            {!isResearch && (
-                <div className="mb-8">
-                    <h3 className="text-xl font-semibold text-white mb-4">Technical Conference Details</h3>
-                    <div className="bg-white/20 backdrop-blur-md rounded-lg p-6">
-                        <span className="text-white/70 text-sm">Target Audience:</span>
-                        <p className="text-white font-medium">{(conference as TechnicalConferenceDetailResponse).targetAudience || 'Chưa có thông tin về đối tượng mục tiêu'}</p>
-                    </div>
-                </div>
-            )}
-
-            {/* Media Section */}
-            <div className="mb-8">
-                <h3 className="text-xl font-semibold text-white mb-4">Hình ảnh & Media</h3>
-                {mediaList.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {mediaList.map((media) => (
-                            <div
-                                key={media.mediaId}
-                                className="relative cursor-pointer group"
-                                onClick={() => setSelectedImage(media.mediaUrl || '')}
-                            >
-                                <div className="relative w-full aspect-video bg-white/10 rounded-lg overflow-hidden">
-                                    <Image
-                                        src={media.mediaUrl || '/images/customer_route/confbannerbg2.jpg'}
-                                        alt="Conference media"
-                                        fill
-                                        className="object-cover group-hover:scale-110 transition-transform duration-300"
-                                    />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="text-center text-white/70 py-6 bg-white/10 rounded-lg">
-                        <p>Chưa có hình ảnh hoặc media cho hội nghị này</p>
-                    </div>
-                )}
-            </div>
-
-            {/* Sponsors */}
-            <div className="mb-8">
-                <h3 className="text-xl font-semibold text-white mb-4">Nhà tài trợ</h3>
-                {sponsorsList.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                        {sponsorsList.map((sponsor) => (
-                            <div
-                                key={sponsor.sponsorId}
-                                className="bg-white/20 backdrop-blur-md rounded-lg p-4 flex flex-col items-center"
-                            >
-                                <div className="relative w-16 h-16 mb-2">
-                                    <Image
-                                        src={sponsor.imageUrl || '/images/LandingPage/logo_sponser/tech_logo/logo_microsoft.png'}
-                                        alt={sponsor.name || 'Sponsor'}
-                                        fill
-                                        className="object-contain"
-                                    />
-                                </div>
-                                <span className="text-white text-sm text-center">{sponsor.name || 'Tên nhà tài trợ chưa xác định'}</span>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="text-center text-white/70 py-6 bg-white/10 rounded-lg">
-                        <p>Chưa có thông tin về nhà tài trợ</p>
-                    </div>
-                )}
-            </div>
-
+      {/* Basic Conference Information */}
+      <div className="mb-8">
+        <h3 className="text-xl font-semibold text-white mb-4">
+          Thông tin cơ bản
+        </h3>
+        <div className="bg-white/20 backdrop-blur-md rounded-lg p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <span className="text-white/70 text-sm">Conference ID:</span>
+            <p className="text-white font-medium">
+              {conference.conferenceId || "Chưa có ID"}
+            </p>
+          </div>
+          <div>
+            <span className="text-white/70 text-sm">Conference Name:</span>
+            <p className="text-white font-medium">
+              {conference.conferenceName || "Chưa có tên hội nghị"}
+            </p>
+          </div>
+          <div className="col-span-full">
+            <span className="text-white/70 text-sm">Description:</span>
+            <p className="text-white mt-1">
+              {conference.description || "Chưa có mô tả"}
+            </p>
+          </div>
+          <div>
+            <span className="text-white/70 text-sm">Start Date:</span>
+            <p className="text-white font-medium">
+              {conference.startDate
+                ? new Date(conference.startDate).toLocaleDateString("vi-VN")
+                : "Chưa xác định"}
+            </p>
+          </div>
+          <div>
+            <span className="text-white/70 text-sm">End Date:</span>
+            <p className="text-white font-medium">
+              {conference.endDate
+                ? new Date(conference.endDate).toLocaleDateString("vi-VN")
+                : "Chưa xác định"}
+            </p>
+          </div>
+          <div>
+            <span className="text-white/70 text-sm">Total Slots:</span>
+            <p className="text-white font-medium">
+              {conference.totalSlot !== undefined
+                ? conference.totalSlot
+                : "Chưa xác định"}
+            </p>
+          </div>
+          <div>
+            <span className="text-white/70 text-sm">Available Slots:</span>
+            <p className="text-white font-medium">
+              {conference.availableSlot !== undefined
+                ? conference.availableSlot
+                : "Chưa xác định"}
+            </p>
+          </div>
+          <div>
+            <span className="text-white/70 text-sm">Address:</span>
+            <p className="text-white font-medium">
+              {conference.address || "Chưa có địa chỉ"}
+            </p>
+          </div>
+          <div>
+            <span className="text-white/70 text-sm">Created At:</span>
+            <p className="text-white font-medium">
+              {conference.createdAt
+                ? new Date(conference.createdAt).toLocaleDateString("vi-VN")
+                : "Chưa xác định"}
+            </p>
+          </div>
+          <div>
+            <span className="text-white/70 text-sm">Ticket Sale Start:</span>
+            <p className="text-white font-medium">
+              {conference.ticketSaleStart
+                ? new Date(conference.ticketSaleStart).toLocaleDateString(
+                    "vi-VN",
+                  )
+                : "Chưa xác định"}
+            </p>
+          </div>
+          <div>
+            <span className="text-white/70 text-sm">Ticket Sale End:</span>
+            <p className="text-white font-medium">
+              {conference.ticketSaleEnd
+                ? new Date(conference.ticketSaleEnd).toLocaleDateString("vi-VN")
+                : "Chưa xác định"}
+            </p>
+          </div>
+          <div>
+            <span className="text-white/70 text-sm">Internal Hosted:</span>
+            <p className="text-white font-medium">
+              {conference.isInternalHosted !== undefined
+                ? conference.isInternalHosted
+                  ? "Có"
+                  : "Không"
+                : "Chưa xác định"}
+            </p>
+          </div>
+          <div>
+            <span className="text-white/70 text-sm">Research Conference:</span>
+            <p className="text-white font-medium">
+              {conference.isResearchConference !== undefined
+                ? conference.isResearchConference
+                  ? "Có"
+                  : "Không"
+                : "Chưa xác định"}
+            </p>
+          </div>
+          <div>
+            <span className="text-white/70 text-sm">City ID:</span>
+            <p className="text-white font-medium">
+              {conference.cityId || "Chưa có City ID"}
+            </p>
+          </div>
+          <div>
+            <span className="text-white/70 text-sm">
+              Conference Category ID:
+            </span>
+            <p className="text-white font-medium">
+              {conference.conferenceCategoryId || "Chưa có Category ID"}
+            </p>
+          </div>
+          <div>
+            <span className="text-white/70 text-sm">Conference Status ID:</span>
+            <p className="text-white font-medium">
+              {conference.conferenceStatusId || "Chưa có Status ID"}
+            </p>
+          </div>
         </div>
-    );
+      </div>
+
+      {/* Research Conference */}
+      {isResearch && (
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold text-white mb-4">
+            Research Conference Details
+          </h3>
+          <div className="bg-white/20 backdrop-blur-md rounded-lg p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <span className="text-white/70 text-sm">Conference Name:</span>
+              <p className="text-white font-medium">
+                {(conference as ResearchConferenceDetailResponse).name ||
+                  "Chưa có tên hội nghị nghiên cứu"}
+              </p>
+            </div>
+            <div>
+              <span className="text-white/70 text-sm">Paper Format:</span>
+              <p className="text-white font-medium">
+                {(conference as ResearchConferenceDetailResponse).paperFormat ||
+                  "Chưa có thông tin về định dạng bài báo"}
+              </p>
+            </div>
+            <div>
+              <span className="text-white/70 text-sm">Papers Accepted:</span>
+              <p className="text-white font-medium">
+                {(conference as ResearchConferenceDetailResponse)
+                  .numberPaperAccept !== undefined
+                  ? (conference as ResearchConferenceDetailResponse)
+                      .numberPaperAccept
+                  : "Chưa xác định số lượng bài báo được chấp nhận"}
+              </p>
+            </div>
+            <div>
+              <span className="text-white/70 text-sm">
+                Revision Attempts Allowed:
+              </span>
+              <p className="text-white font-medium">
+                {(conference as ResearchConferenceDetailResponse)
+                  .revisionAttemptAllowed !== undefined
+                  ? (conference as ResearchConferenceDetailResponse)
+                      .revisionAttemptAllowed
+                  : "Chưa xác định số lần sửa đổi cho phép"}
+              </p>
+            </div>
+            <div>
+              <span className="text-white/70 text-sm">Allow Listeners:</span>
+              <p className="text-white font-medium">
+                {(conference as ResearchConferenceDetailResponse)
+                  .allowListener !== undefined
+                  ? (conference as ResearchConferenceDetailResponse)
+                      .allowListener
+                    ? "Có"
+                    : "Không"
+                  : "Chưa xác định chính sách người nghe"}
+              </p>
+            </div>
+            <div>
+              <span className="text-white/70 text-sm">Rank Value:</span>
+              <p className="text-white font-medium">
+                {(conference as ResearchConferenceDetailResponse).rankValue ||
+                  "Chưa có thông tin về giá trị xếp hạng"}
+              </p>
+            </div>
+            <div>
+              <span className="text-white/70 text-sm">Rank Year:</span>
+              <p className="text-white font-medium">
+                {(conference as ResearchConferenceDetailResponse).rankYear ||
+                  "Chưa có thông tin về năm xếp hạng"}
+              </p>
+            </div>
+            <div>
+              <span className="text-white/70 text-sm">Review Fee:</span>
+              <p className="text-white font-medium">
+                {(conference as ResearchConferenceDetailResponse).reviewFee !==
+                undefined
+                  ? `${(conference as ResearchConferenceDetailResponse).reviewFee?.toLocaleString("vi-VN")}₫`
+                  : "Phí đánh giá bài báo chưa xác định"}
+              </p>
+            </div>
+            <div>
+              <span className="text-white/70 text-sm">
+                Ranking Category ID:
+              </span>
+              <p className="text-white font-medium">
+                {(conference as ResearchConferenceDetailResponse)
+                  .rankingCategoryId || "Chưa có ID danh mục xếp hạng"}
+              </p>
+            </div>
+            <div>
+              <span className="text-white/70 text-sm">
+                Ranking Category Name:
+              </span>
+              <p className="text-white font-medium">
+                {(conference as ResearchConferenceDetailResponse)
+                  .rankingCategoryName ||
+                  "Chưa có thông tin về danh mục xếp hạng"}
+              </p>
+            </div>
+            <div className="col-span-full">
+              <span className="text-white/70 text-sm">
+                Ranking Description:
+              </span>
+              <p className="text-white mt-1">
+                {(conference as ResearchConferenceDetailResponse)
+                  .rankingDescription || "Chưa có mô tả về xếp hạng"}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Technical Conference */}
+      {!isResearch && (
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold text-white mb-4">
+            Technical Conference Details
+          </h3>
+          <div className="bg-white/20 backdrop-blur-md rounded-lg p-6">
+            <span className="text-white/70 text-sm">Target Audience:</span>
+            <p className="text-white font-medium">
+              {(conference as TechnicalConferenceDetailResponse)
+                .targetAudience || "Chưa có thông tin về đối tượng mục tiêu"}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Media Section */}
+      <div className="mb-8">
+        <h3 className="text-xl font-semibold text-white mb-4">
+          Hình ảnh & Media
+        </h3>
+        {mediaList.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {mediaList.map((media) => (
+              <div
+                key={media.mediaId}
+                className="relative cursor-pointer group"
+                onClick={() => setSelectedImage(media.mediaUrl || "")}
+              >
+                <div className="relative w-full aspect-video bg-white/10 rounded-lg overflow-hidden">
+                  <Image
+                    src={
+                      media.mediaUrl ||
+                      "/images/customer_route/confbannerbg2.jpg"
+                    }
+                    alt="Conference media"
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-300"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center text-white/70 py-6 bg-white/10 rounded-lg">
+            <p>Chưa có hình ảnh hoặc media cho hội nghị này</p>
+          </div>
+        )}
+      </div>
+
+      {/* Sponsors */}
+      <div className="mb-8">
+        <h3 className="text-xl font-semibold text-white mb-4">Nhà tài trợ</h3>
+        {sponsorsList.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {sponsorsList.map((sponsor) => (
+              <div
+                key={sponsor.sponsorId}
+                className="bg-white/20 backdrop-blur-md rounded-lg p-4 flex flex-col items-center"
+              >
+                <div className="relative w-16 h-16 mb-2">
+                  <Image
+                    src={
+                      sponsor.imageUrl ||
+                      "/images/LandingPage/logo_sponser/tech_logo/logo_microsoft.png"
+                    }
+                    alt={sponsor.name || "Sponsor"}
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+                <span className="text-white text-sm text-center">
+                  {sponsor.name || "Tên nhà tài trợ chưa xác định"}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center text-white/70 py-6 bg-white/10 rounded-lg">
+            <p>Chưa có thông tin về nhà tài trợ</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default InformationTab;

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/molecules/FormInput";
 import { FormSelect } from "@/components/molecules/FormSelect";
 import { validationUserRules } from "@/utils/validationUserRules";
-import type { User, UserFormData } from "@/types/user.type";
+import type { User, UserFormData } from "../ManageUser";
 
 interface UserFormProps {
   user?: User | null;
@@ -14,30 +14,25 @@ interface UserFormProps {
 }
 
 export function UserForm({ user, onSave, onCancel }: UserFormProps) {
-const [formData, setFormData] = useState<UserFormData>({
-  fullName: user?.fullName || "",
-  email: user?.email || "",
-  phoneNumber: user?.phoneNumber || "",
-  address: user?.address || "",
-  role: user?.role || "customer"  
-});
+  const [formData, setFormData] = useState<UserFormData>({
+    fullName: user?.fullName || "",
+    email: user?.email || "",
+    phoneNumber: user?.phoneNumber || "",
+    role: user?.role || "customer",
+  });
 
-  const [errors, setErrors] = useState<Partial<Record<keyof UserFormData, string>>>({});
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof UserFormData, string>>
+  >({});
   const [touched, setTouched] = useState<Set<keyof UserFormData>>(new Set());
 
-  const handleChange = (
-    field: keyof UserFormData,
-    value: string
-  ) => {
+  const handleChange = (field: keyof UserFormData, value: string) => {
     setFormData((prev: UserFormData) => ({ ...prev, [field]: value }));
     validateField(field, value);
     setTouched((prev: Set<keyof UserFormData>) => new Set(prev).add(field));
   };
 
-  const validateField = (
-    field: keyof UserFormData,
-    value: string
-  ): boolean => {
+  const validateField = (field: keyof UserFormData, value: string): boolean => {
     if (typeof field !== "string") return true;
     const fieldRules = validationUserRules[field as string];
     if (!fieldRules) return true;
@@ -46,7 +41,7 @@ const [formData, setFormData] = useState<UserFormData>({
       if (!rule.validate(value)) {
         setErrors((prev: Partial<Record<keyof UserFormData, string>>) => ({
           ...prev,
-          [field]: rule.message
+          [field]: rule.message,
         }));
         return false;
       }
@@ -54,7 +49,7 @@ const [formData, setFormData] = useState<UserFormData>({
 
     setErrors((prev: Partial<Record<keyof UserFormData, string>>) => ({
       ...prev,
-      [field]: ""
+      [field]: "",
     }));
     return true;
   };
@@ -64,7 +59,7 @@ const [formData, setFormData] = useState<UserFormData>({
     const allFields = Object.keys(formData) as Array<keyof UserFormData>;
 
     allFields.forEach((field: keyof UserFormData) => {
-      const fieldValue = formData[field];
+      const fieldValue = formData[field] ?? "";
       const fieldIsValid = validateField(field, fieldValue);
 
       if (!fieldIsValid) {
@@ -82,15 +77,14 @@ const [formData, setFormData] = useState<UserFormData>({
     }
   };
 
-const roleOptions = [
+  const roleOptions = [
     { value: "customer", label: "Khách hàng" },
     // { value: "conferenceorganizer", label: "Người tổ chức hội nghị" },
     { value: "collaborator", label: "Cộng tác viên" },
     { value: "localreviewer", label: "Phản biện nội bộ" },
     { value: "externalreviewer", label: "Phản biện bên ngoài" },
     // { value: "admin", label: "Quản trị viên" }
-  ]; 
-
+  ];
 
   return (
     <div className="space-y-6">

@@ -9,15 +9,15 @@ interface FormSelectProps {
   disabled?: boolean;
 }
 
-export function FormSelect({ 
-  label, 
-  name, 
-  value, 
-  onChange, 
-  options, 
-  required = false, 
+export function FormSelect({
+  label,
+  name,
+  value,
+  onChange,
+  options,
+  required = false,
   error,
-  disabled = false 
+  disabled = false,
 }: FormSelectProps) {
   return (
     <div>

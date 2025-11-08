@@ -1,8 +1,32 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieLabelRenderProps } from 'recharts';
-import { Download, FileSpreadsheet, FileText, Filter, Calendar, Users, DollarSign, FileCheck } from 'lucide-react';
+import { useState } from "react";
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieLabelRenderProps,
+} from "recharts";
+import {
+  Download,
+  FileSpreadsheet,
+  FileText,
+  Filter,
+  Calendar,
+  Users,
+  DollarSign,
+  FileCheck,
+} from "lucide-react";
 
 interface Conference {
   id: string;
@@ -40,56 +64,60 @@ interface SelectedSections {
   papers: boolean;
 }
 
-type ExportFormat = 'xlsx' | 'csv' | 'pdf';
+type ExportFormat = "xlsx" | "csv" | "pdf";
 
 export default function OrganizerPage() {
-  const [selectedConference, setSelectedConference] = useState<string>('conf-2024');
-  const [exportFormat, setExportFormat] = useState<ExportFormat>('xlsx');
+  const [selectedConference, setSelectedConference] =
+    useState<string>("conf-2024");
+  const [exportFormat, setExportFormat] = useState<ExportFormat>("xlsx");
   const [selectedSections, setSelectedSections] = useState<SelectedSections>({
     registration: true,
     attendance: true,
     revenue: true,
-    papers: true
+    papers: true,
   });
   const [showExportDialog, setShowExportDialog] = useState<boolean>(false);
   const [exportSuccess, setExportSuccess] = useState<boolean>(false);
 
   const conferences: Conference[] = [
-    { id: 'conf-2024', name: 'Tech Conference 2024' },
-    { id: 'conf-2023', name: 'Tech Conference 2023' },
-    { id: 'ai-summit', name: 'AI Summit 2024' }
+    { id: "conf-2024", name: "Tech Conference 2024" },
+    { id: "conf-2023", name: "Tech Conference 2023" },
+    { id: "ai-summit", name: "AI Summit 2024" },
   ];
 
   const registrationData: RegistrationDataPoint[] = [
-    { month: 'Jan', registrations: 45 },
-    { month: 'Feb', registrations: 78 },
-    { month: 'Mar', registrations: 120 },
-    { month: 'Apr', registrations: 156 },
-    { month: 'May', registrations: 203 }
+    { month: "Jan", registrations: 45 },
+    { month: "Feb", registrations: 78 },
+    { month: "Mar", registrations: 120 },
+    { month: "Apr", registrations: 156 },
+    { month: "May", registrations: 203 },
   ];
 
   const attendanceData: AttendanceDataPoint[] = [
-    { name: 'Attended', value: 485, color: '#10b981' },
-    { name: 'Registered', value: 118, color: '#f59e0b' },
-    { name: 'Cancelled', value: 32, color: '#ef4444' }
+    { name: "Attended", value: 485, color: "#10b981" },
+    { name: "Registered", value: 118, color: "#f59e0b" },
+    { name: "Cancelled", value: 32, color: "#ef4444" },
   ];
 
   const revenueData: RevenueDataPoint[] = [
-    { category: 'Early Bird', amount: 45000 },
-    { category: 'Regular', amount: 78000 },
-    { category: 'Late', amount: 23000 },
-    { category: 'Sponsors', amount: 150000 }
+    { category: "Early Bird", amount: 45000 },
+    { category: "Regular", amount: 78000 },
+    { category: "Late", amount: 23000 },
+    { category: "Sponsors", amount: 150000 },
   ];
 
   const paperStats: PaperStats = {
     submitted: 234,
     accepted: 89,
     rejected: 98,
-    pending: 47
+    pending: 47,
   };
 
   const handleSectionToggle = (section: keyof SelectedSections): void => {
-    setSelectedSections(prev => ({ ...prev, [section]: !prev[section as keyof SelectedSections] }));
+    setSelectedSections((prev) => ({
+      ...prev,
+      [section]: !prev[section as keyof SelectedSections],
+    }));
   };
 
   const handleExport = (): void => {
@@ -103,8 +131,12 @@ export default function OrganizerPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Conference Statistics</h1>
-          <p className="text-gray-600">Xin chào Organizer! Quản lý và xuất báo cáo thống kê hội nghị.</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Conference Statistics
+          </h1>
+          <p className="text-gray-600">
+            Xin chào Organizer! Quản lý và xuất báo cáo thống kê hội nghị.
+          </p>
         </div>
 
         {/* Conference Selection & Export */}
@@ -115,17 +147,19 @@ export default function OrganizerPage() {
                 <Calendar className="inline w-4 h-4 mr-1" />
                 Select Conference
               </label>
-              <select 
+              <select
                 value={selectedConference}
                 onChange={(e) => setSelectedConference(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                {conferences.map(conf => (
-                  <option key={conf.id} value={conf.id}>{conf.name}</option>
+                {conferences.map((conf) => (
+                  <option key={conf.id} value={conf.id}>
+                    {conf.name}
+                  </option>
                 ))}
               </select>
             </div>
-            <button 
+            <button
               onClick={() => setShowExportDialog(true)}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium"
             >
@@ -139,7 +173,9 @@ export default function OrganizerPage() {
         {exportSuccess && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 flex items-center gap-3">
             <FileCheck className="w-5 h-5 text-green-600" />
-            <p className="text-green-800 font-medium">Conference statistics exported successfully.</p>
+            <p className="text-green-800 font-medium">
+              Conference statistics exported successfully.
+            </p>
           </div>
         )}
 
@@ -172,7 +208,9 @@ export default function OrganizerPage() {
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex items-center justify-between mb-2">
               <FileText className="w-8 h-8 text-orange-600" />
-              <span className="text-sm font-medium text-gray-500">Accepted</span>
+              <span className="text-sm font-medium text-gray-500">
+                Accepted
+              </span>
             </div>
             <h3 className="text-3xl font-bold text-gray-900">89</h3>
             <p className="text-sm text-gray-600">Research Papers</p>
@@ -183,7 +221,9 @@ export default function OrganizerPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Registration Trend */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Registration Trend</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Registration Trend
+            </h3>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={registrationData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -191,14 +231,21 @@ export default function OrganizerPage() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="registrations" stroke="#3b82f6" strokeWidth={2} />
+                <Line
+                  type="monotone"
+                  dataKey="registrations"
+                  stroke="#3b82f6"
+                  strokeWidth={2}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
 
           {/* Attendance Distribution */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Attendance Distribution</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Attendance Distribution
+            </h3>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
@@ -208,18 +255,33 @@ export default function OrganizerPage() {
                   labelLine={false}
                   label={(props: PieLabelRenderProps) => {
                     const RADIAN = Math.PI / 180;
-                    const { cx, cy, midAngle, innerRadius, outerRadius, name, percent } = props;
-                    const radius = (innerRadius as number) + ((outerRadius as number) - (innerRadius as number)) * 0.5;
-                    const x = (cx as number) + radius * Math.cos(-(midAngle as number) * RADIAN);
-                    const y = (cy as number) + radius * Math.sin(-(midAngle as number) * RADIAN);
-                    const percentValue = typeof percent === 'number' ? percent : 0;
-                    
+                    const {
+                      cx,
+                      cy,
+                      midAngle,
+                      innerRadius,
+                      outerRadius,
+                      name,
+                      percent,
+                    } = props;
+                    const radius =
+                      (innerRadius as number) +
+                      ((outerRadius as number) - (innerRadius as number)) * 0.5;
+                    const x =
+                      (cx as number) +
+                      radius * Math.cos(-(midAngle as number) * RADIAN);
+                    const y =
+                      (cy as number) +
+                      radius * Math.sin(-(midAngle as number) * RADIAN);
+                    const percentValue =
+                      typeof percent === "number" ? percent : 0;
+
                     return (
-                      <text 
-                        x={x} 
-                        y={y} 
-                        fill="white" 
-                        textAnchor={x > (cx as number) ? 'start' : 'end'} 
+                      <text
+                        x={x}
+                        y={y}
+                        fill="white"
+                        textAnchor={x > (cx as number) ? "start" : "end"}
                         dominantBaseline="central"
                         className="text-sm font-semibold"
                       >
@@ -242,7 +304,9 @@ export default function OrganizerPage() {
 
           {/* Revenue Breakdown */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Revenue Breakdown</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Revenue Breakdown
+            </h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={revenueData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -257,38 +321,60 @@ export default function OrganizerPage() {
 
           {/* Paper Statistics */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Research Paper Statistics</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Research Paper Statistics
+            </h3>
             <div className="space-y-4 mt-8">
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Submitted</span>
-                <span className="text-2xl font-bold text-gray-900">{paperStats.submitted}</span>
+                <span className="text-2xl font-bold text-gray-900">
+                  {paperStats.submitted}
+                </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-blue-600 h-2 rounded-full" style={{ width: '100%' }}></div>
+                <div
+                  className="bg-blue-600 h-2 rounded-full"
+                  style={{ width: "100%" }}
+                ></div>
               </div>
-              
+
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Accepted</span>
-                <span className="text-2xl font-bold text-green-600">{paperStats.accepted}</span>
+                <span className="text-2xl font-bold text-green-600">
+                  {paperStats.accepted}
+                </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-green-600 h-2 rounded-full" style={{ width: '38%' }}></div>
+                <div
+                  className="bg-green-600 h-2 rounded-full"
+                  style={{ width: "38%" }}
+                ></div>
               </div>
-              
+
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Rejected</span>
-                <span className="text-2xl font-bold text-red-600">{paperStats.rejected}</span>
+                <span className="text-2xl font-bold text-red-600">
+                  {paperStats.rejected}
+                </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-red-600 h-2 rounded-full" style={{ width: '42%' }}></div>
+                <div
+                  className="bg-red-600 h-2 rounded-full"
+                  style={{ width: "42%" }}
+                ></div>
               </div>
-              
+
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Pending Review</span>
-                <span className="text-2xl font-bold text-orange-600">{paperStats.pending}</span>
+                <span className="text-2xl font-bold text-orange-600">
+                  {paperStats.pending}
+                </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-orange-600 h-2 rounded-full" style={{ width: '20%' }}></div>
+                <div
+                  className="bg-orange-600 h-2 rounded-full"
+                  style={{ width: "20%" }}
+                ></div>
               </div>
             </div>
           </div>
@@ -299,8 +385,10 @@ export default function OrganizerPage() {
       {showExportDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Export Statistics</h2>
-            
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Export Statistics
+            </h2>
+
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-3">
                 <Filter className="inline w-4 h-4 mr-1" />
@@ -311,7 +399,7 @@ export default function OrganizerPage() {
                   <input
                     type="checkbox"
                     checked={selectedSections.registration}
-                    onChange={() => handleSectionToggle('registration')}
+                    onChange={() => handleSectionToggle("registration")}
                     className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                   />
                   <span className="ml-2 text-gray-700">Registration Data</span>
@@ -320,7 +408,7 @@ export default function OrganizerPage() {
                   <input
                     type="checkbox"
                     checked={selectedSections.attendance}
-                    onChange={() => handleSectionToggle('attendance')}
+                    onChange={() => handleSectionToggle("attendance")}
                     className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                   />
                   <span className="ml-2 text-gray-700">Attendance Data</span>
@@ -329,7 +417,7 @@ export default function OrganizerPage() {
                   <input
                     type="checkbox"
                     checked={selectedSections.revenue}
-                    onChange={() => handleSectionToggle('revenue')}
+                    onChange={() => handleSectionToggle("revenue")}
                     className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                   />
                   <span className="ml-2 text-gray-700">Revenue Data</span>
@@ -338,10 +426,12 @@ export default function OrganizerPage() {
                   <input
                     type="checkbox"
                     checked={selectedSections.papers}
-                    onChange={() => handleSectionToggle('papers')}
+                    onChange={() => handleSectionToggle("papers")}
                     className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                   />
-                  <span className="ml-2 text-gray-700">Research Papers Data</span>
+                  <span className="ml-2 text-gray-700">
+                    Research Papers Data
+                  </span>
                 </label>
               </div>
             </div>
@@ -353,33 +443,33 @@ export default function OrganizerPage() {
               </label>
               <div className="grid grid-cols-3 gap-3">
                 <button
-                  onClick={() => setExportFormat('xlsx')}
+                  onClick={() => setExportFormat("xlsx")}
                   className={`p-3 border-2 rounded-lg text-center transition-all ${
-                    exportFormat === 'xlsx' 
-                      ? 'border-blue-600 bg-blue-50 text-blue-600' 
-                      : 'border-gray-300 hover:border-gray-400'
+                    exportFormat === "xlsx"
+                      ? "border-blue-600 bg-blue-50 text-blue-600"
+                      : "border-gray-300 hover:border-gray-400"
                   }`}
                 >
                   <FileSpreadsheet className="w-6 h-6 mx-auto mb-1" />
                   <span className="text-xs font-medium">Excel</span>
                 </button>
                 <button
-                  onClick={() => setExportFormat('csv')}
+                  onClick={() => setExportFormat("csv")}
                   className={`p-3 border-2 rounded-lg text-center transition-all ${
-                    exportFormat === 'csv' 
-                      ? 'border-blue-600 bg-blue-50 text-blue-600' 
-                      : 'border-gray-300 hover:border-gray-400'
+                    exportFormat === "csv"
+                      ? "border-blue-600 bg-blue-50 text-blue-600"
+                      : "border-gray-300 hover:border-gray-400"
                   }`}
                 >
                   <FileText className="w-6 h-6 mx-auto mb-1" />
                   <span className="text-xs font-medium">CSV</span>
                 </button>
                 <button
-                  onClick={() => setExportFormat('pdf')}
+                  onClick={() => setExportFormat("pdf")}
                   className={`p-3 border-2 rounded-lg text-center transition-all ${
-                    exportFormat === 'pdf' 
-                      ? 'border-blue-600 bg-blue-50 text-blue-600' 
-                      : 'border-gray-300 hover:border-gray-400'
+                    exportFormat === "pdf"
+                      ? "border-blue-600 bg-blue-50 text-blue-600"
+                      : "border-gray-300 hover:border-gray-400"
                   }`}
                 >
                   <FileText className="w-6 h-6 mx-auto mb-1" />

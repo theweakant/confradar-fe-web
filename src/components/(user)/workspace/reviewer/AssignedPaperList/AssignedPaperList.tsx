@@ -2,13 +2,17 @@
 
 import { FileText, Calendar, User, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useListPendingAbstractsQuery, useDecideAbstractStatusMutation } from "@/redux/services/paper.service";
+import {
+  useListPendingAbstractsQuery,
+  useDecideAbstractStatusMutation,
+} from "@/redux/services/paper.service";
 import { toast } from "sonner";
 
 export default function PendingAbstractPaperList() {
   const { data: response, isLoading, isError } = useListPendingAbstractsQuery();
-  const [decideAbstractStatus, { isLoading: isDeciding }] = useDecideAbstractStatusMutation();
-  
+  const [decideAbstractStatus, { isLoading: isDeciding }] =
+    useDecideAbstractStatusMutation();
+
   const pendingAbstracts = response?.data || [];
 
   const handleAccept = async (paperId: string, abstractId: string) => {
@@ -16,9 +20,9 @@ export default function PendingAbstractPaperList() {
       const result = await decideAbstractStatus({
         paperId,
         abstractId,
-        globalStatus: "Accepted"
+        globalStatus: "Accepted",
       }).unwrap();
-      
+
       toast.success("Đã chấp nhận bài báo thành công!");
     } catch (error) {
       toast.error("Có lỗi xảy ra khi chấp nhận bài báo");
@@ -80,36 +84,41 @@ export default function PendingAbstractPaperList() {
                   <h3 className="text-xl font-semibold text-gray-900 mb-3">
                     abstractId: {abstract.abstractId.substring(0, 8)}...
                   </h3>
-                  
+
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div className="flex items-center text-sm text-gray-600">
                       <User className="w-4 h-4 mr-2" />
                       <span>Diễn giả: {abstract.presenterName}</span>
                     </div>
-                    
+
                     <div className="flex items-center text-sm text-gray-600">
                       <FileText className="w-4 h-4 mr-2" />
                       <span>{abstract.conferenceName}</span>
                     </div>
-                    
+
                     <div className="flex items-center text-sm text-gray-600">
                       <Tag className="w-4 h-4 mr-2" />
                       <span>Trạng thái: {abstract.globalStatusName}</span>
                     </div>
-                    
+
                     <div className="flex items-center text-sm text-gray-600">
                       <Calendar className="w-4 h-4 mr-2" />
-                      <span>Ngày nộp: {new Date(abstract.createdAt).toLocaleDateString('vi-VN')}</span>
+                      <span>
+                        Ngày nộp:{" "}
+                        {new Date(abstract.createdAt).toLocaleDateString(
+                          "vi-VN",
+                        )}
+                      </span>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
                     <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
                       {abstract.globalStatusName}
                     </span>
-                    <a 
-                      href={abstract.abstractUrl} 
-                      target="_blank" 
+                    <a
+                      href={abstract.abstractUrl}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs text-blue-600 hover:underline"
                     >
@@ -117,10 +126,12 @@ export default function PendingAbstractPaperList() {
                     </a>
                   </div>
                 </div>
-                
-                <Button 
+
+                <Button
                   className="ml-4"
-                  onClick={() => handleAccept(abstract.paperId, abstract.abstractId)}
+                  onClick={() =>
+                    handleAccept(abstract.paperId, abstract.abstractId)
+                  }
                   disabled={isDeciding}
                 >
                   {isDeciding ? "Đang xử lý..." : "Chấp nhận"}

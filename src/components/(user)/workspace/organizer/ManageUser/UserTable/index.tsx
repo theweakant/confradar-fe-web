@@ -1,13 +1,13 @@
 import React from "react";
-import { 
-  Eye,
-  MoreVertical,
-  Ban,
-  CheckCircle
-} from "lucide-react";
+import { Eye, MoreVertical, Ban, CheckCircle } from "lucide-react";
 
 import { DataTable, Column } from "@/components/molecules/DataTable";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { StatusBadge } from "@/components/atoms/StatusBadge";
 import { UserProfileResponse } from "@/types/user.type";
 
@@ -18,11 +18,11 @@ interface UserTableProps {
   onActivate: (userId: string) => void;
 }
 
-export function UserTable({ 
-  users, 
-  onView, 
-  onSuspend, 
-  onActivate 
+export function UserTable({
+  users,
+  onView,
+  onSuspend,
+  onActivate,
 }: UserTableProps) {
   const getRoleLabel = (role: string) => {
     const labels: Record<string, string> = {
@@ -31,20 +31,23 @@ export function UserTable({
       collaborator: "Cộng tác viên",
       localreviewer: "Phản biện nội bộ",
       externalreviewer: "Phản biện bên ngoài",
-      admin: "Quản trị viên"
+      admin: "Quản trị viên",
     };
     return labels[role] || role;
   };
 
-  const getRoleVariant = (role: string): "success" | "danger" | "warning" | "info" => {
-    const variants: Record<string, "success" | "danger" | "warning" | "info"> = {
-      customer: "info",
-      conferenceorganizer: "warning",
-      collaborator: "success",
-      localreviewer: "info",
-      externalreviewer: "warning",
-      admin: "danger"
-    };
+  const getRoleVariant = (
+    role: string,
+  ): "success" | "danger" | "warning" | "info" => {
+    const variants: Record<string, "success" | "danger" | "warning" | "info"> =
+      {
+        customer: "info",
+        conferenceorganizer: "warning",
+        collaborator: "success",
+        localreviewer: "info",
+        externalreviewer: "warning",
+        admin: "danger",
+      };
     return variants[role] || "info";
   };
 

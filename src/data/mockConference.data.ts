@@ -10,7 +10,8 @@ export const mockConferences: Conference[] = [
     endDate: "2025-11-17T18:00:00Z",
     capacity: 500,
     address: "Trung tâm Hội nghị Quốc gia, Quận 1",
-    bannerImageUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87",
+    bannerImageUrl:
+      "https://images.unsplash.com/photo-1540575467063-178a50c2df87",
     createdAt: "2025-01-15T10:30:00Z",
     isInternalHosted: true,
     conferenceRankingId: "rank-1",
@@ -31,7 +32,8 @@ export const mockConferences: Conference[] = [
     endDate: "2025-10-22T17:00:00Z",
     capacity: 300,
     address: "Đại học Quốc gia Hà Nội, Thanh Xuân",
-    bannerImageUrl: "https://images.unsplash.com/photo-1591115765373-5207764f72e7",
+    bannerImageUrl:
+      "https://images.unsplash.com/photo-1591115765373-5207764f72e7",
     createdAt: "2025-02-20T14:00:00Z",
     isInternalHosted: false,
     conferenceRankingId: "rank-2",
@@ -73,7 +75,8 @@ export const mockConferences: Conference[] = [
     endDate: "2025-12-06T17:00:00Z",
     capacity: 200,
     address: "Đại học Cần Thơ, Ninh Kiều",
-    bannerImageUrl: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1",
+    bannerImageUrl:
+      "https://images.unsplash.com/photo-1523050854058-8df90110c9f1",
     createdAt: "2025-03-01T09:00:00Z",
     isInternalHosted: false,
     conferenceRankingId: "rank-4",

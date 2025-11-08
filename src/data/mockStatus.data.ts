@@ -5,5 +5,5 @@ export const mockStatusData = [
   { statusId: "4", name: "Đã đóng đăng ký" },
   { statusId: "5", name: "Đang diễn ra" },
   { statusId: "6", name: "Đã kết thúc" },
-  { statusId: "7", name: "Đã hủy" }
+  { statusId: "7", name: "Đã hủy" },
 ];

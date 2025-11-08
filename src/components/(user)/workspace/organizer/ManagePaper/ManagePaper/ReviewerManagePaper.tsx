@@ -38,7 +38,7 @@ export default function ReviewerManagePage() {
   const [assignPaper, setAssignPaper] = useState<UnassignAbstract | null>(null);
   const [showCameraReady, setShowCameraReady] = useState(false);
 
-  // ✅ Extract data từ API 
+  // ✅ Extract data từ API
   const papers = papersData?.data || [];
 
   const handleView = (paper: UnassignAbstract) => {
@@ -78,13 +78,15 @@ export default function ReviewerManagePage() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Quản lý Bài báo</h1>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Quản lý Bài báo
+              </h1>
               <p className="text-gray-600 mt-2">
                 Quản lý bài báo và đánh giá trên ConfRadar
               </p>
             </div>
             <div className="flex items-center gap-3">
-           <Link href="/workspace/organizer/manage-paper/assigned-papper-list">
+              <Link href="/workspace/organizer/manage-paper/assigned-papper-list">
                 <Button
                   className="flex items-center gap-2 whitespace-nowrap"
                   variant="outline"
@@ -92,8 +94,7 @@ export default function ReviewerManagePage() {
                   <ScanEye className="w-5 h-5" />
                   Xem danh sách Abstract đang chờ
                 </Button>
-              </Link>   
-
+              </Link>
             </div>
           </div>
         </div>

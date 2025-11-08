@@ -19,7 +19,7 @@
 //       >
 //         <Home className="w-4 h-4" />
 //       </Link>
-      
+
 //       {items.map((item, index) => (
 //         <div key={index} className="flex items-center space-x-2">
 //           <ChevronRight className="w-4 h-4 text-gray-400" />
@@ -117,15 +117,19 @@
 //   );
 // }
 
-"use client"
+"use client";
 
-import { ROLES } from "@/constants/roles"
-import RouteGuard from "@/utils/routeGuard"
+import { ROLES } from "@/constants/roles";
+import RouteGuard from "@/utils/routeGuard";
 
-export default function ReviewerLayout({ children }: { children: React.ReactNode }) {
+export default function ReviewerLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <RouteGuard allowedRoles={[ROLES.LOCAL_REVIEWER, ROLES.EXTERNAL_REVIEWER]}>
       {children}
     </RouteGuard>
-  )
+  );
 }

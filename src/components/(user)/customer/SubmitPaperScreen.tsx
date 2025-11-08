@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 interface Author {
   name: string;
@@ -25,74 +25,77 @@ interface FormData {
 
 const SubmitPaperScreen: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
-    title: '',
-    abstract: '',
-    keywords: '',
-    authors: [{ name: '', affiliation: '', email: '' }],
-    category: '',
+    title: "",
+    abstract: "",
+    keywords: "",
+    authors: [{ name: "", affiliation: "", email: "" }],
+    category: "",
     paperFile: null,
     abstractFile: null,
     supplementaryFiles: [],
-    acknowledgments: '',
-    conflicts: '',
+    acknowledgments: "",
+    conflicts: "",
     ethics: false,
-    copyright: false
+    copyright: false,
   });
 
   const [currentStep, setCurrentStep] = useState<number>(1);
   const totalSteps = 4;
 
   const conferenceInfo = {
-    name: 'Hội thảo Khoa học Máy tính Việt Nam 2025',
-    deadline: '28/02/2025',
-    submissionGuidelines: 'IEEE Conference Paper Format',
+    name: "Hội thảo Khoa học Máy tính Việt Nam 2025",
+    deadline: "28/02/2025",
+    submissionGuidelines: "IEEE Conference Paper Format",
     maxPages: 8,
     topics: [
-      'Trí tuệ nhân tạo và Machine Learning',
-      'Xử lý ngôn ngữ tự nhiên',
-      'Computer Vision',
-      'Hệ thống phân tán',
-      'Bảo mật thông tin',
-      'Khoa học dữ liệu'
-    ]
+      "Trí tuệ nhân tạo và Machine Learning",
+      "Xử lý ngôn ngữ tự nhiên",
+      "Computer Vision",
+      "Hệ thống phân tán",
+      "Bảo mật thông tin",
+      "Khoa học dữ liệu",
+    ],
   };
 
   const addAuthor = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      authors: [...prev.authors, { name: '', affiliation: '', email: '' }]
+      authors: [...prev.authors, { name: "", affiliation: "", email: "" }],
     }));
   };
 
   const removeAuthor = (index: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      authors: prev.authors.filter((_, i) => i !== index)
+      authors: prev.authors.filter((_, i) => i !== index),
     }));
   };
 
   const updateAuthor = (index: number, field: keyof Author, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       authors: prev.authors.map((author, i) =>
-        i === index ? { ...author, [field]: value } : author
-      )
+        i === index ? { ...author, [field]: value } : author,
+      ),
     }));
   };
 
-  const handleFileUpload = (field: 'paperFile' | 'abstractFile', file: File) => {
-    setFormData(prev => ({ ...prev, [field]: file }));
+  const handleFileUpload = (
+    field: "paperFile" | "abstractFile",
+    file: File,
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: file }));
   };
 
   const handleSupplementaryFiles = (files: FileList) => {
-    setFormData(prev => ({ ...prev, supplementaryFiles: Array.from(files) }));
+    setFormData((prev) => ({ ...prev, supplementaryFiles: Array.from(files) }));
   };
 
   const nextStep = () => {
-    if (currentStep < totalSteps) setCurrentStep(prev => prev + 1);
+    if (currentStep < totalSteps) setCurrentStep((prev) => prev + 1);
   };
   const prevStep = () => {
-    if (currentStep > 1) setCurrentStep(prev => prev - 1);
+    if (currentStep > 1) setCurrentStep((prev) => prev - 1);
   };
 
   const renderStepContent = () => {
@@ -100,7 +103,9 @@ const SubmitPaperScreen: React.FC = () => {
       case 1:
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Thông tin cơ bản</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Thông tin cơ bản
+            </h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -109,7 +114,9 @@ const SubmitPaperScreen: React.FC = () => {
                 <input
                   type="text"
                   value={formData.title}
-                  onChange={e => setFormData({ ...formData, title: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, title: e.target.value })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   placeholder="Nhập tiêu đề bài báo của bạn..."
                 />
@@ -121,7 +128,9 @@ const SubmitPaperScreen: React.FC = () => {
                 </label>
                 <select
                   value={formData.category}
-                  onChange={e => setFormData({ ...formData, category: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, category: e.target.value })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 >
                   <option value="">Chọn lĩnh vực nghiên cứu</option>
@@ -140,7 +149,9 @@ const SubmitPaperScreen: React.FC = () => {
                 <input
                   type="text"
                   value={formData.keywords}
-                  onChange={e => setFormData({ ...formData, keywords: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, keywords: e.target.value })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   placeholder="Nhập các từ khóa, phân cách bằng dấu phẩy..."
                 />
@@ -155,14 +166,23 @@ const SubmitPaperScreen: React.FC = () => {
                 </label>
                 <textarea
                   value={formData.abstract}
-                  onChange={e => setFormData({ ...formData, abstract: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, abstract: e.target.value })
+                  }
                   rows={6}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   placeholder="Nhập tóm tắt bài báo của bạn (khoảng 150-300 từ)..."
                 />
                 <div className="flex justify-between text-sm text-gray-500 mt-1">
                   <span>Tối thiểu 150 từ, tối đa 300 từ</span>
-                  <span>{formData.abstract.split(' ').filter(word => word.length > 0).length} từ</span>
+                  <span>
+                    {
+                      formData.abstract
+                        .split(" ")
+                        .filter((word) => word.length > 0).length
+                    }{" "}
+                    từ
+                  </span>
                 </div>
               </div>
             </div>
@@ -172,12 +192,20 @@ const SubmitPaperScreen: React.FC = () => {
       case 2:
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Thông tin tác giả</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Thông tin tác giả
+            </h3>
             {formData.authors.map((author, index) => (
-              <div key={index} className="p-4 bg-gray-100 rounded-lg mb-4 border border-gray-300">
+              <div
+                key={index}
+                className="p-4 bg-gray-100 rounded-lg mb-4 border border-gray-300"
+              >
                 <div className="flex justify-between items-center mb-3">
                   <h4 className="font-medium text-gray-800">
-                    Tác giả {index + 1} {index === 0 && <span className="text-blue-500">(Tác giả chính)</span>}
+                    Tác giả {index + 1}{" "}
+                    {index === 0 && (
+                      <span className="text-blue-500">(Tác giả chính)</span>
+                    )}
                   </h4>
                   {index > 0 && (
                     <button
@@ -191,21 +219,29 @@ const SubmitPaperScreen: React.FC = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Họ và tên *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Họ và tên *
+                    </label>
                     <input
                       type="text"
                       value={author.name}
-                      onChange={e => updateAuthor(index, 'name', e.target.value)}
+                      onChange={(e) =>
+                        updateAuthor(index, "name", e.target.value)
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                       placeholder="Nhập họ và tên..."
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email *
+                    </label>
                     <input
                       type="email"
                       value={author.email}
-                      onChange={e => updateAuthor(index, 'email', e.target.value)}
+                      onChange={(e) =>
+                        updateAuthor(index, "email", e.target.value)
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                       placeholder="Nhập email..."
                     />
@@ -213,11 +249,15 @@ const SubmitPaperScreen: React.FC = () => {
                 </div>
 
                 <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Đơn vị công tác *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Đơn vị công tác *
+                  </label>
                   <input
                     type="text"
                     value={author.affiliation}
-                    onChange={e => updateAuthor(index, 'affiliation', e.target.value)}
+                    onChange={(e) =>
+                      updateAuthor(index, "affiliation", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                     placeholder="Nhập tên trường/công ty/tổ chức..."
                   />
@@ -249,7 +289,9 @@ const SubmitPaperScreen: React.FC = () => {
           </div>
           <div className="text-right">
             <p className="text-sm text-gray-600">Deadline nộp bài</p>
-            <p className="font-semibold text-red-500">{conferenceInfo.deadline}</p>
+            <p className="font-semibold text-red-500">
+              {conferenceInfo.deadline}
+            </p>
           </div>
         </div>
       </header>
@@ -258,7 +300,9 @@ const SubmitPaperScreen: React.FC = () => {
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-600">Tiến độ hoàn thành</span>
+            <span className="text-sm font-medium text-gray-600">
+              Tiến độ hoàn thành
+            </span>
             <span className="text-sm font-medium text-gray-600">
               {currentStep}/{totalSteps}
             </span>
@@ -270,10 +314,26 @@ const SubmitPaperScreen: React.FC = () => {
             />
           </div>
           <div className="flex justify-between mt-2 text-xs">
-            <span className={`${currentStep >= 1 ? 'text-blue-500' : 'text-gray-400'}`}>Thông tin cơ bản</span>
-            <span className={`${currentStep >= 2 ? 'text-blue-500' : 'text-gray-400'}`}>Tác giả</span>
-            <span className={`${currentStep >= 3 ? 'text-blue-500' : 'text-gray-400'}`}>Tài liệu</span>
-            <span className={`${currentStep >= 4 ? 'text-blue-500' : 'text-gray-400'}`}>Xác nhận</span>
+            <span
+              className={`${currentStep >= 1 ? "text-blue-500" : "text-gray-400"}`}
+            >
+              Thông tin cơ bản
+            </span>
+            <span
+              className={`${currentStep >= 2 ? "text-blue-500" : "text-gray-400"}`}
+            >
+              Tác giả
+            </span>
+            <span
+              className={`${currentStep >= 3 ? "text-blue-500" : "text-gray-400"}`}
+            >
+              Tài liệu
+            </span>
+            <span
+              className={`${currentStep >= 4 ? "text-blue-500" : "text-gray-400"}`}
+            >
+              Xác nhận
+            </span>
           </div>
         </div>
 
@@ -321,7 +381,6 @@ const SubmitPaperScreen: React.FC = () => {
 };
 
 export default SubmitPaperScreen;
-
 
 // 'use client';
 
@@ -374,7 +433,7 @@ export default SubmitPaperScreen;
 //   };
 
 //   const updateAuthor = (index, field, value) => {
-//     const newAuthors = formData.authors.map((author, i) => 
+//     const newAuthors = formData.authors.map((author, i) =>
 //       i === index ? { ...author, [field]: value } : author
 //     );
 //     setFormData({ ...formData, authors: newAuthors });
@@ -403,7 +462,7 @@ export default SubmitPaperScreen;
 //           <div className="space-y-6">
 //             <div>
 //               <h3 className="text-lg font-semibold text-white mb-4">Thông tin cơ bản</h3>
-              
+
 //               <div className="space-y-4">
 //                 <div>
 //                   <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -474,7 +533,7 @@ export default SubmitPaperScreen;
 //           <div className="space-y-6">
 //             <div>
 //               <h3 className="text-lg font-semibold text-white mb-4">Thông tin tác giả</h3>
-              
+
 //               {formData.authors.map((author, index) => (
 //                 <div key={index} className="p-4 bg-gray-700 rounded-lg mb-4 border border-gray-600">
 //                   <div className="flex justify-between items-center mb-3">
@@ -490,7 +549,7 @@ export default SubmitPaperScreen;
 //                       </button>
 //                     )}
 //                   </div>
-                  
+
 //                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 //                     <div>
 //                       <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -517,7 +576,7 @@ export default SubmitPaperScreen;
 //                       />
 //                     </div>
 //                   </div>
-                  
+
 //                   <div className="mt-4">
 //                     <label className="block text-sm font-medium text-gray-300 mb-2">
 //                       Đơn vị công tác <span className="text-red-400">*</span>
@@ -548,7 +607,7 @@ export default SubmitPaperScreen;
 //           <div className="space-y-6">
 //             <div>
 //               <h3 className="text-lg font-semibold text-white mb-4">Tải lên tài liệu</h3>
-              
+
 //               <div className="space-y-6">
 //                 <div>
 //                   <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -666,7 +725,7 @@ export default SubmitPaperScreen;
 //           <div className="space-y-6">
 //             <div>
 //               <h3 className="text-lg font-semibold text-white mb-4">Xác nhận và cam kết</h3>
-              
+
 //               <div className="space-y-6">
 //                 <div>
 //                   <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -767,8 +826,8 @@ export default SubmitPaperScreen;
 //             <span className="text-sm font-medium text-gray-300">{currentStep}/{totalSteps}</span>
 //           </div>
 //           <div className="w-full bg-gray-700 rounded-full h-2">
-//             <div 
-//               className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+//             <div
+//               className="bg-blue-600 h-2 rounded-full transition-all duration-300"
 //               style={{ width: `${(currentStep / totalSteps) * 100}%` }}
 //             ></div>
 //           </div>
@@ -808,7 +867,7 @@ export default SubmitPaperScreen;
 //                   <button className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors">
 //                     Lưu nháp
 //                   </button>
-                  
+
 //                   {currentStep < totalSteps ? (
 //                     <button
 //                       onClick={nextStep}
@@ -833,23 +892,23 @@ export default SubmitPaperScreen;
 //           <div className="lg:col-span-1">
 //             <div className="bg-gray-800 rounded-xl border border-gray-700 p-6 sticky top-8">
 //               <h3 className="font-semibold text-white mb-4">Thông tin hội thảo</h3>
-              
+
 //               <div className="space-y-4 text-sm">
 //                 <div>
 //                   <p className="text-gray-400">Tên hội thảo:</p>
 //                   <p className="text-white font-medium">{conferenceInfo.name}</p>
 //                 </div>
-                
+
 //                 <div>
 //                   <p className="text-gray-400">Deadline:</p>
 //                   <p className="text-red-400 font-medium">{conferenceInfo.deadline}</p>
 //                 </div>
-                
+
 //                 <div>
 //                   <p className="text-gray-400">Định dạng:</p>
 //                   <p className="text-white">{conferenceInfo.submissionGuidelines}</p>
 //                 </div>
-                
+
 //                 <div>
 //                   <p className="text-gray-400">Số trang tối đa:</p>
 //                   <p className="text-white">{conferenceInfo.maxPages} trang</p>

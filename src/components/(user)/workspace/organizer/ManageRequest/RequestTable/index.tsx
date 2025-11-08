@@ -30,16 +30,14 @@ export function RequestTable({
   };
 
   const getTypeVariant = (
-    type: string
+    type: string,
   ): "success" | "danger" | "warning" | "info" => {
-    const variants: Record<
-      string,
-      "success" | "danger" | "warning" | "info"
-    > = {
-      refund: "danger",
-      change_presenter: "warning",
-      change_session: "info",
-    };
+    const variants: Record<string, "success" | "danger" | "warning" | "info"> =
+      {
+        refund: "danger",
+        change_presenter: "warning",
+        change_session: "info",
+      };
     return variants[type] || "info";
   };
 
@@ -54,17 +52,15 @@ export function RequestTable({
   };
 
   const getStatusVariant = (
-    status: string
+    status: string,
   ): "success" | "danger" | "warning" | "info" => {
-    const variants: Record<
-      string,
-      "success" | "danger" | "warning" | "info"
-    > = {
-      pending: "warning",
-      approved: "success",
-      rejected: "danger",
-      more_info: "info",
-    };
+    const variants: Record<string, "success" | "danger" | "warning" | "info"> =
+      {
+        pending: "warning",
+        approved: "success",
+        rejected: "danger",
+        more_info: "info",
+      };
     return variants[status] || "info";
   };
 
@@ -81,7 +77,9 @@ export function RequestTable({
             <p className="font-medium text-gray-900 truncate">
               {request.userName}
             </p>
-            <p className="text-sm text-gray-500 truncate">{request.userEmail}</p>
+            <p className="text-sm text-gray-500 truncate">
+              {request.userEmail}
+            </p>
           </div>
         </div>
       ),

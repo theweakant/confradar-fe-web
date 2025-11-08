@@ -1,4 +1,4 @@
-import { HoverRevealSquare } from "@/components/molecules/LandingPage/HoverRevealSquare"
+import { HoverRevealSquare } from "@/components/molecules/LandingPage/HoverRevealSquare";
 
 export default function WhatWeOffer() {
   return (
@@ -18,7 +18,12 @@ export default function WhatWeOffer() {
           {/* Đối tác tổ chức */}
           <HoverRevealSquare
             title="Đối tác"
-            hoverInfo={["Tổ chức sự kiện", "Quản lý nội dung", "Kết nối cộng đồng", "Xây dựng thương hiệu"]}
+            hoverInfo={[
+              "Tổ chức sự kiện",
+              "Quản lý nội dung",
+              "Kết nối cộng đồng",
+              "Xây dựng thương hiệu",
+            ]}
             detailNumber="1"
             detailTitle="Đối tác tổ chức"
             detailDescription="Dành cho các tổ chức, ban tổ chức hội nghị muốn tiếp cận rộng rãi và quản lý sự kiện hiệu quả."
@@ -27,7 +32,12 @@ export default function WhatWeOffer() {
           {/* Tác giả / Diễn giả */}
           <HoverRevealSquare
             title="Tác giả"
-            hoverInfo={["Gửi bài nghiên cứu", "Chia sẻ kiến thức", "Xây dựng uy tín", "Kết nối chuyên gia"]}
+            hoverInfo={[
+              "Gửi bài nghiên cứu",
+              "Chia sẻ kiến thức",
+              "Xây dựng uy tín",
+              "Kết nối chuyên gia",
+            ]}
             detailNumber="2"
             detailTitle="Tác giả / Diễn giả"
             detailDescription="Dành cho các nhà nghiên cứu, diễn giả muốn trình bày công trình và mở rộng tầm ảnh hưởng."
@@ -36,7 +46,12 @@ export default function WhatWeOffer() {
           {/* Người tham dự */}
           <HoverRevealSquare
             title="Người dự"
-            hoverInfo={["Khám phá hội nghị", "Học hỏi xu hướng", "Networking", "Phát triển nghề nghiệp"]}
+            hoverInfo={[
+              "Khám phá hội nghị",
+              "Học hỏi xu hướng",
+              "Networking",
+              "Phát triển nghề nghiệp",
+            ]}
             detailNumber="3"
             detailTitle="Người tham dự"
             detailDescription="Dành cho những ai muốn cập nhật kiến thức mới nhất và kết nối với cộng đồng chuyên môn."
@@ -45,7 +60,12 @@ export default function WhatWeOffer() {
           {/* Phản biện */}
           <HoverRevealSquare
             title="Phản biện"
-            hoverInfo={["Đánh giá bài viết", "Đảm bảo chất lượng", "Góp ý xây dựng", "Nâng cao chuẩn mực"]}
+            hoverInfo={[
+              "Đánh giá bài viết",
+              "Đảm bảo chất lượng",
+              "Góp ý xây dựng",
+              "Nâng cao chuẩn mực",
+            ]}
             detailNumber="4"
             detailTitle="Phản biện"
             detailDescription="Dành cho các chuyên gia đánh giá và đảm bảo chất lượng nội dung học thuật của hội nghị."
@@ -53,5 +73,5 @@ export default function WhatWeOffer() {
         </div>
       </div>
     </section>
-  )
+  );
 }

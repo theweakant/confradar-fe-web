@@ -2,8 +2,8 @@
 
 export interface AuthUser {
   userId: string;
-  email: string
-  role: string | null
+  email: string;
+  role: string | null;
 }
 
 export interface UserProfileResponse {
@@ -16,14 +16,14 @@ export interface UserProfileResponse {
   avatarUrl: string | null;
   bioDescription: string | null;
   createdAt: string;
-  roles?: string[]
+  roles?: string[];
 }
 
 export interface ProfileUpdateRequest {
   fullName?: string;
   birthDay?: string;
   phoneNumber?: string;
-  gender?: 'Male' | 'Female' | 'Other';
+  gender?: "Male" | "Female" | "Other";
   avatarFile?: File;
   bioDescription?: string;
 }
@@ -45,7 +45,7 @@ export interface CollaboratorRequest {
 //+++++
 
 export interface UsersListResponse {
-  users: UserProfileResponse[]
+  users: UserProfileResponse[];
 }
 
 export interface ReviewerListResponse {
@@ -58,8 +58,7 @@ export interface ReviewerListResponse {
 
 //+++++
 
-
-export type UserFormData = Omit<UserProfileResponse, "userId" | "createdAt"  >;
+export type UserFormData = Omit<UserProfileResponse, "userId" | "createdAt">;
 
 export interface UserFormProps {
   user?: UserProfileResponse | null;
@@ -79,8 +78,6 @@ export interface UserTableProps {
   onDelete: (id: string) => void;
 }
 
-
-
 //--------------------------------------------------------------
 
 // REVIEWER TYPES
@@ -93,7 +90,7 @@ export interface Reviewer {
   phoneNumber: string;
   address: string;
   organization: string;
-  expertise: string[]; // Các lĩnh vực chuyên môn
+  expertise: string[];
   type: "localreviewer" | "externalreviewer";
   status: "active" | "inactive";
   assignedPapers: number;
@@ -101,7 +98,10 @@ export interface Reviewer {
   joinedDate: string;
 }
 
-export type ReviewerFormData = Omit<Reviewer, "reviewerId" | "status" | "assignedPapers" | "completedReviews" | "joinedDate">;
+export type ReviewerFormData = Omit<
+  Reviewer,
+  "reviewerId" | "status" | "assignedPapers" | "completedReviews" | "joinedDate"
+>;
 
 export interface ReviewerFormProps {
   reviewer?: Reviewer | null;

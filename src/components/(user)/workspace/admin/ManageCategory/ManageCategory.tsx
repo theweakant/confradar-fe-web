@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, FolderOpen} from "lucide-react";
+import { Plus, FolderOpen } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,11 +31,18 @@ import {
 import type { Category, CategoryFormData } from "@/types/category.type";
 
 export default function ManageCategory() {
-  const { data: categoriesResponse, isLoading: categoriesLoading, refetch: refetchCategories } = useGetAllCategoriesQuery();
-  
-  const [createCategory, { isLoading: isCreating }] = useCreateCategoryMutation();
-  const [updateCategory, { isLoading: isUpdating }] = useUpdateCategoryMutation();
-  const [deleteCategory, { isLoading: isDeleting }] = useDeleteCategoryMutation();
+  const {
+    data: categoriesResponse,
+    isLoading: categoriesLoading,
+    refetch: refetchCategories,
+  } = useGetAllCategoriesQuery();
+
+  const [createCategory, { isLoading: isCreating }] =
+    useCreateCategoryMutation();
+  const [updateCategory, { isLoading: isUpdating }] =
+    useUpdateCategoryMutation();
+  const [deleteCategory, { isLoading: isDeleting }] =
+    useDeleteCategoryMutation();
 
   const categories: Category[] = categoriesResponse?.data || [];
 
@@ -48,13 +55,12 @@ export default function ManageCategory() {
   const [viewingCategory, setViewingCategory] = useState<Category | null>(null);
   const [deleteCategoryId, setDeleteCategoryId] = useState<string | null>(null);
 
-  const statusOptions = [
-    { value: "all", label: "Tất cả trạng thái" },
-  ];
+  const statusOptions = [{ value: "all", label: "Tất cả trạng thái" }];
 
   const filteredCategories = categories.filter((category: Category) => {
-    const matchesSearch =
-      category.conferenceCategoryName.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = category.conferenceCategoryName
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
     return matchesSearch;
   });
 
@@ -85,17 +91,17 @@ export default function ManageCategory() {
         const result = await createCategory(data).unwrap();
         toast.success(result.message || "Thêm danh mục mới thành công!");
       }
-      
+
       setIsFormModalOpen(false);
       setEditingCategory(null);
       refetchCategories();
     } catch (error: unknown) {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Có lỗi xảy ra, vui lòng thử lại!";
-        toast.error(message);
-      }
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Có lỗi xảy ra, vui lòng thử lại!";
+      toast.error(message);
+    }
   };
 
   const handleDelete = (id: string) => {
