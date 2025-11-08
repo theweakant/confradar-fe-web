@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { usePaperCustomer } from '@/redux/hooks/paper/usePaper';
 import { RevisionPaper, RevisionSubmission, RevisionSubmissionFeedback } from '@/types/paper.type';
+import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
+import "@cyntler/react-doc-viewer/dist/index.css";
 
 interface RevisionPhaseProps {
     paperId: string;
@@ -275,14 +277,17 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
 
                                             {submission.fileUrl && (
                                                 <div className="mb-4">
-                                                    <a
-                                                        href={submission.fileUrl}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-blue-400 hover:text-blue-300 text-sm"
-                                                    >
-                                                        Xem file submission
-                                                    </a>
+                                                    <div className="max-h-[80vh] overflow-auto">
+                                                        <DocViewer
+                                                            documents={[{ uri: submission.fileUrl }]}
+                                                            pluginRenderers={DocViewerRenderers}
+                                                            config={{
+                                                                header: { disableHeader: true },
+                                                                pdfVerticalScrollByDefault: true,
+                                                            }}
+                                                            style={{ minHeight: "100%", borderRadius: 8 }}
+                                                        />
+                                                    </div>
                                                 </div>
                                             )}
 
