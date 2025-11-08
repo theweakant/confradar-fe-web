@@ -35,7 +35,7 @@ export interface ChangePasswordRequest {
 }
 
 export interface CollaboratorRequest {
-  userId?: string;
+  // userId?: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -59,7 +59,7 @@ export interface ReviewerListResponse {
 //+++++
 
 
-export type UserFormData = Omit<UserProfileResponse, "userId" | "createdAt"  >;
+export type UserFormData = Omit<UserProfileResponse, "userId" | "createdAt">;
 
 export interface UserFormProps {
   user?: UserProfileResponse | null;

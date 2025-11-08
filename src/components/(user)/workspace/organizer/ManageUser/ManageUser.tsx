@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import {  
-  Plus, 
-  UserCheck, 
+import { useEffect, useState } from "react";
+import {
+  Plus,
+  UserCheck,
   Shield
 } from "lucide-react";
 import {
@@ -25,29 +25,30 @@ import { Modal } from "@/components/molecules/Modal";
 import { UserDetail } from "@/components/(user)/workspace/organizer/ManageUser/UserDetail/index";
 import { UserForm } from "@/components/(user)/workspace/organizer/ManageUser/UserForm/index";
 import { UserTable } from "@/components/(user)/workspace/organizer/ManageUser/UserTable/index";
-import {  UserProfileResponse, CollaboratorRequest } from "@/types/user.type";
-import { 
-  useGetUsersListQuery, 
-  useGetProfileByIdQuery, 
+import { UserProfileResponse, CollaboratorRequest } from "@/types/user.type";
+import {
+  useGetUsersListQuery,
+  useGetProfileByIdQuery,
   useCreateCollaboratorMutation,
   useSuspendAccountMutation,
   useActivateAccountMutation
 } from "@/redux/services/user.service";
+import { parseApiError } from "@/helper/api";
 
 export default function ManageUser() {
   // API: Lấy danh sách users
-  const { 
-    data: usersListData, 
-    isLoading: isLoadingList, 
-    error: errorList, 
-    refetch 
+  const {
+    data: usersListData,
+    isLoading: isLoadingList,
+    error: errorList,
+    refetch
   } = useGetUsersListQuery();
-  
+
   const users: UserProfileResponse[] = usersListData?.data?.users || [];
 
   // API: Mutation tạo collaborator
-  const [createCollaborator, { isLoading: isCreating }] = useCreateCollaboratorMutation();
-  
+  const [createCollaborator, { isLoading: isCreating, error: createRawError }] = useCreateCollaboratorMutation();
+
   // API: Mutation suspend và activate
   const [suspendAccount, { isLoading: isSuspending }] = useSuspendAccountMutation();
   const [activateAccount, { isLoading: isActivating }] = useActivateAccountMutation();
@@ -61,10 +62,12 @@ export default function ManageUser() {
   const [suspendUserId, setSuspendUserId] = useState<string | null>(null);
   const [activateUserId, setActivateUserId] = useState<string | null>(null);
 
+  const createError = parseApiError<string>(createRawError);
+
   // API: Lấy chi tiết user
-  const { 
-    data: userProfileData, 
-    isLoading: isLoadingProfile 
+  const {
+    data: userProfileData,
+    isLoading: isLoadingProfile
   } = useGetProfileByIdQuery(
     viewingUserId || "",
     { skip: !viewingUserId }
@@ -81,10 +84,14 @@ export default function ManageUser() {
 
   const filteredUsers = users.filter((user: UserProfileResponse) => {
     const matchesSearch = user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchQuery.toLowerCase());
+      user.email.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole = filterRole === "all" || user.roles?.includes(filterRole);
-    return matchesSearch && matchesRole ;
+    return matchesSearch && matchesRole;
   });
+
+  useEffect(() => {
+    if (createError) toast.error(createError.data?.Message);
+  }, [createError])
 
   const handleCreate = () => {
     setIsFormModalOpen(true);
@@ -99,13 +106,13 @@ export default function ManageUser() {
     try {
       const response = await createCollaborator(data).unwrap();
       toast.success(response.message || "Thêm collaborator thành công!");
-      
+
       setIsFormModalOpen(false);
-      refetch(); 
+      refetch();
     } catch (error: unknown) {
-        const err = error as ApiError;
-        const errorMessage = err?.Message || "Them đối tác thất bại!";
-        toast.error(errorMessage);
+      // const err = error as ApiError;
+      // const errorMessage = err?.Message || "Them đối tác thất bại!";
+      // toast.error(errorMessage);
     }
   };
 
@@ -293,8 +300,8 @@ export default function ManageUser() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmSuspend} 
+            <AlertDialogAction
+              onClick={confirmSuspend}
               className="bg-orange-600 hover:bg-orange-700"
               disabled={isSuspending}
             >
@@ -315,8 +322,8 @@ export default function ManageUser() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmActivate} 
+            <AlertDialogAction
+              onClick={confirmActivate}
               className="bg-green-600 hover:bg-green-700"
               disabled={isActivating}
             >
