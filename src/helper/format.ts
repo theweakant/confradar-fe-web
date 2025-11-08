@@ -67,5 +67,26 @@ export function convertDuration(duration: string) {
 }
 
 
+//format request
+export const parseDate = (dateStr: string): Date | undefined => {
+  if (!dateStr) return undefined;
+  // Nếu format yyyy-mm-dd
+  if (dateStr.includes('-')) {
+    return new Date(dateStr);
+  }
+  // Nếu format dd/mm/yyyy
+  if (dateStr.includes('/')) {
+    const [day, month, year] = dateStr.split('/');
+    return new Date(`${year}-${month}-${day}`);
+  }
+  return undefined;
+};
 
-
+// Helper để convert Date object sang yyyy-mm-dd
+export const formatDateToAPI = (date: Date | null): string => {
+  if (!date) return "";
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
