@@ -13,10 +13,10 @@ interface UserFormProps {
 
 export function UserForm({ user, onSave, onCancel }: UserFormProps) {
   const [formData, setFormData] = useState<CollaboratorRequest>({
-    fullName: user?.fullName || "",
     email: user?.email || "",
     password: "",
     confirmPassword: "",
+    fullName: user?.fullName || "",
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof CollaboratorRequest, string>>>({});
@@ -92,7 +92,7 @@ export function UserForm({ user, onSave, onCancel }: UserFormProps) {
     const allFields = Object.keys(formData) as Array<keyof CollaboratorRequest>;
 
     allFields.forEach((field) => {
-      const fieldValue = formData[field]??"";
+      const fieldValue = formData[field] ?? "";
       const fieldIsValid = validateField(field, fieldValue);
 
       if (!fieldIsValid) {

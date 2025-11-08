@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { AvailableCustomerResponse, Abstract } from "@/types/paper.type";
 import { usePaperCustomer } from "@/redux/hooks/paper/usePaper";
+import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
+import "@cyntler/react-doc-viewer/dist/index.css";
 
 interface AbstractPhaseProps {
     paperId?: string;
@@ -151,12 +153,27 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
                             </p>
                         )}
                         {abstract.fileUrl && (
-                            <iframe
-                                src={abstract.fileUrl}
-                                width="100%"
-                                height="600px"
-                                style={{ border: 'none' }}
-                            />
+                            <div className="max-h-[80vh]  overflow-auto">
+                                <DocViewer
+                                    documents={[{ uri: abstract.fileUrl }]}
+                                    pluginRenderers={DocViewerRenderers}
+                                    config={{
+                                        header: { disableHeader: true },
+                                        pdfVerticalScrollByDefault: true,
+                                    }}
+                                    // style={{ height: "100%", borderRadius: 8 }}
+                                    style={{ minHeight: "100%", borderRadius: 8 }}
+                                />
+                            </div>
+                            // <iframe
+                            //     // src={abstract.fileUrl}
+                            //     src={`https://docs.google.com/viewer?url=${encodeURIComponent(
+                            //         abstract.fileUrl
+                            //     )}&embedded=true`}
+                            //     width="100%"
+                            //     height="600px"
+                            //     style={{ border: 'none' }}
+                            // />
                             // <a
                             //     href={abstract.fileUrl}
                             //     target="_blank"

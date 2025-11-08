@@ -17,9 +17,9 @@ export interface ListPaper {
     globalStatusName: string | null;
     abstractUrl: string;
   } | null;
-  fullPaper: unknown  | null;
-  revisionPaper: unknown  | null;
-  cameraReady: CameraReadyA  | null;
+  fullPaper: unknown | null;
+  revisionPaper: unknown | null;
+  cameraReady: CameraReadyA | null;
 }
 
 export interface UnassignAbstract {
@@ -55,11 +55,11 @@ export interface AssignedPaper {
   conferenceId: string;
   paperPhaseId: string;
   createdAt: string;
-  cameraReady: CameraReadyA   | null;
-  conference: unknown  | null;
-  paperAuthors: unknown [];
-  paperPhase: unknown  | null;
-  presenter: unknown  | null;
+  cameraReady: CameraReadyA | null;
+  conference: unknown | null;
+  paperAuthors: unknown[];
+  paperPhase: unknown | null;
+  presenter: unknown | null;
 }
 
 //------------------------------------------
@@ -121,7 +121,7 @@ export interface RevisionPaperSubmission {
   revisionPaperUrl: string;
   revisionPaperId: string;
   revisionDeadlineRoundId: string;
-  startDate:string;
+  startDate: string;
   endDate: string;
   roundNumber: number;
   revisionSubmissionFeedbacks: RevisionSubmissionFeedbackA[];
@@ -298,6 +298,32 @@ export interface PaperDetailResponse {
   revisionPaper?: RevisionPaper | null;
   cameraReady?: CameraReady | null;
   created?: string;
+
+  researchPhase?: ResearchPhaseDtoDetail;
+  revisionDeadline?: RevisionDeadlineDetail[];
+}
+
+export type RevisionDeadlineDetail = {
+  revisionRoundDeadlineId: string
+  startSubmissionDate?: string
+  endSubmissionDate?: string
+  roundNumber?: number
+  researchConferencePhaseId?: string
+}
+
+export type ResearchPhaseDtoDetail = {
+  researchConferencePhaseId: string
+  conferenceId?: string
+  registrationStartDate?: string
+  registrationEndDate?: string
+  fullPaperStartDate?: string
+  fullPaperEndDate?: string
+  reviewStartDate?: string
+  reviewEndDate?: string
+  reviseStartDate?: string
+  reviseEndDate?: string
+  cameraReadyStartDate?: string
+  cameraReadyEndDate?: string
 }
 
 export interface Author {

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { CameraReady } from "@/types/paper.type";
 import { usePaperCustomer } from "@/redux/hooks/paper/usePaper";
+import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
+import "@cyntler/react-doc-viewer/dist/index.css";
 
 interface CameraReadyPhaseProps {
     paperId?: string;
@@ -100,14 +102,17 @@ const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({ paperId, cameraRead
                             </p>
                         )}
                         {cameraReady.fileUrl && (
-                            <a
-                                href={cameraReady.fileUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-400 hover:text-blue-300 text-sm underline mt-2 inline-block"
-                            >
-                                Xem file camera-ready →
-                            </a>
+                            <div className="max-h-[80vh] overflow-auto">
+                                <DocViewer
+                                    documents={[{ uri: cameraReady.fileUrl }]}
+                                    pluginRenderers={DocViewerRenderers}
+                                    config={{
+                                        header: { disableHeader: true },
+                                        pdfVerticalScrollByDefault: true,
+                                    }}
+                                    style={{ minHeight: "100%", borderRadius: 8 }}
+                                />
+                            </div>
                         )}
                     </div>
                 </div>

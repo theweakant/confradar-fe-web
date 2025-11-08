@@ -1,34 +1,95 @@
-import { useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { usePaperCustomer } from '@/redux/hooks/paper/usePaper';
 import { RevisionPaper, RevisionSubmission, RevisionSubmissionFeedback } from '@/types/paper.type';
+import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
+import "@cyntler/react-doc-viewer/dist/index.css";
+import FeedbackDialog from './FeedbackDialog';
+import { MessageSquare } from 'lucide-react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import { toast } from 'sonner';
 
 interface RevisionPhaseProps {
     paperId: string;
     revisionPaper: RevisionPaper | null;
 }
 
+const MemoizedDocViewer = memo<{ fileUrl: string }>(({ fileUrl }) => {
+    const documents = useMemo(() => [{ uri: fileUrl }], [fileUrl]);
+
+    const config = useMemo(() => ({
+        header: { disableHeader: true },
+        pdfVerticalScrollByDefault: true,
+    }), []);
+
+    return (
+        <DocViewer
+            documents={documents}
+            pluginRenderers={DocViewerRenderers}
+            config={config}
+            style={{ minHeight: "100%", borderRadius: 8 }}
+        />
+    );
+});
+
+MemoizedDocViewer.displayName = 'MemoizedDocViewer';
+
 const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper }) => {
-    const { handleSubmitPaperRevision, handleSubmitPaperRevisionResponse, loading } = usePaperCustomer();
+    const { handleSubmitPaperRevision, handleSubmitPaperRevisionResponse, loading, submitRevisionError } = usePaperCustomer();
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [feedbackResponses, setFeedbackResponses] = useState<{ [key: string]: string }>({});
     const [activeSubmissionId, setActiveSubmissionId] = useState<string | null>(null);
 
-    const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const [swiperInstance, setSwiperInstance] = useState<any>(null);
+
+    const MemoizedFeedbackDialog = memo(FeedbackDialog);
+
+    // const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    //     if (event.target.files && event.target.files[0]) {
+    //         setSelectedFile(event.target.files[0]);
+    //     }
+    // };
+
+    useEffect(() => {
+        if (submitRevisionError) {
+            let errorMessage = "Có lỗi xảy ra";
+            if (submitRevisionError.data?.Message) {
+                errorMessage = submitRevisionError.data.Message;
+            }
+            toast.error(errorMessage);
+        }
+    }, [submitRevisionError]);
+
+    const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files[0]) {
             setSelectedFile(event.target.files[0]);
         }
-    };
+    }, []);
 
-    const handleResponseChange = (feedbackId: string, response: string) => {
-        setFeedbackResponses(prev => ({
-            ...prev,
-            [feedbackId]: response
-        }));
-    };
+    // const handleResponseChange = (feedbackId: string, response: string) => {
+    //     setFeedbackResponses(prev => ({
+    //         ...prev,
+    //         [feedbackId]: response
+    //     }));
+    // };
 
-    const handleSubmitNewSubmission = async () => {
+    const handleResponseChange = useCallback(
+        (feedbackId: string, response: string) => {
+            setFeedbackResponses(prev => ({
+                ...prev,
+                [feedbackId]: response
+            }));
+        },
+        []
+    );
+
+
+    const handleSubmitNewSubmission = useCallback(async () => {
         if (!selectedFile || !paperId || !title.trim() || !description.trim()) {
             alert("Vui lòng chọn file revision, nhập title, description và đảm bảo có Paper ID");
             return;
@@ -48,68 +109,134 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
             setDescription("");
             window.location.reload();
         } catch (error: unknown) {
-            const errorMessage = "Có lỗi xảy ra khi nộp revision paper";
-
-            // if (error?.data?.Message) {
-            //     errorMessage = error.data.Message;
-            // } else if (error?.data?.Errors) {
-            //     const errors = Object.values(error.data.Errors);
-            //     errorMessage = errors.length > 0 ? errors[0] as string : errorMessage;
-            // }
-
-            alert(errorMessage);
+            // const errorMessage = "Có lỗi xảy ra khi nộp revision paper";
+            // alert(errorMessage);
         }
-    };
+    }, [selectedFile, paperId, title, description, handleSubmitPaperRevision]);
+    // const handleSubmitNewSubmission = async () => {
+    //     if (!selectedFile || !paperId || !title.trim() || !description.trim()) {
+    //         alert("Vui lòng chọn file revision, nhập title, description và đảm bảo có Paper ID");
+    //         return;
+    //     }
 
-    const handleSubmitResponses = async (submissionId: string) => {
-        const submission = revisionPaper?.submissions.find(s => s.submissionId === submissionId);
-        if (!submission || !paperId) {
-            alert("Không tìm thấy submission hoặc Paper ID");
-            return;
-        }
+    //     try {
+    //         await handleSubmitPaperRevision({
+    //             revisionPaperFile: selectedFile,
+    //             paperId,
+    //             title: title.trim(),
+    //             description: description.trim()
+    //         });
 
-        const responses = submission.feedbacks
-            .filter(feedback => feedback.feedBack && feedbackResponses[feedback.feedbackId])
-            .map(feedback => ({
-                revisionSubmissionFeedbackId: feedback.feedbackId,
-                response: feedbackResponses[feedback.feedbackId]
-            }));
+    //         alert("Nộp revision paper thành công!");
+    //         setSelectedFile(null);
+    //         setTitle("");
+    //         setDescription("");
+    //         window.location.reload();
+    //     } catch (error: unknown) {
+    //         const errorMessage = "Có lỗi xảy ra khi nộp revision paper";
 
-        if (responses.length === 0) {
-            alert("Vui lòng nhập phản hồi cho ít nhất một feedback");
-            return;
-        }
+    //         // if (error?.data?.Message) {
+    //         //     errorMessage = error.data.Message;
+    //         // } else if (error?.data?.Errors) {
+    //         //     const errors = Object.values(error.data.Errors);
+    //         //     errorMessage = errors.length > 0 ? errors[0] as string : errorMessage;
+    //         // }
 
-        try {
-            await handleSubmitPaperRevisionResponse({
-                responses,
-                revisionPaperSubmissionId: submissionId,
-                paperId
-            });
+    //         alert(errorMessage);
+    //     }
+    // };
 
-            alert("Gửi phản hồi thành công!");
-            setFeedbackResponses({});
-            setActiveSubmissionId(null);
-            // Reload page to refresh data
-            // window.location.reload();
-        } catch (error: unknown) {
-            const errorMessage = "Có lỗi xảy ra khi gửi phản hồi";
+    const handleSubmitResponses = useCallback(
+        async (submissionId: string) => {
+            const submission = revisionPaper?.submissions.find(s => s.submissionId === submissionId);
+            if (!submission || !paperId) return;
 
-            // if (error?.data?.Message) {
-            //     errorMessage = error.data.Message;
-            // } else if (error?.data?.Errors) {
-            //     const errors = Object.values(error.data.Errors);
-            //     errorMessage = errors.length > 0 ? errors[0] as string : errorMessage;
-            // }
+            const responses = submission.feedbacks
+                .filter(f => f.feedBack && feedbackResponses[f.feedbackId])
+                .map(f => ({
+                    revisionSubmissionFeedbackId: f.feedbackId,
+                    response: feedbackResponses[f.feedbackId]
+                }));
 
-            alert(errorMessage);
-        }
-    };
+            if (responses.length === 0) {
+                alert("Vui lòng nhập phản hồi cho ít nhất một feedback");
+                return;
+            }
+
+            try {
+                await handleSubmitPaperRevisionResponse({
+                    responses,
+                    revisionPaperSubmissionId: submissionId,
+                    paperId
+                });
+                alert("Gửi phản hồi thành công!");
+                setFeedbackResponses({});
+                setActiveSubmissionId(null);
+            } catch {
+                alert("Có lỗi xảy ra khi gửi phản hồi");
+            }
+        },
+        [feedbackResponses, paperId, revisionPaper?.submissions, handleSubmitPaperRevisionResponse]
+    );
+
+    // const handleSubmitResponses = async (submissionId: string) => {
+    //     const submission = revisionPaper?.submissions.find(s => s.submissionId === submissionId);
+    //     if (!submission || !paperId) {
+    //         alert("Không tìm thấy submission hoặc Paper ID");
+    //         return;
+    //     }
+
+    //     const responses = submission.feedbacks
+    //         .filter(feedback => feedback.feedBack && feedbackResponses[feedback.feedbackId])
+    //         .map(feedback => ({
+    //             revisionSubmissionFeedbackId: feedback.feedbackId,
+    //             response: feedbackResponses[feedback.feedbackId]
+    //         }));
+
+    //     if (responses.length === 0) {
+    //         alert("Vui lòng nhập phản hồi cho ít nhất một feedback");
+    //         return;
+    //     }
+
+    //     try {
+    //         await handleSubmitPaperRevisionResponse({
+    //             responses,
+    //             revisionPaperSubmissionId: submissionId,
+    //             paperId
+    //         });
+
+    //         alert("Gửi phản hồi thành công!");
+    //         setFeedbackResponses({});
+    //         setActiveSubmissionId(null);
+    //         // Reload page to refresh data
+    //         // window.location.reload();
+    //     } catch (error: unknown) {
+    //         const errorMessage = "Có lỗi xảy ra khi gửi phản hồi";
+
+    //         // if (error?.data?.Message) {
+    //         //     errorMessage = error.data.Message;
+    //         // } else if (error?.data?.Errors) {
+    //         //     const errors = Object.values(error.data.Errors);
+    //         //     errorMessage = errors.length > 0 ? errors[0] as string : errorMessage;
+    //         // }
+
+    //         alert(errorMessage);
+    //     }
+    // };
 
     // Check if feedback has content to allow response input
-    const canRespondToFeedback = (feedback: RevisionSubmissionFeedback) => {
-        return feedback.feedBack && feedback.feedBack.trim().length > 0;
-    };
+    // const canRespondToFeedback = (feedback: RevisionSubmissionFeedback) => {
+    //     return feedback.feedBack && feedback.feedBack.trim().length > 0;
+    // };
+
+    const canRespondToFeedback = useCallback((feedback: RevisionSubmissionFeedback): boolean => {
+        return !!feedback.feedBack && feedback.feedBack.trim().length > 0;
+    }, []);
+
+    // const canRespondToFeedback = (feedback: RevisionSubmissionFeedback): boolean => {
+    //     return !!feedback.feedBack && feedback.feedBack.trim().length > 0;
+    // };
+
     const paperStatus = [
         { id: 1, step: 'Nộp bài báo', completed: true, date: '15/01/2025' },
         { id: 2, step: 'Xác nhận tiếp nhận', completed: true, date: '17/01/2025' },
@@ -246,15 +373,200 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
                         {/* Submissions History */}
                         {revisionPaper?.submissions && revisionPaper.submissions.length > 0 && (
                             <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="text-lg font-bold">Lịch sử Submissions</h3>
+                                    <div className="text-sm text-gray-400">
+                                        {revisionPaper.submissions.length} submission{revisionPaper.submissions.length > 1 ? 's' : ''}
+                                    </div>
+                                </div>
+
+                                <Swiper
+                                    modules={[Navigation, Pagination]}
+                                    spaceBetween={20}
+                                    slidesPerView={1}
+                                    navigation
+                                    pagination={{
+                                        clickable: true,
+                                        dynamicBullets: true
+                                    }}
+                                    onSwiper={setSwiperInstance}
+                                    className="submissions-swiper"
+                                >
+                                    {revisionPaper.submissions.map((submission, index) => (
+                                        <SwiperSlide key={submission.submissionId}>
+                                            <div className="border border-gray-600 rounded-lg p-4 hover:border-gray-500 transition-colors">
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div>
+                                                        <h4 className="font-semibold text-lg">Submission #{index + 1}</h4>
+                                                        <p className="text-xs text-gray-400 mt-1">ID: {submission.submissionId}</p>
+                                                    </div>
+                                                    {submission.feedbacks && submission.feedbacks.length > 0 && (
+                                                        <button
+                                                            onClick={() => setActiveSubmissionId(submission.submissionId)}
+                                                            className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg font-medium transition-colors"
+                                                        >
+                                                            <MessageSquare className="w-4 h-4" />
+                                                            <span>{submission.feedbacks.length} Feedback{submission.feedbacks.length > 1 ? 's từ Reviewer' : ''}</span>
+                                                        </button>
+                                                    )}
+                                                </div>
+
+                                                <div className="mb-4 space-y-2">
+                                                    {submission.title && (
+                                                        <p className="text-sm text-gray-400">
+                                                            <span className="font-medium text-white">Tiêu đề:</span> {submission.title}
+                                                        </p>
+                                                    )}
+                                                    {submission.description && (
+                                                        <p className="text-sm text-gray-400">
+                                                            <span className="font-medium text-white">Mô tả:</span> {submission.description}
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                {submission.fileUrl && (
+                                                    <div className="mb-4">
+                                                        <p className="text-sm font-medium text-gray-300 mb-2">File đã nộp:</p>
+                                                        <div className="max-h-[60vh] overflow-auto border border-gray-600 rounded-lg">
+                                                            <MemoizedDocViewer fileUrl={submission.fileUrl} />
+                                                            {/* <DocViewer
+                                                                documents={[{ uri: submission.fileUrl }]}
+                                                                pluginRenderers={DocViewerRenderers}
+                                                                config={{
+                                                                    header: { disableHeader: true },
+                                                                    pdfVerticalScrollByDefault: true,
+                                                                }}
+                                                                style={{ minHeight: "100%", borderRadius: 8 }}
+                                                            /> */}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Feedback Dialog */}
+                                                {submission.feedbacks && submission.feedbacks.length > 0 && (
+                                                    <MemoizedFeedbackDialog
+                                                        isOpen={activeSubmissionId === submission.submissionId}
+                                                        onClose={() => setActiveSubmissionId(null)}
+                                                        submission={submission}
+                                                        feedbackResponses={feedbackResponses}
+                                                        onResponseChange={handleResponseChange}
+                                                        onSubmitResponses={() => handleSubmitResponses(submission.submissionId)}
+                                                        loading={loading}
+                                                        canRespondToFeedback={canRespondToFeedback}
+                                                    />
+                                                )}
+                                            </div>
+                                        </SwiperSlide>
+                                    ))}
+                                </Swiper>
+
+                                {/* Custom styling cho Swiper navigation */}
+                                <style jsx global>{`
+            .submissions-swiper .swiper-button-next,
+            .submissions-swiper .swiper-button-prev {
+                color: #3b82f6;
+                background: rgba(31, 41, 55, 0.8);
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+            }
+            
+            .submissions-swiper .swiper-button-next:after,
+            .submissions-swiper .swiper-button-prev:after {
+                font-size: 20px;
+            }
+            
+            .submissions-swiper .swiper-pagination-bullet {
+                background: #9ca3af;
+            }
+            
+            .submissions-swiper .swiper-pagination-bullet-active {
+                background: #3b82f6;
+            }
+            
+            .submissions-swiper {
+                padding-bottom: 50px;
+            }
+        `}</style>
+                            </div>
+                        )}
+                        {/* {revisionPaper?.submissions && revisionPaper.submissions.length > 0 && (
+                            <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+                                <h3 className="text-lg font-bold mb-4">Lịch sử Submissions</h3>
+                                <div className="space-y-4">
+                                    {revisionPaper.submissions.map((submission, index) => (
+                                        <div key={submission.submissionId} className="border border-gray-600 rounded-lg p-4 hover:border-gray-500 transition-colors">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div>
+                                                    <h4 className="font-semibold text-lg">Submission #{index + 1}</h4>
+                                                    <p className="text-xs text-gray-400 mt-1">ID: {submission.submissionId}</p>
+                                                </div>
+                                                {submission.feedbacks && submission.feedbacks.length > 0 && (
+                                                    <button
+                                                        onClick={() => setActiveSubmissionId(submission.submissionId)}
+                                                        className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg font-medium transition-colors"
+                                                    >
+                                                        <MessageSquare className="w-4 h-4" />
+                                                        <span>{submission.feedbacks.length} Feedback{submission.feedbacks.length > 1 ? 's từ Reviewer' : ''}</span>
+                                                    </button>
+                                                )}
+                                            </div>
+
+                                            <div className="mb-4 space-y-2">
+                                                {submission.title && (
+                                                    <p className="text-sm text-gray-400">
+                                                        <span className="font-medium text-white">Tiêu đề:</span> {submission.title}
+                                                    </p>
+                                                )}
+                                                {submission.description && (
+                                                    <p className="text-sm text-gray-400">
+                                                        <span className="font-medium text-white">Mô tả:</span> {submission.description}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            {submission.fileUrl && (
+                                                <div className="mb-4">
+                                                    <p className="text-sm font-medium text-gray-300 mb-2">File đã nộp:</p>
+                                                    <div className="max-h-[60vh] overflow-auto border border-gray-600 rounded-lg">
+                                                        <DocViewer
+                                                            documents={[{ uri: submission.fileUrl }]}
+                                                            pluginRenderers={DocViewerRenderers}
+                                                            config={{
+                                                                header: { disableHeader: true },
+                                                                pdfVerticalScrollByDefault: true,
+                                                            }}
+                                                            style={{ minHeight: "100%", borderRadius: 8 }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {submission.feedbacks && submission.feedbacks.length > 0 && (
+                                                <FeedbackDialog
+                                                    isOpen={activeSubmissionId === submission.submissionId}
+                                                    onClose={() => setActiveSubmissionId(null)}
+                                                    submission={submission}
+                                                    feedbackResponses={feedbackResponses}
+                                                    onResponseChange={handleResponseChange}
+                                                    onSubmitResponses={() => handleSubmitResponses(submission.submissionId)}
+                                                    loading={loading}
+                                                    canRespondToFeedback={canRespondToFeedback}
+                                                />
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )} */}
+                        {/* {revisionPaper?.submissions && revisionPaper.submissions.length > 0 && (
+                            <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
                                 <h3 className="text-lg font-bold mb-4">Lịch sử Submissions</h3>
                                 <div className="space-y-6">
                                     {revisionPaper.submissions.map((submission, index) => (
                                         <div key={submission.submissionId} className="border border-gray-600 rounded-lg p-4">
                                             <div className="flex justify-between items-start mb-4">
                                                 <h4 className="font-semibold">Submission #{index + 1}</h4>
-                                                {/* <span className="text-sm text-gray-400">
-                                                    Round {submission.revisionDeadline?.roundNumher || 'N/A'}
-                                                </span> */}
                                             </div>
 
                                             <div className="mb-4 space-y-2">
@@ -275,24 +587,20 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
 
                                             {submission.fileUrl && (
                                                 <div className="mb-4">
-                                                    <a
-                                                        href={submission.fileUrl}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-blue-400 hover:text-blue-300 text-sm"
-                                                    >
-                                                        Xem file submission
-                                                    </a>
+                                                    <div className="max-h-[80vh] overflow-auto">
+                                                        <DocViewer
+                                                            documents={[{ uri: submission.fileUrl }]}
+                                                            pluginRenderers={DocViewerRenderers}
+                                                            config={{
+                                                                header: { disableHeader: true },
+                                                                pdfVerticalScrollByDefault: true,
+                                                            }}
+                                                            style={{ minHeight: "100%", borderRadius: 8 }}
+                                                        />
+                                                    </div>
                                                 </div>
                                             )}
-
-                                            {/* {submission.revisionDeadline?.deadline && (
-                                                <p className="text-sm text-gray-400 mb-4">
-                                                    Deadline: {new Date(submission.revisionDeadline.deadline).toLocaleDateString('vi-VN')}
-                                                </p>
-                                            )} */}
-
-                                            {/* Feedbacks */}
+                                    
                                             {submission.feedbacks && submission.feedbacks.length > 0 && (
                                                 <div>
                                                     <h5 className="font-medium mb-3">Feedbacks:</h5>
@@ -327,7 +635,6 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
                                                         ))}
                                                     </div>
 
-                                                    {/* Submit Response Button */}
                                                     {submission.feedbacks.some(f => canRespondToFeedback(f) && !f.response) && (
                                                         <button
                                                             onClick={() => handleSubmitResponses(submission.submissionId)}
@@ -343,7 +650,7 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
                                     ))}
                                 </div>
                             </div>
-                        )}
+                        )} */}
                     </div>
 
                     {/* Actions Panel */}
