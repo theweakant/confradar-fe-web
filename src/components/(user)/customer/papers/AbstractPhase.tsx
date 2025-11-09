@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { AvailableCustomerResponse, Abstract } from "@/types/paper.type";
 import { usePaperCustomer } from "@/redux/hooks/paper/usePaper";
+import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
+import "@cyntler/react-doc-viewer/dist/index.css";
 
 interface AbstractPhaseProps {
   paperId?: string;
@@ -125,19 +127,71 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
         Nộp abstract và chọn đồng tác giả cho bài báo của bạn.
       </p>
 
-      {/* Show current abstract if exists */}
-      {abstract && (
-        <div className="bg-green-900/20 border border-green-700 rounded-xl p-5">
-          <h4 className="font-semibold text-green-400 mb-2">Abstract đã nộp</h4>
-          <div className="space-y-2">
-            <p className="text-green-300 text-sm">
-              Abstract ID: {abstract.abstractId}
-            </p>
-            {abstract.title && (
-              <p className="text-green-300 text-sm">
-                <span className="font-medium">Tiêu đề:</span> {abstract.title}
-              </p>
-            )}
+
+            {/* Show current abstract if exists */}
+            {abstract && (
+                <div className="bg-green-900/20 border border-green-700 rounded-xl p-5">
+                    <h4 className="font-semibold text-green-400 mb-2">Abstract đã nộp</h4>
+                    <div className="space-y-2">
+                        <p className="text-green-300 text-sm">
+                            Abstract ID: {abstract.abstractId}
+                        </p>
+                        {abstract.title && (
+                            <p className="text-green-300 text-sm">
+                                <span className="font-medium">Tiêu đề:</span> {abstract.title}
+                            </p>
+                        )}
+                        {abstract.description && (
+                            <p className="text-green-300 text-sm">
+                                <span className="font-medium">Mô tả:</span> {abstract.description}
+                            </p>
+                        )}
+                        {abstract.globalStatusId && (
+                            <p className="text-green-300 text-sm">
+                                <span className="font-medium">Trạng thái:</span> {abstract.globalStatusId}
+                            </p>
+                        )}
+                        {abstract.created && (
+                            <p className="text-green-300 text-sm">
+                                <span className="font-medium">Ngày tạo:</span> {new Date(abstract.created).toLocaleDateString('vi-VN')}
+                            </p>
+                        )}
+                        {abstract.reviewedAt && (
+                            <p className="text-green-300 text-sm">
+                                <span className="font-medium">Ngày đánh giá:</span> {new Date(abstract.reviewedAt).toLocaleDateString('vi-VN')}
+                            </p>
+                        )}
+                        {abstract.fileUrl && (
+                            <div className="max-h-[80vh]  overflow-auto">
+                                <DocViewer
+                                    documents={[{ uri: abstract.fileUrl }]}
+                                    pluginRenderers={DocViewerRenderers}
+                                    config={{
+                                        header: { disableHeader: true },
+                                        pdfVerticalScrollByDefault: true,
+                                    }}
+                                    // style={{ height: "100%", borderRadius: 8 }}
+                                    style={{ minHeight: "100%", borderRadius: 8 }}
+                                />
+                            </div>
+                            // <iframe
+                            //     // src={abstract.fileUrl}
+                            //     src={`https://docs.google.com/viewer?url=${encodeURIComponent(
+                            //         abstract.fileUrl
+                            //     )}&embedded=true`}
+                            //     width="100%"
+                            //     height="600px"
+                            //     style={{ border: 'none' }}
+                            // />
+                            // <a
+                            //     href={abstract.fileUrl}
+                            //     target="_blank"
+                            //     rel="noopener noreferrer"
+                            //     className="text-blue-400 hover:text-blue-300 text-sm underline mt-2 inline-block"
+                            // >
+                            //     Xem file abstract →
+                            // </a>
+                        )}
             {abstract.description && (
               <p className="text-green-300 text-sm">
                 <span className="font-medium">Mô tả:</span>{" "}
@@ -177,10 +231,12 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
               // >
               //     Xem file abstract →
               // </a>
+            )}                        
+                    </div>
+                </div>
+
             )}
-          </div>
-        </div>
-      )}
+
 
       {isSubmitted && (
         <p className="text-sm text-yellow-400 mt-2">

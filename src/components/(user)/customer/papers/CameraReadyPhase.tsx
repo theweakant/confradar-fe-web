@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { CameraReady } from "@/types/paper.type";
 import { usePaperCustomer } from "@/redux/hooks/paper/usePaper";
+import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
+import "@cyntler/react-doc-viewer/dist/index.css";
 
 interface CameraReadyPhaseProps {
   paperId?: string;
@@ -73,21 +75,54 @@ const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({
         Nộp bản camera-ready cuối cùng cho bài báo của bạn.
       </p>
 
-      {/* Show current camera-ready if exists */}
-      {cameraReady && (
-        <div className="bg-green-900/20 border border-green-700 rounded-xl p-5">
-          <h4 className="font-semibold text-green-400 mb-2">
-            Camera-ready đã nộp
-          </h4>
-          <div className="space-y-2">
-            <p className="text-green-300 text-sm">
-              Camera-ready ID: {cameraReady.cameraReadyId}
-            </p>
-            {cameraReady.title && (
-              <p className="text-green-300 text-sm">
-                <span className="font-medium">Tiêu đề:</span>{" "}
-                {cameraReady.title}
-              </p>
+            {/* Show current camera-ready if exists */}
+            {cameraReady && (
+                <div className="bg-green-900/20 border border-green-700 rounded-xl p-5">
+                    <h4 className="font-semibold text-green-400 mb-2">Camera-ready đã nộp</h4>
+                    <div className="space-y-2">
+                        <p className="text-green-300 text-sm">
+                            Camera-ready ID: {cameraReady.cameraReadyId}
+                        </p>
+                        {cameraReady.title && (
+                            <p className="text-green-300 text-sm">
+                                <span className="font-medium">Tiêu đề:</span> {cameraReady.title}
+                            </p>
+                        )}
+                        {cameraReady.description && (
+                            <p className="text-green-300 text-sm">
+                                <span className="font-medium">Mô tả:</span> {cameraReady.description}
+                            </p>
+                        )}
+                        {cameraReady.globalStatusId && (
+                            <p className="text-green-300 text-sm">
+                                <span className="font-medium">Trạng thái:</span> {cameraReady.globalStatusId}
+                            </p>
+                        )}
+                        {cameraReady.created && (
+                            <p className="text-green-300 text-sm">
+                                <span className="font-medium">Ngày tạo:</span> {new Date(cameraReady.created).toLocaleDateString('vi-VN')}
+                            </p>
+                        )}
+                        {cameraReady.reviewedAt && (
+                            <p className="text-green-300 text-sm">
+                                <span className="font-medium">Ngày đánh giá:</span> {new Date(cameraReady.reviewedAt).toLocaleDateString('vi-VN')}
+                            </p>
+                        )}
+                        {cameraReady.fileUrl && (
+                            <div className="max-h-[80vh] overflow-auto">
+                                <DocViewer
+                                    documents={[{ uri: cameraReady.fileUrl }]}
+                                    pluginRenderers={DocViewerRenderers}
+                                    config={{
+                                        header: { disableHeader: true },
+                                        pdfVerticalScrollByDefault: true,
+                                    }}
+                                    style={{ minHeight: "100%", borderRadius: 8 }}
+                                />
+                            </div>
+                        )}
+                    </div>
+                </div>
             )}
             {cameraReady.description && (
               <p className="text-green-300 text-sm">

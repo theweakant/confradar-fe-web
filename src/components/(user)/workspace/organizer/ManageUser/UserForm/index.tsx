@@ -16,10 +16,10 @@ interface UserFormProps {
 
 export function UserForm({ user, onSave, onCancel }: UserFormProps) {
   const [formData, setFormData] = useState<CollaboratorRequest>({
-    fullName: user?.fullName || "",
     email: user?.email || "",
     password: "",
     confirmPassword: "",
+    fullName: user?.fullName || "",
   });
 
   const [errors, setErrors] = useState<

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { FullPaper } from "@/types/paper.type";
 import { usePaperCustomer } from "@/redux/hooks/paper/usePaper";
+import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
+import "@cyntler/react-doc-viewer/dist/index.css";
 
 interface FullPaperPhaseProps {
   paperId?: string;
@@ -73,20 +75,54 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({
         Nộp bản full paper hoàn chỉnh cho bài báo của bạn.
       </p>
 
-      {/* Show current full paper if exists */}
-      {fullPaper && (
-        <div className="bg-green-900/20 border border-green-700 rounded-xl p-5">
-          <h4 className="font-semibold text-green-400 mb-2">
-            Full Paper đã nộp
-          </h4>
-          <div className="space-y-2">
-            <p className="text-green-300 text-sm">
-              Full Paper ID: {fullPaper.fullPaperId}
-            </p>
-            {fullPaper.title && (
-              <p className="text-green-300 text-sm">
-                <span className="font-medium">Tiêu đề:</span> {fullPaper.title}
-              </p>
+            {/* Show current full paper if exists */}
+            {fullPaper && (
+                <div className="bg-green-900/20 border border-green-700 rounded-xl p-5">
+                    <h4 className="font-semibold text-green-400 mb-2">Full Paper đã nộp</h4>
+                    <div className="space-y-2">
+                        <p className="text-green-300 text-sm">
+                            Full Paper ID: {fullPaper.fullPaperId}
+                        </p>
+                        {fullPaper.title && (
+                            <p className="text-green-300 text-sm">
+                                <span className="font-medium">Tiêu đề:</span> {fullPaper.title}
+                            </p>
+                        )}
+                        {fullPaper.description && (
+                            <p className="text-green-300 text-sm">
+                                <span className="font-medium">Mô tả:</span> {fullPaper.description}
+                            </p>
+                        )}
+                        {fullPaper.reviewStatusId && (
+                            <p className="text-green-300 text-sm">
+                                <span className="font-medium">Trạng thái đánh giá:</span> {fullPaper.reviewStatusId}
+                            </p>
+                        )}
+                        {fullPaper.created && (
+                            <p className="text-green-300 text-sm">
+                                <span className="font-medium">Ngày tạo:</span> {new Date(fullPaper.created).toLocaleDateString('vi-VN')}
+                            </p>
+                        )}
+                        {fullPaper.reviewedAt && (
+                            <p className="text-green-300 text-sm">
+                                <span className="font-medium">Ngày đánh giá:</span> {new Date(fullPaper.reviewedAt).toLocaleDateString('vi-VN')}
+                            </p>
+                        )}
+                        {fullPaper.fileUrl && (
+                            <div className="max-h-[80vh] overflow-auto">
+                                <DocViewer
+                                    documents={[{ uri: fullPaper.fileUrl }]}
+                                    pluginRenderers={DocViewerRenderers}
+                                    config={{
+                                        header: { disableHeader: true },
+                                        pdfVerticalScrollByDefault: true,
+                                    }}
+                                    style={{ minHeight: "100%", borderRadius: 8 }}
+                                />
+                            </div>
+                        )}
+                    </div>
+                </div>
             )}
             {fullPaper.description && (
               <p className="text-green-300 text-sm">

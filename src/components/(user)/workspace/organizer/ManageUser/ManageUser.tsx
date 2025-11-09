@@ -1,7 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, UserCheck, Shield } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Plus,
+  UserCheck,
+  Shield
+} from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,6 +33,7 @@ import {
   useSuspendAccountMutation,
   useActivateAccountMutation,
 } from "@/redux/services/user.service";
+import { parseApiError } from "@/helper/api";
 
 export default function ManageUser() {
   // API: Lấy danh sách users
@@ -36,14 +41,13 @@ export default function ManageUser() {
     data: usersListData,
     isLoading: isLoadingList,
     error: errorList,
-    refetch,
+    refetch
   } = useGetUsersListQuery();
 
   const users: UserProfileResponse[] = usersListData?.data?.users || [];
 
   // API: Mutation tạo collaborator
-  const [createCollaborator, { isLoading: isCreating }] =
-    useCreateCollaboratorMutation();
+  const [createCollaborator, { isLoading: isCreating, error: createRawError }] = useCreateCollaboratorMutation();
 
   // API: Mutation suspend và activate
   const [suspendAccount, { isLoading: isSuspending }] =
@@ -60,9 +64,16 @@ export default function ManageUser() {
   const [suspendUserId, setSuspendUserId] = useState<string | null>(null);
   const [activateUserId, setActivateUserId] = useState<string | null>(null);
 
+  const createError = parseApiError<string>(createRawError);
+
   // API: Lấy chi tiết user
-  const { data: userProfileData, isLoading: isLoadingProfile } =
-    useGetProfileByIdQuery(viewingUserId || "", { skip: !viewingUserId });
+  const {
+    data: userProfileData,
+    isLoading: isLoadingProfile
+  } = useGetProfileByIdQuery(
+    viewingUserId || "",
+    { skip: !viewingUserId }
+  );
 
   const viewingUserProfile: UserProfileResponse | undefined =
     userProfileData?.data;
@@ -75,13 +86,15 @@ export default function ManageUser() {
   ];
 
   const filteredUsers = users.filter((user: UserProfileResponse) => {
-    const matchesSearch =
-      user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesSearch = user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRole =
-      filterRole === "all" || user.roles?.includes(filterRole);
+    const matchesRole = filterRole === "all" || user.roles?.includes(filterRole);
     return matchesSearch && matchesRole;
   });
+
+  useEffect(() => {
+    if (createError) toast.error(createError.data?.Message);
+  }, [createError])
 
   const handleCreate = () => {
     setIsFormModalOpen(true);
@@ -100,9 +113,9 @@ export default function ManageUser() {
       setIsFormModalOpen(false);
       refetch();
     } catch (error: unknown) {
-      const err = error as ApiError;
-      const errorMessage = err?.Message || "Them đối tác thất bại!";
-      toast.error(errorMessage);
+      // const err = error as ApiError;
+      // const errorMessage = err?.Message || "Them đối tác thất bại!";
+      // toast.error(errorMessage);
     }
   };
 

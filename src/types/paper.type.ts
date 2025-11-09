@@ -290,6 +290,32 @@ export interface PaperDetailResponse {
   revisionPaper?: RevisionPaper | null;
   cameraReady?: CameraReady | null;
   created?: string;
+
+  researchPhase?: ResearchPhaseDtoDetail;
+  revisionDeadline?: RevisionDeadlineDetail[];
+}
+
+export type RevisionDeadlineDetail = {
+  revisionRoundDeadlineId: string
+  startSubmissionDate?: string
+  endSubmissionDate?: string
+  roundNumber?: number
+  researchConferencePhaseId?: string
+}
+
+export type ResearchPhaseDtoDetail = {
+  researchConferencePhaseId: string
+  conferenceId?: string
+  registrationStartDate?: string
+  registrationEndDate?: string
+  fullPaperStartDate?: string
+  fullPaperEndDate?: string
+  reviewStartDate?: string
+  reviewEndDate?: string
+  reviseStartDate?: string
+  reviseEndDate?: string
+  cameraReadyStartDate?: string
+  cameraReadyEndDate?: string
 }
 
 export interface Author {
