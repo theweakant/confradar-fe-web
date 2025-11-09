@@ -9,10 +9,7 @@ interface FullPaperPhaseProps {
   fullPaper?: FullPaper | null;
 }
 
-const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({
-  paperId,
-  fullPaper,
-}) => {
+const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper }) => {
   const isSubmitted = !!fullPaper;
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -22,7 +19,7 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({
   const {
     handleSubmitFullPaper,
     submitFullPaperError,
-    loading: submitLoading,
+    loading: submitLoading
   } = usePaperCustomer();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,9 +31,7 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({
 
   const handleSubmitFullPaperForm = async () => {
     if (!selectedFile || !paperId || !title.trim() || !description.trim()) {
-      alert(
-        "Vui lòng chọn file full paper, nhập title, description và đảm bảo có Paper ID",
-      );
+      alert("Vui lòng chọn file full paper, nhập title, description và đảm bảo có Paper ID");
       return;
     }
 
@@ -45,7 +40,7 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({
         fullPaperFile: selectedFile,
         paperId,
         title: title.trim(),
-        description: description.trim(),
+        description: description.trim()
       });
 
       alert("Nộp full paper thành công!");
@@ -71,92 +66,53 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold">Giai đoạn Full Paper</h3>
-      <p className="text-gray-400">
-        Nộp bản full paper hoàn chỉnh cho bài báo của bạn.
-      </p>
+      <p className="text-gray-400">Nộp bản full paper hoàn chỉnh cho bài báo của bạn.</p>
 
-            {/* Show current full paper if exists */}
-            {fullPaper && (
-                <div className="bg-green-900/20 border border-green-700 rounded-xl p-5">
-                    <h4 className="font-semibold text-green-400 mb-2">Full Paper đã nộp</h4>
-                    <div className="space-y-2">
-                        <p className="text-green-300 text-sm">
-                            Full Paper ID: {fullPaper.fullPaperId}
-                        </p>
-                        {fullPaper.title && (
-                            <p className="text-green-300 text-sm">
-                                <span className="font-medium">Tiêu đề:</span> {fullPaper.title}
-                            </p>
-                        )}
-                        {fullPaper.description && (
-                            <p className="text-green-300 text-sm">
-                                <span className="font-medium">Mô tả:</span> {fullPaper.description}
-                            </p>
-                        )}
-                        {fullPaper.reviewStatusId && (
-                            <p className="text-green-300 text-sm">
-                                <span className="font-medium">Trạng thái đánh giá:</span> {fullPaper.reviewStatusId}
-                            </p>
-                        )}
-                        {fullPaper.created && (
-                            <p className="text-green-300 text-sm">
-                                <span className="font-medium">Ngày tạo:</span> {new Date(fullPaper.created).toLocaleDateString('vi-VN')}
-                            </p>
-                        )}
-                        {fullPaper.reviewedAt && (
-                            <p className="text-green-300 text-sm">
-                                <span className="font-medium">Ngày đánh giá:</span> {new Date(fullPaper.reviewedAt).toLocaleDateString('vi-VN')}
-                            </p>
-                        )}
-                        {fullPaper.fileUrl && (
-                            <div className="max-h-[80vh] overflow-auto">
-                                <DocViewer
-                                    documents={[{ uri: fullPaper.fileUrl }]}
-                                    pluginRenderers={DocViewerRenderers}
-                                    config={{
-                                        header: { disableHeader: true },
-                                        pdfVerticalScrollByDefault: true,
-                                    }}
-                                    style={{ minHeight: "100%", borderRadius: 8 }}
-                                />
-                            </div>
-                        )}
-                    </div>
-                </div>
+      {/* Show current full paper if exists */}
+      {fullPaper && (
+        <div className="bg-green-900/20 border border-green-700 rounded-xl p-5">
+          <h4 className="font-semibold text-green-400 mb-2">Full Paper đã nộp</h4>
+          <div className="space-y-2">
+            <p className="text-green-300 text-sm">
+              Full Paper ID: {fullPaper.fullPaperId}
+            </p>
+            {fullPaper.title && (
+              <p className="text-green-300 text-sm">
+                <span className="font-medium">Tiêu đề:</span> {fullPaper.title}
+              </p>
             )}
             {fullPaper.description && (
               <p className="text-green-300 text-sm">
-                <span className="font-medium">Mô tả:</span>{" "}
-                {fullPaper.description}
+                <span className="font-medium">Mô tả:</span> {fullPaper.description}
               </p>
             )}
             {fullPaper.reviewStatusId && (
               <p className="text-green-300 text-sm">
-                <span className="font-medium">Trạng thái đánh giá:</span>{" "}
-                {fullPaper.reviewStatusId}
+                <span className="font-medium">Trạng thái đánh giá:</span> {fullPaper.reviewStatusId}
               </p>
             )}
             {fullPaper.created && (
               <p className="text-green-300 text-sm">
-                <span className="font-medium">Ngày tạo:</span>{" "}
-                {new Date(fullPaper.created).toLocaleDateString("vi-VN")}
+                <span className="font-medium">Ngày tạo:</span> {new Date(fullPaper.created).toLocaleDateString('vi-VN')}
               </p>
             )}
             {fullPaper.reviewedAt && (
               <p className="text-green-300 text-sm">
-                <span className="font-medium">Ngày đánh giá:</span>{" "}
-                {new Date(fullPaper.reviewedAt).toLocaleDateString("vi-VN")}
+                <span className="font-medium">Ngày đánh giá:</span> {new Date(fullPaper.reviewedAt).toLocaleDateString('vi-VN')}
               </p>
             )}
             {fullPaper.fileUrl && (
-              <a
-                href={fullPaper.fileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-400 hover:text-blue-300 text-sm underline mt-2 inline-block"
-              >
-                Xem file full paper →
-              </a>
+              <div className="max-h-[80vh] overflow-auto">
+                <DocViewer
+                  documents={[{ uri: fullPaper.fileUrl }]}
+                  pluginRenderers={DocViewerRenderers}
+                  config={{
+                    header: { disableHeader: true },
+                    pdfVerticalScrollByDefault: true,
+                  }}
+                  style={{ minHeight: "100%", borderRadius: 8 }}
+                />
+              </div>
             )}
           </div>
         </div>
@@ -194,9 +150,7 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">
-            Tải lên tệp full paper (.pdf)
-          </label>
+          <label className="block text-sm font-medium mb-2">Tải lên tệp full paper (.pdf)</label>
           <input
             type="file"
             accept="application/pdf"
@@ -219,21 +173,10 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({
       <div className="flex justify-end">
         <button
           onClick={handleSubmitFullPaperForm}
-          disabled={
-            isSubmitted ||
-            !selectedFile ||
-            !paperId ||
-            !title.trim() ||
-            !description.trim() ||
-            submitLoading
-          }
+          disabled={isSubmitted || !selectedFile || !paperId || !title.trim() || !description.trim() || submitLoading}
           className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition"
         >
-          {isSubmitted
-            ? "Đã nộp Full Paper"
-            : submitLoading
-              ? "Đang nộp..."
-              : "Nộp Full Paper"}
+          {isSubmitted ? "Đã nộp Full Paper" : submitLoading ? "Đang nộp..." : "Nộp Full Paper"}
         </button>
       </div>
 
@@ -241,10 +184,7 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({
       {submitFullPaperError && (
         <div className="bg-red-900/20 border border-red-700 rounded-xl p-4">
           <p className="text-red-400 text-sm">
-            Lỗi:{" "}
-            {typeof submitFullPaperError === "string"
-              ? submitFullPaperError
-              : "Có lỗi xảy ra khi nộp full paper"}
+            Lỗi: {typeof submitFullPaperError === 'string' ? submitFullPaperError : 'Có lỗi xảy ra khi nộp full paper'}
           </p>
         </div>
       )}

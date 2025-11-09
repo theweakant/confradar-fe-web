@@ -9,10 +9,7 @@ interface CameraReadyPhaseProps {
   cameraReady?: CameraReady | null;
 }
 
-const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({
-  paperId,
-  cameraReady,
-}) => {
+const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({ paperId, cameraReady }) => {
   const isSubmitted = !!cameraReady;
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -22,7 +19,7 @@ const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({
   const {
     handleSubmitCameraReady,
     submitCameraReadyError,
-    loading: submitLoading,
+    loading: submitLoading
   } = usePaperCustomer();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,9 +31,7 @@ const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({
 
   const handleSubmitCameraReadyForm = async () => {
     if (!selectedFile || !paperId || !title.trim() || !description.trim()) {
-      alert(
-        "Vui lòng chọn file camera-ready, nhập title, description và đảm bảo có Paper ID",
-      );
+      alert("Vui lòng chọn file camera-ready, nhập title, description và đảm bảo có Paper ID");
       return;
     }
 
@@ -45,7 +40,7 @@ const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({
         cameraReadyFile: selectedFile,
         paperId,
         title: title.trim(),
-        description: description.trim(),
+        description: description.trim()
       });
 
       alert("Nộp camera-ready thành công!");
@@ -71,59 +66,57 @@ const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold">Giai đoạn Camera Ready</h3>
-      <p className="text-gray-400">
-        Nộp bản camera-ready cuối cùng cho bài báo của bạn.
-      </p>
+      <p className="text-gray-400">Nộp bản camera-ready cuối cùng cho bài báo của bạn.</p>
 
-            {/* Show current camera-ready if exists */}
-            {cameraReady && (
-                <div className="bg-green-900/20 border border-green-700 rounded-xl p-5">
-                    <h4 className="font-semibold text-green-400 mb-2">Camera-ready đã nộp</h4>
-                    <div className="space-y-2">
-                        <p className="text-green-300 text-sm">
-                            Camera-ready ID: {cameraReady.cameraReadyId}
-                        </p>
-                        {cameraReady.title && (
-                            <p className="text-green-300 text-sm">
-                                <span className="font-medium">Tiêu đề:</span> {cameraReady.title}
-                            </p>
-                        )}
-                        {cameraReady.description && (
-                            <p className="text-green-300 text-sm">
-                                <span className="font-medium">Mô tả:</span> {cameraReady.description}
-                            </p>
-                        )}
-                        {cameraReady.globalStatusId && (
-                            <p className="text-green-300 text-sm">
-                                <span className="font-medium">Trạng thái:</span> {cameraReady.globalStatusId}
-                            </p>
-                        )}
-                        {cameraReady.created && (
-                            <p className="text-green-300 text-sm">
-                                <span className="font-medium">Ngày tạo:</span> {new Date(cameraReady.created).toLocaleDateString('vi-VN')}
-                            </p>
-                        )}
-                        {cameraReady.reviewedAt && (
-                            <p className="text-green-300 text-sm">
-                                <span className="font-medium">Ngày đánh giá:</span> {new Date(cameraReady.reviewedAt).toLocaleDateString('vi-VN')}
-                            </p>
-                        )}
-                        {cameraReady.fileUrl && (
-                            <div className="max-h-[80vh] overflow-auto">
-                                <DocViewer
-                                    documents={[{ uri: cameraReady.fileUrl }]}
-                                    pluginRenderers={DocViewerRenderers}
-                                    config={{
-                                        header: { disableHeader: true },
-                                        pdfVerticalScrollByDefault: true,
-                                    }}
-                                    style={{ minHeight: "100%", borderRadius: 8 }}
-                                />
-                            </div>
-                        )}
-                    </div>
-                </div>
+      {/* Show current camera-ready if exists */}
+      {cameraReady && (
+        <div className="bg-green-900/20 border border-green-700 rounded-xl p-5">
+          <h4 className="font-semibold text-green-400 mb-2">Camera-ready đã nộp</h4>
+          <div className="space-y-2">
+            <p className="text-green-300 text-sm">
+              Camera-ready ID: {cameraReady.cameraReadyId}
+            </p>
+            {cameraReady.title && (
+              <p className="text-green-300 text-sm">
+                <span className="font-medium">Tiêu đề:</span> {cameraReady.title}
+              </p>
             )}
+            {cameraReady.description && (
+              <p className="text-green-300 text-sm">
+                <span className="font-medium">Mô tả:</span> {cameraReady.description}
+              </p>
+            )}
+            {cameraReady.globalStatusId && (
+              <p className="text-green-300 text-sm">
+                <span className="font-medium">Trạng thái:</span> {cameraReady.globalStatusId}
+              </p>
+            )}
+            {cameraReady.created && (
+              <p className="text-green-300 text-sm">
+                <span className="font-medium">Ngày tạo:</span> {new Date(cameraReady.created).toLocaleDateString('vi-VN')}
+              </p>
+            )}
+            {cameraReady.reviewedAt && (
+              <p className="text-green-300 text-sm">
+                <span className="font-medium">Ngày đánh giá:</span> {new Date(cameraReady.reviewedAt).toLocaleDateString('vi-VN')}
+              </p>
+            )}
+            {cameraReady.fileUrl && (
+              <div className="max-h-[80vh] overflow-auto">
+                <DocViewer
+                  documents={[{ uri: cameraReady.fileUrl }]}
+                  pluginRenderers={DocViewerRenderers}
+                  config={{
+                    header: { disableHeader: true },
+                    pdfVerticalScrollByDefault: true,
+                  }}
+                  style={{ minHeight: "100%", borderRadius: 8 }}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {isSubmitted && (
         <p className="text-sm text-yellow-400 mt-2">
@@ -157,9 +150,7 @@ const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">
-            Tải lên tệp camera-ready (.pdf)
-          </label>
+          <label className="block text-sm font-medium mb-2">Tải lên tệp camera-ready (.pdf)</label>
           <input
             type="file"
             accept="application/pdf"
@@ -182,21 +173,10 @@ const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({
       <div className="flex justify-end">
         <button
           onClick={handleSubmitCameraReadyForm}
-          disabled={
-            isSubmitted ||
-            !selectedFile ||
-            !paperId ||
-            !title.trim() ||
-            !description.trim() ||
-            submitLoading
-          }
+          disabled={isSubmitted || !selectedFile || !paperId || !title.trim() || !description.trim() || submitLoading}
           className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition"
         >
-          {isSubmitted
-            ? "Đã nộp Camera-ready"
-            : submitLoading
-              ? "Đang nộp..."
-              : "Nộp Camera-ready"}
+          {isSubmitted ? "Đã nộp Camera-ready" : submitLoading ? "Đang nộp..." : "Nộp Camera-ready"}
         </button>
       </div>
 
@@ -204,10 +184,7 @@ const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({
       {submitCameraReadyError && (
         <div className="bg-red-900/20 border border-red-700 rounded-xl p-4">
           <p className="text-red-400 text-sm">
-            Lỗi:{" "}
-            {typeof submitCameraReadyError === "string"
-              ? submitCameraReadyError
-              : "Có lỗi xảy ra khi nộp camera-ready"}
+            Lỗi: {typeof submitCameraReadyError === 'string' ? submitCameraReadyError : 'Có lỗi xảy ra khi nộp camera-ready'}
           </p>
         </div>
       )}

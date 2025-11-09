@@ -17,12 +17,8 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCoauthors, setSelectedCoauthors] = useState<
-    AvailableCustomerResponse[]
-  >([]);
-  const [availableCustomers, setAvailableCustomers] = useState<
-    AvailableCustomerResponse[]
-  >([]);
+  const [selectedCoauthors, setSelectedCoauthors] = useState<AvailableCustomerResponse[]>([]);
+  const [availableCustomers, setAvailableCustomers] = useState<AvailableCustomerResponse[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -33,7 +29,7 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
     fetchAvailableCustomers,
     handleSubmitAbstract,
     submitAbstractError,
-    loading: submitLoading,
+    loading: submitLoading
   } = usePaperCustomer();
 
   const loadAvailableCustomers = async () => {
@@ -75,20 +71,18 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
 
   const handleSubmitAbstractForm = async () => {
     if (!selectedFile || !paperId || !title.trim() || !description.trim()) {
-      alert(
-        "Vui lòng chọn file abstract, nhập title, description và đảm bảo có Paper ID",
-      );
+      alert("Vui lòng chọn file abstract, nhập title, description và đảm bảo có Paper ID");
       return;
     }
 
     try {
-      const coAuthorIds = selectedCoauthors.map((c) => c.userId);
+      const coAuthorIds = selectedCoauthors.map(c => c.userId);
       await handleSubmitAbstract({
         abstractFile: selectedFile,
         paperId,
         title: title.trim(),
         description: description.trim(),
-        coAuthorId: coAuthorIds,
+        coAuthorId: coAuthorIds
       });
 
       alert("Nộp abstract thành công!");
@@ -117,112 +111,69 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
   };
 
   const filteredCustomers = availableCustomers.filter((c) =>
-    c.fullName?.toLowerCase().includes(searchTerm.toLowerCase()),
+    c.fullName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold">Giai đoạn Abstract</h3>
-      <p className="text-gray-400">
-        Nộp abstract và chọn đồng tác giả cho bài báo của bạn.
-      </p>
+      <p className="text-gray-400">Nộp abstract và chọn đồng tác giả cho bài báo của bạn.</p>
 
-
-            {/* Show current abstract if exists */}
-            {abstract && (
-                <div className="bg-green-900/20 border border-green-700 rounded-xl p-5">
-                    <h4 className="font-semibold text-green-400 mb-2">Abstract đã nộp</h4>
-                    <div className="space-y-2">
-                        <p className="text-green-300 text-sm">
-                            Abstract ID: {abstract.abstractId}
-                        </p>
-                        {abstract.title && (
-                            <p className="text-green-300 text-sm">
-                                <span className="font-medium">Tiêu đề:</span> {abstract.title}
-                            </p>
-                        )}
-                        {abstract.description && (
-                            <p className="text-green-300 text-sm">
-                                <span className="font-medium">Mô tả:</span> {abstract.description}
-                            </p>
-                        )}
-                        {abstract.globalStatusId && (
-                            <p className="text-green-300 text-sm">
-                                <span className="font-medium">Trạng thái:</span> {abstract.globalStatusId}
-                            </p>
-                        )}
-                        {abstract.created && (
-                            <p className="text-green-300 text-sm">
-                                <span className="font-medium">Ngày tạo:</span> {new Date(abstract.created).toLocaleDateString('vi-VN')}
-                            </p>
-                        )}
-                        {abstract.reviewedAt && (
-                            <p className="text-green-300 text-sm">
-                                <span className="font-medium">Ngày đánh giá:</span> {new Date(abstract.reviewedAt).toLocaleDateString('vi-VN')}
-                            </p>
-                        )}
-                        {abstract.fileUrl && (
-                            <div className="max-h-[80vh]  overflow-auto">
-                                <DocViewer
-                                    documents={[{ uri: abstract.fileUrl }]}
-                                    pluginRenderers={DocViewerRenderers}
-                                    config={{
-                                        header: { disableHeader: true },
-                                        pdfVerticalScrollByDefault: true,
-                                    }}
-                                    // style={{ height: "100%", borderRadius: 8 }}
-                                    style={{ minHeight: "100%", borderRadius: 8 }}
-                                />
-                            </div>
-                            // <iframe
-                            //     // src={abstract.fileUrl}
-                            //     src={`https://docs.google.com/viewer?url=${encodeURIComponent(
-                            //         abstract.fileUrl
-                            //     )}&embedded=true`}
-                            //     width="100%"
-                            //     height="600px"
-                            //     style={{ border: 'none' }}
-                            // />
-                            // <a
-                            //     href={abstract.fileUrl}
-                            //     target="_blank"
-                            //     rel="noopener noreferrer"
-                            //     className="text-blue-400 hover:text-blue-300 text-sm underline mt-2 inline-block"
-                            // >
-                            //     Xem file abstract →
-                            // </a>
-                        )}
+      {/* Show current abstract if exists */}
+      {abstract && (
+        <div className="bg-green-900/20 border border-green-700 rounded-xl p-5">
+          <h4 className="font-semibold text-green-400 mb-2">Abstract đã nộp</h4>
+          <div className="space-y-2">
+            <p className="text-green-300 text-sm">
+              Abstract ID: {abstract.abstractId}
+            </p>
+            {abstract.title && (
+              <p className="text-green-300 text-sm">
+                <span className="font-medium">Tiêu đề:</span> {abstract.title}
+              </p>
+            )}
             {abstract.description && (
               <p className="text-green-300 text-sm">
-                <span className="font-medium">Mô tả:</span>{" "}
-                {abstract.description}
+                <span className="font-medium">Mô tả:</span> {abstract.description}
               </p>
             )}
             {abstract.globalStatusId && (
               <p className="text-green-300 text-sm">
-                <span className="font-medium">Trạng thái:</span>{" "}
-                {abstract.globalStatusId}
+                <span className="font-medium">Trạng thái:</span> {abstract.globalStatusId}
               </p>
             )}
             {abstract.created && (
               <p className="text-green-300 text-sm">
-                <span className="font-medium">Ngày tạo:</span>{" "}
-                {new Date(abstract.created).toLocaleDateString("vi-VN")}
+                <span className="font-medium">Ngày tạo:</span> {new Date(abstract.created).toLocaleDateString('vi-VN')}
               </p>
             )}
             {abstract.reviewedAt && (
               <p className="text-green-300 text-sm">
-                <span className="font-medium">Ngày đánh giá:</span>{" "}
-                {new Date(abstract.reviewedAt).toLocaleDateString("vi-VN")}
+                <span className="font-medium">Ngày đánh giá:</span> {new Date(abstract.reviewedAt).toLocaleDateString('vi-VN')}
               </p>
             )}
             {abstract.fileUrl && (
-              <iframe
-                src={abstract.fileUrl}
-                width="100%"
-                height="600px"
-                style={{ border: "none" }}
-              />
+              <div className="max-h-[80vh]  overflow-auto">
+                <DocViewer
+                  documents={[{ uri: abstract.fileUrl }]}
+                  pluginRenderers={DocViewerRenderers}
+                  config={{
+                    header: { disableHeader: true },
+                    pdfVerticalScrollByDefault: true,
+                  }}
+                  // style={{ height: "100%", borderRadius: 8 }}
+                  style={{ minHeight: "100%", borderRadius: 8 }}
+                />
+              </div>
+              // <iframe
+              //     // src={abstract.fileUrl}
+              //     src={`https://docs.google.com/viewer?url=${encodeURIComponent(
+              //         abstract.fileUrl
+              //     )}&embedded=true`}
+              //     width="100%"
+              //     height="600px"
+              //     style={{ border: 'none' }}
+              // />
               // <a
               //     href={abstract.fileUrl}
               //     target="_blank"
@@ -231,12 +182,10 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
               // >
               //     Xem file abstract →
               // </a>
-            )}                        
-                    </div>
-                </div>
-
             )}
-
+          </div>
+        </div>
+      )}
 
       {isSubmitted && (
         <p className="text-sm text-yellow-400 mt-2">
@@ -270,9 +219,7 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">
-            Tải lên tệp abstract (.pdf)
-          </label>
+          <label className="block text-sm font-medium mb-2">Tải lên tệp abstract (.pdf)</label>
           <input
             type="file"
             accept="application/pdf"
@@ -293,14 +240,10 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
 
       <div className="bg-gray-800 border border-gray-700 rounded-xl p-5">
         <div className="flex items-center justify-between mb-3">
-          <h4 className="font-semibold">
-            Đồng tác giả ({selectedCoauthors.length})
-          </h4>
+          <h4 className="font-semibold">Đồng tác giả ({selectedCoauthors.length})</h4>
           <button
             onClick={handleOpenDialog}
-            disabled={
-              isSubmitted || isLoadingCustomers || customersError !== null
-            } // ✅
+            disabled={isSubmitted || isLoadingCustomers || customersError !== null} // ✅
             className="px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition"
           >
             {isLoadingCustomers ? "Đang tải..." : "+ Thêm đồng tác giả"}
@@ -317,10 +260,7 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
         {selectedCoauthors.length > 0 ? (
           <ul className="space-y-2">
             {selectedCoauthors.map((c) => (
-              <li
-                key={c.userId}
-                className="flex items-center justify-between bg-gray-700 p-3 rounded-lg"
-              >
+              <li key={c.userId} className="flex items-center justify-between bg-gray-700 p-3 rounded-lg">
                 <div className="flex items-center gap-3">
                   <Image
                     src={c.avatarUrl || "/default-avatar.png"}
@@ -336,9 +276,7 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
                 </div>
                 <button
                   onClick={() =>
-                    setSelectedCoauthors((prev) =>
-                      prev.filter((x) => x.userId !== c.userId),
-                    )
+                    setSelectedCoauthors((prev) => prev.filter((x) => x.userId !== c.userId))
                   }
                   className="text-red-400 hover:text-red-500 text-sm"
                 >
@@ -348,9 +286,7 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
             ))}
           </ul>
         ) : (
-          <p className="text-gray-400 text-sm">
-            Chưa có đồng tác giả nào được thêm.
-          </p>
+          <p className="text-gray-400 text-sm">Chưa có đồng tác giả nào được thêm.</p>
         )}
       </div>
 
@@ -358,21 +294,10 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
       <div className="flex justify-end">
         <button
           onClick={handleSubmitAbstractForm}
-          disabled={
-            isSubmitted ||
-            !selectedFile ||
-            !paperId ||
-            !title.trim() ||
-            !description.trim() ||
-            submitLoading
-          }
+          disabled={isSubmitted || !selectedFile || !paperId || !title.trim() || !description.trim() || submitLoading}
           className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition"
         >
-          {isSubmitted
-            ? "Đã nộp Abstract"
-            : submitLoading
-              ? "Đang nộp..."
-              : "Nộp Abstract"}
+          {isSubmitted ? "Đã nộp Abstract" : submitLoading ? "Đang nộp..." : "Nộp Abstract"}
         </button>
         {/* <button
                     onClick={handleSubmitAbstractForm}
@@ -387,10 +312,7 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
       {submitAbstractError && (
         <div className="bg-red-900/20 border border-red-700 rounded-xl p-4">
           <p className="text-red-400 text-sm">
-            Lỗi:{" "}
-            {typeof submitAbstractError === "string"
-              ? submitAbstractError
-              : "Có lỗi xảy ra khi nộp abstract"}
+            Lỗi: {typeof submitAbstractError === 'string' ? submitAbstractError : 'Có lỗi xảy ra khi nộp abstract'}
           </p>
         </div>
       )}
@@ -403,16 +325,8 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
         </div>
       )}
 
-      <Dialog
-        open={isDialogOpen}
-        as="div"
-        className="relative z-50"
-        onClose={setIsDialogOpen}
-      >
-        <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-          aria-hidden="true"
-        />
+      <Dialog open={isDialogOpen} as="div" className="relative z-50" onClose={setIsDialogOpen}>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <DialogPanel
             transition
@@ -439,9 +353,7 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
               {isLoadingCustomers ? (
                 <div className="text-center py-4">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
-                  <p className="text-gray-400 text-sm mt-2">
-                    Đang tải danh sách...
-                  </p>
+                  <p className="text-gray-400 text-sm mt-2">Đang tải danh sách...</p>
                 </div>
               ) : customersError ? (
                 <div className="text-center py-4">
@@ -478,9 +390,7 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
                 ))
               ) : (
                 <p className="text-gray-400 text-sm text-center py-3">
-                  {availableCustomers.length === 0
-                    ? "Không có người dùng nào."
-                    : "Không tìm thấy kết quả."}
+                  {availableCustomers.length === 0 ? "Không có người dùng nào." : "Không tìm thấy kết quả."}
                 </p>
               )}
             </div>
