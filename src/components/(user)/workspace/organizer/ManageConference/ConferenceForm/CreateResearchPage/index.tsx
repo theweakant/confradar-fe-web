@@ -1472,7 +1472,36 @@ export default function CreateResearchConferenceStepPage() {
     setMediaList([...mediaList, newMedia]);
     setNewMedia({ mediaFile: null });
   };
+  const handleMediaSubmit = async () => {
+    if (!conferenceId) {
+      toast.error("Không tìm thấy conference ID!");
+      return;
+    }
 
+    // Media là optional
+    if (mediaList.length === 0) {
+      dispatch(markStepCompleted(8));
+      dispatch(nextStep());
+      toast.info("Đã bỏ qua phần media");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      await createMedia({ conferenceId, data: { media: mediaList } }).unwrap();
+
+      dispatch(markStepCompleted(8));
+      dispatch(nextStep());
+      toast.success("Lưu media thành công!");
+    } catch (error) {
+      const apiError = error as { data?: ApiError };
+      console.error("Failed to create media:", error);
+      toast.error(apiError?.data?.Message || "Lưu media thất bại!");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   const handleAddSponsor = () => {
     if (!newSponsor.name || !newSponsor.imageFile) {
       toast.error("Vui lòng nhập tên và chọn logo!");
@@ -1493,7 +1522,58 @@ export default function CreateResearchConferenceStepPage() {
     end.setDate(start.getDate() + durationInDays - 1);
     return end.toISOString().split("T")[0];
   };
+  const handlePoliciesSubmit = async () => {
+    if (!conferenceId) {
+      toast.error("Không tìm thấy conference ID!");
+      return;
+    }
 
+    // Policies là optional
+    if (policies.length === 0 && refundPolicies.length === 0) {
+      dispatch(markStepCompleted(4));
+      dispatch(nextStep());
+      toast.info("Đã bỏ qua phần chính sách");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      await Promise.all([
+        policies.length > 0
+          ? createPolicies({ conferenceId, data: { policies } }).unwrap()
+          : Promise.resolve(),
+        refundPolicies.length > 0
+          ? createRefundPolicies({
+              conferenceId,
+              data: { refundPolicies },
+            }).unwrap()
+          : Promise.resolve(),
+      ]);
+
+      dispatch(markStepCompleted(4));
+      dispatch(nextStep());
+      toast.success("Lưu chính sách thành công!");
+    } catch (error) {
+      const apiError = error as { data?: ApiError };
+      console.error("Failed to create policies:", error);
+      toast.error(apiError?.data?.Message || "Lưu chính sách thất bại!");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handlePrevStep = () => {
+    dispatch(prevStep());
+  };
+
+  const handleNextStepPreview = () => {
+    dispatch(nextStep());
+  };
+
+  const handleGoToStep = (step: number) => {
+    dispatch(goToStep(step));
+  };
   return (
     <div className="max-w-5xl mx-auto p-6">
       <div className="mb-6">
@@ -3387,127 +3467,40 @@ export default function CreateResearchConferenceStepPage() {
 
       {/* STEP 6: POLICIES - TODO: Copy from Conference */}
 
-      <div className="bg-white border rounded-lg p-6 mb-6">
-        <h3 className="text-lg font-semibold mb-4">5. Chính sách (Tùy chọn)</h3>
+      {currentStep === 6 && (
+        <div className="bg-white border rounded-lg p-6 mb-6">
+          <h3 className="text-lg font-semibold mb-4">
+            4. Chính sách (Tùy chọn)
+          </h3>
 
-        {/* Phần A: Chính sách chung */}
-        <div className="mb-6">
-          <h4 className="font-medium text-gray-700 mb-3">
-            A. Chính sách chung (Tùy chọn)
-          </h4>
+          {/* Phần 4.1: Chính sách chung */}
+          <div className="mb-6">
+            <h4 className="font-medium text-gray-700 mb-3">
+              A. Chính sách chung (Tùy chọn)
+            </h4>
 
-          <div className="space-y-2 mb-4">
-            {policies.length === 0 ? (
-              <div className="p-4 bg-gray-50 text-gray-600 rounded-lg text-sm border border-gray-200 text-center">
-                Chưa có chính sách nào. Bạn có thể bỏ qua hoặc thêm chính sách
-                mới bên dưới.
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
-                {policies.map((p, idx) => (
-                  <div
-                    key={idx}
-                    className="relative bg-white border border-gray-300 rounded-xl p-4 flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="font-semibold text-gray-900">
-                        {p.policyName}
-                      </div>
-                      {p.description && (
-                        <div className="text-sm text-gray-600 mt-1">
-                          {p.description}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex justify-end gap-2 mt-4">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setNewPolicy(p);
-                          setPolicies(policies.filter((_, i) => i !== idx));
-                        }}
-                      >
-                        Sửa
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() =>
-                          setPolicies(policies.filter((_, i) => i !== idx))
-                        }
-                      >
-                        Xóa
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="border p-4 rounded space-y-3">
-            <h5 className="font-medium">Thêm chính sách chung</h5>
-            <FormInput
-              label="Tên chính sách"
-              value={newPolicy.policyName}
-              onChange={(val) =>
-                setNewPolicy({ ...newPolicy, policyName: val })
-              }
-            />
-            <FormTextArea
-              label="Mô tả"
-              value={newPolicy.description || ""}
-              onChange={(val) =>
-                setNewPolicy({ ...newPolicy, description: val })
-              }
-              rows={3}
-            />
-            <Button onClick={handleAddPolicy}>Thêm chính sách</Button>
-          </div>
-        </div>
-
-        {/* Phần 4.2: Chính sách hoàn tiền */}
-        <div className="border-t pt-6">
-          <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
-            B. Chính sách hoàn tiền (Tùy chọn)
-            {basicForm.startDate && (
-              <span className="text-sm text-blue-600">
-                (Trước ngày {formatDate(basicForm.startDate)})
-              </span>
-            )}
-          </h4>
-
-          <div className="space-y-2 mb-4">
-            {refundPolicies.length === 0 ? (
-              <div className="p-4 bg-gray-50 text-gray-600 rounded-lg text-sm border border-gray-200 text-center">
-                Chưa có chính sách hoàn tiền nào. Bạn có thể bỏ qua hoặc thêm
-                mới bên dưới.
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-3">
-                {refundPolicies
-                  .sort((a, b) => a.refundOrder - b.refundOrder)
-                  .map((rp, idx) => (
+            <div className="space-y-2 mb-4">
+              {policies.length === 0 ? (
+                <div className="p-4 bg-gray-50 text-gray-600 rounded-lg text-sm border border-gray-200 text-center">
+                  Chưa có chính sách nào. Bạn có thể bỏ qua hoặc thêm chính sách
+                  mới bên dưới.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
+                  {policies.map((p, idx) => (
                     <div
                       key={idx}
-                      className="relative bg-white border border-gray-300 rounded-xl p-4 shadow-sm hover:shadow-md transition flex flex-col justify-between"
+                      className="relative bg-white border border-gray-300 rounded-xl p-4 flex flex-col justify-between"
                     >
                       <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-black px-2 py-0.5 rounded text-xs font-semibold">
-                            #{rp.refundOrder}
-                          </span>
-                          <span className="text-blue-700 font-semibold">
-                            Hoàn trả {rp.percentRefund}%
-                          </span>
+                        <div className="font-semibold text-gray-900">
+                          {p.policyName}
                         </div>
-
-                        <div className="text-sm text-gray-700">
-                          Trước ngày:{" "}
-                          <strong>{formatDate(rp.refundDeadline)}</strong>
-                        </div>
+                        {p.description && (
+                          <div className="text-sm text-gray-600 mt-1">
+                            {p.description}
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex justify-end gap-2 mt-4">
@@ -3515,10 +3508,8 @@ export default function CreateResearchConferenceStepPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => {
-                            setNewRefundPolicy(rp);
-                            setRefundPolicies(
-                              refundPolicies.filter((_, i) => i !== idx),
-                            );
+                            setNewPolicy(p);
+                            setPolicies(policies.filter((_, i) => i !== idx));
                           }}
                         >
                           Sửa
@@ -3526,86 +3517,162 @@ export default function CreateResearchConferenceStepPage() {
                         <Button
                           size="sm"
                           variant="destructive"
-                          onClick={() => {
-                            setRefundPolicies(
-                              refundPolicies.filter((_, i) => i !== idx),
-                            );
-                            toast.success("Đã xóa chính sách hoàn tiền!");
-                          }}
+                          onClick={() =>
+                            setPolicies(policies.filter((_, i) => i !== idx))
+                          }
                         >
                           Xóa
                         </Button>
                       </div>
                     </div>
                   ))}
-              </div>
-            )}
+                </div>
+              )}
+            </div>
+
+            <div className="border p-4 rounded space-y-3">
+              <h5 className="font-medium">Thêm chính sách chung</h5>
+              <FormInput
+                label="Tên chính sách"
+                value={newPolicy.policyName}
+                onChange={(val) =>
+                  setNewPolicy({ ...newPolicy, policyName: val })
+                }
+              />
+              <FormTextArea
+                label="Mô tả"
+                value={newPolicy.description || ""}
+                onChange={(val) =>
+                  setNewPolicy({ ...newPolicy, description: val })
+                }
+                rows={3}
+              />
+              <Button onClick={handleAddPolicy}>Thêm chính sách</Button>
+            </div>
           </div>
 
-          <div className="border p-4 rounded space-y-3 bg-gray-50">
-            <h5 className="font-medium">Thêm chính sách hoàn tiền mới</h5>
+          {/* Phần 4.2: Chính sách hoàn tiền */}
+          <div className="border-t pt-6">
+            <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
+              B. Chính sách hoàn tiền (Tùy chọn)
+              {basicForm.startDate && (
+                <span className="text-sm text-blue-600">
+                  (Trước ngày{" "}
+                  {new Date(basicForm.startDate).toLocaleDateString("vi-VN")})
+                  (Trong thời gian bán vé{" "}
+                  {new Date(basicForm.ticketSaleStart).toLocaleDateString(
+                    "vi-VN",
+                  )}
+                  -{" "}
+                  {new Date(basicForm.ticketSaleEnd).toLocaleDateString(
+                    "vi-VN",
+                  )}
+                  )
+                </span>
+              )}
+            </h4>
 
-            {basicForm.ticketSaleStart && basicForm.ticketSaleEnd && (
-              <div className="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 rounded">
-                <div className="flex items-center gap-2 mb-2">
-                  <strong className="text-blue-900">
-                    Khoảng thời gian hợp lệ:
-                  </strong>
+            <div className="space-y-2 mb-4">
+              {refundPolicies.length === 0 ? (
+                <div className="p-4 bg-gray-50 text-gray-600 rounded-lg text-sm border border-gray-200 text-center">
+                  Chưa có chính sách hoàn tiền nào. Bạn có thể bỏ qua hoặc thêm
+                  mới bên dưới.
                 </div>
-                <div className="text-sm text-blue-800 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono bg-white px-2 py-1 rounded">
-                      {formatDate(basicForm.ticketSaleStart)}
-                    </span>
-                    <span className="text-blue-600">→</span>
-                    <span className="font-mono bg-white px-2 py-1 rounded">
-                      {formatDate(basicForm.ticketSaleEnd)}
-                    </span>
-                  </div>
-                  <div className="text-xs text-blue-600 mt-2 flex items-start gap-1">
-                    <span>
-                      Hạn hoàn tiền phải nằm <strong>TRONG</strong> khoảng thời
-                      gian này (không bằng đầu/cuối)
-                    </span>
-                  </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-3">
+                  {refundPolicies
+                    .sort((a, b) => a.refundOrder - b.refundOrder)
+                    .map((rp, idx) => (
+                      <div
+                        key={idx}
+                        className="relative bg-white border border-gray-300 rounded-xl p-4 shadow-sm hover:shadow-md transition flex flex-col justify-between"
+                      >
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-black px-2 py-0.5 rounded text-xs font-semibold">
+                              #{rp.refundOrder}
+                            </span>
+                            <span className="text-blue-700 font-semibold">
+                              Hoàn trả {rp.percentRefund}%
+                            </span>
+                          </div>
+
+                          <div className="text-sm text-gray-700">
+                            Trước ngày:{" "}
+                            <strong>{formatDate(rp.refundDeadline)}</strong>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-end gap-2 mt-4">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setNewRefundPolicy(rp);
+                              setRefundPolicies(
+                                refundPolicies.filter((_, i) => i !== idx),
+                              );
+                            }}
+                          >
+                            Sửa
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => {
+                              setRefundPolicies(
+                                refundPolicies.filter((_, i) => i !== idx),
+                              );
+                              toast.success("Đã xóa chính sách hoàn tiền!");
+                            }}
+                          >
+                            Xóa
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
-            <div className="grid grid-cols-3 gap-3">
-              <FormInput
-                label="Thứ tự"
-                type="number"
-                min="1"
-                value={newRefundPolicy.refundOrder}
-                onChange={(val) =>
-                  setNewRefundPolicy({
-                    ...newRefundPolicy,
-                    refundOrder: Number(val),
-                  })
-                }
-                placeholder="1, 2, 3..."
-              />
+            <div className="border p-4 rounded space-y-3 bg-gray-50">
+              <h5 className="font-medium">Thêm chính sách hoàn tiền mới</h5>
 
-              <FormInput
-                label="% Hoàn tiền"
-                type="number"
-                min="1"
-                max="100"
-                value={newRefundPolicy.percentRefund}
-                onChange={(val) =>
-                  setNewRefundPolicy({
-                    ...newRefundPolicy,
-                    percentRefund: Number(val),
-                  })
-                }
-                placeholder="VD: 80"
-              />
+              <div className="grid grid-cols-3 gap-3">
+                <FormInput
+                  label="Thứ tự"
+                  type="number"
+                  min="1"
+                  value={newRefundPolicy.refundOrder}
+                  onChange={(val) =>
+                    setNewRefundPolicy({
+                      ...newRefundPolicy,
+                      refundOrder: Number(val),
+                    })
+                  }
+                  placeholder="1, 2, 3..."
+                />
 
-              <div>
+                <FormInput
+                  label="% Hoàn tiền"
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={newRefundPolicy.percentRefund}
+                  onChange={(val) =>
+                    setNewRefundPolicy({
+                      ...newRefundPolicy,
+                      percentRefund: Number(val),
+                    })
+                  }
+                  placeholder="VD: 80"
+                />
+
                 <FormInput
                   label="Hạn hoàn tiền"
                   type="date"
+                  min={basicForm.ticketSaleStart || undefined}
+                  max={basicForm.ticketSaleEnd || undefined}
                   value={newRefundPolicy.refundDeadline}
                   onChange={(val) =>
                     setNewRefundPolicy({
@@ -3613,82 +3680,58 @@ export default function CreateResearchConferenceStepPage() {
                       refundDeadline: val,
                     })
                   }
-                  min={
-                    basicForm.ticketSaleStart
-                      ? new Date(
-                          new Date(basicForm.ticketSaleStart).getTime() +
-                            86400000,
-                        )
-                          .toISOString()
-                          .split("T")[0]
-                      : undefined
-                  }
-                  max={
-                    basicForm.ticketSaleEnd
-                      ? new Date(
-                          new Date(basicForm.ticketSaleEnd).getTime() -
-                            86400000,
-                        )
-                          .toISOString()
-                          .split("T")[0]
-                      : undefined
-                  }
                 />
-                {newRefundPolicy.refundDeadline &&
-                  basicForm.ticketSaleStart &&
-                  basicForm.ticketSaleEnd && (
-                    <div className="mt-1 text-xs">
-                      {new Date(newRefundPolicy.refundDeadline) <=
-                      new Date(basicForm.ticketSaleStart) ? (
-                        <span className="text-red-600 flex items-center gap-1">
-                          Quá sớm! Phải sau{" "}
-                          {formatDate(basicForm.ticketSaleStart)}
-                        </span>
-                      ) : new Date(newRefundPolicy.refundDeadline) >=
-                        new Date(basicForm.ticketSaleEnd) ? (
-                        <span className="text-red-600 flex items-center gap-1">
-                          Quá muộn! Phải trước{" "}
-                          {formatDate(basicForm.ticketSaleEnd)}
-                        </span>
-                      ) : (
-                        <span className="text-green-600 flex items-center gap-1">
-                          Hợp lệ
-                        </span>
-                      )}
-                    </div>
-                  )}
               </div>
-            </div>
 
-            <div className="text-xs text-gray-700 bg-white p-3 rounded border border-gray-200">
-              <div className="font-semibold mb-2 flex items-center gap-2">
-                <span></span> Ví dụ thực tế:
+              <div className="text-xs text-gray-600 bg-white p-2 rounded">
+                <strong>Ví dụ:</strong> Hoàn 80% nếu hủy trước 7 ngày, 50% nếu
+                hủy trước 3 ngày, 0% nếu hủy trong 24h.
               </div>
-              <div className="space-y-1 ml-6">
-                <div>
-                  • <strong>Thứ tự 1:</strong> Hoàn 80% nếu hủy trước 20/12/2025
-                </div>
-                <div>
-                  • <strong>Thứ tự 2:</strong> Hoàn 50% nếu hủy trước 22/12/2025
-                </div>
-                <div>
-                  • <strong>Thứ tự 3:</strong> Hoàn 20% nếu hủy trước 23/12/2025
-                </div>
-              </div>
-              <div className="text-xs text-amber-700 mt-2 bg-amber-50 p-2 rounded">
-                Deadline càng gần ngày đóng bán vé → % hoàn tiền càng thấp
-              </div>
-            </div>
 
-            <Button onClick={handleAddRefundPolicy} className="w-full">
-              Thêm chính sách hoàn tiền
+              <Button onClick={handleAddRefundPolicy} className="w-full">
+                + Thêm chính sách hoàn tiền
+              </Button>
+            </div>
+          </div>
+          {/* Navigation Buttons */}
+          <div className="flex gap-3 mt-6">
+            <Button
+              onClick={handlePrevStep}
+              variant="outline"
+              className="flex-1"
+            >
+              ← Quay lại
             </Button>
+
+            <Button
+              onClick={handlePoliciesSubmit}
+              disabled={isSubmitting || completedSteps.includes(6)}
+              className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
+            >
+              {isSubmitting
+                ? "Đang lưu..."
+                : completedSteps.includes(6)
+                  ? "Đã lưu"
+                  : policies.length > 0 || refundPolicies.length > 0
+                    ? "Lưu và tiếp tục"
+                    : "Bỏ qua"}
+            </Button>
+
+            {completedSteps.includes(6) && (
+              <Button
+                onClick={handleNextStepPreview}
+                className="flex-1 bg-green-600 text-white hover:bg-green-700"
+              >
+                Tiếp tục →
+              </Button>
+            )}
           </div>
         </div>
-      </div>
+      )}
 
       {/* STEP 7: MATERIALS & RANKINGS */}
-      <div className="bg-white border rounded-lg p-6 mb-6">
+                              {currentStep === 7 && (
+                                      <div className="bg-white border rounded-lg p-6 mb-6">
         <h3 className="text-lg font-semibold mb-4">
           6. Tài liệu & Xếp hạng (Tùy chọn)
         </h3>
@@ -3890,9 +3933,45 @@ export default function CreateResearchConferenceStepPage() {
             <Button onClick={handleAddRankingReference}>Thêm URL</Button>
           </div>
         </div>
+
+                          <div className="flex gap-3 mt-6">
+                    <Button
+                      onClick={handlePrevStep}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      ← Quay lại
+                    </Button>
+        
+                    <Button
+                      onClick={handleMediaSubmit}
+                      disabled={isSubmitting || completedSteps.includes(7)}
+                      className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
+                    >
+                      {isSubmitting
+                        ? "Đang lưu..."
+                        : completedSteps.includes(7)
+                          ? "Đã lưu"
+                          : mediaList.length > 0
+                            ? "Lưu và tiếp tục"
+                            : "Bỏ qua"}
+                    </Button>
+        
+                    {completedSteps.includes(7) && (
+                      <Button
+                        onClick={handleNextStepPreview}
+                        className="flex-1 bg-green-600 text-white hover:bg-green-700"
+                      >
+                        Tiếp tục →
+                      </Button>
+                    )}
+                  </div>
       </div>
+                              )}
+
 
       {/* STEP 8: MEDIA */}
+                        {currentStep === 8 && (
       <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6">
         <h3 className="text-lg font-semibold mb-4">7. Media (Tùy chọn)</h3>
 
@@ -3959,9 +4038,45 @@ export default function CreateResearchConferenceStepPage() {
           />
           <Button onClick={handleAddMedia}>Thêm media</Button>
         </div>
+                  <div className="flex gap-3 mt-6">
+                    <Button
+                      onClick={handlePrevStep}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      ← Quay lại
+                    </Button>
+        
+                    <Button
+                      onClick={handleMediaSubmit}
+                      disabled={isSubmitting || completedSteps.includes(8)}
+                      className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
+                    >
+                      {isSubmitting
+                        ? "Đang lưu..."
+                        : completedSteps.includes(8)
+                          ? "Đã lưu"
+                          : mediaList.length > 0
+                            ? "Lưu và tiếp tục"
+                            : "Bỏ qua"}
+                    </Button>
+        
+                    {completedSteps.includes(8) && (
+                      <Button
+                        onClick={handleNextStepPreview}
+                        className="flex-1 bg-green-600 text-white hover:bg-green-700"
+                      >
+                        Tiếp tục →
+                      </Button>
+                    )}
+                  </div>
       </div>
 
+                        )}
+
+
       {/* STEP 9: SPONSORS - TODO: Copy from Conference */}
+                  {currentStep === 9 && (
       <div className="bg-white border rounded-lg p-6 mb-6">
         <h3 className="text-lg font-semibold mb-4">
           8. Nhà tài trợ (Tùy chọn)
@@ -4059,9 +4174,37 @@ export default function CreateResearchConferenceStepPage() {
             Thêm nhà tài trợ
           </Button>
         </div>
+          <div className="flex gap-3 mt-6">
+            <Button
+              onClick={handlePrevStep}
+              variant="outline"
+              className="flex-1"
+            >
+              ← Quay lại
+            </Button>
+
+            <Button
+              onClick={handleFinalSubmit}
+              disabled={isSubmitting || completedSteps.includes(9)}
+              className="flex-1 bg-green-600 text-white hover:bg-green-700"
+            >
+              {isSubmitting
+                ? "Đang hoàn tất..."
+                : completedSteps.includes(9)
+                  ? "Đã hoàn thành"
+                  : sponsors.length > 0
+                    ? "Hoàn tất"
+                    : "Hoàn tất (Bỏ qua)"}
+            </Button>
+          </div>      
       </div>
 
+                  )}
+
+
+
       {/* FINAL SUBMIT BUTTON */}
+
       <div className="bg-white border rounded-lg p-6">
         <Button
           onClick={handleFinalSubmit}

@@ -124,43 +124,6 @@ const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({
                     </div>
                 </div>
             )}
-            {cameraReady.description && (
-              <p className="text-green-300 text-sm">
-                <span className="font-medium">Mô tả:</span>{" "}
-                {cameraReady.description}
-              </p>
-            )}
-            {cameraReady.globalStatusId && (
-              <p className="text-green-300 text-sm">
-                <span className="font-medium">Trạng thái:</span>{" "}
-                {cameraReady.globalStatusId}
-              </p>
-            )}
-            {cameraReady.created && (
-              <p className="text-green-300 text-sm">
-                <span className="font-medium">Ngày tạo:</span>{" "}
-                {new Date(cameraReady.created).toLocaleDateString("vi-VN")}
-              </p>
-            )}
-            {cameraReady.reviewedAt && (
-              <p className="text-green-300 text-sm">
-                <span className="font-medium">Ngày đánh giá:</span>{" "}
-                {new Date(cameraReady.reviewedAt).toLocaleDateString("vi-VN")}
-              </p>
-            )}
-            {cameraReady.fileUrl && (
-              <a
-                href={cameraReady.fileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-400 hover:text-blue-300 text-sm underline mt-2 inline-block"
-              >
-                Xem file camera-ready →
-              </a>
-            )}
-          </div>
-        </div>
-      )}
 
       {isSubmitted && (
         <p className="text-sm text-yellow-400 mt-2">
