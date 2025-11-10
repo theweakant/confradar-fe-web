@@ -5,9 +5,9 @@ import { Search, Plus, Users } from "lucide-react";
 import { Modal } from "@/components/molecules/Modal";
 import { SearchBar } from "@/components/molecules/SearchBar";
 import { StatCard } from "@/components/molecules/StatCard";
-import { CollaboratorTable } from "./CollaboratorTable";
-import { CollaboratorDetail } from "./CollaboratorDetail";
-import { CollaboratorForm } from "./CollaboratorForm";
+import { CustomerTable } from "./CustomerTable";
+import { CustomerDetail } from "./CustomerDetail";
+import { CustomerForm } from "./CustomerForm";
 import { 
   useGetAllUsersQuery,
   useSuspendUserMutation,
@@ -17,9 +17,9 @@ import {
 import { UserProfileResponse } from "@/types/user.type";
 import { CollaboratorRequest } from "@/types/user.type";
 
-export default function ManageCollaborator() {
+export default function ManageCustomer() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCollaborator, setSelectedCollaborator] = useState<UserProfileResponse | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<UserProfileResponse | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
 
@@ -35,69 +35,69 @@ export default function ManageCollaborator() {
   const [activateUser, { isLoading: isActivating }] = useActivateUserMutation();
   const [createCollaborator, { isLoading: isCreating }] = useCreateCollaboratorMutation();
 
-  // Filter users to only show collaborators
-  const collaborators = allUsers.filter(
-    user => user.role === "collaborator"
+  // Filter users to only show customers
+  const customers = allUsers.filter(
+    user => user.role === "customer"
   );
 
   // Search functionality
-  const filteredCollaborators = collaborators.filter(collaborator =>
-    collaborator.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    collaborator.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCustomers = customers.filter(customer =>
+    customer.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    customer.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleViewCollaborator = (collaborator: UserProfileResponse) => {
-    setSelectedCollaborator(collaborator);
+  const handleViewCustomer = (customer: UserProfileResponse) => {
+    setSelectedCustomer(customer);
     setIsDetailModalOpen(true);
   };
 
-  const handleSuspendCollaborator = async (userId: string) => {
+  const handleSuspendCustomer = async (userId: string) => {
     try {
       await suspendUser(userId).unwrap();
       refetch();
-      console.log("Collaborator suspended successfully");
+      console.log("Customer suspended successfully");
     } catch (error) {
-      console.error("Failed to suspend collaborator:", error);
+      console.error("Failed to suspend customer:", error);
     }
   };
 
-  const handleActivateCollaborator = async (userId: string) => {
+  const handleActivateCustomer = async (userId: string) => {
     try {
       await activateUser(userId).unwrap();
       refetch();
-      console.log("Collaborator activated successfully");
+      console.log("Customer activated successfully");
     } catch (error) {
-      console.error("Failed to activate collaborator:", error);
+      console.error("Failed to activate customer:", error);
     }
   };
 
-  const handleCreateCollaborator = async (data: CollaboratorRequest) => {
+  const handleCreateCustomer = async (data: CollaboratorRequest) => {
     try {
       await createCollaborator(data).unwrap();
       setIsFormModalOpen(false);
       refetch();
-      console.log("Collaborator created successfully");
+      console.log("Customer created successfully");
     } catch (error) {
-      console.error("Failed to create collaborator:", error);
+      console.error("Failed to create customer:", error);
     }
   };
 
   const stats = [
     {
-      title: "Tổng số Cộng tác viên",
-      value: collaborators.length.toString(),
+      title: "Tổng số Khách hàng",
+      value: customers.length.toString(),
       icon: Users,
       variant: "info" as const
     },
     {
       title: "Đang hoạt động", 
-      value: collaborators.filter(c => c.status === "active").length.toString(),
+      value: customers.filter(c => c.status === "active").length.toString(),
       icon: Users,
       variant: "success" as const
     },
     {
       title: "Tạm ngưng",
-      value: collaborators.filter(c => c.status === "inactive").length.toString(), 
+      value: customers.filter(c => c.status === "inactive").length.toString(), 
       icon: Users,
       variant: "danger" as const
     }
@@ -124,15 +124,15 @@ export default function ManageCollaborator() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Quản lý Cộng tác viên</h1>
-          <p className="text-gray-600">Quản lý tài khoản cộng tác viên trong hệ thống</p>
+          <h1 className="text-2xl font-bold text-gray-900">Quản lý Khách hàng</h1>
+          <p className="text-gray-600">Quản lý tài khoản khách hàng trong hệ thống</p>
         </div>
         <button
           onClick={() => setIsFormModalOpen(true)}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Plus className="w-5 h-5" />
-          Thêm Cộng tác viên
+          Thêm Khách hàng
         </button>
       </div>
 
@@ -155,7 +155,7 @@ export default function ManageCollaborator() {
           <SearchBar
             value={searchTerm}
             onChange={setSearchTerm}
-            placeholder="Tìm kiếm cộng tác viên..."
+            placeholder="Tìm kiếm khách hàng..."
             className="w-full"
           />
         </div>
@@ -163,38 +163,38 @@ export default function ManageCollaborator() {
 
       {/* Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
-        <CollaboratorTable
-          collaborators={filteredCollaborators}
-          onView={handleViewCollaborator}
-          onSuspend={handleSuspendCollaborator}
-          onActivate={handleActivateCollaborator}
+        <CustomerTable
+          customers={filteredCustomers}
+          onView={handleViewCustomer}
+          onSuspend={handleSuspendCustomer}
+          onActivate={handleActivateCustomer}
         />
       </div>
 
-      {/* Collaborator Detail Modal */}
+      {/* Customer Detail Modal */}
       <Modal
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
-        title="Chi tiết Cộng tác viên"
+        title="Chi tiết Khách hàng"
         size="lg"
       >
-        {selectedCollaborator && (
-          <CollaboratorDetail
-            collaborator={selectedCollaborator}
+        {selectedCustomer && (
+          <CustomerDetail
+            customer={selectedCustomer}
             onClose={() => setIsDetailModalOpen(false)}
           />
         )}
       </Modal>
 
-      {/* Collaborator Form Modal */}
+      {/* Customer Form Modal */}
       <Modal
         isOpen={isFormModalOpen}
         onClose={() => setIsFormModalOpen(false)}
-        title="Thêm Cộng tác viên mới"
+        title="Thêm Khách hàng mới"
         size="md"
       >
-        <CollaboratorForm
-          onSave={handleCreateCollaborator}
+        <CustomerForm
+          onSave={handleCreateCustomer}
           onCancel={() => setIsFormModalOpen(false)}
         />
       </Modal>
