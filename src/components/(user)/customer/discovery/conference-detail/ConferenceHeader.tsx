@@ -229,7 +229,7 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                      shadow-lg shadow-indigo-500/30 transition-all duration-300
                      hover:scale-[1.02]"
                             >
-                                Mở chọn vé
+                                Mua vé
                             </button>
                         );
 
