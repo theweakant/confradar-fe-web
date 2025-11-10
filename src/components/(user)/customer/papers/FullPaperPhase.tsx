@@ -1,16 +1,24 @@
 import React, { useState } from "react";
-import { FullPaper } from "@/types/paper.type";
+import { FullPaper, ResearchPhaseDtoDetail } from "@/types/paper.type";
 import { usePaperCustomer } from "@/redux/hooks/paper/usePaper";
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 import "@cyntler/react-doc-viewer/dist/index.css";
+import { validatePhaseTime } from "@/helper/timeValidation";
 
 interface FullPaperPhaseProps {
     paperId?: string;
     fullPaper?: FullPaper | null;
+    researchPhase?: ResearchPhaseDtoDetail;
 }
 
-const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper }) => {
+const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper, researchPhase }) => {
     const isSubmitted = !!fullPaper;
+
+    // Validate phase timing
+    const phaseValidation = validatePhaseTime(
+        researchPhase?.fullPaperStartDate,
+        researchPhase?.fullPaperEndDate
+    );
 
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [title, setTitle] = useState("");
@@ -67,6 +75,39 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper }) =
         <div className="space-y-6">
             <h3 className="text-lg font-semibold">Giai đoạn Full Paper</h3>
             <p className="text-gray-400">Nộp bản full paper hoàn chỉnh cho bài báo của bạn.</p>
+
+            {/* Phase timing information */}
+            {phaseValidation.formattedPeriod && (
+                <div className="bg-gray-800 border border-gray-600 rounded-xl p-4">
+                    <p className="text-gray-300 text-sm mb-2">
+                        <strong>Thời gian diễn ra:</strong> {phaseValidation.formattedPeriod}
+                    </p>
+                    
+                    {/* Time validation message */}
+                    {!phaseValidation.isAvailable && (
+                        <div className={`border rounded-lg p-3 ${
+                            phaseValidation.isExpired 
+                                ? "bg-red-900/20 border-red-700" 
+                                : "bg-yellow-900/20 border-yellow-700"
+                        }`}>
+                            <p className={`text-sm ${
+                                phaseValidation.isExpired ? "text-red-400" : "text-yellow-400"
+                            }`}>
+                                {phaseValidation.message}
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Available deadline countdown */}
+                    {phaseValidation.isAvailable && phaseValidation.daysRemaining && (
+                        <div className="bg-blue-900/20 border border-blue-700 rounded-lg p-3">
+                            <p className="text-blue-400 text-sm">
+                                {phaseValidation.message}
+                            </p>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Show current full paper if exists */}
             {fullPaper && (
@@ -131,7 +172,7 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper }) =
                         type="text"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        disabled={isSubmitted}
+                        disabled={isSubmitted || !phaseValidation.isAvailable}
                         placeholder="Nhập tiêu đề bài báo"
                         className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                     />
@@ -142,7 +183,7 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper }) =
                     <textarea
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
-                        disabled={isSubmitted}
+                        disabled={isSubmitted || !phaseValidation.isAvailable}
                         placeholder="Nhập mô tả bài báo"
                         rows={3}
                         className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed resize-none"
@@ -155,7 +196,7 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper }) =
                         type="file"
                         accept="application/pdf"
                         onChange={handleFileChange}
-                        disabled={isSubmitted}
+                        disabled={isSubmitted || !phaseValidation.isAvailable}
                         className="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 
                             file:rounded-lg file:border-0 file:text-sm file:font-semibold
                             file:bg-blue-600 file:text-white hover:file:bg-blue-700
@@ -173,7 +214,7 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper }) =
             <div className="flex justify-end">
                 <button
                     onClick={handleSubmitFullPaperForm}
-                    disabled={isSubmitted || !selectedFile || !paperId || !title.trim() || !description.trim() || submitLoading}
+                    disabled={isSubmitted || !phaseValidation.isAvailable || !selectedFile || !paperId || !title.trim() || !description.trim() || submitLoading}
                     className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition"
                 >
                     {isSubmitted ? "Đã nộp Full Paper" : submitLoading ? "Đang nộp..." : "Nộp Full Paper"}

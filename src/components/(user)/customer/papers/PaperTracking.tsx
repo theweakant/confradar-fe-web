@@ -332,10 +332,10 @@ const PaperTracking = () => {
 
             {!paperPhasesLoading && !isLoadingPaperDetail && !paperPhasesError && !paperDetailError && paperPhases.length > 0 && (
               <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 mt-8">
-                {currentStage === 1 && <AbstractPhase paperId={paperId} abstract={paperDetail?.abstract || null} />}
-                {currentStage === 2 && <FullPaperPhase paperId={paperId} fullPaper={paperDetail?.fullPaper || null} />}
+                {currentStage === 1 && <AbstractPhase paperId={paperId} abstract={paperDetail?.abstract || null} researchPhase={paperDetail?.researchPhase} />}
+                {currentStage === 2 && <FullPaperPhase paperId={paperId} fullPaper={paperDetail?.fullPaper || null} researchPhase={paperDetail?.researchPhase} />}
                 {currentStage === 3 && <RevisionPhase paperId={paperId} revisionPaper={paperDetail?.revisionPaper || null} />}
-                {currentStage === 4 && <CameraReadyPhase paperId={paperId} cameraReady={paperDetail?.cameraReady || null} />}
+                {currentStage === 4 && <CameraReadyPhase paperId={paperId} cameraReady={paperDetail?.cameraReady || null} researchPhase={paperDetail?.researchPhase} />}
 
                 {currentStage > 4 && (
                   <div className="text-center py-8">
