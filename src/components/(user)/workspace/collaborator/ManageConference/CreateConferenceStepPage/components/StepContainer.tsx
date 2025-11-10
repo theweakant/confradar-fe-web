@@ -21,7 +21,7 @@ export function StepContainer({
         </h3>
         {isCompleted && (
           <span className="text-sm text-green-600 font-medium">
-            ✓ Đã hoàn thành
+            Đã hoàn thành
           </span>
         )}
       </div>

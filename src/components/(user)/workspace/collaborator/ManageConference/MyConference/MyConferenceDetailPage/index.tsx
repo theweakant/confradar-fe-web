@@ -2479,6 +2479,7 @@ import {
   ArrowRight,
   Activity
 } from "lucide-react";
+import { formatDate, formatCurrency } from "@/helper/format";
 
 // Mock data
 const mockConference = {
@@ -2532,20 +2533,16 @@ const mockCities = [
   { cityId: "city-hcm", cityName: "Ho Chi Minh City" }
 ];
 
-const formatDate = (dateString) => {
-  if (!dateString) return "N/A";
-  const date = new Date(dateString);
-  return date.toLocaleDateString("vi-VN", {
-    year: "numeric",
-    month: "long",
-    day: "numeric"
-  });
-};
 
-// Info Field Component
-function InfoField({ label, value, className = "" }) {
+interface InfoFieldProps {
+  label: string;
+  value: string | number | boolean | null | undefined;
+  className?: string;
+}
+// Reusable Info Field Component
+function InfoField({ label, value, className = "" }: InfoFieldProps) {
   return (
-    <div className={className}>
+    <div className={`${className}`}>
       <p className="text-xs font-medium text-gray-500 mb-1">{label}</p>
       <p className="text-sm text-gray-900 font-semibold break-words">
         {value || "N/A"}
@@ -2553,6 +2550,7 @@ function InfoField({ label, value, className = "" }) {
     </div>
   );
 }
+
 
 export default function ConferenceDetailPage() {
   const [activeTab, setActiveTab] = useState("information");
@@ -2567,17 +2565,19 @@ export default function ConferenceDetailPage() {
     { id: "ticket-holders", label: "Khách đã mua vé", icon: Calendar }
   ];
 
-  const getCategoryName = (categoryId) => {
-    const category = categories.find(c => c.conferenceCategoryId === categoryId);
+  const getCategoryName = (categoryId: string) => {
+    const category = categories.find(
+      (c) => c.conferenceCategoryId === categoryId,
+    );
     return category?.conferenceCategoryName || categoryId;
   };
 
-  const getStatusName = (statusId) => {
-    const status = statuses.find(s => s.conferenceStatusId === statusId);
+  const getStatusName = (statusId: string) => {
+    const status = statuses.find((s) => s.conferenceStatusId === statusId);
     return status?.conferenceStatusName || statusId;
   };
 
-  const getCityName = (cityId) => {
+  const getCityName = (cityId: string) => {
     const city = cities.find(c => c.cityId === cityId);
     return city?.cityName || cityId;
   };

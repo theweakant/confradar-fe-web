@@ -501,7 +501,7 @@ const handleFinalSubmit = async () => {
   }
 
   // =============== PHASES (Update) ===============
-  const phaseUpdatePromises: Promise<any>[] = [];
+  const phaseUpdatePromises: Promise<unknown>[] = [];
   tickets
     .filter(t => t.priceId)
     .forEach(t => {
@@ -574,7 +574,7 @@ const handleFinalSubmit = async () => {
   }
 
   // =============== SPEAKERS (Update) ===============
-  const speakerUpdatePromises: Promise<any>[] = [];
+  const speakerUpdatePromises: Promise<unknown>[] = [];
   sessions
     .filter(s => s.sessionId)
     .forEach(s => {
@@ -807,7 +807,7 @@ const handleFinalSubmit = async () => {
     }
   }
 
-    const deletePromises: Promise<any>[] = [];
+    const deletePromises: Promise<unknown>[] = [];
 
     // Delete tickets
     for (const id of deletedTicketIds) {

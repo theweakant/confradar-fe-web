@@ -28,7 +28,10 @@ export function BasicInfoForm({
   isCategoriesLoading,
   isCitiesLoading,
 }: BasicInfoFormProps) {
-  const handleChange = (field: keyof ConferenceBasicForm, value: any) => {
+  const handleChange = <K extends keyof ConferenceBasicForm>(
+    field: K,
+    value: ConferenceBasicForm[K]
+  ) => {
     onChange({ ...formData, [field]: value });
   };
 

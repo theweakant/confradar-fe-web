@@ -1,4 +1,5 @@
 import type { ValidationResult } from "./basic";
+import { Sponsor } from "@/types/conference.type";
 
 export const validateSponsorName = (value: string): ValidationResult => {
   if (!value.trim()) {
@@ -31,7 +32,7 @@ export const validateSponsorImage = (file: File | null): ValidationResult => {
   return { isValid: true };
 };
 
-export const validateSponsorList = (sponsors: any[]): ValidationResult => {
+export const validateSponsorList = (sponsors: Sponsor[]): ValidationResult => {
   if (sponsors.length === 0) {
     return {
       isValid: true,

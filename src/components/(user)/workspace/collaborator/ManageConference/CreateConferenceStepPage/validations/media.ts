@@ -1,4 +1,5 @@
 import type { ValidationResult } from "./basic";
+import { Media } from "@/types/conference.type";
 
 export const validateMediaFile = (file: File | null): ValidationResult => {
   if (!file) {
@@ -21,7 +22,7 @@ export const validateMediaFile = (file: File | null): ValidationResult => {
   return { isValid: true };
 };
 
-export const validateMediaList = (mediaList: any[]): ValidationResult => {
+export const validateMediaList = (mediaList: Media[]): ValidationResult => {
   if (mediaList.length === 0) {
     return {
       isValid: true,

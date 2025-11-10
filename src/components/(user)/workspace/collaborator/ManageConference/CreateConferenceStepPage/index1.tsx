@@ -127,8 +127,12 @@ export default function CreateConferenceStepPage() {
         validate(field, () => validateConferenceName(basicForm.conferenceName));
         break;
       case "dateRange":
-        validate(field, () => validateDateRange(basicForm.dateRange));
-        break;
+      if (basicForm.dateRange != null) {
+        validate(field, () => validateDateRange(basicForm.dateRange!));
+      } else {
+        clearError("dateRange");
+      }
+      break;
       case "totalSlot":
         validate(field, () => validateTotalSlot(basicForm.totalSlot));
         break;
@@ -138,14 +142,22 @@ export default function CreateConferenceStepPage() {
         );
         break;
       case "ticketSaleDuration":
+      if (
+        basicForm.ticketSaleDuration != null &&
+        basicForm.ticketSaleStart &&
+        basicForm.startDate
+      ) {
         validate(field, () =>
           validateTicketSaleDuration(
-            basicForm.ticketSaleDuration,
-            basicForm.ticketSaleStart,
-            basicForm.startDate
+            basicForm.ticketSaleDuration!,
+            basicForm.ticketSaleStart!,
+            basicForm.startDate!
           )
         );
-        break;
+      } else {
+        clearError("ticketSaleDuration");
+      }
+      break;
     }
   };
 

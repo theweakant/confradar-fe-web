@@ -45,7 +45,7 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
   const [feedbackResponses, setFeedbackResponses] = useState<{ [key: string]: string }>({});
   const [activeSubmissionId, setActiveSubmissionId] = useState<string | null>(null);
 
-  const [swiperInstance, setSwiperInstance] = useState<any>(null);
+  const [swiperInstance, setSwiperInstance] = useState<unknown>(null);
 
   const MemoizedFeedbackDialog = memo(FeedbackDialog);
 

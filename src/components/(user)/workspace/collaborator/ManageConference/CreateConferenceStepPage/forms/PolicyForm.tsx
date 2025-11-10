@@ -161,7 +161,7 @@ export function PolicyForm({
       </div>
 
       {/* Refund Policies Section */}
-      <div className="border-t pt-6">
+      {/* <div className="border-t pt-6">
         <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
           B. Chính sách hoàn tiền (Tùy chọn)
           {eventStartDate && (
@@ -255,7 +255,7 @@ export function PolicyForm({
             + Thêm chính sách hoàn tiền
           </Button>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }
