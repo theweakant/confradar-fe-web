@@ -21,6 +21,12 @@ import {
   useUpdateConferenceRefundPolicyMutation,
   useUpdateConferenceMediaMutation,
   useUpdateConferenceSponsorMutation,
+
+  useDeleteConferencePriceMutation,
+  useDeleteConferenceSessionMutation,
+  useDeleteConferencePolicyMutation,
+  useDeleteConferenceMediaMutation,
+  useDeleteConferenceSponsorMutation,
 } from "@/redux/services/conferenceStep.service";
 
 import { useGetTechnicalConferenceDetailInternalQuery } from "@/redux/services/conference.service";
@@ -100,6 +106,18 @@ export default function UpdateConferenceStepPage() {
   const [updateRefundPolicy] = useUpdateConferenceRefundPolicyMutation();
   const [updateMedia] = useUpdateConferenceMediaMutation();
   const [updateSponsor] = useUpdateConferenceSponsorMutation();
+
+  const [deletePrice] = useDeleteConferencePriceMutation();
+  const [deleteSession] = useDeleteConferenceSessionMutation();
+  const [deletePolicy] = useDeleteConferencePolicyMutation();
+  const [deleteMedia] = useDeleteConferenceMediaMutation();
+  const [deleteSponsor] = useDeleteConferenceSponsorMutation();
+  
+const [deletedTicketIds, setDeletedTicketIds] = useState<string[]>([]);
+const [deletedSessionIds, setDeletedSessionIds] = useState<string[]>([]);
+const [deletedPolicyIds, setDeletedPolicyIds] = useState<string[]>([]);
+const [deletedMediaIds, setDeletedMediaIds] = useState<string[]>([]);
+const [deletedSponsorIds, setDeletedSponsorIds] = useState<string[]>([]);
 
   const { data: categoriesData, isLoading: isCategoriesLoading } =
     useGetAllCategoriesQuery();
@@ -439,279 +457,407 @@ export default function UpdateConferenceStepPage() {
     imageFile: null,
   });
 
-  const handleFinalSubmit = async () => {
-    if (!conferenceId) {
-      toast.error("Không tìm thấy conference ID!");
+const handleFinalSubmit = async () => {
+  if (!conferenceId) {
+    toast.error("Không tìm thấy conference ID!");
+    return;
+  }
+
+  setIsSubmitting(true);
+  let hasError = false;
+
+  // =============== BASIC ===============
+  try {
+    await updateBasic({ conferenceId, data: basicForm }).unwrap();
+  } catch (error) {
+    hasError = true;
+    const apiError = error as { data?: ApiError };
+    toast.error(apiError?.data?.Message || "Cập nhật thông tin cơ bản thất bại");
+  }
+
+  // =============== TICKETS (Update) ===============
+  if (tickets.some(t => t.priceId)) {
+    const updatePromises = tickets
+      .filter(t => t.priceId)
+      .map(t =>
+        updatePrice({
+          priceId: t.priceId!,
+          data: {
+            ticketPrice: parseFloat(t.ticketPrice.toFixed(2)),
+            ticketName: t.ticketName,
+            ticketDescription: t.ticketDescription,
+            totalSlot: t.totalSlot,
+          },
+        }).unwrap()
+      );
+
+    try {
+      await Promise.all(updatePromises);
+    } catch (error) {
+      hasError = true;
+      const apiError = error as { data?: ApiError };
+      toast.error(apiError?.data?.Message || "Cập nhật vé thất bại");
+    }
+  }
+
+  // =============== PHASES (Update) ===============
+  const phaseUpdatePromises: Promise<any>[] = [];
+  tickets
+    .filter(t => t.priceId)
+    .forEach(t => {
+      (t.phases || [])
+        .filter(p => p.pricePhaseId)
+        .forEach(p => {
+          phaseUpdatePromises.push(
+            updatePricePhase({
+              pricePhaseId: p.pricePhaseId!,
+              data: {
+                phaseName: p.phaseName,
+                applyPercent: p.applyPercent,
+                startDate: p.startDate,
+                endDate: p.endDate,
+                totalSlot: p.totalslot,
+              },
+            }).unwrap()
+          );
+        });
+    });
+
+  if (phaseUpdatePromises.length > 0) {
+    try {
+      await Promise.all(phaseUpdatePromises);
+    } catch (error) {
+      hasError = true;
+      const apiError = error as { data?: ApiError };
+      toast.error(apiError?.data?.Message || "Cập nhật giai đoạn giá thất bại");
+    }
+  }
+
+  // =============== SESSIONS (Validation) ===============
+  const eventStartDate = basicForm.startDate;
+  const eventEndDate = basicForm.endDate;
+  if (eventStartDate && eventEndDate) {
+    const hasSessionOnStartDay = sessions.some(s => s.date === eventStartDate);
+    const hasSessionOnEndDay = sessions.some(s => s.date === eventEndDate);
+    if (!hasSessionOnStartDay || !hasSessionOnEndDay) {
+      toast.error("Phải có ít nhất 1 phiên họp vào ngày bắt đầu và 1 vào ngày kết thúc hội thảo!");
+      setIsSubmitting(false);
       return;
     }
-    try {
-      setIsSubmitting(true);
+  }
 
-      // BASIC
-      const basicUpdatePromise = updateBasic({
-        conferenceId,
-        data: basicForm,
-      }).unwrap();
-
-      // PRICE - Update existing tickets
-      const ticketUpdatePromises = tickets
-        .filter((ticket) => ticket.priceId)
-        .map((ticket) =>
-          updatePrice({
-            priceId: ticket.priceId!,
-            data: {
-              ticketPrice: parseFloat(ticket.ticketPrice.toFixed(2)),
-              ticketName: ticket.ticketName,
-              ticketDescription: ticket.ticketDescription,
-              totalSlot: ticket.totalSlot,
-            },
-          }).unwrap(),
-        );
-
-      // PRICE PHASES - Update existing phases
-      const phaseUpdatePromises = tickets
-        .filter((ticket) => ticket.priceId)
-        .flatMap((ticket) =>
-          (ticket.phases || [])
-            .filter((phase) => phase.pricePhaseId)
-            .map((phase) =>
-              updatePricePhase({
-                pricePhaseId: phase.pricePhaseId!,
-                data: {
-                  phaseName: phase.phaseName,
-                  applyPercent: phase.applyPercent,
-                  startDate: phase.startDate,
-                  endDate: phase.endDate,
-                  totalSlot: phase.totalslot,
-                },
-              }).unwrap(),
-            ),
-        );
-
-      // PRICE - Create new tickets
-      const newTickets = tickets.filter((t) => !t.priceId);
-      const ticketCreatePromise =
-        newTickets.length > 0
-          ? createPrice({
-              conferenceId,
-              data: {
-                typeOfTicket: newTickets.map((t) => ({
-                  ticketPrice: parseFloat(t.ticketPrice.toFixed(2)),
-                  ticketName: t.ticketName,
-                  ticketDescription: t.ticketDescription,
-                  isAuthor: t.isAuthor ?? false,
-                  totalSlot: t.totalSlot,
-                  phases: (t.phases || []).map((p) => ({
-                    phaseName: p.phaseName,
-                    applyPercent: p.applyPercent,
-                    startDate: p.startDate,
-                    endDate: p.endDate,
-                    totalslot: p.totalslot,
-                  })),
-                })),
-              },
-            }).unwrap()
-          : Promise.resolve();
-
-      // SESSIONS - Update existing sessions
-      const eventStartDate = basicForm.startDate;
-      const eventEndDate = basicForm.endDate;
-      if (eventStartDate && eventEndDate) {
-        const hasSessionOnStartDay = sessions.some(
-          (s) => s.date === eventStartDate,
-        );
-        const hasSessionOnEndDay = sessions.some(
-          (s) => s.date === eventEndDate,
-        );
-        if (!hasSessionOnStartDay || !hasSessionOnEndDay) {
-          toast.error(
-            "Phải có ít nhất 1 phiên họp vào ngày bắt đầu và 1 vào ngày kết thúc hội thảo!",
-          );
-          return;
-        }
-      }
-      const sessionUpdatePromises = sessions
-        .filter((s) => s.sessionId)
-        .map((s) =>
-          updateSession({
-            sessionId: s.sessionId!,
-            data: {
-              title: s.title,
-              description: s.description,
-              date: s.date,
-              startTime: s.startTime,
-              endTime: s.endTime,
-              roomId: s.roomId,
-            },
-          }).unwrap(),
-        );
-
-      // SPEAKERS - Update existing speakers
-      const speakerUpdatePromises = sessions
-        .filter((s) => s.sessionId)
-        .flatMap((s) =>
-          (s.speaker || [])
-            .filter((sp) => sp.speakerId)
-            .map((sp) =>
-              updateSessionSpeaker({
-                sessionId: s.sessionId!,
-                data: {
-                  name: sp.name,
-                  description: sp.description,
-                  image: sp.image instanceof File ? sp.image : undefined,
-                },
-              }).unwrap(),
-            ),
-        );
-
-      // SESSIONS - Create new sessions
-      const newSessions = sessions.filter((s) => !s.sessionId);
-      const sessionCreatePromise =
-        newSessions.length > 0
-          ? createSessions({
-              conferenceId,
-              data: {
-                sessions: newSessions.map((s) => ({
-                  title: s.title,
-                  description: s.description,
-                  date: s.date,
-                  startTime: s.startTime,
-                  endTime: s.endTime,
-                  roomId: s.roomId,
-                  speaker: s.speaker.map((sp) => ({
-                    name: sp.name,
-                    description: sp.description,
-                    image: sp.image instanceof File ? sp.image : undefined,
-                    imageUrl:
-                      typeof sp.image === "string" ? sp.image : undefined,
-                  })),
-                  sessionMedias: (s.sessionMedias || []).map((m) => ({
-                    mediaFile:
-                      m.mediaFile instanceof File ? m.mediaFile : undefined,
-                    mediaUrl:
-                      typeof m.mediaFile === "string" ? m.mediaFile : undefined,
-                  })),
-                })),
-              },
-            }).unwrap()
-          : Promise.resolve();
-
-      // POLICIES - Update existing policies
-      const policyUpdatePromises = policies
-        .filter((p) => p.policyId)
-        .map((p) =>
-          updatePolicy({
-            policyId: p.policyId!,
-            data: { policyName: p.policyName, description: p.description },
-          }).unwrap(),
-        );
-
-      // POLICIES - Create new policies
-      const newPolicies = policies.filter((p) => !p.policyId);
-      const policyCreatePromise =
-        newPolicies.length > 0
-          ? createPolicies({
-              conferenceId,
-              data: { policies: newPolicies },
-            }).unwrap()
-          : Promise.resolve();
-
-      // REFUND POLICIES - Update existing refund policies
-      const refundPolicyUpdatePromises = refundPolicies
-        .filter((rp) => rp.refundPolicyId)
-        .map((rp) =>
-          updateRefundPolicy({
-            refundPolicyId: rp.refundPolicyId!,
-            data: {
-              percentRefund: rp.percentRefund,
-              refundDeadline: rp.refundDeadline,
-              refundOrder: rp.refundOrder,
-            },
-          }).unwrap(),
-        );
-
-      // REFUND POLICIES - Create new refund policies
-      const newRefundPolicies = refundPolicies.filter(
-        (rp) => !rp.refundPolicyId,
+  // =============== SESSIONS (Update) ===============
+  if (sessions.some(s => s.sessionId)) {
+    const sessionUpdatePromises = sessions
+      .filter(s => s.sessionId)
+      .map(s =>
+        updateSession({
+          sessionId: s.sessionId!,
+          data: {
+            title: s.title,
+            description: s.description,
+            date: s.date,
+            startTime: s.startTime,
+            endTime: s.endTime,
+            roomId: s.roomId,
+          },
+        }).unwrap()
       );
-      const refundPolicyCreatePromise =
-        newRefundPolicies.length > 0
-          ? createRefundPolicies({
-              conferenceId,
-              data: { refundPolicies: newRefundPolicies },
-            }).unwrap()
-          : Promise.resolve();
 
-      // MEDIA - Update existing media
-      const mediaUpdatePromises = mediaList
-        .filter((m) => m.mediaId && m.mediaFile instanceof File)
-        .map((m) =>
-          updateMedia({
-            mediaId: m.mediaId!,
-            mediaFile: m.mediaFile as File,
-          }).unwrap(),
-        );
-
-      // MEDIA - Create new media
-      const newMediaItems = mediaList.filter((m) => !m.mediaId);
-      const mediaCreatePromise =
-        newMediaItems.length > 0
-          ? createMedia({
-              conferenceId,
-              data: { media: newMediaItems },
-            }).unwrap()
-          : Promise.resolve();
-
-      // SPONSORS - Update existing sponsors
-      const sponsorUpdatePromises = sponsors
-        .filter((s) => s.sponsorId && s.imageFile instanceof File)
-        .map((s) =>
-          updateSponsor({
-            sponsorId: s.sponsorId!,
-            name: s.name,
-            imageFile: s.imageFile as File,
-          }).unwrap(),
-        );
-
-      // SPONSORS - Create new sponsors
-      const newSponsors = sponsors.filter((s) => !s.sponsorId);
-      const sponsorCreatePromise =
-        newSponsors.length > 0
-          ? createSponsors({
-              conferenceId,
-              data: { sponsors: newSponsors },
-            }).unwrap()
-          : Promise.resolve();
-
-      // Execute all promises
-      await Promise.all([
-        basicUpdatePromise,
-        ...ticketUpdatePromises,
-        ...phaseUpdatePromises,
-        ...sessionUpdatePromises,
-        ...speakerUpdatePromises,
-        ...policyUpdatePromises,
-        ...refundPolicyUpdatePromises,
-        ...mediaUpdatePromises,
-        ...sponsorUpdatePromises,
-        ticketCreatePromise,
-        sessionCreatePromise,
-        policyCreatePromise,
-        refundPolicyCreatePromise,
-        mediaCreatePromise,
-        sponsorCreatePromise,
-      ]);
-
-      toast.success("Cập nhật hội thảo thành công!");
-      router.push(`/workspace/collaborator/manage-conference`);
+    try {
+      await Promise.all(sessionUpdatePromises);
     } catch (error) {
+      hasError = true;
       const apiError = error as { data?: ApiError };
-      console.error("Failed to update conference:", error);
-      toast.error(apiError?.data?.Message || "Cập nhật hội thảo thất bại!");
-    } finally {
-      setIsSubmitting(false);
+      toast.error(apiError?.data?.Message || "Cập nhật phiên họp thất bại");
     }
-  };
+  }
+
+  // =============== SPEAKERS (Update) ===============
+  const speakerUpdatePromises: Promise<any>[] = [];
+  sessions
+    .filter(s => s.sessionId)
+    .forEach(s => {
+      (s.speaker || [])
+        .filter(sp => sp.speakerId)
+        .forEach(sp => {
+          speakerUpdatePromises.push(
+            updateSessionSpeaker({
+              sessionId: s.sessionId!,
+              data: {
+                name: sp.name,
+                description: sp.description,
+                image: sp.image instanceof File ? sp.image : undefined,
+              },
+            }).unwrap()
+          );
+        });
+    });
+
+  if (speakerUpdatePromises.length > 0) {
+    try {
+      await Promise.all(speakerUpdatePromises);
+    } catch (error) {
+      hasError = true;
+      const apiError = error as { data?: ApiError };
+      toast.error(apiError?.data?.Message || "Cập nhật diễn giả thất bại");
+    }
+  }
+
+  // =============== POLICIES (Update) ===============
+  if (policies.some(p => p.policyId)) {
+    const policyUpdatePromises = policies
+      .filter(p => p.policyId)
+      .map(p =>
+        updatePolicy({
+          policyId: p.policyId!,
+          data: { policyName: p.policyName, description: p.description },
+        }).unwrap()
+      );
+
+    try {
+      await Promise.all(policyUpdatePromises);
+    } catch (error) {
+      hasError = true;
+      const apiError = error as { data?: ApiError };
+      toast.error(apiError?.data?.Message || "Cập nhật chính sách thất bại");
+    }
+  }
+
+  // =============== REFUND POLICIES (Update) ===============
+  if (refundPolicies.some(rp => rp.refundPolicyId)) {
+    const refundUpdatePromises = refundPolicies
+      .filter(rp => rp.refundPolicyId)
+      .map(rp =>
+        updateRefundPolicy({
+          refundPolicyId: rp.refundPolicyId!,
+          data: {
+            percentRefund: rp.percentRefund,
+            refundDeadline: rp.refundDeadline,
+            refundOrder: rp.refundOrder,
+          },
+        }).unwrap()
+      );
+
+    try {
+      await Promise.all(refundUpdatePromises);
+    } catch (error) {
+      hasError = true;
+      const apiError = error as { data?: ApiError };
+      toast.error(apiError?.data?.Message || "Cập nhật chính sách hoàn tiền thất bại");
+    }
+  }
+
+  // =============== MEDIA (Update) ===============
+  if (mediaList.some(m => m.mediaId && m.mediaFile instanceof File)) {
+    const mediaUpdatePromises = mediaList
+      .filter(m => m.mediaId && m.mediaFile instanceof File)
+      .map(m =>
+        updateMedia({
+          mediaId: m.mediaId!,
+          mediaFile: m.mediaFile as File,
+        }).unwrap()
+      );
+
+    try {
+      await Promise.all(mediaUpdatePromises);
+    } catch (error) {
+      hasError = true;
+      const apiError = error as { data?: ApiError };
+      toast.error(apiError?.data?.Message || "Cập nhật media thất bại");
+    }
+  }
+
+  // =============== SPONSORS (Update) ===============
+  if (sponsors.some(s => s.sponsorId && s.imageFile instanceof File)) {
+    const sponsorUpdatePromises = sponsors
+      .filter(s => s.sponsorId && s.imageFile instanceof File)
+      .map(s =>
+        updateSponsor({
+          sponsorId: s.sponsorId!,
+          name: s.name,
+          imageFile: s.imageFile as File,
+        }).unwrap()
+      );
+
+    try {
+      await Promise.all(sponsorUpdatePromises);
+    } catch (error) {
+      hasError = true;
+      const apiError = error as { data?: ApiError };
+      toast.error(apiError?.data?.Message || "Cập nhật nhà tài trợ thất bại");
+    }
+  }
+
+  // =============== CREATE NEW ITEMS ===============
+  // Giá vé mới
+  const newTickets = tickets.filter(t => !t.priceId);
+  if (newTickets.length > 0) {
+    try {
+      const res = await createPrice({
+        conferenceId,
+        data: {
+          typeOfTicket: newTickets.map(t => ({
+            ticketPrice: parseFloat(t.ticketPrice.toFixed(2)),
+            ticketName: t.ticketName,
+            ticketDescription: t.ticketDescription,
+            isAuthor: t.isAuthor ?? false,
+            totalSlot: t.totalSlot,
+            phases: (t.phases || []).map(p => ({
+              phaseName: p.phaseName,
+              applyPercent: p.applyPercent,
+              startDate: p.startDate,
+              endDate: p.endDate,
+              totalslot: p.totalslot,
+            })),
+          })),
+        },
+      }).unwrap();
+      // TODO: Nếu backend trả về ID, nên cập nhật local state để tránh duplicate
+      // setTickets([...]);
+    } catch (error) {
+      hasError = true;
+      const apiError = error as { data?: ApiError };
+      toast.error(apiError?.data?.Message || "Tạo vé mới thất bại");
+    }
+  }
+
+  // Phiên họp mới
+  const newSessions = sessions.filter(s => !s.sessionId);
+  if (newSessions.length > 0) {
+    try {
+      await createSessions({
+        conferenceId,
+        data: {
+          sessions: newSessions.map(s => ({
+            title: s.title,
+            description: s.description,
+            date: s.date,
+            startTime: s.startTime,
+            endTime: s.endTime,
+            roomId: s.roomId,
+            speaker: s.speaker.map(sp => ({
+              name: sp.name,
+              description: sp.description,
+              image: sp.image instanceof File ? sp.image : undefined,
+              imageUrl: typeof sp.image === "string" ? sp.image : undefined,
+            })),
+            sessionMedias: (s.sessionMedias || []).map(m => ({
+              mediaFile: m.mediaFile instanceof File ? m.mediaFile : undefined,
+              mediaUrl: typeof m.mediaFile === "string" ? m.mediaFile : undefined,
+            })),
+          })),
+        },
+      }).unwrap();
+    } catch (error) {
+      hasError = true;
+      const apiError = error as { data?: ApiError };
+      toast.error(apiError?.data?.Message || "Tạo phiên họp mới thất bại");
+    }
+  }
+
+  // Chính sách mới
+  const newPolicies = policies.filter(p => !p.policyId);
+  if (newPolicies.length > 0) {
+    try {
+      await createPolicies({ conferenceId, data: { policies: newPolicies } }).unwrap();
+    } catch (error) {
+      hasError = true;
+      const apiError = error as { data?: ApiError };
+      toast.error(apiError?.data?.Message || "Tạo chính sách mới thất bại");
+    }
+  }
+
+  // Chính sách hoàn tiền mới
+  const newRefundPolicies = refundPolicies.filter(rp => !rp.refundPolicyId);
+  if (newRefundPolicies.length > 0) {
+    try {
+      await createRefundPolicies({
+        conferenceId,
+        data: { refundPolicies: newRefundPolicies },
+      }).unwrap();
+    } catch (error) {
+      hasError = true;
+      const apiError = error as { data?: ApiError };
+      toast.error(apiError?.data?.Message || "Tạo chính sách hoàn tiền mới thất bại");
+    }
+  }
+
+  // Media mới
+  const newMediaItems = mediaList.filter(m => !m.mediaId);
+  if (newMediaItems.length > 0) {
+    try {
+      await createMedia({ conferenceId, data: { media: newMediaItems } }).unwrap();
+    } catch (error) {
+      hasError = true;
+      const apiError = error as { data?: ApiError };
+      toast.error(apiError?.data?.Message || "Tải lên media mới thất bại");
+    }
+  }
+
+  // Nhà tài trợ mới
+  const newSponsors = sponsors.filter(s => !s.sponsorId);
+  if (newSponsors.length > 0) {
+    try {
+      await createSponsors({ conferenceId, data: { sponsors: newSponsors } }).unwrap();
+    } catch (error) {
+      hasError = true;
+      const apiError = error as { data?: ApiError };
+      toast.error(apiError?.data?.Message || "Thêm nhà tài trợ mới thất bại");
+    }
+  }
+
+    const deletePromises: Promise<any>[] = [];
+
+    // Delete tickets
+    for (const id of deletedTicketIds) {
+      deletePromises.push(deletePrice(id).unwrap());
+    }
+
+    // Delete sessions
+    for (const id of deletedSessionIds) {
+      deletePromises.push(deleteSession(id).unwrap());
+    }
+
+    // Delete policies
+    for (const id of deletedPolicyIds) {
+      deletePromises.push(deletePolicy(id).unwrap());
+    }
+
+    // Delete media
+    for (const id of deletedMediaIds) {
+      deletePromises.push(deleteMedia(id).unwrap());
+    }
+
+    // Delete sponsors
+    for (const id of deletedSponsorIds) {
+      deletePromises.push(deleteSponsor(id).unwrap());
+    }
+
+    if (deletePromises.length > 0) {
+      try {
+        await Promise.all(deletePromises);
+        // Reset deleted lists
+        setDeletedTicketIds([]);
+        setDeletedSessionIds([]);
+        setDeletedPolicyIds([]);
+        setDeletedMediaIds([]);
+        setDeletedSponsorIds([]);
+      } catch (error) {
+        hasError = true;
+        const apiError = error as { data?: ApiError };
+        toast.error(apiError?.data?.Message || "Xóa dữ liệu thất bại");
+      }
+    }
+
+  setIsSubmitting(false);
+  if (!hasError) {
+    toast.success("Cập nhật hội thảo thành công!");
+    router.push(`/workspace/collaborator/manage-conference`);
+  } else {
+    toast.warning("Một số phần chưa lưu được. Vui lòng kiểm tra lại.");
+  }
+};
 
   const handleEditTicket = (ticket: Ticket, index: number) => {
     setNewTicket({
@@ -1595,21 +1741,23 @@ export default function UpdateConferenceStepPage() {
                             onClick={() => handleEditTicket(t, idx)}
                             className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-300"
                           >
-                            ✏️ Chỉnh sửa
+                            Chỉnh sửa
                           </Button>
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={() => {
-                              setTickets(tickets.filter((_, i) => i !== idx));
-                              if (editingTicketIndex === idx) {
-                                handleCancelEdit();
+                            onClick={async () => {
+                              if (!confirm("Bạn có chắc muốn xóa vé này? Hành động này không thể hoàn tác.")) return;
+                              if (t.priceId) {
+                                setDeletedTicketIds(prev => [...prev, t.priceId!]);
                               }
-                              toast.success("Đã xóa vé!");
+                              setTickets(tickets.filter((_, i) => i !== idx));
+                              if (editingTicketIndex === idx) handleCancelEdit();
+                              toast.info("Đã xóa vé (sẽ áp dụng khi lưu)");
                             }}
                             className="flex-1 bg-red-500 hover:bg-red-600 text-white"
                           >
-                            🗑️ Xóa vé
+                            Xóa vé
                           </Button>
                         </div>
                       </div>
@@ -2061,11 +2209,15 @@ export default function UpdateConferenceStepPage() {
                             <Button
                               size="sm"
                               variant="destructive"
-                              onClick={() =>
-                                setSessions(
-                                  sessions.filter((_, i) => i !== idx),
-                                )
+                              onClick={async () => {
+                                if (!confirm("Bạn có chắc muốn xóa phiên họp này?")) return;
+                              const session = sessions[idx];
+                              if (session.sessionId) {
+                                setDeletedSessionIds(prev => [...prev, session.sessionId!]);
                               }
+                              setSessions(sessions.filter((_, i) => i !== idx));
+                              toast.info("Đã xóa phiên họp (sẽ áp dụng khi lưu)");
+                              }}
                             >
                               Xóa
                             </Button>
@@ -2316,7 +2468,7 @@ export default function UpdateConferenceStepPage() {
                 </div>
 
                 <Button onClick={handleAddSession} className="w-full mt-4">
-                  ✓ Thêm phiên họp vào danh sách
+                  Thêm phiên họp vào danh sách
                 </Button>
               </div>
 
@@ -2406,9 +2558,15 @@ export default function UpdateConferenceStepPage() {
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={() =>
-                              setPolicies(policies.filter((_, i) => i !== idx))
-                            }
+                            onClick={async () => {
+                              if (!confirm("Bạn có chắc muốn xóa chính sách này?")) return;
+                              const policy = policies[idx];
+                              if (policy.policyId) {
+                                setDeletedPolicyIds(prev => [...prev, policy.policyId!]);
+                              }
+                              setPolicies(policies.filter((_, i) => i !== idx));
+                              toast.info("Đã xóa chính sách (sẽ áp dụng khi lưu)");
+                            }}
                           >
                             Xóa
                           </Button>
@@ -2439,144 +2597,6 @@ export default function UpdateConferenceStepPage() {
                 </div>
               </div>
 
-              {/* Phần 4.2: Chính sách hoàn tiền */}
-              <div className="border-t pt-6">
-                <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
-                  4.2. Chính sách hoàn tiền (Tùy chọn)
-                  {basicForm.startDate && (
-                    <span className="text-sm text-blue-600">
-                      (Trước ngày{" "}
-                      {new Date(basicForm.startDate).toLocaleDateString(
-                        "vi-VN",
-                      )}
-                      )
-                    </span>
-                  )}
-                </h4>
-
-                <div className="space-y-2 mb-4">
-                  {refundPolicies.length === 0 ? (
-                    <div className="p-3 bg-gray-50 text-gray-600 rounded text-sm">
-                      Chưa có chính sách hoàn tiền nào. Bạn có thể bỏ qua hoặc
-                      thêm mới bên dưới.
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {refundPolicies
-                        .sort((a, b) => a.refundOrder - b.refundOrder)
-                        .map((rp, idx) => (
-                          <div
-                            key={idx}
-                            className="p-3 bg-blue-50 rounded flex justify-between items-center"
-                          >
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="bg-blue-600 text-white px-2 py-0.5 rounded text-xs font-medium">
-                                  #{rp.refundOrder}
-                                </span>
-                                <span className="font-semibold text-blue-700">
-                                  {rp.percentRefund}% hoàn tiền
-                                </span>
-                              </div>
-                              <div className="text-sm text-gray-600">
-                                📅 Trước ngày:{" "}
-                                <strong>
-                                  {new Date(
-                                    rp.refundDeadline,
-                                  ).toLocaleDateString("vi-VN")}
-                                </strong>
-                              </div>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  setNewRefundPolicy(rp);
-                                  setRefundPolicies(
-                                    refundPolicies.filter((_, i) => i !== idx),
-                                  );
-                                }}
-                              >
-                                Sửa
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => {
-                                  setRefundPolicies(
-                                    refundPolicies.filter((_, i) => i !== idx),
-                                  );
-                                  toast.success("Đã xóa chính sách hoàn tiền!");
-                                }}
-                              >
-                                Xóa
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="border p-4 rounded space-y-3 bg-gray-50">
-                  <h5 className="font-medium">Thêm chính sách hoàn tiền mới</h5>
-
-                  <div className="grid grid-cols-3 gap-3">
-                    <FormInput
-                      label="Thứ tự"
-                      type="number"
-                      min="1"
-                      value={newRefundPolicy.refundOrder}
-                      onChange={(val) =>
-                        setNewRefundPolicy({
-                          ...newRefundPolicy,
-                          refundOrder: Number(val),
-                        })
-                      }
-                      placeholder="1, 2, 3..."
-                    />
-
-                    <FormInput
-                      label="% Hoàn tiền"
-                      type="number"
-                      min="1"
-                      max="100"
-                      value={newRefundPolicy.percentRefund}
-                      onChange={(val) =>
-                        setNewRefundPolicy({
-                          ...newRefundPolicy,
-                          percentRefund: Number(val),
-                        })
-                      }
-                      placeholder="VD: 80"
-                    />
-
-                    <FormInput
-                      label="Hạn hoàn tiền"
-                      type="date"
-                      min={basicForm.ticketSaleStart || undefined}
-                      max={basicForm.ticketSaleEnd || undefined}
-                      value={newRefundPolicy.refundDeadline}
-                      onChange={(val) =>
-                        setNewRefundPolicy({
-                          ...newRefundPolicy,
-                          refundDeadline: val,
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div className="text-xs text-gray-600 bg-white p-2 rounded">
-                    💡 <strong>Ví dụ:</strong> Hoàn 80% nếu hủy trước 7 ngày,
-                    50% nếu hủy trước 3 ngày, 0% nếu hủy trong 24h.
-                  </div>
-
-                  <Button onClick={handleAddRefundPolicy} className="w-full">
-                    + Thêm chính sách hoàn tiền
-                  </Button>
-                </div>
-              </div>
               <div className="flex gap-3 mt-6">
                 <Button onClick={() => dispatch(goToStep(3))} variant="outline">
                   ← Quay lại
@@ -2645,9 +2665,19 @@ export default function UpdateConferenceStepPage() {
                     <Button
                       size="sm"
                       variant="destructive"
-                      onClick={() =>
-                        setMediaList(mediaList.filter((_, i) => i !== idx))
-                      }
+                      onClick={async () => {
+                        if (!m.mediaId) {
+                          toast.error("Không tìm thấy media này trên hệ thống");
+                          return;
+                        }                        
+                        if (!confirm("Bạn có chắc muốn xóa media này?")) return;
+                        if (m.mediaId) {
+                          setDeletedMediaIds(prev => [...prev, m.mediaId!]);
+                          // Xóa khỏi existingMediaUrls nếu cần
+                          setExistingMediaUrls(existingMediaUrls.filter((_, i) => i !== idx));
+                        }
+                        toast.info("Đã xóa media (sẽ áp dụng khi lưu)");
+                      }}
                     >
                       Xóa
                     </Button>
@@ -2731,11 +2761,13 @@ export default function UpdateConferenceStepPage() {
                     <Button
                       size="sm"
                       variant="destructive"
-                      onClick={() => {
-                        setExistingSponsorUrls(
-                          existingSponsorUrls.filter((_, i) => i !== idx),
-                        );
-                        toast.success("Đã xóa nhà tài trợ!");
+                      onClick={async () => {
+                        if (!confirm("Bạn có chắc muốn xóa nhà tài trợ này?")) return;
+                        if (s.sponsorId) {
+                          setDeletedSponsorIds(prev => [...prev, s.sponsorId!]);
+                        }
+                        setExistingSponsorUrls(existingSponsorUrls.filter((_, i) => i !== idx));
+                        toast.info("Đã xóa nhà tài trợ (sẽ áp dụng khi lưu)");
                       }}
                     >
                       Xóa

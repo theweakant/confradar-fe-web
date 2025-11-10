@@ -16,6 +16,8 @@ import {
   Building2,
   GraduationCap,
   Home,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import type { ElementType } from "react";
 import { useDispatch } from "react-redux";
@@ -35,10 +37,13 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
   const dispatch = useDispatch();
   const normalizedRole = role.toLowerCase().replace(/\s+/g, "");
 
+  // State để quản lý sub-menu mở/đóng
+  const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({});
+
   // 👇 Sử dụng constants từ roles.ts
   const roleMenus: Record<
     string,
-    { label: string; href: string; icon: ElementType }[]
+    { label: string; href: string; icon: ElementType; subMenu?: { label: string; href: string }[] }[]
   > = {
     [ROLES.ADMIN]: [
       { label: "Tổng quan", href: "/workspace/admin", icon: LayoutDashboard },
@@ -74,6 +79,10 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
         label: "Hội nghị",
         href: "/workspace/organizer/manage-conference",
         icon: Calendar,
+        subMenu: [
+          { label: "Tất cả hội nghị", href: "/workspace/organizer/manage-conference" },
+          { label: "Hội nghị của tôi", href: "/workspace/organizer/my-conference" },
+        ],
       },
       {
         label: "Bài báo",
@@ -111,6 +120,10 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
         label: "Hội thảo",
         href: "/workspace/collaborator/manage-conference",
         icon: Calendar,
+        subMenu: [
+          { label: "Tất cả hội thảo", href: "/workspace/collaborator/manage-conference" },
+          { label: "Hội thảo của tôi", href: "/workspace/collaborator/manage-conference/my-conference" },
+        ],
       },
       {
         label: "Phân tích",
@@ -267,19 +280,62 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
           {roleMenu.map((item) => {
             const Icon = item.icon;
             const active = pathname === item.href;
+            const hasSubMenu = item.subMenu && item.subMenu.length > 0;
+            const isSubMenuActive = item.subMenu?.some(sub => pathname === sub.href);
+            const isSubMenuOpen = openSubMenus[item.href] ?? isSubMenuActive;
+
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                  active
-                    ? "bg-blue-50 text-blue-600 font-medium"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
-              >
-                <Icon size={20} />
-                {isSidebarOpen && <span>{item.label}</span>}
-              </Link>
+              <div key={item.href}>
+                {hasSubMenu ? (
+                  <>
+                    <button
+                      onClick={() => setOpenSubMenus(prev => ({ ...prev, [item.href]: !isSubMenuOpen }))}
+                      className={`flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+                        isSubMenuActive
+                          ? "bg-blue-50 text-blue-600 font-medium"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon size={20} />
+                        {isSidebarOpen && <span>{item.label}</span>}
+                      </div>
+                      {isSidebarOpen && (
+                        isSubMenuOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />
+                      )}
+                    </button>
+                    {isSidebarOpen && isSubMenuOpen && (
+                      <div className="ml-9 mt-1 space-y-1">
+                        {item.subMenu?.map((subItem) => (
+                          <Link
+                            key={subItem.href}
+                            href={subItem.href}
+                            className={`block px-3 py-2 rounded-lg text-sm transition-colors ${
+                              pathname === subItem.href
+                                ? "bg-blue-50 text-blue-600 font-medium"
+                                : "text-gray-600 hover:bg-gray-100"
+                            }`}
+                          >
+                            {subItem.label}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <Link
+                    href={item.href}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+                      active
+                        ? "bg-blue-50 text-blue-600 font-medium"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}
+                  >
+                    <Icon size={20} />
+                    {isSidebarOpen && <span>{item.label}</span>}
+                  </Link>
+                )}
+              </div>
             );
           })}
         </div>

@@ -588,6 +588,67 @@ export const conferenceStepApi = createApi({
       },
       invalidatesTags: ["ConferenceStep"],
     }),
+
+    // DELETE PRICE
+    deleteConferencePrice: builder.mutation<
+      ApiResponse<null>,
+      string // priceId
+    >({
+      query: (priceId) => ({
+        url: endpoint.CONFERENCE_STEP.DELETE_PRICE(priceId),
+        method: "DELETE",
+      }),
+      invalidatesTags: ["ConferenceStep"],
+    }),
+
+    // DELETE SESSION
+    deleteConferenceSession: builder.mutation<
+      ApiResponse<null>,
+      string // sessionId
+    >({
+      query: (sessionId) => ({
+        url: endpoint.CONFERENCE_STEP.DELETE_SESSION(sessionId),
+        method: "DELETE",
+      }),
+      invalidatesTags: ["ConferenceStep"],
+    }),
+
+    // DELETE POLICY
+    deleteConferencePolicy: builder.mutation<
+      ApiResponse<null>,
+      string // policyId
+    >({
+      query: (policyId) => ({
+        url: endpoint.CONFERENCE_STEP.DELETE_POLICY(policyId),
+        method: "DELETE",
+      }),
+      invalidatesTags: ["ConferenceStep"],
+    }),
+
+    // DELETE MEDIA
+    deleteConferenceMedia: builder.mutation<
+      ApiResponse<null>,
+      string // mediaId
+    >({
+      query: (mediaId) => ({
+        url: endpoint.CONFERENCE_STEP.DELETE_MEDIA(mediaId),
+        method: "DELETE",
+      }),
+      invalidatesTags: ["ConferenceStep"],
+    }),
+
+    // DELETE SPONSOR
+    deleteConferenceSponsor: builder.mutation<
+      ApiResponse<null>,
+      string // sponsorId
+    >({
+      query: (sponsorId) => ({
+        url: endpoint.CONFERENCE_STEP.DELETE_SPONSOR(sponsorId),
+        method: "DELETE",
+      }),
+      invalidatesTags: ["ConferenceStep"],
+    }),
+
   }),
 });
 
@@ -620,4 +681,11 @@ export const {
   useCreateResearchRankingFileMutation,
   useCreateResearchRankingReferenceMutation,
   useCreateResearchMaterialMutation,
+
+  //DELETE
+  useDeleteConferencePriceMutation,
+  useDeleteConferenceSessionMutation,
+  useDeleteConferencePolicyMutation,
+  useDeleteConferenceMediaMutation,
+  useDeleteConferenceSponsorMutation,
 } = conferenceStepApi;
