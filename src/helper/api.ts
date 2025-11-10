@@ -15,6 +15,8 @@ export const parseApiError = <T>(error: FetchBaseQueryError | SerializedError | 
 };
 
 export const clearReduxState = () => {
-    store.dispatch({ type: "RESET_STORE" })
-    persistor.purge()
+    import('@/redux/store').then(({ store, persistor }) => {
+        store.dispatch({ type: "RESET_STORE" })
+        persistor.purge()
+    })
 }
