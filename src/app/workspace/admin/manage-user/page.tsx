@@ -1,5 +1,5 @@
-import ManageUser from "@/components/(user)/workspace/admin/ManageUser/ManageUser";
+import ManageCategory from "@/components/(user)/workspace/admin/ManageCategory/ManageCategory";
 
-export default function ManageUserPage() {
-  return <ManageUser />;
+export default function ManageAccommodationPage() {
+  return <ManageCategory />;
 }

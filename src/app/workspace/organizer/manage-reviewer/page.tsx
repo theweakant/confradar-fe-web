@@ -1,5 +1,5 @@
-import ManageReviewer from "@/components/(user)/workspace/organizer/ManageReviewer/ManageReviewer";
+import ReviewerManagePaper from "@/components/(user)/workspace/organizer/ManagePaper/ManagePaper/ReviewerManagePaper";
 
-export default function ManageUserPage() {
-  return <ManageReviewer />;
+export default function ReviewerManagePaperPage() {
+  return <ReviewerManagePaper />;
 }

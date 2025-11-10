@@ -65,12 +65,15 @@ export function UserTable({
     {
       key: "role",
       header: "Vai trò",
-      render: (user) => (
-        <StatusBadge
-          status={getRoleLabel(user.role)}
-          variant={getRoleVariant(user.role)}
-        />
-      ),
+      render: (user) => {
+        const primaryRole = user.roles?.[0] ?? "User"; 
+        return (
+          <StatusBadge
+            status={getRoleLabel(primaryRole)}
+            variant={getRoleVariant(primaryRole)}
+          />
+        );
+      },
     },
     {
       key: "actions",

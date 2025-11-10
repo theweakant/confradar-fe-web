@@ -792,9 +792,9 @@ const PaperScheduleCalendar: React.FC<PaperScheduleCalendarProps> = ({
   };
 
   const handleEventClick = (event: CalendarEvent) => {
-    const presentation = event.metadata as PaperPresentation & {
+    const presentation = event.metadata as unknown as (PaperPresentation & {
       paper?: Paper;
-    };
+    });
     setSelectedPresentation(presentation);
     setSelectedPaper(presentation.paper || null);
     setSlotSelection(null);

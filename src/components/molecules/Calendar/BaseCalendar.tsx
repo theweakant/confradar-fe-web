@@ -32,7 +32,7 @@ export interface CalendarEvent {
   room?: Room;
   type?: "session" | "paper" | "other";
   color?: string;
-  metadata?: Record<string, unknown>;
+  metadata?: unknown;
 }
 
 export interface TimeSlot {

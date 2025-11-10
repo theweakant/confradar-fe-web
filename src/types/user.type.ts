@@ -17,6 +17,8 @@ export interface UserProfileResponse {
   bioDescription: string | null;
   createdAt: string;
   roles?: string[];
+
+  status?:string
 }
 
 export interface ProfileUpdateRequest {
