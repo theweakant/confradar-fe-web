@@ -723,7 +723,7 @@ export default function CreateResearchConferenceStepPage() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create basic info:", error);
-      toast.error(apiError?.data?.Message || "Tạo thông tin cơ bản thất bại!");
+      toast.error(apiError?.data?.message || "Tạo thông tin cơ bản thất bại!");
     } finally {
       setIsSubmitting(false);
     }
@@ -806,36 +806,36 @@ export default function CreateResearchConferenceStepPage() {
       const sessionPromise =
         sessions.length > 0
           ? (() => {
-              const formattedSessions = sessions.map((s) => ({
-                title: s.title,
-                description: s.description,
-                date: s.date,
-                startTime: s.startTime,
-                endTime: s.endTime,
-                roomId: s.roomId,
-                speaker: (s.speaker || []).map((sp) => ({
-                  name: sp.name,
-                  description: sp.description,
-                  image: sp.image instanceof File ? sp.image : undefined,
-                  imageUrl: typeof sp.image === "string" ? sp.image : undefined,
-                })),
-                sessionMedias: (s.sessionMedias || []).map((media) => ({
-                  mediaFile:
-                    media.mediaFile instanceof File
-                      ? media.mediaFile
-                      : undefined,
-                  mediaUrl:
-                    typeof media.mediaFile === "string"
-                      ? media.mediaFile
-                      : undefined,
-                })),
-              }));
+            const formattedSessions = sessions.map((s) => ({
+              title: s.title,
+              description: s.description,
+              date: s.date,
+              startTime: s.startTime,
+              endTime: s.endTime,
+              roomId: s.roomId,
+              speaker: (s.speaker || []).map((sp) => ({
+                name: sp.name,
+                description: sp.description,
+                image: sp.image instanceof File ? sp.image : undefined,
+                imageUrl: typeof sp.image === "string" ? sp.image : undefined,
+              })),
+              sessionMedias: (s.sessionMedias || []).map((media) => ({
+                mediaFile:
+                  media.mediaFile instanceof File
+                    ? media.mediaFile
+                    : undefined,
+                mediaUrl:
+                  typeof media.mediaFile === "string"
+                    ? media.mediaFile
+                    : undefined,
+              })),
+            }));
 
-              return createSessions({
-                conferenceId,
-                data: { sessions: formattedSessions },
-              }).unwrap();
-            })()
+            return createSessions({
+              conferenceId,
+              data: { sessions: formattedSessions },
+            }).unwrap();
+          })()
           : Promise.resolve();
 
       const policiesPromise =
@@ -845,9 +845,9 @@ export default function CreateResearchConferenceStepPage() {
       const refundPromise =
         refundPolicies.length > 0
           ? createRefundPolicies({
-              conferenceId,
-              data: { refundPolicies },
-            }).unwrap()
+            conferenceId,
+            data: { refundPolicies },
+          }).unwrap()
           : Promise.resolve();
 
       const materialPromises = researchMaterials.map((material) =>
@@ -902,7 +902,7 @@ export default function CreateResearchConferenceStepPage() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create research conference:", error);
-      toast.error(apiError?.data?.Message || "Tạo hội thảo thất bại!");
+      toast.error(apiError?.data?.message || "Tạo hội thảo thất bại!");
     } finally {
       setIsSubmitting(false);
     }
@@ -933,7 +933,7 @@ export default function CreateResearchConferenceStepPage() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed:", error);
-      toast.error(apiError?.data?.Message || "Lưu thất bại!");
+      toast.error(apiError?.data?.message || "Lưu thất bại!");
     } finally {
       setIsSubmitting(false);
     }
@@ -960,7 +960,7 @@ export default function CreateResearchConferenceStepPage() {
       toast.success("Lưu timeline thành công!");
     } catch (error) {
       const apiError = error as { data?: ApiError };
-      toast.error(apiError?.data?.Message || "Lưu timeline thất bại!");
+      toast.error(apiError?.data?.message || "Lưu timeline thất bại!");
     } finally {
       setIsSubmitting(false);
     }
@@ -1497,7 +1497,7 @@ export default function CreateResearchConferenceStepPage() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create media:", error);
-      toast.error(apiError?.data?.Message || "Lưu media thất bại!");
+      toast.error(apiError?.data?.message || "Lưu media thất bại!");
     } finally {
       setIsSubmitting(false);
     }
@@ -1545,9 +1545,9 @@ export default function CreateResearchConferenceStepPage() {
           : Promise.resolve(),
         refundPolicies.length > 0
           ? createRefundPolicies({
-              conferenceId,
-              data: { refundPolicies },
-            }).unwrap()
+            conferenceId,
+            data: { refundPolicies },
+          }).unwrap()
           : Promise.resolve(),
       ]);
 
@@ -1557,7 +1557,7 @@ export default function CreateResearchConferenceStepPage() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create policies:", error);
-      toast.error(apiError?.data?.Message || "Lưu chính sách thất bại!");
+      toast.error(apiError?.data?.message || "Lưu chính sách thất bại!");
     } finally {
       setIsSubmitting(false);
     }
@@ -1803,9 +1803,9 @@ export default function CreateResearchConferenceStepPage() {
                 </div>
               </div>
             </div>
-          <div>
+            <div>
 
-              </div>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <FormInput
                 label="Sức chứa"
@@ -2323,11 +2323,11 @@ export default function CreateResearchConferenceStepPage() {
                         max={
                           basicForm.ticketSaleStart
                             ? new Date(
-                                new Date(basicForm.ticketSaleStart).getTime() -
-                                  86400000,
-                              )
-                                .toISOString()
-                                .split("T")[0]
+                              new Date(basicForm.ticketSaleStart).getTime() -
+                              86400000,
+                            )
+                              .toISOString()
+                              .split("T")[0]
                             : undefined
                         }
                         required
@@ -2596,7 +2596,7 @@ export default function CreateResearchConferenceStepPage() {
                           </label>
                           <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
                             {newRevisionRound.startDate &&
-                            newRevisionRound.durationInDays > 0 ? (
+                              newRevisionRound.durationInDays > 0 ? (
                               <span className="text-gray-900">
                                 {formatDate(
                                   calculateEndDate(
@@ -2669,11 +2669,11 @@ export default function CreateResearchConferenceStepPage() {
                         max={
                           basicForm.ticketSaleStart
                             ? new Date(
-                                new Date(basicForm.ticketSaleStart).getTime() -
-                                  86400000,
-                              )
-                                .toISOString()
-                                .split("T")[0]
+                              new Date(basicForm.ticketSaleStart).getTime() -
+                              86400000,
+                            )
+                              .toISOString()
+                              .split("T")[0]
                             : undefined
                         }
                       />
@@ -2821,9 +2821,8 @@ export default function CreateResearchConferenceStepPage() {
                                 Tổng: {p.totalslot}
                               </span>
                               <span
-                                className={`font-bold ${
-                                  isIncrease ? "text-red-600" : "text-green-600"
-                                }`}
+                                className={`font-bold ${isIncrease ? "text-red-600" : "text-green-600"
+                                  }`}
                               >
                                 {percentDisplay}
                               </span>
@@ -2983,9 +2982,8 @@ export default function CreateResearchConferenceStepPage() {
                               SL: {p.totalslot}
                             </span>
                             <span
-                              className={`font-bold ${
-                                isIncrease ? "text-red-600" : "text-green-600"
-                              }`}
+                              className={`font-bold ${isIncrease ? "text-red-600" : "text-green-600"
+                                }`}
                             >
                               {percentDisplay}
                             </span>
@@ -3135,13 +3133,13 @@ export default function CreateResearchConferenceStepPage() {
                             min={
                               newTicket.isAuthor
                                 ? researchPhases.find((p) => !p.isWaitlist)
-                                    ?.registrationStartDate
+                                  ?.registrationStartDate
                                 : basicForm.ticketSaleStart
                             }
                             max={
                               newTicket.isAuthor
                                 ? researchPhases.find((p) => !p.isWaitlist)
-                                    ?.registrationEndDate
+                                  ?.registrationEndDate
                                 : basicForm.ticketSaleEnd
                             }
                           />
@@ -3166,7 +3164,7 @@ export default function CreateResearchConferenceStepPage() {
                           </label>
                           <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
                             {newPhase.startDate &&
-                            newPhase.durationInDays > 0 ? (
+                              newPhase.durationInDays > 0 ? (
                               <span className="text-gray-900">
                                 {formatDate(
                                   calculatePhaseEndDate(
@@ -3730,450 +3728,450 @@ export default function CreateResearchConferenceStepPage() {
       )}
 
       {/* STEP 7: MATERIALS & RANKINGS */}
-                              {currentStep === 7 && (
-                                      <div className="bg-white border rounded-lg p-6 mb-6">
-        <h3 className="text-lg font-semibold mb-4">
-          6. Tài liệu & Xếp hạng (Tùy chọn)
-        </h3>
+      {currentStep === 7 && (
+        <div className="bg-white border rounded-lg p-6 mb-6">
+          <h3 className="text-lg font-semibold mb-4">
+            6. Tài liệu & Xếp hạng (Tùy chọn)
+          </h3>
 
-        {/* Research Materials */}
-        <div className="border p-4 rounded mb-4">
-          <h4 className="font-medium mb-3">
-            📚 Tài liệu nghiên cứu ({researchMaterials.length})
-          </h4>
+          {/* Research Materials */}
+          <div className="border p-4 rounded mb-4">
+            <h4 className="font-medium mb-3">
+              📚 Tài liệu nghiên cứu ({researchMaterials.length})
+            </h4>
 
-          {researchMaterials.length > 0 && (
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              {researchMaterials.map((m, idx) => (
-                <div
-                  key={idx}
-                  className="p-3 bg-gray-50 rounded border border-gray-200"
-                >
+            {researchMaterials.length > 0 && (
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                {researchMaterials.map((m, idx) => (
                   <div
-                    className="font-medium text-sm truncate"
-                    title={m.fileName}
+                    key={idx}
+                    className="p-3 bg-gray-50 rounded border border-gray-200"
                   >
-                    {m.fileName}
-                  </div>
-                  {m.fileDescription && (
-                    <div className="text-xs text-gray-600 mt-1">
-                      {m.fileDescription}
-                    </div>
-                  )}
-                  {m.file && (
-                    <div className="text-xs text-blue-600 mt-1">
-                      📎{" "}
-                      {m.file instanceof File ? m.file.name : "File attached"}
-                    </div>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() =>
-                      setResearchMaterials(
-                        researchMaterials.filter((_, i) => i !== idx),
-                      )
-                    }
-                    className="w-full mt-2"
-                  >
-                    Xóa
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="space-y-3 border-t pt-3">
-            <h5 className="font-medium">Thêm tài liệu</h5>
-            <FormInput
-              label="Tên file"
-              name="fileName"
-              value={newMaterial.fileName}
-              onChange={(val) =>
-                setNewMaterial({ ...newMaterial, fileName: val })
-              }
-              required
-              placeholder="VD: Template bài báo, Hướng dẫn..."
-            />
-            <FormTextArea
-              label="Mô tả"
-              name="fileDescription"
-              value={newMaterial.fileDescription || ""}
-              onChange={(val) =>
-                setNewMaterial({ ...newMaterial, fileDescription: val })
-              }
-              rows={2}
-              placeholder="Mô tả ngắn gọn về file..."
-            />
-            <div>
-              <label className="block text-sm font-medium mb-2">File *</label>
-              <input
-                type="file"
-                onChange={(e) =>
-                  setNewMaterial({
-                    ...newMaterial,
-                    file: e.target.files?.[0] || null,
-                  })
-                }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-              />
-            </div>
-            <Button onClick={handleAddMaterial}>Thêm tài liệu</Button>
-          </div>
-        </div>
-
-        {/* Ranking Files */}
-        <div className="border p-4 rounded mb-4">
-          <h4 className="font-medium mb-3">
-            🏆 File xếp hạng ({rankingFiles.length})
-          </h4>
-
-          {rankingFiles.length > 0 && (
-            <div className="space-y-2 mb-4">
-              {rankingFiles.map((rf, idx) => (
-                <div
-                  key={idx}
-                  className="p-3 bg-gray-50 rounded flex justify-between items-center"
-                >
-                  <div className="text-sm break-all">
-                    {rf.fileUrl ||
-                      (rf.file instanceof File
-                        ? rf.file.name
-                        : "File uploaded")}
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() =>
-                      setRankingFiles(rankingFiles.filter((_, i) => i !== idx))
-                    }
-                  >
-                    Xóa
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="space-y-3 border-t pt-3">
-            <h5 className="font-medium">Thêm file xếp hạng</h5>
-            <FormInput
-              label="URL file (tùy chọn)"
-              value={newRankingFile.fileUrl || ""}
-              onChange={(val) =>
-                setNewRankingFile({ ...newRankingFile, fileUrl: val })
-              }
-              placeholder="https://..."
-            />
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Hoặc upload file
-              </label>
-              <input
-                type="file"
-                onChange={(e) =>
-                  setNewRankingFile({
-                    ...newRankingFile,
-                    file: e.target.files?.[0] || null,
-                  })
-                }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-              />
-            </div>
-            <Button onClick={handleAddRankingFile}>Thêm file</Button>
-          </div>
-        </div>
-
-        {/* Ranking References */}
-        <div className="border p-4 rounded">
-          <h4 className="font-medium mb-3">
-            🔗 Tham khảo xếp hạng ({rankingReferences.length})
-          </h4>
-
-          {rankingReferences.length > 0 && (
-            <div className="space-y-2 mb-4">
-              {rankingReferences.map((rr, idx) => (
-                <div
-                  key={idx}
-                  className="p-3 bg-gray-50 rounded flex justify-between items-center"
-                >
-                  <a
-                    href={rr.referenceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-blue-600 hover:underline break-all"
-                  >
-                    {rr.referenceUrl}
-                  </a>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() =>
-                      setRankingReferences(
-                        rankingReferences.filter((_, i) => i !== idx),
-                      )
-                    }
-                  >
-                    Xóa
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="space-y-3 border-t pt-3">
-            <h5 className="font-medium">Thêm URL tham khảo</h5>
-            <FormInput
-              label="URL"
-              value={newRankingReference.referenceUrl}
-              onChange={(val) => setNewRankingReference({ referenceUrl: val })}
-              placeholder="https://ranking-website.com/..."
-              required
-            />
-            <Button onClick={handleAddRankingReference}>Thêm URL</Button>
-          </div>
-        </div>
-
-                          <div className="flex gap-3 mt-6">
-                    <Button
-                      onClick={handlePrevStep}
-                      variant="outline"
-                      className="flex-1"
+                    <div
+                      className="font-medium text-sm truncate"
+                      title={m.fileName}
                     >
-                      ← Quay lại
-                    </Button>
-        
-                    <Button
-                      onClick={handleMediaSubmit}
-                      disabled={isSubmitting || completedSteps.includes(7)}
-                      className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
-                    >
-                      {isSubmitting
-                        ? "Đang lưu..."
-                        : completedSteps.includes(7)
-                          ? "Đã lưu"
-                          : mediaList.length > 0
-                            ? "Lưu và tiếp tục"
-                            : "Bỏ qua"}
-                    </Button>
-        
-                    {completedSteps.includes(7) && (
-                      <Button
-                        onClick={handleNextStepPreview}
-                        className="flex-1 bg-green-600 text-white hover:bg-green-700"
-                      >
-                        Tiếp tục →
-                      </Button>
+                      {m.fileName}
+                    </div>
+                    {m.fileDescription && (
+                      <div className="text-xs text-gray-600 mt-1">
+                        {m.fileDescription}
+                      </div>
                     )}
+                    {m.file && (
+                      <div className="text-xs text-blue-600 mt-1">
+                        📎{" "}
+                        {m.file instanceof File ? m.file.name : "File attached"}
+                      </div>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() =>
+                        setResearchMaterials(
+                          researchMaterials.filter((_, i) => i !== idx),
+                        )
+                      }
+                      className="w-full mt-2"
+                    >
+                      Xóa
+                    </Button>
                   </div>
-      </div>
-                              )}
+                ))}
+              </div>
+            )}
+
+            <div className="space-y-3 border-t pt-3">
+              <h5 className="font-medium">Thêm tài liệu</h5>
+              <FormInput
+                label="Tên file"
+                name="fileName"
+                value={newMaterial.fileName}
+                onChange={(val) =>
+                  setNewMaterial({ ...newMaterial, fileName: val })
+                }
+                required
+                placeholder="VD: Template bài báo, Hướng dẫn..."
+              />
+              <FormTextArea
+                label="Mô tả"
+                name="fileDescription"
+                value={newMaterial.fileDescription || ""}
+                onChange={(val) =>
+                  setNewMaterial({ ...newMaterial, fileDescription: val })
+                }
+                rows={2}
+                placeholder="Mô tả ngắn gọn về file..."
+              />
+              <div>
+                <label className="block text-sm font-medium mb-2">File *</label>
+                <input
+                  type="file"
+                  onChange={(e) =>
+                    setNewMaterial({
+                      ...newMaterial,
+                      file: e.target.files?.[0] || null,
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <Button onClick={handleAddMaterial}>Thêm tài liệu</Button>
+            </div>
+          </div>
+
+          {/* Ranking Files */}
+          <div className="border p-4 rounded mb-4">
+            <h4 className="font-medium mb-3">
+              🏆 File xếp hạng ({rankingFiles.length})
+            </h4>
+
+            {rankingFiles.length > 0 && (
+              <div className="space-y-2 mb-4">
+                {rankingFiles.map((rf, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3 bg-gray-50 rounded flex justify-between items-center"
+                  >
+                    <div className="text-sm break-all">
+                      {rf.fileUrl ||
+                        (rf.file instanceof File
+                          ? rf.file.name
+                          : "File uploaded")}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() =>
+                        setRankingFiles(rankingFiles.filter((_, i) => i !== idx))
+                      }
+                    >
+                      Xóa
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="space-y-3 border-t pt-3">
+              <h5 className="font-medium">Thêm file xếp hạng</h5>
+              <FormInput
+                label="URL file (tùy chọn)"
+                value={newRankingFile.fileUrl || ""}
+                onChange={(val) =>
+                  setNewRankingFile({ ...newRankingFile, fileUrl: val })
+                }
+                placeholder="https://..."
+              />
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Hoặc upload file
+                </label>
+                <input
+                  type="file"
+                  onChange={(e) =>
+                    setNewRankingFile({
+                      ...newRankingFile,
+                      file: e.target.files?.[0] || null,
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <Button onClick={handleAddRankingFile}>Thêm file</Button>
+            </div>
+          </div>
+
+          {/* Ranking References */}
+          <div className="border p-4 rounded">
+            <h4 className="font-medium mb-3">
+              🔗 Tham khảo xếp hạng ({rankingReferences.length})
+            </h4>
+
+            {rankingReferences.length > 0 && (
+              <div className="space-y-2 mb-4">
+                {rankingReferences.map((rr, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3 bg-gray-50 rounded flex justify-between items-center"
+                  >
+                    <a
+                      href={rr.referenceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-600 hover:underline break-all"
+                    >
+                      {rr.referenceUrl}
+                    </a>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() =>
+                        setRankingReferences(
+                          rankingReferences.filter((_, i) => i !== idx),
+                        )
+                      }
+                    >
+                      Xóa
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="space-y-3 border-t pt-3">
+              <h5 className="font-medium">Thêm URL tham khảo</h5>
+              <FormInput
+                label="URL"
+                value={newRankingReference.referenceUrl}
+                onChange={(val) => setNewRankingReference({ referenceUrl: val })}
+                placeholder="https://ranking-website.com/..."
+                required
+              />
+              <Button onClick={handleAddRankingReference}>Thêm URL</Button>
+            </div>
+          </div>
+
+          <div className="flex gap-3 mt-6">
+            <Button
+              onClick={handlePrevStep}
+              variant="outline"
+              className="flex-1"
+            >
+              ← Quay lại
+            </Button>
+
+            <Button
+              onClick={handleMediaSubmit}
+              disabled={isSubmitting || completedSteps.includes(7)}
+              className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
+            >
+              {isSubmitting
+                ? "Đang lưu..."
+                : completedSteps.includes(7)
+                  ? "Đã lưu"
+                  : mediaList.length > 0
+                    ? "Lưu và tiếp tục"
+                    : "Bỏ qua"}
+            </Button>
+
+            {completedSteps.includes(7) && (
+              <Button
+                onClick={handleNextStepPreview}
+                className="flex-1 bg-green-600 text-white hover:bg-green-700"
+              >
+                Tiếp tục →
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
 
 
       {/* STEP 8: MEDIA */}
-                        {currentStep === 8 && (
-      <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6">
-        <h3 className="text-lg font-semibold mb-4">7. Media (Tùy chọn)</h3>
+      {currentStep === 8 && (
+        <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6">
+          <h3 className="text-lg font-semibold mb-4">7. Media (Tùy chọn)</h3>
 
-        {mediaList.length === 0 ? (
-          <div className="p-4 bg-gray-50 text-gray-600 rounded-lg text-sm border border-gray-200 text-center mb-8">
-            Chưa có media nào. Bạn có thể bỏ qua hoặc thêm mới bên dưới.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-            {mediaList.map((m, idx) => (
-              <div
-                key={idx}
-                className="relative bg-white border border-gray-300 rounded-lg p-3 shadow-sm hover:shadow-md transition flex flex-col items-center text-center"
-              >
-                {m.mediaFile && (
-                  <>
-                    {m.mediaFile instanceof File ? (
-                      <img
-                        src={URL.createObjectURL(m.mediaFile)}
-                        alt="Media Preview"
-                        className="w-full h-40 object-cover rounded-lg mb-2"
-                      />
-                    ) : typeof m.mediaFile === "string" &&
-                      (m.mediaFile as string).length > 0 ? (
-                      <img
-                        src={m.mediaFile}
-                        alt="Media"
-                        className="w-full h-40 object-cover rounded-lg mb-2"
-                      />
-                    ) : null}
-                  </>
-                )}
-
-                <div className="text-sm text-gray-700 truncate w-full">
-                  {m.mediaFile instanceof File
-                    ? m.mediaFile.name
-                    : typeof m.mediaFile === "string"
-                      ? "Ảnh/Video hiện tại"
-                      : "No file"}
-                </div>
-
-                <button
-                  onClick={() =>
-                    setMediaList(mediaList.filter((_, i) => i !== idx))
-                  }
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md"
+          {mediaList.length === 0 ? (
+            <div className="p-4 bg-gray-50 text-gray-600 rounded-lg text-sm border border-gray-200 text-center mb-8">
+              Chưa có media nào. Bạn có thể bỏ qua hoặc thêm mới bên dưới.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+              {mediaList.map((m, idx) => (
+                <div
+                  key={idx}
+                  className="relative bg-white border border-gray-300 rounded-lg p-3 shadow-sm hover:shadow-md transition flex flex-col items-center text-center"
                 >
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+                  {m.mediaFile && (
+                    <>
+                      {m.mediaFile instanceof File ? (
+                        <img
+                          src={URL.createObjectURL(m.mediaFile)}
+                          alt="Media Preview"
+                          className="w-full h-40 object-cover rounded-lg mb-2"
+                        />
+                      ) : typeof m.mediaFile === "string" &&
+                        (m.mediaFile as string).length > 0 ? (
+                        <img
+                          src={m.mediaFile}
+                          alt="Media"
+                          className="w-full h-40 object-cover rounded-lg mb-2"
+                        />
+                      ) : null}
+                    </>
+                  )}
 
-        <div className="border border-gray-200 p-4 rounded-xl space-y-4">
-          <h4 className="font-medium text-gray-800">Thêm media</h4>
-          <ImageUpload
-            label="Upload media (ảnh hoặc video)"
-            subtext="(4MB max)"
-            isList={false}
-            onChange={(file) =>
-              setNewMedia({ ...newMedia, mediaFile: file as File | null })
-            }
-          />
-          <Button onClick={handleAddMedia}>Thêm media</Button>
-        </div>
-                  <div className="flex gap-3 mt-6">
-                    <Button
-                      onClick={handlePrevStep}
-                      variant="outline"
-                      className="flex-1"
-                    >
-                      ← Quay lại
-                    </Button>
-        
-                    <Button
-                      onClick={handleMediaSubmit}
-                      disabled={isSubmitting || completedSteps.includes(8)}
-                      className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
-                    >
-                      {isSubmitting
-                        ? "Đang lưu..."
-                        : completedSteps.includes(8)
-                          ? "Đã lưu"
-                          : mediaList.length > 0
-                            ? "Lưu và tiếp tục"
-                            : "Bỏ qua"}
-                    </Button>
-        
-                    {completedSteps.includes(8) && (
-                      <Button
-                        onClick={handleNextStepPreview}
-                        className="flex-1 bg-green-600 text-white hover:bg-green-700"
-                      >
-                        Tiếp tục →
-                      </Button>
-                    )}
+                  <div className="text-sm text-gray-700 truncate w-full">
+                    {m.mediaFile instanceof File
+                      ? m.mediaFile.name
+                      : typeof m.mediaFile === "string"
+                        ? "Ảnh/Video hiện tại"
+                        : "No file"}
                   </div>
-      </div>
 
-                        )}
+                  <button
+                    onClick={() =>
+                      setMediaList(mediaList.filter((_, i) => i !== idx))
+                    }
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="border border-gray-200 p-4 rounded-xl space-y-4">
+            <h4 className="font-medium text-gray-800">Thêm media</h4>
+            <ImageUpload
+              label="Upload media (ảnh hoặc video)"
+              subtext="(4MB max)"
+              isList={false}
+              onChange={(file) =>
+                setNewMedia({ ...newMedia, mediaFile: file as File | null })
+              }
+            />
+            <Button onClick={handleAddMedia}>Thêm media</Button>
+          </div>
+          <div className="flex gap-3 mt-6">
+            <Button
+              onClick={handlePrevStep}
+              variant="outline"
+              className="flex-1"
+            >
+              ← Quay lại
+            </Button>
+
+            <Button
+              onClick={handleMediaSubmit}
+              disabled={isSubmitting || completedSteps.includes(8)}
+              className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
+            >
+              {isSubmitting
+                ? "Đang lưu..."
+                : completedSteps.includes(8)
+                  ? "Đã lưu"
+                  : mediaList.length > 0
+                    ? "Lưu và tiếp tục"
+                    : "Bỏ qua"}
+            </Button>
+
+            {completedSteps.includes(8) && (
+              <Button
+                onClick={handleNextStepPreview}
+                className="flex-1 bg-green-600 text-white hover:bg-green-700"
+              >
+                Tiếp tục →
+              </Button>
+            )}
+          </div>
+        </div>
+
+      )}
 
 
       {/* STEP 9: SPONSORS - TODO: Copy from Conference */}
-                  {currentStep === 9 && (
-      <div className="bg-white border rounded-lg p-6 mb-6">
-        <h3 className="text-lg font-semibold mb-4">
-          8. Nhà tài trợ (Tùy chọn)
-        </h3>
+      {currentStep === 9 && (
+        <div className="bg-white border rounded-lg p-6 mb-6">
+          <h3 className="text-lg font-semibold mb-4">
+            8. Nhà tài trợ (Tùy chọn)
+          </h3>
 
-        {/* Hiển thị danh sách nhà tài trợ */}
-        {sponsors.length === 0 ? (
-          <div className="p-3 bg-gray-50 text-gray-600 rounded text-sm">
-            Chưa có nhà tài trợ nào. Bạn có thể bỏ qua hoặc thêm mới bên dưới.
-          </div>
-        ) : (
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            {sponsors.map((s, idx) => (
-              <div
-                key={idx}
-                className="p-3 bg-gray-50 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition flex flex-col items-center text-center"
-              >
-                {s.imageFile instanceof File ? (
-                  <img
-                    src={URL.createObjectURL(s.imageFile)}
-                    alt="Sponsor Preview"
-                    className="h-20 w-20 object-cover rounded-full border border-gray-300 mb-2"
-                  />
-                ) : typeof s.imageFile === "string" && s.imageFile ? (
-                  <img
-                    src={s.imageFile}
-                    alt={s.name}
-                    className="h-20 w-20 object-cover rounded-full border border-gray-300 mb-2"
-                  />
-                ) : (
-                  <div className="h-20 w-20 flex items-center justify-center bg-gray-100 rounded-full text-gray-400">
-                    No Image
+          {/* Hiển thị danh sách nhà tài trợ */}
+          {sponsors.length === 0 ? (
+            <div className="p-3 bg-gray-50 text-gray-600 rounded text-sm">
+              Chưa có nhà tài trợ nào. Bạn có thể bỏ qua hoặc thêm mới bên dưới.
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-4 mb-4">
+              {sponsors.map((s, idx) => (
+                <div
+                  key={idx}
+                  className="p-3 bg-gray-50 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition flex flex-col items-center text-center"
+                >
+                  {s.imageFile instanceof File ? (
+                    <img
+                      src={URL.createObjectURL(s.imageFile)}
+                      alt="Sponsor Preview"
+                      className="h-20 w-20 object-cover rounded-full border border-gray-300 mb-2"
+                    />
+                  ) : typeof s.imageFile === "string" && s.imageFile ? (
+                    <img
+                      src={s.imageFile}
+                      alt={s.name}
+                      className="h-20 w-20 object-cover rounded-full border border-gray-300 mb-2"
+                    />
+                  ) : (
+                    <div className="h-20 w-20 flex items-center justify-center bg-gray-100 rounded-full text-gray-400">
+                      No Image
+                    </div>
+                  )}
+
+                  <div className="font-medium text-gray-800">{s.name}</div>
+                  <div className="text-xs text-gray-500 mb-2">
+                    {s.imageFile instanceof File
+                      ? s.imageFile.name
+                      : typeof s.imageFile === "string"
+                        ? "Logo hiện tại"
+                        : ""}
                   </div>
-                )}
 
-                <div className="font-medium text-gray-800">{s.name}</div>
-                <div className="text-xs text-gray-500 mb-2">
-                  {s.imageFile instanceof File
-                    ? s.imageFile.name
-                    : typeof s.imageFile === "string"
-                      ? "Logo hiện tại"
-                      : ""}
+                  <div className="flex gap-2 mt-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setNewSponsor(s);
+                        setSponsors(sponsors.filter((_, i) => i !== idx));
+                      }}
+                    >
+                      Sửa
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() =>
+                        setSponsors(sponsors.filter((_, i) => i !== idx))
+                      }
+                    >
+                      Xóa
+                    </Button>
+                  </div>
                 </div>
+              ))}
+            </div>
+          )}
 
-                <div className="flex gap-2 mt-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setNewSponsor(s);
-                      setSponsors(sponsors.filter((_, i) => i !== idx));
-                    }}
-                  >
-                    Sửa
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() =>
-                      setSponsors(sponsors.filter((_, i) => i !== idx))
-                    }
-                  >
-                    Xóa
-                  </Button>
-                </div>
-              </div>
-            ))}
+          {/* Form thêm mới */}
+          <div className="border p-4 rounded space-y-4">
+            <h4 className="font-medium">Thêm nhà tài trợ</h4>
+            <FormInput
+              label="Tên nhà tài trợ"
+              value={newSponsor.name}
+              onChange={(val) => setNewSponsor({ ...newSponsor, name: val })}
+            />
+            <ImageUpload
+              isList={false}
+              height="h-32"
+              onChange={(file) =>
+                setNewSponsor({ ...newSponsor, imageFile: file as File | null })
+              }
+              resetTrigger={resetSponsorUpload}
+            />
+
+            <Button
+              onClick={() => {
+                handleAddSponsor();
+                setResetSponsorUpload(true);
+                setTimeout(() => setResetSponsorUpload(false), 200);
+              }}
+            >
+              Thêm nhà tài trợ
+            </Button>
           </div>
-        )}
-
-        {/* Form thêm mới */}
-        <div className="border p-4 rounded space-y-4">
-          <h4 className="font-medium">Thêm nhà tài trợ</h4>
-          <FormInput
-            label="Tên nhà tài trợ"
-            value={newSponsor.name}
-            onChange={(val) => setNewSponsor({ ...newSponsor, name: val })}
-          />
-          <ImageUpload
-            isList={false}
-            height="h-32"
-            onChange={(file) =>
-              setNewSponsor({ ...newSponsor, imageFile: file as File | null })
-            }
-            resetTrigger={resetSponsorUpload}
-          />
-
-          <Button
-            onClick={() => {
-              handleAddSponsor();
-              setResetSponsorUpload(true);
-              setTimeout(() => setResetSponsorUpload(false), 200);
-            }}
-          >
-            Thêm nhà tài trợ
-          </Button>
-        </div>
           <div className="flex gap-3 mt-6">
             <Button
               onClick={handlePrevStep}
@@ -4196,10 +4194,10 @@ export default function CreateResearchConferenceStepPage() {
                     ? "Hoàn tất"
                     : "Hoàn tất (Bỏ qua)"}
             </Button>
-          </div>      
-      </div>
+          </div>
+        </div>
 
-                  )}
+      )}
 
 
 

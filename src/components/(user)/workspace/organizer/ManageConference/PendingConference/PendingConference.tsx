@@ -83,7 +83,7 @@ export default function PendingConference() {
       setReason("");
     } catch (error: unknown) {
       const err = error as ApiError;
-      const errorMessage = err?.Message || "Có lỗi xảy ra, hãy thử lại!";
+      const errorMessage = err?.message || "Có lỗi xảy ra, hãy thử lại!";
       toast.error(errorMessage);
     }
   };
@@ -174,14 +174,14 @@ export default function PendingConference() {
                       <span>
                         {conference.startDate
                           ? new Date(conference.startDate).toLocaleDateString(
-                              "vi-VN",
-                            )
+                            "vi-VN",
+                          )
                           : "N/A"}{" "}
                         -{" "}
                         {conference.endDate
                           ? new Date(conference.endDate).toLocaleDateString(
-                              "vi-VN",
-                            )
+                            "vi-VN",
+                          )
                           : "N/A"}
                       </span>
                     </div>

@@ -129,12 +129,12 @@ function CustomerPaperList() {
   const getErrorMessage = (): string => {
     if (!submittedPapersError) return "";
 
-    if (submittedPapersError.data?.Message) {
-      return submittedPapersError.data.Message;
+    if (submittedPapersError.data?.message) {
+      return submittedPapersError.data.message;
     }
 
-    if (submittedPapersError.data?.Errors) {
-      const errors = Object.values(submittedPapersError.data.Errors);
+    if (submittedPapersError.data?.errors) {
+      const errors = Object.values(submittedPapersError.data.errors);
       return errors.length > 0 ? errors[0] : "Có lỗi xảy ra khi tải dữ liệu";
     }
 

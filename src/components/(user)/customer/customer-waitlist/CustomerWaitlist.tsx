@@ -183,11 +183,10 @@ export default function CustomerWaitlist() {
                 variant={option.active ? "default" : "outline"}
                 onClick={() => handleFilterChange(option.id)}
                 disabled={waitListLoading}
-                className={`whitespace-nowrap ${
-                  option.active
+                className={`whitespace-nowrap ${option.active
                     ? "bg-blue-600 text-white hover:bg-blue-700 border-blue-600"
                     : "bg-gray-800 text-gray-300 hover:bg-gray-700 border-gray-600"
-                }`}
+                  }`}
               >
                 {option.label}
               </Button>
@@ -209,7 +208,7 @@ export default function CustomerWaitlist() {
             <div className="text-red-400 mb-4">
               <X className="h-16 w-16 mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2">Có lỗi xảy ra</h3>
-              <p className="text-gray-400">{waitListError.data?.Message}</p>
+              <p className="text-gray-400">{waitListError.data?.message}</p>
             </div>
           </div>
         )}

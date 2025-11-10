@@ -162,7 +162,7 @@ export default function FavoriteConferences() {
             Có lỗi xảy ra
           </h3>
           <p className="text-gray-400 mb-4">
-            {favouriteConferencesError.data?.Message}
+            {favouriteConferencesError.data?.message}
           </p>
           <Button
             onClick={() => fetchFavouriteConferences()}
@@ -200,11 +200,10 @@ export default function FavoriteConferences() {
                 key={option.id}
                 variant={option.active ? "default" : "outline"}
                 onClick={() => setActiveFilter(option.id)}
-                className={`whitespace-nowrap ${
-                  option.active
+                className={`whitespace-nowrap ${option.active
                     ? "bg-red-600 text-white hover:bg-red-700 border-red-600"
                     : "bg-gray-800 text-gray-300 hover:bg-gray-700 border-gray-600"
-                }`}
+                  }`}
               >
                 {option.label}
               </Button>

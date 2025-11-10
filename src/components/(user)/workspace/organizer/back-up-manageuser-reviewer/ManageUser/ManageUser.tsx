@@ -90,7 +90,7 @@ export default function ManageUser() {
   });
 
   useEffect(() => {
-    if (createError) toast.error(createError.data?.Message);
+    if (createError) toast.error(createError.data?.message);
   }, [createError])
 
   const handleCreate = () => {

@@ -93,7 +93,7 @@ export default function ManageUser() {
   });
 
   useEffect(() => {
-    if (createError) toast.error(createError.data?.Message);
+    if (createError) toast.error(createError.data?.message);
   }, [createError])
 
   const handleCreate = () => {
@@ -132,7 +132,7 @@ export default function ManageUser() {
         refetch();
       } catch (error: unknown) {
         const err = error as ApiError;
-        const errorMessage = err?.Message || "Tạm ngưng tài khoản thất bại";
+        const errorMessage = err?.message || "Tạm ngưng tài khoản thất bại";
         toast.error(errorMessage);
       }
     }
@@ -151,7 +151,7 @@ export default function ManageUser() {
         refetch();
       } catch (error: unknown) {
         const err = error as ApiError;
-        const errorMessage = err?.Message || "Kích hoạt tài khoản thât bại";
+        const errorMessage = err?.message || "Kích hoạt tài khoản thât bại";
         toast.error(errorMessage);
       }
     }

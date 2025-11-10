@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import {  
-  Plus, 
-  UserCheck, 
+import {
+  Plus,
+  UserCheck,
   UserX,
   Users
 } from "lucide-react";
@@ -33,7 +33,7 @@ export default function ManageReviewer() {
   const initialReviewers = mockUsers.filter(
     user => user.role === "localreviewer" || user.role === "externalreviewer"
   );
-  
+
   const [reviewers, setReviewers] = useState<User[]>(initialReviewers);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -51,7 +51,7 @@ export default function ManageReviewer() {
     { value: "localreviewer", label: "Phản biện nội bộ" },
     { value: "externalreviewer", label: "Phản biện bên ngoài" }
   ];
-  
+
   const statusOptions = [
     { value: "all", label: "Tất cả trạng thái" },
     { value: "active", label: "Hoạt động" },
@@ -60,7 +60,7 @@ export default function ManageReviewer() {
 
   const filteredReviewers = reviewers.filter(reviewer => {
     const matchesSearch = reviewer.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         reviewer.email.toLowerCase().includes(searchQuery.toLowerCase());
+      reviewer.email.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole = filterRole === "all" || reviewer.role === filterRole;
     const matchesStatus = filterStatus === "all" || reviewer.status === filterStatus;
     return matchesSearch && matchesRole && matchesStatus;
@@ -83,8 +83,8 @@ export default function ManageReviewer() {
 
   const handleSave = (data: UserFormData) => {
     if (editingReviewer) {
-      setReviewers(prev => prev.map(r => 
-        r.userId === editingReviewer.userId 
+      setReviewers(prev => prev.map(r =>
+        r.userId === editingReviewer.userId
           ? { ...r, ...data }
           : r
       ));
@@ -217,7 +217,7 @@ export default function ManageReviewer() {
         onClose={() => {
           setIsFormModalOpen(false);
           setEditingReviewer(null);
-        }} 
+        }}
         title={editingReviewer ? "Chỉnh sửa reviewer" : "Thêm reviewer mới"}
       >
         <ReviewerForm
