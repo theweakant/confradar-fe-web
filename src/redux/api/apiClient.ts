@@ -15,6 +15,7 @@ import {
 import { endpoint } from "./endpoint";
 import type { ApiResponse } from "@/types/api.type";
 import { toast } from "sonner";
+import { clearReduxState } from "@/helper/api"
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -58,11 +59,12 @@ export const apiClient: BaseQueryFn<
 
     if (!refreshToken || !accessToken) {
       toast.error("Phiên đăng nhập đã hết hạn", {
-        description: "Vui lòng đăng nhập lại",
-      });
-      clearTokens();
-      // window.location.href = "/auth/login"
-      return result;
+        description: "Vui lòng đăng nhập lại"
+      })
+      clearTokens()
+      clearReduxState()
+      window.location.href = "/auth/login"
+      return result
     }
 
     const refreshResult = await rawBaseQuery(

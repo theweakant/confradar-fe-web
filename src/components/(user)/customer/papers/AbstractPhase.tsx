@@ -2,18 +2,26 @@ import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { Search } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { AvailableCustomerResponse, Abstract } from "@/types/paper.type";
+import { AvailableCustomerResponse, Abstract, ResearchPhaseDtoDetail } from "@/types/paper.type";
 import { usePaperCustomer } from "@/redux/hooks/paper/usePaper";
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 import "@cyntler/react-doc-viewer/dist/index.css";
+import { validatePhaseTime } from "@/helper/timeValidation";
 
 interface AbstractPhaseProps {
   paperId?: string;
   abstract?: Abstract | null;
+  researchPhase?: ResearchPhaseDtoDetail;
 }
 
-const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
+const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract, researchPhase }) => {
   const isSubmitted = !!abstract;
+
+  // Validate phase timing
+  const phaseValidation = validatePhaseTime(
+    researchPhase?.registrationStartDate,
+    researchPhase?.registrationEndDate
+  );
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -119,6 +127,37 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
       <h3 className="text-lg font-semibold">Giai đoạn Abstract</h3>
       <p className="text-gray-400">Nộp abstract và chọn đồng tác giả cho bài báo của bạn.</p>
 
+      {/* Phase timing information */}
+      {phaseValidation.formattedPeriod && (
+        <div className="bg-gray-800 border border-gray-600 rounded-xl p-4">
+          <p className="text-gray-300 text-sm mb-2">
+            <strong>Thời gian diễn ra:</strong> {phaseValidation.formattedPeriod}
+          </p>
+
+          {/* Time validation message */}
+          {!phaseValidation.isAvailable && (
+            <div className={`border rounded-lg p-3 ${phaseValidation.isExpired
+                ? "bg-red-900/20 border-red-700"
+                : "bg-yellow-900/20 border-yellow-700"
+              }`}>
+              <p className={`text-sm ${phaseValidation.isExpired ? "text-red-400" : "text-yellow-400"
+                }`}>
+                {phaseValidation.message}
+              </p>
+            </div>
+          )}
+
+          {/* Available deadline countdown */}
+          {phaseValidation.isAvailable && phaseValidation.daysRemaining && (
+            <div className="bg-blue-900/20 border border-blue-700 rounded-lg p-3">
+              <p className="text-blue-400 text-sm">
+                {phaseValidation.message}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Show current abstract if exists */}
       {abstract && (
         <div className="bg-green-900/20 border border-green-700 rounded-xl p-5">
@@ -185,6 +224,7 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
             )}
           </div>
         </div>
+        // )}
       )}
 
       {isSubmitted && (
@@ -192,7 +232,6 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
           Bạn đã nộp abstract, không thể nộp lại.
         </p>
       )}
-
       <div className="bg-gray-800 border border-gray-700 rounded-xl p-5 space-y-4">
         <div>
           <label className="block text-sm font-medium mb-2">Tiêu đề</label>
@@ -200,7 +239,7 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            disabled={isSubmitted}
+            disabled={isSubmitted || !phaseValidation.isAvailable}
             placeholder="Nhập tiêu đề bài báo"
             className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
           />
@@ -211,7 +250,7 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            disabled={isSubmitted}
+            disabled={isSubmitted || !phaseValidation.isAvailable}
             placeholder="Nhập mô tả bài báo"
             rows={3}
             className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed resize-none"
@@ -224,7 +263,7 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
             type="file"
             accept="application/pdf"
             onChange={handleFileChange}
-            disabled={isSubmitted}
+            disabled={isSubmitted || !phaseValidation.isAvailable}
             className="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 
         file:rounded-lg file:border-0 file:text-sm file:font-semibold
         file:bg-blue-600 file:text-white hover:file:bg-blue-700
@@ -243,7 +282,7 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract }) => {
           <h4 className="font-semibold">Đồng tác giả ({selectedCoauthors.length})</h4>
           <button
             onClick={handleOpenDialog}
-            disabled={isSubmitted || isLoadingCustomers || customersError !== null} // ✅
+            disabled={isSubmitted || !phaseValidation.isAvailable || isLoadingCustomers || customersError !== null}
             className="px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition"
           >
             {isLoadingCustomers ? "Đang tải..." : "+ Thêm đồng tác giả"}

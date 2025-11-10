@@ -65,5 +65,12 @@ const appReducer = combineReducers({
   [statusApi.reducerPath]: statusApi.reducer,
 });
 
+const clearReducer = (state: any, action: any) => {
+  if (action.type === "RESET_STORE") {
+    state = undefined;
+  }
+  return appReducer(state, action);
+};
+
 // Wrap với persistReducer
-export const rootReducer = persistReducer(persistConfig, appReducer);
+export const rootReducer = persistReducer(persistConfig, clearReducer)

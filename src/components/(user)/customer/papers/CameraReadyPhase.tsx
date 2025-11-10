@@ -1,16 +1,24 @@
 import React, { useState } from "react";
-import { CameraReady } from "@/types/paper.type";
+import { CameraReady, ResearchPhaseDtoDetail } from "@/types/paper.type";
 import { usePaperCustomer } from "@/redux/hooks/paper/usePaper";
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 import "@cyntler/react-doc-viewer/dist/index.css";
+import { validatePhaseTime } from "@/helper/timeValidation";
 
 interface CameraReadyPhaseProps {
   paperId?: string;
   cameraReady?: CameraReady | null;
+  researchPhase?: ResearchPhaseDtoDetail;
 }
 
-const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({ paperId, cameraReady }) => {
+const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({ paperId, cameraReady, researchPhase }) => {
   const isSubmitted = !!cameraReady;
+
+  // Validate phase timing
+  const phaseValidation = validatePhaseTime(
+    researchPhase?.cameraReadyStartDate,
+    researchPhase?.cameraReadyEndDate
+  );
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
@@ -68,6 +76,37 @@ const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({ paperId, cameraRead
       <h3 className="text-lg font-semibold">Giai đoạn Camera Ready</h3>
       <p className="text-gray-400">Nộp bản camera-ready cuối cùng cho bài báo của bạn.</p>
 
+      {/* Phase timing information */}
+      {phaseValidation.formattedPeriod && (
+        <div className="bg-gray-800 border border-gray-600 rounded-xl p-4">
+          <p className="text-gray-300 text-sm mb-2">
+            <strong>Thời gian diễn ra:</strong> {phaseValidation.formattedPeriod}
+          </p>
+
+          {/* Time validation message */}
+          {!phaseValidation.isAvailable && (
+            <div className={`border rounded-lg p-3 ${phaseValidation.isExpired
+                ? "bg-red-900/20 border-red-700"
+                : "bg-yellow-900/20 border-yellow-700"
+              }`}>
+              <p className={`text-sm ${phaseValidation.isExpired ? "text-red-400" : "text-yellow-400"
+                }`}>
+                {phaseValidation.message}
+              </p>
+            </div>
+          )}
+
+          {/* Available deadline countdown */}
+          {phaseValidation.isAvailable && phaseValidation.daysRemaining && (
+            <div className="bg-blue-900/20 border border-blue-700 rounded-lg p-3">
+              <p className="text-blue-400 text-sm">
+                {phaseValidation.message}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Show current camera-ready if exists */}
       {cameraReady && (
         <div className="bg-green-900/20 border border-green-700 rounded-xl p-5">
@@ -117,6 +156,7 @@ const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({ paperId, cameraRead
           </div>
         </div>
       )}
+      {/* )} */}
 
       {isSubmitted && (
         <p className="text-sm text-yellow-400 mt-2">
@@ -131,7 +171,7 @@ const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({ paperId, cameraRead
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            disabled={isSubmitted}
+            disabled={isSubmitted || !phaseValidation.isAvailable}
             placeholder="Nhập tiêu đề bài báo"
             className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
           />
@@ -142,7 +182,7 @@ const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({ paperId, cameraRead
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            disabled={isSubmitted}
+            disabled={isSubmitted || !phaseValidation.isAvailable}
             placeholder="Nhập mô tả bài báo"
             rows={3}
             className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed resize-none"
@@ -155,7 +195,7 @@ const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({ paperId, cameraRead
             type="file"
             accept="application/pdf"
             onChange={handleFileChange}
-            disabled={isSubmitted}
+            disabled={isSubmitted || !phaseValidation.isAvailable}
             className="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 
                             file:rounded-lg file:border-0 file:text-sm file:font-semibold
                             file:bg-blue-600 file:text-white hover:file:bg-blue-700
@@ -173,7 +213,7 @@ const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({ paperId, cameraRead
       <div className="flex justify-end">
         <button
           onClick={handleSubmitCameraReadyForm}
-          disabled={isSubmitted || !selectedFile || !paperId || !title.trim() || !description.trim() || submitLoading}
+          disabled={isSubmitted || !phaseValidation.isAvailable || !selectedFile || !paperId || !title.trim() || !description.trim() || submitLoading}
           className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition"
         >
           {isSubmitted ? "Đã nộp Camera-ready" : submitLoading ? "Đang nộp..." : "Nộp Camera-ready"}

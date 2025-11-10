@@ -16,13 +16,25 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       const state = store.getState()
       const auth = state.auth
 
-      if (auth?.accessToken && (auth?.user as AuthUser)?.role) {
+      if (
+        auth?.accessToken &&
+        (auth?.user as AuthUser)?.role &&
+        (pathname === '/' || pathname.startsWith('/auth'))
+      ) {
         const redirectUrl = getRouteByRole((auth?.user as AuthUser)?.role || undefined)
 
         if (pathname !== redirectUrl) {
           router.push(redirectUrl)
         }
       }
+
+      // if (auth?.accessToken && (auth?.user as AuthUser)?.role) {
+      //   const redirectUrl = getRouteByRole((auth?.user as AuthUser)?.role || undefined)
+
+      //   if (pathname !== redirectUrl) {
+      //     router.push(redirectUrl)
+      //   }
+      // }
     } catch (err) {
       console.error('Redirect after persist failed:', err)
     }
