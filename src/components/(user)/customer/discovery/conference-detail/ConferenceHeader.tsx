@@ -175,35 +175,45 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                     </p>
                     {(() => {
                         const now = new Date();
-                        const ticketSaleStart = conference.ticketSaleStart ? new Date(conference.ticketSaleStart) : null;
-                        const ticketSaleEnd = conference.ticketSaleEnd ? new Date(conference.ticketSaleEnd) : null;
 
-                        const isBeforeSale = ticketSaleStart && now < ticketSaleStart;
-                        const isAfterSale = ticketSaleEnd && now > ticketSaleEnd;
+                        const allPhases = (conference.conferencePrices || []).flatMap(ticket => ticket.pricePhases || []);
 
-                        if (isBeforeSale) {
+                        // Phase hiện tại (đang mở bán)
+                        const currentPhase = allPhases.find(phase => {
+                            const start = new Date(phase.startDate || "");
+                            const end = new Date(phase.endDate || "");
+                            return now >= start && now <= end && (phase.availableSlot ?? 0) > 0;
+                        });
+
+                        // Phase bắt đầu bán vé gần nhất trong tương lai
+                        const futurePhases = allPhases
+                            .filter(phase => new Date(phase.startDate || "") > now)
+                            .sort((a, b) => new Date(a.startDate || "").getTime() - new Date(b.startDate || "").getTime());
+                        const nextPhaseStart = futurePhases.length > 0 ? new Date(futurePhases[0].startDate || "") : null;
+
+                        if (!currentPhase && nextPhaseStart) {
                             return (
                                 <div>
                                     <button
                                         disabled
                                         className="w-full bg-gray-500/50 text-white/70 px-6 py-3 rounded-lg font-semibold
-                                         cursor-not-allowed opacity-60"
+                         cursor-not-allowed opacity-60"
                                     >
                                         Chưa đến lúc mở bán vé
                                     </button>
                                     <p className="text-white/60 text-xs mt-2 text-center">
-                                        Ngày bắt đầu bán vé: {formatDate(conference.ticketSaleStart)}
+                                        Ngày bắt đầu bán vé: {formatDate(nextPhaseStart.toISOString())}
                                     </p>
                                 </div>
                             );
                         }
 
-                        if (isAfterSale) {
+                        if (!currentPhase && !nextPhaseStart) {
                             return (
                                 <button
                                     disabled
                                     className="w-full bg-red-500/50 text-white/70 px-6 py-3 rounded-lg font-semibold
-                                     cursor-not-allowed opacity-60"
+                     cursor-not-allowed opacity-60"
                                 >
                                     Đã hết thời gian bán vé
                                 </button>
@@ -214,14 +224,62 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                             <button
                                 onClick={() => setIsDialogOpen(true)}
                                 className="w-full bg-gradient-to-r from-sky-500 via-indigo-500 to-violet-500 
-                                 hover:from-sky-400 hover:via-indigo-400 hover:to-violet-400
-                                 text-white px-6 py-3 rounded-lg font-semibold
-                                 shadow-lg shadow-indigo-500/30 transition-all duration-300
-                                 hover:scale-[1.02]"
+                     hover:from-sky-400 hover:via-indigo-400 hover:to-violet-400
+                     text-white px-6 py-3 rounded-lg font-semibold
+                     shadow-lg shadow-indigo-500/30 transition-all duration-300
+                     hover:scale-[1.02]"
                             >
                                 Mở chọn vé
                             </button>
                         );
+
+                        // const ticketSaleStart = conference.ticketSaleStart ? new Date(conference.ticketSaleStart) : null;
+                        // const ticketSaleEnd = conference.ticketSaleEnd ? new Date(conference.ticketSaleEnd) : null;
+
+                        // const isBeforeSale = ticketSaleStart && now < ticketSaleStart;
+                        // const isAfterSale = ticketSaleEnd && now > ticketSaleEnd;
+
+                        // if (isBeforeSale) {
+                        //     return (
+                        //         <div>
+                        //             <button
+                        //                 disabled
+                        //                 className="w-full bg-gray-500/50 text-white/70 px-6 py-3 rounded-lg font-semibold
+                        //                  cursor-not-allowed opacity-60"
+                        //             >
+                        //                 Chưa đến lúc mở bán vé
+                        //             </button>
+                        //             <p className="text-white/60 text-xs mt-2 text-center">
+                        //                 Ngày bắt đầu bán vé: {formatDate(conference.ticketSaleStart)}
+                        //             </p>
+                        //         </div>
+                        //     );
+                        // }
+
+                        // if (isAfterSale) {
+                        //     return (
+                        //         <button
+                        //             disabled
+                        //             className="w-full bg-red-500/50 text-white/70 px-6 py-3 rounded-lg font-semibold
+                        //              cursor-not-allowed opacity-60"
+                        //         >
+                        //             Đã hết thời gian bán vé
+                        //         </button>
+                        //     );
+                        // }
+
+                        // return (
+                        //     <button
+                        //         onClick={() => setIsDialogOpen(true)}
+                        //         className="w-full bg-gradient-to-r from-sky-500 via-indigo-500 to-violet-500 
+                        //          hover:from-sky-400 hover:via-indigo-400 hover:to-violet-400
+                        //          text-white px-6 py-3 rounded-lg font-semibold
+                        //          shadow-lg shadow-indigo-500/30 transition-all duration-300
+                        //          hover:scale-[1.02]"
+                        //     >
+                        //         Mở chọn vé
+                        //     </button>
+                        // );
                     })()}
                 </div>
 
@@ -268,13 +326,9 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
 
                                     const nextPhase = futurePhases && futurePhases.length > 0 ? futurePhases[0] : null;
 
-                                    // Check if current phase is sold out
+                                    const isBeforeSale = !currentPhase && nextPhase;
                                     const currentPhaseSoldOut = currentPhase && currentPhase.availableSlot === 0;
-
-                                    // Check if this is the last phase (no future phases)
                                     const isLastPhase = !nextPhase;
-
-                                    // Check if ticket is completely sold out (no current and no future phases with available slots)
                                     const isTicketSoldOut = (!currentPhase || currentPhase.availableSlot === 0) &&
                                         (!futurePhases || futurePhases.every(phase => phase.availableSlot === 0));
 
@@ -282,7 +336,7 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                                         currentPrice < (ticket.ticketPrice ?? 0) &&
                                         currentPhase?.applyPercent !== undefined;
 
-                                    const isDisabled = currentPhaseSoldOut || isTicketSoldOut;
+                                    const isDisabled = currentPhaseSoldOut || isTicketSoldOut || isBeforeSale;
 
                                     return (
                                         <label
@@ -302,16 +356,21 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                                                         setShowAuthorForm(false);
                                                     }
                                                 }
+                                                //   if (!isDisabled) {
+                                                //     setSelectedTicket(ticket);
+                                                //     setShowAuthorForm(ticket.isAuthor);
+                                                //   }
                                             }}
                                         >
+                                            {/* Hidden radio input */}
                                             <input
                                                 type="radio"
                                                 name="ticket"
                                                 value={ticket.conferencePriceId}
                                                 className="hidden"
-                                            // onChange={() => setSelectedTicket(ticket)}
                                             />
 
+                                            {/* Header: Ticket name + author label + price */}
                                             <div className="flex justify-between items-start mb-1">
                                                 <div className="flex flex-col">
                                                     <span className="font-semibold text-lg">{ticket.ticketName}</span>
@@ -321,7 +380,6 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                                                         </span>
                                                     )}
                                                 </div>
-
                                                 <div className="text-right">
                                                     {hasDiscount && (
                                                         <span className="text-sm line-through text-white/60 block">
@@ -334,18 +392,26 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                                                 </div>
                                             </div>
 
+                                            {/* Ticket description */}
                                             {ticket.ticketDescription && (
                                                 <p className="text-sm text-white/70">{ticket.ticketDescription}</p>
                                             )}
 
+                                            {/* Phase info */}
                                             <div className="mt-2 text-sm space-y-1">
                                                 {currentPhase && (
-                                                    <p>
-                                                        <span className="font-medium text-coral-200">Giai đoạn vé hiện tại:</span>{" "}
-                                                        {currentPhase.phaseName || "Không xác định"}{" "}
+                                                    <div>
+                                                        <p>
+                                                            <span className="font-medium text-coral-200">Giai đoạn vé hiện tại:</span>{" "}
+                                                            {currentPhase.phaseName || "Không xác định"}
+                                                        </p>
                                                         {currentPhase.applyPercent !== undefined && (
                                                             <p
-                                                                className={`text-sm font-medium ${currentPhase.applyPercent > 100 ? "text-red-500" : currentPhase.applyPercent < 100 ? "text-green-500" : "text-gray-400"
+                                                                className={`text-sm font-medium ${currentPhase.applyPercent > 100
+                                                                    ? "text-red-500"
+                                                                    : currentPhase.applyPercent < 100
+                                                                        ? "text-green-500"
+                                                                        : "text-gray-400"
                                                                     }`}
                                                             >
                                                                 {currentPhase.applyPercent > 100
@@ -355,47 +421,160 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                                                                         : "±0%"}
                                                             </p>
                                                         )}
-                                                        {/* {currentPhase.applyPercent && (
-                                                                <span className="text-white/70">
-                                                                    ({currentPhase.applyPercent}%)
-                                                                </span>
-                                                            )} */}
-                                                    </p>
-                                                )}
 
-                                                <p>
-                                                    <span className="font-medium text-coral-200">Số lượng:</span>{" "}
-                                                    {currentPhase?.availableSlot ?? 'N/A'} / {currentPhase?.totalSlot ?? 'N/A'}
-                                                </p>
+                                                        <p>
+                                                            <span className="font-medium text-coral-200">Số lượng:</span>{" "}
+                                                            {currentPhase?.availableSlot} / {currentPhase?.totalSlot}
+                                                        </p>
 
-                                                {currentPhase?.startDate && (
-                                                    <p className="text-white/70">
-                                                        <span className="font-medium">Hiệu lực:</span>{" "}
-                                                        {formatDate(currentPhase.startDate)} →{" "}
-                                                        {formatDate(currentPhase.endDate)}
-                                                    </p>
+                                                        {currentPhase?.startDate && (
+                                                            <p className="text-white/70">
+                                                                <span className="font-medium">Hiệu lực:</span>{" "}
+                                                                {formatDate(currentPhase.startDate)} → {formatDate(currentPhase.endDate)}
+                                                            </p>
+                                                        )}
+                                                    </div>
                                                 )}
                                             </div>
 
                                             {/* Status messages */}
+
+                                            {isBeforeSale && nextPhase && (
+                                                <div className="mt-3 p-2 bg-yellow-500/20 border border-yellow-400/40 rounded-lg">
+                                                    <p className="text-xs text-yellow-200">
+                                                        Vé sẽ mở bán từ {formatDate(nextPhase.startDate)} → {formatDate(nextPhase.endDate)}
+                                                    </p>
+                                                </div>
+                                            )}
+
                                             {currentPhaseSoldOut && !isLastPhase && nextPhase && (
                                                 <div className="mt-3 p-2 bg-yellow-500/20 border border-yellow-400/40 rounded-lg">
                                                     <p className="text-xs text-yellow-200">
                                                         Giai đoạn hiện tại đã hết vé, vui lòng chờ giai đoạn tiếp theo từ{" "}
-                                                        {formatDate(nextPhase.startDate)} - {formatDate(nextPhase.endDate)}
+                                                        {formatDate(nextPhase.startDate)} → {formatDate(nextPhase.endDate)}
                                                     </p>
                                                 </div>
                                             )}
 
                                             {isTicketSoldOut && isLastPhase && (
                                                 <div className="mt-3 p-2 bg-red-500/20 border border-red-400/40 rounded-lg">
-                                                    <p className="text-xs text-red-200">
-                                                        Vé đã bán hết
-                                                    </p>
+                                                    <p className="text-xs text-red-200">Vé đã bán hết</p>
                                                 </div>
                                             )}
                                         </label>
                                     );
+                                    // return (
+                                    //     <label
+                                    //         key={ticket.conferencePriceId}
+                                    //         className={`block rounded-xl p-4 border transition-all ${isDisabled
+                                    //             ? "bg-gray-500/20 border-gray-400/30 cursor-not-allowed opacity-60"
+                                    //             : selectedTicket?.conferencePriceId === ticket.conferencePriceId
+                                    //                 ? "bg-coral-500/30 border-coral-400 cursor-pointer"
+                                    //                 : "bg-white/10 border-white/20 hover:bg-white/20 cursor-pointer"
+                                    //             }`}
+                                    //         onClick={() => {
+                                    //             if (!isDisabled) {
+                                    //                 setSelectedTicket(ticket);
+                                    //                 if (ticket.isAuthor) {
+                                    //                     setShowAuthorForm(true);
+                                    //                 } else {
+                                    //                     setShowAuthorForm(false);
+                                    //                 }
+                                    //             }
+                                    //         }}
+                                    //     >
+                                    //         <input
+                                    //             type="radio"
+                                    //             name="ticket"
+                                    //             value={ticket.conferencePriceId}
+                                    //             className="hidden"
+                                    //         // onChange={() => setSelectedTicket(ticket)}
+                                    //         />
+
+                                    //         <div className="flex justify-between items-start mb-1">
+                                    //             <div className="flex flex-col">
+                                    //                 <span className="font-semibold text-lg">{ticket.ticketName}</span>
+                                    //                 {ticket.isAuthor && (
+                                    //                     <span className="text-xs text-yellow-300 font-medium mt-0.5">
+                                    //                         Vé dành cho tác giả
+                                    //                     </span>
+                                    //                 )}
+                                    //             </div>
+
+                                    //             <div className="text-right">
+                                    //                 {hasDiscount && (
+                                    //                     <span className="text-sm line-through text-white/60 block">
+                                    //                         {(ticket.ticketPrice || 0).toLocaleString("vi-VN")}₫
+                                    //                     </span>
+                                    //                 )}
+                                    //                 <span className="text-coral-300 font-bold text-lg">
+                                    //                     {currentPrice.toLocaleString("vi-VN")}₫
+                                    //                 </span>
+                                    //             </div>
+                                    //         </div>
+
+                                    //         {ticket.ticketDescription && (
+                                    //             <p className="text-sm text-white/70">{ticket.ticketDescription}</p>
+                                    //         )}
+
+                                    //         <div className="mt-2 text-sm space-y-1">
+                                    //             {currentPhase && (
+                                    //                 <p>
+                                    //                     <span className="font-medium text-coral-200">Giai đoạn vé hiện tại:</span>{" "}
+                                    //                     {currentPhase.phaseName || "Không xác định"}{" "}
+                                    //                     {currentPhase.applyPercent !== undefined && (
+                                    //                         <p
+                                    //                             className={`text-sm font-medium ${currentPhase.applyPercent > 100 ? "text-red-500" : currentPhase.applyPercent < 100 ? "text-green-500" : "text-gray-400"
+                                    //                                 }`}
+                                    //                         >
+                                    //                             {currentPhase.applyPercent > 100
+                                    //                                 ? `+${currentPhase.applyPercent - 100}%`
+                                    //                                 : currentPhase.applyPercent < 100
+                                    //                                     ? `-${100 - currentPhase.applyPercent}%`
+                                    //                                     : "±0%"}
+                                    //                         </p>
+                                    //                     )}
+                                    //                     {/* {currentPhase.applyPercent && (
+                                    //                             <span className="text-white/70">
+                                    //                                 ({currentPhase.applyPercent}%)
+                                    //                             </span>
+                                    //                         )} */}
+                                    //                 </p>
+                                    //             )}
+
+                                    //             <p>
+                                    //                 <span className="font-medium text-coral-200">Số lượng:</span>{" "}
+                                    //                 {currentPhase?.availableSlot} / {currentPhase?.totalSlot}
+                                    //             </p>
+
+                                    //             {currentPhase?.startDate && (
+                                    //                 <p className="text-white/70">
+                                    //                     <span className="font-medium">Hiệu lực:</span>{" "}
+                                    //                     {formatDate(currentPhase.startDate)} →{" "}
+                                    //                     {formatDate(currentPhase.endDate)}
+                                    //                 </p>
+                                    //             )}
+                                    //         </div>
+
+                                    //         {/* Status messages */}
+                                    //         {currentPhaseSoldOut && !isLastPhase && nextPhase && (
+                                    //             <div className="mt-3 p-2 bg-yellow-500/20 border border-yellow-400/40 rounded-lg">
+                                    //                 <p className="text-xs text-yellow-200">
+                                    //                     Giai đoạn hiện tại đã hết vé, vui lòng chờ giai đoạn tiếp theo từ{" "}
+                                    //                     {formatDate(nextPhase.startDate)} - {formatDate(nextPhase.endDate)}
+                                    //                 </p>
+                                    //             </div>
+                                    //         )}
+
+                                    //         {isTicketSoldOut && isLastPhase && (
+                                    //             <div className="mt-3 p-2 bg-red-500/20 border border-red-400/40 rounded-lg">
+                                    //                 <p className="text-xs text-red-200">
+                                    //                     Vé đã bán hết
+                                    //                 </p>
+                                    //             </div>
+                                    //         )}
+                                    //     </label>
+                                    // );
                                 })}
                             </div>
 

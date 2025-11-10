@@ -1,3 +1,4 @@
+import { persistor, store } from "@/redux/store";
 import { ApiQueryError } from "@/types/api.type";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
@@ -12,3 +13,8 @@ export const parseApiError = <T>(error: FetchBaseQueryError | SerializedError | 
     // }
     return null;
 };
+
+export const clearReduxState = () => {
+    store.dispatch({ type: "RESET_STORE" })
+    persistor.purge()
+}

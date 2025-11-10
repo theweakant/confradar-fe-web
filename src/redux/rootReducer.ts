@@ -22,9 +22,9 @@ import categoryReducer from "@/redux/slices/category.slice";
 import { transactionApi } from "./services/transaction.service";
 import { ticketApi } from "./services/ticket.service";
 import { cityApi } from "./services/city.service";
-import {userApi} from "./services/user.service"
+import { userApi } from "./services/user.service"
 import { paperApi } from "./services/paper.service";
-import {statusApi} from "./services/status.service";
+import { statusApi } from "./services/status.service";
 
 
 // Cấu hình persist
@@ -72,5 +72,12 @@ const appReducer = combineReducers({
 
 })
 
+const clearReducer = (state: any, action: any) => {
+  if (action.type === "RESET_STORE") {
+    state = undefined;
+  }
+  return appReducer(state, action);
+};
+
 // Wrap với persistReducer
-export const rootReducer = persistReducer(persistConfig, appReducer)
+export const rootReducer = persistReducer(persistConfig, clearReducer)

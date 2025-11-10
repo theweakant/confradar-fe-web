@@ -6,6 +6,7 @@ import { getAccessToken, getRefreshToken, setTokens, clearTokens } from "../util
 import { endpoint } from "./endpoint"
 import type { ApiResponse } from "@/types/api.type"
 import { toast } from "sonner"
+import { clearReduxState } from "@/helper/api"
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
 
@@ -52,7 +53,8 @@ export const apiClient: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryE
         description: "Vui lòng đăng nhập lại"
       })
       clearTokens()
-      // window.location.href = "/auth/login"
+      clearReduxState()
+      window.location.href = "/auth/login"
       return result
     }
 
