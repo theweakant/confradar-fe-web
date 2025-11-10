@@ -2,4 +2,4 @@ import PendingConference from "@/components/(user)/workspace/organizer/ManageCon
 
 export default function PendingConferencePage() {
   return <PendingConference />;
-}   
+}

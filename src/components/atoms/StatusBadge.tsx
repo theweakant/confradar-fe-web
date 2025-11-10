@@ -1,6 +1,14 @@
 interface StatusBadgeProps {
   status: string;
-  variant?: "success" | "danger" | "warning" | "info" | "purple" | "orange" | "teal" | "indigo";
+  variant?:
+    | "success"
+    | "danger"
+    | "warning"
+    | "info"
+    | "purple"
+    | "orange"
+    | "teal"
+    | "indigo";
 }
 
 export function StatusBadge({ status, variant = "success" }: StatusBadgeProps) {
@@ -12,11 +20,13 @@ export function StatusBadge({ status, variant = "success" }: StatusBadgeProps) {
     purple: "bg-purple-100 text-purple-700 border-purple-200",
     orange: "bg-orange-100 text-orange-700 border-orange-200",
     teal: "bg-teal-100 text-teal-700 border-teal-200",
-    indigo: "bg-indigo-100 text-indigo-700 border-indigo-200"
+    indigo: "bg-indigo-100 text-indigo-700 border-indigo-200",
   };
 
   return (
-    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${variants[variant]}`}>
+    <span
+      className={`px-3 py-1 rounded-full text-xs font-medium border ${variants[variant]}`}
+    >
       {status}
     </span>
   );

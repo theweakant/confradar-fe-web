@@ -12,7 +12,7 @@ export function StatCard({ title, value, icon, color }: StatCardProps) {
     red: "text-red-500",
     purple: "text-purple-500",
     orange: "text-orange-500",
-    yellow: "text-yellow-500"
+    yellow: "text-yellow-500",
   };
 
   return (
@@ -22,9 +22,7 @@ export function StatCard({ title, value, icon, color }: StatCardProps) {
           <p className="text-sm text-gray-600 mb-1">{title}</p>
           <p className="text-3xl font-bold text-gray-900">{value}</p>
         </div>
-        <div className={colors[color]}>
-          {icon}
-        </div>
+        <div className={colors[color]}>{icon}</div>
       </div>
     </div>
   );

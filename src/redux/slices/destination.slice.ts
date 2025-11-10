@@ -20,7 +20,10 @@ const destinationSlice = createSlice({
     setDestinations: (state, action: PayloadAction<Destination[]>) => {
       state.list = action.payload;
     },
-    setSelectedDestination: (state, action: PayloadAction<Destination | null>) => {
+    setSelectedDestination: (
+      state,
+      action: PayloadAction<Destination | null>,
+    ) => {
       state.selected = action.payload;
     },
     startLoading: (state) => {
@@ -32,7 +35,11 @@ const destinationSlice = createSlice({
   },
 });
 
-export const { setDestinations, setSelectedDestination, startLoading, stopLoading } =
-  destinationSlice.actions;
+export const {
+  setDestinations,
+  setSelectedDestination,
+  startLoading,
+  stopLoading,
+} = destinationSlice.actions;
 
 export default destinationSlice.reducer;

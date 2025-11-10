@@ -1,9 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { apiClient } from "../api/apiClient";
 import { endpoint } from "../api/endpoint";
-import type { 
-  ConferenceStatus
-} from "@/types/conference.type";
+import type { ConferenceStatus } from "@/types/conference.type";
 import type { ApiResponse } from "@/types/api.type";
 
 export const statusApi = createApi({
@@ -11,9 +9,12 @@ export const statusApi = createApi({
   baseQuery: apiClient,
   tagTypes: ["Status"],
   endpoints: (builder) => ({
-    getAllConferenceStatuses: builder.query<ApiResponse<ConferenceStatus[]>, void>({
+    getAllConferenceStatuses: builder.query<
+      ApiResponse<ConferenceStatus[]>,
+      void
+    >({
       query: () => ({
-        url: endpoint.CONFERENCE.LIST_ALL_CONF_STATUS, 
+        url: endpoint.CONFERENCE.LIST_ALL_CONF_STATUS,
         method: "GET",
       }),
       providesTags: (result) =>
@@ -28,24 +29,22 @@ export const statusApi = createApi({
           : [{ type: "Status", id: "LIST" }],
     }),
 
-
-        updateOwnConferenceStatus: builder.mutation<
-          ApiResponse<null>,
-          { confid: string; newStatus: string; reason: string }
-        >({
-          query: ({ confid, newStatus, reason }) => ({
-            url: endpoint.CONFERENCE.UPDATE_OWN_STATUS,
-            method: "POST",
-            params: { confid, newStatus, reason },
-          }),
-          invalidatesTags: ["Status"],
-        }),
+    updateOwnConferenceStatus: builder.mutation<
+      ApiResponse<null>,
+      { confid: string; newStatus: string; reason: string }
+    >({
+      query: ({ confid, newStatus, reason }) => ({
+        url: endpoint.CONFERENCE.UPDATE_OWN_STATUS,
+        method: "POST",
+        params: { confid, newStatus, reason },
+      }),
+      invalidatesTags: ["Status"],
+    }),
   }),
 });
 
 export const {
-  useGetAllConferenceStatusesQuery, 
+  useGetAllConferenceStatusesQuery,
   useLazyGetAllConferenceStatusesQuery,
   useUpdateOwnConferenceStatusMutation,
-
 } = statusApi;

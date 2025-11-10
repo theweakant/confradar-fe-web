@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import { useState } from "react"
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -15,98 +15,229 @@ import {
   Shield,
   Building2,
   GraduationCap,
-  Home
-} from "lucide-react"
-import type { ElementType } from "react"
-import { useDispatch } from "react-redux"
-import { logout } from "@/redux/slices/auth.slice"
-import { persistor } from "@/redux/store"
-import { toast } from "sonner"
-import { ROLES } from "@/constants/roles"
-
+  Home,
+  ChevronDown,
+  ChevronRight,
+} from "lucide-react";
+import type { ElementType } from "react";
+import { useDispatch } from "react-redux";
+import { logout } from "@/redux/slices/auth.slice";
+import { persistor } from "@/redux/store";
+import { toast } from "sonner";
+import { ROLES } from "@/constants/roles";
 
 interface WorkspaceSidebarProps {
-  role: string
+  role: string;
 }
 
 const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
-  const pathname = usePathname()
-  const router = useRouter()
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
-  const dispatch = useDispatch()
-  const normalizedRole = role.toLowerCase().replace(/\s+/g, "")
+  const pathname = usePathname();
+  const router = useRouter();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const dispatch = useDispatch();
+  const normalizedRole = role.toLowerCase().replace(/\s+/g, "");
+
+  // State để quản lý sub-menu mở/đóng
+  const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({});
 
   // 👇 Sử dụng constants từ roles.ts
-  const roleMenus: Record<string, { label: string; href: string; icon: ElementType }[]> = {
+  const roleMenus: Record<
+    string,
+    { label: string; href: string; icon: ElementType; subMenu?: { label: string; href: string }[] }[]
+  > = {
     [ROLES.ADMIN]: [
       { label: "Tổng quan", href: "/workspace/admin", icon: LayoutDashboard },
-      { label: "Người dùng", href: "/workspace/admin/manage-user", icon: Users },
-      { label: "Địa điểm", href: "/workspace/admin/manage-accommodation", icon: Home },
-      { label: "Danh mục", href: "/workspace/admin/manage-category", icon: FileText },
+      {
+        label: "Người dùng",
+        href: "/workspace/admin/manage-user",
+        icon: Users,
+      },
+      {
+        label: "Địa điểm",
+        href: "/workspace/admin/manage-accommodation",
+        icon: Home,
+      },
+      {
+        label: "Danh mục",
+        href: "/workspace/admin/manage-category",
+        icon: FileText,
+      },
       { label: "Báo cáo", href: "/workspace/admin/report", icon: FileText },
-      { label: "Cài đặt", href: "/workspace/admin/system-setting", icon: Settings },
+      {
+        label: "Cài đặt",
+        href: "/workspace/admin/system-setting",
+        icon: Settings,
+      },
     ],
     [ROLES.CONFERENCE_ORGANIZER]: [
-      { label: "Tổng quan", href: "/workspace/organizer", icon: LayoutDashboard },
-      { label: "Hội nghị", href: "/workspace/organizer/manage-conference", icon: Calendar },
-      { label: "Bài báo", href: "/workspace/organizer/manage-paper", icon: FileText },
-      { label: "Địa điểm", href: "/workspace/organizer/manage-accommodation", icon: Home },
-      { label: "Đối tác", href: "/workspace/organizer/manage-user", icon: Users },
-      { label: "Đánh giá viên", href: "/workspace/organizer/manage-reviewer", icon: Users },
-      { label: "Yêu cầu", href: "/workspace/organizer/manage-request", icon: Building2 },
+      {
+        label: "Tổng quan",
+        href: "/workspace/organizer",
+        icon: LayoutDashboard,
+      },
+      {
+        label: "Hội nghị",
+        href: "/workspace/organizer/manage-conference",
+        icon: Calendar,
+        subMenu: [
+          { label: "Tất cả hội nghị", href: "/workspace/organizer/manage-conference" },
+          { label: "Hội nghị của tôi", href: "/workspace/organizer/my-conference" },
+        ],
+      },
+      {
+        label: "Bài báo",
+        href: "/workspace/organizer/manage-paper",
+        icon: FileText,
+      },
+      {
+        label: "Địa điểm",
+        href: "/workspace/organizer/manage-accommodation",
+        icon: Home,
+      },
+      {
+        label: "Đối tác",
+        href: "/workspace/organizer/manage-user",
+        icon: Users,
+      },
+      {
+        label: "Đánh giá viên",
+        href: "/workspace/organizer/manage-reviewer",
+        icon: Users,
+      },
+      {
+        label: "Yêu cầu",
+        href: "/workspace/organizer/manage-request",
+        icon: Building2,
+      },
     ],
     [ROLES.COLLABORATOR]: [
-      { label: "Tổng quan", href: "/workspace/collaborator", icon: LayoutDashboard },
-      { label: "Hội thảo", href: "/workspace/collaborator/manage-conference", icon: Calendar },
-      { label: "Phân tích", href: "/workspace/collaborator/analytics", icon: FileText },
-      { label: "Cài đặt", href: "/workspace/collaborator/settings", icon: Settings },
+      {
+        label: "Tổng quan",
+        href: "/workspace/collaborator",
+        icon: LayoutDashboard,
+      },
+      {
+        label: "Hội thảo",
+        href: "/workspace/collaborator/manage-conference",
+        icon: Calendar,
+        subMenu: [
+          { label: "Tất cả hội thảo", href: "/workspace/collaborator/manage-conference" },
+          { label: "Hội thảo của tôi", href: "/workspace/collaborator/manage-conference/my-conference" },
+        ],
+      },
+      {
+        label: "Phân tích",
+        href: "/workspace/collaborator/analytics",
+        icon: FileText,
+      },
+      {
+        label: "Cài đặt",
+        href: "/workspace/collaborator/settings",
+        icon: Settings,
+      },
     ],
     [ROLES.LOCAL_REVIEWER]: [
-      { label: "Tổng quan", href: "/workspace/local-reviewer", icon: LayoutDashboard },
-      { label: "Bài cần đánh giá", href: "/workspace/local-reviewer/manage-paper", icon: FileText },
-      { label: "Đã hoàn thành", href: "/workspace/local-reviewer/completed", icon: FileText },
+      {
+        label: "Tổng quan",
+        href: "/workspace/local-reviewer",
+        icon: LayoutDashboard,
+      },
+      {
+        label: "Bài cần đánh giá",
+        href: "/workspace/local-reviewer/manage-paper",
+        icon: FileText,
+      },
+      {
+        label: "Đã hoàn thành",
+        href: "/workspace/local-reviewer/completed",
+        icon: FileText,
+      },
     ],
     [ROLES.EXTERNAL_REVIEWER]: [
-      { label: "Tổng quan", href: "/workspace/external-reviewer", icon: LayoutDashboard },
-      { label: "Bài cần đánh giá", href: "/workspace/external-reviewer/manage-paper", icon: FileText },
-      { label: "Đã hoàn thành", href: "/workspace/external-reviewer/completed", icon: FileText },
-      { label: "Bài đánh giá ngoài", href: "/workspace/reviewer-outsource", icon: GraduationCap },
-      { label: "Lịch trình", href: "/workspace/reviewer-outsource/schedule", icon: Calendar },
+      {
+        label: "Tổng quan",
+        href: "/workspace/external-reviewer",
+        icon: LayoutDashboard,
+      },
+      {
+        label: "Bài cần đánh giá",
+        href: "/workspace/external-reviewer/manage-paper",
+        icon: FileText,
+      },
+      {
+        label: "Đã hoàn thành",
+        href: "/workspace/external-reviewer/completed",
+        icon: FileText,
+      },
+      {
+        label: "Bài đánh giá ngoài",
+        href: "/workspace/reviewer-outsource",
+        icon: GraduationCap,
+      },
+      {
+        label: "Lịch trình",
+        href: "/workspace/reviewer-outsource/schedule",
+        icon: Calendar,
+      },
     ],
-  }
+  };
 
-  const roleInfo: Record<string, { name: string; color: string; icon: ElementType }> = {
+  const roleInfo: Record<
+    string,
+    { name: string; color: string; icon: ElementType }
+  > = {
     [ROLES.ADMIN]: { name: "Quản trị viên", color: "bg-red-500", icon: Shield },
-    [ROLES.CONFERENCE_ORGANIZER]: { name: "Tổ chức", color: "bg-purple-500", icon: Building2 },
-    [ROLES.COLLABORATOR]: { name: "Đối tác", color: "bg-green-500", icon: Building2 },
-    [ROLES.LOCAL_REVIEWER]: { name: "Đánh giá nội bộ", color: "bg-yellow-500", icon: GraduationCap },
-    [ROLES.EXTERNAL_REVIEWER]: { name: "Đánh giá ngoài", color: "bg-orange-500", icon: GraduationCap },
-  }
+    [ROLES.CONFERENCE_ORGANIZER]: {
+      name: "Tổ chức",
+      color: "bg-purple-500",
+      icon: Building2,
+    },
+    [ROLES.COLLABORATOR]: {
+      name: "Đối tác",
+      color: "bg-green-500",
+      icon: Building2,
+    },
+    [ROLES.LOCAL_REVIEWER]: {
+      name: "Đánh giá nội bộ",
+      color: "bg-yellow-500",
+      icon: GraduationCap,
+    },
+    [ROLES.EXTERNAL_REVIEWER]: {
+      name: "Đánh giá ngoài",
+      color: "bg-orange-500",
+      icon: GraduationCap,
+    },
+  };
 
-  const roleMenu = roleMenus[normalizedRole]??[]
+  const roleMenu = roleMenus[normalizedRole] ?? [];
 
-const info = roleInfo[normalizedRole] ?? { name: "Không xác định", color: "bg-gray-400", icon: Shield }
-const RoleIcon = info.icon
+  const info = roleInfo[normalizedRole] ?? {
+    name: "Không xác định",
+    color: "bg-gray-400",
+    icon: Shield,
+  };
+  const RoleIcon = info.icon;
 
   const handleLogout = async () => {
     try {
-      dispatch(logout())
-      await persistor.purge()
-      toast.success("Đăng xuất thành công!")
+      dispatch(logout());
+      await persistor.purge();
+      toast.success("Đăng xuất thành công!");
       setTimeout(() => {
-        router.push("/auth/login")
-      }, 300)
+        router.push("/auth/login");
+      }, 300);
     } catch (error) {
-      console.error("Logout error:", error)
-      toast.error("Có lỗi xảy ra khi đăng xuất")
-      router.push("/auth/login")
+      console.error("Logout error:", error);
+      toast.error("Có lỗi xảy ra khi đăng xuất");
+      router.push("/auth/login");
     }
-  }
+  };
 
   return (
     <aside
-      className={`${isSidebarOpen ? "w-64" : "w-20"
-        } bg-white border-r border-gray-200 transition-all duration-300 flex flex-col`}
+      className={`${
+        isSidebarOpen ? "w-64" : "w-20"
+      } bg-white border-r border-gray-200 transition-all duration-300 flex flex-col`}
     >
       {/* Logo + Toggle */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
@@ -128,7 +259,9 @@ const RoleIcon = info.icon
 
       {/* Role badge */}
       <div className="px-4 py-4 border-b border-gray-200">
-        <div className={`flex items-center gap-3 p-3 rounded-lg ${info.color} bg-opacity-10`}>
+        <div
+          className={`flex items-center gap-3 p-3 rounded-lg ${info.color} bg-opacity-10`}
+        >
           <div className={`${info.color} p-2 rounded-lg`}>
             <RoleIcon className="text-white" size={20} />
           </div>
@@ -145,21 +278,65 @@ const RoleIcon = info.icon
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
         <div className="space-y-1">
           {roleMenu.map((item) => {
-            const Icon = item.icon
-            const active = pathname === item.href
+            const Icon = item.icon;
+            const active = pathname === item.href;
+            const hasSubMenu = item.subMenu && item.subMenu.length > 0;
+            const isSubMenuActive = item.subMenu?.some(sub => pathname === sub.href);
+            const isSubMenuOpen = openSubMenus[item.href] ?? isSubMenuActive;
+
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${active
-                  ? "bg-blue-50 text-blue-600 font-medium"
-                  : "text-gray-700 hover:bg-gray-100"
-                  }`}
-              >
-                <Icon size={20} />
-                {isSidebarOpen && <span>{item.label}</span>}
-              </Link>
-            )
+              <div key={item.href}>
+                {hasSubMenu ? (
+                  <>
+                    <button
+                      onClick={() => setOpenSubMenus(prev => ({ ...prev, [item.href]: !isSubMenuOpen }))}
+                      className={`flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+                        isSubMenuActive
+                          ? "bg-blue-50 text-blue-600 font-medium"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon size={20} />
+                        {isSidebarOpen && <span>{item.label}</span>}
+                      </div>
+                      {isSidebarOpen && (
+                        isSubMenuOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />
+                      )}
+                    </button>
+                    {isSidebarOpen && isSubMenuOpen && (
+                      <div className="ml-9 mt-1 space-y-1">
+                        {item.subMenu?.map((subItem) => (
+                          <Link
+                            key={subItem.href}
+                            href={subItem.href}
+                            className={`block px-3 py-2 rounded-lg text-sm transition-colors ${
+                              pathname === subItem.href
+                                ? "bg-blue-50 text-blue-600 font-medium"
+                                : "text-gray-600 hover:bg-gray-100"
+                            }`}
+                          >
+                            {subItem.label}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <Link
+                    href={item.href}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+                      active
+                        ? "bg-blue-50 text-blue-600 font-medium"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}
+                  >
+                    <Icon size={20} />
+                    {isSidebarOpen && <span>{item.label}</span>}
+                  </Link>
+                )}
+              </div>
+            );
           })}
         </div>
       </nav>
@@ -175,7 +352,7 @@ const RoleIcon = info.icon
         </button>
       </div>
     </aside>
-  )
-}
+  );
+};
 
-export default WorkspaceSidebar
+export default WorkspaceSidebar;

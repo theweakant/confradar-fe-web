@@ -1,4 +1,3 @@
-
 //types/auth.type
 export interface LoginFormData {
   email: string;
@@ -18,7 +17,6 @@ export interface ForgetPasswordData {
 export interface ForgetPasswordResponse {
   // Response trả về null data theo API của bạn
 }
-
 
 export interface VerifyForgetPasswordData {
   token: string;

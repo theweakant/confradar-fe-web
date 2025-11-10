@@ -2,4 +2,4 @@ import AssignedPaperList from "@/components/(user)/workspace/organizer/ManagePap
 
 export default function AssignedPaperListPage() {
   return <AssignedPaperList />;
-}   
+}

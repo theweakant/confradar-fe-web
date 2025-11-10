@@ -1,25 +1,29 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 interface BannerFilterProps {
-  onFilterChange?: (filter: 'technical' | 'research' | 'all') => void;
+  onFilterChange?: (filter: "technical" | "research" | "all") => void;
   className?: string;
 }
 
 const ConferenceBanner: React.FC<BannerFilterProps> = ({
   onFilterChange,
-  className = ""
+  className = "",
 }) => {
-  const [activeFilter, setActiveFilter] = useState<'technical' | 'research' | 'all'>('all');
+  const [activeFilter, setActiveFilter] = useState<
+    "technical" | "research" | "all"
+  >("all");
 
-  const handleFilterClick = (filter: 'technical' | 'research' | 'all') => {
+  const handleFilterClick = (filter: "technical" | "research" | "all") => {
     setActiveFilter(filter);
     onFilterChange?.(filter);
   };
 
   return (
-    <div className={`relative w-full h-96 lg:h-[500px] overflow-hidden rounded-lg ${className}`}>
+    <div
+      className={`relative w-full h-96 lg:h-[500px] overflow-hidden rounded-lg ${className}`}
+    >
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
@@ -32,12 +36,11 @@ const ConferenceBanner: React.FC<BannerFilterProps> = ({
             ),
          url('/images/customer_route/confbannerbg1.jpg')
        `,
-          backgroundSize: 'cover, cover, contain',
-          backgroundPosition: 'center, center, center',
-          backgroundRepeat: 'no-repeat'
+          backgroundSize: "cover, cover, contain",
+          backgroundPosition: "center, center, center",
+          backgroundRepeat: "no-repeat",
         }}
       />
-
 
       <svg
         className="absolute inset-0 w-full h-full pointer-events-none"
@@ -58,7 +61,6 @@ const ConferenceBanner: React.FC<BannerFilterProps> = ({
 
       {/* Content Container */}
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4 sm:px-6 lg:px-8">
-
         {/* Main Title */}
         <div className="mb-8 lg:mb-12">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-4 leading-tight">
@@ -68,32 +70,35 @@ const ConferenceBanner: React.FC<BannerFilterProps> = ({
             NÂNG TẦM KIẾN THỨC!
           </h2>
           <p className="text-lg sm:text-xl lg:text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed">
-            Tham gia các hội nghị hàng đầu để cập nhật xu hướng công nghệ và nghiên cứu mới nhất
+            Tham gia các hội nghị hàng đầu để cập nhật xu hướng công nghệ và
+            nghiên cứu mới nhất
           </p>
         </div>
 
         {/* Filter Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
           <button
-            onClick={() => handleFilterClick('all')}
+            onClick={() => handleFilterClick("all")}
             className={`
       px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105
-      ${activeFilter === 'all'
-                ? 'bg-white text-gray-900 shadow-xl'
-                : 'bg-gray-900/80 text-white border-2 border-white/30 hover:bg-white hover:text-gray-900'
-              }
+      ${
+        activeFilter === "all"
+          ? "bg-white text-gray-900 shadow-xl"
+          : "bg-gray-900/80 text-white border-2 border-white/30 hover:bg-white hover:text-gray-900"
+      }
     `}
           >
             Tất cả
           </button>
 
           <button
-            onClick={() => handleFilterClick('technical')}
+            onClick={() => handleFilterClick("technical")}
             className={`
               px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105
-              ${activeFilter === 'technical'
-                ? 'bg-white text-gray-900 shadow-xl'
-                : 'bg-gray-900/80 text-white border-2 border-white/30 hover:bg-white hover:text-gray-900'
+              ${
+                activeFilter === "technical"
+                  ? "bg-white text-gray-900 shadow-xl"
+                  : "bg-gray-900/80 text-white border-2 border-white/30 hover:bg-white hover:text-gray-900"
               }
             `}
           >
@@ -101,12 +106,13 @@ const ConferenceBanner: React.FC<BannerFilterProps> = ({
           </button>
 
           <button
-            onClick={() => handleFilterClick('research')}
+            onClick={() => handleFilterClick("research")}
             className={`
               px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105
-              ${activeFilter === 'research'
-                ? 'bg-white text-gray-900 shadow-xl'
-                : 'bg-gray-900/80 text-white border-2 border-white/30 hover:bg-white hover:text-gray-900'
+              ${
+                activeFilter === "research"
+                  ? "bg-white text-gray-900 shadow-xl"
+                  : "bg-gray-900/80 text-white border-2 border-white/30 hover:bg-white hover:text-gray-900"
               }
             `}
           >

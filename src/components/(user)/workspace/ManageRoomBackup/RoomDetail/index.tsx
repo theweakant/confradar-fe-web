@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  MapPin,
-  Building,
-  Tag,
-  Calendar,
-  Home,
-} from "lucide-react";
+import { MapPin, Building, Tag, Calendar, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/atoms/StatusBadge";
 import { formatDate } from "@/helper/format";
@@ -58,7 +52,9 @@ export function RoomDetail({ room, onClose }: RoomDetailProps) {
           <div className="flex items-start gap-3">
             <MapPin className="w-5 h-5 text-blue-600 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-gray-700">Thông tin điểm đến</p>
+              <p className="text-sm font-medium text-gray-700">
+                Thông tin điểm đến
+              </p>
               <p className="text-gray-900 italic text-gray-500">
                 (Chưa có thông tin chi tiết — chỉ hiển thị mã điểm đến)
               </p>

@@ -25,7 +25,10 @@ const conferenceSlice = createSlice({
     },
 
     // ✅ Set conference đang được chọn
-    setSelectedConference: (state, action: PayloadAction<Conference | null>) => {
+    setSelectedConference: (
+      state,
+      action: PayloadAction<Conference | null>,
+    ) => {
       state.selected = action.payload;
     },
 

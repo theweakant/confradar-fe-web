@@ -1,4 +1,4 @@
 export interface City {
-    cityId: string;
-    cityName?: string;
+  cityId: string;
+  cityName?: string;
 }

@@ -1,13 +1,13 @@
-import React, { useState, useMemo } from 'react';
-import { 
-  Calendar, 
-  Clock, 
-  ChevronLeft, 
+import React, { useState, useMemo } from "react";
+import {
+  Calendar,
+  Clock,
+  ChevronLeft,
   ChevronRight,
   X,
   Plus,
-  Filter
-} from 'lucide-react';
+  Filter,
+} from "lucide-react";
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -30,9 +30,9 @@ export interface CalendarEvent {
   endTime: string; // ISO string
   roomId?: string;
   room?: Room;
-  type?: 'session' | 'paper' | 'other';
+  type?: "session" | "paper" | "other";
   color?: string;
-  metadata?: Record<string, unknown>; 
+  metadata?: unknown;
 }
 
 export interface TimeSlot {
@@ -45,45 +45,52 @@ export interface TimeSlot {
 export interface BaseCalendarProps {
   /** Array of events to display */
   events: CalendarEvent[];
-  
+
   /** Array of rooms/resources */
   rooms: Room[];
-  
+
   /** Callback when a date is clicked */
   onDateClick?: (date: Date) => void;
-  
+
   /** Callback when an event is clicked */
   onEventClick?: (event: CalendarEvent) => void;
-  
+
   /** Callback when a time slot is clicked */
   onSlotClick?: (date: Date, time: string, roomId: string) => void;
-  
+
   /** Custom render for sidebar when date is selected */
-  renderSidebar?: (date: Date, events: CalendarEvent[], rooms: Room[]) => React.ReactNode;
-  
+  renderSidebar?: (
+    date: Date,
+    events: CalendarEvent[],
+    rooms: Room[],
+  ) => React.ReactNode;
+
   /** Custom render for event popup/modal */
-  renderEventModal?: (event: CalendarEvent, onClose: () => void) => React.ReactNode;
-  
+  renderEventModal?: (
+    event: CalendarEvent,
+    onClose: () => void,
+  ) => React.ReactNode;
+
   /** Show timeline sidebar */
   showTimeline?: boolean;
-  
+
   /** Timeline hours range */
   timelineHours?: { start: number; end: number };
-  
+
   /** Enable room filtering */
   enableRoomFilter?: boolean;
-  
+
   /** Custom category colors */
   categoryColors?: Record<string, string>;
-  
+
   /** Loading state */
   isLoading?: boolean;
-  
+
   /** Custom title */
   title?: string;
-  
+
   /** Initial view mode */
-  initialView?: 'month' | 'week' | 'day';
+  initialView?: "month" | "week" | "day";
 }
 
 // ============================================================================
@@ -91,25 +98,33 @@ export interface BaseCalendarProps {
 // ============================================================================
 
 const formatTime = (date: Date): string => {
-  return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  return date.toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 };
 
 const formatDate = (date: Date): string => {
-  return date.toLocaleDateString('vi-VN', { 
-    day: '2-digit', 
-    month: '2-digit', 
-    year: 'numeric' 
+  return date.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
   });
 };
 
 const isSameDay = (date1: Date, date2: Date): boolean => {
-  return date1.getDate() === date2.getDate() &&
-         date1.getMonth() === date2.getMonth() &&
-         date1.getFullYear() === date2.getFullYear();
+  return (
+    date1.getDate() === date2.getDate() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getFullYear() === date2.getFullYear()
+  );
 };
 
-const getEventsForDate = (events: CalendarEvent[], date: Date): CalendarEvent[] => {
-  return events.filter(event => {
+const getEventsForDate = (
+  events: CalendarEvent[],
+  date: Date,
+): CalendarEvent[] => {
+  return events.filter((event) => {
     try {
       const eventDate = new Date(event.startTime);
       return isSameDay(eventDate, date);
@@ -120,14 +135,16 @@ const getEventsForDate = (events: CalendarEvent[], date: Date): CalendarEvent[] 
 };
 
 const generateTimeSlots = (
-  start: number = 8, 
-  end: number = 18, 
-  interval: number = 30
+  start: number = 8,
+  end: number = 18,
+  interval: number = 30,
 ): string[] => {
   const slots: string[] = [];
   for (let hour = start; hour < end; hour++) {
     for (let minute = 0; minute < 60; minute += interval) {
-      slots.push(`${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`);
+      slots.push(
+        `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`,
+      );
     }
   }
   return slots;
@@ -152,19 +169,22 @@ const TimelineSidebar: React.FC<TimelineSidebarProps> = ({
   rooms,
   timeSlots,
   onSlotClick,
-  onEventClick
+  onEventClick,
 }) => {
-  const getEventForSlot = (time: string, roomId: string): CalendarEvent | undefined => {
-    return events.find(event => {
+  const getEventForSlot = (
+    time: string,
+    roomId: string,
+  ): CalendarEvent | undefined => {
+    return events.find((event) => {
       if (event.roomId !== roomId) return false;
-      
+
       try {
         const eventStart = new Date(event.startTime);
         const eventEnd = new Date(event.endTime);
-        const [hours, minutes] = time.split(':').map(Number);
+        const [hours, minutes] = time.split(":").map(Number);
         const slotTime = new Date(date);
         slotTime.setHours(hours, minutes, 0, 0);
-        
+
         return slotTime >= eventStart && slotTime < eventEnd;
       } catch {
         return false;
@@ -175,20 +195,24 @@ const TimelineSidebar: React.FC<TimelineSidebarProps> = ({
   return (
     <div className="h-full overflow-auto bg-white">
       <div className="sticky top-0 bg-white border-b border-gray-200 z-10 p-4">
-        <h3 className="font-semibold text-gray-900">
-          {formatDate(date)}
-        </h3>
-        <p className="text-sm text-gray-600 mt-1">
-          {events.length} sự kiện
-        </p>
+        <h3 className="font-semibold text-gray-900">{formatDate(date)}</h3>
+        <p className="text-sm text-gray-600 mt-1">{events.length} sự kiện</p>
       </div>
 
       <div className="p-4">
         {/* Header - Room columns */}
-        <div className="grid gap-2 mb-2" style={{ gridTemplateColumns: `80px repeat(${rooms.length}, minmax(120px, 1fr))` }}>
+        <div
+          className="grid gap-2 mb-2"
+          style={{
+            gridTemplateColumns: `80px repeat(${rooms.length}, minmax(120px, 1fr))`,
+          }}
+        >
           <div className="text-xs font-semibold text-gray-600">Thời gian</div>
-          {rooms.map(room => (
-            <div key={room.roomId} className="text-xs font-semibold text-gray-700 text-center">
+          {rooms.map((room) => (
+            <div
+              key={room.roomId}
+              className="text-xs font-semibold text-gray-700 text-center"
+            >
               {room.roomName}
               {room.capacity && (
                 <span className="block text-gray-500 font-normal">
@@ -201,17 +225,17 @@ const TimelineSidebar: React.FC<TimelineSidebarProps> = ({
 
         {/* Timeline grid */}
         <div className="space-y-1">
-          {timeSlots.map(time => (
-            <div 
+          {timeSlots.map((time) => (
+            <div
               key={time}
               className="grid gap-2"
-              style={{ gridTemplateColumns: `80px repeat(${rooms.length}, minmax(120px, 1fr))` }}
+              style={{
+                gridTemplateColumns: `80px repeat(${rooms.length}, minmax(120px, 1fr))`,
+              }}
             >
-              <div className="text-xs text-gray-600 py-2">
-                {time}
-              </div>
-              
-              {rooms.map(room => {
+              <div className="text-xs text-gray-600 py-2">{time}</div>
+
+              {rooms.map((room) => {
                 const event = getEventForSlot(time, room.roomId);
                 const isAvailable = !event;
 
@@ -227,9 +251,10 @@ const TimelineSidebar: React.FC<TimelineSidebarProps> = ({
                     }}
                     className={`
                       min-h-[40px] rounded border transition-all cursor-pointer
-                      ${event 
-                        ? 'bg-blue-100 border-blue-300 hover:bg-blue-200' 
-                        : 'bg-gray-50 border-gray-200 hover:bg-green-50 hover:border-green-300'
+                      ${
+                        event
+                          ? "bg-blue-100 border-blue-300 hover:bg-blue-200"
+                          : "bg-gray-50 border-gray-200 hover:bg-green-50 hover:border-green-300"
                       }
                     `}
                   >
@@ -239,7 +264,8 @@ const TimelineSidebar: React.FC<TimelineSidebarProps> = ({
                           {event.title}
                         </div>
                         <div className="text-xs text-gray-600 mt-0.5">
-                          {formatTime(new Date(event.startTime))} - {formatTime(new Date(event.endTime))}
+                          {formatTime(new Date(event.startTime))} -{" "}
+                          {formatTime(new Date(event.endTime))}
                         </div>
                       </div>
                     )}
@@ -276,35 +302,37 @@ const BaseCalendar: React.FC<BaseCalendarProps> = ({
   enableRoomFilter = true,
   categoryColors,
   isLoading = false,
-  title = 'Lịch Hội nghị',
-  initialView = 'month'
+  title = "Lịch Hội nghị",
+  initialView = "month",
 }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
-  const [view, setView] = useState<'month' | 'week' | 'day'>(initialView);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
+    null,
+  );
+  const [view, setView] = useState<"month" | "week" | "day">(initialView);
   const [filteredRooms, setFilteredRooms] = useState<string[]>(
-    rooms.map(r => r.roomId)
+    rooms.map((r) => r.roomId),
   );
 
   const timeSlots = useMemo(
     () => generateTimeSlots(timelineHours.start, timelineHours.end, 30),
-    [timelineHours]
+    [timelineHours],
   );
 
   const filteredEvents = useMemo(
-    () => events.filter(e => !e.roomId || filteredRooms.includes(e.roomId)),
-    [events, filteredRooms]
+    () => events.filter((e) => !e.roomId || filteredRooms.includes(e.roomId)),
+    [events, filteredRooms],
   );
 
   const selectedDateEvents = useMemo(
-    () => selectedDate ? getEventsForDate(filteredEvents, selectedDate) : [],
-    [selectedDate, filteredEvents]
+    () => (selectedDate ? getEventsForDate(filteredEvents, selectedDate) : []),
+    [selectedDate, filteredEvents],
   );
 
   const activeRooms = useMemo(
-    () => rooms.filter(r => filteredRooms.includes(r.roomId)),
-    [rooms, filteredRooms]
+    () => rooms.filter((r) => filteredRooms.includes(r.roomId)),
+    [rooms, filteredRooms],
   );
 
   // Calendar calculations
@@ -315,15 +343,15 @@ const BaseCalendar: React.FC<BaseCalendarProps> = ({
     const lastDay = new Date(year, month + 1, 0);
     const daysInMonth = lastDay.getDate();
     const startingDayOfWeek = firstDay.getDay();
-    
+
     return { daysInMonth, startingDayOfWeek };
   };
 
   const { daysInMonth, startingDayOfWeek } = getDaysInMonth(currentDate);
 
-  const navigateMonth = (direction: 'prev' | 'next') => {
+  const navigateMonth = (direction: "prev" | "next") => {
     const newDate = new Date(currentDate);
-    newDate.setMonth(newDate.getMonth() + (direction === 'prev' ? -1 : 1));
+    newDate.setMonth(newDate.getMonth() + (direction === "prev" ? -1 : 1));
     setCurrentDate(newDate);
   };
 
@@ -348,17 +376,18 @@ const BaseCalendar: React.FC<BaseCalendarProps> = ({
   };
 
   const toggleRoomFilter = (roomId: string) => {
-    setFilteredRooms(prev => 
+    setFilteredRooms((prev) =>
       prev.includes(roomId)
-        ? prev.filter(id => id !== roomId)
-        : [...prev, roomId]
+        ? prev.filter((id) => id !== roomId)
+        : [...prev, roomId],
     );
   };
 
   const getEventColor = (event: CalendarEvent): string => {
     if (event.color) return event.color;
-    if (event.type && categoryColors?.[event.type]) return categoryColors[event.type];
-    return '#3b82f6'; // default blue
+    if (event.type && categoryColors?.[event.type])
+      return categoryColors[event.type];
+    return "#3b82f6"; // default blue
   };
 
   if (isLoading) {
@@ -388,21 +417,28 @@ const BaseCalendar: React.FC<BaseCalendarProps> = ({
               <div className="relative group">
                 <button className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2">
                   <Filter className="w-4 h-4" />
-                  <span className="text-sm">Phòng ({filteredRooms.length}/{rooms.length})</span>
+                  <span className="text-sm">
+                    Phòng ({filteredRooms.length}/{rooms.length})
+                  </span>
                 </button>
-                
+
                 {/* Dropdown */}
                 <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
                   <div className="p-3 space-y-2 max-h-64 overflow-auto">
-                    {rooms.map(room => (
-                      <label key={room.roomId} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                    {rooms.map((room) => (
+                      <label
+                        key={room.roomId}
+                        className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded"
+                      >
                         <input
                           type="checkbox"
                           checked={filteredRooms.includes(room.roomId)}
                           onChange={() => toggleRoomFilter(room.roomId)}
                           className="w-4 h-4 text-blue-600 rounded"
                         />
-                        <span className="text-sm text-gray-700">{room.roomName}</span>
+                        <span className="text-sm text-gray-700">
+                          {room.roomName}
+                        </span>
                         {room.capacity && (
                           <span className="text-xs text-gray-500 ml-auto">
                             {room.capacity} người
@@ -417,17 +453,17 @@ const BaseCalendar: React.FC<BaseCalendarProps> = ({
 
             {/* View Switcher */}
             <div className="flex gap-2">
-              {(['month', 'week', 'day'] as const).map((v) => (
+              {(["month", "week", "day"] as const).map((v) => (
                 <button
                   key={v}
                   onClick={() => setView(v)}
                   className={`px-3 py-2 rounded-lg transition-colors text-sm capitalize ${
-                    view === v 
-                      ? 'bg-blue-600 text-white' 
-                      : 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-300'
+                    view === v
+                      ? "bg-blue-600 text-white"
+                      : "bg-white hover:bg-gray-100 text-gray-700 border border-gray-300"
                   }`}
                 >
-                  {v === 'month' ? 'Tháng' : v === 'week' ? 'Tuần' : 'Ngày'}
+                  {v === "month" ? "Tháng" : v === "week" ? "Tuần" : "Ngày"}
                 </button>
               ))}
             </div>
@@ -438,11 +474,13 @@ const BaseCalendar: React.FC<BaseCalendarProps> = ({
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Calendar View */}
-        <div className={`${selectedDate && showTimeline ? 'w-1/2' : 'w-full'} p-6 overflow-auto transition-all`}>
+        <div
+          className={`${selectedDate && showTimeline ? "w-1/2" : "w-full"} p-6 overflow-auto transition-all`}
+        >
           {/* Month Navigation */}
           <div className="mb-6 flex items-center justify-between">
             <button
-              onClick={() => navigateMonth('prev')}
+              onClick={() => navigateMonth("prev")}
               className="p-2 hover:bg-white rounded-lg transition-colors"
             >
               <ChevronLeft className="w-5 h-5 text-gray-600" />
@@ -453,7 +491,7 @@ const BaseCalendar: React.FC<BaseCalendarProps> = ({
             </h2>
 
             <button
-              onClick={() => navigateMonth('next')}
+              onClick={() => navigateMonth("next")}
               className="p-2 hover:bg-white rounded-lg transition-colors"
             >
               <ChevronRight className="w-5 h-5 text-gray-600" />
@@ -464,8 +502,11 @@ const BaseCalendar: React.FC<BaseCalendarProps> = ({
           <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
             {/* Day Headers */}
             <div className="grid grid-cols-7 gap-2 mb-2">
-              {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'].map(day => (
-                <div key={day} className="text-center text-sm font-semibold text-gray-600 py-2">
+              {["CN", "T2", "T3", "T4", "T5", "T6", "T7"].map((day) => (
+                <div
+                  key={day}
+                  className="text-center text-sm font-semibold text-gray-600 py-2"
+                >
                   {day}
                 </div>
               ))}
@@ -476,11 +517,20 @@ const BaseCalendar: React.FC<BaseCalendarProps> = ({
               {Array.from({ length: 42 }, (_, i) => {
                 const dayNum = i - startingDayOfWeek + 1;
                 const isCurrentMonth = dayNum > 0 && dayNum <= daysInMonth;
-                const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), dayNum);
+                const date = new Date(
+                  currentDate.getFullYear(),
+                  currentDate.getMonth(),
+                  dayNum,
+                );
                 const today = new Date();
                 const isToday = isCurrentMonth && isSameDay(date, today);
-                const isSelected = selectedDate && isCurrentMonth && isSameDay(date, selectedDate);
-                const dayEvents = isCurrentMonth ? getEventsForDate(filteredEvents, date) : [];
+                const isSelected =
+                  selectedDate &&
+                  isCurrentMonth &&
+                  isSameDay(date, selectedDate);
+                const dayEvents = isCurrentMonth
+                  ? getEventsForDate(filteredEvents, date)
+                  : [];
 
                 return (
                   <div
@@ -488,21 +538,23 @@ const BaseCalendar: React.FC<BaseCalendarProps> = ({
                     onClick={() => isCurrentMonth && handleDateClick(date)}
                     className={`
                       min-h-[100px] rounded-lg border p-2 cursor-pointer transition-all
-                      ${isToday ? 'ring-2 ring-blue-500 bg-blue-50' : ''}
-                      ${isSelected ? 'ring-2 ring-green-500 bg-green-50' : ''}
-                      ${!isCurrentMonth ? 'opacity-30 bg-gray-50' : 'bg-white hover:bg-blue-50'}
-                      ${!isToday && !isSelected && isCurrentMonth ? 'hover:border-blue-300' : ''}
+                      ${isToday ? "ring-2 ring-blue-500 bg-blue-50" : ""}
+                      ${isSelected ? "ring-2 ring-green-500 bg-green-50" : ""}
+                      ${!isCurrentMonth ? "opacity-30 bg-gray-50" : "bg-white hover:bg-blue-50"}
+                      ${!isToday && !isSelected && isCurrentMonth ? "hover:border-blue-300" : ""}
                     `}
                   >
                     {isCurrentMonth && (
                       <>
-                        <div className={`text-sm font-medium mb-1 ${isToday ? 'text-blue-600 font-bold' : 'text-gray-700'}`}>
+                        <div
+                          className={`text-sm font-medium mb-1 ${isToday ? "text-blue-600 font-bold" : "text-gray-700"}`}
+                        >
                           {dayNum}
                         </div>
-                        
+
                         {dayEvents.length > 0 && (
                           <div className="space-y-1">
-                            {dayEvents.slice(0, 2).map(event => (
+                            {dayEvents.slice(0, 2).map((event) => (
                               <div
                                 key={event.eventId}
                                 onClick={(e) => {
@@ -511,9 +563,9 @@ const BaseCalendar: React.FC<BaseCalendarProps> = ({
                                 }}
                                 className="text-xs p-1 rounded truncate font-medium cursor-pointer hover:opacity-80"
                                 style={{
-                                  backgroundColor: getEventColor(event) + '20',
+                                  backgroundColor: getEventColor(event) + "20",
                                   color: getEventColor(event),
-                                  borderLeft: `3px solid ${getEventColor(event)}`
+                                  borderLeft: `3px solid ${getEventColor(event)}`,
                                 }}
                                 title={event.title}
                               >
@@ -556,9 +608,9 @@ const BaseCalendar: React.FC<BaseCalendarProps> = ({
       </div>
 
       {/* Event Modal */}
-      {selectedEvent && renderEventModal && (
-        renderEventModal(selectedEvent, () => setSelectedEvent(null))
-      )}
+      {selectedEvent &&
+        renderEventModal &&
+        renderEventModal(selectedEvent, () => setSelectedEvent(null))}
     </div>
   );
 };

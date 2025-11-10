@@ -1,7 +1,13 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { apiClient } from "../api/apiClient";
 import { endpoint } from "../api/endpoint";
-import type { Room, RoomFormData, RoomOccupationSlot, RoomWithSessions, TimeSpan } from "@/types/room.type";
+import type {
+  Room,
+  RoomFormData,
+  RoomOccupationSlot,
+  RoomWithSessions,
+  TimeSpan,
+} from "@/types/room.type";
 import type { ApiResponse, ApiResponsePagination } from "@/types/api.type";
 
 export const roomApi = createApi({
@@ -26,7 +32,10 @@ export const roomApi = createApi({
       invalidatesTags: ["Room"],
     }),
 
-    updateRoom: builder.mutation<ApiResponse<string>, { id: string; data: RoomFormData }>({
+    updateRoom: builder.mutation<
+      ApiResponse<string>,
+      { id: string; data: RoomFormData }
+    >({
       query: ({ id, data }) => ({
         url: `${endpoint.ROOM.UPDATE}/${id}`,
         method: "PUT",
@@ -119,9 +128,21 @@ export const roomApi = createApi({
 
     getRoomsWithSessions: builder.query<
       ApiResponsePagination<RoomWithSessions>,
-      { page?: number; pageSize?: number; destinationId?: string; searchKeyword?: string; date?: string }
+      {
+        page?: number;
+        pageSize?: number;
+        destinationId?: string;
+        searchKeyword?: string;
+        date?: string;
+      }
     >({
-      query: ({ page = 1, pageSize = 10, destinationId, searchKeyword, date }) => ({
+      query: ({
+        page = 1,
+        pageSize = 10,
+        destinationId,
+        searchKeyword,
+        date,
+      }) => ({
         url: `${endpoint.ROOM.LIST}/rooms-with-sessions`,
         method: "GET",
         params: {

@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/molecules/FormInput";
-import type { UserProfileResponse, CollaboratorRequest } from "@/types/user.type";
+import type {
+  UserProfileResponse,
+  CollaboratorRequest,
+} from "@/types/user.type";
 
 interface UserFormProps {
   user?: UserProfileResponse | null;
@@ -19,13 +22,14 @@ export function UserForm({ user, onSave, onCancel }: UserFormProps) {
     fullName: user?.fullName || "",
   });
 
-  const [errors, setErrors] = useState<Partial<Record<keyof CollaboratorRequest, string>>>({});
-  const [touched, setTouched] = useState<Set<keyof CollaboratorRequest>>(new Set());
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof CollaboratorRequest, string>>
+  >({});
+  const [touched, setTouched] = useState<Set<keyof CollaboratorRequest>>(
+    new Set(),
+  );
 
-  const handleChange = (
-    field: keyof CollaboratorRequest,
-    value: string
-  ) => {
+  const handleChange = (field: keyof CollaboratorRequest, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     validateField(field, value);
     setTouched((prev) => new Set(prev).add(field));
@@ -33,14 +37,14 @@ export function UserForm({ user, onSave, onCancel }: UserFormProps) {
 
   const validateField = (
     field: keyof CollaboratorRequest,
-    value: string
+    value: string,
   ): boolean => {
     // Validate password
     if (field === "password") {
       if (!value || value.length < 6) {
         setErrors((prev) => ({
           ...prev,
-          [field]: "Mật khẩu phải có ít nhất 6 ký tự"
+          [field]: "Mật khẩu phải có ít nhất 6 ký tự",
         }));
         return false;
       }
@@ -51,7 +55,7 @@ export function UserForm({ user, onSave, onCancel }: UserFormProps) {
       if (value !== formData.password) {
         setErrors((prev) => ({
           ...prev,
-          [field]: "Mật khẩu xác nhận không khớp"
+          [field]: "Mật khẩu xác nhận không khớp",
         }));
         return false;
       }
@@ -62,7 +66,7 @@ export function UserForm({ user, onSave, onCancel }: UserFormProps) {
       if (!value || value.trim().length < 2) {
         setErrors((prev) => ({
           ...prev,
-          [field]: "Tên phải có ít nhất 2 ký tự"
+          [field]: "Tên phải có ít nhất 2 ký tự",
         }));
         return false;
       }
@@ -74,7 +78,7 @@ export function UserForm({ user, onSave, onCancel }: UserFormProps) {
       if (!value || !emailRegex.test(value)) {
         setErrors((prev) => ({
           ...prev,
-          [field]: "Email không hợp lệ"
+          [field]: "Email không hợp lệ",
         }));
         return false;
       }
@@ -82,7 +86,7 @@ export function UserForm({ user, onSave, onCancel }: UserFormProps) {
 
     setErrors((prev) => ({
       ...prev,
-      [field]: ""
+      [field]: "",
     }));
     return true;
   };
@@ -105,7 +109,7 @@ export function UserForm({ user, onSave, onCancel }: UserFormProps) {
     if (formData.password !== formData.confirmPassword) {
       setErrors((prev) => ({
         ...prev,
-        confirmPassword: "Mật khẩu xác nhận không khớp"
+        confirmPassword: "Mật khẩu xác nhận không khớp",
       }));
       isValid = false;
     }
@@ -166,9 +170,13 @@ export function UserForm({ user, onSave, onCancel }: UserFormProps) {
           type="password"
           value={formData.confirmPassword}
           onChange={(value: string) => handleChange("confirmPassword", value)}
-          onBlur={() => validateField("confirmPassword", formData.confirmPassword)}
+          onBlur={() =>
+            validateField("confirmPassword", formData.confirmPassword)
+          }
           required
-          error={touched.has("confirmPassword") ? errors.confirmPassword : undefined}
+          error={
+            touched.has("confirmPassword") ? errors.confirmPassword : undefined
+          }
           success={touched.has("confirmPassword") && !errors.confirmPassword}
           placeholder="Nhập lại mật khẩu"
         />

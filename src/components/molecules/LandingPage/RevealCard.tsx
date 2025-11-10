@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from "react"
-import Image from "next/image"
-import { cn } from "@/utils/utils"
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import { cn } from "@/utils/utils";
 
 interface ConferenceRevealCardProps {
-  imageSrc: string
-  title: string
-  date?: string
-  description?: string
-  delay?: number
-  direction?: "left" | "right"
-  className?: string
-  onClick?: () => void
+  imageSrc: string;
+  title: string;
+  date?: string;
+  description?: string;
+  delay?: number;
+  direction?: "left" | "right";
+  className?: string;
+  onClick?: () => void;
 }
 
 export function ConferenceRevealCard({
@@ -25,41 +25,45 @@ export function ConferenceRevealCard({
   className,
   onClick,
 }: ConferenceRevealCardProps) {
-  const [isVisible, setIsVisible] = useState(false)
-  const cardRef = useRef<HTMLDivElement>(null)
+  const [isVisible, setIsVisible] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const currentCard = cardRef.current
-    
+    const currentCard = cardRef.current;
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             setTimeout(() => {
-              setIsVisible(true)
-            }, delay)
+              setIsVisible(true);
+            }, delay);
           }
-        })
+        });
       },
       {
         threshold: 0.1,
         rootMargin: "50px",
       },
-    )
+    );
 
     if (currentCard) {
-      observer.observe(currentCard)
+      observer.observe(currentCard);
     }
 
     return () => {
       if (currentCard) {
-        observer.unobserve(currentCard)
+        observer.unobserve(currentCard);
       }
-    }
-  }, [delay])
+    };
+  }, [delay]);
 
   return (
-    <div ref={cardRef} className={cn("relative overflow-hidden cursor-pointer group", className)} onClick={onClick}>
+    <div
+      ref={cardRef}
+      className={cn("relative overflow-hidden cursor-pointer group", className)}
+      onClick={onClick}
+    >
       <div
         className={cn(
           "transition-all duration-500 ease-[cubic-bezier(.2,.8,.2,1)]",
@@ -82,12 +86,20 @@ export function ConferenceRevealCard({
         </div>
         {(title || date || description) && (
           <div className="mt-3 space-y-1">
-            {title && <h3 className="font-semibold text-sm text-foreground line-clamp-1">{title}</h3>}
+            {title && (
+              <h3 className="font-semibold text-sm text-foreground line-clamp-1">
+                {title}
+              </h3>
+            )}
             {date && <p className="text-xs text-muted-foreground">{date}</p>}
-            {description && <p className="text-xs text-muted-foreground line-clamp-2">{description}</p>}
+            {description && (
+              <p className="text-xs text-muted-foreground line-clamp-2">
+                {description}
+              </p>
+            )}
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }

@@ -2,4 +2,4 @@ import AssignedPaperList from "@/components/(user)/workspace/reviewer/AssignedPa
 
 export default function AssignedPaperListPage() {
   return <AssignedPaperList />;
-}   
+}

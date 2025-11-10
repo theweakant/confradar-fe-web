@@ -32,12 +32,14 @@ export function CategoryTable({
       header: "ID",
       render: (category) => (
         <div className="max-w-xs">
-          <p className="text-sm text-gray-600 font-mono truncate">{category.conferenceCategoryId}</p>
+          <p className="text-sm text-gray-600 font-mono truncate">
+            {category.conferenceCategoryId}
+          </p>
         </div>
       ),
     },
 
-        {
+    {
       key: "conferenceCategoryName",
       header: "Tên danh mục",
       render: (category) => (

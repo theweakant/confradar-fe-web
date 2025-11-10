@@ -9,7 +9,7 @@ interface SocialLoginButtonsProps {
 export const SocialLoginButtons = ({
   onGoogleLogin,
   onOrcidLogin,
-  isLoading
+  isLoading,
 }: SocialLoginButtonsProps) => {
   return (
     <>
@@ -60,11 +60,18 @@ export const SocialLoginButtons = ({
           className="h-12 border-gray-300 hover:bg-gray-50 font-medium text-gray-700 shadow-sm transition-colors bg-transparent"
           disabled={isLoading}
         >
-          <svg className="mr-2 h-5 w-5 flex-shrink-0" viewBox="0 0 24 24" fill="none">
+          <svg
+            className="mr-2 h-5 w-5 flex-shrink-0"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
             <circle cx="12" cy="12" r="11" fill="#A6CE39" />
             <path d="M8.5 7.5h1.5v9H8.5v-9z" fill="white" />
             <circle cx="9.25" cy="5.75" r="1" fill="white" />
-            <path d="M12.5 10.5h2.8c1.4 0 2.2.9 2.2 2.1v.3c0 1.2-.8 2.1-2.2 2.1h-1.3v1.5h-1.5v-6zm1.5 3.2h1.2c.5 0 .8-.3.8-.8v-.2c0-.5-.3-.8-.8-.8h-1.2v1.8z" fill="white" />
+            <path
+              d="M12.5 10.5h2.8c1.4 0 2.2.9 2.2 2.1v.3c0 1.2-.8 2.1-2.2 2.1h-1.3v1.5h-1.5v-6zm1.5 3.2h1.2c.5 0 .8-.3.8-.8v-.2c0-.5-.3-.8-.8-.8h-1.2v1.8z"
+              fill="white"
+            />
           </svg>
           <span className="truncate">ORCID</span>
         </Button>

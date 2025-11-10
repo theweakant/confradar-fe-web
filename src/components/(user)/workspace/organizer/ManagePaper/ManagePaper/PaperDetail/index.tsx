@@ -4,8 +4,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ApiError } from "@/types/api.type";
-import{Paper} from "@/types/paper.type"
-import { useAssignPaperToReviewerMutation,  } from "@/redux/services/paper.service";
+import { Paper } from "@/types/paper.type";
+import { useAssignPaperToReviewerMutation } from "@/redux/services/paper.service";
 import { useGetReviewersListQuery } from "@/redux/services/user.service";
 
 import { ReviewerListResponse } from "@/types/user.type";
@@ -21,8 +21,9 @@ export function PaperDetail({ paperId, onClose }: PaperDetailProps) {
   const [isHeadReviewer, setIsHeadReviewer] = useState(false);
 
   // Gọi API lấy danh sách reviewer
-  const { data: reviewersData, isLoading: isLoadingReviewers } = useGetReviewersListQuery();
-const reviewers = reviewersData?.data ?? [];
+  const { data: reviewersData, isLoading: isLoadingReviewers } =
+    useGetReviewersListQuery();
+  const reviewers = reviewersData?.data ?? [];
 
   // Mutation gọi API giao reviewer
   const [assignPaper, { isLoading }] = useAssignPaperToReviewerMutation();
@@ -39,10 +40,10 @@ const reviewers = reviewersData?.data ?? [];
 
       toast.success(res.message || "Giao reviewer thành công!");
       onClose();
-    } catch (error: unknown) { 
-      const err = error as ApiError; 
-      const errorMessage = err?.Message || "Them đối tác thất bại!"; 
-      toast.error(errorMessage); 
+    } catch (error: unknown) {
+      const err = error as ApiError;
+      const errorMessage = err?.Message || "Them đối tác thất bại!";
+      toast.error(errorMessage);
     }
   };
 

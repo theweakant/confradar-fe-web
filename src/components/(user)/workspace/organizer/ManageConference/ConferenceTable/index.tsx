@@ -1,16 +1,15 @@
 "use client";
 
 import React from "react";
-import { 
-  Eye, 
-  Pencil, 
-  Calendar, 
-  MapPin, 
-  MoreVertical 
-} from "lucide-react";
+import { Eye, Pencil, Calendar, MapPin, MoreVertical } from "lucide-react";
 
 import { DataTable, Column } from "@/components/molecules/DataTable";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ConferenceResponse } from "@/types/conference.type";
 
 interface ConferenceTableProps {
@@ -25,7 +24,9 @@ export function ConferenceTable({ conferences, onView }: ConferenceTableProps) {
       header: "Hội thảo",
       render: (conference) => (
         <div className="max-w-xs">
-          <p className="font-medium text-gray-900 truncate">{conference.conferenceName}</p>
+          <p className="font-medium text-gray-900 truncate">
+            {conference.conferenceName}
+          </p>
           <p className="text-sm text-gray-500 truncate">
             {conference.isInternalHosted ? "Nội bộ" : "Bên ngoài"}
           </p>
@@ -83,7 +84,6 @@ export function ConferenceTable({ conferences, onView }: ConferenceTableProps) {
                 <Eye className="w-4 h-4 mr-2 text-green-600" />
                 <span>Xem</span>
               </DropdownMenuItem>
-
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

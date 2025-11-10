@@ -13,7 +13,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 
 import { SearchFilter } from "@/components/molecules/SearchFilter";
@@ -26,22 +32,44 @@ import { DestinationDetail } from "@/components/(user)/workspace/admin/ManageRoo
 import DestinationTable from "@/components/(user)/workspace/admin/ManageRoom/DestinationTable";
 
 import { useDestinationForm } from "@/redux/hooks/destination/useDestinationForm";
-import { useGetAllRoomsQuery, useCreateRoomMutation, useUpdateRoomMutation, useDeleteRoomMutation } from "@/redux/services/room.service";
-import { useGetAllDestinationsQuery, useCreateDestinationMutation, useUpdateDestinationMutation } from "@/redux/services/destination.service";
+import {
+  useGetAllRoomsQuery,
+  useCreateRoomMutation,
+  useUpdateRoomMutation,
+  useDeleteRoomMutation,
+} from "@/redux/services/room.service";
+import {
+  useGetAllDestinationsQuery,
+  useCreateDestinationMutation,
+  useUpdateDestinationMutation,
+} from "@/redux/services/destination.service";
 
 import type { Room, RoomFormData } from "@/types/room.type";
-import type { Destination, DestinationFormData } from "@/types/destination.type";
+import type {
+  Destination,
+  DestinationFormData,
+} from "@/types/destination.type";
 
 export default function ManageRoom() {
-  const { data: roomsResponse, isLoading: roomsLoading, refetch: refetchRooms } = useGetAllRoomsQuery();
-  const { data: destinationsResponse, isLoading: destinationsLoading, refetch: refetchDestinations } = useGetAllDestinationsQuery();
+  const {
+    data: roomsResponse,
+    isLoading: roomsLoading,
+    refetch: refetchRooms,
+  } = useGetAllRoomsQuery();
+  const {
+    data: destinationsResponse,
+    isLoading: destinationsLoading,
+    refetch: refetchDestinations,
+  } = useGetAllDestinationsQuery();
 
   const [createRoom, { isLoading: isCreatingRoom }] = useCreateRoomMutation();
   const [updateRoom, { isLoading: isUpdatingRoom }] = useUpdateRoomMutation();
   const [deleteRoom, { isLoading: isDeletingRoom }] = useDeleteRoomMutation();
 
-  const [createDestination, { isLoading: isCreatingDestination }] = useCreateDestinationMutation();
-  const [updateDestination, { isLoading: isUpdatingDestination }] = useUpdateDestinationMutation();
+  const [createDestination, { isLoading: isCreatingDestination }] =
+    useCreateDestinationMutation();
+  const [updateDestination, { isLoading: isUpdatingDestination }] =
+    useUpdateDestinationMutation();
 
   const rooms = roomsResponse?.data || [];
   const destinations = destinationsResponse?.data || [];
@@ -52,7 +80,8 @@ export default function ManageRoom() {
   // Search and filter states
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
-  const [selectedDestinationFilter, setSelectedDestinationFilter] = useState<string>("all");
+  const [selectedDestinationFilter, setSelectedDestinationFilter] =
+    useState<string>("all");
 
   // Room modal states
   const [isRoomFormModalOpen, setIsRoomFormModalOpen] = useState(false);
@@ -62,10 +91,14 @@ export default function ManageRoom() {
   const [deleteRoomId, setDeleteRoomId] = useState<string | null>(null);
 
   // Destination modal states
-  const [isDestinationFormModalOpen, setIsDestinationFormModalOpen] = useState(false);
-  const [isDestinationDetailModalOpen, setIsDestinationDetailModalOpen] = useState(false);
-  const [editingDestination, setEditingDestination] = useState<Destination | null>(null);
-  const [viewingDestination, setViewingDestination] = useState<Destination | null>(null);
+  const [isDestinationFormModalOpen, setIsDestinationFormModalOpen] =
+    useState(false);
+  const [isDestinationDetailModalOpen, setIsDestinationDetailModalOpen] =
+    useState(false);
+  const [editingDestination, setEditingDestination] =
+    useState<Destination | null>(null);
+  const [viewingDestination, setViewingDestination] =
+    useState<Destination | null>(null);
 
   const statusOptions = [
     { value: "all", label: "Tất cả trạng thái" },
@@ -79,17 +112,21 @@ export default function ManageRoom() {
       room.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       room.number.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = filterStatus === "all";
-    const matchesDestination = selectedDestinationFilter === "all" || room.destinationId === selectedDestinationFilter;
+    const matchesDestination =
+      selectedDestinationFilter === "all" ||
+      room.destinationId === selectedDestinationFilter;
     return matchesSearch && matchesStatus && matchesDestination;
   });
 
-  const filteredDestinations = destinations.filter((destination: Destination) => {
-    const matchesSearch =
-      destination.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      // destination.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      destination.district.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSearch;
-  });
+  const filteredDestinations = destinations.filter(
+    (destination: Destination) => {
+      const matchesSearch =
+        destination.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        // destination.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        destination.district.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesSearch;
+    },
+  );
 
   // Room handlers
   const handleCreateRoom = () => {
@@ -128,7 +165,7 @@ export default function ManageRoom() {
       if (editingRoom) {
         const result = await updateRoom({
           id: editingRoom.roomId,
-          data
+          data,
         }).unwrap();
 
         toast.success(result.message || "Cập nhật thông tin phòng thành công!");
@@ -154,10 +191,12 @@ export default function ManageRoom() {
       if (editingDestination) {
         const result = await updateDestination({
           id: editingDestination.destinationId,
-          data
+          data,
         }).unwrap();
 
-        toast.success(result.message || "Cập nhật thông tin địa điểm thành công!");
+        toast.success(
+          result.message || "Cập nhật thông tin địa điểm thành công!",
+        );
       } else {
         const result = await createDestination(data).unwrap();
         toast.success(result.message || "Thêm địa điểm mới thành công!");
@@ -202,7 +241,9 @@ export default function ManageRoom() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-gray-900">Quản lý Phòng & Địa điểm</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Quản lý Phòng & Địa điểm
+            </h1>
             <div className="flex gap-3">
               {activeTab === "rooms" ? (
                 <Button
@@ -236,10 +277,11 @@ export default function ManageRoom() {
             <nav className="-mb-px flex space-x-8">
               <button
                 onClick={() => setActiveTab("rooms")}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "rooms"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  }`}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === "rooms"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
               >
                 <div className="flex items-center gap-2">
                   <Home className="w-4 h-4" />
@@ -248,10 +290,11 @@ export default function ManageRoom() {
               </button>
               <button
                 onClick={() => setActiveTab("destinations")}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "destinations"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  }`}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === "destinations"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
               >
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
@@ -267,27 +310,41 @@ export default function ManageRoom() {
           <SearchFilter
             searchValue={searchQuery}
             onSearchChange={setSearchQuery}
-            searchPlaceholder={activeTab === "rooms" ? "Tìm kiếm phòng..." : "Tìm kiếm địa điểm..."}
-            filters={activeTab === "rooms" ? [
-              {
-                value: filterStatus,
-                onValueChange: setFilterStatus,
-                options: statusOptions,
-              },
-            ] : []}
+            searchPlaceholder={
+              activeTab === "rooms"
+                ? "Tìm kiếm phòng..."
+                : "Tìm kiếm địa điểm..."
+            }
+            filters={
+              activeTab === "rooms"
+                ? [
+                    {
+                      value: filterStatus,
+                      onValueChange: setFilterStatus,
+                      options: statusOptions,
+                    },
+                  ]
+                : []
+            }
           />
 
           {/* Additional filter for rooms */}
           {activeTab === "rooms" && (
             <div className="mt-4">
-              <Select value={selectedDestinationFilter} onValueChange={setSelectedDestinationFilter}>
+              <Select
+                value={selectedDestinationFilter}
+                onValueChange={setSelectedDestinationFilter}
+              >
                 <SelectTrigger className="w-64">
                   <SelectValue placeholder="Lọc theo địa điểm" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Tất cả địa điểm</SelectItem>
                   {destinations.map((destination) => (
-                    <SelectItem key={destination.destinationId} value={destination.destinationId}>
+                    <SelectItem
+                      key={destination.destinationId}
+                      value={destination.destinationId}
+                    >
                       {destination.name}
                     </SelectItem>
                   ))}
@@ -307,9 +364,12 @@ export default function ManageRoom() {
                 </p>
                 <p className="text-3xl font-bold text-gray-900">
                   {activeTab === "rooms"
-                    ? (roomsLoading ? "..." : rooms.length)
-                    : (destinationsLoading ? "..." : destinations.length)
-                  }
+                    ? roomsLoading
+                      ? "..."
+                      : rooms.length
+                    : destinationsLoading
+                      ? "..."
+                      : destinations.length}
                 </p>
               </div>
               {activeTab === "rooms" ? (
@@ -336,19 +396,17 @@ export default function ManageRoom() {
                 onDelete={handleDeleteRoom}
               />
             )
+          ) : destinationsLoading ? (
+            <div className="p-8 text-center text-gray-500">
+              Đang tải dữ liệu địa điểm...
+            </div>
           ) : (
-            destinationsLoading ? (
-              <div className="p-8 text-center text-gray-500">
-                Đang tải dữ liệu địa điểm...
-              </div>
-            ) : (
-              <DestinationTable
-                destinations={filteredDestinations}
-                loading={destinationsLoading}
-                onViewDetail={handleViewDestination}
-                onEdit={handleEditDestination}
-              />
-            )
+            <DestinationTable
+              destinations={filteredDestinations}
+              loading={destinationsLoading}
+              onViewDetail={handleViewDestination}
+              onEdit={handleEditDestination}
+            />
           )}
         </div>
       </div>
@@ -434,12 +492,16 @@ export default function ManageRoom() {
       </Modal>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteRoomId} onOpenChange={() => setDeleteRoomId(null)}>
+      <AlertDialog
+        open={!!deleteRoomId}
+        onOpenChange={() => setDeleteRoomId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa phòng này? Hành động này không thể hoàn tác.
+              Bạn có chắc chắn muốn xóa phòng này? Hành động này không thể hoàn
+              tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

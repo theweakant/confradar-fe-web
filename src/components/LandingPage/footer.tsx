@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { ExternalLink } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import type React from "react";
+import { useState } from "react";
+import { ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function Footer() {
-  const [email, setEmail] = useState("")
+  const [email, setEmail] = useState("");
 
   const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Email đăng ký:", email)
+    e.preventDefault();
+    console.log("Email đăng ký:", email);
     // TODO: Thêm logic gọi API lưu email đăng ký
-    setEmail("")
-  }
+    setEmail("");
+  };
 
   const footerLinks = [
     {
@@ -73,7 +73,7 @@ export default function Footer() {
         },
       ],
     },
-  ]
+  ];
 
   return (
     <footer className="bg-black text-white">
@@ -130,8 +130,10 @@ export default function Footer() {
               <h2 className="text-2xl font-bold">ConfRadar</h2>
             </div>
             <p className="text-white/60 text-sm leading-relaxed max-w-md">
-              ConfRadar là ứng dụng hỗ trợ tìm kiếm và đăng ký tham dự các Hội thảo Công nghệ & Nghiên cứu. 
-              Kết nối với chuyên gia hàng đầu, khám phá xu hướng mới nhất và mở rộng mạng lưới học thuật & nghề nghiệp của bạn.
+              ConfRadar là ứng dụng hỗ trợ tìm kiếm và đăng ký tham dự các Hội
+              thảo Công nghệ & Nghiên cứu. Kết nối với chuyên gia hàng đầu, khám
+              phá xu hướng mới nhất và mở rộng mạng lưới học thuật & nghề nghiệp
+              của bạn.
             </p>
           </div>
 
@@ -162,11 +164,17 @@ export default function Footer() {
         <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-white/40">
           <p>© 2025 ConfRadar | Bản quyền thuộc về nhóm phát triển</p>
           <div className="flex gap-6">
-            <a href="/privacy" className="hover:text-orange-500 transition-colors">
+            <a
+              href="/privacy"
+              className="hover:text-orange-500 transition-colors"
+            >
               Chính sách bảo mật
             </a>
             <span>|</span>
-            <a href="/terms" className="hover:text-orange-500 transition-colors">
+            <a
+              href="/terms"
+              className="hover:text-orange-500 transition-colors"
+            >
               Điều khoản sử dụng
             </a>
           </div>
@@ -174,5 +182,5 @@ export default function Footer() {
         </div>
       </div>
     </footer>
-  )
+  );
 }

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 
 interface FormInputProps {
   id: string;
-  type: 'email' | 'password';
+  type: "email" | "password";
   label: string;
   placeholder: string;
   value: string;
@@ -15,19 +15,19 @@ interface FormInputProps {
   showForgotPassword?: boolean;
 }
 
-export const FormInput = ({ 
-  id, 
-  type, 
-  label, 
-  placeholder, 
-  value, 
-  onChange, 
-  error, 
+export const FormInput = ({
+  id,
+  type,
+  label,
+  placeholder,
+  value,
+  onChange,
+  error,
   disabled,
-  showForgotPassword = false
+  showForgotPassword = false,
 }: FormInputProps) => {
   const router = useRouter();
-  const Icon = type === 'email' ? Mail : Lock;
+  const Icon = type === "email" ? Mail : Lock;
 
   return (
     <div className="space-y-2">
@@ -55,7 +55,9 @@ export const FormInput = ({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className={`pl-11 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${
-            error ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
+            error
+              ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+              : ""
           }`}
           disabled={disabled}
         />

@@ -1,9 +1,13 @@
 // redux/services/auth.service.ts
-import { createApi } from "@reduxjs/toolkit/query/react"
-import { apiClient } from "../api/apiClient"
-import { endpoint } from "../api/endpoint"
-import {ForgetPasswordResponse, VerifyForgetPasswordResponse, VerifyForgetPasswordData  } from "@/types/auth.type"
-import {ApiResponse} from "@/types/api.type"
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { apiClient } from "../api/apiClient";
+import { endpoint } from "../api/endpoint";
+import {
+  ForgetPasswordResponse,
+  VerifyForgetPasswordResponse,
+  VerifyForgetPasswordData,
+} from "@/types/auth.type";
+import { ApiResponse } from "@/types/api.type";
 
 export const authApi = createApi({
   reducerPath: "authApi",
@@ -30,29 +34,34 @@ export const authApi = createApi({
         body: { token },
       }),
     }),
-    forgetPassword: builder.mutation<ApiResponse<ForgetPasswordResponse>, string>({
+    forgetPassword: builder.mutation<
+      ApiResponse<ForgetPasswordResponse>,
+      string
+    >({
       query: (email) => ({
         url: endpoint.AUTH.FORGET_PASSWORD,
-        method: 'POST',
+        method: "POST",
         params: { email },
       }),
     }),
 
-    verifyForgetPassword: builder.mutation<ApiResponse<VerifyForgetPasswordResponse>, VerifyForgetPasswordData>({
+    verifyForgetPassword: builder.mutation<
+      ApiResponse<VerifyForgetPasswordResponse>,
+      VerifyForgetPasswordData
+    >({
       query: (body) => ({
         url: endpoint.AUTH.VERIFY_FORGET_PASSWORD,
         method: "POST",
         body,
       }),
-          }),
-
+    }),
   }),
-})
+});
 
-export const { 
-  useLoginMutation, 
-  useRegisterMutation, 
+export const {
+  useLoginMutation,
+  useRegisterMutation,
   useFirebaseLoginMutation,
   useForgetPasswordMutation,
-  useVerifyForgetPasswordMutation   
- } = authApi
+  useVerifyForgetPasswordMutation,
+} = authApi;

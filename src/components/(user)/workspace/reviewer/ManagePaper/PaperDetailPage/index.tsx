@@ -1,7 +1,20 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { FileText, Clock, Download, AlertCircle, CheckCircle, XCircle, Send, Gavel, ChevronDown, ChevronUp, MessageSquare, Plus } from "lucide-react";
+import {
+  FileText,
+  Clock,
+  Download,
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+  Send,
+  Gavel,
+  ChevronDown,
+  ChevronUp,
+  MessageSquare,
+  Plus,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/helper/format";
 import {
@@ -13,21 +26,21 @@ import {
   useSubmitPaperRevisionReviewMutation,
   useListRevisionPaperReviewsQuery,
   useDecideRevisionStatusMutation,
-  useDecideCameraReadyMutation
+  useDecideCameraReadyMutation,
 } from "@/redux/services/paper.service";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ApiError } from "@/types/api.type";
 
 // Component for Revision Reviews List
-function RevisionReviewsList({ 
-  paperId, 
-  revisionPaperId, 
+function RevisionReviewsList({
+  paperId,
+  revisionPaperId,
   submissionId,
-  isExpanded, 
+  isExpanded,
   onToggle,
   getStatusIcon,
-  getStatusColor 
+  getStatusColor,
 }: {
   paperId: string;
   revisionPaperId: string;
@@ -39,7 +52,7 @@ function RevisionReviewsList({
 }) {
   const { data: revisionReviews, isLoading } = useListRevisionPaperReviewsQuery(
     { revisionPaperId, paperId },
-    { skip: !isExpanded }
+    { skip: !isExpanded },
   );
 
   return (
@@ -89,17 +102,21 @@ function RevisionReviewsList({
                       />
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-semibold text-sm">
-                        {review.reviewerName ? review.reviewerName.charAt(0).toUpperCase() : "R"}
+                        {review.reviewerName
+                          ? review.reviewerName.charAt(0).toUpperCase()
+                          : "R"}
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
                       <p className="font-semibold text-gray-900">
                         {review.reviewerName || "N/A"}
                       </p>
-                      <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(review.globalStatusName)}`}>
+                      <span
+                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(review.globalStatusName)}`}
+                      >
                         {getStatusIcon(review.globalStatusName)}
                         {review.globalStatusName}
                       </span>
@@ -117,9 +134,7 @@ function RevisionReviewsList({
                     <p className="text-xs font-semibold text-yellow-800 mb-1">
                       Ghi chú nội bộ:
                     </p>
-                    <p className="text-sm text-gray-700">
-                      {review.note}
-                    </p>
+                    <p className="text-sm text-gray-700">{review.note}</p>
                   </div>
                 )}
 
@@ -174,9 +189,10 @@ export default function ReviewPaperPage() {
   const paperDetail = data?.data;
   const currentPhase = paperDetail?.currentResearchConferencePhase;
 
-
   // Tab state
-  const [activeTab, setActiveTab] = useState<"fullPaper" | "revision" | "cameraReady">("fullPaper");
+  const [activeTab, setActiveTab] = useState<
+    "fullPaper" | "revision" | "cameraReady"
+  >("fullPaper");
 
   // Full Paper Form states
   const [note, setNote] = useState("");
@@ -207,107 +223,133 @@ export default function ReviewPaperPage() {
   // Popup state for Head Reviewer decision
   const [showDecisionPopup, setShowDecisionPopup] = useState(false);
   const [decisionStatus, setDecisionStatus] = useState("Accepted");
-  
+
   // Popup state for Head Reviewer decision - Revision
-  const [showRevisionDecisionPopup, setShowRevisionDecisionPopup] = useState(false);
-  const [revisionDecisionStatus, setRevisionDecisionStatus] = useState("Pending");
+  const [showRevisionDecisionPopup, setShowRevisionDecisionPopup] =
+    useState(false);
+  const [revisionDecisionStatus, setRevisionDecisionStatus] =
+    useState("Pending");
 
-  const [showCameraReadyDecisionPopup, setShowCameraReadyDecisionPopup] = useState(false);
-  const [cameraReadyDecisionStatus, setCameraReadyDecisionStatus] = useState("Accepted");
+  const [showCameraReadyDecisionPopup, setShowCameraReadyDecisionPopup] =
+    useState(false);
+  const [cameraReadyDecisionStatus, setCameraReadyDecisionStatus] =
+    useState("Accepted");
 
-  const [submitReview, { isLoading: isSubmitting }] = useSubmitFullPaperReviewMutation();
-  const [decideStatus, { isLoading: isDeciding }] = useDecideFullPaperStatusMutation();
-  const [decideRevisionStatus, { isLoading: isDecidingRevision }] = useDecideRevisionStatusMutation();
-  const [decideCameraReadyStatus, { isLoading: isDecidingCameraReady }] = useDecideCameraReadyMutation();
-  const [submitRevisionReview, { isLoading: isSubmittingRevisionReview }] = useSubmitPaperRevisionReviewMutation();
-  const [submitRevisionFeedback, { isLoading: isSubmittingRevision }] = useSubmitPaperRevisionFeedbackMutation();
+  const [submitReview, { isLoading: isSubmitting }] =
+    useSubmitFullPaperReviewMutation();
+  const [decideStatus, { isLoading: isDeciding }] =
+    useDecideFullPaperStatusMutation();
+  const [decideRevisionStatus, { isLoading: isDecidingRevision }] =
+    useDecideRevisionStatusMutation();
+  const [decideCameraReadyStatus, { isLoading: isDecidingCameraReady }] =
+    useDecideCameraReadyMutation();
+  const [submitRevisionReview, { isLoading: isSubmittingRevisionReview }] =
+    useSubmitPaperRevisionReviewMutation();
+  const [submitRevisionFeedback, { isLoading: isSubmittingRevision }] =
+    useSubmitPaperRevisionFeedbackMutation();
 
   // Get reviews for Head Reviewer
   const { data: fullReviews } = useGetFullPaperReviewsQuery(
-    paperDetail?.isHeadReviewer ? paperDetail?.fullPaper?.fullPaperId ?? "" : "",
-    { skip: !paperDetail?.isHeadReviewer || !paperDetail?.fullPaper?.fullPaperId }
+    paperDetail?.isHeadReviewer
+      ? (paperDetail?.fullPaper?.fullPaperId ?? "")
+      : "",
+    {
+      skip:
+        !paperDetail?.isHeadReviewer || !paperDetail?.fullPaper?.fullPaperId,
+    },
   );
 
-
-//++VALIDATION++
-// Helper function: Check if current date is within date range
-const isWithinDateRange = (startDate: string, endDate: string): boolean => {
-  const now = new Date();
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-  return now >= start && now <= end;
-};
-
-// Helper function: Check if current date is after date
-const isAfterDate = (date: string): boolean => {
-  const now = new Date();
-  const targetDate = new Date(date);
-  return now > targetDate;
-};
-
-// Helper function: Get feedback period for a revision round
-const getRevisionFeedbackPeriod = (roundNumber: number): { start: string; end: string } | null => {
-  if (!currentPhase?.revisionRoundsDetail) return null;
-  
-  const sortedRounds = [...currentPhase.revisionRoundsDetail].sort((a, b) => a.roundNumber - b.roundNumber);
-  const currentRoundIndex = sortedRounds.findIndex(r => r.roundNumber === roundNumber);
-  
-  if (currentRoundIndex === -1) return null;
-  
-  const currentRound = sortedRounds[currentRoundIndex];
-  const nextRound = sortedRounds[currentRoundIndex + 1];
-  
-  if (!nextRound) return null; // No feedback period if it's the last round
-  
-  return {
-    start: currentRound.endSubmissionDate??"??",
-    end: nextRound.endSubmissionDate??""
+  //++VALIDATION++
+  // Helper function: Check if current date is within date range
+  const isWithinDateRange = (startDate: string, endDate: string): boolean => {
+    const now = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    return now >= start && now <= end;
   };
-};
 
-// Validation functions
-const canSubmitFullPaperReview = (): boolean => {
-  if (!currentPhase) return false;
-  return isWithinDateRange(currentPhase.reviewStartDate, currentPhase.reviewEndDate);
-};
+  // Helper function: Check if current date is after date
+  const isAfterDate = (date: string): boolean => {
+    const now = new Date();
+    const targetDate = new Date(date);
+    return now > targetDate;
+  };
 
-const canDecideFullPaperStatus = (): boolean => {
-  if (!currentPhase) return false;
-  return isWithinDateRange(currentPhase.reviewStartDate, currentPhase.reviewEndDate);
-};
+  // Helper function: Get feedback period for a revision round
+  const getRevisionFeedbackPeriod = (
+    roundNumber: number,
+  ): { start: string; end: string } | null => {
+    if (!currentPhase?.revisionRoundsDetail) return null;
 
-const canSubmitRevisionReview = (submissionId: string): boolean => {
-  if (!paperDetail?.revisionPaper) return false;
-  
-  const submission = paperDetail.revisionPaper.revisionPaperSubmissions.find(
-    s => s.revisionPaperSubmissionId === submissionId
-  );
-  
-  if (!submission) return false;
-  
-  return isWithinDateRange(submission.startDate, submission.endDate);
-};
+    const sortedRounds = [...currentPhase.revisionRoundsDetail].sort(
+      (a, b) => a.roundNumber - b.roundNumber,
+    );
+    const currentRoundIndex = sortedRounds.findIndex(
+      (r) => r.roundNumber === roundNumber,
+    );
 
-const canSubmitRevisionFeedback = (roundNumber: number): boolean => {
-  const feedbackPeriod = getRevisionFeedbackPeriod(roundNumber);
-  if (!feedbackPeriod) return false;
-  
-  return isWithinDateRange(feedbackPeriod.start, feedbackPeriod.end);
-};
+    if (currentRoundIndex === -1) return null;
 
-const canDecideRevisionStatus = (): boolean => {
-  if (!currentPhase) return false;
-  return isAfterDate(currentPhase.reviseEndDate);
-};
+    const currentRound = sortedRounds[currentRoundIndex];
+    const nextRound = sortedRounds[currentRoundIndex + 1];
 
-const canDecideCameraReadyStatus = (): boolean => {
-  if (!currentPhase) return false;
-  return isAfterDate(currentPhase.cameraReadyEndDate);
-};
+    if (!nextRound) return null; // No feedback period if it's the last round
+
+    return {
+      start: currentRound.endSubmissionDate ?? "??",
+      end: nextRound.endSubmissionDate ?? "",
+    };
+  };
+
+  // Validation functions
+  const canSubmitFullPaperReview = (): boolean => {
+    if (!currentPhase) return false;
+    return isWithinDateRange(
+      currentPhase.reviewStartDate,
+      currentPhase.reviewEndDate,
+    );
+  };
+
+  const canDecideFullPaperStatus = (): boolean => {
+    if (!currentPhase) return false;
+    return isWithinDateRange(
+      currentPhase.reviewStartDate,
+      currentPhase.reviewEndDate,
+    );
+  };
+
+  const canSubmitRevisionReview = (submissionId: string): boolean => {
+    if (!paperDetail?.revisionPaper) return false;
+
+    const submission = paperDetail.revisionPaper.revisionPaperSubmissions.find(
+      (s) => s.revisionPaperSubmissionId === submissionId,
+    );
+
+    if (!submission) return false;
+
+    return isWithinDateRange(submission.startDate, submission.endDate);
+  };
+
+  const canSubmitRevisionFeedback = (roundNumber: number): boolean => {
+    const feedbackPeriod = getRevisionFeedbackPeriod(roundNumber);
+    if (!feedbackPeriod) return false;
+
+    return isWithinDateRange(feedbackPeriod.start, feedbackPeriod.end);
+  };
+
+  const canDecideRevisionStatus = (): boolean => {
+    if (!currentPhase) return false;
+    return isAfterDate(currentPhase.reviseEndDate);
+  };
+
+  const canDecideCameraReadyStatus = (): boolean => {
+    if (!currentPhase) return false;
+    return isAfterDate(currentPhase.cameraReadyEndDate);
+  };
 
   // Toggle function for expanding/collapsing reviews
   const toggleReviewsExpansion = (submissionId: string) => {
-    setExpandedReviewsSubmissions(prev => ({
+    setExpandedReviewsSubmissions((prev) => ({
       ...prev,
       [submissionId]: !prev[submissionId],
     }));
@@ -316,7 +358,9 @@ const canDecideCameraReadyStatus = (): boolean => {
   const handleSubmitReview = async () => {
     if (!paperDetail?.fullPaper) return;
     if (!canSubmitFullPaperReview()) {
-      toast.error(`Thời hạn nộp đánh giá Full Paper là từ ${formatDate(currentPhase!.reviewStartDate)} đến ${formatDate(currentPhase!.reviewEndDate)}`);
+      toast.error(
+        `Thời hạn nộp đánh giá Full Paper là từ ${formatDate(currentPhase!.reviewStartDate)} đến ${formatDate(currentPhase!.reviewEndDate)}`,
+      );
       return;
     }
     try {
@@ -327,7 +371,7 @@ const canDecideCameraReadyStatus = (): boolean => {
         reviewStatus,
         feedbackMaterialFile: file!,
       }).unwrap();
-      toast.success( "Gửi đánh giá thành công");
+      toast.success("Gửi đánh giá thành công");
       setNote("");
       setFeedbackToAuthor("");
       setFile(null);
@@ -340,7 +384,7 @@ const canDecideCameraReadyStatus = (): boolean => {
 
   const handleSubmitRevisionReview = async (submissionId: string) => {
     if (!paperDetail?.revisionPaper) return;
-    
+
     const reviewData = revisionReviews[submissionId];
     if (!reviewData) {
       toast.error("Vui lòng nhập thông tin đánh giá");
@@ -348,10 +392,13 @@ const canDecideCameraReadyStatus = (): boolean => {
     }
 
     if (!canSubmitRevisionReview(submissionId)) {
-      const submission = paperDetail.revisionPaper.revisionPaperSubmissions.find(
-        s => s.revisionPaperSubmissionId === submissionId
+      const submission =
+        paperDetail.revisionPaper.revisionPaperSubmissions.find(
+          (s) => s.revisionPaperSubmissionId === submissionId,
+        );
+      toast.error(
+        `Thời hạn nộp đánh giá cho Round ${submission?.roundNumber} là từ ${formatDate(submission!.startDate)} đến ${formatDate(submission!.endDate)}`,
       );
-      toast.error(`Thời hạn nộp đánh giá cho Round ${submission?.roundNumber} là từ ${formatDate(submission!.startDate)} đến ${formatDate(submission!.endDate)}`);
       return;
     }
 
@@ -365,10 +412,10 @@ const canDecideCameraReadyStatus = (): boolean => {
         feedbackToAuthor: reviewData.feedbackToAuthor,
         feedbackMaterialFile: reviewData.file || undefined,
       }).unwrap();
-      
+
       toast.success("Gửi đánh giá revision thành công");
-      
-      setRevisionReviews(prev => {
+
+      setRevisionReviews((prev) => {
         const updated = { ...prev };
         delete updated[submissionId];
         return updated;
@@ -382,42 +429,44 @@ const canDecideCameraReadyStatus = (): boolean => {
 
   const handleSubmitRevisionFeedback = async (submissionId: string) => {
     if (!paperDetail?.revisionPaper) return;
-    
+
     const feedbacks = revisionFeedbacks[submissionId];
     if (!feedbacks || feedbacks.length === 0) {
       toast.error("Vui lòng nhập ít nhất một feedback");
       return;
     }
 
-  const submission = paperDetail.revisionPaper.revisionPaperSubmissions.find(
-    s => s.revisionPaperSubmissionId === submissionId
-  );
-  
-  if (!submission) return;
-  
-  if (!canSubmitRevisionFeedback(submission.roundNumber)) {
-    const feedbackPeriod = getRevisionFeedbackPeriod(submission.roundNumber);
-    if (feedbackPeriod) {
-      toast.error(`Thời hạn nhập feedback cho Round ${submission.roundNumber} là từ ${formatDate(feedbackPeriod.start)} đến ${formatDate(feedbackPeriod.end)}`);
-    } else {
-      toast.error(`Không thể nhập feedback cho Round cuối cùng`);
+    const submission = paperDetail.revisionPaper.revisionPaperSubmissions.find(
+      (s) => s.revisionPaperSubmissionId === submissionId,
+    );
+
+    if (!submission) return;
+
+    if (!canSubmitRevisionFeedback(submission.roundNumber)) {
+      const feedbackPeriod = getRevisionFeedbackPeriod(submission.roundNumber);
+      if (feedbackPeriod) {
+        toast.error(
+          `Thời hạn nhập feedback cho Round ${submission.roundNumber} là từ ${formatDate(feedbackPeriod.start)} đến ${formatDate(feedbackPeriod.end)}`,
+        );
+      } else {
+        toast.error(`Không thể nhập feedback cho Round cuối cùng`);
+      }
+      return;
     }
-    return;
-  }
 
     try {
       const response = await submitRevisionFeedback({
         paperId,
         revisionPaperSubmissionId: submissionId,
-        feedbacks: feedbacks.map(f => ({
+        feedbacks: feedbacks.map((f) => ({
           feedback: f.feedback,
           sortOrder: f.sortOrder,
         })),
       }).unwrap();
-      
+
       toast.success(response?.message || "Đã gửi thành công revision feedback");
-      
-      setRevisionFeedbacks(prev => ({
+
+      setRevisionFeedbacks((prev) => ({
         ...prev,
         [submissionId]: [],
       }));
@@ -432,7 +481,7 @@ const canDecideCameraReadyStatus = (): boolean => {
   const updateRevisionReview = (
     submissionId: string,
     field: string,
-    value: string | boolean | File | null
+    value: string | boolean | File | null,
   ) => {
     setRevisionReviews((prev) => ({
       ...prev,
@@ -449,27 +498,36 @@ const canDecideCameraReadyStatus = (): boolean => {
   };
 
   const getRevisionReview = (submissionId: string) => {
-    return revisionReviews[submissionId] || {
-      note: "",
-      feedbackToAuthor: "",
-      globalStatus: "Accepted",
-      file: null,
-    };
+    return (
+      revisionReviews[submissionId] || {
+        note: "",
+        feedbackToAuthor: "",
+        globalStatus: "Accepted",
+        file: null,
+      }
+    );
   };
 
   const addFeedbackField = (submissionId: string) => {
-    setRevisionFeedbacks(prev => {
+    setRevisionFeedbacks((prev) => {
       const current = prev[submissionId] || [];
       const nextSortOrder = current.length + 1;
       return {
         ...prev,
-        [submissionId]: [...current, { feedback: "", sortOrder: nextSortOrder }],
+        [submissionId]: [
+          ...current,
+          { feedback: "", sortOrder: nextSortOrder },
+        ],
       };
     });
   };
 
-  const updateFeedback = (submissionId: string, index: number, value: string) => {
-    setRevisionFeedbacks(prev => {
+  const updateFeedback = (
+    submissionId: string,
+    index: number,
+    value: string,
+  ) => {
+    setRevisionFeedbacks((prev) => {
       const current = prev[submissionId] || [];
       const updated = [...current];
       updated[index] = { ...updated[index], feedback: value };
@@ -481,7 +539,7 @@ const canDecideCameraReadyStatus = (): boolean => {
   };
 
   const removeFeedback = (submissionId: string, index: number) => {
-    setRevisionFeedbacks(prev => {
+    setRevisionFeedbacks((prev) => {
       const current = prev[submissionId] || [];
       const updated = current.filter((_, i) => i !== index);
       // Re-index sortOrder
@@ -496,9 +554,11 @@ const canDecideCameraReadyStatus = (): boolean => {
   const handleDecideStatus = async () => {
     if (!paperDetail?.fullPaper) return;
     if (!canDecideFullPaperStatus()) {
-      toast.error(`Thời hạn quyết định Full Paper là từ ${formatDate(currentPhase!.reviewStartDate)} đến ${formatDate(currentPhase!.reviewEndDate)}`);
+      toast.error(
+        `Thời hạn quyết định Full Paper là từ ${formatDate(currentPhase!.reviewStartDate)} đến ${formatDate(currentPhase!.reviewEndDate)}`,
+      );
       return;
-    }    
+    }
     try {
       const response = await decideStatus({
         paperId,
@@ -508,16 +568,18 @@ const canDecideCameraReadyStatus = (): boolean => {
       toast.success("Cập nhật trạng thái thành công");
       setShowDecisionPopup(false);
     } catch (error: unknown) {
-        const apiError = error as ApiError; 
-        const errorMessage =apiError?.Message ||"Lỗi khi cập nhật trạng thái";
-        toast.error(errorMessage);
-      }
+      const apiError = error as ApiError;
+      const errorMessage = apiError?.Message || "Lỗi khi cập nhật trạng thái";
+      toast.error(errorMessage);
+    }
   };
 
   const handleDecideRevisionStatus = async () => {
     if (!paperDetail?.revisionPaper) return;
     if (!canDecideRevisionStatus()) {
-      toast.error(`Chỉ có thể quyết định Revision sau ngày ${formatDate(currentPhase!.reviseEndDate)}`);
+      toast.error(
+        `Chỉ có thể quyết định Revision sau ngày ${formatDate(currentPhase!.reviseEndDate)}`,
+      );
       return;
     }
 
@@ -529,18 +591,20 @@ const canDecideCameraReadyStatus = (): boolean => {
       }).unwrap();
       toast.success("Cập nhật trạng thái revision thành công");
       setShowRevisionDecisionPopup(false);
-      } catch (error: unknown) {
-        const err = error as ApiError;
-        toast.error(err.Message || "Lỗi khi cập nhật trạng thái revision");
-      }
+    } catch (error: unknown) {
+      const err = error as ApiError;
+      toast.error(err.Message || "Lỗi khi cập nhật trạng thái revision");
+    }
   };
 
   const handleDecideCameraReadyStatus = async () => {
     if (!paperDetail?.cameraReady) return;
     if (!canDecideCameraReadyStatus()) {
-      toast.error(`Chỉ có thể quyết định Camera Ready sau ngày ${formatDate(currentPhase!.cameraReadyEndDate)}`);
+      toast.error(
+        `Chỉ có thể quyết định Camera Ready sau ngày ${formatDate(currentPhase!.cameraReadyEndDate)}`,
+      );
       return;
-    }    
+    }
     try {
       const response = await decideCameraReadyStatus({
         cameraReadyId: paperDetail.cameraReady.cameraReadyId,
@@ -599,7 +663,9 @@ const canDecideCameraReadyStatus = (): boolean => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <p className="text-gray-600 mb-4">Có lỗi xảy ra khi tải chi tiết bài báo</p>
+          <p className="text-gray-600 mb-4">
+            Có lỗi xảy ra khi tải chi tiết bài báo
+          </p>
         </div>
       </div>
     );
@@ -638,15 +704,15 @@ const canDecideCameraReadyStatus = (): boolean => {
                 <span className="px-3 py-1 bg-purple-200 rounded-full text-xs">
                   {paperDetail.isHeadReviewer ? "HEAD REVIEWER" : "REVIEWER"}
                 </span>
-                {paperDetail.isHeadReviewer 
+                {paperDetail.isHeadReviewer
                   ? "Bạn là Head Reviewer cho bài báo này"
                   : "Bạn là Reviewer cho bài báo này"}
               </p>
-              
+
               {paperDetail.isHeadReviewer && (
                 <>
                   {activeTab === "fullPaper" && paperDetail.fullPaper && (
-                    <Button 
+                    <Button
                       onClick={() => setShowDecisionPopup(true)}
                       className="bg-purple-600 hover:bg-purple-700"
                     >
@@ -654,9 +720,9 @@ const canDecideCameraReadyStatus = (): boolean => {
                       Quyết định cuối cùng
                     </Button>
                   )}
-                  
+
                   {activeTab === "revision" && paperDetail.revisionPaper && (
-                    <Button 
+                    <Button
                       onClick={() => setShowRevisionDecisionPopup(true)}
                       className="bg-orange-600 hover:bg-orange-700"
                     >
@@ -665,7 +731,7 @@ const canDecideCameraReadyStatus = (): boolean => {
                     </Button>
                   )}
                   {activeTab === "cameraReady" && paperDetail.cameraReady && (
-                    <Button 
+                    <Button
                       onClick={() => setShowCameraReadyDecisionPopup(true)}
                       className="bg-green-600 hover:bg-green-700"
                     >
@@ -686,41 +752,65 @@ const canDecideCameraReadyStatus = (): boolean => {
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <span className="text-gray-600">Đăng ký:</span>
-                  <p className="font-medium text-gray-900">{formatDate(currentPhase.registrationStartDate)} - {formatDate(currentPhase.registrationEndDate)}</p>
+                  <p className="font-medium text-gray-900">
+                    {formatDate(currentPhase.registrationStartDate)} -{" "}
+                    {formatDate(currentPhase.registrationEndDate)}
+                  </p>
                 </div>
                 <div>
                   <span className="text-gray-600">Full Paper:</span>
-                  <p className="font-medium text-gray-900">{formatDate(currentPhase.fullPaperStartDate)} - {formatDate(currentPhase.fullPaperEndDate)}</p>
+                  <p className="font-medium text-gray-900">
+                    {formatDate(currentPhase.fullPaperStartDate)} -{" "}
+                    {formatDate(currentPhase.fullPaperEndDate)}
+                  </p>
                 </div>
                 <div>
                   <span className="text-gray-600">Review:</span>
-                  <p className="font-medium text-gray-900">{formatDate(currentPhase.reviewStartDate)} - {formatDate(currentPhase.reviewEndDate)}</p>
+                  <p className="font-medium text-gray-900">
+                    {formatDate(currentPhase.reviewStartDate)} -{" "}
+                    {formatDate(currentPhase.reviewEndDate)}
+                  </p>
                 </div>
                 <div>
                   <span className="text-gray-600">Revision:</span>
-                  <p className="font-medium text-gray-900">{formatDate(currentPhase.reviseStartDate)} - {formatDate(currentPhase.reviseEndDate)}</p>
+                  <p className="font-medium text-gray-900">
+                    {formatDate(currentPhase.reviseStartDate)} -{" "}
+                    {formatDate(currentPhase.reviseEndDate)}
+                  </p>
                 </div>
                 <div>
                   <span className="text-gray-600">Camera Ready:</span>
-                  <p className="font-medium text-gray-900">{formatDate(currentPhase.cameraReadyStartDate)} - {formatDate(currentPhase.cameraReadyEndDate)}</p>
+                  <p className="font-medium text-gray-900">
+                    {formatDate(currentPhase.cameraReadyStartDate)} -{" "}
+                    {formatDate(currentPhase.cameraReadyEndDate)}
+                  </p>
                 </div>
               </div>
-              
+
               {currentPhase.revisionRoundsDetail.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-blue-200">
-                  <span className="text-xs font-semibold text-blue-900">Revision Rounds:</span>
+                  <span className="text-xs font-semibold text-blue-900">
+                    Revision Rounds:
+                  </span>
                   <div className="mt-2 space-y-1">
-                      {[...currentPhase.revisionRoundsDetail]
-                        .sort((a, b) => a.roundNumber - b.roundNumber)
-                        .map(round => (
-
-                      <div key={round.revisionRoundDeadlineId} className="text-xs">
-                        <span className="text-gray-600">Round {round.roundNumber}:</span>
-                        <span className="font-medium text-gray-900 ml-2">
-                          {round.startSubmissionDate ? formatDate(round.startSubmissionDate) : 'N/A'} - {formatDate(round.endSubmissionDate)}
-                        </span>
-                      </div>
-                    ))}
+                    {[...currentPhase.revisionRoundsDetail]
+                      .sort((a, b) => a.roundNumber - b.roundNumber)
+                      .map((round) => (
+                        <div
+                          key={round.revisionRoundDeadlineId}
+                          className="text-xs"
+                        >
+                          <span className="text-gray-600">
+                            Round {round.roundNumber}:
+                          </span>
+                          <span className="font-medium text-gray-900 ml-2">
+                            {round.startSubmissionDate
+                              ? formatDate(round.startSubmissionDate)
+                              : "N/A"}{" "}
+                            - {formatDate(round.endSubmissionDate)}
+                          </span>
+                        </div>
+                      ))}
                   </div>
                 </div>
               )}
@@ -781,564 +871,743 @@ const canDecideCameraReadyStatus = (): boolean => {
             {activeTab === "fullPaper" && (
               <>
                 {/* Full Paper Section */}
-{paperDetail.fullPaper ? (
-  <div className="space-y-6">
-    <div className="bg-white border rounded-lg p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <FileText className="w-5 h-5 text-blue-600" />
-        Full Paper
-      </h3>
+                {paperDetail.fullPaper ? (
+                  <div className="space-y-6">
+                    <div className="bg-white border rounded-lg p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <FileText className="w-5 h-5 text-blue-600" />
+                        Full Paper
+                      </h3>
 
-      {/* ========== THÔNG TIN CƠ BẢN ========== */}
-      <div className="space-y-3 mb-6">
-        <div className="flex items-start justify-between">
-          <span className="text-sm text-gray-600">Tiêu đề:</span>
-          <span className="text-sm font-medium text-gray-900">{paperDetail.fullPaper.title}</span>
-        </div>
+                      {/* ========== THÔNG TIN CƠ BẢN ========== */}
+                      <div className="space-y-3 mb-6">
+                        <div className="flex items-start justify-between">
+                          <span className="text-sm text-gray-600">
+                            Tiêu đề:
+                          </span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {paperDetail.fullPaper.title}
+                          </span>
+                        </div>
 
-        <div className="flex items-start justify-between">
-          <span className="text-sm text-gray-600">Mô tả:</span>
-          <span className="text-sm text-gray-700">{paperDetail.fullPaper.description}</span>
-        </div>
+                        <div className="flex items-start justify-between">
+                          <span className="text-sm text-gray-600">Mô tả:</span>
+                          <span className="text-sm text-gray-700">
+                            {paperDetail.fullPaper.description}
+                          </span>
+                        </div>
 
-        <div className="flex items-start justify-between">
-          <span className="text-sm text-gray-600">Trạng thái Review:</span>
-          <span
-            className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
-              paperDetail.fullPaper.reviewStatusName
-            )}`}
-          >
-            {getStatusIcon(paperDetail.fullPaper.reviewStatusName)}
-            {paperDetail.fullPaper.reviewStatusName}
-          </span>
-        </div>
-
-        <div className="flex items-start justify-between">
-          <span className="text-sm text-gray-600">Thời gian nộp bài:</span>
-          <span className="text-sm text-gray-700">
-            {formatDate(paperDetail.fullPaper.fullPaperStartDate)} →{" "}
-            {formatDate(paperDetail.fullPaper.fullPaperEndDate)}
-          </span>
-        </div>
-
-        <div className="flex items-start justify-between">
-          <span className="text-sm text-gray-600">Tình trạng hoàn thành đánh giá:</span>
-          <span
-            className={`px-3 py-1 rounded-full text-sm font-medium ${
-              paperDetail.fullPaper.isAllSubmittedFullPaperReview
-                ? "bg-green-50 text-green-700 border border-green-200"
-                : "bg-yellow-50 text-yellow-700 border border-yellow-200"
-            }`}
-          >
-            {paperDetail.fullPaper.isAllSubmittedFullPaperReview ? "Tất cả Reviewer đã nộp" : "Đang chờ Reviewer"}
-          </span>
-        </div>
-
-        <div className="pt-3 border-t">
-          <a
-            href={paperDetail.fullPaper.fullPaperUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Download className="w-4 h-4" />
-            Tải xuống Full Paper
-          </a>
-        </div>
-      </div>
-
-      {/* ========== FORM REVIEW ========== */}
-      <div className="pt-6 border-t">
-        <h4 className="text-md font-semibold text-gray-900 mb-4">Phần đánh giá Full Paper</h4>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Ghi chú nội bộ</label>
-            <textarea
-              placeholder="Nhập ghi chú nội bộ..."
-              className="w-full border rounded-lg p-3 text-sm min-h-[100px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Phản hồi tới tác giả</label>
-            <textarea
-              placeholder="Nhập phản hồi cho tác giả..."
-              className="w-full border rounded-lg p-3 text-sm min-h-[120px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              value={feedbackToAuthor}
-              onChange={(e) => setFeedbackToAuthor(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Trạng thái đánh giá</label>
-            <select
-              className="border rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500"
-              value={reviewStatus}
-              onChange={(e) => setReviewStatus(e.target.value)}
-            >
-              <option value="Accepted">Accepted</option>
-              <option value="Revise">Revise</option>
-              <option value="Rejected">Rejected</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Tài liệu đánh giá (nếu có)</label>
-            <input
-              type="file"
-              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
-            />
-          </div>
-
-          <Button
-            onClick={handleSubmitReview}
-            disabled={isSubmitting}
-            className="w-full bg-black hover:bg-gray-800"
-          >
-            <Send className="w-4 h-4 mr-2" />
-            {isSubmitting ? "Đang gửi..." : "Gửi đánh giá"}
-          </Button>
-        </div>
-      </div>
-    </div>
-
-    {/* ========== DANH SÁCH REVIEW CỦA CÁC REVIEWER KHÁC ========== */}
-    {paperDetail.fullPaper.fullPaperReviews?.length > 0 && (
-      <div className="bg-white border rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <FileText className="w-5 h-5 text-purple-600" />
-          Các đánh giá từ Reviewer khác
-        </h3>
-
-        <div className="space-y-4">
-          {paperDetail.fullPaper.fullPaperReviews.map((review) => (
-            <div
-              key={review.fullPaperReviewId}
-              className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start gap-3 mb-3">
-                <div className="flex-shrink-0">
-                  {review.reviewerAvatarUrl ? (
-                    <img
-                      src={review.reviewerAvatarUrl}
-                      alt={review.reviewerName || "Reviewer"}
-                      className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-semibold text-sm">
-                      {review.reviewerName ? review.reviewerName.charAt(0).toUpperCase() : "R"}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="font-semibold text-gray-900">{review.reviewerName || "N/A"}</p>
-                    <span
-                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(
-                        review.reviewStatusName
-                      )}`}
-                    >
-                      {getStatusIcon(review.reviewStatusName)}
-                      {review.reviewStatusName}
-                    </span>
-                  </div>
-                  {review.createdAt && (
-                    <p className="text-xs text-gray-500 mt-0.5">{formatDate(review.createdAt)}</p>
-                  )}
-                </div>
-              </div>
-
-              {review.note && (
-                <div className="mb-3 bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded">
-                  <p className="text-xs font-semibold text-yellow-800 mb-1">Ghi chú nội bộ:</p>
-                  <p className="text-sm text-gray-700">{review.note}</p>
-                </div>
-              )}
-
-              {review.feedbackToAuthor && (
-                <div className="mb-3">
-                  <p className="text-xs font-semibold text-gray-600 mb-1">Phản hồi tới tác giả:</p>
-                  <p className="text-sm text-gray-700 leading-relaxed">{review.feedbackToAuthor}</p>
-                </div>
-              )}
-
-              {review.feedbackMaterialUrl && (
-                <div className="pt-3 border-t">
-                  <a
-                    href={review.feedbackMaterialUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 text-sm rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
-                  >
-                    <Download className="w-4 h-4" />
-                    Tải tài liệu đánh giá
-                  </a>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-    )}
-  </div>
-) : (
-  <div className="text-center py-12 bg-gray-50 rounded-lg">
-    <FileText className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-    <p className="text-gray-600">Chưa có thông tin Full Paper</p>
-  </div>
-)}
-
-              </>
-            )}
-
-{activeTab === "revision" && (
-  <>
-    {/* Revision Paper Section */}
-    {paperDetail.revisionPaper ? (
-      <div className="space-y-6">
-        {/* Revision Submissions with Review Forms */}
-        <div className="bg-white border rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-orange-600" />
-            Các Round Revision
-          </h3>
-
-          {/* Overall Status */}
-          <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700">Trạng thái tổng thể:</span>
-              <span className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(paperDetail.revisionPaper.globalStatusName)}`}>
-                {getStatusIcon(paperDetail.revisionPaper.globalStatusName)}
-                {paperDetail.revisionPaper.globalStatusName}
-              </span>
-            </div>
-          </div>
-
-          {/* Revision Submissions */}
-          <div className="space-y-6">
-            {paperDetail.revisionPaper.revisionPaperSubmissions.map((submission) => {
-              const reviewData = getRevisionReview(submission.revisionPaperSubmissionId);
-              
-              return (
-                <div
-                  key={submission.revisionPaperSubmissionId}
-                  className="bg-gradient-to-br from-orange-50 to-white rounded-lg p-6 border-2 border-orange-200"
-                >
-                  {/* Submission Header */}
-                  <div className="flex items-center justify-between mb-4 pb-4 border-b border-orange-200">
-                    <div>
-                      <h4 className="text-lg font-bold text-gray-900">
-                        Round {submission.roundNumber}
-                      </h4>
-                      <p className="text-sm text-gray-600 mt-1">
-                        Deadline: {formatDate(submission.endDate)}
-                      </p>
-                    </div>
-                    <a
-                      href={submission.revisionPaperUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 transition-colors shadow-sm"
-                    >
-                      <Download className="w-4 h-4" />
-                      Tải xuống
-                    </a>
-                  </div>
-
-                  {/* Previous Feedbacks */}
-                  {submission.revisionSubmissionFeedbacks.length > 0 && (
-                    <div className="mb-6">
-                      <h5 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-green-600" />
-                        Feedbacks đã gửi
-                      </h5>
-                      <div className="space-y-2">
-                        {submission.revisionSubmissionFeedbacks.map((feedback) => (
-                          <div
-                            key={feedback.revisionSubmissionFeedbackId}
-                            className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm"
+                        <div className="flex items-start justify-between">
+                          <span className="text-sm text-gray-600">
+                            Trạng thái Review:
+                          </span>
+                          <span
+                            className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
+                              paperDetail.fullPaper.reviewStatusName,
+                            )}`}
                           >
-                            <div className="flex items-start gap-3">
-                              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-bold flex items-center justify-center">
-                                {feedback.sortOrder}
-                              </span>
-                              <div className="flex-1">
-                                <p className="text-sm text-gray-900 leading-relaxed">{feedback.feedback || "N/A"}</p>
-                                {feedback.response && (
-                                  <div className="mt-3 pl-4 border-l-2 border-blue-300 bg-blue-50 p-3 rounded">
-                                    <p className="text-xs text-gray-600">
-                                      <span className="font-semibold text-blue-700">Response:</span> {feedback.response}
+                            {getStatusIcon(
+                              paperDetail.fullPaper.reviewStatusName,
+                            )}
+                            {paperDetail.fullPaper.reviewStatusName}
+                          </span>
+                        </div>
+
+                        <div className="flex items-start justify-between">
+                          <span className="text-sm text-gray-600">
+                            Thời gian nộp bài:
+                          </span>
+                          <span className="text-sm text-gray-700">
+                            {formatDate(
+                              paperDetail.fullPaper.fullPaperStartDate,
+                            )}{" "}
+                            →{" "}
+                            {formatDate(paperDetail.fullPaper.fullPaperEndDate)}
+                          </span>
+                        </div>
+
+                        <div className="flex items-start justify-between">
+                          <span className="text-sm text-gray-600">
+                            Tình trạng hoàn thành đánh giá:
+                          </span>
+                          <span
+                            className={`px-3 py-1 rounded-full text-sm font-medium ${
+                              paperDetail.fullPaper
+                                .isAllSubmittedFullPaperReview
+                                ? "bg-green-50 text-green-700 border border-green-200"
+                                : "bg-yellow-50 text-yellow-700 border border-yellow-200"
+                            }`}
+                          >
+                            {paperDetail.fullPaper.isAllSubmittedFullPaperReview
+                              ? "Tất cả Reviewer đã nộp"
+                              : "Đang chờ Reviewer"}
+                          </span>
+                        </div>
+
+                        <div className="pt-3 border-t">
+                          <a
+                            href={paperDetail.fullPaper.fullPaperUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                          >
+                            <Download className="w-4 h-4" />
+                            Tải xuống Full Paper
+                          </a>
+                        </div>
+                      </div>
+
+                      {/* ========== FORM REVIEW ========== */}
+                      <div className="pt-6 border-t">
+                        <h4 className="text-md font-semibold text-gray-900 mb-4">
+                          Phần đánh giá Full Paper
+                        </h4>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Ghi chú nội bộ
+                            </label>
+                            <textarea
+                              placeholder="Nhập ghi chú nội bộ..."
+                              className="w-full border rounded-lg p-3 text-sm min-h-[100px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              value={note}
+                              onChange={(e) => setNote(e.target.value)}
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Phản hồi tới tác giả
+                            </label>
+                            <textarea
+                              placeholder="Nhập phản hồi cho tác giả..."
+                              className="w-full border rounded-lg p-3 text-sm min-h-[120px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              value={feedbackToAuthor}
+                              onChange={(e) =>
+                                setFeedbackToAuthor(e.target.value)
+                              }
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Trạng thái đánh giá
+                            </label>
+                            <select
+                              className="border rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500"
+                              value={reviewStatus}
+                              onChange={(e) => setReviewStatus(e.target.value)}
+                            >
+                              <option value="Accepted">Accepted</option>
+                              <option value="Revise">Revise</option>
+                              <option value="Rejected">Rejected</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Tài liệu đánh giá (nếu có)
+                            </label>
+                            <input
+                              type="file"
+                              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                              onChange={(e) =>
+                                setFile(e.target.files?.[0] || null)
+                              }
+                            />
+                          </div>
+
+                          <Button
+                            onClick={handleSubmitReview}
+                            disabled={isSubmitting}
+                            className="w-full bg-black hover:bg-gray-800"
+                          >
+                            <Send className="w-4 h-4 mr-2" />
+                            {isSubmitting ? "Đang gửi..." : "Gửi đánh giá"}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* ========== DANH SÁCH REVIEW CỦA CÁC REVIEWER KHÁC ========== */}
+                    {paperDetail.fullPaper.fullPaperReviews?.length > 0 && (
+                      <div className="bg-white border rounded-lg p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                          <FileText className="w-5 h-5 text-purple-600" />
+                          Các đánh giá từ Reviewer khác
+                        </h3>
+
+                        <div className="space-y-4">
+                          {paperDetail.fullPaper.fullPaperReviews.map(
+                            (review) => (
+                              <div
+                                key={review.fullPaperReviewId}
+                                className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow"
+                              >
+                                <div className="flex items-start gap-3 mb-3">
+                                  <div className="flex-shrink-0">
+                                    {review.reviewerAvatarUrl ? (
+                                      <img
+                                        src={review.reviewerAvatarUrl}
+                                        alt={review.reviewerName || "Reviewer"}
+                                        className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+                                      />
+                                    ) : (
+                                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-semibold text-sm">
+                                        {review.reviewerName
+                                          ? review.reviewerName
+                                              .charAt(0)
+                                              .toUpperCase()
+                                          : "R"}
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between gap-2">
+                                      <p className="font-semibold text-gray-900">
+                                        {review.reviewerName || "N/A"}
+                                      </p>
+                                      <span
+                                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+                                          review.reviewStatusName,
+                                        )}`}
+                                      >
+                                        {getStatusIcon(review.reviewStatusName)}
+                                        {review.reviewStatusName}
+                                      </span>
+                                    </div>
+                                    {review.createdAt && (
+                                      <p className="text-xs text-gray-500 mt-0.5">
+                                        {formatDate(review.createdAt)}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {review.note && (
+                                  <div className="mb-3 bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded">
+                                    <p className="text-xs font-semibold text-yellow-800 mb-1">
+                                      Ghi chú nội bộ:
+                                    </p>
+                                    <p className="text-sm text-gray-700">
+                                      {review.note}
                                     </p>
                                   </div>
                                 )}
-                                {feedback.createdAt && (
-                                  <p className="text-xs text-gray-400 mt-2">
-                                    {formatDate(feedback.createdAt)}
-                                  </p>
+
+                                {review.feedbackToAuthor && (
+                                  <div className="mb-3">
+                                    <p className="text-xs font-semibold text-gray-600 mb-1">
+                                      Phản hồi tới tác giả:
+                                    </p>
+                                    <p className="text-sm text-gray-700 leading-relaxed">
+                                      {review.feedbackToAuthor}
+                                    </p>
+                                  </div>
+                                )}
+
+                                {review.feedbackMaterialUrl && (
+                                  <div className="pt-3 border-t">
+                                    <a
+                                      href={review.feedbackMaterialUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 text-sm rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
+                                    >
+                                      <Download className="w-4 h-4" />
+                                      Tải tài liệu đánh giá
+                                    </a>
+                                  </div>
                                 )}
                               </div>
-                            </div>
-                          </div>
-                        ))}
+                            ),
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
-
-                  {/* Reviews from Other Reviewers - Only for Head Reviewer */}
-                  {paperDetail.isHeadReviewer && paperDetail.revisionPaper && (
-                    <RevisionReviewsList
-                      paperId={paperId}
-                      revisionPaperId={paperDetail.revisionPaper.revisionPaperId}
-                      submissionId={submission.revisionPaperSubmissionId}
-                      isExpanded={expandedReviewsSubmissions[submission.revisionPaperSubmissionId] || false}
-                      onToggle={() => toggleReviewsExpansion(submission.revisionPaperSubmissionId)}
-                      getStatusIcon={getStatusIcon}
-                      getStatusColor={getStatusColor}
-                    />
-                  )}
-
-                  {/* Review Form for this Submission */}
-                  <div className="bg-white rounded-lg p-5 border border-orange-300">
-                    <h5 className="text-md font-bold text-gray-900 mb-4 flex items-center gap-2">
-                      <Send className="w-4 h-4 text-orange-600" />
-                      Đánh giá cho Round {submission.roundNumber}
-                    </h5>
-                    
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Ghi chú nội bộ
-                        </label>
-                        <textarea
-                          placeholder="Nhập ghi chú nội bộ..."
-                          className="w-full border rounded-lg p-3 text-sm min-h-[100px] focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                          value={reviewData.note}
-                          onChange={(e) => updateRevisionReview(submission.revisionPaperSubmissionId, 'note', e.target.value)}
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Phản hồi tới tác giả
-                        </label>
-                        <textarea
-                          placeholder="Nhập phản hồi cho tác giả..."
-                          className="w-full border rounded-lg p-3 text-sm min-h-[120px] focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                          value={reviewData.feedbackToAuthor}
-                          onChange={(e) => updateRevisionReview(submission.revisionPaperSubmissionId, 'feedbackToAuthor', e.target.value)}
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Trạng thái đánh giá
-                        </label>
-                        <select
-                          className="border rounded-lg p-2 w-full focus:ring-2 focus:ring-orange-500"
-                          value={reviewData.globalStatus}
-                          onChange={(e) => updateRevisionReview(submission.revisionPaperSubmissionId, 'globalStatus', e.target.value)}
-                        >
-                          <option value="Accepted">Accepted</option>
-                          <option value="Pending">Pending</option>
-                          <option value="Rejected">Rejected</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Tài liệu đánh giá (nếu có)
-                        </label>
-                        <input
-                          type="file"
-                          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
-                          onChange={(e) => updateRevisionReview(submission.revisionPaperSubmissionId, 'file', e.target.files?.[0] || null)}
-                        />
-                        {reviewData.file && (
-                          <p className="text-xs text-gray-600 mt-2">
-                            File đã chọn: {reviewData.file.name}
-                          </p>
-                        )}
-                      </div>
-
-                      <Button 
-                        onClick={() => handleSubmitRevisionReview(submission.revisionPaperSubmissionId)} 
-                        disabled={isSubmittingRevisionReview}
-                        className="w-full bg-orange-600 hover:bg-orange-700"
-                      >
-                        <Send className="w-4 h-4 mr-2" />
-                        {isSubmittingRevisionReview ? "Đang gửi..." : "Gửi đánh giá"}
-                      </Button>
-                    </div>
+                    )}
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Feedback Section - Separated Like YouTube Comments */}
-        <div className="bg-white border rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-            <MessageSquare className="w-5 h-5 text-blue-600" />
-            Feedbacks chi tiết
-          </h3>
-
-          {/* Feedback for each submission */}
-          {paperDetail.revisionPaper.revisionPaperSubmissions.map((submission) => (
-            <div key={submission.revisionPaperSubmissionId} className="mb-8 last:mb-0">
-              {/* Round Header */}
-              <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-200">
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100">
-                  <span className="text-lg font-bold text-blue-700">{submission.roundNumber}</span>
-                </div>
-                <div>
-                  <h4 className="text-md font-semibold text-gray-900">
-                    Feedback cho Round {submission.roundNumber}
-                  </h4>
-                  <p className="text-xs text-gray-500">
-                    Deadline: {formatDate(submission.endDate)}
-                  </p>
-                </div>
-              </div>
-
-              {/* Feedback Form */}
-              <div className="ml-13 space-y-3">
-                {(revisionFeedbacks[submission.revisionPaperSubmissionId] || []).map((feedback, index) => (
-                  <div key={index} className="flex gap-3 items-start">
-                    <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 text-blue-700 text-sm font-bold flex items-center justify-center mt-2">
-                      {feedback.sortOrder}
-                    </span>
-                    <div className="flex-1 flex gap-2 items-start">
-                      <textarea
-                        placeholder={`Viết feedback #${feedback.sortOrder}...`}
-                        className="flex-1 border border-gray-300 rounded-lg p-3 text-sm min-h-[90px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none hover:border-gray-400 transition-colors"
-                        value={feedback.feedback}
-                        onChange={(e) => updateFeedback(submission.revisionPaperSubmissionId, index, e.target.value)}
-                      />
-                      <button
-                        onClick={() => removeFeedback(submission.revisionPaperSubmissionId, index)}
-                        className="mt-2 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Xóa feedback"
-                      >
-                        <XCircle className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-
-                {/* Add Feedback Button */}
-                <div className="flex gap-3">
-                  <div className="w-8"></div>
-                  <Button
-                    onClick={() => addFeedbackField(submission.revisionPaperSubmissionId)}
-                    variant="outline"
-                    className="flex-1 border-dashed border-2 hover:bg-blue-50 hover:border-blue-300 text-blue-600"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Thêm feedback
-                  </Button>
-                </div>
-
-                {/* Submit Button */}
-                {(revisionFeedbacks[submission.revisionPaperSubmissionId]?.length || 0) > 0 && (
-                  <div className="flex gap-3 pt-2">
-                    <div className="w-8"></div>
-                    <Button
-                      onClick={() => handleSubmitRevisionFeedback(submission.revisionPaperSubmissionId)}
-                      disabled={isSubmittingRevision}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      <Send className="w-4 h-4 mr-2" />
-                      {isSubmittingRevision ? "Đang gửi..." : `Gửi ${revisionFeedbacks[submission.revisionPaperSubmissionId]?.length || 0} feedback`}
-                    </Button>
+                ) : (
+                  <div className="text-center py-12 bg-gray-50 rounded-lg">
+                    <FileText className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                    <p className="text-gray-600">
+                      Chưa có thông tin Full Paper
+                    </p>
                   </div>
                 )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    ) : (
-      <div className="text-center py-12 bg-gray-50 rounded-lg">
-        <FileText className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-        <p className="text-gray-600">Chưa có thông tin Revision Paper</p>
-      </div>
-    )}
-  </>
-)}
-{activeTab === "cameraReady" && (
-  <>
-    {paperDetail.cameraReady ? (
-      <div className="space-y-6">
-        <div className="bg-white border rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-green-600" />
-            Camera Ready
-          </h3>
-          
-          <div className="space-y-3 mb-6">
-            <div>
-              <span className="text-sm text-gray-600">Tiêu đề:</span>
-              <p className="font-medium text-gray-900 mt-1">{paperDetail.cameraReady.title}</p>
-            </div>
+              </>
+            )}
 
-            <div>
-              <span className="text-sm text-gray-600">Mô tả:</span>
-              <p className="text-gray-700 mt-1">{paperDetail.cameraReady.description}</p>
-            </div>
+            {activeTab === "revision" && (
+              <>
+                {/* Revision Paper Section */}
+                {paperDetail.revisionPaper ? (
+                  <div className="space-y-6">
+                    {/* Revision Submissions with Review Forms */}
+                    <div className="bg-white border rounded-lg p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <FileText className="w-5 h-5 text-orange-600" />
+                        Các Round Revision
+                      </h3>
 
-            <div className="flex items-start justify-between">
-              <span className="text-sm text-gray-600">Trạng thái:</span>
-              <span className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(paperDetail.cameraReady.globalStatusName)}`}>
-                {getStatusIcon(paperDetail.cameraReady.globalStatusName)}
-                {paperDetail.cameraReady.globalStatusName}
-              </span>
-            </div>
+                      {/* Overall Status */}
+                      <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-700">
+                            Trạng thái tổng thể:
+                          </span>
+                          <span
+                            className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(paperDetail.revisionPaper.globalStatusName)}`}
+                          >
+                            {getStatusIcon(
+                              paperDetail.revisionPaper.globalStatusName,
+                            )}
+                            {paperDetail.revisionPaper.globalStatusName}
+                          </span>
+                        </div>
+                      </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <span className="text-sm text-gray-600">Ngày tạo:</span>
-                <p className="text-gray-900 font-medium mt-1">
-                  {formatDate(paperDetail.cameraReady.createdAt)}
-                </p>
-              </div>
-              {paperDetail.cameraReady.reviewAt && (
-                <div>
-                  <span className="text-sm text-gray-600">Ngày đánh giá:</span>
-                  <p className="text-gray-900 font-medium mt-1">
-                    {formatDate(paperDetail.cameraReady.reviewAt)}
-                  </p>
-                </div>
-              )}
-            </div>
+                      {/* Revision Submissions */}
+                      <div className="space-y-6">
+                        {paperDetail.revisionPaper.revisionPaperSubmissions.map(
+                          (submission) => {
+                            const reviewData = getRevisionReview(
+                              submission.revisionPaperSubmissionId,
+                            );
 
-            <div className="pt-3 border-t">
-              <a
-                href={paperDetail.cameraReady.cameraReadyUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                Tải xuống Camera Ready
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    ) : (
-      <div className="text-center py-12 bg-gray-50 rounded-lg">
-        <FileText className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-        <p className="text-gray-600">Chưa có thông tin Camera Ready</p>
-      </div>
-    )}
-  </>
-)}
-            
+                            return (
+                              <div
+                                key={submission.revisionPaperSubmissionId}
+                                className="bg-gradient-to-br from-orange-50 to-white rounded-lg p-6 border-2 border-orange-200"
+                              >
+                                {/* Submission Header */}
+                                <div className="flex items-center justify-between mb-4 pb-4 border-b border-orange-200">
+                                  <div>
+                                    <h4 className="text-lg font-bold text-gray-900">
+                                      Round {submission.roundNumber}
+                                    </h4>
+                                    <p className="text-sm text-gray-600 mt-1">
+                                      Deadline: {formatDate(submission.endDate)}
+                                    </p>
+                                  </div>
+                                  <a
+                                    href={submission.revisionPaperUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 transition-colors shadow-sm"
+                                  >
+                                    <Download className="w-4 h-4" />
+                                    Tải xuống
+                                  </a>
+                                </div>
+
+                                {/* Previous Feedbacks */}
+                                {submission.revisionSubmissionFeedbacks.length >
+                                  0 && (
+                                  <div className="mb-6">
+                                    <h5 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                      <CheckCircle className="w-4 h-4 text-green-600" />
+                                      Feedbacks đã gửi
+                                    </h5>
+                                    <div className="space-y-2">
+                                      {submission.revisionSubmissionFeedbacks.map(
+                                        (feedback) => (
+                                          <div
+                                            key={
+                                              feedback.revisionSubmissionFeedbackId
+                                            }
+                                            className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm"
+                                          >
+                                            <div className="flex items-start gap-3">
+                                              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-bold flex items-center justify-center">
+                                                {feedback.sortOrder}
+                                              </span>
+                                              <div className="flex-1">
+                                                <p className="text-sm text-gray-900 leading-relaxed">
+                                                  {feedback.feedback || "N/A"}
+                                                </p>
+                                                {feedback.response && (
+                                                  <div className="mt-3 pl-4 border-l-2 border-blue-300 bg-blue-50 p-3 rounded">
+                                                    <p className="text-xs text-gray-600">
+                                                      <span className="font-semibold text-blue-700">
+                                                        Response:
+                                                      </span>{" "}
+                                                      {feedback.response}
+                                                    </p>
+                                                  </div>
+                                                )}
+                                                {feedback.createdAt && (
+                                                  <p className="text-xs text-gray-400 mt-2">
+                                                    {formatDate(
+                                                      feedback.createdAt,
+                                                    )}
+                                                  </p>
+                                                )}
+                                              </div>
+                                            </div>
+                                          </div>
+                                        ),
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Reviews from Other Reviewers - Only for Head Reviewer */}
+                                {paperDetail.isHeadReviewer &&
+                                  paperDetail.revisionPaper && (
+                                    <RevisionReviewsList
+                                      paperId={paperId}
+                                      revisionPaperId={
+                                        paperDetail.revisionPaper
+                                          .revisionPaperId
+                                      }
+                                      submissionId={
+                                        submission.revisionPaperSubmissionId
+                                      }
+                                      isExpanded={
+                                        expandedReviewsSubmissions[
+                                          submission.revisionPaperSubmissionId
+                                        ] || false
+                                      }
+                                      onToggle={() =>
+                                        toggleReviewsExpansion(
+                                          submission.revisionPaperSubmissionId,
+                                        )
+                                      }
+                                      getStatusIcon={getStatusIcon}
+                                      getStatusColor={getStatusColor}
+                                    />
+                                  )}
+
+                                {/* Review Form for this Submission */}
+                                <div className="bg-white rounded-lg p-5 border border-orange-300">
+                                  <h5 className="text-md font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                    <Send className="w-4 h-4 text-orange-600" />
+                                    Đánh giá cho Round {submission.roundNumber}
+                                  </h5>
+
+                                  <div className="space-y-4">
+                                    <div>
+                                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Ghi chú nội bộ
+                                      </label>
+                                      <textarea
+                                        placeholder="Nhập ghi chú nội bộ..."
+                                        className="w-full border rounded-lg p-3 text-sm min-h-[100px] focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                        value={reviewData.note}
+                                        onChange={(e) =>
+                                          updateRevisionReview(
+                                            submission.revisionPaperSubmissionId,
+                                            "note",
+                                            e.target.value,
+                                          )
+                                        }
+                                      />
+                                    </div>
+
+                                    <div>
+                                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Phản hồi tới tác giả
+                                      </label>
+                                      <textarea
+                                        placeholder="Nhập phản hồi cho tác giả..."
+                                        className="w-full border rounded-lg p-3 text-sm min-h-[120px] focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                        value={reviewData.feedbackToAuthor}
+                                        onChange={(e) =>
+                                          updateRevisionReview(
+                                            submission.revisionPaperSubmissionId,
+                                            "feedbackToAuthor",
+                                            e.target.value,
+                                          )
+                                        }
+                                      />
+                                    </div>
+
+                                    <div>
+                                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Trạng thái đánh giá
+                                      </label>
+                                      <select
+                                        className="border rounded-lg p-2 w-full focus:ring-2 focus:ring-orange-500"
+                                        value={reviewData.globalStatus}
+                                        onChange={(e) =>
+                                          updateRevisionReview(
+                                            submission.revisionPaperSubmissionId,
+                                            "globalStatus",
+                                            e.target.value,
+                                          )
+                                        }
+                                      >
+                                        <option value="Accepted">
+                                          Accepted
+                                        </option>
+                                        <option value="Pending">Pending</option>
+                                        <option value="Rejected">
+                                          Rejected
+                                        </option>
+                                      </select>
+                                    </div>
+
+                                    <div>
+                                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Tài liệu đánh giá (nếu có)
+                                      </label>
+                                      <input
+                                        type="file"
+                                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
+                                        onChange={(e) =>
+                                          updateRevisionReview(
+                                            submission.revisionPaperSubmissionId,
+                                            "file",
+                                            e.target.files?.[0] || null,
+                                          )
+                                        }
+                                      />
+                                      {reviewData.file && (
+                                        <p className="text-xs text-gray-600 mt-2">
+                                          File đã chọn: {reviewData.file.name}
+                                        </p>
+                                      )}
+                                    </div>
+
+                                    <Button
+                                      onClick={() =>
+                                        handleSubmitRevisionReview(
+                                          submission.revisionPaperSubmissionId,
+                                        )
+                                      }
+                                      disabled={isSubmittingRevisionReview}
+                                      className="w-full bg-orange-600 hover:bg-orange-700"
+                                    >
+                                      <Send className="w-4 h-4 mr-2" />
+                                      {isSubmittingRevisionReview
+                                        ? "Đang gửi..."
+                                        : "Gửi đánh giá"}
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          },
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Feedback Section - Separated Like YouTube Comments */}
+                    <div className="bg-white border rounded-lg p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                        <MessageSquare className="w-5 h-5 text-blue-600" />
+                        Feedbacks chi tiết
+                      </h3>
+
+                      {/* Feedback for each submission */}
+                      {paperDetail.revisionPaper.revisionPaperSubmissions.map(
+                        (submission) => (
+                          <div
+                            key={submission.revisionPaperSubmissionId}
+                            className="mb-8 last:mb-0"
+                          >
+                            {/* Round Header */}
+                            <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-200">
+                              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100">
+                                <span className="text-lg font-bold text-blue-700">
+                                  {submission.roundNumber}
+                                </span>
+                              </div>
+                              <div>
+                                <h4 className="text-md font-semibold text-gray-900">
+                                  Feedback cho Round {submission.roundNumber}
+                                </h4>
+                                <p className="text-xs text-gray-500">
+                                  Deadline: {formatDate(submission.endDate)}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Feedback Form */}
+                            <div className="ml-13 space-y-3">
+                              {(
+                                revisionFeedbacks[
+                                  submission.revisionPaperSubmissionId
+                                ] || []
+                              ).map((feedback, index) => (
+                                <div
+                                  key={index}
+                                  className="flex gap-3 items-start"
+                                >
+                                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 text-blue-700 text-sm font-bold flex items-center justify-center mt-2">
+                                    {feedback.sortOrder}
+                                  </span>
+                                  <div className="flex-1 flex gap-2 items-start">
+                                    <textarea
+                                      placeholder={`Viết feedback #${feedback.sortOrder}...`}
+                                      className="flex-1 border border-gray-300 rounded-lg p-3 text-sm min-h-[90px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none hover:border-gray-400 transition-colors"
+                                      value={feedback.feedback}
+                                      onChange={(e) =>
+                                        updateFeedback(
+                                          submission.revisionPaperSubmissionId,
+                                          index,
+                                          e.target.value,
+                                        )
+                                      }
+                                    />
+                                    <button
+                                      onClick={() =>
+                                        removeFeedback(
+                                          submission.revisionPaperSubmissionId,
+                                          index,
+                                        )
+                                      }
+                                      className="mt-2 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                      title="Xóa feedback"
+                                    >
+                                      <XCircle className="w-5 h-5" />
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+
+                              {/* Add Feedback Button */}
+                              <div className="flex gap-3">
+                                <div className="w-8"></div>
+                                <Button
+                                  onClick={() =>
+                                    addFeedbackField(
+                                      submission.revisionPaperSubmissionId,
+                                    )
+                                  }
+                                  variant="outline"
+                                  className="flex-1 border-dashed border-2 hover:bg-blue-50 hover:border-blue-300 text-blue-600"
+                                >
+                                  <Plus className="w-4 h-4 mr-2" />
+                                  Thêm feedback
+                                </Button>
+                              </div>
+
+                              {/* Submit Button */}
+                              {(revisionFeedbacks[
+                                submission.revisionPaperSubmissionId
+                              ]?.length || 0) > 0 && (
+                                <div className="flex gap-3 pt-2">
+                                  <div className="w-8"></div>
+                                  <Button
+                                    onClick={() =>
+                                      handleSubmitRevisionFeedback(
+                                        submission.revisionPaperSubmissionId,
+                                      )
+                                    }
+                                    disabled={isSubmittingRevision}
+                                    className="bg-blue-600 hover:bg-blue-700"
+                                  >
+                                    <Send className="w-4 h-4 mr-2" />
+                                    {isSubmittingRevision
+                                      ? "Đang gửi..."
+                                      : `Gửi ${revisionFeedbacks[submission.revisionPaperSubmissionId]?.length || 0} feedback`}
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ),
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12 bg-gray-50 rounded-lg">
+                    <FileText className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                    <p className="text-gray-600">
+                      Chưa có thông tin Revision Paper
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+            {activeTab === "cameraReady" && (
+              <>
+                {paperDetail.cameraReady ? (
+                  <div className="space-y-6">
+                    <div className="bg-white border rounded-lg p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <FileText className="w-5 h-5 text-green-600" />
+                        Camera Ready
+                      </h3>
+
+                      <div className="space-y-3 mb-6">
+                        <div>
+                          <span className="text-sm text-gray-600">
+                            Tiêu đề:
+                          </span>
+                          <p className="font-medium text-gray-900 mt-1">
+                            {paperDetail.cameraReady.title}
+                          </p>
+                        </div>
+
+                        <div>
+                          <span className="text-sm text-gray-600">Mô tả:</span>
+                          <p className="text-gray-700 mt-1">
+                            {paperDetail.cameraReady.description}
+                          </p>
+                        </div>
+
+                        <div className="flex items-start justify-between">
+                          <span className="text-sm text-gray-600">
+                            Trạng thái:
+                          </span>
+                          <span
+                            className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(paperDetail.cameraReady.globalStatusName)}`}
+                          >
+                            {getStatusIcon(
+                              paperDetail.cameraReady.globalStatusName,
+                            )}
+                            {paperDetail.cameraReady.globalStatusName}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <span className="text-sm text-gray-600">
+                              Ngày tạo:
+                            </span>
+                            <p className="text-gray-900 font-medium mt-1">
+                              {formatDate(paperDetail.cameraReady.createdAt)}
+                            </p>
+                          </div>
+                          {paperDetail.cameraReady.reviewAt && (
+                            <div>
+                              <span className="text-sm text-gray-600">
+                                Ngày đánh giá:
+                              </span>
+                              <p className="text-gray-900 font-medium mt-1">
+                                {formatDate(paperDetail.cameraReady.reviewAt)}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="pt-3 border-t">
+                          <a
+                            href={paperDetail.cameraReady.cameraReadyUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                          >
+                            <Download className="w-4 h-4" />
+                            Tải xuống Camera Ready
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12 bg-gray-50 rounded-lg">
+                    <FileText className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                    <p className="text-gray-600">
+                      Chưa có thông tin Camera Ready
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -1351,7 +1620,7 @@ const canDecideCameraReadyStatus = (): boolean => {
               <Gavel className="w-5 h-5 text-purple-600" />
               Quyết định cuối cùng - Full Paper
             </h3>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1369,15 +1638,15 @@ const canDecideCameraReadyStatus = (): boolean => {
               </div>
 
               <div className="flex gap-3">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => setShowDecisionPopup(false)}
                   className="flex-1"
                   disabled={isDeciding}
                 >
                   Hủy
                 </Button>
-                <Button 
+                <Button
                   onClick={handleDecideStatus}
                   disabled={isDeciding}
                   className="flex-1 bg-purple-600 hover:bg-purple-700"
@@ -1398,7 +1667,7 @@ const canDecideCameraReadyStatus = (): boolean => {
               <Gavel className="w-5 h-5 text-orange-600" />
               Quyết định cuối cùng - Revision Paper
             </h3>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1416,15 +1685,15 @@ const canDecideCameraReadyStatus = (): boolean => {
               </div>
 
               <div className="flex gap-3">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => setShowRevisionDecisionPopup(false)}
                   className="flex-1"
                   disabled={isDecidingRevision}
                 >
                   Hủy
                 </Button>
-                <Button 
+                <Button
                   onClick={handleDecideRevisionStatus}
                   disabled={isDecidingRevision}
                   className="flex-1 bg-orange-600 hover:bg-orange-700"
@@ -1444,7 +1713,7 @@ const canDecideCameraReadyStatus = (): boolean => {
               <Gavel className="w-5 h-5 text-green-600" />
               Quyết định cuối cùng - Camera Ready
             </h3>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1461,15 +1730,15 @@ const canDecideCameraReadyStatus = (): boolean => {
               </div>
 
               <div className="flex gap-3">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => setShowCameraReadyDecisionPopup(false)}
                   className="flex-1"
                   disabled={isDecidingCameraReady}
                 >
                   Hủy
                 </Button>
-                <Button 
+                <Button
                   onClick={handleDecideCameraReadyStatus}
                   disabled={isDecidingCameraReady}
                   className="flex-1 bg-green-600 hover:bg-green-700"
@@ -1480,9 +1749,7 @@ const canDecideCameraReadyStatus = (): boolean => {
             </div>
           </div>
         </div>
-      )}  
+      )}
     </div>
   );
 }
-
-

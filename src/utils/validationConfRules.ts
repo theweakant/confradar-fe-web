@@ -1,6 +1,5 @@
 // src/lib/validationConfRules.ts
 
-
 export type ValidationRule = {
   validate: (value: string | number) => boolean;
   message: string;

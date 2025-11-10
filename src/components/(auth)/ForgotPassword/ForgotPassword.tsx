@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { useState } from 'react';
-import { Mail, ArrowLeft, CheckCircle2 } from 'lucide-react';
-import { useForgetPasswordMutation } from '@/redux/services/auth.service';
-import { toast } from 'sonner'; // ✅ Import toast
+import { useState } from "react";
+import { Mail, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { useForgetPasswordMutation } from "@/redux/services/auth.service";
+import { toast } from "sonner"; // ✅ Import toast
 
 export default function ForgotPassword() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
-  const [error, setError] = useState('');
-  
+  const [error, setError] = useState("");
+
   const [forgetPassword, { isLoading }] = useForgetPasswordMutation();
 
   const validateEmail = (email: string) => {
@@ -19,41 +19,46 @@ export default function ForgotPassword() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (!email) {
-      setError('Please enter your email address');
-      toast.error('Please enter your email address'); 
+      setError("Please enter your email address");
+      toast.error("Please enter your email address");
       return;
     }
 
     if (!validateEmail(email)) {
-      setError('Please enter a valid email address');
-      toast.error('Please enter a valid email address'); 
+      setError("Please enter a valid email address");
+      toast.error("Please enter a valid email address");
       return;
     }
 
     try {
       const result = await forgetPassword(email).unwrap();
-      
+
       if (result.success) {
         setIsSuccess(true);
-        toast.success('Password reset link sent!', { 
-          description: 'Please check your email inbox',
+        toast.success("Password reset link sent!", {
+          description: "Please check your email inbox",
         });
       }
     } catch (error: unknown) {
-    console.error('❌ Error:', error);
+      console.error("❌ Error:", error);
 
-    const message =
-      error instanceof Error
-        ? error.message
-        : (error as { data?: { message?: string; errors?: { email?: string[] } } })?.data?.message ||
-          (error as { data?: { errors?: { email?: string[] } } })?.data?.errors?.email?.[0] ||
-          'Failed to send reset email. Please try again.';
+      const message =
+        error instanceof Error
+          ? error.message
+          : (
+              error as {
+                data?: { message?: string; errors?: { email?: string[] } };
+              }
+            )?.data?.message ||
+            (error as { data?: { errors?: { email?: string[] } } })?.data
+              ?.errors?.email?.[0] ||
+            "Failed to send reset email. Please try again.";
 
-    setError(message);
-    toast.error(message);
+      setError(message);
+      toast.error(message);
     }
   };
 
@@ -64,7 +69,9 @@ export default function ForgotPassword() {
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle2 className="w-8 h-8 text-green-600" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Check Your Email</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            Check Your Email
+          </h2>
           <p className="text-gray-600 mb-6">
             We&apos;ve sent a password reset link to <strong>{email}</strong>
           </p>
@@ -74,7 +81,7 @@ export default function ForgotPassword() {
           <button
             onClick={() => {
               setIsSuccess(false);
-              setEmail(''); // ✅ Clear email
+              setEmail(""); // ✅ Clear email
             }}
             className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
           >
@@ -100,7 +107,9 @@ export default function ForgotPassword() {
           <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Mail className="w-8 h-8 text-indigo-600" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Forgot Password?</h1>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            Forgot Password?
+          </h1>
           <p className="text-gray-600">
             No worries, we&apos;ll send you reset instructions
           </p>
@@ -108,7 +117,10 @@ export default function ForgotPassword() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Email Address
             </label>
             <div className="relative">
@@ -119,11 +131,11 @@ export default function ForgotPassword() {
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
-                  setError('');
+                  setError("");
                 }}
                 placeholder="Enter your email"
                 className={`w-full pl-10 pr-4 py-3 border ${
-                  error ? 'border-red-500' : 'border-gray-300'
+                  error ? "border-red-500" : "border-gray-300"
                 } rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all`}
               />
             </div>
@@ -139,8 +151,8 @@ export default function ForgotPassword() {
             disabled={isLoading}
             className={`w-full py-3 rounded-lg font-medium text-white transition-all ${
               isLoading
-                ? 'bg-indigo-400 cursor-not-allowed'
-                : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-lg'
+                ? "bg-indigo-400 cursor-not-allowed"
+                : "bg-indigo-600 hover:bg-indigo-700 hover:shadow-lg"
             }`}
           >
             {isLoading ? (
@@ -164,14 +176,17 @@ export default function ForgotPassword() {
                 Sending...
               </span>
             ) : (
-              'Send Reset Link'
+              "Send Reset Link"
             )}
           </button>
         </form>
 
         <p className="text-sm text-gray-600">
-          Remember your password?{' '}
-          <a href="/login" className="text-indigo-600 hover:text-indigo-700 font-medium">
+          Remember your password?{" "}
+          <a
+            href="/login"
+            className="text-indigo-600 hover:text-indigo-700 font-medium"
+          >
             Sign In
           </a>
         </p>

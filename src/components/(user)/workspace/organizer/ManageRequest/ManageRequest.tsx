@@ -22,7 +22,11 @@ import { RequestForm } from "@/components/(user)/workspace/organizer/ManageReque
 import { RequestTable } from "@/components/(user)/workspace/organizer/ManageRequest/RequestTable/index";
 
 import { mockRequests } from "@/data/mockRequest.data";
-import { Request, CreateRequestDto, UpdateRequestStatusDto } from "@/types/request.type";
+import {
+  Request,
+  CreateRequestDto,
+  UpdateRequestStatusDto,
+} from "@/types/request.type";
 
 export default function ManageRequest() {
   const [requests, setRequests] = useState<Request[]>(mockRequests);
@@ -57,7 +61,8 @@ export default function ManageRequest() {
       request.userEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
       request.conferenceName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = filterType === "all" || request.type === filterType;
-    const matchesStatus = filterStatus === "all" || request.status === filterStatus;
+    const matchesStatus =
+      filterStatus === "all" || request.status === filterStatus;
     return matchesSearch && matchesType && matchesStatus;
   });
 
@@ -97,8 +102,8 @@ export default function ManageRequest() {
               reviewedBy: "Organizer Name", // Get from auth context
               updatedAt: new Date(),
             }
-          : r
-      )
+          : r,
+      ),
     );
     toast.success("Cập nhật trạng thái yêu cầu thành công!");
     setIsDetailModalOpen(false);
@@ -135,7 +140,8 @@ export default function ManageRequest() {
             </Button>
           </div>
           <p className="text-gray-600 mt-2">
-            Quản lý các yêu cầu từ người dùng về hoàn tiền, thay đổi diễn giả và phiên
+            Quản lý các yêu cầu từ người dùng về hoàn tiền, thay đổi diễn giả và
+            phiên
           </p>
         </div>
 
@@ -261,7 +267,8 @@ export default function ManageRequest() {
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa yêu cầu này? Hành động này không thể hoàn tác.
+              Bạn có chắc chắn muốn xóa yêu cầu này? Hành động này không thể
+              hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

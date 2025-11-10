@@ -1,6 +1,14 @@
 "use client";
 
-import { History, MapPin, Calendar, Users, ExternalLink, CheckCircle, Star } from "lucide-react";
+import {
+  History,
+  MapPin,
+  Calendar,
+  Users,
+  ExternalLink,
+  CheckCircle,
+  Star,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -75,10 +83,9 @@ export default function HistoryConferences() {
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
-            className={`h-4 w-4 ${star <= rating
-                ? "text-yellow-400 fill-current"
-                : "text-gray-300"
-              }`}
+            className={`h-4 w-4 ${
+              star <= rating ? "text-yellow-400 fill-current" : "text-gray-300"
+            }`}
           />
         ))}
       </div>
@@ -108,10 +115,11 @@ export default function HistoryConferences() {
               <Button
                 key={option.id}
                 variant={option.active ? "default" : "outline"}
-                className={`whitespace-nowrap ${option.active
+                className={`whitespace-nowrap ${
+                  option.active
                     ? "bg-black text-white hover:bg-gray-800"
                     : "bg-white text-gray-700 hover:bg-gray-50"
-                  }`}
+                }`}
               >
                 {option.label}
               </Button>
@@ -122,7 +130,10 @@ export default function HistoryConferences() {
         {/* Conference List */}
         <div className="space-y-6">
           {historyConferences.map((conference) => (
-            <Card key={conference.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+            <Card
+              key={conference.id}
+              className="overflow-hidden hover:shadow-lg transition-shadow"
+            >
               <div className="flex flex-col lg:flex-row">
                 {/* Content */}
                 <CardContent className="flex-1 p-6">
@@ -135,7 +146,10 @@ export default function HistoryConferences() {
                           {conference.date}
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge variant="default" className="bg-green-100 text-green-700 w-fit">
+                          <Badge
+                            variant="default"
+                            className="bg-green-100 text-green-700 w-fit"
+                          >
                             <CheckCircle className="h-3 w-3 mr-1" />
                             {conference.status}
                           </Badge>
@@ -159,12 +173,19 @@ export default function HistoryConferences() {
                       {/* Rating & Certificate */}
                       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-600">Đánh giá:</span>
+                          <span className="text-sm text-gray-600">
+                            Đánh giá:
+                          </span>
                           {renderStars(conference.rating)}
-                          <span className="text-sm text-gray-600">({conference.rating}/5)</span>
+                          <span className="text-sm text-gray-600">
+                            ({conference.rating}/5)
+                          </span>
                         </div>
                         {conference.certificate && (
-                          <Badge variant="outline" className="text-blue-600 border-blue-600 w-fit">
+                          <Badge
+                            variant="outline"
+                            className="text-blue-600 border-blue-600 w-fit"
+                          >
                             Có chứng chí
                           </Badge>
                         )}

@@ -1,22 +1,22 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import { ConferenceRevealCard } from "@/components/molecules/LandingPage/RevealCard"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import Image from "next/image";
+import { ConferenceRevealCard } from "@/components/molecules/LandingPage/RevealCard";
+import { Button } from "@/components/ui/button";
 
 interface Conference {
-  id: string
-  title: string
-  date: string
-  time?: string
-  location?: string
-  speaker?: string
-  speakerTitle?: string
-  type: "tech" | "research"
-  imageSrc: string
-  description?: string
-  tags?: string[]
+  id: string;
+  title: string;
+  date: string;
+  time?: string;
+  location?: string;
+  speaker?: string;
+  speakerTitle?: string;
+  type: "tech" | "research";
+  imageSrc: string;
+  description?: string;
+  tags?: string[];
 }
 
 const conferences: Conference[] = [
@@ -27,7 +27,8 @@ const conferences: Conference[] = [
     time: "14:00 UTC",
     type: "tech",
     imageSrc: "/design-systems-conference-with-colorful-lights.jpg",
-    description: "Xây dựng hệ thống thiết kế bền vững cho các ứng dụng doanh nghiệp",
+    description:
+      "Xây dựng hệ thống thiết kế bền vững cho các ứng dụng doanh nghiệp",
   },
   {
     id: "2",
@@ -48,7 +49,8 @@ const conferences: Conference[] = [
     time: "15:00 UTC",
     type: "research",
     imageSrc: "/design-expo-with-colorful-stage-and-yellow-green-l.jpg",
-    description: "Nghiên cứu các phương pháp tiếp cận hệ thống trong thiết kế hiện đại",
+    description:
+      "Nghiên cứu các phương pháp tiếp cận hệ thống trong thiết kế hiện đại",
   },
   {
     id: "4",
@@ -59,10 +61,12 @@ const conferences: Conference[] = [
     imageSrc: "/large-tech-conference-audience-from-behind-speaker.jpg",
     description: "Chiến lược mở rộng sản phẩm và đội ngũ trong thời đại mới",
   },
-]
+];
 
 export default function UpcomingConferences() {
-  const [selectedConference, setSelectedConference] = useState<Conference>(conferences[1])
+  const [selectedConference, setSelectedConference] = useState<Conference>(
+    conferences[1],
+  );
 
   return (
     <section className="min-h-screen bg-black text-white">
@@ -110,7 +114,9 @@ export default function UpcomingConferences() {
                     <p className="text-base text-gray-200 leading-relaxed">
                       Với {selectedConference.speaker},
                       <br />
-                      <span className="text-gray-300">{selectedConference.speakerTitle}</span>
+                      <span className="text-gray-300">
+                        {selectedConference.speakerTitle}
+                      </span>
                     </p>
                   </div>
                 )}
@@ -142,8 +148,12 @@ export default function UpcomingConferences() {
                 direction="left"
                 className={cn(
                   "transition-all duration-300 cursor-pointer",
-                  selectedConference.id === conference.id ? "ring-2 ring-offset-2 ring-offset-black" : "",
-                  conference.type === "tech" ? "ring-blue-500" : "ring-purple-500",
+                  selectedConference.id === conference.id
+                    ? "ring-2 ring-offset-2 ring-offset-black"
+                    : "",
+                  conference.type === "tech"
+                    ? "ring-blue-500"
+                    : "ring-purple-500",
                 )}
                 onClick={() => setSelectedConference(conference)}
               />
@@ -152,9 +162,9 @@ export default function UpcomingConferences() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 function cn(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(" ")
+  return classes.filter(Boolean).join(" ");
 }

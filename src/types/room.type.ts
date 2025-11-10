@@ -1,4 +1,3 @@
-
 export type Room = {
   roomId: string;
   number: string;
@@ -6,7 +5,7 @@ export type Room = {
   destinationId: string;
 };
 
-export type RoomFormData = Omit<Room, "roomId">
+export type RoomFormData = Omit<Room, "roomId">;
 
 export interface CreateDestinationPayload {
   number: string;

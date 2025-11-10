@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 interface Report {
   id: number;
   name: string;
   type: string;
-  status: 'pending' | 'resolved';
+  status: "pending" | "resolved";
   responses: number;
   lastModified: string;
   created: string;
@@ -21,59 +21,60 @@ interface ReportTemplate {
 
 const ReportManagementScreen: React.FC = () => {
   const [isNewReportDialogOpen, setIsNewReportDialogOpen] = useState(false);
-  const [isReportDetailDialogOpen, setIsReportDetailDialogOpen] = useState(false);
+  const [isReportDetailDialogOpen, setIsReportDetailDialogOpen] =
+    useState(false);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
-  const [sortBy, setSortBy] = useState('name');
+  const [sortBy, setSortBy] = useState("name");
 
   const reportTemplates: ReportTemplate[] = [
     {
-      name: 'Báo cáo lỗi hệ thống',
-      description: 'Dành cho báo cáo các vấn đề kỹ thuật trong hệ thống',
-      icon: '🐛'
+      name: "Báo cáo lỗi hệ thống",
+      description: "Dành cho báo cáo các vấn đề kỹ thuật trong hệ thống",
+      icon: "🐛",
     },
     {
-      name: 'Phản hồi về hội thảo',
-      description: 'Thu thập ý kiến phản hồi từ người tham gia',
-      icon: '💬'
+      name: "Phản hồi về hội thảo",
+      description: "Thu thập ý kiến phản hồi từ người tham gia",
+      icon: "💬",
     },
     {
-      name: 'Báo cáo vi phạm',
-      description: 'Báo cáo hành vi vi phạm quy định',
-      icon: '⚠️'
-    }
+      name: "Báo cáo vi phạm",
+      description: "Báo cáo hành vi vi phạm quy định",
+      icon: "⚠️",
+    },
   ];
 
   const reports: Report[] = [
     {
       id: 1,
-      name: 'Lỗi đăng nhập hệ thống',
-      type: 'Báo cáo lỗi',
-      status: 'pending',
+      name: "Lỗi đăng nhập hệ thống",
+      type: "Báo cáo lỗi",
+      status: "pending",
       responses: 0,
-      lastModified: '27 Thg 12, 2024',
-      created: '1 tháng trước',
-      description: 'Không thể đăng nhập vào hệ thống với tài khoản thường'
+      lastModified: "27 Thg 12, 2024",
+      created: "1 tháng trước",
+      description: "Không thể đăng nhập vào hệ thống với tài khoản thường",
     },
     {
       id: 2,
-      name: 'Phản hồi hội thảo AI 2024',
-      type: 'Phản hồi',
-      status: 'resolved',
+      name: "Phản hồi hội thảo AI 2024",
+      type: "Phản hồi",
+      status: "resolved",
       responses: 45,
-      lastModified: '27 Thg 12, 2024',
-      created: '1 tháng trước',
-      description: 'Hội thảo rất bổ ích, tuy nhiên âm thanh có vấn đề'
+      lastModified: "27 Thg 12, 2024",
+      created: "1 tháng trước",
+      description: "Hội thảo rất bổ ích, tuy nhiên âm thanh có vấn đề",
     },
     {
       id: 3,
-      name: 'Báo cáo spam trong bình luận',
-      type: 'Vi phạm',
-      status: 'pending',
+      name: "Báo cáo spam trong bình luận",
+      type: "Vi phạm",
+      status: "pending",
       responses: 12,
-      lastModified: '27 Thg 12, 2024',
-      created: '1 tháng trước',
-      description: 'Phát hiện nhiều bình luận spam trong phần thảo luận'
-    }
+      lastModified: "27 Thg 12, 2024",
+      created: "1 tháng trước",
+      description: "Phát hiện nhiều bình luận spam trong phần thảo luận",
+    },
   ];
 
   const handleViewReport = (report: Report) => {
@@ -84,10 +85,10 @@ const ReportManagementScreen: React.FC = () => {
   /** ---------------- Dialog tạo báo cáo mới ---------------- */
   const NewReportDialog = () => {
     const [formData, setFormData] = useState({
-      title: '',
-      type: '',
-      description: '',
-      priority: 'medium'
+      title: "",
+      type: "",
+      description: "",
+      priority: "medium",
     });
 
     if (!isNewReportDialogOpen) return null;
@@ -96,8 +97,13 @@ const ReportManagementScreen: React.FC = () => {
       <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-xl max-w-2xl w-full shadow-xl overflow-y-auto max-h-[90vh]">
           <div className="p-6 border-b flex justify-between items-center">
-            <h3 className="text-xl font-semibold text-gray-900">Tạo báo cáo mới</h3>
-            <button onClick={() => setIsNewReportDialogOpen(false)} className="text-gray-500 hover:text-gray-700">
+            <h3 className="text-xl font-semibold text-gray-900">
+              Tạo báo cáo mới
+            </h3>
+            <button
+              onClick={() => setIsNewReportDialogOpen(false)}
+              className="text-gray-500 hover:text-gray-700"
+            >
               ✕
             </button>
           </div>
@@ -108,33 +114,47 @@ const ReportManagementScreen: React.FC = () => {
                 <div
                   key={i}
                   className={`p-4 border rounded-lg cursor-pointer hover:border-blue-500 transition ${
-                    formData.type === template.name ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
+                    formData.type === template.name
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-300"
                   }`}
-                  onClick={() => setFormData({ ...formData, type: template.name })}
+                  onClick={() =>
+                    setFormData({ ...formData, type: template.name })
+                  }
                 >
                   <div className="text-2xl mb-1">{template.icon}</div>
                   <h4 className="font-medium">{template.name}</h4>
-                  <p className="text-sm text-gray-500">{template.description}</p>
+                  <p className="text-sm text-gray-500">
+                    {template.description}
+                  </p>
                 </div>
               ))}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tiêu đề</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Tiêu đề
+              </label>
               <input
                 type="text"
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
                 className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none"
                 placeholder="Nhập tiêu đề báo cáo..."
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Mức độ ưu tiên</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Mức độ ưu tiên
+              </label>
               <select
                 value={formData.priority}
-                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, priority: e.target.value })
+                }
                 className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none"
               >
                 <option value="low">Thấp</option>
@@ -145,11 +165,15 @@ const ReportManagementScreen: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Mô tả chi tiết</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Mô tả chi tiết
+              </label>
               <textarea
                 rows={4}
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
                 className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none"
                 placeholder="Mô tả chi tiết vấn đề hoặc phản hồi..."
               />
@@ -183,8 +207,13 @@ const ReportManagementScreen: React.FC = () => {
       <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-xl max-w-2xl w-full shadow-xl overflow-y-auto max-h-[90vh]">
           <div className="p-6 border-b flex justify-between items-center">
-            <h3 className="text-xl font-semibold text-gray-900">Chi tiết báo cáo</h3>
-            <button onClick={() => setIsReportDetailDialogOpen(false)} className="text-gray-500 hover:text-gray-700">
+            <h3 className="text-xl font-semibold text-gray-900">
+              Chi tiết báo cáo
+            </h3>
+            <button
+              onClick={() => setIsReportDetailDialogOpen(false)}
+              className="text-gray-500 hover:text-gray-700"
+            >
               ✕
             </button>
           </div>
@@ -204,12 +233,14 @@ const ReportManagementScreen: React.FC = () => {
                 <h4 className="font-medium mb-1">Trạng thái</h4>
                 <span
                   className={`px-3 py-1 text-xs rounded-full ${
-                    selectedReport.status === 'resolved'
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-yellow-100 text-yellow-700'
+                    selectedReport.status === "resolved"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-yellow-100 text-yellow-700"
                   }`}
                 >
-                  {selectedReport.status === 'resolved' ? 'Đã giải quyết' : 'Đang xử lý'}
+                  {selectedReport.status === "resolved"
+                    ? "Đã giải quyết"
+                    : "Đang xử lý"}
                 </span>
               </div>
             </div>
@@ -227,10 +258,12 @@ const ReportManagementScreen: React.FC = () => {
 
             <div>
               <h4 className="font-medium mb-1">Mô tả</h4>
-              <p className="bg-gray-50 border rounded-lg p-3">{selectedReport.description}</p>
+              <p className="bg-gray-50 border rounded-lg p-3">
+                {selectedReport.description}
+              </p>
             </div>
 
-            {selectedReport.status === 'resolved' && (
+            {selectedReport.status === "resolved" && (
               <div>
                 <h4 className="font-medium mb-1">Phản hồi từ admin</h4>
                 <p className="bg-gray-50 border rounded-lg p-3 text-green-700">
@@ -246,7 +279,7 @@ const ReportManagementScreen: React.FC = () => {
               >
                 Đóng
               </button>
-              {selectedReport.status === 'pending' && (
+              {selectedReport.status === "pending" && (
                 <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
                   Hủy báo cáo
                 </button>
@@ -265,7 +298,9 @@ const ReportManagementScreen: React.FC = () => {
         <div className="flex items-center justify-between max-w-6xl mx-auto">
           <div>
             <h1 className="text-2xl font-bold">Quản lý báo cáo</h1>
-            <p className="text-gray-500 text-sm">Theo dõi và quản lý các báo cáo bạn đã gửi</p>
+            <p className="text-gray-500 text-sm">
+              Theo dõi và quản lý các báo cáo bạn đã gửi
+            </p>
           </div>
           <button
             onClick={() => setIsNewReportDialogOpen(true)}
@@ -279,7 +314,9 @@ const ReportManagementScreen: React.FC = () => {
       <main className="max-w-6xl mx-auto p-6">
         {/* Danh sách template */}
         <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-4">Tạo báo cáo mới từ template</h2>
+          <h2 className="text-lg font-semibold mb-4">
+            Tạo báo cáo mới từ template
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {reportTemplates.map((t, i) => (
               <div
@@ -319,11 +356,14 @@ const ReportManagementScreen: React.FC = () => {
 
           <div className="p-6 divide-y">
             {reports.map((r) => (
-              <div key={r.id} className="grid grid-cols-6 gap-4 py-3 items-center">
+              <div
+                key={r.id}
+                className="grid grid-cols-6 gap-4 py-3 items-center"
+              >
                 <div className="col-span-2 flex items-center gap-3">
                   <div
                     className={`w-3 h-3 rounded-full ${
-                      r.status === 'resolved' ? 'bg-green-500' : 'bg-yellow-400'
+                      r.status === "resolved" ? "bg-green-500" : "bg-yellow-400"
                     }`}
                   />
                   <div>
@@ -355,7 +395,6 @@ const ReportManagementScreen: React.FC = () => {
 };
 
 export default ReportManagementScreen;
-
 
 // 'use client';
 
@@ -449,7 +488,7 @@ export default ReportManagementScreen;
 //           <div className="p-6 border-b border-gray-700">
 //             <div className="flex justify-between items-center">
 //               <h3 className="text-xl font-bold text-white">Tạo báo cáo mới</h3>
-//               <button 
+//               <button
 //                 onClick={() => setIsNewReportDialogOpen(false)}
 //                 className="text-gray-400 hover:text-white"
 //               >
@@ -457,11 +496,11 @@ export default ReportManagementScreen;
 //               </button>
 //             </div>
 //           </div>
-          
+
 //           <div className="p-6">
 //             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
 //               {reportTemplates.map((template, index) => (
-//                 <div 
+//                 <div
 //                   key={index}
 //                   className="p-4 bg-gray-700 rounded-lg border border-gray-600 hover:border-blue-500 cursor-pointer transition-colors"
 //                   onClick={() => setFormData({...formData, type: template.name})}
@@ -556,7 +595,7 @@ export default ReportManagementScreen;
 //           <div className="p-6 border-b border-gray-700">
 //             <div className="flex justify-between items-center">
 //               <h3 className="text-xl font-bold text-white">Chi tiết báo cáo</h3>
-//               <button 
+//               <button
 //                 onClick={() => setIsReportDetailDialogOpen(false)}
 //                 className="text-gray-400 hover:text-white"
 //               >
@@ -564,7 +603,7 @@ export default ReportManagementScreen;
 //               </button>
 //             </div>
 //           </div>
-          
+
 //           <div className="p-6">
 //             <div className="space-y-4">
 //               <div>
@@ -580,8 +619,8 @@ export default ReportManagementScreen;
 //                 <div>
 //                   <h4 className="font-medium text-white mb-2">Trạng thái</h4>
 //                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-//                     selectedReport.status === 'resolved' 
-//                       ? 'bg-green-900 text-green-300' 
+//                     selectedReport.status === 'resolved'
+//                       ? 'bg-green-900 text-green-300'
 //                       : 'bg-yellow-900 text-yellow-300'
 //                   }`}>
 //                     {selectedReport.status === 'resolved' ? 'Đã giải quyết' : 'Đang xử lý'}
@@ -643,7 +682,7 @@ export default ReportManagementScreen;
 //             <h1 className="text-xl font-bold">Quản lý báo cáo</h1>
 //             <p className="text-gray-400 text-sm mt-1">Theo dõi và quản lý các báo cáo bạn đã gửi</p>
 //           </div>
-//           <button 
+//           <button
 //             onClick={() => setIsNewReportDialogOpen(true)}
 //             className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
 //           >
@@ -708,7 +747,7 @@ export default ReportManagementScreen;
 //                 Hỗ trợ
 //               </a>
 //             </div>
-            
+
 //             <div className="mt-4 flex items-center px-3 py-2">
 //               <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
 //                 ND
@@ -732,10 +771,10 @@ export default ReportManagementScreen;
 //                   Thư viện Template
 //                 </button>
 //               </div>
-              
+
 //               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 //                 {reportTemplates.map((template, index) => (
-//                   <div 
+//                   <div
 //                     key={index}
 //                     className="p-4 bg-gray-800 rounded-lg border border-gray-700 hover:border-blue-500 cursor-pointer transition-colors"
 //                     onClick={() => setIsNewReportDialogOpen(true)}
@@ -748,7 +787,7 @@ export default ReportManagementScreen;
 //               </div>
 
 //               <div className="mt-4 text-center">
-//                 <button 
+//                 <button
 //                   onClick={() => setIsNewReportDialogOpen(true)}
 //                   className="inline-flex items-center justify-center w-12 h-12 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
 //                 >
@@ -769,7 +808,7 @@ export default ReportManagementScreen;
 //                       placeholder="Tìm kiếm..."
 //                       className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
 //                     />
-//                     <select 
+//                     <select
 //                       value={sortBy}
 //                       onChange={(e) => setSortBy(e.target.value)}
 //                       className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
@@ -812,7 +851,7 @@ export default ReportManagementScreen;
 //                       <div className="text-gray-300">{report.lastModified}</div>
 //                       <div className="text-gray-300">{report.created}</div>
 //                       <div>
-//                         <button 
+//                         <button
 //                           onClick={() => handleViewReport(report)}
 //                           className="text-blue-400 hover:text-blue-300 text-sm font-medium"
 //                         >

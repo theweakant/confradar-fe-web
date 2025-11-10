@@ -19,11 +19,9 @@ import type {
   Policy,
   Media,
   Sponsor,
-
   ResearchDetail,
   ResearchPhase,
-  ConferenceRefundPolicyData
-
+  ConferenceRefundPolicyData,
 } from "@/types/conference.type";
 
 export const conferenceStepApi = createApi({
@@ -44,7 +42,10 @@ export const conferenceStepApi = createApi({
         formData.append("endDate", body.endDate);
         formData.append("totalSlot", String(body.totalSlot));
         formData.append("isInternalHosted", String(body.isInternalHosted));
-        formData.append("isResearchConference", String(body.isResearchConference));
+        formData.append(
+          "isResearchConference",
+          String(body.isResearchConference),
+        );
         formData.append("conferenceCategoryId", body.conferenceCategoryId);
         formData.append("cityId", body.cityId);
         formData.append("ticketSaleStart", body.ticketSaleStart);
@@ -56,7 +57,10 @@ export const conferenceStepApi = createApi({
           formData.append("bannerImageFile", body.bannerImageFile);
         if (body.createdby) formData.append("createdby", body.createdby);
         if (body.targetAudienceTechnicalConference)
-          formData.append("targetAudienceTechnicalConference", body.targetAudienceTechnicalConference);
+          formData.append(
+            "targetAudienceTechnicalConference",
+            body.targetAudienceTechnicalConference,
+          );
 
         return {
           url: endpoint.CONFERENCE_STEP.CREATE_BASIC,
@@ -67,7 +71,7 @@ export const conferenceStepApi = createApi({
       invalidatesTags: ["ConferenceStep"],
     }),
 
-    // UPDATE BASIC 
+    // UPDATE BASIC
     updateBasicConference: builder.mutation<
       ApiResponse<{ conferenceId: string }>,
       { conferenceId: string; data: ConferenceBasicForm }
@@ -81,7 +85,10 @@ export const conferenceStepApi = createApi({
         formData.append("endDate", data.endDate);
         formData.append("totalSlot", String(data.totalSlot));
         formData.append("isInternalHosted", String(data.isInternalHosted));
-        formData.append("isResearchConference", String(data.isResearchConference));
+        formData.append(
+          "isResearchConference",
+          String(data.isResearchConference),
+        );
         formData.append("conferenceCategoryId", data.conferenceCategoryId);
         formData.append("cityId", data.cityId);
         formData.append("ticketSaleStart", data.ticketSaleStart);
@@ -90,7 +97,8 @@ export const conferenceStepApi = createApi({
         // Optional fields
         if (data.description) formData.append("description", data.description);
         if (data.address) formData.append("address", data.address);
-        if (data.bannerImageFile) formData.append("bannerImageFile", data.bannerImageFile);
+        if (data.bannerImageFile)
+          formData.append("bannerImageFile", data.bannerImageFile);
 
         return {
           url: endpoint.CONFERENCE_STEP.UPDATE_BASIC(conferenceId),
@@ -100,7 +108,6 @@ export const conferenceStepApi = createApi({
       },
       invalidatesTags: ["ConferenceStep"],
     }),
-
 
     //CREATE PRICE (TECH)
     createConferencePrice: builder.mutation<
@@ -136,7 +143,6 @@ export const conferenceStepApi = createApi({
       invalidatesTags: ["ConferenceStep"],
     }),
 
-
     // UPDATE PRICE PHASE
     updateConferencePricePhase: builder.mutation<
       ApiResponse<unknown>,
@@ -170,7 +176,10 @@ export const conferenceStepApi = createApi({
         // Lặp qua từng session
         data.sessions.forEach((session, index) => {
           formData.append(`sessions[${index}].title`, session.title);
-          formData.append(`sessions[${index}].description`, session.description);
+          formData.append(
+            `sessions[${index}].description`,
+            session.description,
+          );
           formData.append(`sessions[${index}].startTime`, session.startTime);
           formData.append(`sessions[${index}].endTime`, session.endTime);
           formData.append(`sessions[${index}].date`, session.date);
@@ -180,21 +189,21 @@ export const conferenceStepApi = createApi({
           session.speaker?.forEach((sp, spIndex) => {
             formData.append(
               `sessions[${index}].speaker[${spIndex}].name`,
-              sp.name
+              sp.name,
             );
             formData.append(
               `sessions[${index}].speaker[${spIndex}].description`,
-              sp.description
+              sp.description,
             );
             if (sp.image instanceof File) {
               formData.append(
                 `sessions[${index}].speaker[${spIndex}].image`,
-                sp.image
+                sp.image,
               );
             } else if (sp.imageUrl) {
               formData.append(
                 `sessions[${index}].speaker[${spIndex}].imageUrl`,
-                sp.imageUrl
+                sp.imageUrl,
               );
             }
           });
@@ -204,12 +213,12 @@ export const conferenceStepApi = createApi({
             if (media.mediaFile instanceof File) {
               formData.append(
                 `sessions[${index}].sessionMedias[${mediaIndex}].mediaFile`,
-                media.mediaFile
+                media.mediaFile,
               );
             } else if (media.mediaUrl) {
               formData.append(
                 `sessions[${index}].sessionMedias[${mediaIndex}].mediaUrl`,
-                media.mediaUrl
+                media.mediaUrl,
               );
             }
           });
@@ -224,7 +233,6 @@ export const conferenceStepApi = createApi({
       invalidatesTags: ["ConferenceStep"],
     }),
 
-
     //UPDATE SESSION
     updateConferenceSession: builder.mutation<
       ApiResponse<Session>,
@@ -235,7 +243,7 @@ export const conferenceStepApi = createApi({
           description: string;
           startTime: string;
           endTime: string;
-          date: string; 
+          date: string;
           roomId: string;
         };
       }
@@ -249,31 +257,31 @@ export const conferenceStepApi = createApi({
     }),
 
     //UPDATE SPEAKER
-updateSessionSpeaker: builder.mutation<
-  ApiResponse<Speaker>,
-  {
-    sessionId: string;
-    data: {
-      name: string;
-      description: string;
-      image?: File ;
-    };
-  }
->({
-  query: ({ sessionId, data }) => {
-    const formData = new FormData();
-    formData.append("name", data.name);
-    formData.append("description", data.description);
-    if (data.image) formData.append("image", data.image);
+    updateSessionSpeaker: builder.mutation<
+      ApiResponse<Speaker>,
+      {
+        sessionId: string;
+        data: {
+          name: string;
+          description: string;
+          image?: File;
+        };
+      }
+    >({
+      query: ({ sessionId, data }) => {
+        const formData = new FormData();
+        formData.append("name", data.name);
+        formData.append("description", data.description);
+        if (data.image) formData.append("image", data.image);
 
-    return {
-      url: endpoint.CONFERENCE_STEP.UPDATE_SPEAKER(sessionId),
-      method: "PUT",
-      body: formData,
-    };
-  },
-  invalidatesTags: ["ConferenceStep"],
-}),
+        return {
+          url: endpoint.CONFERENCE_STEP.UPDATE_SPEAKER(sessionId),
+          method: "PUT",
+          body: formData,
+        };
+      },
+      invalidatesTags: ["ConferenceStep"],
+    }),
 
     //CREATE POLICY
     createConferencePolicies: builder.mutation<
@@ -299,7 +307,7 @@ updateSessionSpeaker: builder.mutation<
         body: data,
       }),
       invalidatesTags: ["ConferenceStep"],
-    }),    
+    }),
 
     //UPDATE POLICY
     updateConferencePolicy: builder.mutation<
@@ -327,7 +335,7 @@ updateSessionSpeaker: builder.mutation<
         refundPolicyId: string;
         data: {
           percentRefund: number;
-          refundDeadline: string; 
+          refundDeadline: string;
           refundOrder: number;
         };
       }
@@ -339,7 +347,6 @@ updateSessionSpeaker: builder.mutation<
       }),
       invalidatesTags: ["ConferenceStep"],
     }),
-
 
     //CREATE MEDIA
     createConferenceMedia: builder.mutation<
@@ -363,8 +370,7 @@ updateSessionSpeaker: builder.mutation<
       invalidatesTags: ["ConferenceStep"],
     }),
 
-
-    //UPDATE MEDIA 
+    //UPDATE MEDIA
     updateConferenceMedia: builder.mutation<
       ApiResponse<Media>,
       { mediaId: string; mediaFile?: File; mediaUrl?: string }
@@ -431,16 +437,17 @@ updateSessionSpeaker: builder.mutation<
       invalidatesTags: ["ConferenceStep"],
     }),
 
-
     // GET BASIC
-    getBasicStepById: builder.query<ApiResponse<ConferenceBasicResponse>, string>({
+    getBasicStepById: builder.query<
+      ApiResponse<ConferenceBasicResponse>,
+      string
+    >({
       query: (conferenceId) => ({
         url: endpoint.CONFERENCE_STEP.GET_BASIC(conferenceId),
         method: "GET",
       }),
       providesTags: ["ConferenceStep"],
     }),
-
 
     //RESEARCH
     //CREATE BASIC
@@ -455,7 +462,10 @@ updateSessionSpeaker: builder.mutation<
         formData.append("endDate", body.endDate);
         formData.append("totalSlot", String(body.totalSlot));
         formData.append("isInternalHosted", String(body.isInternalHosted));
-        formData.append("isResearchConference", String(body.isResearchConference));
+        formData.append(
+          "isResearchConference",
+          String(body.isResearchConference),
+        );
         formData.append("conferenceCategoryId", body.conferenceCategoryId);
         formData.append("cityId", body.cityId);
         formData.append("ticketSaleStart", body.ticketSaleStart);
@@ -488,7 +498,7 @@ updateSessionSpeaker: builder.mutation<
       }),
       invalidatesTags: ["ConferenceStep"],
     }),
-    
+
     //CREATE PHASE
     createResearchPhase: builder.mutation<
       ApiResponse<string>,
@@ -501,7 +511,7 @@ updateSessionSpeaker: builder.mutation<
       }),
       invalidatesTags: ["ConferenceStep"],
     }),
-    
+
     //CREATE SESSION
     createResearchSessions: builder.mutation<
       ApiResponse<string>,
@@ -518,7 +528,7 @@ updateSessionSpeaker: builder.mutation<
         };
       },
       invalidatesTags: ["ConferenceStep"],
-    }),    
+    }),
 
     createResearchRankingFile: builder.mutation<
       ApiResponse<string>,
@@ -530,34 +540,44 @@ updateSessionSpeaker: builder.mutation<
         if (file) formData.append("file", file);
 
         return {
-          url: endpoint.CONFERENCE_STEP.CREATE_RESEARCH_RANKING_FILE(conferenceId),
+          url: endpoint.CONFERENCE_STEP.CREATE_RESEARCH_RANKING_FILE(
+            conferenceId,
+          ),
           method: "POST",
           body: formData,
         };
       },
       invalidatesTags: ["ConferenceStep"],
-    }),  
-    
+    }),
+
     createResearchRankingReference: builder.mutation<
       ApiResponse<string>,
       { conferenceId: string; referenceUrl: string }
     >({
       query: ({ conferenceId, referenceUrl }) => ({
-        url: endpoint.CONFERENCE_STEP.CREATE_RESEARCH_RANKING_REFERENCE(conferenceId),
+        url: endpoint.CONFERENCE_STEP.CREATE_RESEARCH_RANKING_REFERENCE(
+          conferenceId,
+        ),
         method: "POST",
-        body: { referenceUrl }, 
+        body: { referenceUrl },
       }),
       invalidatesTags: ["ConferenceStep"],
-    }),    
+    }),
 
     createResearchMaterial: builder.mutation<
       ApiResponse<string>,
-      { conferenceId: string; fileName: string; fileDescription?: string; file?: File }
+      {
+        conferenceId: string;
+        fileName: string;
+        fileDescription?: string;
+        file?: File;
+      }
     >({
       query: ({ conferenceId, fileName, fileDescription, file }) => {
         const formData = new FormData();
         formData.append("fileName", fileName);
-        if (fileDescription) formData.append("fileDescription", fileDescription);
+        if (fileDescription)
+          formData.append("fileDescription", fileDescription);
         if (file) formData.append("file", file);
 
         return {
@@ -568,7 +588,67 @@ updateSessionSpeaker: builder.mutation<
       },
       invalidatesTags: ["ConferenceStep"],
     }),
-    
+
+    // DELETE PRICE
+    deleteConferencePrice: builder.mutation<
+      ApiResponse<null>,
+      string // priceId
+    >({
+      query: (priceId) => ({
+        url: endpoint.CONFERENCE_STEP.DELETE_PRICE(priceId),
+        method: "DELETE",
+      }),
+      invalidatesTags: ["ConferenceStep"],
+    }),
+
+    // DELETE SESSION
+    deleteConferenceSession: builder.mutation<
+      ApiResponse<null>,
+      string // sessionId
+    >({
+      query: (sessionId) => ({
+        url: endpoint.CONFERENCE_STEP.DELETE_SESSION(sessionId),
+        method: "DELETE",
+      }),
+      invalidatesTags: ["ConferenceStep"],
+    }),
+
+    // DELETE POLICY
+    deleteConferencePolicy: builder.mutation<
+      ApiResponse<null>,
+      string // policyId
+    >({
+      query: (policyId) => ({
+        url: endpoint.CONFERENCE_STEP.DELETE_POLICY(policyId),
+        method: "DELETE",
+      }),
+      invalidatesTags: ["ConferenceStep"],
+    }),
+
+    // DELETE MEDIA
+    deleteConferenceMedia: builder.mutation<
+      ApiResponse<null>,
+      string // mediaId
+    >({
+      query: (mediaId) => ({
+        url: endpoint.CONFERENCE_STEP.DELETE_MEDIA(mediaId),
+        method: "DELETE",
+      }),
+      invalidatesTags: ["ConferenceStep"],
+    }),
+
+    // DELETE SPONSOR
+    deleteConferenceSponsor: builder.mutation<
+      ApiResponse<null>,
+      string // sponsorId
+    >({
+      query: (sponsorId) => ({
+        url: endpoint.CONFERENCE_STEP.DELETE_SPONSOR(sponsorId),
+        method: "DELETE",
+      }),
+      invalidatesTags: ["ConferenceStep"],
+    }),
+
   }),
 });
 
@@ -589,9 +669,9 @@ export const {
   useUpdateConferenceSponsorMutation,
   useGetBasicStepByIdQuery,
 
-//UPDATE TECH
-  useUpdateSessionSpeakerMutation ,
-useUpdateConferencePricePhaseMutation,
+  //UPDATE TECH
+  useUpdateSessionSpeakerMutation,
+  useUpdateConferencePricePhaseMutation,
 
   //RESEARCH
   useCreateBasicResearchConferenceMutation,
@@ -600,6 +680,12 @@ useUpdateConferencePricePhaseMutation,
   useCreateResearchSessionsMutation,
   useCreateResearchRankingFileMutation,
   useCreateResearchRankingReferenceMutation,
-  useCreateResearchMaterialMutation
+  useCreateResearchMaterialMutation,
 
+  //DELETE
+  useDeleteConferencePriceMutation,
+  useDeleteConferenceSessionMutation,
+  useDeleteConferencePolicyMutation,
+  useDeleteConferenceMediaMutation,
+  useDeleteConferenceSponsorMutation,
 } = conferenceStepApi;

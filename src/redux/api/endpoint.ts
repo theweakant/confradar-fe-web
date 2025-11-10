@@ -52,32 +52,39 @@ export const endpoint = {
     LIST_BY_STATUS: "/Conference/by-status",
     VIEW_REGISTERED_USERS: "/Conference/view-registered-users-for-conference",
 
-    TECH_CONF_FOR_COLLABORATOR_AND_ORGANIZER: "/Conference/technical-conferences-for-collaborator-and-Organizer",
-    RESEARCH_CONF_FOR_ORGANIZER: "/Conference/research-conferences-for-Organizer",
+    TECH_CONF_FOR_COLLABORATOR_AND_ORGANIZER:
+      "/Conference/technical-conferences-for-collaborator-and-Organizer",
+    RESEARCH_CONF_FOR_ORGANIZER:
+      "/Conference/research-conferences-for-Organizer",
 
     //DETAIL CONF
-    GET_TECH_BY_ID_INTERNAL: (conferenceId: string) => `/Conference/detail-technical-for-organizer-collaborator/${conferenceId}`,
-    GET_RESEARCH_BY_ID_INTERNAL: (conferenceId: string) => `/Conference/detail-research-organizer-for-organizer/${conferenceId}`,
-
+    GET_TECH_BY_ID_INTERNAL: (conferenceId: string) =>
+      `/Conference/detail-technical-for-organizer-collaborator/${conferenceId}`,
+    GET_RESEARCH_BY_ID_INTERNAL: (conferenceId: string) =>
+      `/Conference/detail-research-organizer-for-organizer/${conferenceId}`,
 
     //CUSTOMER
-    GET_TECH_BY_ID: (conferenceId: string) => `/Conference/technical-detail/${conferenceId}`,
-    GET_RESEARCH_BY_ID: (conferenceId: string) => `/Conference/research-detail/${conferenceId}`,
+    GET_TECH_BY_ID: (conferenceId: string) =>
+      `/Conference/technical-detail/${conferenceId}`,
+    GET_RESEARCH_BY_ID: (conferenceId: string) =>
+      `/Conference/research-detail/${conferenceId}`,
 
     // check status
     STEP_COMPLETION_STATUS: "/Conference/step-completion-status",
-    RESEARCH_STEP_COMPLETION_STATUS: "/Conference/research-step-completion-status",
+    RESEARCH_STEP_COMPLETION_STATUS:
+      "/Conference/research-step-completion-status",
     CHECK_TECH_STEP_COMPLETION: "/Conference/check-technical-step-completion",
-    CHECK_RESEARCH_STEP_COMPLETION: "/Conference/check-research-step-completion",
+    CHECK_RESEARCH_STEP_COMPLETION:
+      "/Conference/check-research-step-completion",
 
     //pending & approve
     PENDING_CONFERENCES: "/Conference/pending-conferences",
-    APPROVE_CONFERENCE: (conferenceId: string) => `/Conference/approve-conference/${conferenceId}`,
+    APPROVE_CONFERENCE: (conferenceId: string) =>
+      `/Conference/approve-conference/${conferenceId}`,
 
     //STATUS
     LIST_ALL_CONF_STATUS: "/ConferenceStatus/get-all-conference-statuses",
     UPDATE_OWN_STATUS: "/Conference/Update-own-conference-Status",
-
 
     DETAIL: "/Conference",
     TECHNICAL_DETAIL: "/Conference/technical-detail",
@@ -86,43 +93,67 @@ export const endpoint = {
     UPDATE: "/Conference",
     DELETE: "/Conference",
 
-    GET_OWN_CONFERENCES_FOR_SCHEDULE: '/Conference/own-conferences-for-schedule',
+    GET_OWN_CONFERENCES_FOR_SCHEDULE:
+      "/Conference/own-conferences-for-schedule",
   },
 
   CONFERENCE_STEP: {
-
     //TECH
     CREATE_BASIC: "/conferencestep/basic",
-    CREATE_PRICE: (conferenceId: string) => `/conferencestep/${conferenceId}/prices`,
-    CREATE_SESSION: (conferenceId: string) => `/conferencestep/${conferenceId}/sessions`,
-    CREATE_POLICY: (conferenceId: string) => `/conferencestep/${conferenceId}/policies`,
-    CREATE_REFUND_POLICY: (conferenceId: string) => `/conferencestep/${conferenceId}/refund-policies`,
-    CREATE_MEDIA: (conferenceId: string) => `/conferencestep/${conferenceId}/media`,
-    CREATE_SPONSOR: (conferenceId: string) => `/conferencestep/${conferenceId}/sponsors`,
+    CREATE_PRICE: (conferenceId: string) =>
+      `/conferencestep/${conferenceId}/prices`,
+    CREATE_SESSION: (conferenceId: string) =>
+      `/conferencestep/${conferenceId}/sessions`,
+    CREATE_POLICY: (conferenceId: string) =>
+      `/conferencestep/${conferenceId}/policies`,
+    CREATE_REFUND_POLICY: (conferenceId: string) =>
+      `/conferencestep/${conferenceId}/refund-policies`,
+    CREATE_MEDIA: (conferenceId: string) =>
+      `/conferencestep/${conferenceId}/media`,
+    CREATE_SPONSOR: (conferenceId: string) =>
+      `/conferencestep/${conferenceId}/sponsors`,
 
-
-    UPDATE_BASIC: (conferenceId: string) => `/conferencestep/${conferenceId}/basic`,
+    UPDATE_BASIC: (conferenceId: string) =>
+      `/conferencestep/${conferenceId}/basic`,
     UPDATE_PRICE: (priceId: string) => `/conferencestep/prices/${priceId}`,
-    UPDATE_PHASE: (pricePhaseId: string) => `/conferencestep/phases/${pricePhaseId}`,
-    UPDATE_SESSION: (sessionId: string) => `/conferencestep/sessions/${sessionId}`,
-    UPDATE_SPEAKER: (sessionId: string) => `/conferencestep/sessions/${sessionId}/speaker`,
+    UPDATE_PHASE: (pricePhaseId: string) =>
+      `/conferencestep/phases/${pricePhaseId}`,
+    UPDATE_SESSION: (sessionId: string) =>
+      `/conferencestep/sessions/${sessionId}`,
+    UPDATE_SPEAKER: (sessionId: string) =>
+      `/conferencestep/sessions/${sessionId}/speaker`,
     UPDATE_POLICY: (policyId: string) => `/conferencestep/policies/${policyId}`,
-    UPDATE_REFUND_POLICY: (refundPolicyId: string) => `/conferencestep/refund-policies/${refundPolicyId}`,
+    UPDATE_REFUND_POLICY: (refundPolicyId: string) =>
+      `/conferencestep/refund-policies/${refundPolicyId}`,
     UPDATE_MEDIA: (mediaId: string) => `/conferencestep/media/${mediaId}`,
-    UPDATE_SPONSOR: (sponsorId: string) => `/conferencestep/sponsors/${sponsorId}`,
+    UPDATE_SPONSOR: (sponsorId: string) =>
+      `/conferencestep/sponsors/${sponsorId}`,
 
-    GET_BASIC: (conferenceId: string) => `/conferencestep/${conferenceId}/basic`,
+    //DELETE
+    DELETE_PRICE: (priceId : string) =>`/conferencestep/prices/${priceId}`,  
+    DELETE_SESSION: (sessionId: string) =>`/conferencestep/sessions/${sessionId}`,  
+    DELETE_POLICY: (policyId: string) =>`/conferencestep/policies/${policyId}`,  
+    DELETE_MEDIA: (mediaId: string) =>`/conferencestep/media/${mediaId}`,  
+    DELETE_SPONSOR: (sponsorId: string) =>`/conferencestep/sponsors/${sponsorId}`,  
 
+    //GET
+    GET_BASIC: (conferenceId: string) =>
+      `/conferencestep/${conferenceId}/basic`,
 
     //RESEARCH
     CREATE_RESEARCH_BASIC: "/conferencestep/research/basic",
-    CREATE_RESEARCH_DETAIL: (conferenceId: string) => `/conferencestep/${conferenceId}/research/detail`,
-    CREATE_RESEARCH_PHASE: (conferenceId: string) => `/conferencestep/${conferenceId}/research/phases`,
-    CREATE_RESEARCH_SESSION: (conferenceId: string) => `/conferencestep/${conferenceId}/research/sessions`,
-    CREATE_RESEARCH_RANKING_FILE: (conferenceId: string) => `/conferencestep/${conferenceId}/research/ranking-file-urls`,
-    CREATE_RESEARCH_RANKING_REFERENCE: (conferenceId: string) => `/conferencestep/${conferenceId}/research/ranking-reference-urls`,
-    CREATE_RESEARCH_MATERIAL: (conferenceId: string) => `/conferencestep/${conferenceId}/research/materials`,
-
+    CREATE_RESEARCH_DETAIL: (conferenceId: string) =>
+      `/conferencestep/${conferenceId}/research/detail`,
+    CREATE_RESEARCH_PHASE: (conferenceId: string) =>
+      `/conferencestep/${conferenceId}/research/phases`,
+    CREATE_RESEARCH_SESSION: (conferenceId: string) =>
+      `/conferencestep/${conferenceId}/research/sessions`,
+    CREATE_RESEARCH_RANKING_FILE: (conferenceId: string) =>
+      `/conferencestep/${conferenceId}/research/ranking-file-urls`,
+    CREATE_RESEARCH_RANKING_REFERENCE: (conferenceId: string) =>
+      `/conferencestep/${conferenceId}/research/ranking-reference-urls`,
+    CREATE_RESEARCH_MATERIAL: (conferenceId: string) =>
+      `/conferencestep/${conferenceId}/research/materials`,
   },
 
   CITY: {
@@ -155,9 +186,9 @@ export const endpoint = {
 
     //FULL PAPER
     SUBMIT_FULLPAPER_REVIEW: "/Paper/submit-fullpaper-review",
-    LIST_FULLPAPER_REVIEWS: (fullPaperId: string) => `/Paper/get-fullpaper-reviews/${fullPaperId}`,
+    LIST_FULLPAPER_REVIEWS: (fullPaperId: string) =>
+      `/Paper/get-fullpaper-reviews/${fullPaperId}`,
     DECIDE_FULLPAPER_STATUS: "/Paper/decide-fullpaper-status",
-
 
     //CAMERA-READY
     LIST_PENDING_CAMERA_READY: "/Paper/get-pending-cameraready",
@@ -169,7 +200,6 @@ export const endpoint = {
     DECIDE_REVISION_STATUS: "/Paper/decide-revise-status",
     SUBMIT_PAPER_REVISION_FEEDBACK: "/Paper/submit-paper-revision-feedback",
 
-
     // FULL PAPER
     SUBMIT_FULLPAPER: "/Paper/submit-fullpaper",
 
@@ -179,7 +209,8 @@ export const endpoint = {
 
     // CAMERA READY
     SUBMIT_CAMERA_READY: "/Paper/submit-camera-ready",
-    LIST_SUBMITTED_PAPERS_CUSTOMER: "/Paper/get-all-submitted-papers-for-customer",
+    LIST_SUBMITTED_PAPERS_CUSTOMER:
+      "/Paper/get-all-submitted-papers-for-customer",
     GET_PAPER_DETAIL_CUSTOMER: "/Paper/get-paper-detail-customer",
     LIST_PAPER_PHASES: "/Paper/list-paper-phases",
     LIST_AVAILABLE_CUSTOMERS: "/Paper/list-available-customers",
@@ -191,16 +222,19 @@ export const endpoint = {
   },
 
   FAVOURITE_CONFERENCE: {
-    LIST_OWN: '/FavouriteConference/list-own-favourite-conferences',
-    ADD: '/FavouriteConference/add-to-favourite',
-    DELETE: '/FavouriteConference/delete-from-favourite',
+    LIST_OWN: "/FavouriteConference/list-own-favourite-conferences",
+    ADD: "/FavouriteConference/add-to-favourite",
+    DELETE: "/FavouriteConference/delete-from-favourite",
   },
 
-  PRESENTER_SESSSION:{
-  LIST_ACCEPTED_PAPER:"/assigningpresentersession/get-accepted-papers",
-  ASSIGN_PRESENTER:"/assigningpresentersession/assign-presenter-to-session",
-  REQUEST_CHANGE_PRESENTER:"/assigningpresentersession/request-change-presenter",
-  APPROVE_CHANGE_PRESENTER:"/assigningpresentersession/approve-change-presenter",
-  LIST_PENDING_CHANGE_REQUEST:"/assigningpresentersession/get-pending-presenter-change-requests"
-  }
-}
+  PRESENTER_SESSSION: {
+    LIST_ACCEPTED_PAPER: "/assigningpresentersession/get-accepted-papers",
+    ASSIGN_PRESENTER: "/assigningpresentersession/assign-presenter-to-session",
+    REQUEST_CHANGE_PRESENTER:
+      "/assigningpresentersession/request-change-presenter",
+    APPROVE_CHANGE_PRESENTER:
+      "/assigningpresentersession/approve-change-presenter",
+    LIST_PENDING_CHANGE_REQUEST:
+      "/assigningpresentersession/get-pending-presenter-change-requests",
+  },
+};

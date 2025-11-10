@@ -41,16 +41,14 @@ export function RequestDetail({
   };
 
   const getTypeVariant = (
-    type: string
+    type: string,
   ): "success" | "danger" | "warning" | "info" => {
-    const variants: Record<
-      string,
-      "success" | "danger" | "warning" | "info"
-    > = {
-      refund: "danger",
-      change_presenter: "warning",
-      change_session: "info",
-    };
+    const variants: Record<string, "success" | "danger" | "warning" | "info"> =
+      {
+        refund: "danger",
+        change_presenter: "warning",
+        change_session: "info",
+      };
     return variants[type] || "info";
   };
 
@@ -65,17 +63,15 @@ export function RequestDetail({
   };
 
   const getStatusVariant = (
-    status: string
+    status: string,
   ): "success" | "danger" | "warning" | "info" => {
-    const variants: Record<
-      string,
-      "success" | "danger" | "warning" | "info"
-    > = {
-      pending: "warning",
-      approved: "success",
-      rejected: "danger",
-      more_info: "info",
-    };
+    const variants: Record<string, "success" | "danger" | "warning" | "info"> =
+      {
+        pending: "warning",
+        approved: "success",
+        rejected: "danger",
+        more_info: "info",
+      };
     return variants[status] || "info";
   };
 
@@ -142,7 +138,9 @@ export function RequestDetail({
         <div className="flex items-start gap-3">
           <Calendar className="w-5 h-5 text-blue-600 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-gray-700">Cập nhật lần cuối</p>
+            <p className="text-sm font-medium text-gray-700">
+              Cập nhật lần cuối
+            </p>
             <p className="text-gray-900">
               {formatDate(request.updatedAt.toISOString())}
             </p>
@@ -201,12 +199,16 @@ export function RequestDetail({
       {/* Update Status Section */}
       <div className="pt-4 border-t space-y-4">
         <h4 className="font-semibold text-gray-900">Cập nhật trạng thái</h4>
-        
+
         <FormSelect
           label="Trạng thái"
           name="status"
           value={status}
-          onChange={(value) => setStatus(value as "pending" | "approved" | "rejected" | "more_info")}
+          onChange={(value) =>
+            setStatus(
+              value as "pending" | "approved" | "rejected" | "more_info",
+            )
+          }
           options={statusOptions}
           required
         />

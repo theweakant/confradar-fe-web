@@ -3,21 +3,21 @@ interface FormSelectProps {
   name?: string;
   value: string | undefined;
   onChange: (value: string) => void;
-  options: { value: string; label: string }[];
+  options: ReadonlyArray<{ value: string; label: string }>;
   required?: boolean;
   error?: string;
   disabled?: boolean;
 }
 
-export function FormSelect({ 
-  label, 
-  name, 
-  value, 
-  onChange, 
-  options, 
-  required = false, 
+export function FormSelect({
+  label,
+  name,
+  value,
+  onChange,
+  options,
+  required = false,
   error,
-  disabled = false 
+  disabled = false,
 }: FormSelectProps) {
   return (
     <div>

@@ -1,15 +1,17 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Menu, X } from "lucide-react"
-import { useState } from "react"
-import { useAppSelector } from "@/redux/hooks/hooks"
-import { RootState } from "@/redux/store"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Menu, X } from "lucide-react";
+import { useState } from "react";
+import { useAppSelector } from "@/redux/hooks/hooks";
+import { RootState } from "@/redux/store";
 
 export default function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const accessToken = useAppSelector((state: RootState) => state.auth.accessToken)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const accessToken = useAppSelector(
+    (state: RootState) => state.auth.accessToken,
+  );
 
   return (
     <header className="bg-black sticky top-0 z-50 w-full">
@@ -20,7 +22,9 @@ export default function Header() {
             <div className="h-8 w-8 rounded-lg bg-orange-600 flex items-center justify-center">
               <span className="text-white font-bold text-lg">N</span>
             </div>
-            <span className="font-bold text-base text-white uppercase tracking-wide">ConfRadar</span>
+            <span className="font-bold text-base text-white uppercase tracking-wide">
+              ConfRadar
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -85,8 +89,15 @@ export default function Header() {
           </div> */}
 
           {/* Mobile menu button */}
-          <button className="md:hidden text-white" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          <button
+            className="md:hidden text-white"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
           </button>
         </div>
 
@@ -133,5 +144,5 @@ export default function Header() {
         )}
       </div>
     </header>
-  )
+  );
 }

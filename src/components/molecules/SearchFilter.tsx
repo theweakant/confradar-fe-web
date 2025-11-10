@@ -37,7 +37,7 @@ export function SearchFilter({
           onChange={onSearchChange}
           placeholder={searchPlaceholder}
         />
-        
+
         {filters.map((filter, index) => (
           <SelectSection
             key={index}

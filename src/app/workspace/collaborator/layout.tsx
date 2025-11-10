@@ -1,12 +1,14 @@
-"use client"
+"use client";
 
-import { ROLES } from "@/constants/roles"
-import RouteGuard from "@/utils/routeGuard"
+import { ROLES } from "@/constants/roles";
+import RouteGuard from "@/utils/routeGuard";
 
-export default function CollaboratorLayout({ children }: { children: React.ReactNode }) {
+export default function CollaboratorLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <RouteGuard allowedRoles={[ROLES.COLLABORATOR]}>
-      {children}
-    </RouteGuard>
-  )
+    <RouteGuard allowedRoles={[ROLES.COLLABORATOR]}>{children}</RouteGuard>
+  );
 }

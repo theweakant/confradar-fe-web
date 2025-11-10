@@ -10,8 +10,13 @@ import {
 
 export default function CameraReadyList() {
   // Gọi API lấy danh sách camera ready đang chờ duyệt
-  const { data: response, isLoading, isError } = useListPendingCameraReadyQuery();
-  const [decideCameraReady, { isLoading: isDeciding }] = useDecideCameraReadyMutation();
+  const {
+    data: response,
+    isLoading,
+    isError,
+  } = useListPendingCameraReadyQuery();
+  const [decideCameraReady, { isLoading: isDeciding }] =
+    useDecideCameraReadyMutation();
 
   const pendingCameraReady = response?.data || [];
 
@@ -20,7 +25,7 @@ export default function CameraReadyList() {
       const result = await decideCameraReady({
         cameraReadyId,
         globalStatus: "Accepted",
-        paperid: rootPaperId, 
+        paperid: rootPaperId,
       }).unwrap();
 
       toast.success("Đã chấp nhận thành công!");
@@ -95,7 +100,9 @@ export default function CameraReadyList() {
                         <Calendar className="w-4 h-4 mr-2" />
                         <span>
                           Bắt đầu:{" "}
-                          {new Date(item.cameraReadyStartDate).toLocaleDateString("vi-VN")}
+                          {new Date(
+                            item.cameraReadyStartDate,
+                          ).toLocaleDateString("vi-VN")}
                         </span>
                       </div>
                     )}
@@ -105,7 +112,9 @@ export default function CameraReadyList() {
                         <Calendar className="w-4 h-4 mr-2" />
                         <span>
                           Kết thúc:{" "}
-                          {new Date(item.cameraReadyEndDate).toLocaleDateString("vi-VN")}
+                          {new Date(item.cameraReadyEndDate).toLocaleDateString(
+                            "vi-VN",
+                          )}
                         </span>
                       </div>
                     )}
@@ -123,7 +132,9 @@ export default function CameraReadyList() {
 
                 <Button
                   className="ml-4"
-                  onClick={() => handleAccept(item.cameraReadyId, item.rootPaperId)}
+                  onClick={() =>
+                    handleAccept(item.cameraReadyId, item.rootPaperId)
+                  }
                   disabled={isDeciding}
                 >
                   {isDeciding ? "Đang xử lý..." : "Chấp nhận"}

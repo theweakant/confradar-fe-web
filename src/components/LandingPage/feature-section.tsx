@@ -1,6 +1,6 @@
-import Image from "next/image"
-import { Marquee } from "@/components/molecules/Marquee"
-import { Button } from "@/components/ui/button"
+import Image from "next/image";
+import { Marquee } from "@/components/molecules/Marquee";
+import { Button } from "@/components/ui/button";
 
 export default function HomePage() {
   return (
@@ -39,5 +39,5 @@ export default function HomePage() {
         </Button>
       </section>
     </main>
-  )
+  );
 }

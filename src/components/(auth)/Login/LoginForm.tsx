@@ -32,7 +32,7 @@ export const LoginForm = () => {
               label="Email"
               placeholder="example@email.com"
               value={formData.email}
-              onChange={(value) => handleInputChange('email', value)}
+              onChange={(value) => handleInputChange("email", value)}
               error={errors.email}
               disabled={isLoading}
             />
@@ -43,7 +43,7 @@ export const LoginForm = () => {
               label="Mật Khẩu"
               placeholder="••••••••"
               value={formData.password}
-              onChange={(value) => handleInputChange('password', value)}
+              onChange={(value) => handleInputChange("password", value)}
               error={errors.password}
               disabled={isLoading}
               showForgotPassword
@@ -66,8 +66,8 @@ export const LoginForm = () => {
           </form>
 
           <SocialLoginButtons
-            onGoogleLogin={() => handleSocialLogin('google')}
-            onOrcidLogin={() => handleSocialLogin('orcid')}
+            onGoogleLogin={() => handleSocialLogin("google")}
+            onOrcidLogin={() => handleSocialLogin("orcid")}
             isLoading={isLoading}
           />
         </CardContent>

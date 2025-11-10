@@ -28,15 +28,17 @@ export default function PendingConference() {
   const [pageSize] = useState(10);
 
   const [selectedConference, setSelectedConference] = useState<string | null>(
-    null
+    null,
   );
 
   const [isApproveAction, setIsApproveAction] = useState<boolean>(true);
   const [reason, setReason] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const [getPendingConferences, { data, isLoading, isFetching }] = useLazyGetPendingConferencesQuery();
-  const [approveConference, { isLoading: isSubmitting }] = useApproveConferenceMutation();
+  const [getPendingConferences, { data, isLoading, isFetching }] =
+    useLazyGetPendingConferencesQuery();
+  const [approveConference, { isLoading: isSubmitting }] =
+    useApproveConferenceMutation();
 
   useEffect(() => {
     getPendingConferences({ page, pageSize });
@@ -49,7 +51,9 @@ export default function PendingConference() {
     setDialogOpen(true);
   };
   const handleConferenceClick = (conferenceId: string) => {
-    router.push(`/workspace/organizer/manage-conference/view-detail/${conferenceId}`);
+    router.push(
+      `/workspace/organizer/manage-conference/view-detail/${conferenceId}`,
+    );
   };
   const handleSubmit = async () => {
     if (!selectedConference) return;
@@ -67,7 +71,9 @@ export default function PendingConference() {
       }).unwrap();
 
       toast.success(
-        isApproveAction ? "Đã phê duyệt hội nghị thành công!" : "Đã từ chối hội nghị!"
+        isApproveAction
+          ? "Đã phê duyệt hội nghị thành công!"
+          : "Đã từ chối hội nghị!",
       );
 
       getPendingConferences({ page, pageSize });
@@ -75,11 +81,11 @@ export default function PendingConference() {
       setDialogOpen(false);
       setSelectedConference(null);
       setReason("");
-    } catch (error: unknown) { 
-      const err = error as ApiError; 
-      const errorMessage = err?.Message || "Có lỗi xảy ra, hãy thử lại!"; 
-      toast.error(errorMessage); 
-      }
+    } catch (error: unknown) {
+      const err = error as ApiError;
+      const errorMessage = err?.Message || "Có lỗi xảy ra, hãy thử lại!";
+      toast.error(errorMessage);
+    }
   };
 
   const pendingConferences = data?.data?.items || [];
@@ -95,7 +101,9 @@ export default function PendingConference() {
               Quay lại
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900">Hội nghị chờ duyệt</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Hội nghị chờ duyệt
+          </h1>
           <p className="text-gray-600 mt-2">
             Danh sách các hội nghị đang chờ phê duyệt từ ban tổ chức
           </p>
@@ -120,11 +128,11 @@ export default function PendingConference() {
           <>
             <div className="grid gap-6">
               {pendingConferences.map((conference: ConferenceResponse) => (
-                  <div
-                    key={conference.conferenceId}
-                    className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer"
-                    onClick={() => handleConferenceClick(conference.conferenceId)}
-                  >
+                <div
+                  key={conference.conferenceId}
+                  className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => handleConferenceClick(conference.conferenceId)}
+                >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -146,10 +154,7 @@ export default function PendingConference() {
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div className="flex items-center text-sm text-gray-600">
                       <Users className="w-4 h-4 mr-2" />
-                      <span>
-                        Người tạo:{" "}
-                        {conference.createdBy ?? "N/A"}
-                      </span>
+                      <span>Người tạo: {conference.createdBy ?? "N/A"}</span>
                     </div>
 
                     <div className="flex items-center text-sm text-gray-600">
@@ -169,13 +174,13 @@ export default function PendingConference() {
                       <span>
                         {conference.startDate
                           ? new Date(conference.startDate).toLocaleDateString(
-                              "vi-VN"
+                              "vi-VN",
                             )
                           : "N/A"}{" "}
                         -{" "}
                         {conference.endDate
                           ? new Date(conference.endDate).toLocaleDateString(
-                              "vi-VN"
+                              "vi-VN",
                             )
                           : "N/A"}
                       </span>
@@ -199,7 +204,7 @@ export default function PendingConference() {
                         <span>
                           Nộp ngày:{" "}
                           {new Date(conference.createdAt).toLocaleDateString(
-                            "vi-VN"
+                            "vi-VN",
                           )}
                         </span>
                       </div>

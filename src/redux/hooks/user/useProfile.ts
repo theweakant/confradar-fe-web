@@ -1,20 +1,31 @@
 // redux/hooks/useProfile.ts
-import { useAuth } from "@/redux/hooks/useAuth"
-import { useChangePasswordMutation, useGetProfileByIdQuery, useUpdateProfileMutation } from "@/redux/services/user.service"
-import { ChangePasswordRequest, ProfileUpdateRequest } from "@/types/user.type"
+import { useAuth } from "@/redux/hooks/useAuth";
+import {
+  useChangePasswordMutation,
+  useGetProfileByIdQuery,
+  useUpdateProfileMutation,
+} from "@/redux/services/user.service";
+import { ChangePasswordRequest, ProfileUpdateRequest } from "@/types/user.type";
 
 export const useProfile = () => {
-  const { user } = useAuth()
-  const userId = user?.userId || null
-
+  const { user } = useAuth();
+  const userId = user?.userId || null;
 
   const { data, error, isLoading, refetch } = useGetProfileByIdQuery(userId!, {
     skip: !userId,
-  })
+  });
 
-  const [updateProfileMutation, { isLoading: isUpdating, error: updateError }] = useUpdateProfileMutation();
+  const [updateProfileMutation, { isLoading: isUpdating, error: updateError }] =
+    useUpdateProfileMutation();
 
-  const [changePasswordMutation, { isLoading: isChanging, error: changePasswordError, data: changePasswordData }] = useChangePasswordMutation();
+  const [
+    changePasswordMutation,
+    {
+      isLoading: isChanging,
+      error: changePasswordError,
+      data: changePasswordData,
+    },
+  ] = useChangePasswordMutation();
 
   const updateProfile = async (payload: ProfileUpdateRequest) => {
     if (!userId) throw new Error("User not logged in");
@@ -41,5 +52,5 @@ export const useProfile = () => {
     isChanging,
     changePasswordError,
     changePasswordData,
-  }
-}
+  };
+};

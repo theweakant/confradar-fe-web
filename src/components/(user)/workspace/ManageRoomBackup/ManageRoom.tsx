@@ -23,15 +23,25 @@ import { RoomTable } from "@/components/(user)/workspace/admin/ManageRoom/RoomTa
 import { DestinationForm } from "@/components/(user)/workspace/admin/ManageRoom/DestinationForm/index";
 
 import { useDestinationForm } from "@/redux/hooks/destination/useDestinationForm";
-import { useGetAllRoomsQuery, useCreateRoomMutation, useUpdateRoomMutation, useDeleteRoomMutation } from "@/redux/services/room.service";
+import {
+  useGetAllRoomsQuery,
+  useCreateRoomMutation,
+  useUpdateRoomMutation,
+  useDeleteRoomMutation,
+} from "@/redux/services/room.service";
 import { useGetAllDestinationsQuery } from "@/redux/services/destination.service";
 
 import type { Room, RoomFormData } from "@/types/room.type";
 
 export default function ManageRoom() {
-  const { data: roomsResponse, isLoading: roomsLoading, refetch: refetchRooms } = useGetAllRoomsQuery();
-  const { data: destinationsResponse, isLoading: destinationsLoading } = useGetAllDestinationsQuery();
-  
+  const {
+    data: roomsResponse,
+    isLoading: roomsLoading,
+    refetch: refetchRooms,
+  } = useGetAllRoomsQuery();
+  const { data: destinationsResponse, isLoading: destinationsLoading } =
+    useGetAllDestinationsQuery();
+
   const [createRoom, { isLoading: isCreating }] = useCreateRoomMutation();
   const [updateRoom, { isLoading: isUpdating }] = useUpdateRoomMutation();
   const [deleteRoom, { isLoading: isDeleting }] = useDeleteRoomMutation();
@@ -84,27 +94,27 @@ export default function ManageRoom() {
   const handleSave = async (data: RoomFormData) => {
     try {
       if (editingRoom) {
-        const result = await updateRoom({ 
-          id: editingRoom.roomId, 
-          data 
+        const result = await updateRoom({
+          id: editingRoom.roomId,
+          data,
         }).unwrap();
-        
+
         toast.success(result.message || "Cập nhật thông tin phòng thành công!");
       } else {
         const result = await createRoom(data).unwrap();
         toast.success(result.message || "Thêm phòng mới thành công!");
       }
-      
+
       setIsFormModalOpen(false);
       setEditingRoom(null);
       refetchRooms();
     } catch (error: unknown) {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Có lỗi xảy ra, vui lòng thử lại!";
-        toast.error(message);
-      }
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Có lỗi xảy ra, vui lòng thử lại!";
+      toast.error(message);
+    }
   };
 
   const handleDelete = (id: string) => {
@@ -263,12 +273,16 @@ export default function ManageRoom() {
       </Modal>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteRoomId} onOpenChange={() => setDeleteRoomId(null)}>
+      <AlertDialog
+        open={!!deleteRoomId}
+        onOpenChange={() => setDeleteRoomId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa phòng này? Hành động này không thể hoàn tác.
+              Bạn có chắc chắn muốn xóa phòng này? Hành động này không thể hoàn
+              tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

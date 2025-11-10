@@ -23,9 +23,7 @@ export function PaperTable({ papers, onView }: PaperTableProps) {
       key: "paperId",
       header: "Paper ID",
       render: (paper) => (
-        <div className="font-mono text-sm text-gray-900">
-          {paper.paperId}
-        </div>
+        <div className="font-mono text-sm text-gray-900">{paper.paperId}</div>
       ),
     },
     {

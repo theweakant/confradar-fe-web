@@ -1,16 +1,25 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogPanel, } from '@headlessui/react'
-import { UserProfileResponse, ProfileUpdateRequest, ChangePasswordRequest } from '@/types/user.type'
-import { Edit, Mail, Phone, MapPin, Calendar, Users, X } from 'lucide-react'
-import { useAuth } from '@/redux/hooks/useAuth'
-import { useProfile } from '@/redux/hooks/user/useProfile'
-
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Dialog, DialogPanel } from "@headlessui/react";
+import {
+  UserProfileResponse,
+  ProfileUpdateRequest,
+  ChangePasswordRequest,
+} from "@/types/user.type";
+import { Edit, Mail, Phone, MapPin, Calendar, Users, X } from "lucide-react";
+import { useAuth } from "@/redux/hooks/useAuth";
+import { useProfile } from "@/redux/hooks/user/useProfile";
 
 const EditProfileScreen: React.FC = () => {
   const { user } = useAuth();
@@ -26,77 +35,79 @@ const EditProfileScreen: React.FC = () => {
     updateError,
     changePassword,
     isChanging,
-    changePasswordError
+    changePasswordError,
   } = useProfile();
 
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [editFormData, setEditFormData] = useState<Partial<UserProfileResponse>>({
-    fullName: '',
-    phoneNumber: '',
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState<
+    Partial<UserProfileResponse>
+  >({
+    fullName: "",
+    phoneNumber: "",
     gender: null,
-    bioDescription: '',
-    birthDay: null
-  })
+    bioDescription: "",
+    birthDay: null,
+  });
 
-  const [isChangePassDialogOpen, setIsChangePassDialogOpen] = useState(false)
+  const [isChangePassDialogOpen, setIsChangePassDialogOpen] = useState(false);
   const [passwordData, setPasswordData] = useState<ChangePasswordRequest>({
-    oldPassword: '',
-    newPassword: '',
-    confirmNewPassword: ''
-  })
+    oldPassword: "",
+    newPassword: "",
+    confirmNewPassword: "",
+  });
 
-  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
   // Load profile data when component mounts or when profile changes
   useEffect(() => {
     if (profile) {
       setEditFormData({
-        fullName: profile.fullName || '',
-        phoneNumber: profile.phoneNumber || '',
-        gender: profile.gender as 'Male' | 'Female' | 'Other' | null,
-        bioDescription: profile.bioDescription || '',
-        birthDay: profile.birthDay || null
-      })
+        fullName: profile.fullName || "",
+        phoneNumber: profile.phoneNumber || "",
+        gender: profile.gender as "Male" | "Female" | "Other" | null,
+        bioDescription: profile.bioDescription || "",
+        birthDay: profile.birthDay || null,
+      });
     }
-  }, [profile])
+  }, [profile]);
 
   const handleInputChange = (field: string, value: string | null) => {
-    setEditFormData(prev => ({
+    setEditFormData((prev) => ({
       ...prev,
-      [field]: value
-    }))
-  }
+      [field]: value,
+    }));
+  };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      setAvatarFile(file)
+      setAvatarFile(file);
     }
-  }
+  };
 
   const handleSaveChanges = async () => {
     try {
       const updateData: ProfileUpdateRequest = {
         fullName: editFormData.fullName || undefined,
         phoneNumber: editFormData.phoneNumber ?? undefined,
-        gender: editFormData.gender as 'Male' | 'Female' | 'Other' | undefined,
+        gender: editFormData.gender as "Male" | "Female" | "Other" | undefined,
         bioDescription: editFormData.bioDescription ?? undefined,
         birthDay: editFormData.birthDay ?? undefined,
-        avatarFile: avatarFile || undefined
+        avatarFile: avatarFile || undefined,
         // fullName: editFormData.fullName,
         // phoneNumber: editFormData.phoneNumber,
         // gender: editFormData.gender as 'Male' | 'Female' | 'Other' | undefined,
         // bioDescription: editFormData.bioDescription,
         // birthDay: editFormData.birthDay,
         // avatarFile: avatarFile || undefined
-      }
+      };
 
-      await updateProfile(updateData)
-      alert('Cập nhật hồ sơ thành công!')
-      setIsEditDialogOpen(false)
-      setAvatarFile(null)
+      await updateProfile(updateData);
+      alert("Cập nhật hồ sơ thành công!");
+      setIsEditDialogOpen(false);
+      setAvatarFile(null);
     } catch (error: unknown) {
-      const errorMessage = "Có lỗi xảy ra khi cập nhật hồ sơ"
+      const errorMessage = "Có lỗi xảy ra khi cập nhật hồ sơ";
 
       // if (error?.data?.Message) {
       //   errorMessage = error.data.Message
@@ -105,41 +116,48 @@ const EditProfileScreen: React.FC = () => {
       //   errorMessage = errors.length > 0 ? errors[0] as string : errorMessage
       // }
 
-      alert(errorMessage)
+      alert(errorMessage);
     }
-  }
+  };
 
   const handleCancel = () => {
     if (profile) {
       setEditFormData({
-        fullName: profile.fullName || '',
-        phoneNumber: profile.phoneNumber || '',
-        gender: profile.gender as 'Male' | 'Female' | 'Other' | null,
-        bioDescription: profile.bioDescription || '',
-        birthDay: profile.birthDay || null
-      })
+        fullName: profile.fullName || "",
+        phoneNumber: profile.phoneNumber || "",
+        gender: profile.gender as "Male" | "Female" | "Other" | null,
+        bioDescription: profile.bioDescription || "",
+        birthDay: profile.birthDay || null,
+      });
     }
-    setAvatarFile(null)
-    setIsEditDialogOpen(false)
-  }
+    setAvatarFile(null);
+    setIsEditDialogOpen(false);
+  };
 
-  const handlePasswordChange = (field: keyof ChangePasswordRequest, value: string) => {
-    setPasswordData(prev => ({ ...prev, [field]: value }))
-  }
+  const handlePasswordChange = (
+    field: keyof ChangePasswordRequest,
+    value: string,
+  ) => {
+    setPasswordData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleSavePassword = async () => {
     if (passwordData.newPassword !== passwordData.confirmNewPassword) {
-      alert('Mật khẩu mới và xác nhận mật khẩu không khớp!')
-      return
+      alert("Mật khẩu mới và xác nhận mật khẩu không khớp!");
+      return;
     }
 
     try {
-      await changePassword(passwordData)
-      alert('Đổi mật khẩu thành công!')
-      setIsChangePassDialogOpen(false)
-      setPasswordData({ oldPassword: '', newPassword: '', confirmNewPassword: '' })
+      await changePassword(passwordData);
+      alert("Đổi mật khẩu thành công!");
+      setIsChangePassDialogOpen(false);
+      setPasswordData({
+        oldPassword: "",
+        newPassword: "",
+        confirmNewPassword: "",
+      });
     } catch (error: unknown) {
-      const errorMessage = "Có lỗi xảy ra khi đổi mật khẩu"
+      const errorMessage = "Có lỗi xảy ra khi đổi mật khẩu";
 
       // if (error?.data?.Message) {
       //   errorMessage = error.data.Message
@@ -148,14 +166,18 @@ const EditProfileScreen: React.FC = () => {
       //   errorMessage = errors.length > 0 ? errors[0] as string : errorMessage
       // }
 
-      alert(errorMessage)
+      alert(errorMessage);
     }
-  }
+  };
 
   const handleCancelPassword = () => {
-    setPasswordData({ oldPassword: '', newPassword: '', confirmNewPassword: '' })
-    setIsChangePassDialogOpen(false)
-  }
+    setPasswordData({
+      oldPassword: "",
+      newPassword: "",
+      confirmNewPassword: "",
+    });
+    setIsChangePassDialogOpen(false);
+  };
 
   if (!userId) {
     return (
@@ -165,7 +187,7 @@ const EditProfileScreen: React.FC = () => {
           <p className="text-gray-400">Vui lòng đăng nhập để xem hồ sơ.</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (profileLoading) {
@@ -176,7 +198,7 @@ const EditProfileScreen: React.FC = () => {
           <p className="text-gray-400">Đang tải hồ sơ...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (profileError || !profile) {
@@ -185,24 +207,30 @@ const EditProfileScreen: React.FC = () => {
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-2">Lỗi tải hồ sơ</h2>
           <p className="text-gray-400 mb-4">
-            {profileError ? "Có lỗi xảy ra khi tải hồ sơ." : "Không tìm thấy thông tin hồ sơ."}
+            {profileError
+              ? "Có lỗi xảy ra khi tải hồ sơ."
+              : "Không tìm thấy thông tin hồ sơ."}
           </p>
-          <Button onClick={() => refetch()} className="bg-blue-600 hover:bg-blue-700">
+          <Button
+            onClick={() => refetch()}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
             Thử lại
           </Button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-
         <header className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-              <h1 className="text-2xl lg:text-3xl font-bold">Hồ sơ người dùng</h1>
+              <h1 className="text-2xl lg:text-3xl font-bold">
+                Hồ sơ người dùng
+              </h1>
               {/* <span className="text-sm text-gray-400">
                   Responded 2 discussion in 1 Property
                 </span> */}
@@ -228,10 +256,8 @@ const EditProfileScreen: React.FC = () => {
         </header>
 
         <main className="grid grid-cols-1 xl:grid-cols-12 gap-6 lg:gap-8">
-
           <section className="xl:col-span-4">
             <div className="bg-gray-900 border border-gray-700 rounded-lg overflow-hidden">
-
               <div className="p-6 pb-4">
                 <div className="flex flex-col items-center text-center">
                   <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-xl sm:text-2xl font-bold mb-4 overflow-hidden">
@@ -242,15 +268,26 @@ const EditProfileScreen: React.FC = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      (profile.fullName || "U").split(' ').map(n => n[0]).join('')
+                      (profile.fullName || "U")
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
                     )}
                   </div>
-                  <h2 className="text-xl font-semibold mb-2">{profile.fullName || 'Chưa cập nhật'}</h2>
-                  <p className="text-gray-400 mb-3 break-all">{profile.email || 'Chưa cập nhật'}</p>
+                  <h2 className="text-xl font-semibold mb-2">
+                    {profile.fullName || "Chưa cập nhật"}
+                  </h2>
+                  <p className="text-gray-400 mb-3 break-all">
+                    {profile.email || "Chưa cập nhật"}
+                  </p>
                   <div className="flex flex-wrap items-center justify-center gap-2">
                     {profile.gender && (
                       <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-900 text-blue-300 border border-blue-700">
-                        {profile.gender === 'Male' ? 'Nam' : profile.gender === 'Female' ? 'Nữ' : 'Khác'}
+                        {profile.gender === "Male"
+                          ? "Nam"
+                          : profile.gender === "Female"
+                            ? "Nữ"
+                            : "Khác"}
                       </span>
                     )}
                   </div>
@@ -258,7 +295,9 @@ const EditProfileScreen: React.FC = () => {
               </div>
 
               <div className="px-6 pb-6">
-                <h3 className="text-sm font-semibold text-gray-300 mb-4 uppercase tracking-wide">Thông tin liên hệ</h3>
+                <h3 className="text-sm font-semibold text-gray-300 mb-4 uppercase tracking-wide">
+                  Thông tin liên hệ
+                </h3>
                 <div className="space-y-4">
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0 mt-0.5">
@@ -266,7 +305,9 @@ const EditProfileScreen: React.FC = () => {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-xs text-gray-400 mb-1">Email</p>
-                      <p className="text-sm break-all">{profile.email || 'Chưa cập nhật'}</p>
+                      <p className="text-sm break-all">
+                        {profile.email || "Chưa cập nhật"}
+                      </p>
                     </div>
                   </div>
 
@@ -276,7 +317,9 @@ const EditProfileScreen: React.FC = () => {
                         <Phone className="w-4 h-4 text-gray-400" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs text-gray-400 mb-1">Số điện thoại</p>
+                        <p className="text-xs text-gray-400 mb-1">
+                          Số điện thoại
+                        </p>
                         <p className="text-sm">{profile.phoneNumber}</p>
                       </div>
                     </div>
@@ -289,7 +332,9 @@ const EditProfileScreen: React.FC = () => {
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-xs text-gray-400 mb-1">Mô tả</p>
-                        <p className="text-sm leading-relaxed">{profile.bioDescription}</p>
+                        <p className="text-sm leading-relaxed">
+                          {profile.bioDescription}
+                        </p>
                       </div>
                     </div>
                   )}
@@ -301,7 +346,11 @@ const EditProfileScreen: React.FC = () => {
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-xs text-gray-400 mb-1">Ngày sinh</p>
-                        <p className="text-sm">{new Date(profile.birthDay).toLocaleDateString('vi-VN')}</p>
+                        <p className="text-sm">
+                          {new Date(profile.birthDay).toLocaleDateString(
+                            "vi-VN",
+                          )}
+                        </p>
                       </div>
                     </div>
                   )}
@@ -389,7 +438,6 @@ const EditProfileScreen: React.FC = () => {
         className="relative z-50"
         onClose={setIsEditDialogOpen}
       >
-
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
 
         <div className="fixed inset-0 overflow-y-auto">
@@ -399,8 +447,8 @@ const EditProfileScreen: React.FC = () => {
               // data-open
               transition
               style={{
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none'
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
               }}
             >
               <button
@@ -428,17 +476,28 @@ const EditProfileScreen: React.FC = () => {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          (editFormData.fullName || "U").split(' ').map(n => n[0]).join('')
+                          (editFormData.fullName || "U")
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
                         )}
                       </div>
                     </div>
                     <div className="text-center sm:text-left min-w-0 flex-1">
-                      <h2 className="text-lg sm:text-xl font-semibold truncate">{editFormData.fullName || 'Chưa cập nhật'}</h2>
-                      <p className="text-sm text-gray-400 truncate">{profile.email || 'Chưa cập nhật'}</p>
+                      <h2 className="text-lg sm:text-xl font-semibold truncate">
+                        {editFormData.fullName || "Chưa cập nhật"}
+                      </h2>
+                      <p className="text-sm text-gray-400 truncate">
+                        {profile.email || "Chưa cập nhật"}
+                      </p>
                       <div className="flex justify-center sm:justify-start items-center gap-2 mt-1">
                         {profile.gender && (
                           <span className="text-xs bg-blue-900 text-blue-300 px-2 py-1 rounded border border-blue-700">
-                            {profile.gender === 'Male' ? 'Nam' : profile.gender === 'Female' ? 'Nữ' : 'Khác'}
+                            {profile.gender === "Male"
+                              ? "Nam"
+                              : profile.gender === "Female"
+                                ? "Nữ"
+                                : "Khác"}
                           </span>
                         )}
                       </div>
@@ -451,18 +510,30 @@ const EditProfileScreen: React.FC = () => {
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-center bg-gray-800/50 rounded-lg p-3 sm:p-4">
                     <div>
                       <p className="text-xs text-gray-400">User ID</p>
-                      <p className="text-xs sm:text-sm font-medium truncate">{profile.userId || 'N/A'}</p>
+                      <p className="text-xs sm:text-sm font-medium truncate">
+                        {profile.userId || "N/A"}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-400">Giới tính</p>
                       <p className="text-xs sm:text-sm font-medium">
-                        {profile.gender === 'Male' ? 'Nam' : profile.gender === 'Female' ? 'Nữ' : profile.gender === 'Other' ? 'Khác' : 'Chưa cập nhật'}
+                        {profile.gender === "Male"
+                          ? "Nam"
+                          : profile.gender === "Female"
+                            ? "Nữ"
+                            : profile.gender === "Other"
+                              ? "Khác"
+                              : "Chưa cập nhật"}
                       </p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-400">Ngày sinh</p>
                       <p className="text-xs sm:text-sm font-medium">
-                        {profile.birthDay ? new Date(profile.birthDay).toLocaleDateString('vi-VN') : 'Chưa cập nhật'}
+                        {profile.birthDay
+                          ? new Date(profile.birthDay).toLocaleDateString(
+                              "vi-VN",
+                            )
+                          : "Chưa cập nhật"}
                       </p>
                     </div>
                   </div>
@@ -472,33 +543,56 @@ const EditProfileScreen: React.FC = () => {
                 <section className="pb-6 space-y-4">
                   {/* Personal Info */}
                   <fieldset>
-                    <legend className="text-sm font-medium text-gray-300 mb-3">Thông tin cá nhân</legend>
+                    <legend className="text-sm font-medium text-gray-300 mb-3">
+                      Thông tin cá nhân
+                    </legend>
                     <div className="space-y-3">
                       <div>
-                        <Label htmlFor="fullName" className="text-sm text-gray-300">Họ và tên</Label>
+                        <Label
+                          htmlFor="fullName"
+                          className="text-sm text-gray-300"
+                        >
+                          Họ và tên
+                        </Label>
                         <Input
                           id="fullName"
-                          value={editFormData.fullName || ''}
-                          onChange={(e) => handleInputChange('fullName', e.target.value)}
+                          value={editFormData.fullName || ""}
+                          onChange={(e) =>
+                            handleInputChange("fullName", e.target.value)
+                          }
                           className="bg-gray-800 border-gray-600 text-white focus:border-blue-500 transition-colors"
                           placeholder="Nhập họ và tên"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="phoneNumber" className="text-sm text-gray-300">Số điện thoại</Label>
+                        <Label
+                          htmlFor="phoneNumber"
+                          className="text-sm text-gray-300"
+                        >
+                          Số điện thoại
+                        </Label>
                         <Input
                           id="phoneNumber"
-                          value={editFormData.phoneNumber || ''}
-                          onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                          value={editFormData.phoneNumber || ""}
+                          onChange={(e) =>
+                            handleInputChange("phoneNumber", e.target.value)
+                          }
                           className="bg-gray-800 border-gray-600 text-white focus:border-blue-500 transition-colors"
                           placeholder="Nhập số điện thoại"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="gender" className="text-sm text-gray-300">Giới tính</Label>
+                        <Label
+                          htmlFor="gender"
+                          className="text-sm text-gray-300"
+                        >
+                          Giới tính
+                        </Label>
                         <Select
-                          value={editFormData.gender || ''}
-                          onValueChange={(value) => handleInputChange('gender', value || null)}
+                          value={editFormData.gender || ""}
+                          onValueChange={(value) =>
+                            handleInputChange("gender", value || null)
+                          }
                         >
                           <SelectTrigger className="bg-gray-800 border-gray-600 text-white focus:border-blue-500">
                             <SelectValue placeholder="Chọn giới tính" />
@@ -511,27 +605,55 @@ const EditProfileScreen: React.FC = () => {
                         </Select>
                       </div>
                       <div>
-                        <Label htmlFor="birthDay" className="text-sm text-gray-300">Ngày sinh</Label>
+                        <Label
+                          htmlFor="birthDay"
+                          className="text-sm text-gray-300"
+                        >
+                          Ngày sinh
+                        </Label>
                         <Input
                           id="birthDay"
                           type="date"
-                          value={editFormData.birthDay ? new Date(editFormData.birthDay).toISOString().split('T')[0] : ''}
-                          onChange={(e) => handleInputChange('birthDay', e.target.value || null)}
+                          value={
+                            editFormData.birthDay
+                              ? new Date(editFormData.birthDay)
+                                  .toISOString()
+                                  .split("T")[0]
+                              : ""
+                          }
+                          onChange={(e) =>
+                            handleInputChange(
+                              "birthDay",
+                              e.target.value || null,
+                            )
+                          }
                           className="bg-gray-800 border-gray-600 text-white focus:border-blue-500 transition-colors"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="bioDescription" className="text-sm text-gray-300">Mô tả</Label>
+                        <Label
+                          htmlFor="bioDescription"
+                          className="text-sm text-gray-300"
+                        >
+                          Mô tả
+                        </Label>
                         <Input
                           id="bioDescription"
-                          value={editFormData.bioDescription || ''}
-                          onChange={(e) => handleInputChange('bioDescription', e.target.value)}
+                          value={editFormData.bioDescription || ""}
+                          onChange={(e) =>
+                            handleInputChange("bioDescription", e.target.value)
+                          }
                           className="bg-gray-800 border-gray-600 text-white focus:border-blue-500 transition-colors"
                           placeholder="Nhập mô tả về bản thân"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="avatar" className="text-sm text-gray-300">Ảnh đại diện</Label>
+                        <Label
+                          htmlFor="avatar"
+                          className="text-sm text-gray-300"
+                        >
+                          Ảnh đại diện
+                        </Label>
                         <Input
                           id="avatar"
                           type="file"
@@ -540,18 +662,21 @@ const EditProfileScreen: React.FC = () => {
                           className="bg-gray-800 border-gray-600 text-white focus:border-blue-500 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
                         />
                         {avatarFile && (
-                          <p className="text-green-400 text-sm mt-1">Đã chọn: {avatarFile.name}</p>
+                          <p className="text-green-400 text-sm mt-1">
+                            Đã chọn: {avatarFile.name}
+                          </p>
                         )}
                       </div>
                     </div>
                   </fieldset>
 
-
                   {/* Error Display */}
                   {updateError && (
                     <div className="bg-red-900/20 border border-red-700 rounded-lg p-4 mb-4">
                       <p className="text-red-400 text-sm">
-                        {typeof updateError === 'string' ? updateError : 'Có lỗi xảy ra khi cập nhật hồ sơ'}
+                        {typeof updateError === "string"
+                          ? updateError
+                          : "Có lỗi xảy ra khi cập nhật hồ sơ"}
                       </p>
                     </div>
                   )}
@@ -571,7 +696,7 @@ const EditProfileScreen: React.FC = () => {
                       disabled={isUpdating}
                       className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white transition-colors"
                     >
-                      {isUpdating ? 'Đang lưu...' : 'Lưu thay đổi'}
+                      {isUpdating ? "Đang lưu..." : "Lưu thay đổi"}
                     </Button>
                   </footer>
                 </section>
@@ -602,39 +727,62 @@ const EditProfileScreen: React.FC = () => {
               </button>
 
               <header className="h-24 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center">
-                <h2 className="text-lg sm:text-xl font-semibold">Đổi mật khẩu</h2>
+                <h2 className="text-lg sm:text-xl font-semibold">
+                  Đổi mật khẩu
+                </h2>
               </header>
 
               <div className="px-6 py-6 space-y-5">
                 <div>
-                  <Label htmlFor="oldPassword" className="text-sm text-gray-300">Mật khẩu hiện tại</Label>
+                  <Label
+                    htmlFor="oldPassword"
+                    className="text-sm text-gray-300"
+                  >
+                    Mật khẩu hiện tại
+                  </Label>
                   <Input
                     id="oldPassword"
                     type="password"
                     value={passwordData.oldPassword}
-                    onChange={(e) => handlePasswordChange('oldPassword', e.target.value)}
+                    onChange={(e) =>
+                      handlePasswordChange("oldPassword", e.target.value)
+                    }
                     className="bg-gray-800 border-gray-600 text-white focus:border-blue-500 transition-colors"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="newPassword" className="text-sm text-gray-300">Mật khẩu mới</Label>
+                  <Label
+                    htmlFor="newPassword"
+                    className="text-sm text-gray-300"
+                  >
+                    Mật khẩu mới
+                  </Label>
                   <Input
                     id="newPassword"
                     type="password"
                     value={passwordData.newPassword}
-                    onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
+                    onChange={(e) =>
+                      handlePasswordChange("newPassword", e.target.value)
+                    }
                     className="bg-gray-800 border-gray-600 text-white focus:border-blue-500 transition-colors"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="confirmNewPassword" className="text-sm text-gray-300">Xác nhận mật khẩu mới</Label>
+                  <Label
+                    htmlFor="confirmNewPassword"
+                    className="text-sm text-gray-300"
+                  >
+                    Xác nhận mật khẩu mới
+                  </Label>
                   <Input
                     id="confirmNewPassword"
                     type="password"
                     value={passwordData.confirmNewPassword}
-                    onChange={(e) => handlePasswordChange('confirmNewPassword', e.target.value)}
+                    onChange={(e) =>
+                      handlePasswordChange("confirmNewPassword", e.target.value)
+                    }
                     className="bg-gray-800 border-gray-600 text-white focus:border-blue-500 transition-colors"
                   />
                 </div>
@@ -643,7 +791,9 @@ const EditProfileScreen: React.FC = () => {
                 {changePasswordError && (
                   <div className="bg-red-900/20 border border-red-700 rounded-lg p-4">
                     <p className="text-red-400 text-sm">
-                      {typeof changePasswordError === 'string' ? changePasswordError : 'Có lỗi xảy ra khi đổi mật khẩu'}
+                      {typeof changePasswordError === "string"
+                        ? changePasswordError
+                        : "Có lỗi xảy ra khi đổi mật khẩu"}
                     </p>
                   </div>
                 )}
@@ -662,7 +812,7 @@ const EditProfileScreen: React.FC = () => {
                     disabled={isChanging}
                     className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white transition-colors"
                   >
-                    {isChanging ? 'Đang đổi...' : 'Đổi mật khẩu'}
+                    {isChanging ? "Đang đổi..." : "Đổi mật khẩu"}
                   </Button>
                 </footer>
               </div>
@@ -675,10 +825,10 @@ const EditProfileScreen: React.FC = () => {
 
        </Dialog> */}
     </div>
-  )
-}
+  );
+};
 
-export default EditProfileScreen
+export default EditProfileScreen;
 
 // "use client"
 

@@ -12,13 +12,22 @@ interface CategoryFormProps {
   onCancel: () => void;
 }
 
-export function CategoryForm({ category, isLoading, onSave, onCancel }: CategoryFormProps) {
+export function CategoryForm({
+  category,
+  isLoading,
+  onSave,
+  onCancel,
+}: CategoryFormProps) {
   const [formData, setFormData] = useState<CategoryFormData>({
     conferenceCategoryName: category?.conferenceCategoryName || "",
   });
 
-  const [errors, setErrors] = useState<Partial<Record<keyof CategoryFormData, string>>>({});
-  const [touched, setTouched] = useState<Set<keyof CategoryFormData>>(new Set());
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof CategoryFormData, string>>
+  >({});
+  const [touched, setTouched] = useState<Set<keyof CategoryFormData>>(
+    new Set(),
+  );
 
   const handleChange = (field: keyof CategoryFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -26,7 +35,10 @@ export function CategoryForm({ category, isLoading, onSave, onCancel }: Category
     setTouched((prev) => new Set(prev).add(field));
   };
 
-  const validateField = (field: keyof CategoryFormData, value: string): boolean => {
+  const validateField = (
+    field: keyof CategoryFormData,
+    value: string,
+  ): boolean => {
     let errorMessage = "";
 
     if (field === "conferenceCategoryName") {
@@ -73,10 +85,22 @@ export function CategoryForm({ category, isLoading, onSave, onCancel }: Category
           name="conferenceCategoryName"
           value={formData.conferenceCategoryName}
           onChange={(value) => handleChange("conferenceCategoryName", value)}
-          onBlur={() => validateField("conferenceCategoryName", formData.conferenceCategoryName)}
+          onBlur={() =>
+            validateField(
+              "conferenceCategoryName",
+              formData.conferenceCategoryName,
+            )
+          }
           required
-          error={touched.has("conferenceCategoryName") ? errors.conferenceCategoryName : undefined}
-          success={touched.has("conferenceCategoryName") && !errors.conferenceCategoryName}
+          error={
+            touched.has("conferenceCategoryName")
+              ? errors.conferenceCategoryName
+              : undefined
+          }
+          success={
+            touched.has("conferenceCategoryName") &&
+            !errors.conferenceCategoryName
+          }
           placeholder="VD: Technology, Business, Science..."
           disabled={isLoading}
         />

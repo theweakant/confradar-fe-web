@@ -61,7 +61,6 @@ export interface ConferenceRanking {
   description: string | null;
 }
 
-
 //+++++++++++++++
 
 //BASIC STEP
@@ -86,7 +85,6 @@ export interface ConferenceBasicForm {
 
   targetAudienceTechnicalConference?: string; //for tech conf
   customTarget?: string;
-
 }
 
 export interface ConferenceBasicResponse {
@@ -131,11 +129,9 @@ export interface Ticket {
   phases: Phase[];
 }
 
-
 export interface ConferencePriceData {
   typeOfTicket: Ticket[];
 }
-
 
 //API res theo tech conf organizer&collab
 export interface PricePhase {
@@ -230,7 +226,6 @@ export interface Sponsor {
   name: string;
   imageFile: File | null;
   imageUrl?: string;
-
 }
 
 export interface ConferenceSponsorData {
@@ -267,8 +262,6 @@ export interface ConferenceBasicResponse {
   categoryId: string;
 }
 
-
-
 //+++++++++++++++
 //RESEARCH DETAIL STEP
 export interface ResearchDetail {
@@ -292,14 +285,14 @@ export interface ConferenceResearchDetailData {
 //RESEARCH PHASE STEP
 export interface RevisionRoundDeadline {
   revisionRoundDeadlineId?: string;
-  startSubmissionDate:string;
-  endSubmissionDate:string;
+  startSubmissionDate: string;
+  endSubmissionDate: string;
   roundNumber: number;
 }
 
 export interface ResearchPhase {
   researchPhaseId?: string;
-  registrationStartDate: string; 
+  registrationStartDate: string;
   registrationEndDate: string;
   fullPaperStartDate: string;
   fullPaperEndDate: string;
@@ -326,7 +319,7 @@ export interface ConferenceResearchPhaseData {
 
 //RESEARCH RANKING FILE STEP
 export interface ResearchRankingFile {
-  rankingFileId?: string; 
+  rankingFileId?: string;
   fileUrl?: string;
   file?: File | null;
 }
@@ -360,13 +353,12 @@ export interface ConferenceResearchMaterialData {
 
 //+++++++++++++++
 
-
 //prop
 export interface ConferenceStepFormProps {
   conference?: Conference | null;
   onSave?: (data: ConferenceFormData) => void;
   onCancel?: () => void;
-  mode?: 'create' | 'edit';
+  mode?: "create" | "edit";
 }
 
 export interface ConferenceFormProps {
@@ -400,7 +392,6 @@ export interface ConferenceStatus {
   conferenceTimelineAfterwardStatuses: unknown[];
   conferenceTimelinePreviousStatuses: unknown[];
 }
-
 
 //---------------------------------------------------
 
@@ -457,8 +448,7 @@ export interface TechnicalConferenceDetailResponse {
   sponsors?: SponsorResponse[];
   sessions?: TechnicalConferenceSessionResponse[];
   conferencePrices?: ConferencePriceResponse[];
-  conferenceTimelines?: ConferenceTimelineResponse[]
-
+  conferenceTimelines?: ConferenceTimelineResponse[];
 }
 
 export interface ResearchConferenceDetailResponse {
@@ -506,8 +496,7 @@ export interface ResearchConferenceDetailResponse {
   refundPolicies?: RefundPolicyResponse[];
   conferenceMedia?: ConferenceMediaResponse[];
   conferencePrices?: ConferencePriceResponse[];
-  conferenceTimelines?: ConferenceTimelineResponse[]
-
+  conferenceTimelines?: ConferenceTimelineResponse[];
 }
 
 export interface ConferencePolicyResponse {
@@ -552,7 +541,7 @@ export interface TechnicalConferenceSessionResponse {
   conferenceSessionId: string;
   title: string;
   description?: string;
-  date?:string;
+  date?: string;
   startTime?: string;
   endTime?: string;
   sessionDate?: string;
@@ -648,7 +637,7 @@ export interface RefundPolicyResponse {
 export interface ConferenceTimelineResponse {
   conferenceTimelineId: string;
   conferenceId: string;
-  changeDate: string; 
+  changeDate: string;
   previousStatusId: string;
   afterwardStatusId: string;
   reason: string | null;

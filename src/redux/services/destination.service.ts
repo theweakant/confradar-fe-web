@@ -1,7 +1,10 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { apiClient } from "../api/apiClient";
 import { endpoint } from "../api/endpoint";
-import type { Destination, DestinationFormData } from "@/types/destination.type";
+import type {
+  Destination,
+  DestinationFormData,
+} from "@/types/destination.type";
 import type { ApiResponse } from "@/types/api.type";
 
 export const destinationApi = createApi({
@@ -17,7 +20,10 @@ export const destinationApi = createApi({
       providesTags: ["Destination"],
     }),
 
-    createDestination: builder.mutation<ApiResponse<string>, DestinationFormData>({
+    createDestination: builder.mutation<
+      ApiResponse<string>,
+      DestinationFormData
+    >({
       query: (body) => ({
         url: endpoint.DESTINATION.CREATE,
         method: "POST",
@@ -26,7 +32,10 @@ export const destinationApi = createApi({
       invalidatesTags: ["Destination"],
     }),
 
-    updateDestination: builder.mutation<ApiResponse<string>, { id: string; data: DestinationFormData }>({
+    updateDestination: builder.mutation<
+      ApiResponse<string>,
+      { id: string; data: DestinationFormData }
+    >({
       query: ({ id, data }) => ({
         url: `${endpoint.DESTINATION.UPDATE}/${id}`,
         method: "PUT",

@@ -10,7 +10,8 @@ export const mockRequests: Request[] = [
     conferenceName: "Tech Conference 2024",
     type: "refund",
     reason: "Không thể tham dự",
-    details: "Do lý do cá nhân đột xuất, tôi không thể tham dự hội nghị. Mong được hoàn tiền.",
+    details:
+      "Do lý do cá nhân đột xuất, tôi không thể tham dự hội nghị. Mong được hoàn tiền.",
     status: "pending",
     createdAt: new Date("2024-10-15"),
     updatedAt: new Date("2024-10-15"),
@@ -24,7 +25,8 @@ export const mockRequests: Request[] = [
     conferenceName: "AI Summit 2024",
     type: "change_presenter",
     reason: "Thay đổi diễn giả",
-    details: "Diễn giả chính không thể tham dự, cần thay đổi sang người khác trong team.",
+    details:
+      "Diễn giả chính không thể tham dự, cần thay đổi sang người khác trong team.",
     attachment: "presenter-document.pdf",
     status: "approved",
     createdAt: new Date("2024-10-10"),
@@ -41,7 +43,8 @@ export const mockRequests: Request[] = [
     conferenceName: "Tech Conference 2024",
     type: "change_session",
     reason: "Xung đột lịch trình",
-    details: "Session hiện tại xung đột với phiên họp quan trọng khác. Mong được chuyển sang buổi chiều.",
+    details:
+      "Session hiện tại xung đột với phiên họp quan trọng khác. Mong được chuyển sang buổi chiều.",
     status: "more_info",
     createdAt: new Date("2024-10-18"),
     updatedAt: new Date("2024-10-19"),
