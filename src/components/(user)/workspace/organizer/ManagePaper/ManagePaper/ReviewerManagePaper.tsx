@@ -85,17 +85,6 @@ export default function ReviewerManagePage() {
                 Quản lý bài báo và đánh giá trên ConfRadar
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              <Link href="/workspace/organizer/manage-paper/assigned-papper-list">
-                <Button
-                  className="flex items-center gap-2 whitespace-nowrap"
-                  variant="outline"
-                >
-                  <ScanEye className="w-5 h-5" />
-                  Xem danh sách Abstract đang chờ
-                </Button>
-              </Link>
-            </div>
           </div>
         </div>
 

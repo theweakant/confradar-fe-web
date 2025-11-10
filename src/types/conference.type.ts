@@ -241,6 +241,7 @@ export interface RegisteredUserInConference {
   registeredDate: string;
   conferenceId: string;
   conferenceName: string;
+  isRefunded:boolean;
 }
 
 //not in use

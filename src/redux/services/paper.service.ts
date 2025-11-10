@@ -43,13 +43,14 @@ export const paperApi = createApi({
       providesTags: ["Paper"],
     }),
 
-    listPendingAbstracts: builder.query<ApiResponse<PendingAbstract[]>, void>({
-      query: () => ({
-        url: endpoint.PAPER.LIST_PENDING_ABSTRACT,
-        method: "GET",
-      }),
-      providesTags: ["Paper"],
+  listPendingAbstracts: builder.query<
+    ApiResponse<PendingAbstract[]>,string >({
+    query: (confId?: string) => ({
+      url: endpoint.PAPER.LIST_PENDING_ABSTRACT(confId),
+      method: "GET",
     }),
+    providesTags: ["Paper"],
+  }),
 
     listUnassignAbstracts: builder.query<ApiResponse<UnassignAbstract[]>, void>(
       {

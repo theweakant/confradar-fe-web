@@ -30,14 +30,14 @@ interface WorkspaceSidebarProps {
   role: string;
 }
 
-const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
+export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const dispatch = useDispatch();
   const normalizedRole = role.toLowerCase().replace(/\s+/g, "");
 
-  // State để quản lý sub-menu mở/đóng
+  // State để quản lý sub-menu  mở/đóng
   const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({});
 
   // 👇 Sử dụng constants từ roles.ts
@@ -80,8 +80,9 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
         href: "/workspace/organizer/manage-conference",
         icon: Calendar,
         subMenu: [
-          { label: "Tất cả hội nghị", href: "/workspace/organizer/manage-conference" },
-          { label: "Hội nghị của tôi", href: "/workspace/organizer/my-conference" },
+          { label: "Tất cả", href: "/workspace/organizer/manage-conference" },
+          { label: "Của tôi", href: "/workspace/organizer/manage-conference/my-conference" },
+
         ],
       },
       {
@@ -119,11 +120,7 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
       {
         label: "Hội thảo",
         href: "/workspace/collaborator/manage-conference",
-        icon: Calendar,
-        subMenu: [
-          { label: "Tất cả hội thảo", href: "/workspace/collaborator/manage-conference" },
-          { label: "Hội thảo của tôi", href: "/workspace/collaborator/manage-conference/my-conference" },
-        ],
+        icon: Calendar
       },
       {
         label: "Phân tích",
@@ -355,4 +352,3 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
   );
 };
 
-export default WorkspaceSidebar;

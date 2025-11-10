@@ -174,7 +174,10 @@ export const endpoint = {
     LIST_ALL_PAPERS: "/Paper/list-all-papers",
 
     //ABSTRACT
-    LIST_PENDING_ABSTRACT: "/Paper/list-pending-abstract",
+    LIST_PENDING_ABSTRACT: (confId?: string) =>
+      confId
+        ? `/Paper/list-pending-abstract?confId=${confId}`
+        : `/Paper/list-pending-abstract`,   
     DECIDE_ABSTRACT: "/Paper/decide-abstract-paper-status",
     ASSIGN_PAPER_TO_REVIEWER: "/Paper/assign-reviewer-to-paper",
     LIST_UNASSIGN_ABSTRACT: "/Paper/list-unassign-abstract",

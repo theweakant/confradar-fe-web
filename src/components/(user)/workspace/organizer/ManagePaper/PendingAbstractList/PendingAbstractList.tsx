@@ -1,5 +1,5 @@
 "use client";
-
+import { useParams } from "next/navigation"; 
 import { FileText, Calendar, User, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,8 +8,9 @@ import {
 } from "@/redux/services/paper.service";
 import { toast } from "sonner";
 
-export default function PendingAbstractPaperList() {
-  const { data: response, isLoading, isError } = useListPendingAbstractsQuery();
+export default function PendingAbstractList() {
+  const { confId } = useParams();
+  const { data: response, isLoading, isError } = useListPendingAbstractsQuery(confId as string);
   const [decideAbstractStatus, { isLoading: isDeciding }] =
     useDecideAbstractStatusMutation();
 
