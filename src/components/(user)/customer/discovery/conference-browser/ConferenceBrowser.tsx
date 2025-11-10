@@ -510,7 +510,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
             setPriceRange([0, absoluteMaxPrice]);
             setSortBy("date");
           }}
-          // DropdownSelect={DropdownSelect}
+        // DropdownSelect={DropdownSelect}
         />
 
         <div className="flex justify-between items-center mb-6">
@@ -530,8 +530,8 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
           {(defaultLoading ||
             lazyWithPricesLoading ||
             statusConferencesLoading) && (
-            <div className="text-sm text-blue-400">Đang tải...</div>
-          )}
+              <div className="text-sm text-blue-400">Đang tải...</div>
+            )}
           <div className="text-sm text-gray-400">
             Trang {currentPage} / {totalPages} (Hiển thị{" "}
             {paginatedConferences.length} / {totalCount})
@@ -541,10 +541,10 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
         {(defaultLoading ||
           lazyWithPricesLoading ||
           statusConferencesLoading) && (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          </div>
-        )}
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+          )}
 
         {(defaultError || lazyWithPricesError || statusConferencesError) && (
           <div className="flex justify-center items-center py-12">
@@ -559,9 +559,9 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
                     : " nghiên cứu"}
               </p>
               <p className="text-sm mt-2">
-                {defaultError?.data?.Message ||
-                  lazyWithPricesError?.data?.Message ||
-                  statusConferencesError?.data?.Message}
+                {defaultError?.data?.message ||
+                  lazyWithPricesError?.data?.message ||
+                  statusConferencesError?.data?.message}
               </p>
             </div>
           </div>

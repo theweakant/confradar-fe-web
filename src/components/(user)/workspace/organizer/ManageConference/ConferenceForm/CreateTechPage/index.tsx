@@ -320,7 +320,7 @@ export default function CreateConferenceStepPage() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create basic info:", error);
-      toast.error(apiError?.data?.Message || "Tạo thông tin cơ bản thất bại!");
+      toast.error(apiError?.data?.message || "Tạo thông tin cơ bản thất bại!");
     } finally {
       setIsSubmitting(false);
     }
@@ -366,7 +366,7 @@ export default function CreateConferenceStepPage() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create price:", error);
-      toast.error(apiError?.data?.Message || "Lưu giá vé thất bại!");
+      toast.error(apiError?.data?.message || "Lưu giá vé thất bại!");
     } finally {
       setIsSubmitting(false);
     }
@@ -448,7 +448,7 @@ export default function CreateConferenceStepPage() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create sessions:", error);
-      toast.error(apiError?.data?.Message || "Lưu phiên họp thất bại!");
+      toast.error(apiError?.data?.message || "Lưu phiên họp thất bại!");
     } finally {
       setIsSubmitting(false);
     }
@@ -478,9 +478,9 @@ export default function CreateConferenceStepPage() {
           : Promise.resolve(),
         refundPolicies.length > 0
           ? createRefundPolicies({
-              conferenceId,
-              data: { refundPolicies },
-            }).unwrap()
+            conferenceId,
+            data: { refundPolicies },
+          }).unwrap()
           : Promise.resolve(),
       ]);
 
@@ -490,7 +490,7 @@ export default function CreateConferenceStepPage() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create policies:", error);
-      toast.error(apiError?.data?.Message || "Lưu chính sách thất bại!");
+      toast.error(apiError?.data?.message || "Lưu chính sách thất bại!");
     } finally {
       setIsSubmitting(false);
     }
@@ -521,7 +521,7 @@ export default function CreateConferenceStepPage() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create media:", error);
-      toast.error(apiError?.data?.Message || "Lưu media thất bại!");
+      toast.error(apiError?.data?.message || "Lưu media thất bại!");
     } finally {
       setIsSubmitting(false);
     }
@@ -553,7 +553,7 @@ export default function CreateConferenceStepPage() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create sponsors:", error);
-      toast.error(apiError?.data?.Message || "Lưu nhà tài trợ thất bại!");
+      toast.error(apiError?.data?.message || "Lưu nhà tài trợ thất bại!");
     } finally {
       setIsSubmitting(false);
     }
@@ -1335,9 +1335,8 @@ export default function CreateConferenceStepPage() {
                                 Tổng: {p.totalslot}
                               </span>
                               <span
-                                className={`font-bold ${
-                                  isIncrease ? "text-red-600" : "text-green-600"
-                                }`}
+                                className={`font-bold ${isIncrease ? "text-red-600" : "text-green-600"
+                                  }`}
                               >
                                 {percentDisplay}
                               </span>
@@ -1473,9 +1472,8 @@ export default function CreateConferenceStepPage() {
                               SL: {p.totalslot}
                             </span>
                             <span
-                              className={`font-bold ${
-                                isIncrease ? "text-red-600" : "text-green-600"
-                              }`}
+                              className={`font-bold ${isIncrease ? "text-red-600" : "text-green-600"
+                                }`}
                             >
                               {percentDisplay}
                             </span>
@@ -1661,7 +1659,7 @@ export default function CreateConferenceStepPage() {
                           </label>
                           <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
                             {newPhase.startDate &&
-                            newPhase.durationInDays > 0 ? (
+                              newPhase.durationInDays > 0 ? (
                               <span className="text-gray-900">
                                 {new Date(
                                   calculatePhaseEndDate(

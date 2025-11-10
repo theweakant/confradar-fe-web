@@ -297,7 +297,7 @@ export const useConference = (params?: {
 //         return 'Có lỗi xảy ra khi tải thông tin hội nghị.';
 //     };
 //     // const parseError = (error: any): string => {
-//     //     if (error?.data?.Message) return error.data.Message;
+//     //     if (error?.data?.message) return error.data.Message;
 //     //     if (error?.data?.message) return error.data.message;
 //     //     if (typeof error?.data === 'string') return error.data;
 //     //     return 'Có lỗi xảy ra khi tải thông tin hội nghị.';

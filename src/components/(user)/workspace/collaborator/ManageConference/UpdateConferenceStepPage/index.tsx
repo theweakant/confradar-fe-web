@@ -112,12 +112,12 @@ export default function UpdateConferenceStepPage() {
   const [deletePolicy] = useDeleteConferencePolicyMutation();
   const [deleteMedia] = useDeleteConferenceMediaMutation();
   const [deleteSponsor] = useDeleteConferenceSponsorMutation();
-  
-const [deletedTicketIds, setDeletedTicketIds] = useState<string[]>([]);
-const [deletedSessionIds, setDeletedSessionIds] = useState<string[]>([]);
-const [deletedPolicyIds, setDeletedPolicyIds] = useState<string[]>([]);
-const [deletedMediaIds, setDeletedMediaIds] = useState<string[]>([]);
-const [deletedSponsorIds, setDeletedSponsorIds] = useState<string[]>([]);
+
+  const [deletedTicketIds, setDeletedTicketIds] = useState<string[]>([]);
+  const [deletedSessionIds, setDeletedSessionIds] = useState<string[]>([]);
+  const [deletedPolicyIds, setDeletedPolicyIds] = useState<string[]>([]);
+  const [deletedMediaIds, setDeletedMediaIds] = useState<string[]>([]);
+  const [deletedSponsorIds, setDeletedSponsorIds] = useState<string[]>([]);
 
   const { data: categoriesData, isLoading: isCategoriesLoading } =
     useGetAllCategoriesQuery();
@@ -457,355 +457,355 @@ const [deletedSponsorIds, setDeletedSponsorIds] = useState<string[]>([]);
     imageFile: null,
   });
 
-const handleFinalSubmit = async () => {
-  if (!conferenceId) {
-    toast.error("Không tìm thấy conference ID!");
-    return;
-  }
+  const handleFinalSubmit = async () => {
+    if (!conferenceId) {
+      toast.error("Không tìm thấy conference ID!");
+      return;
+    }
 
-  setIsSubmitting(true);
-  let hasError = false;
+    setIsSubmitting(true);
+    let hasError = false;
 
-  // =============== BASIC ===============
-  try {
-    await updateBasic({ conferenceId, data: basicForm }).unwrap();
-  } catch (error) {
-    hasError = true;
-    const apiError = error as { data?: ApiError };
-    toast.error(apiError?.data?.Message || "Cập nhật thông tin cơ bản thất bại");
-  }
-
-  // =============== TICKETS (Update) ===============
-  if (tickets.some(t => t.priceId)) {
-    const updatePromises = tickets
-      .filter(t => t.priceId)
-      .map(t =>
-        updatePrice({
-          priceId: t.priceId!,
-          data: {
-            ticketPrice: parseFloat(t.ticketPrice.toFixed(2)),
-            ticketName: t.ticketName,
-            ticketDescription: t.ticketDescription,
-            totalSlot: t.totalSlot,
-          },
-        }).unwrap()
-      );
-
+    // =============== BASIC ===============
     try {
-      await Promise.all(updatePromises);
+      await updateBasic({ conferenceId, data: basicForm }).unwrap();
     } catch (error) {
       hasError = true;
       const apiError = error as { data?: ApiError };
-      toast.error(apiError?.data?.Message || "Cập nhật vé thất bại");
+      toast.error(apiError?.data?.message || "Cập nhật thông tin cơ bản thất bại");
     }
-  }
 
-  // =============== PHASES (Update) ===============
-  const phaseUpdatePromises: Promise<unknown>[] = [];
-  tickets
-    .filter(t => t.priceId)
-    .forEach(t => {
-      (t.phases || [])
-        .filter(p => p.pricePhaseId)
-        .forEach(p => {
-          phaseUpdatePromises.push(
-            updatePricePhase({
-              pricePhaseId: p.pricePhaseId!,
-              data: {
+    // =============== TICKETS (Update) ===============
+    if (tickets.some(t => t.priceId)) {
+      const updatePromises = tickets
+        .filter(t => t.priceId)
+        .map(t =>
+          updatePrice({
+            priceId: t.priceId!,
+            data: {
+              ticketPrice: parseFloat(t.ticketPrice.toFixed(2)),
+              ticketName: t.ticketName,
+              ticketDescription: t.ticketDescription,
+              totalSlot: t.totalSlot,
+            },
+          }).unwrap()
+        );
+
+      try {
+        await Promise.all(updatePromises);
+      } catch (error) {
+        hasError = true;
+        const apiError = error as { data?: ApiError };
+        toast.error(apiError?.data?.message || "Cập nhật vé thất bại");
+      }
+    }
+
+    // =============== PHASES (Update) ===============
+    const phaseUpdatePromises: Promise<unknown>[] = [];
+    tickets
+      .filter(t => t.priceId)
+      .forEach(t => {
+        (t.phases || [])
+          .filter(p => p.pricePhaseId)
+          .forEach(p => {
+            phaseUpdatePromises.push(
+              updatePricePhase({
+                pricePhaseId: p.pricePhaseId!,
+                data: {
+                  phaseName: p.phaseName,
+                  applyPercent: p.applyPercent,
+                  startDate: p.startDate,
+                  endDate: p.endDate,
+                  totalSlot: p.totalslot,
+                },
+              }).unwrap()
+            );
+          });
+      });
+
+    if (phaseUpdatePromises.length > 0) {
+      try {
+        await Promise.all(phaseUpdatePromises);
+      } catch (error) {
+        hasError = true;
+        const apiError = error as { data?: ApiError };
+        toast.error(apiError?.data?.message || "Cập nhật giai đoạn giá thất bại");
+      }
+    }
+
+    // =============== SESSIONS (Validation) ===============
+    const eventStartDate = basicForm.startDate;
+    const eventEndDate = basicForm.endDate;
+    if (eventStartDate && eventEndDate) {
+      const hasSessionOnStartDay = sessions.some(s => s.date === eventStartDate);
+      const hasSessionOnEndDay = sessions.some(s => s.date === eventEndDate);
+      if (!hasSessionOnStartDay || !hasSessionOnEndDay) {
+        toast.error("Phải có ít nhất 1 phiên họp vào ngày bắt đầu và 1 vào ngày kết thúc hội thảo!");
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    // =============== SESSIONS (Update) ===============
+    if (sessions.some(s => s.sessionId)) {
+      const sessionUpdatePromises = sessions
+        .filter(s => s.sessionId)
+        .map(s =>
+          updateSession({
+            sessionId: s.sessionId!,
+            data: {
+              title: s.title,
+              description: s.description,
+              date: s.date,
+              startTime: s.startTime,
+              endTime: s.endTime,
+              roomId: s.roomId,
+            },
+          }).unwrap()
+        );
+
+      try {
+        await Promise.all(sessionUpdatePromises);
+      } catch (error) {
+        hasError = true;
+        const apiError = error as { data?: ApiError };
+        toast.error(apiError?.data?.message || "Cập nhật phiên họp thất bại");
+      }
+    }
+
+    // =============== SPEAKERS (Update) ===============
+    const speakerUpdatePromises: Promise<unknown>[] = [];
+    sessions
+      .filter(s => s.sessionId)
+      .forEach(s => {
+        (s.speaker || [])
+          .filter(sp => sp.speakerId)
+          .forEach(sp => {
+            speakerUpdatePromises.push(
+              updateSessionSpeaker({
+                sessionId: s.sessionId!,
+                data: {
+                  name: sp.name,
+                  description: sp.description,
+                  image: sp.image instanceof File ? sp.image : undefined,
+                },
+              }).unwrap()
+            );
+          });
+      });
+
+    if (speakerUpdatePromises.length > 0) {
+      try {
+        await Promise.all(speakerUpdatePromises);
+      } catch (error) {
+        hasError = true;
+        const apiError = error as { data?: ApiError };
+        toast.error(apiError?.data?.message || "Cập nhật diễn giả thất bại");
+      }
+    }
+
+    // =============== POLICIES (Update) ===============
+    if (policies.some(p => p.policyId)) {
+      const policyUpdatePromises = policies
+        .filter(p => p.policyId)
+        .map(p =>
+          updatePolicy({
+            policyId: p.policyId!,
+            data: { policyName: p.policyName, description: p.description },
+          }).unwrap()
+        );
+
+      try {
+        await Promise.all(policyUpdatePromises);
+      } catch (error) {
+        hasError = true;
+        const apiError = error as { data?: ApiError };
+        toast.error(apiError?.data?.message || "Cập nhật chính sách thất bại");
+      }
+    }
+
+    // =============== REFUND POLICIES (Update) ===============
+    if (refundPolicies.some(rp => rp.refundPolicyId)) {
+      const refundUpdatePromises = refundPolicies
+        .filter(rp => rp.refundPolicyId)
+        .map(rp =>
+          updateRefundPolicy({
+            refundPolicyId: rp.refundPolicyId!,
+            data: {
+              percentRefund: rp.percentRefund,
+              refundDeadline: rp.refundDeadline,
+              refundOrder: rp.refundOrder,
+            },
+          }).unwrap()
+        );
+
+      try {
+        await Promise.all(refundUpdatePromises);
+      } catch (error) {
+        hasError = true;
+        const apiError = error as { data?: ApiError };
+        toast.error(apiError?.data?.message || "Cập nhật chính sách hoàn tiền thất bại");
+      }
+    }
+
+    // =============== MEDIA (Update) ===============
+    if (mediaList.some(m => m.mediaId && m.mediaFile instanceof File)) {
+      const mediaUpdatePromises = mediaList
+        .filter(m => m.mediaId && m.mediaFile instanceof File)
+        .map(m =>
+          updateMedia({
+            mediaId: m.mediaId!,
+            mediaFile: m.mediaFile as File,
+          }).unwrap()
+        );
+
+      try {
+        await Promise.all(mediaUpdatePromises);
+      } catch (error) {
+        hasError = true;
+        const apiError = error as { data?: ApiError };
+        toast.error(apiError?.data?.message || "Cập nhật media thất bại");
+      }
+    }
+
+    // =============== SPONSORS (Update) ===============
+    if (sponsors.some(s => s.sponsorId && s.imageFile instanceof File)) {
+      const sponsorUpdatePromises = sponsors
+        .filter(s => s.sponsorId && s.imageFile instanceof File)
+        .map(s =>
+          updateSponsor({
+            sponsorId: s.sponsorId!,
+            name: s.name,
+            imageFile: s.imageFile as File,
+          }).unwrap()
+        );
+
+      try {
+        await Promise.all(sponsorUpdatePromises);
+      } catch (error) {
+        hasError = true;
+        const apiError = error as { data?: ApiError };
+        toast.error(apiError?.data?.message || "Cập nhật nhà tài trợ thất bại");
+      }
+    }
+
+    // =============== CREATE NEW ITEMS ===============
+    // Giá vé mới
+    const newTickets = tickets.filter(t => !t.priceId);
+    if (newTickets.length > 0) {
+      try {
+        const res = await createPrice({
+          conferenceId,
+          data: {
+            typeOfTicket: newTickets.map(t => ({
+              ticketPrice: parseFloat(t.ticketPrice.toFixed(2)),
+              ticketName: t.ticketName,
+              ticketDescription: t.ticketDescription,
+              isAuthor: t.isAuthor ?? false,
+              totalSlot: t.totalSlot,
+              phases: (t.phases || []).map(p => ({
                 phaseName: p.phaseName,
                 applyPercent: p.applyPercent,
                 startDate: p.startDate,
                 endDate: p.endDate,
-                totalSlot: p.totalslot,
-              },
-            }).unwrap()
-          );
-        });
-    });
-
-  if (phaseUpdatePromises.length > 0) {
-    try {
-      await Promise.all(phaseUpdatePromises);
-    } catch (error) {
-      hasError = true;
-      const apiError = error as { data?: ApiError };
-      toast.error(apiError?.data?.Message || "Cập nhật giai đoạn giá thất bại");
-    }
-  }
-
-  // =============== SESSIONS (Validation) ===============
-  const eventStartDate = basicForm.startDate;
-  const eventEndDate = basicForm.endDate;
-  if (eventStartDate && eventEndDate) {
-    const hasSessionOnStartDay = sessions.some(s => s.date === eventStartDate);
-    const hasSessionOnEndDay = sessions.some(s => s.date === eventEndDate);
-    if (!hasSessionOnStartDay || !hasSessionOnEndDay) {
-      toast.error("Phải có ít nhất 1 phiên họp vào ngày bắt đầu và 1 vào ngày kết thúc hội thảo!");
-      setIsSubmitting(false);
-      return;
-    }
-  }
-
-  // =============== SESSIONS (Update) ===============
-  if (sessions.some(s => s.sessionId)) {
-    const sessionUpdatePromises = sessions
-      .filter(s => s.sessionId)
-      .map(s =>
-        updateSession({
-          sessionId: s.sessionId!,
-          data: {
-            title: s.title,
-            description: s.description,
-            date: s.date,
-            startTime: s.startTime,
-            endTime: s.endTime,
-            roomId: s.roomId,
+                totalslot: p.totalslot,
+              })),
+            })),
           },
-        }).unwrap()
-      );
-
-    try {
-      await Promise.all(sessionUpdatePromises);
-    } catch (error) {
-      hasError = true;
-      const apiError = error as { data?: ApiError };
-      toast.error(apiError?.data?.Message || "Cập nhật phiên họp thất bại");
+        }).unwrap();
+        // TODO: Nếu backend trả về ID, nên cập nhật local state để tránh duplicate
+        // setTickets([...]);
+      } catch (error) {
+        hasError = true;
+        const apiError = error as { data?: ApiError };
+        toast.error(apiError?.data?.message || "Tạo vé mới thất bại");
+      }
     }
-  }
 
-  // =============== SPEAKERS (Update) ===============
-  const speakerUpdatePromises: Promise<unknown>[] = [];
-  sessions
-    .filter(s => s.sessionId)
-    .forEach(s => {
-      (s.speaker || [])
-        .filter(sp => sp.speakerId)
-        .forEach(sp => {
-          speakerUpdatePromises.push(
-            updateSessionSpeaker({
-              sessionId: s.sessionId!,
-              data: {
+    // Phiên họp mới
+    const newSessions = sessions.filter(s => !s.sessionId);
+    if (newSessions.length > 0) {
+      try {
+        await createSessions({
+          conferenceId,
+          data: {
+            sessions: newSessions.map(s => ({
+              title: s.title,
+              description: s.description,
+              date: s.date,
+              startTime: s.startTime,
+              endTime: s.endTime,
+              roomId: s.roomId,
+              speaker: s.speaker.map(sp => ({
                 name: sp.name,
                 description: sp.description,
                 image: sp.image instanceof File ? sp.image : undefined,
-              },
-            }).unwrap()
-          );
-        });
-    });
-
-  if (speakerUpdatePromises.length > 0) {
-    try {
-      await Promise.all(speakerUpdatePromises);
-    } catch (error) {
-      hasError = true;
-      const apiError = error as { data?: ApiError };
-      toast.error(apiError?.data?.Message || "Cập nhật diễn giả thất bại");
-    }
-  }
-
-  // =============== POLICIES (Update) ===============
-  if (policies.some(p => p.policyId)) {
-    const policyUpdatePromises = policies
-      .filter(p => p.policyId)
-      .map(p =>
-        updatePolicy({
-          policyId: p.policyId!,
-          data: { policyName: p.policyName, description: p.description },
-        }).unwrap()
-      );
-
-    try {
-      await Promise.all(policyUpdatePromises);
-    } catch (error) {
-      hasError = true;
-      const apiError = error as { data?: ApiError };
-      toast.error(apiError?.data?.Message || "Cập nhật chính sách thất bại");
-    }
-  }
-
-  // =============== REFUND POLICIES (Update) ===============
-  if (refundPolicies.some(rp => rp.refundPolicyId)) {
-    const refundUpdatePromises = refundPolicies
-      .filter(rp => rp.refundPolicyId)
-      .map(rp =>
-        updateRefundPolicy({
-          refundPolicyId: rp.refundPolicyId!,
-          data: {
-            percentRefund: rp.percentRefund,
-            refundDeadline: rp.refundDeadline,
-            refundOrder: rp.refundOrder,
+                imageUrl: typeof sp.image === "string" ? sp.image : undefined,
+              })),
+              sessionMedias: (s.sessionMedias || []).map(m => ({
+                mediaFile: m.mediaFile instanceof File ? m.mediaFile : undefined,
+                mediaUrl: typeof m.mediaFile === "string" ? m.mediaFile : undefined,
+              })),
+            })),
           },
-        }).unwrap()
-      );
-
-    try {
-      await Promise.all(refundUpdatePromises);
-    } catch (error) {
-      hasError = true;
-      const apiError = error as { data?: ApiError };
-      toast.error(apiError?.data?.Message || "Cập nhật chính sách hoàn tiền thất bại");
+        }).unwrap();
+      } catch (error) {
+        hasError = true;
+        const apiError = error as { data?: ApiError };
+        toast.error(apiError?.data?.message || "Tạo phiên họp mới thất bại");
+      }
     }
-  }
 
-  // =============== MEDIA (Update) ===============
-  if (mediaList.some(m => m.mediaId && m.mediaFile instanceof File)) {
-    const mediaUpdatePromises = mediaList
-      .filter(m => m.mediaId && m.mediaFile instanceof File)
-      .map(m =>
-        updateMedia({
-          mediaId: m.mediaId!,
-          mediaFile: m.mediaFile as File,
-        }).unwrap()
-      );
-
-    try {
-      await Promise.all(mediaUpdatePromises);
-    } catch (error) {
-      hasError = true;
-      const apiError = error as { data?: ApiError };
-      toast.error(apiError?.data?.Message || "Cập nhật media thất bại");
+    // Chính sách mới
+    const newPolicies = policies.filter(p => !p.policyId);
+    if (newPolicies.length > 0) {
+      try {
+        await createPolicies({ conferenceId, data: { policies: newPolicies } }).unwrap();
+      } catch (error) {
+        hasError = true;
+        const apiError = error as { data?: ApiError };
+        toast.error(apiError?.data?.message || "Tạo chính sách mới thất bại");
+      }
     }
-  }
 
-  // =============== SPONSORS (Update) ===============
-  if (sponsors.some(s => s.sponsorId && s.imageFile instanceof File)) {
-    const sponsorUpdatePromises = sponsors
-      .filter(s => s.sponsorId && s.imageFile instanceof File)
-      .map(s =>
-        updateSponsor({
-          sponsorId: s.sponsorId!,
-          name: s.name,
-          imageFile: s.imageFile as File,
-        }).unwrap()
-      );
-
-    try {
-      await Promise.all(sponsorUpdatePromises);
-    } catch (error) {
-      hasError = true;
-      const apiError = error as { data?: ApiError };
-      toast.error(apiError?.data?.Message || "Cập nhật nhà tài trợ thất bại");
+    // Chính sách hoàn tiền mới
+    const newRefundPolicies = refundPolicies.filter(rp => !rp.refundPolicyId);
+    if (newRefundPolicies.length > 0) {
+      try {
+        await createRefundPolicies({
+          conferenceId,
+          data: { refundPolicies: newRefundPolicies },
+        }).unwrap();
+      } catch (error) {
+        hasError = true;
+        const apiError = error as { data?: ApiError };
+        toast.error(apiError?.data?.message || "Tạo chính sách hoàn tiền mới thất bại");
+      }
     }
-  }
 
-  // =============== CREATE NEW ITEMS ===============
-  // Giá vé mới
-  const newTickets = tickets.filter(t => !t.priceId);
-  if (newTickets.length > 0) {
-    try {
-      const res = await createPrice({
-        conferenceId,
-        data: {
-          typeOfTicket: newTickets.map(t => ({
-            ticketPrice: parseFloat(t.ticketPrice.toFixed(2)),
-            ticketName: t.ticketName,
-            ticketDescription: t.ticketDescription,
-            isAuthor: t.isAuthor ?? false,
-            totalSlot: t.totalSlot,
-            phases: (t.phases || []).map(p => ({
-              phaseName: p.phaseName,
-              applyPercent: p.applyPercent,
-              startDate: p.startDate,
-              endDate: p.endDate,
-              totalslot: p.totalslot,
-            })),
-          })),
-        },
-      }).unwrap();
-      // TODO: Nếu backend trả về ID, nên cập nhật local state để tránh duplicate
-      // setTickets([...]);
-    } catch (error) {
-      hasError = true;
-      const apiError = error as { data?: ApiError };
-      toast.error(apiError?.data?.Message || "Tạo vé mới thất bại");
+    // Media mới
+    const newMediaItems = mediaList.filter(m => !m.mediaId);
+    if (newMediaItems.length > 0) {
+      try {
+        await createMedia({ conferenceId, data: { media: newMediaItems } }).unwrap();
+      } catch (error) {
+        hasError = true;
+        const apiError = error as { data?: ApiError };
+        toast.error(apiError?.data?.message || "Tải lên media mới thất bại");
+      }
     }
-  }
 
-  // Phiên họp mới
-  const newSessions = sessions.filter(s => !s.sessionId);
-  if (newSessions.length > 0) {
-    try {
-      await createSessions({
-        conferenceId,
-        data: {
-          sessions: newSessions.map(s => ({
-            title: s.title,
-            description: s.description,
-            date: s.date,
-            startTime: s.startTime,
-            endTime: s.endTime,
-            roomId: s.roomId,
-            speaker: s.speaker.map(sp => ({
-              name: sp.name,
-              description: sp.description,
-              image: sp.image instanceof File ? sp.image : undefined,
-              imageUrl: typeof sp.image === "string" ? sp.image : undefined,
-            })),
-            sessionMedias: (s.sessionMedias || []).map(m => ({
-              mediaFile: m.mediaFile instanceof File ? m.mediaFile : undefined,
-              mediaUrl: typeof m.mediaFile === "string" ? m.mediaFile : undefined,
-            })),
-          })),
-        },
-      }).unwrap();
-    } catch (error) {
-      hasError = true;
-      const apiError = error as { data?: ApiError };
-      toast.error(apiError?.data?.Message || "Tạo phiên họp mới thất bại");
+    // Nhà tài trợ mới
+    const newSponsors = sponsors.filter(s => !s.sponsorId);
+    if (newSponsors.length > 0) {
+      try {
+        await createSponsors({ conferenceId, data: { sponsors: newSponsors } }).unwrap();
+      } catch (error) {
+        hasError = true;
+        const apiError = error as { data?: ApiError };
+        toast.error(apiError?.data?.message || "Thêm nhà tài trợ mới thất bại");
+      }
     }
-  }
-
-  // Chính sách mới
-  const newPolicies = policies.filter(p => !p.policyId);
-  if (newPolicies.length > 0) {
-    try {
-      await createPolicies({ conferenceId, data: { policies: newPolicies } }).unwrap();
-    } catch (error) {
-      hasError = true;
-      const apiError = error as { data?: ApiError };
-      toast.error(apiError?.data?.Message || "Tạo chính sách mới thất bại");
-    }
-  }
-
-  // Chính sách hoàn tiền mới
-  const newRefundPolicies = refundPolicies.filter(rp => !rp.refundPolicyId);
-  if (newRefundPolicies.length > 0) {
-    try {
-      await createRefundPolicies({
-        conferenceId,
-        data: { refundPolicies: newRefundPolicies },
-      }).unwrap();
-    } catch (error) {
-      hasError = true;
-      const apiError = error as { data?: ApiError };
-      toast.error(apiError?.data?.Message || "Tạo chính sách hoàn tiền mới thất bại");
-    }
-  }
-
-  // Media mới
-  const newMediaItems = mediaList.filter(m => !m.mediaId);
-  if (newMediaItems.length > 0) {
-    try {
-      await createMedia({ conferenceId, data: { media: newMediaItems } }).unwrap();
-    } catch (error) {
-      hasError = true;
-      const apiError = error as { data?: ApiError };
-      toast.error(apiError?.data?.Message || "Tải lên media mới thất bại");
-    }
-  }
-
-  // Nhà tài trợ mới
-  const newSponsors = sponsors.filter(s => !s.sponsorId);
-  if (newSponsors.length > 0) {
-    try {
-      await createSponsors({ conferenceId, data: { sponsors: newSponsors } }).unwrap();
-    } catch (error) {
-      hasError = true;
-      const apiError = error as { data?: ApiError };
-      toast.error(apiError?.data?.Message || "Thêm nhà tài trợ mới thất bại");
-    }
-  }
 
     const deletePromises: Promise<unknown>[] = [];
 
@@ -846,18 +846,18 @@ const handleFinalSubmit = async () => {
       } catch (error) {
         hasError = true;
         const apiError = error as { data?: ApiError };
-        toast.error(apiError?.data?.Message || "Xóa dữ liệu thất bại");
+        toast.error(apiError?.data?.message || "Xóa dữ liệu thất bại");
       }
     }
 
-  setIsSubmitting(false);
-  if (!hasError) {
-    toast.success("Cập nhật hội thảo thành công!");
-    router.push(`/workspace/collaborator/manage-conference`);
-  } else {
-    toast.warning("Một số phần chưa lưu được. Vui lòng kiểm tra lại.");
-  }
-};
+    setIsSubmitting(false);
+    if (!hasError) {
+      toast.success("Cập nhật hội thảo thành công!");
+      router.push(`/workspace/collaborator/manage-conference`);
+    } else {
+      toast.warning("Một số phần chưa lưu được. Vui lòng kiểm tra lại.");
+    }
+  };
 
   const handleEditTicket = (ticket: Ticket, index: number) => {
     setNewTicket({
@@ -1562,29 +1562,29 @@ const handleFinalSubmit = async () => {
               {/* Hiển thị ảnh hiện tại hoặc preview */}
               {(basicForm.bannerImageFile ||
                 conferenceDetail?.data?.bannerImageUrl) && (
-                <div className="relative inline-block mt-2">
-                  <img
-                    src={
-                      basicForm.bannerImageFile
-                        ? URL.createObjectURL(basicForm.bannerImageFile)
-                        : conferenceDetail?.data?.bannerImageUrl
-                    }
-                    alt="Preview"
-                    className="h-32 object-cover rounded border"
-                  />
-                  {!basicFormCompleted && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setBasicForm({ ...basicForm, bannerImageFile: null })
+                  <div className="relative inline-block mt-2">
+                    <img
+                      src={
+                        basicForm.bannerImageFile
+                          ? URL.createObjectURL(basicForm.bannerImageFile)
+                          : conferenceDetail?.data?.bannerImageUrl
                       }
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6"
-                    >
-                      ×
-                    </button>
-                  )}
-                </div>
-              )}
+                      alt="Preview"
+                      className="h-32 object-cover rounded border"
+                    />
+                    {!basicFormCompleted && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setBasicForm({ ...basicForm, bannerImageFile: null })
+                        }
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                )}
 
               {!basicFormCompleted && (
                 <input
@@ -1653,9 +1653,8 @@ const handleFinalSubmit = async () => {
                     return (
                       <div
                         key={t.ticketId || idx}
-                        className={`border rounded-lg p-3 mb-3 bg-white shadow-sm hover:shadow-md transition-all ${
-                          isEditing ? "ring-2 ring-blue-500 bg-blue-50" : ""
-                        }`}
+                        className={`border rounded-lg p-3 mb-3 bg-white shadow-sm hover:shadow-md transition-all ${isEditing ? "ring-2 ring-blue-500 bg-blue-50" : ""
+                          }`}
                       >
                         {/* Header - Compact */}
                         <div className="flex items-center justify-between mb-2 pb-2 border-b">
@@ -1857,11 +1856,10 @@ const handleFinalSubmit = async () => {
                     return (
                       <div
                         key={idx}
-                        className={`text-sm p-2 rounded flex justify-between items-center mb-2 transition-all ${
-                          isEditingPhase
+                        className={`text-sm p-2 rounded flex justify-between items-center mb-2 transition-all ${isEditingPhase
                             ? "bg-blue-100 ring-2 ring-blue-400"
                             : "bg-blue-50"
-                        }`}
+                          }`}
                       >
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
@@ -2211,12 +2209,12 @@ const handleFinalSubmit = async () => {
                               variant="destructive"
                               onClick={async () => {
                                 if (!confirm("Bạn có chắc muốn xóa phiên họp này?")) return;
-                              const session = sessions[idx];
-                              if (session.sessionId) {
-                                setDeletedSessionIds(prev => [...prev, session.sessionId!]);
-                              }
-                              setSessions(sessions.filter((_, i) => i !== idx));
-                              toast.info("Đã xóa phiên họp (sẽ áp dụng khi lưu)");
+                                const session = sessions[idx];
+                                if (session.sessionId) {
+                                  setDeletedSessionIds(prev => [...prev, session.sessionId!]);
+                                }
+                                setSessions(sessions.filter((_, i) => i !== idx));
+                                toast.info("Đã xóa phiên họp (sẽ áp dụng khi lưu)");
                               }}
                             >
                               Xóa
@@ -2669,7 +2667,7 @@ const handleFinalSubmit = async () => {
                         if (!m.mediaId) {
                           toast.error("Không tìm thấy media này trên hệ thống");
                           return;
-                        }                        
+                        }
                         if (!confirm("Bạn có chắc muốn xóa media này?")) return;
                         if (m.mediaId) {
                           setDeletedMediaIds(prev => [...prev, m.mediaId!]);

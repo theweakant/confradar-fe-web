@@ -98,7 +98,7 @@ export default function TransactionHistory() {
             <div className="text-red-400 mb-4">
               Có lỗi xảy ra khi tải dữ liệu
             </div>
-            <p className="text-gray-400">{transactionsError.data?.Message}</p>
+            <p className="text-gray-400">{transactionsError.data?.message}</p>
             <Button
               onClick={() => fetchTransactions()}
               className="mt-4 bg-purple-600 hover:bg-purple-700"
@@ -134,11 +134,10 @@ export default function TransactionHistory() {
               <Button
                 key={option.id}
                 variant={option.active ? "default" : "outline"}
-                className={`whitespace-nowrap ${
-                  option.active
-                    ? "bg-purple-600 text-white hover:bg-purple-700 border-purple-600"
-                    : "bg-gray-800 text-gray-300 hover:bg-gray-700 border-gray-600"
-                }`}
+                className={`whitespace-nowrap ${option.active
+                  ? "bg-purple-600 text-white hover:bg-purple-700 border-purple-600"
+                  : "bg-gray-800 text-gray-300 hover:bg-gray-700 border-gray-600"
+                  }`}
               >
                 {option.label}
               </Button>
@@ -187,15 +186,15 @@ export default function TransactionHistory() {
                   {txn.paymentStatusName
                     ?.toLowerCase()
                     .includes("thành công") && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-2 text-gray-300 border-gray-600 hover:bg-gray-700 bg-gray-800"
-                    >
-                      <Download className="h-4 w-4" />
-                      Tải biên lai
-                    </Button>
-                  )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2 text-gray-300 border-gray-600 hover:bg-gray-700 bg-gray-800"
+                      >
+                        <Download className="h-4 w-4" />
+                        Tải biên lai
+                      </Button>
+                    )}
                   <Button
                     variant="outline"
                     size="sm"
