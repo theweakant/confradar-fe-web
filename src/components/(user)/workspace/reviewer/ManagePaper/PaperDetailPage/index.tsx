@@ -15,6 +15,8 @@ import {
   MessageSquare,
   Plus,
 } from "lucide-react";
+import Slider from "rc-slider";
+import "rc-slider/assets/index.css";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/helper/format";
 import {
@@ -27,10 +29,15 @@ import {
   useListRevisionPaperReviewsQuery,
   useDecideRevisionStatusMutation,
   useDecideCameraReadyMutation,
+  useLazyGetPaperDetailForReviewerQuery,
 } from "@/redux/services/paper.service";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ApiError } from "@/types/api.type";
+import { ApiError, ApiResponse } from "@/types/api.type";
+import FullPaperPhase from "./FullPaperPhase";
+import RevisionPaperPhase from "./RevisionPaperPhase";
+import CameraReadyPhase from "./CameraReadyPhase";
+import { PaperDetailForReviewer } from "@/types/paper.type";
 
 // Component for Revision Reviews List
 function RevisionReviewsList({
@@ -185,9 +192,23 @@ export default function ReviewPaperPage() {
   const params = useParams();
   const paperId = params.paperId as string;
 
-  const { data, isLoading, error } = useGetPaperDetailForReviewerQuery(paperId);
-  const paperDetail = data?.data;
+  // const { data, isLoading, error } = useGetPaperDetailForReviewerQuery(paperId);
+  const [getPaperDetailForReviewer, { data, isLoading, error }] = useLazyGetPaperDetailForReviewerQuery();
+  // const paperDetail = data?.data;
+  const [paperDetail, setPaperDetail] = useState<PaperDetailForReviewer | null>(
+    null,
+  );
   const currentPhase = paperDetail?.currentResearchConferencePhase;
+
+  const [currentStage, setCurrentStage] = useState<number>(1);
+  const [maxReachedStage, setMaxReachedStage] = useState<number>(1);
+  const [isValidPhase, setIsValidPhase] = useState<boolean>(true);
+
+  const stages = [
+    { id: 1, label: "FullPaper" },
+    { id: 2, label: "Revise" },
+    { id: 3, label: "CameraReady" },
+  ];
 
   // Tab state
   const [activeTab, setActiveTab] = useState<
@@ -259,6 +280,59 @@ export default function ReviewPaperPage() {
     },
   );
 
+  const fetchPaperDetail = useCallback(
+    async (paperId: string): Promise<ApiResponse<PaperDetailForReviewer>> => {
+      try {
+        const result = await getPaperDetailForReviewer(paperId).unwrap();
+        return result;
+      } catch (error) {
+        throw error;
+      }
+    },
+    [getPaperDetailForReviewer],
+  );
+
+  useEffect(() => {
+    const loadPaperDetail = async () => {
+      if (!paperId) return;
+
+      // setIsLoadingPaperDetail(true);
+      // setPaperDetailError(null);
+
+      try {
+        const response = await fetchPaperDetail(paperId);
+        setPaperDetail(response.data);
+      } catch (error: unknown) {
+
+      }
+    };
+
+    loadPaperDetail();
+    fetchPaperDetail(paperId)
+  }, [paperId, fetchPaperDetail])
+
+  useEffect(() => {
+    if (paperDetail?.currentPaperPhase) {
+
+      const currentPhaseIndex = stages.findIndex(
+        (obj) =>
+          obj.label.toLowerCase() ===
+          paperDetail.currentPaperPhase!.phaseName?.toLowerCase(),
+      );
+
+      if (currentPhaseIndex !== -1) {
+        setCurrentStage(currentPhaseIndex + 1);
+        setMaxReachedStage(currentPhaseIndex + 1);
+        setIsValidPhase(true);
+        setActiveTab(
+          currentPhaseIndex + 1 === 1 ? "fullPaper" : currentPhaseIndex + 1 === 2 ? "revision" : "cameraReady"
+        );
+      } else {
+        setIsValidPhase(false);
+      }
+    }
+  }, [paperDetail]);
+
   //++VALIDATION++
   // Helper function: Check if current date is within date range
   const isWithinDateRange = (startDate: string, endDate: string): boolean => {
@@ -276,206 +350,206 @@ export default function ReviewPaperPage() {
   };
 
   // Helper function: Get feedback period for a revision round
-  const getRevisionFeedbackPeriod = (
-    roundNumber: number,
-  ): { start: string; end: string } | null => {
-    if (!currentPhase?.revisionRoundsDetail) return null;
+  // const getRevisionFeedbackPeriod = (
+  //   roundNumber: number,
+  // ): { start: string; end: string } | null => {
+  //   if (!currentPhase?.revisionRoundsDetail) return null;
 
-    const sortedRounds = [...currentPhase.revisionRoundsDetail].sort(
-      (a, b) => a.roundNumber - b.roundNumber,
-    );
-    const currentRoundIndex = sortedRounds.findIndex(
-      (r) => r.roundNumber === roundNumber,
-    );
+  //   const sortedRounds = [...currentPhase.revisionRoundsDetail].sort(
+  //     (a, b) => a.roundNumber - b.roundNumber,
+  //   );
+  //   const currentRoundIndex = sortedRounds.findIndex(
+  //     (r) => r.roundNumber === roundNumber,
+  //   );
 
-    if (currentRoundIndex === -1) return null;
+  //   if (currentRoundIndex === -1) return null;
 
-    const currentRound = sortedRounds[currentRoundIndex];
-    const nextRound = sortedRounds[currentRoundIndex + 1];
+  //   const currentRound = sortedRounds[currentRoundIndex];
+  //   const nextRound = sortedRounds[currentRoundIndex + 1];
 
-    if (!nextRound) return null; // No feedback period if it's the last round
+  //   if (!nextRound) return null; // No feedback period if it's the last round
 
-    return {
-      start: currentRound.endSubmissionDate ?? "??",
-      end: nextRound.endSubmissionDate ?? "",
-    };
-  };
+  //   return {
+  //     start: currentRound.endSubmissionDate ?? "??",
+  //     end: nextRound.endSubmissionDate ?? "",
+  //   };
+  // };
 
   // Validation functions
-  const canSubmitFullPaperReview = (): boolean => {
-    if (!currentPhase) return false;
-    return isWithinDateRange(
-      currentPhase.reviewStartDate,
-      currentPhase.reviewEndDate,
-    );
-  };
+  // const canSubmitFullPaperReview = (): boolean => {
+  //   if (!currentPhase) return false;
+  //   return isWithinDateRange(
+  //     currentPhase.reviewStartDate,
+  //     currentPhase.reviewEndDate,
+  //   );
+  // };
 
-  const canDecideFullPaperStatus = (): boolean => {
-    if (!currentPhase) return false;
-    return isWithinDateRange(
-      currentPhase.reviewStartDate,
-      currentPhase.reviewEndDate,
-    );
-  };
+  // const canDecideFullPaperStatus = (): boolean => {
+  //   if (!currentPhase) return false;
+  //   return isWithinDateRange(
+  //     currentPhase.reviewStartDate,
+  //     currentPhase.reviewEndDate,
+  //   );
+  // };
 
-  const canSubmitRevisionReview = (submissionId: string): boolean => {
-    if (!paperDetail?.revisionPaper) return false;
+  // const canSubmitRevisionReview = (submissionId: string): boolean => {
+  //   if (!paperDetail?.revisionPaper) return false;
 
-    const submission = paperDetail.revisionPaper.revisionPaperSubmissions.find(
-      (s) => s.revisionPaperSubmissionId === submissionId,
-    );
+  //   const submission = paperDetail.revisionPaper.revisionPaperSubmissions.find(
+  //     (s) => s.revisionPaperSubmissionId === submissionId,
+  //   );
 
-    if (!submission) return false;
+  //   if (!submission) return false;
 
-    return isWithinDateRange(submission.startDate, submission.endDate);
-  };
+  //   return isWithinDateRange(submission.startDate, submission.endDate);
+  // };
 
-  const canSubmitRevisionFeedback = (roundNumber: number): boolean => {
-    const feedbackPeriod = getRevisionFeedbackPeriod(roundNumber);
-    if (!feedbackPeriod) return false;
+  // const canSubmitRevisionFeedback = (roundNumber: number): boolean => {
+  //   const feedbackPeriod = getRevisionFeedbackPeriod(roundNumber);
+  //   if (!feedbackPeriod) return false;
 
-    return isWithinDateRange(feedbackPeriod.start, feedbackPeriod.end);
-  };
+  //   return isWithinDateRange(feedbackPeriod.start, feedbackPeriod.end);
+  // };
 
-  const canDecideRevisionStatus = (): boolean => {
-    if (!currentPhase) return false;
-    return isAfterDate(currentPhase.reviseEndDate);
-  };
+  // const canDecideRevisionStatus = (): boolean => {
+  //   if (!currentPhase) return false;
+  //   return isAfterDate(currentPhase.reviseEndDate);
+  // };
 
-  const canDecideCameraReadyStatus = (): boolean => {
-    if (!currentPhase) return false;
-    return isAfterDate(currentPhase.cameraReadyEndDate);
-  };
+  // const canDecideCameraReadyStatus = (): boolean => {
+  //   if (!currentPhase) return false;
+  //   return isAfterDate(currentPhase.cameraReadyEndDate);
+  // };
 
   // Toggle function for expanding/collapsing reviews
-  const toggleReviewsExpansion = (submissionId: string) => {
-    setExpandedReviewsSubmissions((prev) => ({
-      ...prev,
-      [submissionId]: !prev[submissionId],
-    }));
-  };
+  // const toggleReviewsExpansion = (submissionId: string) => {
+  //   setExpandedReviewsSubmissions((prev) => ({
+  //     ...prev,
+  //     [submissionId]: !prev[submissionId],
+  //   }));
+  // };
 
-  const handleSubmitReview = async () => {
-    if (!paperDetail?.fullPaper) return;
-    if (!canSubmitFullPaperReview()) {
-      toast.error(
-        `Thời hạn nộp đánh giá Full Paper là từ ${formatDate(currentPhase!.reviewStartDate)} đến ${formatDate(currentPhase!.reviewEndDate)}`,
-      );
-      return;
-    }
-    try {
-      const response = await submitReview({
-        fullPaperId: paperDetail.fullPaper.fullPaperId,
-        note,
-        feedbackToAuthor,
-        reviewStatus,
-        feedbackMaterialFile: file!,
-      }).unwrap();
-      toast.success("Gửi đánh giá thành công");
-      setNote("");
-      setFeedbackToAuthor("");
-      setFile(null);
-    } catch (error: unknown) {
-      const err = error as ApiError;
-      const errorMessage = err?.message || "Lỗi khi gửi đánh giá";
-      toast.error(errorMessage);
-    }
-  };
+  // const handleSubmitReview = async () => {
+  //   if (!paperDetail?.fullPaper) return;
+  //   if (!canSubmitFullPaperReview()) {
+  //     toast.error(
+  //       `Thời hạn nộp đánh giá Full Paper là từ ${formatDate(currentPhase!.reviewStartDate)} đến ${formatDate(currentPhase!.reviewEndDate)}`,
+  //     );
+  //     return;
+  //   }
+  //   try {
+  //     const response = await submitReview({
+  //       fullPaperId: paperDetail.fullPaper.fullPaperId,
+  //       note,
+  //       feedbackToAuthor,
+  //       reviewStatus,
+  //       feedbackMaterialFile: file!,
+  //     }).unwrap();
+  //     toast.success("Gửi đánh giá thành công");
+  //     setNote("");
+  //     setFeedbackToAuthor("");
+  //     setFile(null);
+  //   } catch (error: unknown) {
+  //     const err = error as ApiError;
+  //     const errorMessage = err?.message || "Lỗi khi gửi đánh giá";
+  //     toast.error(errorMessage);
+  //   }
+  // };
 
-  const handleSubmitRevisionReview = async (submissionId: string) => {
-    if (!paperDetail?.revisionPaper) return;
+  // const handleSubmitRevisionReview = async (submissionId: string) => {
+  //   if (!paperDetail?.revisionPaper) return;
 
-    const reviewData = revisionReviews[submissionId];
-    if (!reviewData) {
-      toast.error("Vui lòng nhập thông tin đánh giá");
-      return;
-    }
+  //   const reviewData = revisionReviews[submissionId];
+  //   if (!reviewData) {
+  //     toast.error("Vui lòng nhập thông tin đánh giá");
+  //     return;
+  //   }
 
-    if (!canSubmitRevisionReview(submissionId)) {
-      const submission =
-        paperDetail.revisionPaper.revisionPaperSubmissions.find(
-          (s) => s.revisionPaperSubmissionId === submissionId,
-        );
-      toast.error(
-        `Thời hạn nộp đánh giá cho Round ${submission?.roundNumber} là từ ${formatDate(submission!.startDate)} đến ${formatDate(submission!.endDate)}`,
-      );
-      return;
-    }
+  //   if (!canSubmitRevisionReview(submissionId)) {
+  //     const submission =
+  //       paperDetail.revisionPaper.revisionPaperSubmissions.find(
+  //         (s) => s.revisionPaperSubmissionId === submissionId,
+  //       );
+  //     toast.error(
+  //       `Thời hạn nộp đánh giá cho Round ${submission?.roundNumber} là từ ${formatDate(submission!.startDate)} đến ${formatDate(submission!.endDate)}`,
+  //     );
+  //     return;
+  //   }
 
-    try {
-      const response = await submitRevisionReview({
-        paperId,
-        revisionPaperId: paperDetail.revisionPaper.revisionPaperId,
-        revisionPaperSubmissionId: submissionId,
-        globalStatus: reviewData.globalStatus,
-        note: reviewData.note,
-        feedbackToAuthor: reviewData.feedbackToAuthor,
-        feedbackMaterialFile: reviewData.file || undefined,
-      }).unwrap();
+  //   try {
+  //     const response = await submitRevisionReview({
+  //       paperId,
+  //       revisionPaperId: paperDetail.revisionPaper.revisionPaperId,
+  //       revisionPaperSubmissionId: submissionId,
+  //       globalStatus: reviewData.globalStatus,
+  //       note: reviewData.note,
+  //       feedbackToAuthor: reviewData.feedbackToAuthor,
+  //       feedbackMaterialFile: reviewData.file || undefined,
+  //     }).unwrap();
 
-      toast.success("Gửi đánh giá revision thành công");
+  //     toast.success("Gửi đánh giá revision thành công");
 
-      setRevisionReviews((prev) => {
-        const updated = { ...prev };
-        delete updated[submissionId];
-        return updated;
-      });
-    } catch (error: unknown) {
-      const err = error as ApiError;
-      const errorMessage = err?.message || "Lỗi khi gửi revision review";
-      toast.error(errorMessage);
-    }
-  };
+  //     setRevisionReviews((prev) => {
+  //       const updated = { ...prev };
+  //       delete updated[submissionId];
+  //       return updated;
+  //     });
+  //   } catch (error: unknown) {
+  //     const err = error as ApiError;
+  //     const errorMessage = err?.message || "Lỗi khi gửi revision review";
+  //     toast.error(errorMessage);
+  //   }
+  // };
 
-  const handleSubmitRevisionFeedback = async (submissionId: string) => {
-    if (!paperDetail?.revisionPaper) return;
+  // const handleSubmitRevisionFeedback = async (submissionId: string) => {
+  //   if (!paperDetail?.revisionPaper) return;
 
-    const feedbacks = revisionFeedbacks[submissionId];
-    if (!feedbacks || feedbacks.length === 0) {
-      toast.error("Vui lòng nhập ít nhất một feedback");
-      return;
-    }
+  //   const feedbacks = revisionFeedbacks[submissionId];
+  //   if (!feedbacks || feedbacks.length === 0) {
+  //     toast.error("Vui lòng nhập ít nhất một feedback");
+  //     return;
+  //   }
 
-    const submission = paperDetail.revisionPaper.revisionPaperSubmissions.find(
-      (s) => s.revisionPaperSubmissionId === submissionId,
-    );
+  //   const submission = paperDetail.revisionPaper.revisionPaperSubmissions.find(
+  //     (s) => s.revisionPaperSubmissionId === submissionId,
+  //   );
 
-    if (!submission) return;
+  //   if (!submission) return;
 
-    if (!canSubmitRevisionFeedback(submission.roundNumber)) {
-      const feedbackPeriod = getRevisionFeedbackPeriod(submission.roundNumber);
-      if (feedbackPeriod) {
-        toast.error(
-          `Thời hạn nhập feedback cho Round ${submission.roundNumber} là từ ${formatDate(feedbackPeriod.start)} đến ${formatDate(feedbackPeriod.end)}`,
-        );
-      } else {
-        toast.error(`Không thể nhập feedback cho Round cuối cùng`);
-      }
-      return;
-    }
+  //   if (!canSubmitRevisionFeedback(submission.roundNumber)) {
+  //     const feedbackPeriod = getRevisionFeedbackPeriod(submission.roundNumber);
+  //     if (feedbackPeriod) {
+  //       toast.error(
+  //         `Thời hạn nhập feedback cho Round ${submission.roundNumber} là từ ${formatDate(feedbackPeriod.start)} đến ${formatDate(feedbackPeriod.end)}`,
+  //       );
+  //     } else {
+  //       toast.error(`Không thể nhập feedback cho Round cuối cùng`);
+  //     }
+  //     return;
+  //   }
 
-    try {
-      const response = await submitRevisionFeedback({
-        paperId,
-        revisionPaperSubmissionId: submissionId,
-        feedbacks: feedbacks.map((f) => ({
-          feedback: f.feedback,
-          sortOrder: f.sortOrder,
-        })),
-      }).unwrap();
+  //   try {
+  //     const response = await submitRevisionFeedback({
+  //       paperId,
+  //       revisionPaperSubmissionId: submissionId,
+  //       feedbacks: feedbacks.map((f) => ({
+  //         feedback: f.feedback,
+  //         sortOrder: f.sortOrder,
+  //       })),
+  //     }).unwrap();
 
-      toast.success(response?.message || "Đã gửi thành công revision feedback");
+  //     toast.success(response?.message || "Đã gửi thành công revision feedback");
 
-      setRevisionFeedbacks((prev) => ({
-        ...prev,
-        [submissionId]: [],
-      }));
-    } catch (error: unknown) {
-      const err = error as ApiError;
-      const errorMessage = err?.message || "Lỗi khi gửi revision feedback";
-      toast.error(errorMessage);
-    }
-  };
+  //     setRevisionFeedbacks((prev) => ({
+  //       ...prev,
+  //       [submissionId]: [],
+  //     }));
+  //   } catch (error: unknown) {
+  //     const err = error as ApiError;
+  //     const errorMessage = err?.message || "Lỗi khi gửi revision feedback";
+  //     toast.error(errorMessage);
+  //   }
+  // };
 
   // Revision Review helpers
   const updateRevisionReview = (
@@ -551,73 +625,73 @@ export default function ReviewPaperPage() {
     });
   };
 
-  const handleDecideStatus = async () => {
-    if (!paperDetail?.fullPaper) return;
-    if (!canDecideFullPaperStatus()) {
-      toast.error(
-        `Thời hạn quyết định Full Paper là từ ${formatDate(currentPhase!.reviewStartDate)} đến ${formatDate(currentPhase!.reviewEndDate)}`,
-      );
-      return;
-    }
-    try {
-      const response = await decideStatus({
-        paperId,
-        fullPaperId: paperDetail.fullPaper.fullPaperId,
-        reviewStatus: decisionStatus,
-      }).unwrap();
-      toast.success("Cập nhật trạng thái thành công");
-      setShowDecisionPopup(false);
-    } catch (error: unknown) {
-      const apiError = error as ApiError;
-      const errorMessage = apiError?.message || "Lỗi khi cập nhật trạng thái";
-      toast.error(errorMessage);
-    }
-  };
+  // const handleDecideStatus = async () => {
+  //   if (!paperDetail?.fullPaper) return;
+  //   if (!canDecideFullPaperStatus()) {
+  //     toast.error(
+  //       `Thời hạn quyết định Full Paper là từ ${formatDate(currentPhase!.reviewStartDate)} đến ${formatDate(currentPhase!.reviewEndDate)}`,
+  //     );
+  //     return;
+  //   }
+  //   try {
+  //     const response = await decideStatus({
+  //       paperId,
+  //       fullPaperId: paperDetail.fullPaper.fullPaperId,
+  //       reviewStatus: decisionStatus,
+  //     }).unwrap();
+  //     toast.success("Cập nhật trạng thái thành công");
+  //     setShowDecisionPopup(false);
+  //   } catch (error: unknown) {
+  //     const apiError = error as ApiError;
+  //     const errorMessage = apiError?.message || "Lỗi khi cập nhật trạng thái";
+  //     toast.error(errorMessage);
+  //   }
+  // };
 
-  const handleDecideRevisionStatus = async () => {
-    if (!paperDetail?.revisionPaper) return;
-    if (!canDecideRevisionStatus()) {
-      toast.error(
-        `Chỉ có thể quyết định Revision sau ngày ${formatDate(currentPhase!.reviseEndDate)}`,
-      );
-      return;
-    }
+  // const handleDecideRevisionStatus = async () => {
+  //   if (!paperDetail?.revisionPaper) return;
+  //   if (!canDecideRevisionStatus()) {
+  //     toast.error(
+  //       `Chỉ có thể quyết định Revision sau ngày ${formatDate(currentPhase!.reviseEndDate)}`,
+  //     );
+  //     return;
+  //   }
 
-    try {
-      const response = await decideRevisionStatus({
-        revisionPaperId: paperDetail.revisionPaper.revisionPaperId,
-        paperId,
-        globalStatus: revisionDecisionStatus,
-      }).unwrap();
-      toast.success("Cập nhật trạng thái revision thành công");
-      setShowRevisionDecisionPopup(false);
-    } catch (error: unknown) {
-      const err = error as ApiError;
-      toast.error(err.message || "Lỗi khi cập nhật trạng thái revision");
-    }
-  };
+  //   try {
+  //     const response = await decideRevisionStatus({
+  //       revisionPaperId: paperDetail.revisionPaper.revisionPaperId,
+  //       paperId,
+  //       globalStatus: revisionDecisionStatus,
+  //     }).unwrap();
+  //     toast.success("Cập nhật trạng thái revision thành công");
+  //     setShowRevisionDecisionPopup(false);
+  //   } catch (error: unknown) {
+  //     const err = error as ApiError;
+  //     toast.error(err.message || "Lỗi khi cập nhật trạng thái revision");
+  //   }
+  // };
 
-  const handleDecideCameraReadyStatus = async () => {
-    if (!paperDetail?.cameraReady) return;
-    if (!canDecideCameraReadyStatus()) {
-      toast.error(
-        `Chỉ có thể quyết định Camera Ready sau ngày ${formatDate(currentPhase!.cameraReadyEndDate)}`,
-      );
-      return;
-    }
-    try {
-      const response = await decideCameraReadyStatus({
-        cameraReadyId: paperDetail.cameraReady.cameraReadyId,
-        globalStatus: cameraReadyDecisionStatus,
-        paperid: paperId,
-      }).unwrap();
-      toast.success("Cập nhật trạng thái camera ready thành công");
-      setShowCameraReadyDecisionPopup(false);
-    } catch (error: unknown) {
-      const err = error as ApiError;
-      toast.error(err?.message || "Có lỗi xảy ra");
-    }
-  };
+  // const handleDecideCameraReadyStatus = async () => {
+  //   if (!paperDetail?.cameraReady) return;
+  //   if (!canDecideCameraReadyStatus()) {
+  //     toast.error(
+  //       `Chỉ có thể quyết định Camera Ready sau ngày ${formatDate(currentPhase!.cameraReadyEndDate)}`,
+  //     );
+  //     return;
+  //   }
+  //   try {
+  //     const response = await decideCameraReadyStatus({
+  //       cameraReadyId: paperDetail.cameraReady.cameraReadyId,
+  //       globalStatus: cameraReadyDecisionStatus,
+  //       paperid: paperId,
+  //     }).unwrap();
+  //     toast.success("Cập nhật trạng thái camera ready thành công");
+  //     setShowCameraReadyDecisionPopup(false);
+  //   } catch (error: unknown) {
+  //     const err = error as ApiError;
+  //     toast.error(err?.message || "Có lỗi xảy ra");
+  //   }
+  // };
 
   const getStatusIcon = (statusName?: string) => {
     if (!statusName) return <Clock className="w-5 h-5 text-gray-600" />;
@@ -683,6 +757,89 @@ export default function ReviewPaperPage() {
     );
   }
 
+  if (!isValidPhase && paperDetail) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+        <div className="max-w-2xl w-full">
+          <div className="bg-white rounded-xl shadow-sm p-8 border-2 border-red-200">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="w-8 h-8 text-red-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                Không tìm thấy giai đoạn review phù hợp
+              </h2>
+              <p className="text-gray-600 mb-6">
+                Bài báo này không thuộc giai đoạn nào có thể review được (Full Paper, Revision, Camera Ready)
+              </p>
+
+              {/* Paper Info */}
+              <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">Thông tin bài báo:</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Paper ID:</span>
+                    <span className="font-medium text-gray-900">{paperId}</span>
+                  </div>
+                  {paperDetail.currentPaperPhase && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Giai đoạn hiện tại:</span>
+                      <span className="font-medium text-gray-900">
+                        {paperDetail.currentPaperPhase.phaseName || "Không xác định"}
+                      </span>
+                    </div>
+                  )}
+                  {/* {paperDetail.title && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Tiêu đề:</span>
+                    <span className="font-medium text-gray-900 text-right ml-4">
+                      {paperDetail.title}
+                    </span>
+                  </div>
+                )} */}
+                </div>
+              </div>
+
+              {/* Acceptable Phases */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h4 className="text-sm font-semibold text-blue-900 mb-2">
+                  Các giai đoạn có thể review:
+                </h4>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {stages.map((stage) => (
+                    <span
+                      key={stage.id}
+                      className="px-3 py-1 bg-white text-blue-700 rounded-full text-xs font-medium border border-blue-200"
+                    >
+                      {stage.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 justify-center">
+                <Button
+                  onClick={() => window.history.back()}
+                  variant="outline"
+                  className="px-6"
+                >
+                  Quay lại
+                </Button>
+                <Button
+                  onClick={() => window.location.reload()}
+                  className="bg-blue-600 hover:bg-blue-700 px-6"
+                >
+                  Tải lại trang
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -709,7 +866,7 @@ export default function ReviewPaperPage() {
                   : "Bạn là Reviewer cho bài báo này"}
               </p>
 
-              {paperDetail.isHeadReviewer && (
+              {/* {paperDetail.isHeadReviewer && (
                 <>
                   {activeTab === "fullPaper" && paperDetail.fullPaper && (
                     <Button
@@ -740,7 +897,7 @@ export default function ReviewPaperPage() {
                     </Button>
                   )}
                 </>
-              )}
+              )} */}
             </div>
           </div>
           {currentPhase && (
@@ -787,14 +944,14 @@ export default function ReviewPaperPage() {
                 </div>
               </div>
 
-              {currentPhase.revisionRoundsDetail.length > 0 && (
+              {(currentPhase.revisionRoundsDetail?.length || 0) > 0 && (
                 <div className="mt-3 pt-3 border-t border-blue-200">
                   <span className="text-xs font-semibold text-blue-900">
                     Revision Rounds:
                   </span>
                   <div className="mt-2 space-y-1">
-                    {[...currentPhase.revisionRoundsDetail]
-                      .sort((a, b) => a.roundNumber - b.roundNumber)
+                    {[...(currentPhase.revisionRoundsDetail || [])]
+                      .sort((a, b) => (a.roundNumber ?? 0) - (b.roundNumber ?? 0))
                       .map((round) => (
                         <div
                           key={round.revisionRoundDeadlineId}
@@ -816,8 +973,106 @@ export default function ReviewPaperPage() {
               )}
             </div>
           )}
+
+          {/* Progress Bar Navigation */}
+          <div className="bg-white border rounded-lg p-6 mb-6">
+            <h3 className="text-lg font-semibold mb-4">Các giai đoạn bài báo</h3>
+
+            <div className="px-6">
+              <Slider
+                min={1}
+                max={3}
+                step={1}
+                marks={{
+                  1: <span className="text-xs text-gray-600">Full Paper</span>,
+                  2: <span className="text-xs text-gray-600">Revision Paper</span>,
+                  3: <span className="text-xs text-gray-600">Camera Ready</span>,
+                }}
+                value={currentStage}
+                disabled={!isValidPhase}
+                onBeforeChange={(value) => {
+                  if (typeof value !== "number") return;
+
+                  if (value > maxReachedStage) {
+                    alert("Bạn không thể bỏ qua giai đoạn hiện tại.");
+                    return;
+                  }
+
+                  console.log("ne", value)
+
+                  setCurrentStage(value);
+                  setActiveTab(
+                    value === 1 ? "fullPaper"
+                      : value === 2 ? "revision"
+                        : "cameraReady"
+                  );
+                }}
+                // value={
+                //   activeTab === "fullPaper" ? 1
+                //     : activeTab === "revision" ? 2
+                //       : 3
+                // }
+                // onChange={(value) => {
+                //   if (typeof value === 'number') {
+                //     if (value === 1 && !paperDetail?.fullPaper) {
+                //       toast.error("Chưa có thông tin Full Paper");
+                //       return;
+                //     }
+                //     if (value === 2 && !paperDetail?.revisionPaper) {
+                //       toast.error("Chưa có thông tin Revision Paper");
+                //       return;
+                //     }
+                //     if (value === 3 && !paperDetail?.cameraReady) {
+                //       toast.error("Chưa có thông tin Camera Ready");
+                //       return;
+                //     }
+
+                //     setActiveTab(
+                //       value === 1 ? "fullPaper"
+                //         : value === 2 ? "revision"
+                //           : "cameraReady"
+                //     );
+                //   }
+                // }}
+                // onChange={(value) => {
+                //   if (typeof value === 'number') {
+                //     setActiveTab(
+                //       value === 1 ? "fullPaper"
+                //         : value === 2 ? "revision"
+                //           : "cameraReady"
+                //     );
+                //   }
+                // }}
+                trackStyle={[{ backgroundColor: "#3b82f6", height: 8 }]}
+                handleStyle={{
+                  borderColor: "#3b82f6",
+                  height: 20,
+                  width: 20,
+                  marginTop: -9,
+                  backgroundColor: "#60a5fa",
+                }}
+                railStyle={{ backgroundColor: "#e5e7eb", height: 8 }}
+              />
+            </div>
+
+            <div className="mt-10 text-sm text-gray-600 text-center">
+              {/* Giai đoạn hiện tại:{" "} */}
+              {/* <p className="text-blue-400 text-sm mt-1"> */}
+              Giai đoạn hiện tại:{" "}
+              <span className="text-blue-600 font-semibold">
+                {paperDetail.currentPaperPhase?.phaseName ||
+                  paperDetail.currentPaperPhase?.paperPhaseId}
+              </span>
+              {/* </p> */}
+              {/* <span className="text-blue-600 font-semibold">
+                {activeTab === "fullPaper" && "Full Paper"}
+                {activeTab === "revision" && "Revision Paper"}
+                {activeTab === "cameraReady" && "Camera Ready"}
+              </span> */}
+            </div>
+          </div>
           {/* Tab Navigation */}
-          <div className="border-b border-gray-200">
+          {/* <div className="border-b border-gray-200">
             <div className="flex gap-1">
               <button
                 onClick={() => setActiveTab("fullPaper")}
@@ -841,11 +1096,11 @@ export default function ReviewPaperPage() {
                 <div className="flex items-center gap-2">
                   <FileText className="w-4 h-4" />
                   Revision Paper
-                  {/* {paperDetail.revisionPaper && (
+                  {paperDetail.revisionPaper && (
                     <span className="px-2 py-0.5 bg-orange-100 text-orange-600 rounded-full text-xs">
                       Round {paperDetail.revisionPaper.revisionRound}
                     </span>
-                  )} */}
+                  )}
                 </div>
               </button>
               <button
@@ -861,755 +1116,774 @@ export default function ReviewPaperPage() {
                 </div>
               </button>
             </div>
-          </div>
+          </div> */}
 
           {/* Tab Content */}
           <div className="pt-4">
             {activeTab === "fullPaper" && (
-              <>
-                {/* Full Paper Section */}
-                {paperDetail.fullPaper ? (
-                  <div className="space-y-6">
-                    <div className="bg-white border rounded-lg p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                        <FileText className="w-5 h-5 text-blue-600" />
-                        Full Paper
-                      </h3>
+              <FullPaperPhase
+                paperDetail={paperDetail}
+                currentPhase={currentPhase}
+                getStatusIcon={getStatusIcon}
+                getStatusColor={getStatusColor}
+                paperId={paperId}
+              />
+              // <>
+              //   {/* Full Paper Section */}
+              //   {paperDetail.fullPaper ? (
+              //     <div className="space-y-6">
+              //       <div className="bg-white border rounded-lg p-6">
+              //         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              //           <FileText className="w-5 h-5 text-blue-600" />
+              //           Full Paper
+              //         </h3>
 
-                      {/* ========== THÔNG TIN CƠ BẢN ========== */}
-                      <div className="space-y-3 mb-6">
-                        <div className="flex items-start justify-between">
-                          <span className="text-sm text-gray-600">
-                            Tiêu đề:
-                          </span>
-                          <span className="text-sm font-medium text-gray-900">
-                            {paperDetail.fullPaper.title}
-                          </span>
-                        </div>
+              //         {/* ========== THÔNG TIN CƠ BẢN ========== */}
+              //         <div className="space-y-3 mb-6">
+              //           <div className="flex items-start justify-between">
+              //             <span className="text-sm text-gray-600">
+              //               Tiêu đề:
+              //             </span>
+              //             <span className="text-sm font-medium text-gray-900">
+              //               {paperDetail.fullPaper.title}
+              //             </span>
+              //           </div>
 
-                        <div className="flex items-start justify-between">
-                          <span className="text-sm text-gray-600">Mô tả:</span>
-                          <span className="text-sm text-gray-700">
-                            {paperDetail.fullPaper.description}
-                          </span>
-                        </div>
+              //           <div className="flex items-start justify-between">
+              //             <span className="text-sm text-gray-600">Mô tả:</span>
+              //             <span className="text-sm text-gray-700">
+              //               {paperDetail.fullPaper.description}
+              //             </span>
+              //           </div>
 
-                        <div className="flex items-start justify-between">
-                          <span className="text-sm text-gray-600">
-                            Trạng thái Review:
-                          </span>
-                          <span
-                            className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
-                              paperDetail.fullPaper.reviewStatusName,
-                            )}`}
-                          >
-                            {getStatusIcon(
-                              paperDetail.fullPaper.reviewStatusName,
-                            )}
-                            {paperDetail.fullPaper.reviewStatusName}
-                          </span>
-                        </div>
+              //           <div className="flex items-start justify-between">
+              //             <span className="text-sm text-gray-600">
+              //               Trạng thái Review:
+              //             </span>
+              //             <span
+              //               className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
+              //                 paperDetail.fullPaper.reviewStatusName,
+              //               )}`}
+              //             >
+              //               {getStatusIcon(
+              //                 paperDetail.fullPaper.reviewStatusName,
+              //               )}
+              //               {paperDetail.fullPaper.reviewStatusName}
+              //             </span>
+              //           </div>
 
-                        <div className="flex items-start justify-between">
-                          <span className="text-sm text-gray-600">
-                            Thời gian nộp bài:
-                          </span>
-                          <span className="text-sm text-gray-700">
-                            {formatDate(
-                              paperDetail.fullPaper.fullPaperStartDate,
-                            )}{" "}
-                            →{" "}
-                            {formatDate(paperDetail.fullPaper.fullPaperEndDate)}
-                          </span>
-                        </div>
+              //           <div className="flex items-start justify-between">
+              //             <span className="text-sm text-gray-600">
+              //               Thời gian nộp bài:
+              //             </span>
+              //             <span className="text-sm text-gray-700">
+              //               {formatDate(
+              //                 paperDetail.fullPaper.fullPaperStartDate,
+              //               )}{" "}
+              //               →{" "}
+              //               {formatDate(paperDetail.fullPaper.fullPaperEndDate)}
+              //             </span>
+              //           </div>
 
-                        <div className="flex items-start justify-between">
-                          <span className="text-sm text-gray-600">
-                            Tình trạng hoàn thành đánh giá:
-                          </span>
-                          <span
-                            className={`px-3 py-1 rounded-full text-sm font-medium ${paperDetail.fullPaper
-                              .isAllSubmittedFullPaperReview
-                              ? "bg-green-50 text-green-700 border border-green-200"
-                              : "bg-yellow-50 text-yellow-700 border border-yellow-200"
-                              }`}
-                          >
-                            {paperDetail.fullPaper.isAllSubmittedFullPaperReview
-                              ? "Tất cả Reviewer đã nộp"
-                              : "Đang chờ Reviewer"}
-                          </span>
-                        </div>
+              //           <div className="flex items-start justify-between">
+              //             <span className="text-sm text-gray-600">
+              //               Tình trạng hoàn thành đánh giá:
+              //             </span>
+              //             <span
+              //               className={`px-3 py-1 rounded-full text-sm font-medium ${paperDetail.fullPaper
+              //                 .isAllSubmittedFullPaperReview
+              //                 ? "bg-green-50 text-green-700 border border-green-200"
+              //                 : "bg-yellow-50 text-yellow-700 border border-yellow-200"
+              //                 }`}
+              //             >
+              //               {paperDetail.fullPaper.isAllSubmittedFullPaperReview
+              //                 ? "Tất cả Reviewer đã nộp"
+              //                 : "Đang chờ Reviewer"}
+              //             </span>
+              //           </div>
 
-                        <div className="pt-3 border-t">
-                          <a
-                            href={paperDetail.fullPaper.fullPaperUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                          >
-                            <Download className="w-4 h-4" />
-                            Tải xuống Full Paper
-                          </a>
-                        </div>
-                      </div>
+              //           <div className="pt-3 border-t">
+              //             <a
+              //               href={paperDetail.fullPaper.fullPaperUrl}
+              //               target="_blank"
+              //               rel="noopener noreferrer"
+              //               className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              //             >
+              //               <Download className="w-4 h-4" />
+              //               Tải xuống Full Paper
+              //             </a>
+              //           </div>
+              //         </div>
 
-                      {/* ========== FORM REVIEW ========== */}
-                      <div className="pt-6 border-t">
-                        <h4 className="text-md font-semibold text-gray-900 mb-4">
-                          Phần đánh giá Full Paper
-                        </h4>
-                        <div className="space-y-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Ghi chú nội bộ
-                            </label>
-                            <textarea
-                              placeholder="Nhập ghi chú nội bộ..."
-                              className="w-full border rounded-lg p-3 text-sm min-h-[100px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              value={note}
-                              onChange={(e) => setNote(e.target.value)}
-                            />
-                          </div>
+              //         {/* ========== FORM REVIEW ========== */}
+              //         <div className="pt-6 border-t">
+              //           <h4 className="text-md font-semibold text-gray-900 mb-4">
+              //             Phần đánh giá Full Paper
+              //           </h4>
+              //           <div className="space-y-4">
+              //             <div>
+              //               <label className="block text-sm font-medium text-gray-700 mb-2">
+              //                 Ghi chú nội bộ
+              //               </label>
+              //               <textarea
+              //                 placeholder="Nhập ghi chú nội bộ..."
+              //                 className="w-full border rounded-lg p-3 text-sm min-h-[100px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              //                 value={note}
+              //                 onChange={(e) => setNote(e.target.value)}
+              //               />
+              //             </div>
 
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Phản hồi tới tác giả
-                            </label>
-                            <textarea
-                              placeholder="Nhập phản hồi cho tác giả..."
-                              className="w-full border rounded-lg p-3 text-sm min-h-[120px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              value={feedbackToAuthor}
-                              onChange={(e) =>
-                                setFeedbackToAuthor(e.target.value)
-                              }
-                            />
-                          </div>
+              //             <div>
+              //               <label className="block text-sm font-medium text-gray-700 mb-2">
+              //                 Phản hồi tới tác giả
+              //               </label>
+              //               <textarea
+              //                 placeholder="Nhập phản hồi cho tác giả..."
+              //                 className="w-full border rounded-lg p-3 text-sm min-h-[120px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              //                 value={feedbackToAuthor}
+              //                 onChange={(e) =>
+              //                   setFeedbackToAuthor(e.target.value)
+              //                 }
+              //               />
+              //             </div>
 
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Trạng thái đánh giá
-                            </label>
-                            <select
-                              className="border rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500"
-                              value={reviewStatus}
-                              onChange={(e) => setReviewStatus(e.target.value)}
-                            >
-                              <option value="Accepted">Accepted</option>
-                              <option value="Revise">Revise</option>
-                              <option value="Rejected">Rejected</option>
-                            </select>
-                          </div>
+              //             <div>
+              //               <label className="block text-sm font-medium text-gray-700 mb-2">
+              //                 Trạng thái đánh giá
+              //               </label>
+              //               <select
+              //                 className="border rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500"
+              //                 value={reviewStatus}
+              //                 onChange={(e) => setReviewStatus(e.target.value)}
+              //               >
+              //                 <option value="Accepted">Accepted</option>
+              //                 <option value="Revise">Revise</option>
+              //                 <option value="Rejected">Rejected</option>
+              //               </select>
+              //             </div>
 
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Tài liệu đánh giá (nếu có)
-                            </label>
-                            <input
-                              type="file"
-                              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                              onChange={(e) =>
-                                setFile(e.target.files?.[0] || null)
-                              }
-                            />
-                          </div>
+              //             <div>
+              //               <label className="block text-sm font-medium text-gray-700 mb-2">
+              //                 Tài liệu đánh giá (nếu có)
+              //               </label>
+              //               <input
+              //                 type="file"
+              //                 className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              //                 onChange={(e) =>
+              //                   setFile(e.target.files?.[0] || null)
+              //                 }
+              //               />
+              //             </div>
 
-                          <Button
-                            onClick={handleSubmitReview}
-                            disabled={isSubmitting}
-                            className="w-full bg-black hover:bg-gray-800"
-                          >
-                            <Send className="w-4 h-4 mr-2" />
-                            {isSubmitting ? "Đang gửi..." : "Gửi đánh giá"}
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
+              //             <Button
+              //               onClick={handleSubmitReview}
+              //               disabled={isSubmitting}
+              //               className="w-full bg-black hover:bg-gray-800"
+              //             >
+              //               <Send className="w-4 h-4 mr-2" />
+              //               {isSubmitting ? "Đang gửi..." : "Gửi đánh giá"}
+              //             </Button>
+              //           </div>
+              //         </div>
+              //       </div>
 
-                    {/* ========== DANH SÁCH REVIEW CỦA CÁC REVIEWER KHÁC ========== */}
-                    {paperDetail.fullPaper.fullPaperReviews?.length > 0 && (
-                      <div className="bg-white border rounded-lg p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                          <FileText className="w-5 h-5 text-purple-600" />
-                          Các đánh giá từ Reviewer khác
-                        </h3>
+              //       {/* ========== DANH SÁCH REVIEW CỦA CÁC REVIEWER KHÁC ========== */}
+              //       {paperDetail.fullPaper.fullPaperReviews?.length > 0 && (
+              //         <div className="bg-white border rounded-lg p-6">
+              //           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              //             <FileText className="w-5 h-5 text-purple-600" />
+              //             Các đánh giá từ Reviewer khác
+              //           </h3>
 
-                        <div className="space-y-4">
-                          {paperDetail.fullPaper.fullPaperReviews.map(
-                            (review) => (
-                              <div
-                                key={review.fullPaperReviewId}
-                                className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow"
-                              >
-                                <div className="flex items-start gap-3 mb-3">
-                                  <div className="flex-shrink-0">
-                                    {review.reviewerAvatarUrl ? (
-                                      <img
-                                        src={review.reviewerAvatarUrl}
-                                        alt={review.reviewerName || "Reviewer"}
-                                        className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
-                                      />
-                                    ) : (
-                                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-semibold text-sm">
-                                        {review.reviewerName
-                                          ? review.reviewerName
-                                            .charAt(0)
-                                            .toUpperCase()
-                                          : "R"}
-                                      </div>
-                                    )}
-                                  </div>
+              //           <div className="space-y-4">
+              //             {paperDetail.fullPaper.fullPaperReviews.map(
+              //               (review) => (
+              //                 <div
+              //                   key={review.fullPaperReviewId}
+              //                   className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow"
+              //                 >
+              //                   <div className="flex items-start gap-3 mb-3">
+              //                     <div className="flex-shrink-0">
+              //                       {review.reviewerAvatarUrl ? (
+              //                         <img
+              //                           src={review.reviewerAvatarUrl}
+              //                           alt={review.reviewerName || "Reviewer"}
+              //                           className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+              //                         />
+              //                       ) : (
+              //                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-semibold text-sm">
+              //                           {review.reviewerName
+              //                             ? review.reviewerName
+              //                               .charAt(0)
+              //                               .toUpperCase()
+              //                             : "R"}
+              //                         </div>
+              //                       )}
+              //                     </div>
 
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center justify-between gap-2">
-                                      <p className="font-semibold text-gray-900">
-                                        {review.reviewerName || "N/A"}
-                                      </p>
-                                      <span
-                                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(
-                                          review.reviewStatusName,
-                                        )}`}
-                                      >
-                                        {getStatusIcon(review.reviewStatusName)}
-                                        {review.reviewStatusName}
-                                      </span>
-                                    </div>
-                                    {review.createdAt && (
-                                      <p className="text-xs text-gray-500 mt-0.5">
-                                        {formatDate(review.createdAt)}
-                                      </p>
-                                    )}
-                                  </div>
-                                </div>
+              //                     <div className="flex-1 min-w-0">
+              //                       <div className="flex items-center justify-between gap-2">
+              //                         <p className="font-semibold text-gray-900">
+              //                           {review.reviewerName || "N/A"}
+              //                         </p>
+              //                         <span
+              //                           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+              //                             review.reviewStatusName,
+              //                           )}`}
+              //                         >
+              //                           {getStatusIcon(review.reviewStatusName)}
+              //                           {review.reviewStatusName}
+              //                         </span>
+              //                       </div>
+              //                       {review.createdAt && (
+              //                         <p className="text-xs text-gray-500 mt-0.5">
+              //                           {formatDate(review.createdAt)}
+              //                         </p>
+              //                       )}
+              //                     </div>
+              //                   </div>
 
-                                {review.note && (
-                                  <div className="mb-3 bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded">
-                                    <p className="text-xs font-semibold text-yellow-800 mb-1">
-                                      Ghi chú nội bộ:
-                                    </p>
-                                    <p className="text-sm text-gray-700">
-                                      {review.note}
-                                    </p>
-                                  </div>
-                                )}
+              //                   {review.note && (
+              //                     <div className="mb-3 bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded">
+              //                       <p className="text-xs font-semibold text-yellow-800 mb-1">
+              //                         Ghi chú nội bộ:
+              //                       </p>
+              //                       <p className="text-sm text-gray-700">
+              //                         {review.note}
+              //                       </p>
+              //                     </div>
+              //                   )}
 
-                                {review.feedbackToAuthor && (
-                                  <div className="mb-3">
-                                    <p className="text-xs font-semibold text-gray-600 mb-1">
-                                      Phản hồi tới tác giả:
-                                    </p>
-                                    <p className="text-sm text-gray-700 leading-relaxed">
-                                      {review.feedbackToAuthor}
-                                    </p>
-                                  </div>
-                                )}
+              //                   {review.feedbackToAuthor && (
+              //                     <div className="mb-3">
+              //                       <p className="text-xs font-semibold text-gray-600 mb-1">
+              //                         Phản hồi tới tác giả:
+              //                       </p>
+              //                       <p className="text-sm text-gray-700 leading-relaxed">
+              //                         {review.feedbackToAuthor}
+              //                       </p>
+              //                     </div>
+              //                   )}
 
-                                {review.feedbackMaterialUrl && (
-                                  <div className="pt-3 border-t">
-                                    <a
-                                      href={review.feedbackMaterialUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 text-sm rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
-                                    >
-                                      <Download className="w-4 h-4" />
-                                      Tải tài liệu đánh giá
-                                    </a>
-                                  </div>
-                                )}
-                              </div>
-                            ),
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-12 bg-gray-50 rounded-lg">
-                    <FileText className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                    <p className="text-gray-600">
-                      Chưa có thông tin Full Paper
-                    </p>
-                  </div>
-                )}
-              </>
+              //                   {review.feedbackMaterialUrl && (
+              //                     <div className="pt-3 border-t">
+              //                       <a
+              //                         href={review.feedbackMaterialUrl}
+              //                         target="_blank"
+              //                         rel="noopener noreferrer"
+              //                         className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 text-sm rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
+              //                       >
+              //                         <Download className="w-4 h-4" />
+              //                         Tải tài liệu đánh giá
+              //                       </a>
+              //                     </div>
+              //                   )}
+              //                 </div>
+              //               ),
+              //             )}
+              //           </div>
+              //         </div>
+              //       )}
+              //     </div>
+              //   ) : (
+              //     <div className="text-center py-12 bg-gray-50 rounded-lg">
+              //       <FileText className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+              //       <p className="text-gray-600">
+              //         Chưa có thông tin Full Paper
+              //       </p>
+              //     </div>
+              //   )}
+              // </>
             )}
 
             {activeTab === "revision" && (
-              <>
-                {/* Revision Paper Section */}
-                {paperDetail.revisionPaper ? (
-                  <div className="space-y-6">
-                    {/* Revision Submissions with Review Forms */}
-                    <div className="bg-white border rounded-lg p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                        <FileText className="w-5 h-5 text-orange-600" />
-                        Các Round Revision
-                      </h3>
+              <RevisionPaperPhase
+                paperDetail={paperDetail}
+                currentPhase={currentPhase}
+                paperId={paperId}
+                getStatusIcon={getStatusIcon}
+                getStatusColor={getStatusColor}
+              />
+              // <>
+              //   {/* Revision Paper Section */}
+              //   {paperDetail.revisionPaper ? (
+              //     <div className="space-y-6">
+              //       {/* Revision Submissions with Review Forms */}
+              //       <div className="bg-white border rounded-lg p-6">
+              //         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              //           <FileText className="w-5 h-5 text-orange-600" />
+              //           Các Round Revision
+              //         </h3>
 
-                      {/* Overall Status */}
-                      <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-gray-700">
-                            Trạng thái tổng thể:
-                          </span>
-                          <span
-                            className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(paperDetail.revisionPaper.globalStatusName)}`}
-                          >
-                            {getStatusIcon(
-                              paperDetail.revisionPaper.globalStatusName,
-                            )}
-                            {paperDetail.revisionPaper.globalStatusName}
-                          </span>
-                        </div>
-                      </div>
+              //         {/* Overall Status */}
+              //         <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+              //           <div className="flex items-center justify-between">
+              //             <span className="text-sm font-medium text-gray-700">
+              //               Trạng thái tổng thể:
+              //             </span>
+              //             <span
+              //               className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(paperDetail.revisionPaper.globalStatusName)}`}
+              //             >
+              //               {getStatusIcon(
+              //                 paperDetail.revisionPaper.globalStatusName,
+              //               )}
+              //               {paperDetail.revisionPaper.globalStatusName}
+              //             </span>
+              //           </div>
+              //         </div>
 
-                      {/* Revision Submissions */}
-                      <div className="space-y-6">
-                        {paperDetail.revisionPaper.revisionPaperSubmissions.map(
-                          (submission) => {
-                            const reviewData = getRevisionReview(
-                              submission.revisionPaperSubmissionId,
-                            );
+              //         {/* Revision Submissions */}
+              //         <div className="space-y-6">
+              //           {paperDetail.revisionPaper.revisionPaperSubmissions.map(
+              //             (submission) => {
+              //               const reviewData = getRevisionReview(
+              //                 submission.revisionPaperSubmissionId,
+              //               );
 
-                            return (
-                              <div
-                                key={submission.revisionPaperSubmissionId}
-                                className="bg-gradient-to-br from-orange-50 to-white rounded-lg p-6 border-2 border-orange-200"
-                              >
-                                {/* Submission Header */}
-                                <div className="flex items-center justify-between mb-4 pb-4 border-b border-orange-200">
-                                  <div>
-                                    <h4 className="text-lg font-bold text-gray-900">
-                                      Round {submission.roundNumber}
-                                    </h4>
-                                    <p className="text-sm text-gray-600 mt-1">
-                                      Deadline: {formatDate(submission.endDate)}
-                                    </p>
-                                  </div>
-                                  <a
-                                    href={submission.revisionPaperUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 transition-colors shadow-sm"
-                                  >
-                                    <Download className="w-4 h-4" />
-                                    Tải xuống
-                                  </a>
-                                </div>
+              //               return (
+              //                 <div
+              //                   key={submission.revisionPaperSubmissionId}
+              //                   className="bg-gradient-to-br from-orange-50 to-white rounded-lg p-6 border-2 border-orange-200"
+              //                 >
+              //                   {/* Submission Header */}
+              //                   <div className="flex items-center justify-between mb-4 pb-4 border-b border-orange-200">
+              //                     <div>
+              //                       <h4 className="text-lg font-bold text-gray-900">
+              //                         Round {submission.roundNumber}
+              //                       </h4>
+              //                       <p className="text-sm text-gray-600 mt-1">
+              //                         Deadline: {formatDate(submission.endDate)}
+              //                       </p>
+              //                     </div>
+              //                     <a
+              //                       href={submission.revisionPaperUrl}
+              //                       target="_blank"
+              //                       rel="noopener noreferrer"
+              //                       className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 transition-colors shadow-sm"
+              //                     >
+              //                       <Download className="w-4 h-4" />
+              //                       Tải xuống
+              //                     </a>
+              //                   </div>
 
-                                {/* Previous Feedbacks */}
-                                {submission.revisionSubmissionFeedbacks.length >
-                                  0 && (
-                                    <div className="mb-6">
-                                      <h5 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                                        <CheckCircle className="w-4 h-4 text-green-600" />
-                                        Feedbacks đã gửi
-                                      </h5>
-                                      <div className="space-y-2">
-                                        {submission.revisionSubmissionFeedbacks.map(
-                                          (feedback) => (
-                                            <div
-                                              key={
-                                                feedback.revisionSubmissionFeedbackId
-                                              }
-                                              className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm"
-                                            >
-                                              <div className="flex items-start gap-3">
-                                                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-bold flex items-center justify-center">
-                                                  {feedback.sortOrder}
-                                                </span>
-                                                <div className="flex-1">
-                                                  <p className="text-sm text-gray-900 leading-relaxed">
-                                                    {feedback.feedback || "N/A"}
-                                                  </p>
-                                                  {feedback.response && (
-                                                    <div className="mt-3 pl-4 border-l-2 border-blue-300 bg-blue-50 p-3 rounded">
-                                                      <p className="text-xs text-gray-600">
-                                                        <span className="font-semibold text-blue-700">
-                                                          Response:
-                                                        </span>{" "}
-                                                        {feedback.response}
-                                                      </p>
-                                                    </div>
-                                                  )}
-                                                  {feedback.createdAt && (
-                                                    <p className="text-xs text-gray-400 mt-2">
-                                                      {formatDate(
-                                                        feedback.createdAt,
-                                                      )}
-                                                    </p>
-                                                  )}
-                                                </div>
-                                              </div>
-                                            </div>
-                                          ),
-                                        )}
-                                      </div>
-                                    </div>
-                                  )}
+              //                   {/* Previous Feedbacks */}
+              //                   {submission.revisionSubmissionFeedbacks.length >
+              //                     0 && (
+              //                       <div className="mb-6">
+              //                         <h5 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              //                           <CheckCircle className="w-4 h-4 text-green-600" />
+              //                           Feedbacks đã gửi
+              //                         </h5>
+              //                         <div className="space-y-2">
+              //                           {submission.revisionSubmissionFeedbacks.map(
+              //                             (feedback) => (
+              //                               <div
+              //                                 key={
+              //                                   feedback.revisionSubmissionFeedbackId
+              //                                 }
+              //                                 className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm"
+              //                               >
+              //                                 <div className="flex items-start gap-3">
+              //                                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-bold flex items-center justify-center">
+              //                                     {feedback.sortOrder}
+              //                                   </span>
+              //                                   <div className="flex-1">
+              //                                     <p className="text-sm text-gray-900 leading-relaxed">
+              //                                       {feedback.feedback || "N/A"}
+              //                                     </p>
+              //                                     {feedback.response && (
+              //                                       <div className="mt-3 pl-4 border-l-2 border-blue-300 bg-blue-50 p-3 rounded">
+              //                                         <p className="text-xs text-gray-600">
+              //                                           <span className="font-semibold text-blue-700">
+              //                                             Response:
+              //                                           </span>{" "}
+              //                                           {feedback.response}
+              //                                         </p>
+              //                                       </div>
+              //                                     )}
+              //                                     {feedback.createdAt && (
+              //                                       <p className="text-xs text-gray-400 mt-2">
+              //                                         {formatDate(
+              //                                           feedback.createdAt,
+              //                                         )}
+              //                                       </p>
+              //                                     )}
+              //                                   </div>
+              //                                 </div>
+              //                               </div>
+              //                             ),
+              //                           )}
+              //                         </div>
+              //                       </div>
+              //                     )}
 
-                                {/* Reviews from Other Reviewers - Only for Head Reviewer */}
-                                {paperDetail.isHeadReviewer &&
-                                  paperDetail.revisionPaper && (
-                                    <RevisionReviewsList
-                                      paperId={paperId}
-                                      revisionPaperId={
-                                        paperDetail.revisionPaper
-                                          .revisionPaperId
-                                      }
-                                      submissionId={
-                                        submission.revisionPaperSubmissionId
-                                      }
-                                      isExpanded={
-                                        expandedReviewsSubmissions[
-                                        submission.revisionPaperSubmissionId
-                                        ] || false
-                                      }
-                                      onToggle={() =>
-                                        toggleReviewsExpansion(
-                                          submission.revisionPaperSubmissionId,
-                                        )
-                                      }
-                                      getStatusIcon={getStatusIcon}
-                                      getStatusColor={getStatusColor}
-                                    />
-                                  )}
+              //                   {/* Reviews from Other Reviewers - Only for Head Reviewer */}
+              //                   {paperDetail.isHeadReviewer &&
+              //                     paperDetail.revisionPaper && (
+              //                       <RevisionReviewsList
+              //                         paperId={paperId}
+              //                         revisionPaperId={
+              //                           paperDetail.revisionPaper
+              //                             .revisionPaperId
+              //                         }
+              //                         submissionId={
+              //                           submission.revisionPaperSubmissionId
+              //                         }
+              //                         isExpanded={
+              //                           expandedReviewsSubmissions[
+              //                           submission.revisionPaperSubmissionId
+              //                           ] || false
+              //                         }
+              //                         onToggle={() =>
+              //                           toggleReviewsExpansion(
+              //                             submission.revisionPaperSubmissionId,
+              //                           )
+              //                         }
+              //                         getStatusIcon={getStatusIcon}
+              //                         getStatusColor={getStatusColor}
+              //                       />
+              //                     )}
 
-                                {/* Review Form for this Submission */}
-                                <div className="bg-white rounded-lg p-5 border border-orange-300">
-                                  <h5 className="text-md font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                    <Send className="w-4 h-4 text-orange-600" />
-                                    Đánh giá cho Round {submission.roundNumber}
-                                  </h5>
+              //                   {/* Review Form for this Submission */}
+              //                   <div className="bg-white rounded-lg p-5 border border-orange-300">
+              //                     <h5 className="text-md font-bold text-gray-900 mb-4 flex items-center gap-2">
+              //                       <Send className="w-4 h-4 text-orange-600" />
+              //                       Đánh giá cho Round {submission.roundNumber}
+              //                     </h5>
 
-                                  <div className="space-y-4">
-                                    <div>
-                                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Ghi chú nội bộ
-                                      </label>
-                                      <textarea
-                                        placeholder="Nhập ghi chú nội bộ..."
-                                        className="w-full border rounded-lg p-3 text-sm min-h-[100px] focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                        value={reviewData.note}
-                                        onChange={(e) =>
-                                          updateRevisionReview(
-                                            submission.revisionPaperSubmissionId,
-                                            "note",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </div>
+              //                     <div className="space-y-4">
+              //                       <div>
+              //                         <label className="block text-sm font-medium text-gray-700 mb-2">
+              //                           Ghi chú nội bộ
+              //                         </label>
+              //                         <textarea
+              //                           placeholder="Nhập ghi chú nội bộ..."
+              //                           className="w-full border rounded-lg p-3 text-sm min-h-[100px] focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              //                           value={reviewData.note}
+              //                           onChange={(e) =>
+              //                             updateRevisionReview(
+              //                               submission.revisionPaperSubmissionId,
+              //                               "note",
+              //                               e.target.value,
+              //                             )
+              //                           }
+              //                         />
+              //                       </div>
 
-                                    <div>
-                                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Phản hồi tới tác giả
-                                      </label>
-                                      <textarea
-                                        placeholder="Nhập phản hồi cho tác giả..."
-                                        className="w-full border rounded-lg p-3 text-sm min-h-[120px] focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                        value={reviewData.feedbackToAuthor}
-                                        onChange={(e) =>
-                                          updateRevisionReview(
-                                            submission.revisionPaperSubmissionId,
-                                            "feedbackToAuthor",
-                                            e.target.value,
-                                          )
-                                        }
-                                      />
-                                    </div>
+              //                       <div>
+              //                         <label className="block text-sm font-medium text-gray-700 mb-2">
+              //                           Phản hồi tới tác giả
+              //                         </label>
+              //                         <textarea
+              //                           placeholder="Nhập phản hồi cho tác giả..."
+              //                           className="w-full border rounded-lg p-3 text-sm min-h-[120px] focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              //                           value={reviewData.feedbackToAuthor}
+              //                           onChange={(e) =>
+              //                             updateRevisionReview(
+              //                               submission.revisionPaperSubmissionId,
+              //                               "feedbackToAuthor",
+              //                               e.target.value,
+              //                             )
+              //                           }
+              //                         />
+              //                       </div>
 
-                                    <div>
-                                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Trạng thái đánh giá
-                                      </label>
-                                      <select
-                                        className="border rounded-lg p-2 w-full focus:ring-2 focus:ring-orange-500"
-                                        value={reviewData.globalStatus}
-                                        onChange={(e) =>
-                                          updateRevisionReview(
-                                            submission.revisionPaperSubmissionId,
-                                            "globalStatus",
-                                            e.target.value,
-                                          )
-                                        }
-                                      >
-                                        <option value="Accepted">
-                                          Accepted
-                                        </option>
-                                        <option value="Pending">Pending</option>
-                                        <option value="Rejected">
-                                          Rejected
-                                        </option>
-                                      </select>
-                                    </div>
+              //                       <div>
+              //                         <label className="block text-sm font-medium text-gray-700 mb-2">
+              //                           Trạng thái đánh giá
+              //                         </label>
+              //                         <select
+              //                           className="border rounded-lg p-2 w-full focus:ring-2 focus:ring-orange-500"
+              //                           value={reviewData.globalStatus}
+              //                           onChange={(e) =>
+              //                             updateRevisionReview(
+              //                               submission.revisionPaperSubmissionId,
+              //                               "globalStatus",
+              //                               e.target.value,
+              //                             )
+              //                           }
+              //                         >
+              //                           <option value="Accepted">
+              //                             Accepted
+              //                           </option>
+              //                           <option value="Pending">Pending</option>
+              //                           <option value="Rejected">
+              //                             Rejected
+              //                           </option>
+              //                         </select>
+              //                       </div>
 
-                                    <div>
-                                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Tài liệu đánh giá (nếu có)
-                                      </label>
-                                      <input
-                                        type="file"
-                                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
-                                        onChange={(e) =>
-                                          updateRevisionReview(
-                                            submission.revisionPaperSubmissionId,
-                                            "file",
-                                            e.target.files?.[0] || null,
-                                          )
-                                        }
-                                      />
-                                      {reviewData.file && (
-                                        <p className="text-xs text-gray-600 mt-2">
-                                          File đã chọn: {reviewData.file.name}
-                                        </p>
-                                      )}
-                                    </div>
+              //                       <div>
+              //                         <label className="block text-sm font-medium text-gray-700 mb-2">
+              //                           Tài liệu đánh giá (nếu có)
+              //                         </label>
+              //                         <input
+              //                           type="file"
+              //                           className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
+              //                           onChange={(e) =>
+              //                             updateRevisionReview(
+              //                               submission.revisionPaperSubmissionId,
+              //                               "file",
+              //                               e.target.files?.[0] || null,
+              //                             )
+              //                           }
+              //                         />
+              //                         {reviewData.file && (
+              //                           <p className="text-xs text-gray-600 mt-2">
+              //                             File đã chọn: {reviewData.file.name}
+              //                           </p>
+              //                         )}
+              //                       </div>
 
-                                    <Button
-                                      onClick={() =>
-                                        handleSubmitRevisionReview(
-                                          submission.revisionPaperSubmissionId,
-                                        )
-                                      }
-                                      disabled={isSubmittingRevisionReview}
-                                      className="w-full bg-orange-600 hover:bg-orange-700"
-                                    >
-                                      <Send className="w-4 h-4 mr-2" />
-                                      {isSubmittingRevisionReview
-                                        ? "Đang gửi..."
-                                        : "Gửi đánh giá"}
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          },
-                        )}
-                      </div>
-                    </div>
+              //                       <Button
+              //                         onClick={() =>
+              //                           handleSubmitRevisionReview(
+              //                             submission.revisionPaperSubmissionId,
+              //                           )
+              //                         }
+              //                         disabled={isSubmittingRevisionReview}
+              //                         className="w-full bg-orange-600 hover:bg-orange-700"
+              //                       >
+              //                         <Send className="w-4 h-4 mr-2" />
+              //                         {isSubmittingRevisionReview
+              //                           ? "Đang gửi..."
+              //                           : "Gửi đánh giá"}
+              //                       </Button>
+              //                     </div>
+              //                   </div>
+              //                 </div>
+              //               );
+              //             },
+              //           )}
+              //         </div>
+              //       </div>
 
-                    {/* Feedback Section - Separated Like YouTube Comments */}
-                    <div className="bg-white border rounded-lg p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                        <MessageSquare className="w-5 h-5 text-blue-600" />
-                        Feedbacks chi tiết
-                      </h3>
+              //       {/* Feedback Section - Separated Like YouTube Comments */}
+              //       <div className="bg-white border rounded-lg p-6">
+              //         <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+              //           <MessageSquare className="w-5 h-5 text-blue-600" />
+              //           Feedbacks chi tiết
+              //         </h3>
 
-                      {/* Feedback for each submission */}
-                      {paperDetail.revisionPaper.revisionPaperSubmissions.map(
-                        (submission) => (
-                          <div
-                            key={submission.revisionPaperSubmissionId}
-                            className="mb-8 last:mb-0"
-                          >
-                            {/* Round Header */}
-                            <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-200">
-                              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100">
-                                <span className="text-lg font-bold text-blue-700">
-                                  {submission.roundNumber}
-                                </span>
-                              </div>
-                              <div>
-                                <h4 className="text-md font-semibold text-gray-900">
-                                  Feedback cho Round {submission.roundNumber}
-                                </h4>
-                                <p className="text-xs text-gray-500">
-                                  Deadline: {formatDate(submission.endDate)}
-                                </p>
-                              </div>
-                            </div>
+              //         {/* Feedback for each submission */}
+              //         {paperDetail.revisionPaper.revisionPaperSubmissions.map(
+              //           (submission) => (
+              //             <div
+              //               key={submission.revisionPaperSubmissionId}
+              //               className="mb-8 last:mb-0"
+              //             >
+              //               {/* Round Header */}
+              //               <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-200">
+              //                 <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100">
+              //                   <span className="text-lg font-bold text-blue-700">
+              //                     {submission.roundNumber}
+              //                   </span>
+              //                 </div>
+              //                 <div>
+              //                   <h4 className="text-md font-semibold text-gray-900">
+              //                     Feedback cho Round {submission.roundNumber}
+              //                   </h4>
+              //                   <p className="text-xs text-gray-500">
+              //                     Deadline: {formatDate(submission.endDate)}
+              //                   </p>
+              //                 </div>
+              //               </div>
 
-                            {/* Feedback Form */}
-                            <div className="ml-13 space-y-3">
-                              {(
-                                revisionFeedbacks[
-                                submission.revisionPaperSubmissionId
-                                ] || []
-                              ).map((feedback, index) => (
-                                <div
-                                  key={index}
-                                  className="flex gap-3 items-start"
-                                >
-                                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 text-blue-700 text-sm font-bold flex items-center justify-center mt-2">
-                                    {feedback.sortOrder}
-                                  </span>
-                                  <div className="flex-1 flex gap-2 items-start">
-                                    <textarea
-                                      placeholder={`Viết feedback #${feedback.sortOrder}...`}
-                                      className="flex-1 border border-gray-300 rounded-lg p-3 text-sm min-h-[90px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none hover:border-gray-400 transition-colors"
-                                      value={feedback.feedback}
-                                      onChange={(e) =>
-                                        updateFeedback(
-                                          submission.revisionPaperSubmissionId,
-                                          index,
-                                          e.target.value,
-                                        )
-                                      }
-                                    />
-                                    <button
-                                      onClick={() =>
-                                        removeFeedback(
-                                          submission.revisionPaperSubmissionId,
-                                          index,
-                                        )
-                                      }
-                                      className="mt-2 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                      title="Xóa feedback"
-                                    >
-                                      <XCircle className="w-5 h-5" />
-                                    </button>
-                                  </div>
-                                </div>
-                              ))}
+              //               {/* Feedback Form */}
+              //               <div className="ml-13 space-y-3">
+              //                 {(
+              //                   revisionFeedbacks[
+              //                   submission.revisionPaperSubmissionId
+              //                   ] || []
+              //                 ).map((feedback, index) => (
+              //                   <div
+              //                     key={index}
+              //                     className="flex gap-3 items-start"
+              //                   >
+              //                     <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 text-blue-700 text-sm font-bold flex items-center justify-center mt-2">
+              //                       {feedback.sortOrder}
+              //                     </span>
+              //                     <div className="flex-1 flex gap-2 items-start">
+              //                       <textarea
+              //                         placeholder={`Viết feedback #${feedback.sortOrder}...`}
+              //                         className="flex-1 border border-gray-300 rounded-lg p-3 text-sm min-h-[90px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none hover:border-gray-400 transition-colors"
+              //                         value={feedback.feedback}
+              //                         onChange={(e) =>
+              //                           updateFeedback(
+              //                             submission.revisionPaperSubmissionId,
+              //                             index,
+              //                             e.target.value,
+              //                           )
+              //                         }
+              //                       />
+              //                       <button
+              //                         onClick={() =>
+              //                           removeFeedback(
+              //                             submission.revisionPaperSubmissionId,
+              //                             index,
+              //                           )
+              //                         }
+              //                         className="mt-2 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              //                         title="Xóa feedback"
+              //                       >
+              //                         <XCircle className="w-5 h-5" />
+              //                       </button>
+              //                     </div>
+              //                   </div>
+              //                 ))}
 
-                              {/* Add Feedback Button */}
-                              <div className="flex gap-3">
-                                <div className="w-8"></div>
-                                <Button
-                                  onClick={() =>
-                                    addFeedbackField(
-                                      submission.revisionPaperSubmissionId,
-                                    )
-                                  }
-                                  variant="outline"
-                                  className="flex-1 border-dashed border-2 hover:bg-blue-50 hover:border-blue-300 text-blue-600"
-                                >
-                                  <Plus className="w-4 h-4 mr-2" />
-                                  Thêm feedback
-                                </Button>
-                              </div>
+              //                 {/* Add Feedback Button */}
+              //                 <div className="flex gap-3">
+              //                   <div className="w-8"></div>
+              //                   <Button
+              //                     onClick={() =>
+              //                       addFeedbackField(
+              //                         submission.revisionPaperSubmissionId,
+              //                       )
+              //                     }
+              //                     variant="outline"
+              //                     className="flex-1 border-dashed border-2 hover:bg-blue-50 hover:border-blue-300 text-blue-600"
+              //                   >
+              //                     <Plus className="w-4 h-4 mr-2" />
+              //                     Thêm feedback
+              //                   </Button>
+              //                 </div>
 
-                              {/* Submit Button */}
-                              {(revisionFeedbacks[
-                                submission.revisionPaperSubmissionId
-                              ]?.length || 0) > 0 && (
-                                  <div className="flex gap-3 pt-2">
-                                    <div className="w-8"></div>
-                                    <Button
-                                      onClick={() =>
-                                        handleSubmitRevisionFeedback(
-                                          submission.revisionPaperSubmissionId,
-                                        )
-                                      }
-                                      disabled={isSubmittingRevision}
-                                      className="bg-blue-600 hover:bg-blue-700"
-                                    >
-                                      <Send className="w-4 h-4 mr-2" />
-                                      {isSubmittingRevision
-                                        ? "Đang gửi..."
-                                        : `Gửi ${revisionFeedbacks[submission.revisionPaperSubmissionId]?.length || 0} feedback`}
-                                    </Button>
-                                  </div>
-                                )}
-                            </div>
-                          </div>
-                        ),
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-12 bg-gray-50 rounded-lg">
-                    <FileText className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                    <p className="text-gray-600">
-                      Chưa có thông tin Revision Paper
-                    </p>
-                  </div>
-                )}
-              </>
+              //                 {/* Submit Button */}
+              //                 {(revisionFeedbacks[
+              //                   submission.revisionPaperSubmissionId
+              //                 ]?.length || 0) > 0 && (
+              //                     <div className="flex gap-3 pt-2">
+              //                       <div className="w-8"></div>
+              //                       <Button
+              //                         onClick={() =>
+              //                           handleSubmitRevisionFeedback(
+              //                             submission.revisionPaperSubmissionId,
+              //                           )
+              //                         }
+              //                         disabled={isSubmittingRevision}
+              //                         className="bg-blue-600 hover:bg-blue-700"
+              //                       >
+              //                         <Send className="w-4 h-4 mr-2" />
+              //                         {isSubmittingRevision
+              //                           ? "Đang gửi..."
+              //                           : `Gửi ${revisionFeedbacks[submission.revisionPaperSubmissionId]?.length || 0} feedback`}
+              //                       </Button>
+              //                     </div>
+              //                   )}
+              //               </div>
+              //             </div>
+              //           ),
+              //         )}
+              //       </div>
+              //     </div>
+              //   ) : (
+              //     <div className="text-center py-12 bg-gray-50 rounded-lg">
+              //       <FileText className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+              //       <p className="text-gray-600">
+              //         Chưa có thông tin Revision Paper
+              //       </p>
+              //     </div>
+              //   )}
+              // </>
             )}
             {activeTab === "cameraReady" && (
-              <>
-                {paperDetail.cameraReady ? (
-                  <div className="space-y-6">
-                    <div className="bg-white border rounded-lg p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                        <FileText className="w-5 h-5 text-green-600" />
-                        Camera Ready
-                      </h3>
+              <CameraReadyPhase
+                paperDetail={paperDetail}
+                getStatusIcon={getStatusIcon}
+                getStatusColor={getStatusColor}
+              />
+              // <>
+              //   {paperDetail.cameraReady ? (
+              //     <div className="space-y-6">
+              //       <div className="bg-white border rounded-lg p-6">
+              //         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              //           <FileText className="w-5 h-5 text-green-600" />
+              //           Camera Ready
+              //         </h3>
 
-                      <div className="space-y-3 mb-6">
-                        <div>
-                          <span className="text-sm text-gray-600">
-                            Tiêu đề:
-                          </span>
-                          <p className="font-medium text-gray-900 mt-1">
-                            {paperDetail.cameraReady.title}
-                          </p>
-                        </div>
+              //         <div className="space-y-3 mb-6">
+              //           <div>
+              //             <span className="text-sm text-gray-600">
+              //               Tiêu đề:
+              //             </span>
+              //             <p className="font-medium text-gray-900 mt-1">
+              //               {paperDetail.cameraReady.title}
+              //             </p>
+              //           </div>
 
-                        <div>
-                          <span className="text-sm text-gray-600">Mô tả:</span>
-                          <p className="text-gray-700 mt-1">
-                            {paperDetail.cameraReady.description}
-                          </p>
-                        </div>
+              //           <div>
+              //             <span className="text-sm text-gray-600">Mô tả:</span>
+              //             <p className="text-gray-700 mt-1">
+              //               {paperDetail.cameraReady.description}
+              //             </p>
+              //           </div>
 
-                        <div className="flex items-start justify-between">
-                          <span className="text-sm text-gray-600">
-                            Trạng thái:
-                          </span>
-                          <span
-                            className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(paperDetail.cameraReady.globalStatusName)}`}
-                          >
-                            {getStatusIcon(
-                              paperDetail.cameraReady.globalStatusName,
-                            )}
-                            {paperDetail.cameraReady.globalStatusName}
-                          </span>
-                        </div>
+              //           <div className="flex items-start justify-between">
+              //             <span className="text-sm text-gray-600">
+              //               Trạng thái:
+              //             </span>
+              //             <span
+              //               className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(paperDetail.cameraReady.globalStatusName)}`}
+              //             >
+              //               {getStatusIcon(
+              //                 paperDetail.cameraReady.globalStatusName,
+              //               )}
+              //               {paperDetail.cameraReady.globalStatusName}
+              //             </span>
+              //           </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <span className="text-sm text-gray-600">
-                              Ngày tạo:
-                            </span>
-                            <p className="text-gray-900 font-medium mt-1">
-                              {formatDate(paperDetail.cameraReady.createdAt)}
-                            </p>
-                          </div>
-                          {paperDetail.cameraReady.reviewAt && (
-                            <div>
-                              <span className="text-sm text-gray-600">
-                                Ngày đánh giá:
-                              </span>
-                              <p className="text-gray-900 font-medium mt-1">
-                                {formatDate(paperDetail.cameraReady.reviewAt)}
-                              </p>
-                            </div>
-                          )}
-                        </div>
+              //           <div className="grid grid-cols-2 gap-4">
+              //             <div>
+              //               <span className="text-sm text-gray-600">
+              //                 Ngày tạo:
+              //               </span>
+              //               <p className="text-gray-900 font-medium mt-1">
+              //                 {formatDate(paperDetail.cameraReady.createdAt)}
+              //               </p>
+              //             </div>
+              //             {paperDetail.cameraReady.reviewAt && (
+              //               <div>
+              //                 <span className="text-sm text-gray-600">
+              //                   Ngày đánh giá:
+              //                 </span>
+              //                 <p className="text-gray-900 font-medium mt-1">
+              //                   {formatDate(paperDetail.cameraReady.reviewAt)}
+              //                 </p>
+              //               </div>
+              //             )}
+              //           </div>
 
-                        <div className="pt-3 border-t">
-                          <a
-                            href={paperDetail.cameraReady.cameraReadyUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                          >
-                            <Download className="w-4 h-4" />
-                            Tải xuống Camera Ready
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-12 bg-gray-50 rounded-lg">
-                    <FileText className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                    <p className="text-gray-600">
-                      Chưa có thông tin Camera Ready
-                    </p>
-                  </div>
-                )}
-              </>
+              //           <div className="pt-3 border-t">
+              //             <a
+              //               href={paperDetail.cameraReady.cameraReadyUrl}
+              //               target="_blank"
+              //               rel="noopener noreferrer"
+              //               className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              //             >
+              //               <Download className="w-4 h-4" />
+              //               Tải xuống Camera Ready
+              //             </a>
+              //           </div>
+              //         </div>
+              //       </div>
+              //     </div>
+              //   ) : (
+              //     <div className="text-center py-12 bg-gray-50 rounded-lg">
+              //       <FileText className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+              //       <p className="text-gray-600">
+              //         Chưa có thông tin Camera Ready
+              //       </p>
+              //     </div>
+              //   )}
+              // </>
             )}
           </div>
         </div>
       </div>
 
       {/* Decision Popup for Head Reviewer */}
-      {showDecisionPopup && (
+      {/* {showDecisionPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
             <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -1653,10 +1927,10 @@ export default function ReviewPaperPage() {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Decision Popup for Head Reviewer - Revision */}
-      {showRevisionDecisionPopup && (
+      {/* {showRevisionDecisionPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
             <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -1700,9 +1974,9 @@ export default function ReviewPaperPage() {
             </div>
           </div>
         </div>
-      )}
+      )} */}
       {/* Decision Popup for Head Reviewer - Camera Ready */}
-      {showCameraReadyDecisionPopup && (
+      {/* {showCameraReadyDecisionPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
             <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -1745,7 +2019,7 @@ export default function ReviewPaperPage() {
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 }

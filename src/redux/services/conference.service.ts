@@ -36,12 +36,12 @@ export const conferenceApi = createApi({
       providesTags: (result) =>
         result?.data?.items
           ? [
-              ...result.data?.items.map(({ conferenceId }) => ({
-                type: "Conference" as const,
-                id: conferenceId,
-              })),
-              { type: "Conference", id: "LIST" },
-            ]
+            ...result.data?.items.map(({ conferenceId }) => ({
+              type: "Conference" as const,
+              id: conferenceId,
+            })),
+            { type: "Conference", id: "LIST" },
+          ]
           : [{ type: "Conference", id: "LIST" }],
     }),
 
@@ -72,12 +72,12 @@ export const conferenceApi = createApi({
       providesTags: (result) =>
         result?.data?.items
           ? [
-              ...result.data?.items.map(({ conferenceId }) => ({
-                type: "Conference" as const,
-                id: conferenceId,
-              })),
-              { type: "Conference", id: "LIST" },
-            ]
+            ...result.data?.items.map(({ conferenceId }) => ({
+              type: "Conference" as const,
+              id: conferenceId,
+            })),
+            { type: "Conference", id: "LIST" },
+          ]
           : [{ type: "Conference", id: "LIST" }],
     }),
     // getAllConferences: builder.query<ApiResponse<Conference[]>, void>({
@@ -203,12 +203,12 @@ export const conferenceApi = createApi({
       providesTags: (result) =>
         result?.data?.items
           ? [
-              ...result.data.items.map(({ conferenceId }) => ({
-                type: "Conference" as const,
-                id: conferenceId,
-              })),
-              { type: "Conference", id: "LIST" },
-            ]
+            ...result.data.items.map(({ conferenceId }) => ({
+              type: "Conference" as const,
+              id: conferenceId,
+            })),
+            { type: "Conference", id: "LIST" },
+          ]
           : [{ type: "Conference", id: "LIST" }],
     }),
 
@@ -282,12 +282,12 @@ export const conferenceApi = createApi({
       providesTags: (result) =>
         result?.data?.items
           ? [
-              ...result.data.items.map(({ conferenceId }) => ({
-                type: "Conference" as const,
-                id: conferenceId,
-              })),
-              { type: "Conference", id: "PENDING_LIST" },
-            ]
+            ...result.data.items.map(({ conferenceId }) => ({
+              type: "Conference" as const,
+              id: conferenceId,
+            })),
+            { type: "Conference", id: "PENDING_LIST" },
+          ]
           : [{ type: "Conference", id: "PENDING_LIST" }],
     }),
 
@@ -378,6 +378,17 @@ export const conferenceApi = createApi({
       }),
       providesTags: ["Conference"],
     }),
+
+    getConferencesHasAssignedPaperForLocalReviewer: builder.query<
+      ApiResponse<ConferenceResponse[]>,
+      void
+    >({
+      query: () => ({
+        url: endpoint.CONFERENCE.GET_CONFERENCES_HAS_ASSIGNED_PAPERS,
+        method: "GET",
+      }),
+      providesTags: ["Conference"],
+    }),
   }),
 });
 
@@ -413,4 +424,7 @@ export const {
 
   useGetOwnConferencesForScheduleQuery,
   useLazyGetOwnConferencesForScheduleQuery,
+
+  useGetConferencesHasAssignedPaperForLocalReviewerQuery,
+  useLazyGetConferencesHasAssignedPaperForLocalReviewerQuery,
 } = conferenceApi;

@@ -95,6 +95,16 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
         icon: Home,
       },
       {
+        label: "Quản lý người dùng",
+        href: "/workspace/organizer/manage-user",
+        icon: Users,
+        subMenu: [
+          { label: "Phản biện", href: "/workspace/organizer/manage-conference" },
+          { label: "Đối tác", href: "/workspace/organizer/my-conference" },
+          { label: "Khách hàng", href: "/workspace/organizer/my-conference" },
+        ],
+      },
+      {
         label: "Đối tác",
         href: "/workspace/organizer/manage-user",
         icon: Users,
@@ -143,7 +153,7 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
         icon: LayoutDashboard,
       },
       {
-        label: "Bài cần đánh giá",
+        label: "Bài báo được giao",
         href: "/workspace/local-reviewer/manage-paper",
         icon: FileText,
       },
@@ -235,9 +245,8 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
 
   return (
     <aside
-      className={`${
-        isSidebarOpen ? "w-64" : "w-20"
-      } bg-white border-r border-gray-200 transition-all duration-300 flex flex-col`}
+      className={`${isSidebarOpen ? "w-64" : "w-20"
+        } bg-white border-r border-gray-200 transition-all duration-300 flex flex-col`}
     >
       {/* Logo + Toggle */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
@@ -290,11 +299,10 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
                   <>
                     <button
                       onClick={() => setOpenSubMenus(prev => ({ ...prev, [item.href]: !isSubMenuOpen }))}
-                      className={`flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                        isSubMenuActive
-                          ? "bg-blue-50 text-blue-600 font-medium"
-                          : "text-gray-700 hover:bg-gray-100"
-                      }`}
+                      className={`flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-colors ${isSubMenuActive
+                        ? "bg-blue-50 text-blue-600 font-medium"
+                        : "text-gray-700 hover:bg-gray-100"
+                        }`}
                     >
                       <div className="flex items-center gap-3">
                         <Icon size={20} />
@@ -310,11 +318,10 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
                           <Link
                             key={subItem.href}
                             href={subItem.href}
-                            className={`block px-3 py-2 rounded-lg text-sm transition-colors ${
-                              pathname === subItem.href
-                                ? "bg-blue-50 text-blue-600 font-medium"
-                                : "text-gray-600 hover:bg-gray-100"
-                            }`}
+                            className={`block px-3 py-2 rounded-lg text-sm transition-colors ${pathname === subItem.href
+                              ? "bg-blue-50 text-blue-600 font-medium"
+                              : "text-gray-600 hover:bg-gray-100"
+                              }`}
                           >
                             {subItem.label}
                           </Link>
@@ -325,11 +332,10 @@ const WorkspaceSidebar = ({ role }: WorkspaceSidebarProps) => {
                 ) : (
                   <Link
                     href={item.href}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                      active
-                        ? "bg-blue-50 text-blue-600 font-medium"
-                        : "text-gray-700 hover:bg-gray-100"
-                    }`}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${active
+                      ? "bg-blue-50 text-blue-600 font-medium"
+                      : "text-gray-700 hover:bg-gray-100"
+                      }`}
                   >
                     <Icon size={20} />
                     {isSidebarOpen && <span>{item.label}</span>}

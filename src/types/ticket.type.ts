@@ -58,3 +58,8 @@ export interface CustomerSessionDetailResponse {
   district?: string;
   street?: string;
 }
+
+export interface RefundTicketRequest {
+  ticketId: string;
+  transactionId: string;
+}
