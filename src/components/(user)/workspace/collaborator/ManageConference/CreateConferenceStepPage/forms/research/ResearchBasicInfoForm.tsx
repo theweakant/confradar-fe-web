@@ -75,7 +75,6 @@ export function ResearchBasicInfoForm({
           onChange={(val) => handleChange("dateRange", Number(val))}
           onBlur={() => onFieldBlur("dateRange")}
           error={validationErrors.dateRange}
-          success={!validationErrors.dateRange && (formData.dateRange ?? 0) > 0}
           min="1"
           max="365"
           required

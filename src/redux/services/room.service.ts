@@ -7,6 +7,7 @@ import type {
   RoomOccupationSlot,
   RoomWithSessions,
   TimeSpan,
+  AvailableRoom
 } from "@/types/room.type";
 import type { ApiResponse, ApiResponsePagination } from "@/types/api.type";
 
@@ -155,6 +156,18 @@ export const roomApi = createApi({
       }),
       providesTags: ["Room"],
     }),
+
+    getAvailableRoomsBetweenDates: builder.query<
+      ApiResponse<AvailableRoom[]>,
+      { startdate: string; endate: string }
+    >({
+      query: ({ startdate, endate }) => ({
+        url: endpoint.ROOM.AVAILABLE_ROOM,
+        method: "GET",
+        params: { startdate, endate },
+      }),
+    }),
+
   }),
 });
 
@@ -173,4 +186,7 @@ export const {
   useGetRoomsWithSessionsQuery,
   useLazyCheckRoomAvailabilityQuery,
   useLazyIsRoomOccupiedAtTimeQuery,
+
+  useGetAvailableRoomsBetweenDatesQuery,
+  useLazyGetAvailableRoomsBetweenDatesQuery,  
 } = roomApi;

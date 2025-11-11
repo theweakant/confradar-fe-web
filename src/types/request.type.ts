@@ -32,3 +32,33 @@ export interface UpdateRequestStatusDto {
   status: RequestStatus;
   reviewNote?: string;
 }
+
+
+
+export interface RefundRequestTicket {
+  ticketId: string;
+  registeredDate: string;
+  isRefunded: boolean;
+  actualPrice: number;
+  userId: string;
+  fullName: string | null;
+  avatarUrl: string | null;
+  pricePhaseId: string;
+  pricePhaseName: string;
+  pricePhaseStartDate: string;
+  pricePhaseEndDate: string;
+  pricePhaseApplyPercent: number;
+  pricePhaseTotalSlot: number;
+  pricePhaseAvailableSlot: number;
+}
+
+export interface RefundRequest {
+  refundRequestId: string;
+  transactionId: string;
+  ticketId: string;
+  ticket: RefundRequestTicket;
+  globalStatusId: string;
+  globalStatusName: string;
+  reason: string;
+  createdAt: string | null;
+}

@@ -1,29 +1,27 @@
 // components/pages/ConferenceDetailPage/TabNavigation.tsx
-import { Info, Users, Calendar, FileText, MessageCircle, Clock } from "lucide-react";
+import { Info, Users, Calendar, FileText, MessageCircle, Clock, RefreshCw } from "lucide-react";
 
 interface TabNavigationProps {
   activeTab: string;
   onTabChange: (tabId: string) => void;
-  isResearch: boolean; // ✅ true = research, false = technical
+  isResearch: boolean; 
 }
 
 export function TabNavigation({ activeTab, onTabChange, isResearch }: TabNavigationProps) {
-  // Bộ tab cho Technical Conference
+  
   const technicalTabs = [
     { id: "information", label: "Thông tin cơ bản", icon: Info },
-    { id: "customer-requests", label: "Yêu cầu của khách", icon: Users },
+    { id: "refund-requests", label: "Yêu cầu hoàn vé", icon: RefreshCw },
     { id: "ticket-holders", label: "Khách đã mua vé", icon: Calendar },
   ];
 
-  // Bộ tab cho Research Conference
   const researchTabs = [
     { id: "information", label: "Thông tin cơ bản", icon: Info },
     { id: "paper-phase", label: "Bài báo", icon: FileText },
     { id: "research-timeline", label: "Research Timeline", icon: Clock },
-    { id: "customer-requests", label: "Yêu cầu của tác giả", icon: MessageCircle },
+    { id: "refund-requests", label: "Yêu cầu hoàn vé", icon: RefreshCw },
+    { id: "other-requests", label: "Yêu cầu khác", icon: MessageCircle },
     { id: "ticket-holders", label: "Người tham dự", icon: Calendar },
-
-    // Bạn có thể thêm tab khác như: "Reviewers", "Schedule", v.v.
   ];
 
   const tabs = isResearch ? researchTabs : technicalTabs;

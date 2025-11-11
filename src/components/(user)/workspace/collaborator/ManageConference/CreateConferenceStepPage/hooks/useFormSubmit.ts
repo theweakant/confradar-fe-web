@@ -12,9 +12,8 @@ import {
 import {
   useCreateBasicConferenceMutation,
   useCreateConferencePriceMutation,
-  useCreateConferenceSessionsMutation,
+  useCreateConferenceSessionsMutation, 
   useCreateConferencePoliciesMutation,
-  useCreateRefundPoliciesMutation,
   useCreateConferenceMediaMutation,
   useCreateConferenceSponsorsMutation,
 } from "@/redux/services/conferenceStep.service";
@@ -45,7 +44,6 @@ export function useFormSubmit() {
   const [createPrice] = useCreateConferencePriceMutation();
   const [createSessions] = useCreateConferenceSessionsMutation();
   const [createPolicies] = useCreateConferencePoliciesMutation();
-  const [createRefundPolicies] = useCreateRefundPoliciesMutation();
   const [createMedia] = useCreateConferenceMediaMutation();
   const [createSponsors] = useCreateConferenceSponsorsMutation();
 
@@ -101,6 +99,10 @@ export function useFormSubmit() {
             startDate: phase.startDate,
             endDate: phase.endDate,
             totalslot: phase.totalslot,
+            refundInPhase: (phase.refundInPhase || []).map((rp) => ({
+              percentRefund: rp.percentRefund,
+              refundDeadline: rp.refundDeadline,
+          })),
           })),
         })),
       };
@@ -139,7 +141,6 @@ export function useFormSubmit() {
       return { success: true, skipped: true };
     }
 
-    // Validate sessions on start and end day
     const hasSessionOnStartDay = sessions.some((s) => s.date === eventStartDate);
     const hasSessionOnEndDay = sessions.some((s) => s.date === eventEndDate);
 
@@ -202,50 +203,37 @@ export function useFormSubmit() {
   };
 
   // Step 4: Policies
-  const submitPolicies = async (
-    policies: Policy[],
-    refundPolicies: RefundPolicy[]
-  ) => {
-    if (!conferenceId) {
-      toast.error("Không tìm thấy conference ID!");
-      return { success: false };
-    }
+const submitPolicies = async (policies: Policy[]) => {
+  if (!conferenceId) {
+    toast.error("Không tìm thấy conference ID!");
+    return { success: false };
+  }
 
-    if (policies.length === 0 && refundPolicies.length === 0) {
-      dispatch(markStepCompleted(4));
-      dispatch(nextStep());
-      toast.info("Đã bỏ qua phần chính sách");
-      return { success: true, skipped: true };
-    }
+  if (policies.length === 0) {
+    dispatch(markStepCompleted(4));
+    dispatch(nextStep());
+    toast.info("Đã bỏ qua phần chính sách");
+    return { success: true, skipped: true };
+  }
 
-    try {
-      setIsSubmitting(true);
+  try {
+    setIsSubmitting(true);
 
-      await Promise.all([
-        policies.length > 0
-          ? createPolicies({ conferenceId, data: { policies } }).unwrap()
-          : Promise.resolve(),
-        refundPolicies.length > 0
-          ? createRefundPolicies({
-            conferenceId,
-            data: { refundPolicies },
-          }).unwrap()
-          : Promise.resolve(),
-      ]);
+    await createPolicies({ conferenceId, data: { policies } }).unwrap();
 
-      dispatch(markStepCompleted(4));
-      dispatch(nextStep());
-      toast.success("Lưu chính sách thành công!");
-      return { success: true };
-    } catch (error) {
-      const apiError = error as { data?: ApiError };
-      console.error("Failed to create policies:", error);
-      toast.error(apiError?.data?.message || "Lưu chính sách thất bại!");
-      return { success: false, error };
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    dispatch(markStepCompleted(4));
+    dispatch(nextStep());
+    toast.success("Lưu chính sách thành công!");
+    return { success: true };
+  } catch (error) {
+    const apiError = error as { data?: ApiError };
+    console.error("Failed to create policies:", error);
+    toast.error(apiError?.data?.message || "Lưu chính sách thất bại!");
+    return { success: false, error };
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   // Step 5: Media
   const submitMedia = async (mediaList: Media[]) => {

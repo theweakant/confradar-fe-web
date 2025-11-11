@@ -71,7 +71,6 @@ export function BasicInfoForm({
           value={formData.dateRange}
           onChange={(val) => handleChange("dateRange", Number(val))}
           error={validationErrors.dateRange}
-          success={!validationErrors.dateRange}
           min="1"
           max="365"
           required
@@ -181,6 +180,33 @@ export function BasicInfoForm({
             onChange={(val) => handleChange("customTarget", val)}
           />
         )}
+      </div>
+      {/* Contract & Commission */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormInput
+          label="Hợp đồng"
+          name="contractURL"
+          type="url"
+          value={formData.contractURL}
+          onChange={(val) => handleChange("contractURL", val)}
+          placeholder="https://example.com/contract.pdf"
+          error={validationErrors.contractURL}
+          required
+        />
+
+        <FormInput
+          label="Hoa hồng (%)"
+          name="commission"
+          type="number"
+          min="10"
+          max="50"
+          step="0.5"
+          value={formData.commission}
+          onChange={(val) => handleChange("commission", Number(val))}
+          placeholder="1"
+          error={validationErrors.commission}
+          required
+        />
       </div>
 
       {/* Banner Image */}

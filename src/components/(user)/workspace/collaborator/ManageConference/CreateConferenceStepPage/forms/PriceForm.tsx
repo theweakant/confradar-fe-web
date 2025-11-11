@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/molecules/FormInput";
 import { FormTextArea } from "@/components/molecules/FormTextArea";
 import { DatePickerInput } from "@/components/atoms/DatePickerInput";
 import { formatCurrency, formatDate } from "@/helper/format";
 import { toast } from "sonner";
-import type { Ticket, Phase } from "@/types/conference.type";
+import type { Ticket, Phase, RefundInPhase } from "@/types/conference.type";
 
 interface PriceFormProps {
   tickets: Ticket[];
@@ -48,39 +48,9 @@ function PhaseModal({
     totalslot: 0,
   });
 
-  useEffect(() => {
-    if (editingPhase) {
-      const percentValue =
-        editingPhase.applyPercent > 100
-          ? editingPhase.applyPercent - 100
-          : 100 - editingPhase.applyPercent;
-      const percentType = editingPhase.applyPercent > 100 ? "increase" : "decrease";
-
-      const start = new Date(editingPhase.startDate);
-      const end = new Date(editingPhase.endDate);
-      const durationInDays =
-        Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-
-      setPhaseData({
-        phaseName: editingPhase.phaseName,
-        percentValue,
-        percentType,
-        startDate: editingPhase.startDate,
-        durationInDays,
-        totalslot: editingPhase.totalslot,
-      });
-    } else {
-      // Reset khi không edit
-      setPhaseData({
-        phaseName: "",
-        percentValue: 0,
-        percentType: "increase",
-        startDate: ticketSaleStart,
-        durationInDays: 1,
-        totalslot: 0,
-      });
-    }
-  }, [editingPhase, ticketSaleStart]);
+  const [refundPolicies, setRefundPolicies] = useState<RefundInPhase[]>([
+    { percentRefund: 100, refundDeadline: ticketSaleStart },
+  ]);
 
   const calculateEndDate = (startDate: string, duration: number): string => {
     if (!startDate || duration <= 0) return "";
@@ -89,6 +59,78 @@ function PhaseModal({
     end.setDate(start.getDate() + duration - 1);
     return end.toISOString().split("T")[0];
   };
+
+  // Tính max duration hợp lệ
+  const maxDuration = useMemo(() => {
+    if (!phaseData.startDate) return 1;
+    const start = new Date(phaseData.startDate);
+    const saleEnd = new Date(ticketSaleEnd);
+    const diffTime = saleEnd.getTime() - start.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    return Math.max(1, diffDays);
+  }, [phaseData.startDate, ticketSaleEnd]);
+
+useEffect(() => {
+  if (editingPhase) {
+    const percentValue =
+      editingPhase.applyPercent > 100
+        ? editingPhase.applyPercent - 100
+        : 100 - editingPhase.applyPercent;
+    const percentType = editingPhase.applyPercent > 100 ? "increase" : "decrease";
+
+    const start = new Date(editingPhase.startDate);
+    const end = new Date(editingPhase.endDate);
+    const durationInDays =
+      Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+    setPhaseData({
+      phaseName: editingPhase.phaseName,
+      percentValue,
+      percentType,
+      startDate: editingPhase.startDate,
+      durationInDays: Math.min(durationInDays, maxDuration),
+      totalslot: editingPhase.totalslot,
+    });
+
+    const sortedRefunds = [...(editingPhase.refundInPhase || [])].sort(
+      (a, b) => new Date(a.refundDeadline).getTime() - new Date(b.refundDeadline).getTime()
+    );
+    setRefundPolicies(sortedRefunds.length > 0 ? sortedRefunds : [{ percentRefund: 100, refundDeadline: editingPhase.startDate }]);
+  }
+}, [editingPhase, maxDuration]); // ← Bỏ ticketSaleStart khỏi dependency
+
+useEffect(() => {
+  if (isOpen && !editingPhase) {
+    setPhaseData({
+      phaseName: "",
+      percentValue: 0,
+      percentType: "increase",
+      startDate: ticketSaleStart,
+      durationInDays: 1,
+      totalslot: 0,
+    });
+    setRefundPolicies([{ percentRefund: 100, refundDeadline: ticketSaleStart }]);
+  }
+}, [isOpen]);
+
+  const handleAddRefund = () => {
+    setRefundPolicies([...refundPolicies, { percentRefund: 100, refundDeadline: ticketSaleStart }]);
+  };
+
+  const handleRemoveRefund = (index: number) => {
+    if (refundPolicies.length <= 1) {
+      toast.error("Phải có ít nhất 1 chính sách hoàn tiền!");
+      return;
+    }
+    setRefundPolicies(refundPolicies.filter((_, i) => i !== index));
+  };
+
+const handleUpdateRefund = (index: number, field: keyof RefundInPhase, value: string | number) => {
+  const updated = [...refundPolicies];
+  // @ts-expect-error: Dynamic assignment to keyof RefundInPhase may not align with exact property types (e.g., number vs string).
+  updated[index][field] = value;
+  setRefundPolicies(updated);
+};
 
   const handleAdd = () => {
     if (!phaseData.phaseName.trim()) {
@@ -110,6 +152,31 @@ function PhaseModal({
       return;
     }
 
+    // Validate refund deadlines
+    const phaseEndDate = calculateEndDate(phaseData.startDate, phaseData.durationInDays);
+    for (const refund of refundPolicies) {
+      if (!refund.refundDeadline) {
+        toast.error("Vui lòng chọn hạn hoàn tiền!");
+        return;
+      }
+      const deadline = new Date(refund.refundDeadline);
+      const start = new Date(phaseData.startDate);
+      const saleEnd = new Date(ticketSaleEnd);
+
+      if (deadline < start) {
+        toast.error("Hạn hoàn tiền phải sau ngày bắt đầu giai đoạn!");
+        return;
+      }
+      if (deadline > saleEnd) {
+        toast.error("Hạn hoàn tiền không được sau ngày kết thúc bán vé!");
+        return;
+      }
+    }
+
+    const sortedRefunds = [...refundPolicies].sort(
+      (a, b) => new Date(a.refundDeadline).getTime() - new Date(b.refundDeadline).getTime()
+    );
+
     const applyPercent =
       phaseData.percentType === "increase"
         ? 100 + phaseData.percentValue
@@ -119,8 +186,9 @@ function PhaseModal({
       phaseName: phaseData.phaseName,
       applyPercent,
       startDate: phaseData.startDate,
-      endDate: calculateEndDate(phaseData.startDate, phaseData.durationInDays),
+      endDate: phaseEndDate,
       totalslot: phaseData.totalslot,
+      refundInPhase: sortedRefunds,
     };
 
     onAdd(phase);
@@ -217,12 +285,10 @@ function PhaseModal({
                       phaseData.percentType === "increase"
                         ? "text-red-600"
                         : "text-green-600"
-                    }
-                  >
+                    }>
                     {calculatedPrice.toLocaleString()} VND
-                  </strong>{" "}
-                  ({phaseData.percentType === "increase" ? "+" : "-"}
-                  {phaseData.percentValue}%)
+                  </strong>
+                  {" "}({phaseData.percentType === "increase" ? "+" : "-"}{phaseData.percentValue}%)
                 </div>
               )}
             </div>
@@ -230,24 +296,27 @@ function PhaseModal({
 
           <div className="grid grid-cols-4 gap-3">
             <div>
-              <DatePickerInput
-                label="Ngày bắt đầu"
-                value={phaseData.startDate}
-                onChange={(val) => setPhaseData({ ...phaseData, startDate: val })}
-                minDate={ticketSaleStart}
-                maxDate={ticketSaleEnd}
-                required
-              />
+            <DatePickerInput
+              label="Ngày bắt đầu"
+              value={phaseData.startDate}
+              onChange={(val) => setPhaseData({ ...phaseData, startDate: val })}
+              minDate={ticketSaleStart }
+              maxDate={ticketSaleEnd }
+              required
+            />
             </div>
 
             <FormInput
               label="Số ngày"
               type="number"
               min="1"
+              max={maxDuration}
               value={phaseData.durationInDays}
-              onChange={(val) =>
-                setPhaseData({ ...phaseData, durationInDays: Number(val) })
-              }
+              onChange={(val) => {
+                const numVal = Number(val);
+                if (numVal > maxDuration) return;
+                setPhaseData({ ...phaseData, durationInDays: numVal });
+              }}
             />
 
             <div>
@@ -255,9 +324,7 @@ function PhaseModal({
               <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
                 {phaseData.startDate && phaseData.durationInDays > 0 ? (
                   <span className="text-gray-900">
-                    {new Date(
-                      calculateEndDate(phaseData.startDate, phaseData.durationInDays)
-                    ).toLocaleDateString("vi-VN")}
+                    {new Date(calculateEndDate(phaseData.startDate, phaseData.durationInDays)).toLocaleDateString("vi-VN")}
                   </span>
                 ) : (
                   <span className="text-gray-400">--/--/----</span>
@@ -274,6 +341,63 @@ function PhaseModal({
               onChange={(val) => setPhaseData({ ...phaseData, totalslot: Number(val) })}
               placeholder={`Còn ${maxSlot - usedSlots}`}
             />
+          </div>
+
+          {/* Multiple Refund Policies */}
+          <div className="border-t pt-4">
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="font-medium text-sm text-red-600">Chính sách hoàn tiền</h4>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleAddRefund}
+                className="text-xs"
+              >
+                + Thêm mức hoàn
+              </Button>
+            </div>
+
+            <div className="space-y-2">
+              {refundPolicies.map((refund, idx) => (
+                <div key={idx} className="grid grid-cols-[1fr,1fr,auto] gap-2 items-end">
+                  <FormInput
+                    label={idx === 0 ? "Tỷ lệ hoàn (%)" : ""}
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={refund.percentRefund}
+                    onChange={(val) =>
+                      handleUpdateRefund(idx, "percentRefund", Number(val))
+                    }
+                  />
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      {idx === 0 ? "Hạn hoàn tiền" : ""}
+                    </label>
+                    <DatePickerInput
+                      value={refund.refundDeadline}
+                      onChange={(val) =>
+                        handleUpdateRefund(idx, "refundDeadline", val)
+                      }
+                      minDate={phaseData.startDate}
+                      maxDate={ticketSaleEnd}
+                      className="text-sm py-1.5"
+                    />
+                  </div>
+                  {refundPolicies.length > 1 && (
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleRemoveRefund(idx)}
+                      className="h-[34px] w-[34px] p-0 flex items-center justify-center text-xs"
+                      title="Xoá mức hoàn"
+                    >
+                      ✕
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="flex gap-3 mt-6">
@@ -349,6 +473,38 @@ export function PriceForm({
         );
         return;
       }
+
+      const sortedPhases = [...newTicket.phases].sort(
+        (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+      );
+
+      if (sortedPhases[0].startDate !== ticketSaleStart) {
+        toast.error(`Giai đoạn đầu tiên phải bắt đầu từ ${formatDate(ticketSaleStart)}`);
+        return;
+      }
+
+      // Phase cuối phải kết thúc đúng ticketSaleEnd
+      const lastPhase = sortedPhases[sortedPhases.length - 1];
+      if (lastPhase.endDate !== ticketSaleEnd) {
+        toast.error(`Giai đoạn cuối cùng phải kết thúc vào ${formatDate(ticketSaleEnd)}`);
+        return;
+      }
+
+      // Kiểm tra không đứt quãng, không chồng lấn
+      for (let i = 0; i < sortedPhases.length - 1; i++) {
+        const current = sortedPhases[i];
+        const next = sortedPhases[i + 1];
+
+        const currentDate = new Date(current.endDate);
+        const nextStartDate = new Date(next.startDate);
+        const expectedNextDate = new Date(currentDate);
+        expectedNextDate.setDate(currentDate.getDate() + 1);
+
+        if (nextStartDate.getTime() !== expectedNextDate.getTime()) {
+          toast.error(`Giai đoạn "${current.phaseName}" và "${next.phaseName}" bị chồng lên nhau!`);
+          return;
+        }
+      }
     }
 
     if (editingTicketIndex !== null) {
@@ -365,7 +521,6 @@ export function PriceForm({
       toast.success("Đã thêm vé!");
     }
 
-    // Reset form
     setNewTicket({
       ticketPrice: 0,
       ticketName: "",
@@ -408,7 +563,6 @@ export function PriceForm({
             key={t.ticketId || idx}
             className="border rounded-lg p-4 mb-3 bg-white shadow-sm hover:shadow-md transition-all duration-200"
           >
-            {/* Header */}
             <div className="flex justify-between items-start mb-3 border-b pb-2">
               <div className="flex-1">
                 <h3 className="font-semibold text-base text-gray-800">{t.ticketName}</h3>
@@ -425,7 +579,6 @@ export function PriceForm({
               </div>
             </div>
 
-            {/* Phases */}
             {t.phases && t.phases.length > 0 && (
               <div className="mt-2">
                 <div className="text-xs font-medium text-gray-600 mb-1.5">
@@ -442,7 +595,7 @@ export function PriceForm({
                     return (
                       <div
                         key={pi}
-                        className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-md p-2 border border-gray-200 hover:border-blue-300 transition-colors cursor-pointer"
+                        className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-md p-2 border border-gray-200 hover:border-blue-300 transition-colors"
                       >
                         <div className="text-xs font-semibold text-gray-800 mb-1 truncate" title={p.phaseName}>
                           {p.phaseName}
@@ -453,11 +606,18 @@ export function PriceForm({
                         <div className="text-[10px] text-gray-600 mb-1 font-medium">
                           Giá: {formatCurrency(adjustedPrice)}
                         </div>
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-gray-600">Tổng: {p.totalslot}</span>
-                          <span className={`font-bold ${isIncrease ? "text-red-600" : "text-green-600"}`}>
-                            {percentDisplay}
-                          </span>
+                        <div className="space-y-0.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-600 text-xs">Tổng: {p.totalslot}</span>
+                            <span className={`font-bold ${isIncrease ? "text-red-600" : "text-green-600"} text-xs`}>
+                              {percentDisplay}
+                            </span>
+                          </div>
+                          {p.refundInPhase?.map((refund, ri) => (
+                            <div key={ri} className="text-[10px] text-orange-600 font-medium">
+                              Hoàn {refund.percentRefund}% trước {formatDate(refund.refundDeadline)}
+                            </div>
+                          ))}
                         </div>
                       </div>
                     );
@@ -466,7 +626,6 @@ export function PriceForm({
               </div>
             )}
 
-            {/* Action Buttons */}
             <div className="flex gap-2 mt-3">
               <Button size="sm" variant="outline" onClick={() => handleEditTicket(t, idx)} className="flex-1">
                 Sửa vé
@@ -521,7 +680,6 @@ export function PriceForm({
           />
         </div>
 
-        {/* Phase Management */}
         <div className="border-t pt-3 mt-3">
           <div className="flex justify-between items-center mb-3">
             <h5 className="font-medium text-sm">
@@ -552,12 +710,19 @@ export function PriceForm({
                       <div className="text-xs text-gray-600">
                         {formatDate(phase.startDate)} - {formatDate(phase.endDate)} | Slot: {phase.totalslot}
                       </div>
-                      <div className="text-xs">
-                        <span className={isIncrease ? "text-red-600" : "text-green-600"}>
-                          {percentDisplay}
-                        </span>
-                        {" → "}
-                        <span className="font-medium">{formatCurrency(adjustedPrice)}</span>
+                      <div className="space-y-0.5">
+                        <div className="text-xs">
+                          <span className={isIncrease ? "text-red-600" : "text-green-600"}>
+                            {percentDisplay}
+                          </span>
+                          {" → "}
+                          <span className="font-medium">{formatCurrency(adjustedPrice)}</span>
+                        </div>
+                        {phase.refundInPhase?.map((refund, ri) => (
+                          <div key={ri} className="text-[10px] text-orange-600 font-medium">
+                            Hoàn {refund.percentRefund}% trước {formatDate(refund.refundDeadline)}
+                          </div>
+                        ))}
                       </div>
                     </div>
                     <Button
@@ -579,7 +744,6 @@ export function PriceForm({
         </Button>
       </div>
 
-      {/* Phase Modal */}
       <PhaseModal
         isOpen={isPhaseModalOpen}
         onClose={() => setIsPhaseModalOpen(false)}

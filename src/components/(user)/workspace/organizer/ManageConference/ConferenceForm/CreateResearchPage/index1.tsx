@@ -16,7 +16,7 @@ import {
   PhaseModal,
 } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/components/index";
 
-// Shared Forms (100% reuse)
+// Shared Forms
 import { PolicyForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/PolicyForm"
 import { MediaForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/MediaForm";
 import { SponsorForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/SponsorForm";
@@ -159,8 +159,6 @@ export default function CreateResearchConferenceStepPage() {
       label: ranking.rankName || "N/A",
     })) || [];
 
-console.log("Ranking loading?", isRankingLoading);
-console.log("Ranking options:", rankingOptions);
 
   const handleFieldBlur = (field: string) => {
     switch (field) {
@@ -330,6 +328,7 @@ const handleTimelineSubmit = async () => {
             ticketSaleEnd={basicForm.ticketSaleEnd}
             eventStartDate={basicForm.startDate}
             eventEndDate={basicForm.endDate}
+            revisionAttemptAllowed={researchDetail.revisionAttemptAllowed}
           />
 
           <NavigationButtons

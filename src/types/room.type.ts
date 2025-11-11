@@ -39,3 +39,14 @@ export interface RoomWithSessions {
   destinationId: string | null;
   sessions: RoomOccupationSlot[];
 }
+
+//get available room
+export interface AvailableRoom {
+  roomId: string;
+  roomNumber: string;
+  roomDisplayName: string;
+  date: string; 
+  availableTimeSpans: TimeSpan[];
+  isAvailableWholeday: boolean;
+}
+

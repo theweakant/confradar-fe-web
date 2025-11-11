@@ -31,7 +31,7 @@ import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 
 import ConferenceCalendar from "@/components/molecules/Calendar/index";
-import SessionScheduleCalendar from "@/components/molecules/Calendar/SessionScheduleCalendar";
+import {SessionScheduleCalendar} from "@/components/molecules/Calendar/SessionScheduleCalendar";
 import PaperScheduleCalendar from "@/components/molecules/Calendar/PaperScheduleCalendar";
 
 export default function ManageConference() {
@@ -198,7 +198,7 @@ export default function ManageConference() {
                   onClick={() => handleOpenCalendar("session")}
                 >
                   <Calendar className="w-5 h-5" />
-                  Session Calendar
+                  Lịch xếp phòng cho session
                 </Button>
 
                 <Button

@@ -18,7 +18,8 @@ import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 import { BannerSection } from "./BannerSection";
 import { TabNavigation } from "./TabNavigation";
 import { BasicInfoTab } from "./Tab/BasicInfoTab";
-import { RequestTab } from "./Tab/RequestTab";
+import { RefundRequestTab } from "./Tab/RefundRequestTab";
+import { OtherRequestTab } from "./Tab/OtherRequestTab";
 import { RegisteredUserTab } from "./Tab/RegisteredUserTab";
 import { PaperPhaseTab } from "./Tab/PaperPhaseTab";
 import { ResearchTimelineTab } from "./Tab/ResearchTimelineTab";
@@ -173,11 +174,20 @@ export default function ConferenceDetailPage() {
             />
           )}
 
-          {activeTab === "customer-requests" && (
-            <RequestTab conferenceType={conferenceType} />
+          {activeTab === "refund-requests" && (
+            <RefundRequestTab 
+              conferenceId={conference.conferenceId!}
+              conferenceType={conferenceType} 
+            />
           )}
 
-          {activeTab === "ticket-holders" && <RegisteredUserTab conferenceId={conference.conferenceId!} />}
+          {conferenceType === "research" && activeTab === "other-requests" && (
+            <OtherRequestTab conferenceId={conference.conferenceId!} />
+          )}
+
+          {activeTab === "ticket-holders" && (
+            <RegisteredUserTab conferenceId={conference.conferenceId!} />
+          )}
 
           {/* Tab bổ sung chỉ cho Research */}
           {conferenceType === "research" && activeTab === "paper-phase" && <PaperPhaseTab />}

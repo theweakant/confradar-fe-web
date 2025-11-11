@@ -199,7 +199,7 @@ export default function CreateConferenceStepPage() {
   };
 
   const handlePoliciesSubmit = async () => {
-    const result = await submitPolicies(policies, refundPolicies);
+    const result = await submitPolicies(policies);
     if (result.success) {
       handleMarkCompleted(4);
     }

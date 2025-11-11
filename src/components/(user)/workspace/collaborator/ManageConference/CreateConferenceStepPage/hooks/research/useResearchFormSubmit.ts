@@ -78,7 +78,7 @@ export function useResearchFormSubmit() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create basic info:", error);
-      toast.error(apiError?.data?.Message || "Tạo thông tin cơ bản thất bại!");
+      toast.error(apiError?.data?.message || "Tạo thông tin cơ bản thất bại!");
       return { success: false, error };
     } finally {
       setIsSubmitting(false);
@@ -103,7 +103,7 @@ export function useResearchFormSubmit() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create research detail:", error);
-      toast.error(apiError?.data?.Message || "Lưu chi tiết nghiên cứu thất bại!");
+      toast.error(apiError?.data?.message || "Lưu chi tiết nghiên cứu thất bại!");
       return { success: false, error };
     } finally {
       setIsSubmitting(false);
@@ -134,7 +134,7 @@ export function useResearchFormSubmit() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create research phase:", error);
-      toast.error(apiError?.data?.Message || "Lưu timeline thất bại!");
+      toast.error(apiError?.data?.message || "Lưu timeline thất bại!");
       return { success: false, error };
     } finally {
       setIsSubmitting(false);
@@ -162,7 +162,7 @@ export function useResearchFormSubmit() {
 
     try {
       setIsSubmitting(true);
-
+ 
       const priceData: ConferencePriceData = {
         typeOfTicket: tickets.map((ticket) => ({
           ticketPrice: parseFloat(ticket.ticketPrice.toFixed(2)),
@@ -176,6 +176,10 @@ export function useResearchFormSubmit() {
             startDate: phase.startDate,
             endDate: phase.endDate,
             totalslot: phase.totalslot,
+            refundInPhase: (phase.refundInPhase || []).map((rp) => ({
+              percentRefund: rp.percentRefund,
+              refundDeadline: rp.refundDeadline,
+          })),
           })),
         })),
       };
@@ -189,7 +193,7 @@ export function useResearchFormSubmit() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create price:", error);
-      toast.error(apiError?.data?.Message || "Lưu giá vé thất bại!");
+      toast.error(apiError?.data?.message || "Lưu giá vé thất bại!");
       return { success: false, error };
     } finally {
       setIsSubmitting(false);
@@ -255,7 +259,7 @@ export function useResearchFormSubmit() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create sessions:", error);
-      toast.error(apiError?.data?.Message || "Lưu phiên họp thất bại!");
+      toast.error(apiError?.data?.message || "Lưu phiên họp thất bại!");
       return { success: false, error };
     } finally {
       setIsSubmitting(false);
@@ -295,7 +299,7 @@ export function useResearchFormSubmit() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create policies:", error);
-      toast.error(apiError?.data?.Message || "Lưu chính sách thất bại!");
+      toast.error(apiError?.data?.message || "Lưu chính sách thất bại!");
       return { success: false, error };
     } finally {
       setIsSubmitting(false);
@@ -358,7 +362,7 @@ export function useResearchFormSubmit() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create materials:", error);
-      toast.error(apiError?.data?.Message || "Lưu tài liệu thất bại!");
+      toast.error(apiError?.data?.message || "Lưu tài liệu thất bại!");
       return { success: false, error };
     } finally {
       setIsSubmitting(false);
@@ -390,7 +394,7 @@ export function useResearchFormSubmit() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create media:", error);
-      toast.error(apiError?.data?.Message || "Lưu media thất bại!");
+      toast.error(apiError?.data?.message || "Lưu media thất bại!");
       return { success: false, error };
     } finally {
       setIsSubmitting(false);
@@ -424,7 +428,7 @@ export function useResearchFormSubmit() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create sponsors:", error);
-      toast.error(apiError?.data?.Message || "Lưu nhà tài trợ thất bại!");
+      toast.error(apiError?.data?.message || "Lưu nhà tài trợ thất bại!");
       return { success: false, error };
     } finally {
       setIsSubmitting(false);

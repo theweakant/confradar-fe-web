@@ -22,6 +22,7 @@ import { cityApi } from "./services/city.service";
 import { userApi } from "./services/user.service";
 import { paperApi } from "./services/paper.service";
 import { statusApi } from "./services/status.service";
+import {requestApi} from "./services/request.service"
 
 // Cấu hình persist
 const persistConfig = {
@@ -38,6 +39,8 @@ const persistConfig = {
     userApi.reducerPath,
     paperApi.reducerPath,
     statusApi.reducerPath,
+    requestApi.reducerPath,
+
   ],
 };
 
@@ -63,6 +66,8 @@ const appReducer = combineReducers({
   [userApi.reducerPath]: userApi.reducer,
   [paperApi.reducerPath]: paperApi.reducer,
   [statusApi.reducerPath]: statusApi.reducer,
+  [requestApi.reducerPath]: requestApi.reducer,
+
 });
 
 export type AppState = ReturnType<typeof appReducer>;

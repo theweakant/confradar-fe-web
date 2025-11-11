@@ -33,6 +33,9 @@ export const endpoint = {
     UPDATE: "/Room",
     DELETE: "/Room",
     DETAIL: "/room",
+
+    AVAILABLE_ROOM:"/room/available-rooms-between-dates"
+
   },
 
   CATEGORY: {
@@ -239,5 +242,11 @@ export const endpoint = {
       "/assigningpresentersession/approve-change-presenter",
     LIST_PENDING_CHANGE_REQUEST:
       "/assigningpresentersession/get-pending-presenter-change-requests",
+  },
+
+  REQUEST: {
+    REFUND_REQUEST: "/ticket/refunds-request",
+    REFUND_REQUEST_BY_CONFID: (conferenceId: string) =>
+      `/ticket/conferences/${conferenceId}/refunds-request`,    
   },
 };

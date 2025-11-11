@@ -36,6 +36,21 @@ export function ResearchDetailForm({
     onChange({ ...formData, [field]: value });
   };
 
+  const handleRankingCategoryChange = (newCategoryId: string) => {
+    onChange({
+      ...formData,
+      rankingCategoryId: newCategoryId,
+      rankValue: "", 
+    });
+  };
+
+  const selectedRanking = rankingOptions.find(
+    (opt) => opt.value === formData.rankingCategoryId
+  );
+  const rankType = selectedRanking?.label;
+
+
+
   return (
     <div className="space-y-4">
       <FormInput
@@ -58,7 +73,7 @@ export function ResearchDetailForm({
           error={validationErrors.paperFormat}
           required
         />
-        
+
         <FormInput
           label="Số bài báo chấp nhận"
           name="numberPaperAccept"
@@ -68,7 +83,7 @@ export function ResearchDetailForm({
           error={validationErrors.numberPaperAccept}
           placeholder="VD: 50"
         />
-        
+
         <FormInput
           label="Số lần chỉnh sửa cho phép"
           name="revisionAttemptAllowed"
@@ -84,30 +99,57 @@ export function ResearchDetailForm({
         <FormSelect
           label="Loại xếp hạng"
           name="rankingCategoryId"
-          value={formData.rankingCategoryId}
-          onChange={(val) => {
-            handleChange("rankingCategoryId", val);
-            handleChange("rankValue", ""); 
-          }}
+          value={formData.rankingCategoryId || ""}
+          onChange={handleRankingCategoryChange}
           options={rankingOptions}
           error={validationErrors.rankingCategoryId}
           required
           disabled={isRankingLoading}
         />
 
+        {/* Hiển thị input phù hợp theo loại xếp hạng */}
         {formData.rankingCategoryId && (
-          <FormInput
-            label="Giá trị xếp hạng"
-            name="rankValue"
-            type="text"
-            value={formData.rankValue}
-            onChange={(val) => handleChange("rankValue", val)}
-            error={validationErrors.rankValue}
-            placeholder="VD: Q1, A*, 1.25"
-            required
-          />
+          <>
+            {rankType === "Core" || rankType === "CoreRanking" ? (
+              <FormSelect
+                label="Giá trị xếp hạng"
+                name="rankValue"
+                value={formData.rankValue}
+                onChange={(val) => handleChange("rankValue", val)}
+                options={[
+                  { value: "Q1", label: "Q1" },
+                  { value: "Q2", label: "Q2" },
+                  { value: "Q3", label: "Q3" },
+                  { value: "Q4", label: "Q4" },
+                ]}
+                error={validationErrors.rankValue}
+                required
+              />
+            ) : (
+              <FormInput
+                label="Giá trị xếp hạng"
+                name="rankValue"
+                type="number"
+                value={formData.rankValue}
+                onChange={(val) => handleChange("rankValue", val)}
+                error={validationErrors.rankValue}
+                placeholder={
+                  rankType === "IF" || rankType === "CiteScore"
+                    ? "VD: 1.25"
+                    : rankType === "H5"
+                    ? "VD: 15"
+                    : "Nhập giá trị > 0"
+                }
+                required
+                min="1"
+                step={
+                  rankType === "IF" || rankType === "CiteScore" ? "0.01" : "1"
+                }
+              />
+            )}
+          </>
         )}
-        
+
         <FormInput
           label="Năm xếp hạng"
           name="rankYear"
@@ -131,8 +173,14 @@ export function ResearchDetailForm({
 
       {formData.rankingCategoryId && (
         <div className="text-xs text-gray-600 bg-blue-50 p-2 rounded">
-          <strong>Lưu ý:</strong> Giá trị xếp hạng có thể là Q1-Q4 cho Core/Scopus, 
-          A*-C cho các loại khác, hoặc số thập phân cho CiteScore (VD: 1.25)
+          <strong>Lưu ý:</strong>{" "}
+          {rankType === "Core" || rankType === "CoreRanking"
+            ? "Chọn Q1–Q4 cho xếp hạng Core."
+            : rankType === "IF" || rankType === "CiteScore"
+            ? "Nhập số thập phân không âm (ví dụ: 1.25)."
+            : rankType === "H5"
+            ? "Nhập số nguyên không âm (ví dụ: 15)."
+            : "Nhập giá trị xếp hạng hợp lệ."}
         </div>
       )}
 
