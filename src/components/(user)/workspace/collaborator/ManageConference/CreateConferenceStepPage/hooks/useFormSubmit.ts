@@ -66,7 +66,7 @@ export function useFormSubmit() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create basic info:", error);
-      toast.error(apiError?.data?.Message || "Tạo thông tin cơ bản thất bại!");
+      toast.error(apiError?.data?.message || "Tạo thông tin cơ bản thất bại!");
       return { success: false, error };
     } finally {
       setIsSubmitting(false);
@@ -114,7 +114,7 @@ export function useFormSubmit() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create price:", error);
-      toast.error(apiError?.data?.Message || "Lưu giá vé thất bại!");
+      toast.error(apiError?.data?.message || "Lưu giá vé thất bại!");
       return { success: false, error };
     } finally {
       setIsSubmitting(false);
@@ -194,7 +194,7 @@ export function useFormSubmit() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create sessions:", error);
-      toast.error(apiError?.data?.Message || "Lưu phiên họp thất bại!");
+      toast.error(apiError?.data?.message || "Lưu phiên họp thất bại!");
       return { success: false, error };
     } finally {
       setIsSubmitting(false);
@@ -227,9 +227,9 @@ export function useFormSubmit() {
           : Promise.resolve(),
         refundPolicies.length > 0
           ? createRefundPolicies({
-              conferenceId,
-              data: { refundPolicies },
-            }).unwrap()
+            conferenceId,
+            data: { refundPolicies },
+          }).unwrap()
           : Promise.resolve(),
       ]);
 
@@ -240,7 +240,7 @@ export function useFormSubmit() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create policies:", error);
-      toast.error(apiError?.data?.Message || "Lưu chính sách thất bại!");
+      toast.error(apiError?.data?.message || "Lưu chính sách thất bại!");
       return { success: false, error };
     } finally {
       setIsSubmitting(false);
@@ -273,7 +273,7 @@ export function useFormSubmit() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create media:", error);
-      toast.error(apiError?.data?.Message || "Lưu media thất bại!");
+      toast.error(apiError?.data?.message || "Lưu media thất bại!");
       return { success: false, error };
     } finally {
       setIsSubmitting(false);
@@ -308,7 +308,7 @@ export function useFormSubmit() {
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create sponsors:", error);
-      toast.error(apiError?.data?.Message || "Lưu nhà tài trợ thất bại!");
+      toast.error(apiError?.data?.message || "Lưu nhà tài trợ thất bại!");
       return { success: false, error };
     } finally {
       setIsSubmitting(false);

@@ -42,7 +42,7 @@ export function PaperDetail({ paperId, onClose }: PaperDetailProps) {
       onClose();
     } catch (error: unknown) {
       const err = error as ApiError;
-      const errorMessage = err?.Message || "Them đối tác thất bại!";
+      const errorMessage = err?.message || "Them đối tác thất bại!";
       toast.error(errorMessage);
     }
   };

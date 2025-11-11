@@ -24,10 +24,10 @@ export interface PaginationData<T = unknown> {
 }
 
 export interface ApiError<T = unknown> {
-  Success: boolean;
-  Message: string;
-  Data?: T;
-  Errors?: Record<string, string>;
+  success: boolean;
+  message: string;
+  data?: T;
+  errors?: Record<string, string>;
 }
 
 export type ApiQueryError<T = unknown> = FetchBaseQueryError & {

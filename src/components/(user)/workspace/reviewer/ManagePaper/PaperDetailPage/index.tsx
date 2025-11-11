@@ -377,7 +377,7 @@ export default function ReviewPaperPage() {
       setFile(null);
     } catch (error: unknown) {
       const err = error as ApiError;
-      const errorMessage = err?.Message || "Lỗi khi gửi đánh giá";
+      const errorMessage = err?.message || "Lỗi khi gửi đánh giá";
       toast.error(errorMessage);
     }
   };
@@ -422,7 +422,7 @@ export default function ReviewPaperPage() {
       });
     } catch (error: unknown) {
       const err = error as ApiError;
-      const errorMessage = err?.Message || "Lỗi khi gửi revision review";
+      const errorMessage = err?.message || "Lỗi khi gửi revision review";
       toast.error(errorMessage);
     }
   };
@@ -472,7 +472,7 @@ export default function ReviewPaperPage() {
       }));
     } catch (error: unknown) {
       const err = error as ApiError;
-      const errorMessage = err?.Message || "Lỗi khi gửi revision feedback";
+      const errorMessage = err?.message || "Lỗi khi gửi revision feedback";
       toast.error(errorMessage);
     }
   };
@@ -569,7 +569,7 @@ export default function ReviewPaperPage() {
       setShowDecisionPopup(false);
     } catch (error: unknown) {
       const apiError = error as ApiError;
-      const errorMessage = apiError?.Message || "Lỗi khi cập nhật trạng thái";
+      const errorMessage = apiError?.message || "Lỗi khi cập nhật trạng thái";
       toast.error(errorMessage);
     }
   };
@@ -593,7 +593,7 @@ export default function ReviewPaperPage() {
       setShowRevisionDecisionPopup(false);
     } catch (error: unknown) {
       const err = error as ApiError;
-      toast.error(err.Message || "Lỗi khi cập nhật trạng thái revision");
+      toast.error(err.message || "Lỗi khi cập nhật trạng thái revision");
     }
   };
 
@@ -615,7 +615,7 @@ export default function ReviewPaperPage() {
       setShowCameraReadyDecisionPopup(false);
     } catch (error: unknown) {
       const err = error as ApiError;
-      toast.error(err?.Message || "Có lỗi xảy ra");
+      toast.error(err?.message || "Có lỗi xảy ra");
     }
   };
 
@@ -821,11 +821,10 @@ export default function ReviewPaperPage() {
             <div className="flex gap-1">
               <button
                 onClick={() => setActiveTab("fullPaper")}
-                className={`px-6 py-3 text-sm font-medium transition-all relative ${
-                  activeTab === "fullPaper"
-                    ? "text-blue-600 border-b-2 border-blue-600"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
+                className={`px-6 py-3 text-sm font-medium transition-all relative ${activeTab === "fullPaper"
+                  ? "text-blue-600 border-b-2 border-blue-600"
+                  : "text-gray-600 hover:text-gray-900"
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <FileText className="w-4 h-4" />
@@ -834,11 +833,10 @@ export default function ReviewPaperPage() {
               </button>
               <button
                 onClick={() => setActiveTab("revision")}
-                className={`px-6 py-3 text-sm font-medium transition-all relative ${
-                  activeTab === "revision"
-                    ? "text-orange-600 border-b-2 border-orange-600"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
+                className={`px-6 py-3 text-sm font-medium transition-all relative ${activeTab === "revision"
+                  ? "text-orange-600 border-b-2 border-orange-600"
+                  : "text-gray-600 hover:text-gray-900"
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <FileText className="w-4 h-4" />
@@ -852,11 +850,10 @@ export default function ReviewPaperPage() {
               </button>
               <button
                 onClick={() => setActiveTab("cameraReady")}
-                className={`px-6 py-3 text-sm font-medium transition-all relative ${
-                  activeTab === "cameraReady"
-                    ? "text-green-600 border-b-2 border-green-600"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
+                className={`px-6 py-3 text-sm font-medium transition-all relative ${activeTab === "cameraReady"
+                  ? "text-green-600 border-b-2 border-green-600"
+                  : "text-gray-600 hover:text-gray-900"
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <FileText className="w-4 h-4" />
@@ -931,12 +928,11 @@ export default function ReviewPaperPage() {
                             Tình trạng hoàn thành đánh giá:
                           </span>
                           <span
-                            className={`px-3 py-1 rounded-full text-sm font-medium ${
-                              paperDetail.fullPaper
-                                .isAllSubmittedFullPaperReview
-                                ? "bg-green-50 text-green-700 border border-green-200"
-                                : "bg-yellow-50 text-yellow-700 border border-yellow-200"
-                            }`}
+                            className={`px-3 py-1 rounded-full text-sm font-medium ${paperDetail.fullPaper
+                              .isAllSubmittedFullPaperReview
+                              ? "bg-green-50 text-green-700 border border-green-200"
+                              : "bg-yellow-50 text-yellow-700 border border-yellow-200"
+                              }`}
                           >
                             {paperDetail.fullPaper.isAllSubmittedFullPaperReview
                               ? "Tất cả Reviewer đã nộp"
@@ -1056,8 +1052,8 @@ export default function ReviewPaperPage() {
                                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-semibold text-sm">
                                         {review.reviewerName
                                           ? review.reviewerName
-                                              .charAt(0)
-                                              .toUpperCase()
+                                            .charAt(0)
+                                            .toUpperCase()
                                           : "R"}
                                       </div>
                                     )}
@@ -1204,53 +1200,53 @@ export default function ReviewPaperPage() {
                                 {/* Previous Feedbacks */}
                                 {submission.revisionSubmissionFeedbacks.length >
                                   0 && (
-                                  <div className="mb-6">
-                                    <h5 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                                      <CheckCircle className="w-4 h-4 text-green-600" />
-                                      Feedbacks đã gửi
-                                    </h5>
-                                    <div className="space-y-2">
-                                      {submission.revisionSubmissionFeedbacks.map(
-                                        (feedback) => (
-                                          <div
-                                            key={
-                                              feedback.revisionSubmissionFeedbackId
-                                            }
-                                            className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm"
-                                          >
-                                            <div className="flex items-start gap-3">
-                                              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-bold flex items-center justify-center">
-                                                {feedback.sortOrder}
-                                              </span>
-                                              <div className="flex-1">
-                                                <p className="text-sm text-gray-900 leading-relaxed">
-                                                  {feedback.feedback || "N/A"}
-                                                </p>
-                                                {feedback.response && (
-                                                  <div className="mt-3 pl-4 border-l-2 border-blue-300 bg-blue-50 p-3 rounded">
-                                                    <p className="text-xs text-gray-600">
-                                                      <span className="font-semibold text-blue-700">
-                                                        Response:
-                                                      </span>{" "}
-                                                      {feedback.response}
-                                                    </p>
-                                                  </div>
-                                                )}
-                                                {feedback.createdAt && (
-                                                  <p className="text-xs text-gray-400 mt-2">
-                                                    {formatDate(
-                                                      feedback.createdAt,
-                                                    )}
+                                    <div className="mb-6">
+                                      <h5 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                        <CheckCircle className="w-4 h-4 text-green-600" />
+                                        Feedbacks đã gửi
+                                      </h5>
+                                      <div className="space-y-2">
+                                        {submission.revisionSubmissionFeedbacks.map(
+                                          (feedback) => (
+                                            <div
+                                              key={
+                                                feedback.revisionSubmissionFeedbackId
+                                              }
+                                              className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm"
+                                            >
+                                              <div className="flex items-start gap-3">
+                                                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-bold flex items-center justify-center">
+                                                  {feedback.sortOrder}
+                                                </span>
+                                                <div className="flex-1">
+                                                  <p className="text-sm text-gray-900 leading-relaxed">
+                                                    {feedback.feedback || "N/A"}
                                                   </p>
-                                                )}
+                                                  {feedback.response && (
+                                                    <div className="mt-3 pl-4 border-l-2 border-blue-300 bg-blue-50 p-3 rounded">
+                                                      <p className="text-xs text-gray-600">
+                                                        <span className="font-semibold text-blue-700">
+                                                          Response:
+                                                        </span>{" "}
+                                                        {feedback.response}
+                                                      </p>
+                                                    </div>
+                                                  )}
+                                                  {feedback.createdAt && (
+                                                    <p className="text-xs text-gray-400 mt-2">
+                                                      {formatDate(
+                                                        feedback.createdAt,
+                                                      )}
+                                                    </p>
+                                                  )}
+                                                </div>
                                               </div>
                                             </div>
-                                          </div>
-                                        ),
-                                      )}
+                                          ),
+                                        )}
+                                      </div>
                                     </div>
-                                  </div>
-                                )}
+                                  )}
 
                                 {/* Reviews from Other Reviewers - Only for Head Reviewer */}
                                 {paperDetail.isHeadReviewer &&
@@ -1266,7 +1262,7 @@ export default function ReviewPaperPage() {
                                       }
                                       isExpanded={
                                         expandedReviewsSubmissions[
-                                          submission.revisionPaperSubmissionId
+                                        submission.revisionPaperSubmissionId
                                         ] || false
                                       }
                                       onToggle={() =>
@@ -1428,7 +1424,7 @@ export default function ReviewPaperPage() {
                             <div className="ml-13 space-y-3">
                               {(
                                 revisionFeedbacks[
-                                  submission.revisionPaperSubmissionId
+                                submission.revisionPaperSubmissionId
                                 ] || []
                               ).map((feedback, index) => (
                                 <div
@@ -1488,24 +1484,24 @@ export default function ReviewPaperPage() {
                               {(revisionFeedbacks[
                                 submission.revisionPaperSubmissionId
                               ]?.length || 0) > 0 && (
-                                <div className="flex gap-3 pt-2">
-                                  <div className="w-8"></div>
-                                  <Button
-                                    onClick={() =>
-                                      handleSubmitRevisionFeedback(
-                                        submission.revisionPaperSubmissionId,
-                                      )
-                                    }
-                                    disabled={isSubmittingRevision}
-                                    className="bg-blue-600 hover:bg-blue-700"
-                                  >
-                                    <Send className="w-4 h-4 mr-2" />
-                                    {isSubmittingRevision
-                                      ? "Đang gửi..."
-                                      : `Gửi ${revisionFeedbacks[submission.revisionPaperSubmissionId]?.length || 0} feedback`}
-                                  </Button>
-                                </div>
-                              )}
+                                  <div className="flex gap-3 pt-2">
+                                    <div className="w-8"></div>
+                                    <Button
+                                      onClick={() =>
+                                        handleSubmitRevisionFeedback(
+                                          submission.revisionPaperSubmissionId,
+                                        )
+                                      }
+                                      disabled={isSubmittingRevision}
+                                      className="bg-blue-600 hover:bg-blue-700"
+                                    >
+                                      <Send className="w-4 h-4 mr-2" />
+                                      {isSubmittingRevision
+                                        ? "Đang gửi..."
+                                        : `Gửi ${revisionFeedbacks[submission.revisionPaperSubmissionId]?.length || 0} feedback`}
+                                    </Button>
+                                  </div>
+                                )}
                             </div>
                           </div>
                         ),

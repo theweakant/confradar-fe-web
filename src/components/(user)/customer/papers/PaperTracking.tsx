@@ -102,12 +102,12 @@ const PaperTracking = () => {
   const getPaperPhasesErrorMessage = (): string => {
     if (!paperPhasesError) return "";
 
-    if (paperPhasesError.data?.Message) {
-      return paperPhasesError.data.Message;
+    if (paperPhasesError.data?.message) {
+      return paperPhasesError.data.message;
     }
 
-    if (paperPhasesError.data?.Errors) {
-      const errors = Object.values(paperPhasesError.data.Errors);
+    if (paperPhasesError.data?.errors) {
+      const errors = Object.values(paperPhasesError.data.errors);
       return errors.length > 0
         ? errors[0]
         : "Có lỗi xảy ra khi tải danh sách phases";

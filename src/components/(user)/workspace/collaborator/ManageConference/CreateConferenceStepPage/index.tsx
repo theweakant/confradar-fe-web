@@ -120,61 +120,61 @@ export default function CreateConferenceStepPage() {
   const [isPhaseModalOpen, setIsPhaseModalOpen] = useState(false);
   const [isSpeakerModalOpen, setIsSpeakerModalOpen] = useState(false);
 
-//realtime error
-const [validationErrors, setValidationErrors] = useState<{
-  conferenceName?: string;
-  startDate?: string;
-  dateRange?: string;
-  totalSlot?: string;
-  ticketSaleStart?: string;
-  ticketSaleDuration?: string;
-  address?: string;
-  cityId?: string;
-  conferenceCategoryId?: string;
-  ticketName?: string;
-  ticketPrice?: string;
-  ticketTotalSlot?: string;
-  phaseName?: string;
-  phaseStartDate?: string;
-  phaseDuration?: string;
-  phaseSlot?: string;
-  sessionTitle?: string;
-  sessionDate?: string;
-  sessionTimeRange?: string;
-  refundPercent?: string;
-  refundDeadline?: string;
-  refundOrder?: string;
-}>({});
+  //realtime error
+  const [validationErrors, setValidationErrors] = useState<{
+    conferenceName?: string;
+    startDate?: string;
+    dateRange?: string;
+    totalSlot?: string;
+    ticketSaleStart?: string;
+    ticketSaleDuration?: string;
+    address?: string;
+    cityId?: string;
+    conferenceCategoryId?: string;
+    ticketName?: string;
+    ticketPrice?: string;
+    ticketTotalSlot?: string;
+    phaseName?: string;
+    phaseStartDate?: string;
+    phaseDuration?: string;
+    phaseSlot?: string;
+    sessionTitle?: string;
+    sessionDate?: string;
+    sessionTimeRange?: string;
+    refundPercent?: string;
+    refundDeadline?: string;
+    refundOrder?: string;
+  }>({});
 
-// Validation warnings state
-const [validationWarnings, setValidationWarnings] = useState<{
-  ticketPrice?: string;
-  ticketSaleStart?: string;
-}>({});
+  // Validation warnings state
+  const [validationWarnings, setValidationWarnings] = useState<{
+    ticketPrice?: string;
+    ticketSaleStart?: string;
+  }>({});
 
-const clearError = (field: keyof typeof validationErrors) => {
-  setValidationErrors(prev => {
-    const newErrors = { ...prev };
-    delete newErrors[field];
-    return newErrors;
-  });
-};
+  const clearError = (field: keyof typeof validationErrors) => {
+    setValidationErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[field];
+      return newErrors;
+    });
+  };
 
-const setError = (field: keyof typeof validationErrors, message: string) => {
-  setValidationErrors(prev => ({ ...prev, [field]: message }));
-};
+  const setError = (field: keyof typeof validationErrors, message: string) => {
+    setValidationErrors(prev => ({ ...prev, [field]: message }));
+  };
 
-const clearWarning = (field: keyof typeof validationWarnings) => {
-  setValidationWarnings(prev => {
-    const newWarnings = { ...prev };
-    delete newWarnings[field];
-    return newWarnings;
-  });
-};
+  const clearWarning = (field: keyof typeof validationWarnings) => {
+    setValidationWarnings(prev => {
+      const newWarnings = { ...prev };
+      delete newWarnings[field];
+      return newWarnings;
+    });
+  };
 
-const setWarning = (field: keyof typeof validationWarnings, message: string) => {
-  setValidationWarnings(prev => ({ ...prev, [field]: message }));
-};
+  const setWarning = (field: keyof typeof validationWarnings, message: string) => {
+    setValidationWarnings(prev => ({ ...prev, [field]: message }));
+  };
 
   // Step 1: Basic Info
   const [basicForm, setBasicForm] = useState<ConferenceBasicForm>({
@@ -208,337 +208,337 @@ const setWarning = (field: keyof typeof validationWarnings, message: string) => 
     };
   }, [dispatch]);
 
-//realtime validation
-// Validation Functions
-const validateConferenceName = (value: string) => {
-  if (!value.trim()) {
-    setError('conferenceName', 'Tên hội thảo không được để trống');
-    return false;
-  }
-  if (value.trim().length < 10) {
-    setError('conferenceName', 'Tên hội thảo phải có ít nhất 10 ký tự');
-    return false;
-  }
-  if (value.trim().length > 200) {
-    setError('conferenceName', 'Tên hội thảo không được vượt quá 200 ký tự');
-    return false;
-  }
-  clearError('conferenceName');
-  return true;
-};
+  //realtime validation
+  // Validation Functions
+  const validateConferenceName = (value: string) => {
+    if (!value.trim()) {
+      setError('conferenceName', 'Tên hội thảo không được để trống');
+      return false;
+    }
+    if (value.trim().length < 10) {
+      setError('conferenceName', 'Tên hội thảo phải có ít nhất 10 ký tự');
+      return false;
+    }
+    if (value.trim().length > 200) {
+      setError('conferenceName', 'Tên hội thảo không được vượt quá 200 ký tự');
+      return false;
+    }
+    clearError('conferenceName');
+    return true;
+  };
 
-const validateDateRange = (value: number) => {
-  if (value < 1) {
-    setError('dateRange', 'Số ngày phải lớn hơn 0');
-    return false;
-  }
-  if (value > 365) {
-    setError('dateRange', 'Số ngày không được vượt quá 365');
-    return false;
-  }
-  clearError('dateRange');
-  return true;
-};
+  const validateDateRange = (value: number) => {
+    if (value < 1) {
+      setError('dateRange', 'Số ngày phải lớn hơn 0');
+      return false;
+    }
+    if (value > 365) {
+      setError('dateRange', 'Số ngày không được vượt quá 365');
+      return false;
+    }
+    clearError('dateRange');
+    return true;
+  };
 
-const validateTotalSlot = (value: number) => {
-  if (value < 1) {
-    setError('totalSlot', 'Sức chứa phải lớn hơn 0');
-    return false;
-  }
-  if (value > 100000) {
-    setError('totalSlot', 'Sức chứa không được vượt quá 100,000');
-    return false;
-  }
-  clearError('totalSlot');
-  return true;
-};
+  const validateTotalSlot = (value: number) => {
+    if (value < 1) {
+      setError('totalSlot', 'Sức chứa phải lớn hơn 0');
+      return false;
+    }
+    if (value > 100000) {
+      setError('totalSlot', 'Sức chứa không được vượt quá 100,000');
+      return false;
+    }
+    clearError('totalSlot');
+    return true;
+  };
 
-const validateTicketSaleStart = (saleStart: string, eventStart: string) => {
-  if (!saleStart) {
-    setError('ticketSaleStart', 'Vui lòng chọn ngày bắt đầu bán vé');
-    return false;
-  }
-  if (!eventStart) {
+  const validateTicketSaleStart = (saleStart: string, eventStart: string) => {
+    if (!saleStart) {
+      setError('ticketSaleStart', 'Vui lòng chọn ngày bắt đầu bán vé');
+      return false;
+    }
+    if (!eventStart) {
+      clearError('ticketSaleStart');
+      clearWarning('ticketSaleStart');
+      return true;
+    }
+
+    const saleDate = new Date(saleStart);
+    const eventDate = new Date(eventStart);
+
+    if (saleDate >= eventDate) {
+      setError('ticketSaleStart', 'Ngày bán vé phải trước ngày sự kiện');
+      clearWarning('ticketSaleStart');
+      return false;
+    }
+
+    const daysDiff = Math.floor((eventDate.getTime() - saleDate.getTime()) / (1000 * 60 * 60 * 24));
+    if (daysDiff < 7) {
+      clearError('ticketSaleStart');
+      setWarning('ticketSaleStart', 'Khuyến nghị: Nên bán vé trước ít nhất 7 ngày');
+      return true;
+    }
+
     clearError('ticketSaleStart');
     clearWarning('ticketSaleStart');
     return true;
-  }
-  
-  const saleDate = new Date(saleStart);
-  const eventDate = new Date(eventStart);
-  
-  if (saleDate >= eventDate) {
-    setError('ticketSaleStart', 'Ngày bán vé phải trước ngày sự kiện');
-    clearWarning('ticketSaleStart');
-    return false;
-  }
-  
-  const daysDiff = Math.floor((eventDate.getTime() - saleDate.getTime()) / (1000 * 60 * 60 * 24));
-  if (daysDiff < 7) {
-    clearError('ticketSaleStart');
-    setWarning('ticketSaleStart', 'Khuyến nghị: Nên bán vé trước ít nhất 7 ngày');
-    return true;
-  }
-  
-  clearError('ticketSaleStart');
-  clearWarning('ticketSaleStart');
-  return true;
-};
+  };
 
-const validateTicketSaleDuration = (duration: number, saleStart: string, eventStart: string) => {
-  if (duration < 1) {
-    setError('ticketSaleDuration', 'Thời gian bán vé phải ít nhất 1 ngày');
-    return false;
-  }
-  
-  if (saleStart && eventStart) {
-    const saleStartDate = new Date(saleStart);
-    const saleEndDate = new Date(saleStartDate);
-    saleEndDate.setDate(saleEndDate.getDate() + duration - 1);
-    const eventStartDate = new Date(eventStart);
-    
-    if (saleEndDate >= eventStartDate) {
-      setError('ticketSaleDuration', 'Ngày kết thúc bán vé phải trước ngày sự kiện');
+  const validateTicketSaleDuration = (duration: number, saleStart: string, eventStart: string) => {
+    if (duration < 1) {
+      setError('ticketSaleDuration', 'Thời gian bán vé phải ít nhất 1 ngày');
       return false;
     }
-  }
-  
-  clearError('ticketSaleDuration');
-  return true;
-};
 
-const validateTicketName = (value: string, existingTickets: Ticket[] = []) => {
-  if (!value.trim()) {
-    setError('ticketName', 'Tên vé không được để trống');
-    return false;
-  }
-  if (value.trim().length < 3) {
-    setError('ticketName', 'Tên vé phải có ít nhất 3 ký tự');
-    return false;
-  }
-  
-  const isDuplicate = existingTickets.some(t => 
-    t.ticketName.toLowerCase() === value.trim().toLowerCase()
-  );
-  if (isDuplicate) {
-    setError('ticketName', 'Tên vé đã tồn tại');
-    return false;
-  }
-  
-  clearError('ticketName');
-  return true;
-};
+    if (saleStart && eventStart) {
+      const saleStartDate = new Date(saleStart);
+      const saleEndDate = new Date(saleStartDate);
+      saleEndDate.setDate(saleEndDate.getDate() + duration - 1);
+      const eventStartDate = new Date(eventStart);
 
-const validateTicketPrice = (value: number) => {
-  if (value <= 0) {
-    setError('ticketPrice', 'Giá vé phải lớn hơn 0');
-    clearWarning('ticketPrice');
-    return false;
-  }
-  if (value > 100000000) {
-    setError('ticketPrice', 'Giá vé không hợp lệ (tối đa 100 triệu)');
-    clearWarning('ticketPrice');
-    return false;
-  }
-  
-  clearError('ticketPrice');
-  
-  if (value < 10000) {
-    setWarning('ticketPrice', 'Giá vé thấp hơn mức khuyến nghị (10,000 VND)');
+      if (saleEndDate >= eventStartDate) {
+        setError('ticketSaleDuration', 'Ngày kết thúc bán vé phải trước ngày sự kiện');
+        return false;
+      }
+    }
+
+    clearError('ticketSaleDuration');
     return true;
-  }
-  
-  clearWarning('ticketPrice');
-  return true;
-};
+  };
 
-const validateTicketTotalSlot = (value: number, conferenceMaxSlot: number) => {
-  if (value <= 0) {
-    setError('ticketTotalSlot', 'Số lượng vé phải lớn hơn 0');
-    return false;
-  }
-  if (value > conferenceMaxSlot) {
-    setError('ticketTotalSlot', `Số lượng vượt quá sức chứa (${conferenceMaxSlot})`);
-    return false;
-  }
-  clearError('ticketTotalSlot');
-  return true;
-};
-
-const validatePhaseName = (value: string, existingPhases: Phase[] = []) => {
-  if (!value.trim()) {
-    setError('phaseName', 'Tên giai đoạn không được để trống');
-    return false;
-  }
-  
-  const isDuplicate = existingPhases.some(p => 
-    p.phaseName.toLowerCase() === value.trim().toLowerCase()
-  );
-  if (isDuplicate) {
-    setError('phaseName', 'Tên giai đoạn đã tồn tại');
-    return false;
-  }
-  
-  clearError('phaseName');
-  return true;
-};
-
-const validatePhaseStartDate = (
-  startDate: string, 
-  saleStart: string, 
-  saleEnd: string
-) => {
-  if (!startDate) {
-    setError('phaseStartDate', 'Vui lòng chọn ngày bắt đầu');
-    return false;
-  }
-  
-  const phaseStart = new Date(startDate);
-  const ticketSaleStart = new Date(saleStart);
-  const ticketSaleEnd = new Date(saleEnd);
-  
-  if (phaseStart < ticketSaleStart || phaseStart > ticketSaleEnd) {
-    setError('phaseStartDate', 
-      `Phải trong khoảng ${ticketSaleStart.toLocaleDateString('vi-VN')} - ${ticketSaleEnd.toLocaleDateString('vi-VN')}`
-    );
-    return false;
-  }
-  
-  clearError('phaseStartDate');
-  return true;
-};
-
-const validatePhaseDuration = (duration: number, startDate: string, saleEnd: string) => {
-  if (duration < 1) {
-    setError('phaseDuration', 'Thời gian phải ít nhất 1 ngày');
-    return false;
-  }
-  
-  if (startDate && saleEnd) {
-    const start = new Date(startDate);
-    const end = new Date(start);
-    end.setDate(start.getDate() + duration - 1);
-    const maxEnd = new Date(saleEnd);
-    
-    if (end > maxEnd) {
-      setError('phaseDuration', 'Giai đoạn vượt quá thời gian bán vé');
+  const validateTicketName = (value: string, existingTickets: Ticket[] = []) => {
+    if (!value.trim()) {
+      setError('ticketName', 'Tên vé không được để trống');
       return false;
     }
-  }
-  
-  clearError('phaseDuration');
-  return true;
-};
+    if (value.trim().length < 3) {
+      setError('ticketName', 'Tên vé phải có ít nhất 3 ký tự');
+      return false;
+    }
 
-const validatePhaseSlot = (slot: number, ticketTotal: number, usedSlots: number) => {
-  if (slot <= 0) {
-    setError('phaseSlot', 'Số lượng phải lớn hơn 0');
-    return false;
-  }
-  
-  const remaining = ticketTotal - usedSlots;
-  if (slot > remaining) {
-    setError('phaseSlot', `Chỉ còn ${remaining} slot khả dụng`);
-    return false;
-  }
-  
-  clearError('phaseSlot');
-  return true;
-};
-
-const validateSessionTitle = (value: string) => {
-  if (!value.trim()) {
-    setError('sessionTitle', 'Tiêu đề không được để trống');
-    return false;
-  }
-  if (value.trim().length < 5) {
-    setError('sessionTitle', 'Tiêu đề phải có ít nhất 5 ký tự');
-    return false;
-  }
-  clearError('sessionTitle');
-  return true;
-};
-
-const validateSessionDate = (date: string, eventStart: string, eventEnd: string) => {
-  if (!date) {
-    setError('sessionDate', 'Vui lòng chọn ngày');
-    return false;
-  }
-  
-  const sessionDate = new Date(date);
-  const confStart = new Date(eventStart);
-  const confEnd = new Date(eventEnd);
-  
-  sessionDate.setHours(0, 0, 0, 0);
-  confStart.setHours(0, 0, 0, 0);
-  confEnd.setHours(0, 0, 0, 0);
-  
-  if (sessionDate < confStart || sessionDate > confEnd) {
-    setError('sessionDate', 
-      `Phải trong khoảng ${confStart.toLocaleDateString('vi-VN')} - ${confEnd.toLocaleDateString('vi-VN')}`
+    const isDuplicate = existingTickets.some(t =>
+      t.ticketName.toLowerCase() === value.trim().toLowerCase()
     );
-    return false;
-  }
-  
-  clearError('sessionDate');
-  return true;
-};
+    if (isDuplicate) {
+      setError('ticketName', 'Tên vé đã tồn tại');
+      return false;
+    }
 
-const validateSessionTimeRange = (range: number) => {
-  if (range < 0.5) {
-    setError('sessionTimeRange', 'Thời lượng phải ít nhất 0.5 giờ');
-    return false;
-  }
-  if (range > 12) {
-    setError('sessionTimeRange', 'Thời lượng không quá 12 giờ');
-    return false;
-  }
-  clearError('sessionTimeRange');
-  return true;
-};
+    clearError('ticketName');
+    return true;
+  };
 
-const validateRefundPercent = (percent: number) => {
-  if (percent <= 0 || percent > 100) {
-    setError('refundPercent', 'Phần trăm phải từ 1-100%');
-    return false;
-  }
-  clearError('refundPercent');
-  return true;
-};
+  const validateTicketPrice = (value: number) => {
+    if (value <= 0) {
+      setError('ticketPrice', 'Giá vé phải lớn hơn 0');
+      clearWarning('ticketPrice');
+      return false;
+    }
+    if (value > 100000000) {
+      setError('ticketPrice', 'Giá vé không hợp lệ (tối đa 100 triệu)');
+      clearWarning('ticketPrice');
+      return false;
+    }
 
-const validateRefundDeadline = (deadline: string, eventStart: string) => {
-  if (!deadline) {
-    setError('refundDeadline', 'Vui lòng chọn hạn hoàn tiền');
-    return false;
-  }
-  
-  const refundDate = new Date(deadline);
-  const eventDate = new Date(eventStart);
-  
-  if (refundDate >= eventDate) {
-    setError('refundDeadline', 'Hạn phải trước ngày sự kiện');
-    return false;
-  }
-  
-  clearError('refundDeadline');
-  return true;
-};
+    clearError('ticketPrice');
 
-const validateRefundOrder = (order: number, existingPolicies: RefundPolicy[]) => {
-  if (order < 1) {
-    setError('refundOrder', 'Thứ tự phải lớn hơn 0');
-    return false;
-  }
-  
-  const isDuplicate = existingPolicies.some(p => p.refundOrder === order);
-  if (isDuplicate) {
-    setError('refundOrder', 'Thứ tự đã tồn tại');
-    return false;
-  }
-  
-  clearError('refundOrder');
-  return true;
-};
+    if (value < 10000) {
+      setWarning('ticketPrice', 'Giá vé thấp hơn mức khuyến nghị (10,000 VND)');
+      return true;
+    }
+
+    clearWarning('ticketPrice');
+    return true;
+  };
+
+  const validateTicketTotalSlot = (value: number, conferenceMaxSlot: number) => {
+    if (value <= 0) {
+      setError('ticketTotalSlot', 'Số lượng vé phải lớn hơn 0');
+      return false;
+    }
+    if (value > conferenceMaxSlot) {
+      setError('ticketTotalSlot', `Số lượng vượt quá sức chứa (${conferenceMaxSlot})`);
+      return false;
+    }
+    clearError('ticketTotalSlot');
+    return true;
+  };
+
+  const validatePhaseName = (value: string, existingPhases: Phase[] = []) => {
+    if (!value.trim()) {
+      setError('phaseName', 'Tên giai đoạn không được để trống');
+      return false;
+    }
+
+    const isDuplicate = existingPhases.some(p =>
+      p.phaseName.toLowerCase() === value.trim().toLowerCase()
+    );
+    if (isDuplicate) {
+      setError('phaseName', 'Tên giai đoạn đã tồn tại');
+      return false;
+    }
+
+    clearError('phaseName');
+    return true;
+  };
+
+  const validatePhaseStartDate = (
+    startDate: string,
+    saleStart: string,
+    saleEnd: string
+  ) => {
+    if (!startDate) {
+      setError('phaseStartDate', 'Vui lòng chọn ngày bắt đầu');
+      return false;
+    }
+
+    const phaseStart = new Date(startDate);
+    const ticketSaleStart = new Date(saleStart);
+    const ticketSaleEnd = new Date(saleEnd);
+
+    if (phaseStart < ticketSaleStart || phaseStart > ticketSaleEnd) {
+      setError('phaseStartDate',
+        `Phải trong khoảng ${ticketSaleStart.toLocaleDateString('vi-VN')} - ${ticketSaleEnd.toLocaleDateString('vi-VN')}`
+      );
+      return false;
+    }
+
+    clearError('phaseStartDate');
+    return true;
+  };
+
+  const validatePhaseDuration = (duration: number, startDate: string, saleEnd: string) => {
+    if (duration < 1) {
+      setError('phaseDuration', 'Thời gian phải ít nhất 1 ngày');
+      return false;
+    }
+
+    if (startDate && saleEnd) {
+      const start = new Date(startDate);
+      const end = new Date(start);
+      end.setDate(start.getDate() + duration - 1);
+      const maxEnd = new Date(saleEnd);
+
+      if (end > maxEnd) {
+        setError('phaseDuration', 'Giai đoạn vượt quá thời gian bán vé');
+        return false;
+      }
+    }
+
+    clearError('phaseDuration');
+    return true;
+  };
+
+  const validatePhaseSlot = (slot: number, ticketTotal: number, usedSlots: number) => {
+    if (slot <= 0) {
+      setError('phaseSlot', 'Số lượng phải lớn hơn 0');
+      return false;
+    }
+
+    const remaining = ticketTotal - usedSlots;
+    if (slot > remaining) {
+      setError('phaseSlot', `Chỉ còn ${remaining} slot khả dụng`);
+      return false;
+    }
+
+    clearError('phaseSlot');
+    return true;
+  };
+
+  const validateSessionTitle = (value: string) => {
+    if (!value.trim()) {
+      setError('sessionTitle', 'Tiêu đề không được để trống');
+      return false;
+    }
+    if (value.trim().length < 5) {
+      setError('sessionTitle', 'Tiêu đề phải có ít nhất 5 ký tự');
+      return false;
+    }
+    clearError('sessionTitle');
+    return true;
+  };
+
+  const validateSessionDate = (date: string, eventStart: string, eventEnd: string) => {
+    if (!date) {
+      setError('sessionDate', 'Vui lòng chọn ngày');
+      return false;
+    }
+
+    const sessionDate = new Date(date);
+    const confStart = new Date(eventStart);
+    const confEnd = new Date(eventEnd);
+
+    sessionDate.setHours(0, 0, 0, 0);
+    confStart.setHours(0, 0, 0, 0);
+    confEnd.setHours(0, 0, 0, 0);
+
+    if (sessionDate < confStart || sessionDate > confEnd) {
+      setError('sessionDate',
+        `Phải trong khoảng ${confStart.toLocaleDateString('vi-VN')} - ${confEnd.toLocaleDateString('vi-VN')}`
+      );
+      return false;
+    }
+
+    clearError('sessionDate');
+    return true;
+  };
+
+  const validateSessionTimeRange = (range: number) => {
+    if (range < 0.5) {
+      setError('sessionTimeRange', 'Thời lượng phải ít nhất 0.5 giờ');
+      return false;
+    }
+    if (range > 12) {
+      setError('sessionTimeRange', 'Thời lượng không quá 12 giờ');
+      return false;
+    }
+    clearError('sessionTimeRange');
+    return true;
+  };
+
+  const validateRefundPercent = (percent: number) => {
+    if (percent <= 0 || percent > 100) {
+      setError('refundPercent', 'Phần trăm phải từ 1-100%');
+      return false;
+    }
+    clearError('refundPercent');
+    return true;
+  };
+
+  const validateRefundDeadline = (deadline: string, eventStart: string) => {
+    if (!deadline) {
+      setError('refundDeadline', 'Vui lòng chọn hạn hoàn tiền');
+      return false;
+    }
+
+    const refundDate = new Date(deadline);
+    const eventDate = new Date(eventStart);
+
+    if (refundDate >= eventDate) {
+      setError('refundDeadline', 'Hạn phải trước ngày sự kiện');
+      return false;
+    }
+
+    clearError('refundDeadline');
+    return true;
+  };
+
+  const validateRefundOrder = (order: number, existingPolicies: RefundPolicy[]) => {
+    if (order < 1) {
+      setError('refundOrder', 'Thứ tự phải lớn hơn 0');
+      return false;
+    }
+
+    const isDuplicate = existingPolicies.some(p => p.refundOrder === order);
+    if (isDuplicate) {
+      setError('refundOrder', 'Thứ tự đã tồn tại');
+      return false;
+    }
+
+    clearError('refundOrder');
+    return true;
+  };
 
   useEffect(() => {
     if (basicForm.startDate && basicForm.dateRange && basicForm.dateRange > 0) {
@@ -710,7 +710,7 @@ const validateRefundOrder = (order: number, existingPolicies: RefundPolicy[]) =>
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create basic info:", error);
-      toast.error(apiError?.data?.Message || "Tạo thông tin cơ bản thất bại!");
+      toast.error(apiError?.data?.message || "Tạo thông tin cơ bản thất bại!");
     } finally {
       setIsSubmitting(false);
     }
@@ -756,7 +756,7 @@ const validateRefundOrder = (order: number, existingPolicies: RefundPolicy[]) =>
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create price:", error);
-      toast.error(apiError?.data?.Message || "Lưu giá vé thất bại!");
+      toast.error(apiError?.data?.message || "Lưu giá vé thất bại!");
     } finally {
       setIsSubmitting(false);
     }
@@ -837,7 +837,7 @@ const validateRefundOrder = (order: number, existingPolicies: RefundPolicy[]) =>
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create sessions:", error);
-      toast.error(apiError?.data?.Message || "Lưu phiên họp thất bại!");
+      toast.error(apiError?.data?.message || "Lưu phiên họp thất bại!");
     } finally {
       setIsSubmitting(false);
     }
@@ -866,9 +866,9 @@ const validateRefundOrder = (order: number, existingPolicies: RefundPolicy[]) =>
           : Promise.resolve(),
         refundPolicies.length > 0
           ? createRefundPolicies({
-              conferenceId,
-              data: { refundPolicies },
-            }).unwrap()
+            conferenceId,
+            data: { refundPolicies },
+          }).unwrap()
           : Promise.resolve(),
       ]);
 
@@ -878,7 +878,7 @@ const validateRefundOrder = (order: number, existingPolicies: RefundPolicy[]) =>
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create policies:", error);
-      toast.error(apiError?.data?.Message || "Lưu chính sách thất bại!");
+      toast.error(apiError?.data?.message || "Lưu chính sách thất bại!");
     } finally {
       setIsSubmitting(false);
     }
@@ -909,7 +909,7 @@ const validateRefundOrder = (order: number, existingPolicies: RefundPolicy[]) =>
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create media:", error);
-      toast.error(apiError?.data?.Message || "Lưu media thất bại!");
+      toast.error(apiError?.data?.message || "Lưu media thất bại!");
     } finally {
       setIsSubmitting(false);
     }
@@ -941,7 +941,7 @@ const validateRefundOrder = (order: number, existingPolicies: RefundPolicy[]) =>
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Failed to create sponsors:", error);
-      toast.error(apiError?.data?.Message || "Lưu nhà tài trợ thất bại!");
+      toast.error(apiError?.data?.message || "Lưu nhà tài trợ thất bại!");
     } finally {
       setIsSubmitting(false);
     }
@@ -1440,7 +1440,7 @@ const validateRefundOrder = (order: number, existingPolicies: RefundPolicy[]) =>
               }
               onBlur={() => validateConferenceName(basicForm.conferenceName)}
               error={validationErrors.conferenceName}
-              success={!validationErrors.conferenceName && basicForm.conferenceName.length >= 10}              
+              success={!validationErrors.conferenceName && basicForm.conferenceName.length >= 10}
               required
             />
             <FormTextArea
@@ -1501,7 +1501,7 @@ const validateRefundOrder = (order: number, existingPolicies: RefundPolicy[]) =>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <DatePickerInput
                 label="Ngày bắt đầu bán vé"
-                sublabel={`Trước ngày bắt đầu sự kiện ${formatDate(basicForm.startDate) }`}
+                sublabel={`Trước ngày bắt đầu sự kiện ${formatDate(basicForm.startDate)}`}
                 value={basicForm.ticketSaleStart}
                 onChange={(val) =>
                   setBasicForm({ ...basicForm, ticketSaleStart: val })
@@ -1727,9 +1727,8 @@ const validateRefundOrder = (order: number, existingPolicies: RefundPolicy[]) =>
                                 Tổng: {p.totalslot}
                               </span>
                               <span
-                                className={`font-bold ${
-                                  isIncrease ? "text-red-600" : "text-green-600"
-                                }`}
+                                className={`font-bold ${isIncrease ? "text-red-600" : "text-green-600"
+                                  }`}
                               >
                                 {percentDisplay}
                               </span>
@@ -1865,9 +1864,8 @@ const validateRefundOrder = (order: number, existingPolicies: RefundPolicy[]) =>
                               SL: {p.totalslot}
                             </span>
                             <span
-                              className={`font-bold ${
-                                isIncrease ? "text-red-600" : "text-green-600"
-                              }`}
+                              className={`font-bold ${isIncrease ? "text-red-600" : "text-green-600"
+                                }`}
                             >
                               {percentDisplay}
                             </span>
@@ -2053,7 +2051,7 @@ const validateRefundOrder = (order: number, existingPolicies: RefundPolicy[]) =>
                           </label>
                           <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
                             {newPhase.startDate &&
-                            newPhase.durationInDays > 0 ? (
+                              newPhase.durationInDays > 0 ? (
                               <span className="text-gray-900">
                                 {new Date(
                                   calculatePhaseEndDate(

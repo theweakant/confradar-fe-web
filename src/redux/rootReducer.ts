@@ -1,4 +1,4 @@
-import { combineReducers } from "@reduxjs/toolkit";
+import { AnyAction, combineReducers } from "@reduxjs/toolkit";
 import { persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 
@@ -65,5 +65,14 @@ const appReducer = combineReducers({
   [statusApi.reducerPath]: statusApi.reducer,
 });
 
+export type AppState = ReturnType<typeof appReducer>;
+
+const clearReducer = (state: AppState | undefined, action: AnyAction): AppState => {
+  if (action.type === "RESET_STORE") {
+    state = undefined;
+  }
+  return appReducer(state, action);
+};
+
 // Wrap với persistReducer
-export const rootReducer = persistReducer(persistConfig, appReducer);
+export const rootReducer = persistReducer(persistConfig, clearReducer)

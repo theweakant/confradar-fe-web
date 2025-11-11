@@ -149,7 +149,7 @@ export default function TicketConferences() {
             <div className="text-red-400 mb-4">
               Có lỗi xảy ra khi tải dữ liệu
             </div>
-            <p className="text-gray-400">{ticketsError.data?.Message}</p>
+            <p className="text-gray-400">{ticketsError.data?.message}</p>
             <Button
               onClick={() => refetchTickets()}
               className="mt-4 bg-purple-600 hover:bg-purple-700"
@@ -185,11 +185,10 @@ export default function TicketConferences() {
               <Button
                 key={option.id}
                 variant={option.active ? "default" : "outline"}
-                className={`whitespace-nowrap ${
-                  option.active
+                className={`whitespace-nowrap ${option.active
                     ? "bg-purple-600 text-white hover:bg-purple-700 border-purple-600"
                     : "bg-gray-800 text-gray-300 hover:bg-gray-700 border-gray-600"
-                }`}
+                  }`}
               >
                 {option.label}
               </Button>
@@ -576,13 +575,13 @@ export default function TicketConferences() {
                             </h3>
                             {selectedCheckIn.conferenceSessionDetail
                               ?.description && (
-                              <p className="text-sm text-gray-400 mb-2">
-                                {
-                                  selectedCheckIn.conferenceSessionDetail
-                                    .description
-                                }
-                              </p>
-                            )}
+                                <p className="text-sm text-gray-400 mb-2">
+                                  {
+                                    selectedCheckIn.conferenceSessionDetail
+                                      .description
+                                  }
+                                </p>
+                              )}
                           </div>
                           <div className="flex flex-col gap-2">
                             <Badge className="bg-green-800 text-green-200 border-green-600">
@@ -628,61 +627,61 @@ export default function TicketConferences() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                               {selectedCheckIn.conferenceSessionDetail
                                 .conferenceName && (
-                                <div>
-                                  <div className="text-gray-400">Hội nghị</div>
-                                  <div className="text-white">
-                                    {
-                                      selectedCheckIn.conferenceSessionDetail
-                                        .conferenceName
-                                    }
+                                  <div>
+                                    <div className="text-gray-400">Hội nghị</div>
+                                    <div className="text-white">
+                                      {
+                                        selectedCheckIn.conferenceSessionDetail
+                                          .conferenceName
+                                      }
+                                    </div>
                                   </div>
-                                </div>
-                              )}
+                                )}
                               {selectedCheckIn.conferenceSessionDetail
                                 .roomDisplayName && (
-                                <div>
-                                  <div className="text-gray-400">Phòng</div>
-                                  <div className="text-white">
-                                    {
-                                      selectedCheckIn.conferenceSessionDetail
-                                        .roomDisplayName
-                                    }
+                                  <div>
+                                    <div className="text-gray-400">Phòng</div>
+                                    <div className="text-white">
+                                      {
+                                        selectedCheckIn.conferenceSessionDetail
+                                          .roomDisplayName
+                                      }
+                                    </div>
                                   </div>
-                                </div>
-                              )}
+                                )}
                               {selectedCheckIn.conferenceSessionDetail
                                 .destinationName && (
-                                <div className="col-span-2">
-                                  <div className="text-gray-400 flex items-center gap-1">
-                                    <MapPin className="h-4 w-4" />
-                                    Địa điểm
-                                  </div>
-                                  <div className="text-white">
-                                    {
-                                      selectedCheckIn.conferenceSessionDetail
-                                        .destinationName
-                                    }
-                                    {selectedCheckIn.conferenceSessionDetail
-                                      .cityName &&
-                                      `, ${selectedCheckIn.conferenceSessionDetail.cityName}`}
-                                  </div>
-                                  {(selectedCheckIn.conferenceSessionDetail
-                                    .street ||
-                                    selectedCheckIn.conferenceSessionDetail
-                                      .district) && (
-                                    <div className="text-gray-400 text-xs mt-1">
-                                      {[
-                                        selectedCheckIn.conferenceSessionDetail
-                                          .street,
-                                        selectedCheckIn.conferenceSessionDetail
-                                          .district,
-                                      ]
-                                        .filter(Boolean)
-                                        .join(", ")}
+                                  <div className="col-span-2">
+                                    <div className="text-gray-400 flex items-center gap-1">
+                                      <MapPin className="h-4 w-4" />
+                                      Địa điểm
                                     </div>
-                                  )}
-                                </div>
-                              )}
+                                    <div className="text-white">
+                                      {
+                                        selectedCheckIn.conferenceSessionDetail
+                                          .destinationName
+                                      }
+                                      {selectedCheckIn.conferenceSessionDetail
+                                        .cityName &&
+                                        `, ${selectedCheckIn.conferenceSessionDetail.cityName}`}
+                                    </div>
+                                    {(selectedCheckIn.conferenceSessionDetail
+                                      .street ||
+                                      selectedCheckIn.conferenceSessionDetail
+                                        .district) && (
+                                        <div className="text-gray-400 text-xs mt-1">
+                                          {[
+                                            selectedCheckIn.conferenceSessionDetail
+                                              .street,
+                                            selectedCheckIn.conferenceSessionDetail
+                                              .district,
+                                          ]
+                                            .filter(Boolean)
+                                            .join(", ")}
+                                        </div>
+                                      )}
+                                  </div>
+                                )}
                             </div>
                           </div>
                         )}

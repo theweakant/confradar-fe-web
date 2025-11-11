@@ -90,8 +90,8 @@ const ConferenceDetail = () => {
   const error = isResearch ? researchConferenceError : technicalConferenceError;
 
   useEffect(() => {
-    if (techPaymentError) toast.error(techPaymentError.data?.Message);
-    if (researchPaymentError) toast.error(researchPaymentError.data?.Message);
+    if (techPaymentError) toast.error(techPaymentError.data?.message);
+    if (researchPaymentError) toast.error(researchPaymentError.data?.message);
     console.log(techPaymentError);
     console.log(researchPaymentError);
   }, [techPaymentError, researchPaymentError]);
@@ -206,7 +206,7 @@ const ConferenceDetail = () => {
           <p className="text-red-400 mb-4">
             Có lỗi xảy ra khi tải thông tin hội nghị
           </p>
-          <p className="text-sm">{error.data?.Message}</p>
+          <p className="text-sm">{error.data?.message}</p>
         </div>
       </div>
     );
@@ -290,63 +290,57 @@ const ConferenceDetail = () => {
                 {/* border hơi nhạt trên bg đen */}
                 <button
                   onClick={() => setActiveTab("info")}
-                  className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${
-                    activeTab === "info"
+                  className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "info"
                       ? "text-blue-500 border-b-2 border-coral-500"
                       : "text-white/70 hover:text-white"
-                  }`}
+                    }`}
                 >
                   Thông tin & Hình ảnh
                 </button>
                 <button
                   onClick={() => setActiveTab("sessions")}
-                  className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${
-                    activeTab === "sessions"
+                  className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "sessions"
                       ? "text-blue-500 border-b-2 border-coral-500"
                       : "text-white/70 hover:text-white"
-                  }`}
+                    }`}
                 >
                   Lịch trình Sessions
                 </button>
                 <button
                   onClick={() => setActiveTab("prices")}
-                  className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${
-                    activeTab === "prices"
+                  className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "prices"
                       ? "text-blue-500 border-b-2 border-coral-400"
                       : "text-white/70 hover:text-white"
-                  }`}
+                    }`}
                 >
                   Các loại vé
                 </button>
                 {isResearch && (
                   <button
                     onClick={() => setActiveTab("research")}
-                    className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${
-                      activeTab === "research"
+                    className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "research"
                         ? "text-blue-500 border-b-2 border-coral-500"
                         : "text-white/70 hover:text-white"
-                    }`}
+                      }`}
                   >
                     Research Paper Information
                   </button>
                 )}
                 <button
                   onClick={() => setActiveTab("policy")}
-                  className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${
-                    activeTab === "policy"
+                  className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "policy"
                       ? "text-blue-500 border-b-2 border-coral-500"
                       : "text-white/70 hover:text-white"
-                  }`}
+                    }`}
                 >
                   Chính sách & Hoàn tiền
                 </button>
                 <button
                   onClick={() => setActiveTab("feedback")}
-                  className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${
-                    activeTab === "feedback"
+                  className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "feedback"
                       ? "text-blue-500 border-b-2 border-coral-500"
                       : "text-white/70 hover:text-white"
-                  }`}
+                    }`}
                 >
                   Đánh giá
                 </button>

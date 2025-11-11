@@ -58,8 +58,8 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
   useEffect(() => {
     if (submitRevisionError) {
       let errorMessage = "Có lỗi xảy ra";
-      if (submitRevisionError.data?.Message) {
-        errorMessage = submitRevisionError.data.Message;
+      if (submitRevisionError.data?.message) {
+        errorMessage = submitRevisionError.data.message;
       }
       toast.error(errorMessage);
     }
