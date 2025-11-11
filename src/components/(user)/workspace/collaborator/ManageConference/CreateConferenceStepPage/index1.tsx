@@ -39,8 +39,13 @@ import {
   validateBasicForm,
 } from "./validations";
 
+import { TECH_STEP_LABELS, TECH_MAX_STEP } from "./constants";
+import { useAppDispatch } from "@/redux/hooks/hooks";
+import { setMaxStep } from "@/redux/slices/conferenceStep.slice";
+
 export default function CreateConferenceStepPage() {
-  // API Queries
+  const dispatch = useAppDispatch();
+
   const { data: categoriesData, isLoading: isCategoriesLoading } =
     useGetAllCategoriesQuery();
   const { data: roomsData, isLoading: isRoomsLoading } = useGetAllRoomsQuery();
@@ -92,6 +97,7 @@ export default function CreateConferenceStepPage() {
 
   // Initialize
   useEffect(() => {
+    dispatch(setMaxStep(TECH_MAX_STEP)); 
     handleSetMode("create");
     handleGoToStep(1);
 
@@ -99,7 +105,7 @@ export default function CreateConferenceStepPage() {
       handleReset();
       resetAllForms();
     };
-  }, []);
+  }, [dispatch]);
 
   // Prepare options for selects
   const categoryOptions =
@@ -223,6 +229,8 @@ export default function CreateConferenceStepPage() {
       <StepIndicator
         currentStep={currentStep}
         completedSteps={completedSteps}
+        maxStep={TECH_MAX_STEP} 
+        stepLabels={TECH_STEP_LABELS} 
         onStepClick={handleGoToStep}
       />
 

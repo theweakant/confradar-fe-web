@@ -1,33 +1,42 @@
 "use client";
+import { toast } from "sonner";
 import { useEffect } from "react";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 import { useGetAllRoomsQuery } from "@/redux/services/room.service";
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
+import { useGetAllRankingCategoriesQuery } from "@/redux/services/category.service";
 
-// Components
+// Shared Components
 import {
   StepIndicator,
   NavigationButtons,
   StepContainer,
   LoadingOverlay,
   PageHeader,
-} from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/components";
+  PhaseModal,
+} from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/components/index";
 
-// Forms
-import { BasicInfoForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/BasicInfoForm";
-import { PriceForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/PriceForm";
-import { SessionForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/SessionForm";
-import { PolicyForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/PolicyForm";
+// Shared Forms (100% reuse)
+import { PolicyForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/PolicyForm"
 import { MediaForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/MediaForm";
 import { SponsorForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/SponsorForm";
+
+// Research-Specific Forms
+import { ResearchBasicInfoForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchBasicInfoForm";
+import { ResearchDetailForm } from "../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchDetailForm";
+import { ResearchPhaseForm } from "../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchPhaseForm";
+import { ResearchPriceForm } from "../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchPriceForm";
+import { MaterialsForm } from "../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/MaterialsForm";
+import { SessionForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/SessionForm"; 
 
 // Hooks
 import {
   useStepNavigation,
-  useFormSubmit,
+  useResearchFormSubmit,
   useValidation,
-  useConferenceForm,
-} from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/hooks";
+  useResearchForm,
+  useModalState,
+} from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/hooks/index";
 
 // Validations
 import {
@@ -37,15 +46,24 @@ import {
   validateTicketSaleStart,
   validateTicketSaleDuration,
   validateBasicForm,
+  validateResearchTimeline,
 } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/validations";
 
-export default function CreateConferenceStepPage() {
+// Constants
+import { RESEARCH_STEP_LABELS, RESEARCH_MAX_STEP } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/constants";
+
+// Redux
+import { useAppDispatch } from "@/redux/hooks/hooks";
+import { setMaxStep } from "@/redux/slices/conferenceStep.slice";
+
+export default function CreateResearchConferenceStepPage() {
+  const dispatch = useAppDispatch();
+
   // API Queries
-  const { data: categoriesData, isLoading: isCategoriesLoading } =
-    useGetAllCategoriesQuery();
+  const { data: categoriesData, isLoading: isCategoriesLoading } = useGetAllCategoriesQuery();
   const { data: roomsData, isLoading: isRoomsLoading } = useGetAllRoomsQuery();
-  const { data: citiesData, isLoading: isCitiesLoading } =
-    useGetAllCitiesQuery();
+  const { data: citiesData, isLoading: isCitiesLoading } = useGetAllCitiesQuery();
+  const { data: rankingData, isLoading: isRankingLoading } = useGetAllRankingCategoriesQuery();
 
   // Custom Hooks
   const {
@@ -54,7 +72,6 @@ export default function CreateConferenceStepPage() {
     handleNext,
     handlePrevious,
     handleGoToStep,
-    handleMarkCompleted,
     handleSetMode,
     handleReset,
     isStepCompleted,
@@ -63,18 +80,25 @@ export default function CreateConferenceStepPage() {
   const {
     isSubmitting,
     submitBasicInfo,
+    submitResearchDetail,
+    submitResearchPhase,
     submitPrice,
     submitSessions,
     submitPolicies,
+    submitMaterials,
     submitMedia,
     submitSponsors,
-  } = useFormSubmit();
+  } = useResearchFormSubmit();
 
   const { validationErrors, validate, clearError } = useValidation();
 
   const {
     basicForm,
     setBasicForm,
+    researchDetail,
+    setResearchDetail,
+    researchPhases,
+    setResearchPhases,
     tickets,
     setTickets,
     sessions,
@@ -83,15 +107,24 @@ export default function CreateConferenceStepPage() {
     setPolicies,
     refundPolicies,
     setRefundPolicies,
+    researchMaterials,
+    setResearchMaterials,
+    rankingFiles,
+    setRankingFiles,
+    rankingReferences,
+    setRankingReferences,
     mediaList,
     setMediaList,
     sponsors,
     setSponsors,
     resetAllForms,
-  } = useConferenceForm();
+  } = useResearchForm();
+
+  const { isPhaseModalOpen, openPhaseModal, closePhaseModal } = useModalState();
 
   // Initialize
   useEffect(() => {
+    dispatch(setMaxStep(RESEARCH_MAX_STEP)); 
     handleSetMode("create");
     handleGoToStep(1);
 
@@ -99,9 +132,9 @@ export default function CreateConferenceStepPage() {
       handleReset();
       resetAllForms();
     };
-  }, []);
+  }, [dispatch]);
 
-  // Prepare options for selects
+  // Prepare options
   const categoryOptions =
     categoriesData?.data?.map((category) => ({
       value: category.conferenceCategoryId,
@@ -120,19 +153,24 @@ export default function CreateConferenceStepPage() {
       label: city.cityName || "N/A",
     })) || [];
 
-  // Validation handlers
+  const rankingOptions =
+    rankingData?.data?.map((ranking) => ({
+      value: ranking.rankId,
+      label: ranking.rankName || "N/A",
+    })) || [];
+
   const handleFieldBlur = (field: string) => {
     switch (field) {
       case "conferenceName":
         validate(field, () => validateConferenceName(basicForm.conferenceName));
         break;
       case "dateRange":
-      if (basicForm.dateRange != null) {
-        validate(field, () => validateDateRange(basicForm.dateRange!));
-      } else {
-        clearError("dateRange");
-      }
-      break;
+        if (basicForm.dateRange != null) {
+          validate(field, () => validateDateRange(basicForm.dateRange!));
+        } else {
+          clearError(field);
+        }
+        break;
       case "totalSlot":
         validate(field, () => validateTotalSlot(basicForm.totalSlot));
         break;
@@ -142,22 +180,22 @@ export default function CreateConferenceStepPage() {
         );
         break;
       case "ticketSaleDuration":
-      if (
-        basicForm.ticketSaleDuration != null &&
-        basicForm.ticketSaleStart &&
-        basicForm.startDate
-      ) {
-        validate(field, () =>
-          validateTicketSaleDuration(
-            basicForm.ticketSaleDuration!,
-            basicForm.ticketSaleStart!,
-            basicForm.startDate!
-          )
-        );
-      } else {
-        clearError("ticketSaleDuration");
-      }
-      break;
+        if (
+          basicForm.ticketSaleDuration != null &&
+          basicForm.ticketSaleStart &&
+          basicForm.startDate
+        ) {
+          validate(field, () =>
+            validateTicketSaleDuration(
+              basicForm.ticketSaleDuration!,
+              basicForm.ticketSaleStart!,
+              basicForm.startDate!
+            )
+          );
+        } else {
+          clearError(field);
+        }
+        break;
     }
   };
 
@@ -167,75 +205,75 @@ export default function CreateConferenceStepPage() {
     if (!validationResult.isValid) {
       return;
     }
-
-    const result = await submitBasicInfo(basicForm);
-    if (result.success) {
-      handleMarkCompleted(1);
-    }
+    await submitBasicInfo(basicForm);
   };
 
-  const handlePriceSubmit = async () => {
-    const result = await submitPrice(tickets);
-    if (result.success) {
-      handleMarkCompleted(2);
+  const handleResearchDetailSubmit = async () => {
+    await submitResearchDetail(researchDetail);
+  };
+
+const handleTimelineSubmit = async () => {
+  for (const [index, phase] of researchPhases.entries()) {
+    const validationResult = validateResearchTimeline(phase, basicForm.ticketSaleStart);
+    if (!validationResult.isValid) {
+      toast.error(`Lỗi ở phase ${index + 1}: ${validationResult.error}`);
+      return; 
     }
+    if (validationResult.warning) {
+      toast.warning(`Cảnh báo ở phase ${index + 1}: ${validationResult.warning}`);
+    }
+  }
+
+  // Nếu tất cả phase hợp lệ → submit
+  await submitResearchPhase(researchPhases);
+};
+
+  const handlePriceSubmit = async () => {
+    await submitPrice(tickets);
   };
 
   const handleSessionsSubmit = async () => {
-    const result = await submitSessions(
-      sessions,
-      basicForm.startDate,
-      basicForm.endDate
-    );
-    if (result.success) {
-      handleMarkCompleted(3);
-    }
+    await submitSessions(sessions, basicForm.startDate, basicForm.endDate);
   };
 
   const handlePoliciesSubmit = async () => {
-    const result = await submitPolicies(policies, refundPolicies);
-    if (result.success) {
-      handleMarkCompleted(4);
-    }
+    await submitPolicies(policies, refundPolicies);
+  };
+
+  const handleMaterialsSubmit = async () => {
+    await submitMaterials(researchMaterials, rankingFiles, rankingReferences);
   };
 
   const handleMediaSubmit = async () => {
-    const result = await submitMedia(mediaList);
-    if (result.success) {
-      handleMarkCompleted(5);
-    }
+    await submitMedia(mediaList);
   };
 
   const handleSponsorsSubmit = async () => {
-    const result = await submitSponsors(sponsors);
-    if (result.success) {
-      handleMarkCompleted(6);
-    }
+    await submitSponsors(sponsors);
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
+    <div className="max-w-5xl mx-a uto p-6">
       <PageHeader
-        title="Tạo hội thảo mới"
-        description="Điền đầy đủ thông tin để tạo hội thảo"
+        title="Tạo hội thảo nghiên cứu mới"
+        description="Điền đầy đủ thông tin để tạo hội thảo nghiên cứu"
       />
 
       <StepIndicator
         currentStep={currentStep}
         completedSteps={completedSteps}
+        maxStep={RESEARCH_MAX_STEP}
+        stepLabels={RESEARCH_STEP_LABELS}
         onStepClick={handleGoToStep}
       />
 
-      {isSubmitting && <LoadingOverlay />}
+      {isSubmitting && <LoadingOverlay message="Đang xử lý... Vui lòng đợi" />}
 
       {/* STEP 1: Basic Info */}
       {currentStep === 1 && (
-        <StepContainer
-          stepNumber={1}
-          title="Thông tin cơ bản"
-          isCompleted={isStepCompleted(1)}
-        >
-          <BasicInfoForm
+        <StepContainer stepNumber={1} title="Thông tin cơ bản" isCompleted={isStepCompleted(1)}>
+          {/* Reuse BasicInfoForm from tech with some modifications */}
+          <ResearchBasicInfoForm
             formData={basicForm}
             onChange={setBasicForm}
             validationErrors={validationErrors}
@@ -245,7 +283,6 @@ export default function CreateConferenceStepPage() {
             isCategoriesLoading={isCategoriesLoading}
             isCitiesLoading={isCitiesLoading}
           />
-
           <NavigationButtons
             currentStep={1}
             isStepCompleted={isStepCompleted(1)}
@@ -258,19 +295,15 @@ export default function CreateConferenceStepPage() {
         </StepContainer>
       )}
 
-      {/* STEP 2: Price */}
+      {/* STEP 2: Research Detail */}
       {currentStep === 2 && (
-        <StepContainer
-          stepNumber={2}
-          title="Giá vé"
-          isCompleted={isStepCompleted(2)}
-        >
-          <PriceForm
-            tickets={tickets}
-            onTicketsChange={setTickets}
-            ticketSaleStart={basicForm.ticketSaleStart}
-            ticketSaleEnd={basicForm.ticketSaleEnd}
-            maxTotalSlot={basicForm.totalSlot}
+        <StepContainer stepNumber={2} title="Chi tiết nghiên cứu" isCompleted={isStepCompleted(2)}>
+          <ResearchDetailForm
+            formData={researchDetail}
+            onChange={setResearchDetail}
+            rankingOptions={rankingOptions}
+            isRankingLoading={isRankingLoading}
+            validationErrors={validationErrors}
           />
 
           <NavigationButtons
@@ -279,18 +312,76 @@ export default function CreateConferenceStepPage() {
             isSubmitting={isSubmitting}
             onPrevious={handlePrevious}
             onNext={handleNext}
+            onSubmit={handleResearchDetailSubmit}
+          />
+        </StepContainer>
+      )}
+
+      {/* STEP 3: Timeline/Research Phase */}
+      {currentStep === 3 && (
+        <StepContainer stepNumber={3} title="Timeline & Giai đoạn" isCompleted={isStepCompleted(3)}>
+          <ResearchPhaseForm
+            phases={researchPhases}
+            onPhasesChange={setResearchPhases}
+            ticketSaleStart={basicForm.ticketSaleStart}
+            ticketSaleEnd={basicForm.ticketSaleEnd}
+            eventStartDate={basicForm.startDate}
+            eventEndDate={basicForm.endDate}
+          />
+
+          <NavigationButtons
+            currentStep={3}
+            isStepCompleted={isStepCompleted(3)}
+            isSubmitting={isSubmitting}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+            onSubmit={handleTimelineSubmit}
+          />
+        </StepContainer>
+      )}
+
+      {/* STEP 4: Price */}
+      {currentStep === 4 && (
+        <StepContainer stepNumber={4} title="Giá vé" isCompleted={isStepCompleted(4)}>
+          <ResearchPriceForm
+            tickets={tickets}
+            onTicketsChange={setTickets}
+            ticketSaleStart={basicForm.ticketSaleStart}
+            ticketSaleEnd={basicForm.ticketSaleEnd}
+            researchPhases={researchPhases}
+            maxTotalSlot={basicForm.totalSlot}
+            onOpenPhaseModal={openPhaseModal}
+          />
+
+          {/* Phase Modal */}
+          <PhaseModal
+            isOpen={isPhaseModalOpen}
+            onClose={closePhaseModal}
+            onAdd={(phase) => {
+              /* Handle add phase logic */
+            }}
+            ticketSaleStart={basicForm.ticketSaleStart}
+            ticketSaleEnd={basicForm.ticketSaleEnd}
+            ticketPrice={0}
+            maxSlot={basicForm.totalSlot}
+            usedSlots={0}
+            existingPhases={[]}
+          />
+
+          <NavigationButtons
+            currentStep={4}
+            isStepCompleted={isStepCompleted(4)}
+            isSubmitting={isSubmitting}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
             onSubmit={handlePriceSubmit}
           />
         </StepContainer>
       )}
 
-      {/* STEP 3: Sessions */}
-      {currentStep === 3 && (
-        <StepContainer
-          stepNumber={3}
-          title="Phiên họp (Tùy chọn)"
-          isCompleted={isStepCompleted(3)}
-        >
+      {/* STEP 5: Sessions */}
+      {currentStep === 5 && (
+        <StepContainer stepNumber={5} title="Phiên họp (Tùy chọn)" isCompleted={isStepCompleted(5)}>
           <SessionForm
             sessions={sessions}
             onSessionsChange={setSessions}
@@ -302,8 +393,8 @@ export default function CreateConferenceStepPage() {
           />
 
           <NavigationButtons
-            currentStep={3}
-            isStepCompleted={isStepCompleted(3)}
+            currentStep={5}
+            isStepCompleted={isStepCompleted(5)}
             isSubmitting={isSubmitting}
             showSkip={sessions.length === 0}
             canSkip={sessions.length === 0}
@@ -314,13 +405,9 @@ export default function CreateConferenceStepPage() {
         </StepContainer>
       )}
 
-      {/* STEP 4: Policies */}
-      {currentStep === 4 && (
-        <StepContainer
-          stepNumber={4}
-          title="Chính sách (Tùy chọn)"
-          isCompleted={isStepCompleted(4)}
-        >
+      {/* STEP 6: Policies */}
+      {currentStep === 6 && (
+        <StepContainer stepNumber={6} title="Chính sách (Tùy chọn)" isCompleted={isStepCompleted(6)}>
           <PolicyForm
             policies={policies}
             refundPolicies={refundPolicies}
@@ -332,8 +419,8 @@ export default function CreateConferenceStepPage() {
           />
 
           <NavigationButtons
-            currentStep={4}
-            isStepCompleted={isStepCompleted(4)}
+            currentStep={6}
+            isStepCompleted={isStepCompleted(6)}
             isSubmitting={isSubmitting}
             showSkip={policies.length === 0 && refundPolicies.length === 0}
             canSkip={policies.length === 0 && refundPolicies.length === 0}
@@ -344,18 +431,39 @@ export default function CreateConferenceStepPage() {
         </StepContainer>
       )}
 
-      {/* STEP 5: Media */}
-      {currentStep === 5 && (
-        <StepContainer
-          stepNumber={5}
-          title="Media (Tùy chọn)"
-          isCompleted={isStepCompleted(5)}
-        >
+      {/* STEP 7: Materials */}
+      {currentStep === 7 && (
+        <StepContainer stepNumber={7} title="Tài liệu & Xếp hạng (Tùy chọn)" isCompleted={isStepCompleted(7)}>
+          <MaterialsForm
+            materials={researchMaterials}
+            rankingFiles={rankingFiles}
+            rankingReferences={rankingReferences}
+            onMaterialsChange={setResearchMaterials}
+            onRankingFilesChange={setRankingFiles}
+            onRankingReferencesChange={setRankingReferences}
+          />
+
+          <NavigationButtons
+            currentStep={7}
+            isStepCompleted={isStepCompleted(7)}
+            isSubmitting={isSubmitting}
+            showSkip={researchMaterials.length === 0 && rankingFiles.length === 0 && rankingReferences.length === 0}
+            canSkip={researchMaterials.length === 0}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+            onSubmit={handleMaterialsSubmit}
+          />
+        </StepContainer>
+      )}
+
+      {/* STEP 8: Media */}
+      {currentStep === 8 && (
+        <StepContainer stepNumber={8} title="Media (Tùy chọn)" isCompleted={isStepCompleted(8)}>
           <MediaForm mediaList={mediaList} onMediaListChange={setMediaList} />
 
           <NavigationButtons
-            currentStep={5}
-            isStepCompleted={isStepCompleted(5)}
+            currentStep={8}
+            isStepCompleted={isStepCompleted(8)}
             isSubmitting={isSubmitting}
             showSkip={mediaList.length === 0}
             canSkip={mediaList.length === 0}
@@ -366,24 +474,20 @@ export default function CreateConferenceStepPage() {
         </StepContainer>
       )}
 
-      {/* STEP 6: Sponsors */}
-      {currentStep === 6 && (
-        <StepContainer
-          stepNumber={6}
-          title="Nhà tài trợ (Tùy chọn)"
-          isCompleted={isStepCompleted(6)}
-        >
+      {/* STEP 9: Sponsors (Final) */}
+      {currentStep === 9 && (
+        <StepContainer stepNumber={9} title="Nhà tài trợ (Tùy chọn)" isCompleted={isStepCompleted(9)}>
           <SponsorForm sponsors={sponsors} onSponsorsChange={setSponsors} />
 
           <NavigationButtons
-            currentStep={6}
-            isStepCompleted={isStepCompleted(6)}
+            currentStep={9}
+            isStepCompleted={isStepCompleted(9)}
             isSubmitting={isSubmitting}
             showNext={false}
             submitButtonText={
               isSubmitting
                 ? "Đang hoàn tất..."
-                : isStepCompleted(6)
+                : isStepCompleted(9)
                   ? "Đã hoàn thành"
                   : sponsors.length > 0
                     ? "Hoàn tất"

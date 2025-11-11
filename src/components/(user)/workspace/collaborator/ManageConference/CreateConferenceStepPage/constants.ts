@@ -7,14 +7,15 @@ export const TARGET_OPTIONS = [
   { value: "Khác", label: "Khác" },
 ] as const;
 
-// Step labels
-export const STEP_LABELS = [
+export const TECH_MAX_STEP = 6;
+
+export const TECH_STEP_LABELS: string[] = [
   "Thông tin",
   "Giá vé",
   "Phiên họp",
   "Chính sách",
   "Media",
-  "Tài trợ",
+  "Tài trợ"
 ] as const;
 
 // Validation limits
@@ -90,5 +91,71 @@ export const STATUS_MESSAGES = {
     MEDIA: "Lưu media thất bại!",
     SPONSORS: "Lưu nhà tài trợ thất bại!",
     NO_CONFERENCE_ID: "Không tìm thấy conference ID!",
+  },
+} as const;
+
+
+
+//RESEARCH
+// Step labels for Research Conference
+export const RESEARCH_STEP_LABELS: string[] = [
+  "Thông tin",
+  "Chi tiết", 
+  "Timeline",
+  "Giá vé",
+  "Phiên họp",
+  "Chính sách",
+  "Tài liệu",
+  "Media",
+  "Tài trợ"
+];
+
+export const RESEARCH_MAX_STEP = 9;
+
+// Paper format options
+export const PAPER_FORMAT_OPTIONS = [
+  { value: "acm", label: "ACM" },
+  { value: "apa", label: "APA" },
+  { value: "chicago", label: "Chicago" },
+  { value: "elsevier", label: "Elsevier" },
+  { value: "ieee", label: "IEEE" },
+  { value: "lncs", label: "LNCS" },
+  { value: "mla", label: "MLA" },
+  { value: "springer", label: "Springer" },
+] as const;
+
+// Status messages
+export const RESEARCH_STATUS_MESSAGES = {
+  SUCCESS: {
+    BASIC: "Tạo thông tin cơ bản thành công!",
+    DETAIL: "Lưu chi tiết nghiên cứu thành công!",
+    TIMELINE: "Lưu timeline thành công!",
+    PRICE: "Lưu thông tin giá vé thành công!",
+    SESSIONS: "Lưu phiên họp thành công!",
+    POLICIES: "Lưu chính sách thành công!",
+    MATERIALS: "Lưu tài liệu thành công!",
+    MEDIA: "Lưu media thành công!",
+    SPONSORS: "Lưu nhà tài trợ thành công!",
+    COMPLETE: "Tạo hội thảo nghiên cứu thành công!",
+    SKIP: {
+      SESSIONS: "Đã bỏ qua phần phiên họp",
+      POLICIES: "Đã bỏ qua phần chính sách",
+      MATERIALS: "Đã bỏ qua phần tài liệu",
+      MEDIA: "Đã bỏ qua phần media",
+    },
+  },
+  ERROR: {
+    BASIC: "Tạo thông tin cơ bản thất bại!",
+    DETAIL: "Lưu chi tiết nghiên cứu thất bại!",
+    TIMELINE: "Lưu timeline thất bại!",
+    PRICE: "Lưu giá vé thất bại!",
+    SESSIONS: "Lưu phiên họp thất bại!",
+    POLICIES: "Lưu chính sách thất bại!",
+    MATERIALS: "Lưu tài liệu thất bại!",
+    MEDIA: "Lưu media thất bại!",
+    SPONSORS: "Lưu nhà tài trợ thất bại!",
+    NO_CONFERENCE_ID: "Không tìm thấy conference ID!",
+    NO_AUTHOR_TICKET: "Hội nghị nghiên cứu cần có ít nhất một loại vé dành cho tác giả!",
+    TIMELINE_VALIDATION: "Timeline research phải kết thúc trước ngày bán vé!",
   },
 } as const;
