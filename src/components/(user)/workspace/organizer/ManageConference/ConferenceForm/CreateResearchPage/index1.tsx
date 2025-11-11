@@ -159,6 +159,9 @@ export default function CreateResearchConferenceStepPage() {
       label: ranking.rankName || "N/A",
     })) || [];
 
+console.log("Ranking loading?", isRankingLoading);
+console.log("Ranking options:", rankingOptions);
+
   const handleFieldBlur = (field: string) => {
     switch (field) {
       case "conferenceName":
