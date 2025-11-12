@@ -103,26 +103,26 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
         href: "/workspace/organizer/manage-user",
         icon: Users,
         subMenu: [
-          { label: "Phản biện", href: "/workspace/organizer/manage-user/manage-reviewer" },
+          { label: "Người đánh giá", href: "/workspace/organizer/manage-user/manage-reviewer" },
           { label: "Đối tác", href: "/workspace/organizer/manage-user/manage-collaborator" },
           { label: "Khách hàng", href: "/workspace/organizer/manage-user/manage-customer" },
         ],
       },
-      {
-        label: "Đối tác",
-        href: "/workspace/organizer/manage-user",
-        icon: Users,
-      },
-      {
-        label: "Đánh giá viên",
-        href: "/workspace/organizer/manage-reviewer",
-        icon: Users,
-      },
-      {
-        label: "Yêu cầu",
-        href: "/workspace/organizer/manage-request",
-        icon: Building2,
-      },
+      // {
+      //   label: "Đối tác",
+      //   href: "/workspace/organizer/manage-user",
+      //   icon: Users,
+      // },
+      // {
+      //   label: "Đánh giá viên",
+      //   href: "/workspace/organizer/manage-reviewer",
+      //   icon: Users,
+      // },
+      // {
+      //   label: "Yêu cầu",
+      //   href: "/workspace/organizer/manage-request",
+      //   icon: Building2,
+      // },
     ],
     [ROLES.COLLABORATOR]: [
       {

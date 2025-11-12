@@ -1,159 +1,120 @@
-import React from "react";
-import {
-    Eye,
-    MoreVertical,
-    Ban,
-    CheckCircle
-} from "lucide-react";
-
-import { DataTable, Column } from "@/components/molecules/DataTable";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { StatusBadge } from "@/components/atoms/StatusBadge";
-import { UserProfileResponse } from "@/types/user.type";
+import React from 'react';
+import { Eye, UserMinus, UserCheck, Mail, Calendar } from 'lucide-react';
+import { UserDetailForAdminAndOrganizerResponse } from '@/types/user.type';
+import { format } from 'date-fns';
+import { vi } from 'date-fns/locale';
 
 interface LocalReviewerTableProps {
-    reviewers: UserProfileResponse[];
-    onView: (reviewer: UserProfileResponse) => void;
-    onSuspend: (reviewerId: string) => void;
-    onActivate: (reviewerId: string) => void;
+  reviewers: UserDetailForAdminAndOrganizerResponse[];
+  onView: (reviewer: UserDetailForAdminAndOrganizerResponse) => void;
+  onSuspend: (userId: string) => void;
+  onActivate: (userId: string) => void;
 }
 
-export function LocalReviewerTable({
-    reviewers,
-    onView,
-    onSuspend,
-    onActivate
-}: LocalReviewerTableProps) {
-    const getRoleLabel = (role: string) => {
-        const labels: Record<string, string> = {
-            customer: "Khách hàng",
-            conferenceorganizer: "Người tổ chức hội nghị",
-            collaborator: "Cộng tác viên",
-            localreviewer: "Phản biện nội bộ",
-            externalreviewer: "Phản biện bên ngoài",
-            admin: "Quản trị viên"
-        };
-        return labels[role] || role;
-    };
-
-    const getRoleVariant = (role: string): "success" | "danger" | "warning" | "info" => {
-        const variants: Record<string, "success" | "danger" | "warning" | "info"> = {
-            customer: "info",
-            conferenceorganizer: "warning",
-            collaborator: "success",
-            localreviewer: "info",
-            externalreviewer: "warning",
-            admin: "danger"
-        };
-        return variants[role] || "info";
-    };
-
-    const getStatusLabel = (status: string) => {
-        const labels: Record<string, string> = {
-            active: "Hoạt động",
-            inactive: "Tạm ngưng"
-        };
-        return labels[status] || status;
-    };
-
-    const getStatusVariant = (status: string): "success" | "danger" | "warning" | "info" => {
-        const variants: Record<string, "success" | "danger" | "warning" | "info"> = {
-            active: "success",
-            inactive: "danger"
-        };
-        return variants[status] || "info";
-    };
-
-    const columns: Column<UserProfileResponse>[] = [
-        {
-            key: "fullName",
-            header: "Tên phản biện nội bộ",
-            render: (reviewer) => (
-                <div className="max-w-xs">
-                    <p className="font-medium text-gray-900 truncate">{reviewer.fullName}</p>
-                    <p className="text-sm text-gray-500 truncate">{reviewer.email}</p>
-                </div>
-            ),
-        },
-        {
-            key: "role",
-            header: "Vai trò",
-            render: (reviewer) => (
-                <StatusBadge
-                    status={getRoleLabel(reviewer.role)}
-                    variant={getRoleVariant(reviewer.role)}
-                />
-            ),
-        },
-        {
-            key: "status",
-            header: "Trạng thái",
-            render: (reviewer) => (
-                <StatusBadge
-                    status={getStatusLabel(reviewer.status)}
-                    variant={getStatusVariant(reviewer.status)}
-                />
-            ),
-        },
-        {
-            key: "registeredConferences",
-            header: "Bài báo đã phản biện",
-            render: (reviewer) => (
-                <span className="text-gray-900 font-medium">
-                    {reviewer.registeredConferences || 0}
-                </span>
-            ),
-        },
-        {
-            key: "actions",
-            header: "Thao tác",
-            className: "text-right",
-            render: (reviewer) => (
-                <div className="flex items-center justify-end">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <button className="p-2 hover:bg-gray-100 rounded-md transition-colors">
-                                <MoreVertical className="w-4 h-4 text-gray-600" />
-                            </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                                onClick={() => onView(reviewer)}
-                                className="cursor-pointer"
-                            >
-                                <Eye className="w-4 h-4 mr-2" />
-                                Xem chi tiết
-                            </DropdownMenuItem>
-                            {reviewer.status === "active" ? (
-                                <DropdownMenuItem
-                                    onClick={() => onSuspend(reviewer.userId)}
-                                    className="cursor-pointer text-orange-600 focus:text-orange-600"
-                                >
-                                    <Ban className="w-4 h-4 mr-2" />
-                                    Tạm ngưng
-                                </DropdownMenuItem>
-                            ) : (
-                                <DropdownMenuItem
-                                    onClick={() => onActivate(reviewer.userId)}
-                                    className="cursor-pointer text-green-600 focus:text-green-600"
-                                >
-                                    <CheckCircle className="w-4 h-4 mr-2" />
-                                    Kích hoạt
-                                </DropdownMenuItem>
-                            )}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            ),
-        },
-    ];
-
+export const LocalReviewerTable: React.FC<LocalReviewerTableProps> = ({
+  reviewers,
+  onView,
+  onSuspend,
+  onActivate
+}) => {
+  if (reviewers.length === 0) {
     return (
-        <DataTable
-            columns={columns}
-            data={reviewers}
-            keyExtractor={(reviewer) => reviewer.userId}
-            emptyMessage="Không tìm thấy phản biện nội bộ nào"
-        />
+      <div className="text-center py-12">
+        <div className="text-gray-400 mb-2">
+          <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C20.168 18.477 18.582 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+        </div>
+        <h3 className="text-lg font-medium text-gray-900 mb-1">Không có người đánh giá nội bộ nào</h3>
+        <p className="text-gray-500">Danh sách người đánh giá nội bộ sẽ hiển thị tại đây</p>
+      </div>
     );
-}
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead>
+          <tr className="border-b border-gray-200 bg-gray-50">
+            <th className="text-left py-4 px-6 font-medium text-gray-700">Thông tin người đánh giá nội bộ</th>
+            <th className="text-left py-4 px-6 font-medium text-gray-700">Email</th>
+            <th className="text-left py-4 px-6 font-medium text-gray-700">Ngày tham gia</th>
+            <th className="text-left py-4 px-6 font-medium text-gray-700">Trạng thái</th>
+            <th className="text-center py-4 px-6 font-medium text-gray-700">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          {reviewers.map((reviewer) => (
+            <tr key={reviewer.userId} className="border-b border-gray-100 hover:bg-gray-50">
+              <td className="py-4 px-6">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                    <span className="text-indigo-600 font-medium text-sm">
+                      {reviewer.fullName?.charAt(0)?.toUpperCase() || 'L'}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900">
+                      {reviewer.fullName || 'Chưa có tên'}
+                    </h3>
+                    <p className="text-sm text-gray-500">ID: {reviewer.userId}</p>
+                  </div>
+                </div>
+              </td>
+              <td className="py-4 px-6">
+                <div className="flex items-center space-x-2">
+                  <Mail className="w-4 h-4 text-gray-400" />
+                  <span className="text-gray-900">{reviewer.email}</span>
+                </div>
+              </td>
+              <td className="py-4 px-6">
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-4 h-4 text-gray-400" />
+                  <span className="text-gray-600">
+                    {reviewer.createdAt ? format(new Date(reviewer.createdAt), 'dd/MM/yyyy', { locale: vi }) : 'N/A'}
+                  </span>
+                </div>
+              </td>
+              <td className="py-4 px-6">
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${reviewer.isActive
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-red-100 text-red-800'
+                  }`}>
+                  {reviewer.isActive ? 'Hoạt động' : 'Tạm ngưng'}
+                </span>
+              </td>
+              <td className="py-4 px-6">
+                <div className="flex items-center justify-center space-x-2">
+                  <button
+                    onClick={() => onView(reviewer)}
+                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="Xem chi tiết"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  {reviewer.isActive ? (
+                    <button
+                      onClick={() => onSuspend(reviewer.userId)}
+                      className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                      title="Tạm ngưng tài khoản"
+                    >
+                      <UserMinus className="w-4 h-4" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => onActivate(reviewer.userId)}
+                      className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                      title="Kích hoạt tài khoản"
+                    >
+                      <UserCheck className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};

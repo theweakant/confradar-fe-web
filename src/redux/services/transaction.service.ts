@@ -52,7 +52,29 @@ export const transactionApi = createApi({
           if (data.data) {
             console.log("Research Paper Payment URL:", data.data);
           }
-        } catch (err) {}
+        } catch (err) { }
+      },
+      invalidatesTags: ["Transaction"],
+    }),
+
+    createPaymentForAttendeeResearch: builder.mutation<
+      ApiResponse<GeneralPaymentResultResponse>,
+      CreateTechPaymentRequest
+    >({
+      query: (request) => ({
+        url: endpoint.TRANSACTION.PAY_RESEARCH_AS_ATTENDEE,
+        method: "POST",
+        body: request,
+      }),
+      async onQueryStarted(arg, { queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          if (data.data) {
+            console.log("Attendee Research Payment URL:", data.data);
+          }
+        } catch (err) {
+          console.error("Failed to create attendee research payment", err);
+        }
       },
       invalidatesTags: ["Transaction"],
     }),
@@ -72,6 +94,7 @@ export const transactionApi = createApi({
 export const {
   useCreatePaymentForTechMutation,
   useCreatePaymentForResearchPaperMutation,
+  useCreatePaymentForAttendeeResearchMutation,
   useGetOwnTransactionQuery,
   useLazyGetOwnTransactionQuery,
   useGetAllPaymentMethodsQuery,
