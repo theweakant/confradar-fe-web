@@ -103,9 +103,9 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
         href: "/workspace/organizer/manage-user",
         icon: Users,
         subMenu: [
-          { label: "Phản biện", href: "/workspace/organizer/manage-conference" },
-          { label: "Đối tác", href: "/workspace/organizer/my-conference" },
-          { label: "Khách hàng", href: "/workspace/organizer/my-conference" },
+          { label: "Phản biện", href: "/workspace/organizer/manage-user/manage-reviewer" },
+          { label: "Đối tác", href: "/workspace/organizer/manage-user/manage-collaborator" },
+          { label: "Khách hàng", href: "/workspace/organizer/manage-user/manage-customer" },
         ],
       },
       {

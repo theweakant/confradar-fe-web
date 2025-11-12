@@ -139,17 +139,17 @@ export default function ReviewerManagePaperPage() {
 
       if (viewMode === "all") {
         result = (result as typeof allPapers).filter(paper => {
-          const paperIdMatch = paper.title?.toLowerCase().includes(query);
+          const paperTitleMatch = paper.title?.toLowerCase().includes(query);
           const conferenceMatch = paper.conferenceName.toLowerCase().includes(query);
-          return paperIdMatch || conferenceMatch;
+          return paperTitleMatch || conferenceMatch;
         });
       } else {
         result = (result as AssignedPaperGroup[]).map(group => ({
           ...group,
           assignedPapers: group.assignedPapers.filter(paper => {
-            const paperIdMatch = paper.paperId.toLowerCase().includes(query);
+            const paperTitleMatch = paper.title?.toLowerCase().includes(query);
             const conferenceMatch = group.conferenceName.toLowerCase().includes(query);
-            return paperIdMatch || conferenceMatch;
+            return paperTitleMatch || conferenceMatch;
           })
         })).filter(group =>
           group.conferenceName.toLowerCase().includes(query) ||

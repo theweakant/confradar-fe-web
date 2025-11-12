@@ -6,10 +6,10 @@ import { endpoint } from "../api/endpoint";
 import {
   UserProfileResponse,
   CollaboratorRequest,
-  UsersListResponse,
   ReviewerListResponse,
   ProfileUpdateRequest,
   ChangePasswordRequest,
+  ListUserDetailForAdminAndOrganizerResponse,
 } from "@/types/user.type";
 import { ApiResponse } from "@/types/api.type";
 
@@ -24,7 +24,7 @@ export const userApi = createApi({
       }),
     }),
 
-    getUsersList: builder.query<ApiResponse<UsersListResponse>, void>({
+    getUsersList: builder.query<ApiResponse<ListUserDetailForAdminAndOrganizerResponse>, void>({
       query: () => ({
         url: endpoint.AUTH.USERS_LIST,
         method: "GET",

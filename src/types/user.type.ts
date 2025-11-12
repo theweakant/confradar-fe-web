@@ -46,8 +46,22 @@ export interface CollaboratorRequest {
 
 //+++++
 
-export interface UsersListResponse {
-  users: UserProfileResponse[];
+export interface UserDetailForAdminAndOrganizerResponse {
+  userId: string;
+  email?: string | null;
+  fullName?: string | null;
+  phoneNumber?: string | null;
+  gender?: string | null;
+  avatarUrl?: string | null;
+  createdAt?: string | null;
+  isActive?: boolean | null;
+  isEmailConfirmed?: boolean | null;
+}
+
+export interface ListUserDetailForAdminAndOrganizerResponse {
+  roleId: string;
+  roleName: string;
+  users: UserDetailForAdminAndOrganizerResponse[];
 }
 
 export interface ReviewerListResponse {
