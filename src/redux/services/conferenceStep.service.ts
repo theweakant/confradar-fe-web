@@ -521,10 +521,7 @@ updateBasicConference: builder.mutation<
     { conferenceId: string; data: ConferenceResearchSessionData }
   >({
     query: ({ conferenceId, data }) => {
-    // ✅ DEBUG: Kiểm tra data trước khi xử lý
-    console.log('=== DEBUG SERVICE ===');
-    console.log('Raw data received:', data);
-    console.log('Sessions count:', data.sessions.length);
+
     
     data.sessions.forEach((session, idx) => {
       console.log(`Session ${idx}:`, {
@@ -567,9 +564,7 @@ updateBasicConference: builder.mutation<
               formData.append(
                 `sessions[${index}].SessionMedias[${mediaIndex}].MediaFile`,
                 media.mediaFile
-              );
-                        console.log(`✅ Appended file: ${media.mediaFile.name}`);
-  
+              );  
             }
 
             formData.append(
@@ -579,11 +574,6 @@ updateBasicConference: builder.mutation<
           });
         }
       });
-    // ✅ DEBUG: Kiểm tra FormData
-    console.log('=== FormData entries ===');
-    for (let pair of formData.entries()) {
-      console.log(pair[0], ':', pair[1] instanceof File ? `FILE: ${pair[1].name}` : pair[1]);
-    }
       return {
         url: endpoint.CONFERENCE_STEP.CREATE_RESEARCH_SESSION(conferenceId),
         method: "POST",

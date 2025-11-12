@@ -191,7 +191,7 @@ export interface Speaker {
 
 export interface SessionMedia {
   sessionMediaId?: string;
-  mediaFile?: File | string;
+  mediaFile?: File | string|null;
   mediaUrl?: string;
 }
 
@@ -228,7 +228,7 @@ export interface ConferenceRefundPolicyData {
 //MEDIA STEP
 export interface Media {
   mediaId?: string;
-  mediaFile: File | null;
+  mediaFile: File | null |string;
   mediaUrl?: string;
 }
 
@@ -240,7 +240,7 @@ export interface ConferenceMediaData {
 export interface Sponsor {
   sponsorId?: string;
   name: string;
-  imageFile: File | null;
+  imageFile: File | null |string;
   imageUrl?: string;
 }
 
@@ -626,10 +626,13 @@ export interface ResearchConferencePhaseResponse {
   isWaitlist?: boolean;
   isActive?: boolean;
   revisionRoundDeadlines?: RevisionRoundDeadlineResponse[];
+
+  waitlistPhase?: ResearchConferencePhaseResponse;
 }
 
 export interface RevisionRoundDeadlineResponse {
   revisionRoundDeadlineId?: string;
+  startDate?:string;
   endDate?: string;
   roundNumber?: number;
   researchConferencePhaseId?: string;

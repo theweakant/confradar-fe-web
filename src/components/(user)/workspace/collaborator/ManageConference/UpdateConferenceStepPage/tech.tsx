@@ -230,8 +230,6 @@ export default function UpdateTechConferenceStepPage() {
   const handleNextStep = () => handleNext();
 
   const   handleUpdateCurrentStep = async () => {
-    let result: { success: boolean } = { success: false };
-
   switch (currentStep) {
     case 1:
       const basicValidation = validateBasicForm(basicForm);

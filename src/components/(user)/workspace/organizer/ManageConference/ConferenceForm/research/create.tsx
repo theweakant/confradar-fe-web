@@ -459,9 +459,7 @@ export default function CreateResearchConferenceStepPage() {
         <StepContainer stepNumber={6} title="Chính sách (Tùy chọn)" isCompleted={isStepCompleted(6)}>
           <PolicyForm
             policies={policies}
-            refundPolicies={refundPolicies}
             onPoliciesChange={setPolicies}
-            onRefundPoliciesChange={setRefundPolicies}
             eventStartDate={basicForm.startDate}
             ticketSaleStart={basicForm.ticketSaleStart}
             ticketSaleEnd={basicForm.ticketSaleEnd}

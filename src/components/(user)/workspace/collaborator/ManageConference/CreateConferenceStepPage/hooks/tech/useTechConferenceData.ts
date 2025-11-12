@@ -3,7 +3,7 @@ import { useEffect, useCallback } from "react";
 import { useGetTechnicalConferenceDetailInternalQuery } from "@/redux/services/conference.service";
 import { useAppDispatch } from "@/redux/hooks/hooks";
 import { loadExistingConference } from "@/redux/slices/conferenceStep.slice";
-import type { ConferenceBasicForm, Ticket, Session, Policy, RefundPolicy, Media, Sponsor } from "@/types/conference.type";
+import type { ConferenceBasicForm, Ticket, Session, Policy, RefundPolicy, Media, Sponsor, ConferencePriceResponse, ConferencePricePhaseResponse,ConferencePolicyResponse, RefundPolicyResponse } from "@/types/conference.type";
 
 interface UseConferenceDataProps {
   conferenceId: string;
@@ -62,75 +62,71 @@ export function useTechConferenceData({
       };
 
       // === Map Tickets ===
-      const tickets: Ticket[] = (data.conferencePrices || []).map((p: any) => ({
+      const tickets: Ticket[] = (data.conferencePrices || []).map((p: ConferencePriceResponse) => ({
         priceId: p.conferencePriceId,
-        ticketPrice: p.ticketPrice,
-        ticketName: p.ticketName,
-        ticketDescription: p.ticketDescription || "",
-        isAuthor: p.isAuthor || false,
-        totalSlot: p.totalSlot,
-        phases: (p.pricePhases || []).map((ph: any) => ({
-          pricePhaseId: ph.pricePhaseId,
-          phaseName: ph.phaseName,
-          applyPercent: ph.applyPercent,
-          startDate: ph.startDate,
-          endDate: ph.endDate,
-          totalslot: ph.totalSlot,
-          refundInPhase: [],
+        ticketPrice: p.ticketPrice ?? 0,
+        ticketName: p.ticketName ?? "",
+        ticketDescription: p.ticketDescription ?? "",
+        isAuthor: p.isAuthor ?? false,
+        totalSlot: p.totalSlot ?? 0,
+        phases: (p.pricePhases || []).map((ph: ConferencePricePhaseResponse) => ({
+          ...ph,
+          phaseName: ph.phaseName ?? "",
+          startDate: ph.startDate ?? "",
+          endDate: ph.endDate ?? "",
+          applyPercent: ph.applyPercent ?? 0,
+          totalslot: ph.totalSlot ?? 0,
+          refundInPhase: [], 
         })),
       }));
 
       // === Map Sessions ===
-      const sessions: Session[] = (data.sessions || []).map((s: any) => ({
-        sessionId: s.sessionId,
-        title: s.title,
-        description: s.description || "",
-        startTime: s.startTime,
-        endTime: s.endTime,
-        date: s.date,
-        roomId: s.roomId,
-        speaker: (s.speakers || []).map((sp: any) => ({
+      const sessions: Session[] = (data.sessions || []).map((s) => ({
+        sessionId: s.conferenceSessionId,
+        title: s.title ?? "",
+        description: s.description ?? "",
+        startTime: s.startTime ?? "",
+        endTime: s.endTime ?? "",
+        date: s.date ?? s.sessionDate ?? "",
+        roomId: s.roomId ?? "",
+        speaker: (s.speakers || []).map((sp) => ({
           speakerId: sp.speakerId,
-          name: sp.name,
-          description: sp.description || "",
-          image: sp.imageUrl || null,
-          imageUrl: sp.imageUrl,
+          name: sp.name ?? "",
+          description: sp.description ?? "",
+          image: sp.image, 
+          imageUrl: sp.image ?? "", 
         })),
-        sessionMedias: (s.sessionMedias || []).map((m: any) => ({
-          sessionMediaId: m.sessionMediaId,
-          mediaFile: m.mediaUrl || null,
-          mediaUrl: m.mediaUrl,
+        sessionMedias: (s.sessionMedia || []).map((m) => ({
+          sessionMediaId: m.conferenceSessionMediaId,
+          mediaFile: m.conferenceSessionMediaUrl,
+          mediaUrl: m.conferenceSessionMediaUrl ?? "",
         })),
       }));
 
-      // === Map Policies ===
-      const policies: Policy[] = (data.policies || []).map((p: any) => ({
-        policyId: p.policyId,
-        policyName: p.policyName,
-        description: p.description,
+    const policies: Policy[] = (data.policies || []).map((p: ConferencePolicyResponse) => ({
+      policyId: p.policyId,
+      policyName: p.policyName ?? "",
+      description: p.description ?? "",
+    }));
+
+      const refundPolicies: RefundPolicy[] = (data.refundPolicies || []).map((rp: RefundPolicyResponse) => ({
+        refundPolicyId: rp.refundPolicyId ?? "",
+        percentRefund: rp.percentRefund ?? 0,
+        refundDeadline: rp.refundDeadline ?? "",
+        refundOrder: rp.refundOrder ?? 0,
       }));
 
-      // === Map Refund Policies ===
-      const refundPolicies: RefundPolicy[] = (data.refundPolicies || []).map((rp: any) => ({
-        refundPolicyId: rp.refundPolicyId,
-        percentRefund: rp.percentRefund,
-        refundDeadline: rp.refundDeadline,
-        refundOrder: rp.refundOrder,
-      }));
-
-      // === Map Media ===
-      const mediaList: Media[] = (data.conferenceMedia || []).map((m: any) => ({
+      const mediaList: Media[] = (data.conferenceMedia || []).map((m) => ({
         mediaId: m.mediaId,
-        mediaFile: m.mediaUrl || null,
-        mediaUrl: m.mediaUrl,
+        mediaFile: m.mediaUrl ?? null,
+        mediaUrl: m.mediaUrl ?? "",
       }));
 
-      // === Map Sponsors ===
-      const sponsors: Sponsor[] = (data.sponsors || []).map((s: any) => ({
+      const sponsors: Sponsor[] = (data.sponsors || []).map((s) => ({
         sponsorId: s.sponsorId,
-        name: s.name,
-        imageFile: s.imageUrl || null,
-        imageUrl: s.imageUrl,
+        name: s.name ?? "",
+        imageFile: s.imageUrl ?? null, 
+        imageUrl: s.imageUrl ?? "",
       }));
 
       // Gửi vào Redux

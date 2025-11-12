@@ -150,7 +150,7 @@ export function ResearchPhaseForm({
   };
 
   const createWaitlistFromMain = () => {
-    let currentStartDate = mainPhase.cameraReadyEndDate
+    const currentStartDate = mainPhase.cameraReadyEndDate
       ? new Date(mainPhase.cameraReadyEndDate)
       : new Date();
 

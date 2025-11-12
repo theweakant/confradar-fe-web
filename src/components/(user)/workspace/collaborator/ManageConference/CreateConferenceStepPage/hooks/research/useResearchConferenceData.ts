@@ -105,10 +105,10 @@ export function useResearchConferenceData({
           cameraReadyEndDate: data.researchPhase.cameraReadyEndDate ?? "",
           isWaitlist: false,
           isActive: data.researchPhase.isActive ?? false,
-          revisionRoundDeadlines: (data.researchPhase.revisionRoundDeadlines || []).map((rd: any) => ({
+          revisionRoundDeadlines: (data.researchPhase.revisionRoundDeadlines || []).map((rd) => ({
             revisionRoundDeadlineId: rd.revisionRoundDeadlineId ?? "",
-            startSubmissionDate: rd.startSubmissionDate ?? "",
-            endSubmissionDate: rd.endSubmissionDate ?? "",
+            startSubmissionDate: rd.startDate ?? "",
+            endSubmissionDate: rd.endDate ?? "",
             roundNumber: rd.roundNumber ?? 1,
           })),
         });
@@ -116,7 +116,7 @@ export function useResearchConferenceData({
         // Waitlist phase (nếu có)
         if (data.researchPhase.waitlistPhase) {
           researchPhases.push({
-            researchPhaseId: data.researchPhase.waitlistPhase.researchPhaseId ?? "waitlist",
+            researchPhaseId: data.researchPhase.waitlistPhase.researchConferencePhaseId ?? "waitlist",
             registrationStartDate: data.researchPhase.waitlistPhase.registrationStartDate ?? "",
             registrationEndDate: data.researchPhase.waitlistPhase.registrationEndDate ?? "",
             fullPaperStartDate: data.researchPhase.waitlistPhase.fullPaperStartDate ?? "",
@@ -129,10 +129,10 @@ export function useResearchConferenceData({
             cameraReadyEndDate: data.researchPhase.waitlistPhase.cameraReadyEndDate ?? "",
             isWaitlist: true,
             isActive: data.researchPhase.waitlistPhase.isActive ?? false,
-            revisionRoundDeadlines: (data.researchPhase.waitlistPhase.revisionRoundDeadlines || []).map((rd: any) => ({
+            revisionRoundDeadlines: (data.researchPhase.waitlistPhase.revisionRoundDeadlines || []).map((rd) => ({
               revisionRoundDeadlineId: rd.revisionRoundDeadlineId ?? "",
-              startSubmissionDate: rd.startSubmissionDate ?? "",
-              endSubmissionDate: rd.endSubmissionDate ?? "",
+              startSubmissionDate: rd.startDate ?? "",
+              endSubmissionDate: rd.endDate ?? "",
               roundNumber: rd.roundNumber ?? 1,
             })),
           });
@@ -140,91 +140,83 @@ export function useResearchConferenceData({
       }
 
       // === Map Tickets (Giá vé) ===
-      const tickets: Ticket[] = (data.conferencePrices || []).map((p: any) => ({
+      const tickets: Ticket[] = (data.conferencePrices || []).map((p) => ({
         priceId: p.conferencePriceId,
-        ticketPrice: p.ticketPrice,
-        ticketName: p.ticketName,
-        ticketDescription: p.ticketDescription || "",
-        isAuthor: p.isAuthor || false,
-        totalSlot: p.totalSlot,
-        phases: (p.pricePhases || []).map((ph: any) => ({
+        ticketPrice: p.ticketPrice ?? 0,
+        ticketName: p.ticketName ?? "",
+        ticketDescription: p.ticketDescription ?? "",
+        isAuthor: p.isAuthor ?? false,
+        totalSlot: p.totalSlot ?? 0,
+        phases: (p.pricePhases || []).map((ph) => ({
           pricePhaseId: ph.pricePhaseId,
-          phaseName: ph.phaseName,
-          applyPercent: ph.applyPercent,
-          startDate: ph.startDate,
-          endDate: ph.endDate,
-          totalslot: ph.totalSlot,
-          refundInPhase: [], // nếu API có → map thêm
+          phaseName: ph.phaseName ?? "",
+          startDate: ph.startDate ?? "",
+          endDate: ph.endDate ?? "",
+          applyPercent: ph.applyPercent ?? 0,
+          totalslot: ph.totalSlot ?? 0,
+          refundInPhase: [], 
         })),
       }));
 
       // === Map Research Sessions ===
-      const sessions: Session[] = (data.researchSessions || []).map((s: any) => ({
-        sessionId: s.sessionId,
-        title: s.title,
-        description: s.description || "",
-        startTime: s.startTime,
-        endTime: s.endTime,
-        date: s.date,
-        roomId: s.roomId,
-        speaker: [], // research session không có speaker
-        sessionMedias: (s.sessionMedias || []).map((m: any) => ({
-          sessionMediaId: m.sessionMediaId,
-          mediaFile: m.mediaUrl || null,
-          mediaUrl: m.mediaUrl,
+      const sessions: Session[] = (data.researchSessions || []).map((s) => ({
+        sessionId: s.conferenceSessionId,               
+        title: s.title ?? "",
+        description: s.description ?? "",
+        startTime: s.startTime ?? "",
+        endTime: s.endTime ?? "",
+        date: s.date ?? "",
+        roomId: s.roomId ?? "",
+        speaker: [],
+        sessionMedias: (s.sessionMedia || []).map((m) => ({
+          sessionMediaId: m.conferenceSessionMediaId, 
+          mediaFile: m.conferenceSessionMediaUrl ?? null,
+          mediaUrl: m.conferenceSessionMediaUrl ?? "",
         })),
-      }));
+      }))
 
       // === Map Policies ===
-      const policies: Policy[] = (data.policies || []).map((p: any) => ({
+      const policies: Policy[] = (data.policies || []).map((p) => ({
         policyId: p.policyId,
-        policyName: p.policyName,
-        description: p.description,
-      }));
-
-      // === Map Refund Policies ===
-      const refundPolicies: RefundPolicy[] = (data.refundPolicies || []).map((rp: any) => ({
-        refundPolicyId: rp.refundPolicyId,
-        percentRefund: rp.percentRefund,
-        refundDeadline: rp.refundDeadline,
-        refundOrder: rp.refundOrder,
+        policyName: p.policyName ?? "",
+        description: p.description ?? "",
       }));
 
       // === Map Research Materials ===
-      const researchMaterials: ResearchMaterial[] = (data.materialDownloads || []).map((m: any) => ({
-        materialId: m.materialId,
-        fileName: m.fileName || "Tài liệu",
-        fileDescription: m.fileDescription || "",
-        fileUrl: m.fileUrl,
-        file: null, // file upload → null
+      const researchMaterials: ResearchMaterial[] = (data.materialDownloads || []).map((m) => ({
+        materialId: m.materialDownloadId,    
+        fileName: m.fileName ?? "Tài liệu",
+        fileDescription: m.fileDescription ?? "",
+        fileUrl: m.fileUrl ?? "",
+        file: null, // hoặc File | null nếu cần upload sau
       }));
 
       // === Map Ranking Files ===
-      const rankingFiles: ResearchRankingFile[] = (data.rankingFileUrls || []).map((f: any) => ({
-        rankingFileId: f.rankingFileId,
+      const rankingFiles: ResearchRankingFile[] = (data.rankingFileUrls || []).map((f) => ({
+        rankingFileId: f.rankingFileUrlId,
         fileUrl: f.fileUrl,
         file: null,
       }));
 
       // === Map Ranking References ===
-      const rankingReferences: ResearchRankingReference[] = (data.rankingReferenceUrls || []).map((r: any) => ({
-        rankingReferenceId: r.rankingReferenceId,
-        referenceUrl: r.referenceUrl,
+      const rankingReferences: ResearchRankingReference[] = (data.rankingReferenceUrls || []).map((r) => ({
+        rankingReferenceId: r.referenceUrlId, 
+        referenceUrl: r.referenceUrl ?? "",
       }));
 
       // === Map Media ===
-      const mediaList: Media[] = (data.conferenceMedia || []).map((m: any) => ({
+      const mediaList: Media[] = (data.conferenceMedia || []).map((m) => ({
         mediaId: m.mediaId,
-        mediaFile: m.mediaUrl || null,
-        mediaUrl: m.mediaUrl,
+        mediaFile: m.mediaUrl ?? null,   
+        mediaUrl: m.mediaUrl ?? "",
       }));
 
       // === Map Sponsors ===
-      const sponsors: Sponsor[] = (data.sponsors || []).map((s: any) => ({
+      const sponsors: Sponsor[] = (data.sponsors || []).map((s) => ({
         sponsorId: s.sponsorId,
-        name: s.name,
-        imageFile: s.imageUrl || null,
-        imageUrl: s.imageUrl,
+        name: s.name ?? "",
+        imageFile: s.imageUrl ?? null,   
+        imageUrl: s.imageUrl ?? "",
       }));
 
       // Gửi vào Redux
