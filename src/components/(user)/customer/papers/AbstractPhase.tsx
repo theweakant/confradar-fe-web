@@ -3,7 +3,7 @@ import { Search } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { AvailableCustomerResponse, Abstract, ResearchPhaseDtoDetail } from "@/types/paper.type";
-import { usePaperCustomer } from "@/redux/hooks/paper/usePaper";
+import { usePaperCustomer } from "@/redux/hooks/usePaper";
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 import "@cyntler/react-doc-viewer/dist/index.css";
 import { validatePhaseTime } from "@/helper/timeValidation";
@@ -137,8 +137,8 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract, resear
           {/* Time validation message */}
           {!phaseValidation.isAvailable && (
             <div className={`border rounded-lg p-3 ${phaseValidation.isExpired
-                ? "bg-red-900/20 border-red-700"
-                : "bg-yellow-900/20 border-yellow-700"
+              ? "bg-red-900/20 border-red-700"
+              : "bg-yellow-900/20 border-yellow-700"
               }`}>
               <p className={`text-sm ${phaseValidation.isExpired ? "text-red-400" : "text-yellow-400"
                 }`}>

@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { usePaperCustomer } from '@/redux/hooks/paper/usePaper';
+import { usePaperCustomer } from '@/redux/hooks/usePaper';
 import { RevisionPaper, RevisionSubmission, RevisionSubmissionFeedback } from '@/types/paper.type';
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 import "@cyntler/react-doc-viewer/dist/index.css";

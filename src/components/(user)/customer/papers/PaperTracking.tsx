@@ -8,7 +8,7 @@ import AbstractPhase from "./AbstractPhase";
 import FullPaperPhase from "./FullPaperPhase";
 import RevisionPhase from "./RevisionPhase";
 import CameraReadyPhase from "./CameraReadyPhase";
-import { usePaperCustomer } from "@/redux/hooks/paper/usePaper";
+import { usePaperCustomer } from "@/redux/hooks/usePaper";
 import type { PaperPhase, PaperDetailResponse } from "@/types/paper.type";
 import { stages4Step } from "@/helper/paper";
 

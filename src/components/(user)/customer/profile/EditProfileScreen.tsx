@@ -19,7 +19,7 @@ import {
 } from "@/types/user.type";
 import { Edit, Mail, Phone, MapPin, Calendar, Users, X } from "lucide-react";
 import { useAuth } from "@/redux/hooks/useAuth";
-import { useProfile } from "@/redux/hooks/user/useProfile";
+import { useProfile } from "@/redux/hooks/useProfile";
 
 const EditProfileScreen: React.FC = () => {
   const { user } = useAuth();
@@ -531,8 +531,8 @@ const EditProfileScreen: React.FC = () => {
                       <p className="text-xs sm:text-sm font-medium">
                         {profile.birthDay
                           ? new Date(profile.birthDay).toLocaleDateString(
-                              "vi-VN",
-                            )
+                            "vi-VN",
+                          )
                           : "Chưa cập nhật"}
                       </p>
                     </div>
@@ -617,8 +617,8 @@ const EditProfileScreen: React.FC = () => {
                           value={
                             editFormData.birthDay
                               ? new Date(editFormData.birthDay)
-                                  .toISOString()
-                                  .split("T")[0]
+                                .toISOString()
+                                .split("T")[0]
                               : ""
                           }
                           onChange={(e) =>

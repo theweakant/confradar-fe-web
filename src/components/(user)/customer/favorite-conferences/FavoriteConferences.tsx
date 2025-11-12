@@ -4,7 +4,7 @@ import { Heart, MapPin, Calendar, Users, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useConference } from "@/redux/hooks/conference/useConference";
+import { useConference } from "@/redux/hooks/useConference";
 import { useEffect, useState } from "react";
 import { FavouriteConferenceDetailResponse } from "@/types/conference.type";
 import { toast } from "sonner";
@@ -201,8 +201,8 @@ export default function FavoriteConferences() {
                 variant={option.active ? "default" : "outline"}
                 onClick={() => setActiveFilter(option.id)}
                 className={`whitespace-nowrap ${option.active
-                    ? "bg-red-600 text-white hover:bg-red-700 border-red-600"
-                    : "bg-gray-800 text-gray-300 hover:bg-gray-700 border-gray-600"
+                  ? "bg-red-600 text-white hover:bg-red-700 border-red-600"
+                  : "bg-gray-800 text-gray-300 hover:bg-gray-700 border-gray-600"
                   }`}
               >
                 {option.label}

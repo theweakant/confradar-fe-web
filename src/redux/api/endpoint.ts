@@ -251,4 +251,9 @@ export const endpoint = {
     REFUND_REQUEST_BY_CONFID: (conferenceId: string) =>
       `/ticket/conferences/${conferenceId}/refunds-request`,
   },
+
+  CONTRACT: {
+    CREATE_REVIEWER_CONTRACT: "/contract/create-review-contract",
+    USER_FOR_REVIEWER_CONTRACT: "/contract/users-for-reviewer-contract",
+  },
 };

@@ -7,9 +7,9 @@ import {
 } from "@/types/conference.type";
 import { getCurrentPrice } from "@/helper/conference";
 import React, { useEffect, useState } from "react";
-import { useTransaction } from "@/redux/hooks/transaction/useTransaction";
-import { useConference } from "@/redux/hooks/conference/useConference";
-import { usePaperCustomer } from "@/redux/hooks/paper/usePaper";
+import { useTransaction } from "@/redux/hooks/useTransaction";
+import { useConference } from "@/redux/hooks/useConference";
+import { usePaperCustomer } from "@/redux/hooks/usePaper";
 import { toast } from "sonner";
 
 interface ConferenceHeaderProps {
@@ -903,9 +903,9 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                                     <div className="flex-1 text-left min-w-0">
                                       <div
                                         className={`font-medium text-sm truncate ${selectedPaymentMethod ===
-                                            method.paymentMethodId
-                                            ? "text-indigo-200"
-                                            : "text-white/90"
+                                          method.paymentMethodId
+                                          ? "text-indigo-200"
+                                          : "text-white/90"
                                           }`}
                                       >
                                         {method.methodName}
@@ -936,8 +936,8 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                   {selectedTicket.isAuthor && (
                     <div
                       className={`overflow-hidden transition-all duration-300 ease-in-out ${showAuthorForm
-                          ? "max-h-96 opacity-100 mt-3"
-                          : "max-h-0 opacity-0"
+                        ? "max-h-96 opacity-100 mt-3"
+                        : "max-h-0 opacity-0"
                         }`}
                     >
                       <div className="space-y-3 p-3 bg-black/20 rounded-lg border border-yellow-400/20">

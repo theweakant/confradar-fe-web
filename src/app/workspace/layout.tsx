@@ -4,7 +4,7 @@ import RouteGuard from "@/utils/routeGuard";
 import WorkspaceSidebar from "./WorkspaceSidebar";
 import { Bell, Search } from "lucide-react";
 import { useAuth } from "@/redux/hooks/useAuth";
-import { useProfile } from "@/redux/hooks/user/useProfile";
+import { useProfile } from "@/redux/hooks/useProfile";
 
 export default function WorkspaceLayout({
   children,
