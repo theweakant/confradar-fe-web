@@ -32,11 +32,6 @@ const conferenceStepSlice = createSlice({
       state.conferenceId = action.payload;
     },
 
-    // Lưu response data từ step 1
-    // setConferenceBasicData: (state, action: PayloadAction<ConferenceBasicResponse>) => {
-    //   state.conferenceBasicData = action.payload;
-    // },
-
     setConferenceBasicData: (
       state,
       action: PayloadAction<Partial<ConferenceBasicResponse>>,
@@ -51,7 +46,6 @@ const conferenceStepSlice = createSlice({
       state.maxStep = action.payload;
     },
 
-    // Load existing conference for edit
     loadExistingConference: (
       state,
       action: PayloadAction<{
@@ -74,15 +68,13 @@ const conferenceStepSlice = createSlice({
       }
     },
 
-    // Set mode - QUAN TRỌNG: Reset về step 1 khi chuyển mode
     setMode: (state, action: PayloadAction<"create" | "edit">) => {
       const newMode = action.payload;
 
-      // Nếu chuyển từ edit sang create, reset về step 1
       if (state.mode === "edit" && newMode === "create") {
         state.currentStep = 1;
         state.conferenceId = null;
-        state.conferenceBasicData = null; // ✅ THÊM
+        state.conferenceBasicData = null; 
         state.completedSteps = [];
         state.error = null;
       }
@@ -90,7 +82,6 @@ const conferenceStepSlice = createSlice({
       state.mode = newMode;
     },
 
-    // ✅ FIX: Chuyển sang step tiếp theo - Dùng maxStep động
     nextStep: (state) => {
       if (state.currentStep < state.maxStep) {
         if (!state.completedSteps.includes(state.currentStep)) {
@@ -107,10 +98,8 @@ const conferenceStepSlice = createSlice({
       }
     },
 
-    // ✅ FIX: Chuyển đến step cụ thể - Dùng maxStep động
     goToStep: (state, action: PayloadAction<number>) => {
       const targetStep = action.payload;
-      // Chỉ cho phép nhảy step trong edit mode và trong phạm vi maxStep
       if (
         state.mode === "edit" &&
         targetStep >= 1 &&

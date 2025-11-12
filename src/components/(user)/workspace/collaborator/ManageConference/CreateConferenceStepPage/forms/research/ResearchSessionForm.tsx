@@ -13,6 +13,7 @@ import type { Session, RoomInfoResponse, SessionMedia } from "@/types/conference
 interface ResearchSessionFormProps {
   sessions: Session[];
   onSessionsChange: (sessions: Session[]) => void;
+  onRemoveSession?: (sessionId: string) => void;
   eventStartDate: string;
   eventEndDate: string;
   roomOptions: Array<{ value: string; label: string }>;
@@ -23,6 +24,7 @@ interface ResearchSessionFormProps {
 export function ResearchSessionForm({
   sessions,
   onSessionsChange,
+  onRemoveSession,
   eventStartDate,
   eventEndDate,
   roomOptions,
@@ -39,7 +41,7 @@ export function ResearchSessionForm({
     roomId: "",
     sessionMedias: [],
   });
-const sessionMedias = newSession.sessionMedias;
+  const sessionMedias = newSession.sessionMedias;
 
   useEffect(() => {
     if (newSession.startTime && newSession.timeRange && newSession.timeRange > 0) {
@@ -51,29 +53,29 @@ const sessionMedias = newSession.sessionMedias;
     }
   }, [newSession.startTime, newSession.timeRange]);
 
-    const handleMediaChange = (fileOrFiles: File | File[] | null) => {
+  const handleMediaChange = (fileOrFiles: File | File[] | null) => {
     let files: File[] | null = null;
 
     if (fileOrFiles === null) {
-        files = null;
+      files = null;
     } else if (Array.isArray(fileOrFiles)) {
-        files = fileOrFiles;
+      files = fileOrFiles;
     } else {
-        files = [fileOrFiles];
+      files = [fileOrFiles];
     }
 
     if (!files || files.length === 0) {
-        setNewSession((prev) => ({ ...prev, sessionMedias: [] }));
-        return;
+      setNewSession((prev) => ({ ...prev, sessionMedias: [] }));
+      return;
     }
 
     const sessionMedias: SessionMedia[] = files.map((file) => ({
-        mediaFile: file,
-        mediaUrl: "",
+      mediaFile: file,
+      mediaUrl: "",
     }));
 
     setNewSession((prev) => ({ ...prev, sessionMedias }));
-    };
+  };
 
   const handleAddSession = () => {
     if (!newSession.title.trim()) {
@@ -117,6 +119,12 @@ const sessionMedias = newSession.sessionMedias;
   };
 
   const handleRemoveSession = (index: number) => {
+    const session = sessions[index];
+    
+    if (onRemoveSession && session.sessionId) {
+      onRemoveSession(session.sessionId);
+    }
+
     onSessionsChange(sessions.filter((_, i) => i !== index));
     toast.success("Đã xóa phiên họp!");
   };
@@ -140,11 +148,30 @@ const sessionMedias = newSession.sessionMedias;
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
             {sessions.map((s, idx) => {
               const room = roomsData?.data.find((r) => r.roomId === s.roomId);
+              
+              // Format thời gian để hiển thị
+              const formatPreviewTime = (datetime: string) => {
+                if (!datetime) return "";
+                try {
+                  // Nếu datetime có dạng "YYYY-MM-DDTHH:mm"
+                  const [datePart, timePart] = datetime.split("T");
+                  if (timePart) {
+                    return timePart.slice(0, 5); // Chỉ lấy HH:mm
+                  }
+                  return formatTimeDate(datetime);
+                } catch {
+                  return formatTimeDate(datetime);
+                }
+              };
+
+              const startTimeDisplay = formatPreviewTime(s.startTime);
+              const endTimeDisplay = formatPreviewTime(s.endTime);
+              
               return (
                 <div key={idx} className="bg-white border rounded-xl p-4 shadow-sm">
                   <div className="font-semibold">{s.title}</div>
                   <div className="text-sm text-gray-600 mt-1">
-                    {formatTimeDate(s.startTime)} – {formatTimeDate(s.endTime)}
+                    {s.date && formatDate(s.date)} • {startTimeDisplay} – {endTimeDisplay}
                   </div>
                   {room && (
                     <div className="text-xs text-gray-500 mt-1">
@@ -153,7 +180,7 @@ const sessionMedias = newSession.sessionMedias;
                   )}
                   {s.sessionMedias && s.sessionMedias.length > 0 && (
                     <div className="mt-2 text-xs text-gray-500">
-                      📎 {s.sessionMedias.length} file đã chọn
+                      {s.sessionMedias.length} file đã chọn
                     </div>
                   )}
                   <div className="flex justify-end gap-2 mt-3">
@@ -223,6 +250,23 @@ const sessionMedias = newSession.sessionMedias;
           />
         </div>
 
+        {/* Preview thời gian kết thúc */}
+        {newSession.startTime && newSession.endTime && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <div className="text-sm text-blue-800">
+              <span className="font-medium">Preview:</span> Phiên họp diễn ra từ{" "}
+              <span className="font-semibold">
+                {newSession.startTime.split("T")[1]?.slice(0, 5)}
+              </span>{" "}
+              đến{" "}
+              <span className="font-semibold">
+                {newSession.endTime.split("T")[1]?.slice(0, 5)}
+              </span>
+              {" "}({newSession.timeRange} giờ)
+            </div>
+          </div>
+        )}
+
         <FormSelect
           label="Phòng"
           value={newSession.roomId}
@@ -232,15 +276,14 @@ const sessionMedias = newSession.sessionMedias;
           disabled={isRoomsLoading}
         />
 
-        {/* ✅ Media Upload - LƯU FILE THẬT */}
         <div className="border-t pt-3">
           <h5 className="font-medium mb-2">
             Hình ảnh phiên họp 
-            {newSession.sessionMedias?.length > 0 && (
-            <span className="text-sm text-gray-600 ml-2">
+            { (newSession.sessionMedias?.length ?? 0) > 0 && (
+              <span className="text-sm text-gray-600 ml-2">
                 ({newSession.sessionMedias?.length} file đã chọn)
-            </span>
-            )}
+              </span>
+            ) }
           </h5>
           <ImageUpload
             label="Tải lên ảnh"

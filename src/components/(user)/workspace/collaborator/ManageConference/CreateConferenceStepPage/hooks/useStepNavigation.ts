@@ -1,3 +1,5 @@
+// src/hooks/useStepNavigation.ts
+import { useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks/hooks";
 import {
   nextStep,
@@ -16,42 +18,52 @@ export function useStepNavigation() {
   );
   const mode = useAppSelector((state) => state.conferenceStep.mode);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     dispatch(nextStep());
-  };
+  }, [dispatch]);
 
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     dispatch(prevStep());
-  };
+  }, [dispatch]);
 
-  const handleGoToStep = (step: number) => {
-    dispatch(goToStep(step));
-  };
+  const handleGoToStep = useCallback((step: number) => {
+    if (mode === "edit") {
+      dispatch(goToStep(step));
+      return;
+    }
+    // Trong chế độ "create", chỉ cho phép nhảy đến step đã hoàn thành hoặc step tiếp theo
+    if (step <= currentStep || completedSteps.includes(step)) {
+      dispatch(goToStep(step));
+    }
+  }, [dispatch, mode, currentStep, completedSteps]);
 
-  const handleMarkCompleted = (step: number) => {
+  const handleMarkCompleted = useCallback((step: number) => {
     dispatch(markStepCompleted(step));
-  };
+  }, [dispatch]);
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     dispatch(resetWizard());
-  };
+  }, [dispatch]);
 
-  const handleSetMode = (newMode: "create" | "edit") => {
+  const handleSetMode = useCallback((newMode: "create" | "edit") => {
     dispatch(setMode(newMode));
-  };
+  }, [dispatch]);
 
-  const isStepCompleted = (step: number) => {
+  const isStepCompleted = useCallback((step: number) => {
     return completedSteps.includes(step);
-  };
+  }, [completedSteps]);
 
-  const isStepAccessible = (step: number) => {
-    return isStepCompleted(step) || step <= currentStep;
-  };
+  const isStepAccessible = useCallback((step: number) => {
+    // ✅ Trong edit mode, mọi step đều accessible
+    if (mode === "edit") return true;
+    return completedSteps.includes(step) || step <= currentStep;
+  }, [mode, completedSteps, currentStep]);
 
-  const canNavigateToStep = (step: number) => {
-    // Can navigate to any completed step or the current step
+  const canNavigateToStep = useCallback((step: number) => {
+    // ✅ Trong edit mode, có thể điều hướng đến bất kỳ step nào
+    if (mode === "edit") return true;
     return step <= currentStep || completedSteps.includes(step);
-  };
+  }, [mode, currentStep, completedSteps]);
 
   return {
     currentStep,

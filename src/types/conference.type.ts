@@ -86,7 +86,7 @@ export interface ConferenceBasicForm {
   targetAudienceTechnicalConference?: string; //for tech conf
   customTarget?: string;
 
-  contractURL?:string;
+  contractURL?:File|string|null;
   commission?:number;
 }
 
@@ -466,6 +466,10 @@ export interface TechnicalConferenceDetailResponse {
   sessions?: TechnicalConferenceSessionResponse[];
   conferencePrices?: ConferencePriceResponse[];
   conferenceTimelines?: ConferenceTimelineResponse[];
+
+  contractURL:File|string;
+  commission:number;
+
 }
 
 export interface ResearchConferenceDetailResponse {

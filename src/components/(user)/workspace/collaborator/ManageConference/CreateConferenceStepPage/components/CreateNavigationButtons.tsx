@@ -12,7 +12,7 @@ interface CreateNavigationButtonsProps {
   nextButtonText?: string;
   onPrevious: () => void;
   onNext?: () => void;
-  onSubmit?: () => void; 
+  onSubmit?: () => void;
   canSkip?: boolean;
 }
 
@@ -38,8 +38,11 @@ export function CreateNavigationButtons({
     return "Lưu thông tin";
   };
 
+  const isLastStep = currentStep === 6;
+
   return (
     <div className="flex gap-3 mt-6">
+      {/* Nút Quay lại */}
       {showPrevious && currentStep > 1 && (
         <Button
           onClick={onPrevious}
@@ -51,6 +54,7 @@ export function CreateNavigationButtons({
         </Button>
       )}
 
+      {/* Nút Lưu (Submit) */}
       {onSubmit && (
         <Button
           onClick={onSubmit}
@@ -61,7 +65,8 @@ export function CreateNavigationButtons({
         </Button>
       )}
 
-      {showNext && isStepCompleted && onNext && currentStep < 6 && (
+      {/* Nút Tiếp theo — chỉ hiện nếu step đã hoàn thành */}
+      {showNext && isStepCompleted && onNext && !isLastStep && (
         <Button
           onClick={onNext}
           className="flex-1 bg-green-600 text-white hover:bg-green-700"
@@ -69,6 +74,13 @@ export function CreateNavigationButtons({
         >
           {nextButtonText}
         </Button>
+      )}
+
+      {/* Nút Hoàn tất — ở step cuối */}
+      {isLastStep && isStepCompleted && (
+        <div className="flex-1 text-center text-green-600 font-medium py-2.5">
+          Đã hoàn thành
+        </div>
       )}
     </div>
   );

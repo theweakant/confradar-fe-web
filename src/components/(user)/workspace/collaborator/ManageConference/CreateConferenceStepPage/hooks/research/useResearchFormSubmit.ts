@@ -387,7 +387,7 @@ const submitSessions = async (
       dispatch(markStepCompleted(9));
       toast.success("Tạo hội thảo nghiên cứu thành công!");
       dispatch(resetWizard());
-      router.push(`/workspace/collaborator/manage-conference`);
+      router.push(`/workspace/organizer/manage-conference`);
       return { success: true, skipped: true };
     }
 

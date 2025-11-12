@@ -291,24 +291,24 @@ const addOneDay = (dateStr: string | undefined): string | undefined => {
         <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
+              <div className="text-gray-600 mb-1">Ngày bán vé</div>
+              <div className="font-medium">{formatDate(ticketSaleStart)} → {formatDate(ticketSaleEnd)}</div>
+            </div>            
+            <div>
               <div className="text-gray-600 mb-1">Ngày tổ chức</div>
               <div className="font-medium">{formatDate(eventStartDate)} → {formatDate(eventEndDate)}</div>
             </div>
             <div>
-              <div className="text-gray-600 mb-1">Ngày bán vé</div>
-              <div className="font-medium">{formatDate(ticketSaleStart)} → {formatDate(ticketSaleEnd)}</div>
-            </div>
+              <div className="text-gray-600 mb-1">Đã tạo vòng</div>
+              <div className="font-medium">{activePhase.revisionRoundDeadlines.length} / {revisionAttemptAllowed}</div>
+            </div>            
             <div>
               <div className="text-gray-600 mb-1">Số lần chỉnh sửa cho phép</div>
               <div className="font-medium text-purple-600">{revisionAttemptAllowed}</div>
             </div>
-            <div>
-              <div className="text-gray-600 mb-1">Đã tạo vòng</div>
-              <div className="font-medium">{activePhase.revisionRoundDeadlines.length} / {revisionAttemptAllowed}</div>
-            </div>
           </div>
           <div className="text-xs text-blue-600 mt-3 pt-3 border-t border-blue-200">
-            Timeline research phải kết thúc trước ngày bán vé
+            Timeline research (bao gồm Waitlist) phải kết thúc trước ngày bán vé
           </div>
         </div>
       )}

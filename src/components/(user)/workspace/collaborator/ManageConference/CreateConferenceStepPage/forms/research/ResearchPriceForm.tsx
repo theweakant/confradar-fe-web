@@ -413,6 +413,7 @@ function PhaseModal({
 interface ResearchPriceFormProps {
   tickets: Ticket[];
   onTicketsChange: (tickets: Ticket[]) => void;
+  onRemoveTicket?: (ticketId: string) => void;
   ticketSaleStart: string;
   ticketSaleEnd: string;
   researchPhases: ResearchPhase[];
@@ -423,6 +424,7 @@ interface ResearchPriceFormProps {
 export function ResearchPriceForm({
   tickets,
   onTicketsChange,
+  onRemoveTicket,
   ticketSaleStart,
   ticketSaleEnd,
   researchPhases,
@@ -603,6 +605,12 @@ export function ResearchPriceForm({
   };
 
   const handleRemoveTicket = (index: number) => {
+    const ticket = tickets[index];
+    
+    if (onRemoveTicket && ticket.ticketId) {
+      onRemoveTicket(ticket.ticketId);
+    }
+
     onTicketsChange(tickets.filter((_, i) => i !== index));
     toast.success("Đã xóa vé!");
   };

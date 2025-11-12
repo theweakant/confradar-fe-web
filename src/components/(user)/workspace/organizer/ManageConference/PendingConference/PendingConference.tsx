@@ -52,7 +52,7 @@ export default function PendingConference() {
   };
   const handleConferenceClick = (conferenceId: string) => {
     router.push(
-      `/workspace/organizer/manage-conference/view-detail/${conferenceId}`,
+      `/workspace/organizer/manage-conference/view-pending-detail/${conferenceId}`,
     );
   };
   const handleSubmit = async () => {

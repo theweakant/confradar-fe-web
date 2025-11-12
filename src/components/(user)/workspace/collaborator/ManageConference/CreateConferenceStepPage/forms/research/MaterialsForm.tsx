@@ -16,6 +16,10 @@ interface MaterialsFormProps {
   onMaterialsChange: (materials: ResearchMaterial[]) => void;
   onRankingFilesChange: (files: ResearchRankingFile[]) => void;
   onRankingReferencesChange: (refs: ResearchRankingReference[]) => void;
+
+  onRemoveMaterial?: (materialId: string) => void;
+  onRemoveRankingFile?: (rankingFileId: string) => void;
+  onRemoveRankingReference?: (rankingReferenceId: string) => void;
 }
 
 export function MaterialsForm({
@@ -25,6 +29,9 @@ export function MaterialsForm({
   onMaterialsChange,
   onRankingFilesChange,
   onRankingReferencesChange,
+  onRemoveMaterial,
+  onRemoveRankingFile,
+  onRemoveRankingReference
 }: MaterialsFormProps) {
   const [newMaterial, setNewMaterial] = useState<ResearchMaterial>({
     fileName: "",
@@ -59,6 +66,12 @@ export function MaterialsForm({
   };
 
   const handleRemoveMaterial = (index: number) => {
+    const material = materials[index];
+    
+    if (onRemoveMaterial && material.materialId) {
+      onRemoveMaterial(material.materialId); 
+    }
+    
     onMaterialsChange(materials.filter((_, i) => i !== index));
     toast.success("Đã xóa tài liệu!");
   };
@@ -76,6 +89,12 @@ export function MaterialsForm({
   };
 
   const handleRemoveRankingFile = (index: number) => {
+    const file = rankingFiles[index];
+    
+    if (onRemoveRankingFile && file.rankingFileId) {
+      onRemoveRankingFile(file.rankingFileId); 
+    }
+    
     onRankingFilesChange(rankingFiles.filter((_, i) => i !== index));
     toast.success("Đã xóa file xếp hạng!");
   };
@@ -101,6 +120,12 @@ export function MaterialsForm({
   };
 
   const handleRemoveRankingReference = (index: number) => {
+    const ref = rankingReferences[index];
+    
+    if (onRemoveRankingReference && ref.rankingReferenceId) {
+      onRemoveRankingReference(ref.rankingReferenceId); 
+    }
+    
     onRankingReferencesChange(rankingReferences.filter((_, i) => i !== index));
     toast.success("Đã xóa URL tham khảo!");
   };

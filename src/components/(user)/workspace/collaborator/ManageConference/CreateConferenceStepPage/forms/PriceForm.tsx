@@ -10,6 +10,7 @@ import type { Ticket, Phase, RefundInPhase } from "@/types/conference.type";
 interface PriceFormProps {
   tickets: Ticket[];
   onTicketsChange: (tickets: Ticket[]) => void;
+  onRemoveTicket?: (priceId: string) => void;
   ticketSaleStart: string;
   ticketSaleEnd: string;
   maxTotalSlot: number;
@@ -417,6 +418,7 @@ const handleUpdateRefund = (index: number, field: keyof RefundInPhase, value: st
 export function PriceForm({
   tickets,
   onTicketsChange,
+  onRemoveTicket,
   ticketSaleStart,
   ticketSaleEnd,
   maxTotalSlot,
@@ -545,9 +547,16 @@ export function PriceForm({
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+
   const handleRemoveTicket = (index: number) => {
-    onTicketsChange(tickets.filter((_, i) => i !== index));
-    toast.success("Đã xóa vé!");
+    const ticket = tickets[index];
+    
+    if (onRemoveTicket && ticket.priceId) {
+      onRemoveTicket(ticket.priceId);
+    } else {
+      onTicketsChange(tickets.filter((_, i) => i !== index));
+      toast.success("Đã xóa vé!");
+    }
   };
 
   return (

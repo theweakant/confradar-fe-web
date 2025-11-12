@@ -62,7 +62,9 @@ export const conferenceStepApi = createApi({
             "targetAudienceTechnicalConference",
             body.targetAudienceTechnicalConference,
           );
-        if (body.contractURL) formData.append("contractURL", body.contractURL);
+        if (body.contractURL instanceof File) {
+          formData.append("contractURL", body.contractURL);
+        }        
         if (body.commission !== undefined && body.commission !== null)
           
       formData.append("commission", String(body.commission));
@@ -76,42 +78,39 @@ export const conferenceStepApi = createApi({
     }),
 
     // UPDATE BASIC
-    updateBasicConference: builder.mutation<
-      ApiResponse<{ conferenceId: string }>,
-      { conferenceId: string; data: ConferenceBasicForm }
-    >({
-      query: ({ conferenceId, data }) => {
-        const formData = new FormData();
+updateBasicConference: builder.mutation<
+  ApiResponse<{ conferenceId: string }>,
+  { conferenceId: string; data: ConferenceBasicForm }
+>({
+  query: ({ conferenceId, data }) => {
+    const formData = new FormData();
 
-        // Required fields
-        formData.append("conferenceName", data.conferenceName);
-        formData.append("startDate", data.startDate);
-        formData.append("endDate", data.endDate);
-        formData.append("totalSlot", String(data.totalSlot));
-        formData.append("isInternalHosted", String(data.isInternalHosted));
-        formData.append(
-          "isResearchConference",
-          String(data.isResearchConference),
-        );
-        formData.append("conferenceCategoryId", data.conferenceCategoryId);
-        formData.append("cityId", data.cityId);
-        formData.append("ticketSaleStart", data.ticketSaleStart);
-        formData.append("ticketSaleEnd", data.ticketSaleEnd);
+    // Required fields (the API docs mark these as required or have no indication of optional)
+    formData.append("conferenceName", data.conferenceName);
+    formData.append("startDate", data.startDate);
+    formData.append("endDate", data.endDate);
+    formData.append("totalSlot", String(data.totalSlot));
+    formData.append("isInternalHosted", String(data.isInternalHosted));
+    formData.append("isResearchConference", String(data.isResearchConference));
+    formData.append("conferenceCategoryId", data.conferenceCategoryId);
+    formData.append("cityId", data.cityId);
+    formData.append("ticketSaleStart", data.ticketSaleStart);
+    formData.append("ticketSaleEnd", data.ticketSaleEnd);
 
-        // Optional fields
-        if (data.description) formData.append("description", data.description);
-        if (data.address) formData.append("address", data.address);
-        if (data.bannerImageFile)
-          formData.append("bannerImageFile", data.bannerImageFile);
-
-        return {
-          url: endpoint.CONFERENCE_STEP.UPDATE_BASIC(conferenceId),
-          method: "PUT",
-          body: formData,
-        };
-      },
-      invalidatesTags: ["ConferenceStep"],
-    }),
+    if (data.description) formData.append("description", data.description);
+    if (data.address) formData.append("address", data.address);
+    if (data.bannerImageFile) formData.append("bannerImageFile", data.bannerImageFile);
+    if (data.contractURL) formData.append("contractURL", data.contractURL);
+    if (data.commission !== undefined) formData.append("commission", String(data.commission));
+    if (data.targetAudienceTechnicalConference) {formData.append("targetAudienceTechnicalConference", data.targetAudienceTechnicalConference);}
+    return {
+      url: endpoint.CONFERENCE_STEP.UPDATE_BASIC(conferenceId),
+      method: "PUT",
+      body: formData,
+    };
+  },
+  invalidatesTags: ["ConferenceStep"],
+}),
 
     //CREATE PRICE (TECH)
     createConferencePrice: builder.mutation<
