@@ -42,8 +42,8 @@ export const ExternalReviewerDetail: React.FC<ExternalReviewerDetailProps> = ({
           <p className="text-sm text-gray-500 mt-1">ID: {reviewer.userId}</p>
           <div className="mt-2">
             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${reviewer.isActive
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
+              ? 'bg-green-100 text-green-800'
+              : 'bg-red-100 text-red-800'
               }`}>
               {reviewer.isActive ? 'Hoạt động' : 'Tạm ngưng'}
             </span>
@@ -83,10 +83,10 @@ export const ExternalReviewerDetail: React.FC<ExternalReviewerDetailProps> = ({
                     reviewer.gender === 'Other' ? 'Khác' : 'Chưa cập nhật'}
               </p>
             </div>
-            <div>
+            {/* <div>
               <label className="text-sm font-medium text-gray-500">Địa chỉ</label>
               <p className="text-gray-900">{reviewer.address || 'Chưa cập nhật'}</p>
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -109,7 +109,7 @@ export const ExternalReviewerDetail: React.FC<ExternalReviewerDetailProps> = ({
                 </p>
               </div>
             </div>
-            <div>
+            {/* <div>
               <label className="text-sm font-medium text-gray-500">Cập nhật lần cuối</label>
               <div className="flex items-center space-x-2">
                 <Activity className="w-4 h-4 text-gray-400" />
@@ -120,7 +120,7 @@ export const ExternalReviewerDetail: React.FC<ExternalReviewerDetailProps> = ({
                   }
                 </p>
               </div>
-            </div>
+            </div> */}
             <div>
               <label className="text-sm font-medium text-gray-500">Trạng thái tài khoản</label>
               <div className="flex items-center space-x-2">
@@ -146,7 +146,7 @@ export const ExternalReviewerDetail: React.FC<ExternalReviewerDetailProps> = ({
       </div>
 
       {/* Organization Information if available */}
-      {reviewer.organizationName && (
+      {/* {reviewer.organizationName && (
         <div className="border-t pt-4">
           <h4 className="font-medium text-gray-900 mb-3">Thông tin tổ chức</h4>
           <div className="bg-gray-50 rounded-lg p-4">
@@ -164,7 +164,7 @@ export const ExternalReviewerDetail: React.FC<ExternalReviewerDetailProps> = ({
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Footer */}
       <div className="border-t pt-4">

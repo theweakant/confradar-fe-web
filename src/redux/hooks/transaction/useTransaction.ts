@@ -87,7 +87,7 @@ export const useTransaction = () => {
   };
 
   const purchaseAttendeeResearch = async (
-    request: CreatePaperPaymentRequest
+    request: CreateTechPaymentRequest
   ): Promise<ApiResponse<GeneralPaymentResultResponse>> => {
     try {
       const result = await createAttendeeResearchPayment(request).unwrap();

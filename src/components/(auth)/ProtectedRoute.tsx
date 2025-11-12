@@ -17,21 +17,41 @@ export function ProtectedRoute({
 }: ProtectedRouteProps) {
   const router = useRouter();
   const { user, isAuthenticated, loading } = useAuth();
-  const role = (user as AuthUser)?.role;
+  const roles = (user as AuthUser)?.role || [];
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.push("/auth/login");
+    if (loading) return;
+
+    if (!isAuthenticated) {
+      router.replace("/auth/login");
       return;
     }
 
-    if (!loading && isAuthenticated && allowedRoles && role) {
-      if (!allowedRoles.includes(role)) {
-        const correctRoute = getRouteByRole(role);
-        router.push(correctRoute);
+    if (isAuthenticated && allowedRoles && roles.length > 0) {
+      const hasPermission = roles.some((r) => allowedRoles.includes(r));
+
+      if (!hasPermission) {
+        // Lấy route hợp lệ đầu tiên theo role của user
+        const firstValidRole = roles[0];
+        const correctRoute = getRouteByRole(firstValidRole);
+        router.replace(correctRoute);
       }
     }
-  }, [isAuthenticated, loading, user, allowedRoles, router]);
+  }, [loading, isAuthenticated, roles, allowedRoles, router]);
+
+  // useEffect(() => {
+  //   if (!loading && !isAuthenticated) {
+  //     router.push("/auth/login");
+  //     return;
+  //   }
+
+  //   if (!loading && isAuthenticated && allowedRoles && role) {
+  //     if (!allowedRoles.includes(role)) {
+  //       const correctRoute = getRouteByRole(role);
+  //       router.push(correctRoute);
+  //     }
+  //   }
+  // }, [isAuthenticated, loading, user, allowedRoles, router]);
 
   if (loading) {
     return (
@@ -46,7 +66,10 @@ export function ProtectedRoute({
 
   if (!isAuthenticated) return null;
 
-  if (allowedRoles && role && !allowedRoles.includes(role)) return null;
+  // if (allowedRoles && role && !allowedRoles.includes(role)) return null;
+  if (allowedRoles && roles.length > 0 && !roles.some((r) => allowedRoles.includes(r)))
+    return null;
+
 
   return <>{children}</>;
 }

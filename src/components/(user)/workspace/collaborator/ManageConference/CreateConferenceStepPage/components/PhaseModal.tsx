@@ -102,10 +102,11 @@ export function PhaseModal({
       startDate: phaseData.startDate,
       endDate: calculateEndDate(phaseData.startDate, phaseData.durationInDays),
       totalslot: phaseData.totalslot,
+      refundInPhase: [] // ⚠️ @TEMP(T): tạm thời để trống để build không lỗi
     };
 
     onAdd(phase);
-    
+
     // Reset form
     setPhaseData({
       phaseName: "",

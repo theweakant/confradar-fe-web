@@ -31,6 +31,8 @@ const INITIAL_BASIC_FORM: ConferenceBasicForm = {
   ticketSaleEnd: "",
   ticketSaleDuration: 0,
   createdby: "",
+  contractURL: "", // ⚠️ @TEMP(T): tạm thời để trống để build không lỗi
+  commission: 0, // ⚠️ @TEMP(T): tạm thời để trống để build không lỗi
 };
 
 const INITIAL_RESEARCH_DETAIL: ResearchDetail = {

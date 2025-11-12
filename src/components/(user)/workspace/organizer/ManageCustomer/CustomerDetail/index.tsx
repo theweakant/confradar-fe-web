@@ -41,11 +41,10 @@ export const CustomerDetail: React.FC<CustomerDetailProps> = ({
           </h3>
           <p className="text-sm text-gray-500 mt-1">ID: {customer.userId}</p>
           <div className="mt-2">
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-              customer.isActive 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-red-100 text-red-800'
-            }`}>
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${customer.isActive
+              ? 'bg-green-100 text-green-800'
+              : 'bg-red-100 text-red-800'
+              }`}>
               {customer.isActive ? 'Hoạt động' : 'Tạm ngưng'}
             </span>
           </div>
@@ -79,15 +78,15 @@ export const CustomerDetail: React.FC<CustomerDetailProps> = ({
             <div>
               <label className="text-sm font-medium text-gray-500">Giới tính</label>
               <p className="text-gray-900">
-                {customer.gender === 'Male' ? 'Nam' : 
-                 customer.gender === 'Female' ? 'Nữ' : 
-                 customer.gender === 'Other' ? 'Khác' : 'Chưa cập nhật'}
+                {customer.gender === 'Male' ? 'Nam' :
+                  customer.gender === 'Female' ? 'Nữ' :
+                    customer.gender === 'Other' ? 'Khác' : 'Chưa cập nhật'}
               </p>
             </div>
-            <div>
+            {/* <div>
               <label className="text-sm font-medium text-gray-500">Địa chỉ</label>
               <p className="text-gray-900">{customer.address || 'Chưa cập nhật'}</p>
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -103,25 +102,25 @@ export const CustomerDetail: React.FC<CustomerDetailProps> = ({
               <div className="flex items-center space-x-2">
                 <Calendar className="w-4 h-4 text-gray-400" />
                 <p className="text-gray-900">
-                  {customer.createdAt 
+                  {customer.createdAt
                     ? format(new Date(customer.createdAt), 'dd/MM/yyyy HH:mm', { locale: vi })
                     : 'N/A'
                   }
                 </p>
               </div>
             </div>
-            <div>
+            {/* <div>
               <label className="text-sm font-medium text-gray-500">Cập nhật lần cuối</label>
               <div className="flex items-center space-x-2">
                 <Activity className="w-4 h-4 text-gray-400" />
                 <p className="text-gray-900">
-                  {customer.updatedAt 
+                  {customer.updatedAt
                     ? format(new Date(customer.updatedAt), 'dd/MM/yyyy HH:mm', { locale: vi })
                     : 'N/A'
                   }
                 </p>
               </div>
-            </div>
+            </div> */}
             <div>
               <label className="text-sm font-medium text-gray-500">Trạng thái tài khoản</label>
               <div className="flex items-center space-x-2">
@@ -147,7 +146,7 @@ export const CustomerDetail: React.FC<CustomerDetailProps> = ({
       </div>
 
       {/* Organization Information if available */}
-      {customer.organizationName && (
+      {/* {customer.organizationName && (
         <div className="border-t pt-4">
           <h4 className="font-medium text-gray-900 mb-3">Thông tin tổ chức</h4>
           <div className="bg-gray-50 rounded-lg p-4">
@@ -165,7 +164,7 @@ export const CustomerDetail: React.FC<CustomerDetailProps> = ({
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Footer */}
       <div className="border-t pt-4">
