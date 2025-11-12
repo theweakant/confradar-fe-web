@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/redux/hooks/useAuth";
 import { useFirebaseLogin } from "@/hooks/useFirebaseLogin";
 import { validateLoginForm } from "@/helper/validation";
-import { getRouteByRole } from "@/constants/roles";
+import { getRoleForRedirect, getRouteByRole } from "@/constants/roles";
 import type { LoginFormData, FormErrors } from "@/types/auth.type";
 import { toast } from "sonner";
 
@@ -43,7 +43,10 @@ export const useLoginForm = () => {
       toast.success("Đăng nhập thành công!", {
         description: `Chào mừng ${user.email}`,
       });
-      const redirectUrl = getRouteByRole(user.role ?? "");
+
+      const roleToUse = getRoleForRedirect(user.role);
+
+      const redirectUrl = getRouteByRole(roleToUse ?? "");
       router.push(redirectUrl);
     } else {
       toast.error("Đăng nhập thất bại!", {
@@ -59,7 +62,10 @@ export const useLoginForm = () => {
         const { success, user } = await handleGoogleLogin();
 
         if (success && user) {
-          const redirectUrl = getRouteByRole(user.role ?? "");
+          const roleToUse = getRoleForRedirect(user.role);
+
+          const redirectUrl = getRouteByRole(roleToUse ?? "");
+          // const redirectUrl = getRouteByRole(user.role ?? "");
           router.push(redirectUrl);
         } else {
           setErrors({ email: "Đăng nhập Google thất bại" });

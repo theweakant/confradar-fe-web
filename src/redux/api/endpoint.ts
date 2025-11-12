@@ -34,7 +34,7 @@ export const endpoint = {
     DELETE: "/Room",
     DETAIL: "/room",
 
-    AVAILABLE_ROOM:"/room/available-rooms-between-dates"
+    AVAILABLE_ROOM: "/room/available-rooms-between-dates"
 
   },
 
@@ -167,6 +167,7 @@ export const endpoint = {
   TRANSACTION: {
     CREATE_TECH_PAYMENT: "/payment/pay-tech",
     CREATE_RESEARCH_PAPER_PAYMENT: "/payment/pay-research-paper",
+    PAY_RESEARCH_AS_ATTENDEE: "/payment/pay-research-as-attendee",
     GET_OWN_TRANSACTION: "/payment/get-own-transaction",
   },
 
@@ -181,7 +182,7 @@ export const endpoint = {
     LIST_PENDING_ABSTRACT: (confId?: string) =>
       confId
         ? `/Paper/list-pending-abstract?confId=${confId}`
-        : `/Paper/list-pending-abstract`,   
+        : `/Paper/list-pending-abstract`,
     DECIDE_ABSTRACT: "/Paper/decide-abstract-paper-status",
     ASSIGN_PAPER_TO_REVIEWER: "/Paper/assign-reviewer-to-paper",
     LIST_UNASSIGN_ABSTRACT: "/Paper/list-unassign-abstract",
@@ -248,6 +249,6 @@ export const endpoint = {
   REQUEST: {
     REFUND_REQUEST: "/ticket/refunds-request",
     REFUND_REQUEST_BY_CONFID: (conferenceId: string) =>
-      `/ticket/conferences/${conferenceId}/refunds-request`,    
+      `/ticket/conferences/${conferenceId}/refunds-request`,
   },
 };

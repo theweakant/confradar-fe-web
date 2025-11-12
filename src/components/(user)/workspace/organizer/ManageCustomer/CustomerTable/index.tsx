@@ -1,159 +1,121 @@
-// import React from "react";
-// import {
-//   Eye,
-//   MoreVertical,
-//   Ban,
-//   CheckCircle
-// } from "lucide-react";
+import React from 'react';
+import { Eye, UserMinus, UserCheck, Mail, Calendar } from 'lucide-react';
+import { UserDetailForAdminAndOrganizerResponse } from '@/types/user.type';
+import { format } from 'date-fns';
+import { vi } from 'date-fns/locale';
 
-// import { DataTable, Column } from "@/components/molecules/DataTable";
-// import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-// import { StatusBadge } from "@/components/atoms/StatusBadge";
-// import { UserProfileResponse } from "@/types/user.type";
+interface CustomerTableProps {
+  customers: UserDetailForAdminAndOrganizerResponse[];
+  onView: (customer: UserDetailForAdminAndOrganizerResponse) => void;
+  onSuspend: (userId: string) => void;
+  onActivate: (userId: string) => void;
+}
 
-// interface CustomerTableProps {
-//   customers: UserProfileResponse[];
-//   onView: (customer: UserProfileResponse) => void;
-//   onSuspend: (customerId: string) => void;
-//   onActivate: (customerId: string) => void;
-// }
+export const CustomerTable: React.FC<CustomerTableProps> = ({
+  customers,
+  onView,
+  onSuspend,
+  onActivate
+}) => {
+  if (customers.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <div className="text-gray-400 mb-2">
+          <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM9 9a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        </div>
+        <h3 className="text-lg font-medium text-gray-900 mb-1">Không có khách hàng nào</h3>
+        <p className="text-gray-500">Danh sách khách hàng sẽ hiển thị tại đây</p>
+      </div>
+    );
+  }
 
-// export function CustomerTable({
-//   customers,
-//   onView,
-//   onSuspend,
-//   onActivate
-// }: CustomerTableProps) {
-//   const getRoleLabel = (role: string) => {
-//     const labels: Record<string, string> = {
-//       customer: "Khách hàng",
-//       conferenceorganizer: "Người tổ chức hội nghị",
-//       collaborator: "Cộng tác viên",
-//       localreviewer: "Phản biện nội bộ",
-//       externalreviewer: "Phản biện bên ngoài",
-//       admin: "Quản trị viên"
-//     };
-//     return labels[role] || role;
-//   };
-
-//   const getRoleVariant = (role: string): "success" | "danger" | "warning" | "info" => {
-//     const variants: Record<string, "success" | "danger" | "warning" | "info"> = {
-//       customer: "info",
-//       conferenceorganizer: "warning",
-//       collaborator: "success",
-//       localreviewer: "info",
-//       externalreviewer: "warning",
-//       admin: "danger"
-//     };
-//     return variants[role] || "info";
-//   };
-
-//   const getStatusLabel = (status: string) => {
-//     const labels: Record<string, string> = {
-//       active: "Hoạt động",
-//       inactive: "Tạm ngưng"
-//     };
-//     return labels[status] || status;
-//   };
-
-//   const getStatusVariant = (status: string): "success" | "danger" | "warning" | "info" => {
-//     const variants: Record<string, "success" | "danger" | "warning" | "info"> = {
-//       active: "success",
-//       inactive: "danger"
-//     };
-//     return variants[status] || "info";
-//   };
-
-//   const columns: Column<UserProfileResponse>[] = [
-//     {
-//       key: "fullName",
-//       header: "Tên khách hàng",
-//       render: (customer) => (
-//         <div className="max-w-xs">
-//           <p className="font-medium text-gray-900 truncate">{customer.fullName}</p>
-//           <p className="text-sm text-gray-500 truncate">{customer.email}</p>
-//         </div>
-//       ),
-//     },
-//     {
-//       key: "role",
-//       header: "Vai trò",
-//       render: (customer) => (
-//         <StatusBadge
-//           status={getRoleLabel(customer.role)}
-//           variant={getRoleVariant(customer.role)}
-//         />
-//       ),
-//     },
-//     {
-//       key: "status",
-//       header: "Trạng thái",
-//       render: (customer) => (
-//         <StatusBadge
-//           status={getStatusLabel(customer.status)}
-//           variant={getStatusVariant(customer.status)}
-//         />
-//       ),
-//     },
-//     {
-//       key: "registeredConferences",
-//       header: "Hội nghị đã đăng ký",
-//       render: (customer) => (
-//         <span className="text-gray-900 font-medium">
-//           {customer.registeredConferences || 0}
-//         </span>
-//       ),
-//     },
-//     {
-//       key: "actions",
-//       header: "Thao tác",
-//       className: "text-right",
-//       render: (customer) => (
-//         <div className="flex items-center justify-end">
-//           <DropdownMenu>
-//             <DropdownMenuTrigger asChild>
-//               <button className="p-2 hover:bg-gray-100 rounded-md transition-colors">
-//                 <MoreVertical className="w-4 h-4 text-gray-600" />
-//               </button>
-//             </DropdownMenuTrigger>
-//             <DropdownMenuContent align="end">
-//               <DropdownMenuItem
-//                 onClick={() => onView(customer)}
-//                 className="cursor-pointer"
-//               >
-//                 <Eye className="w-4 h-4 mr-2" />
-//                 Xem chi tiết
-//               </DropdownMenuItem>
-//               {customer.status === "active" ? (
-//                 <DropdownMenuItem
-//                   onClick={() => onSuspend(customer.userId)}
-//                   className="cursor-pointer text-orange-600 focus:text-orange-600"
-//                 >
-//                   <Ban className="w-4 h-4 mr-2" />
-//                   Tạm ngưng
-//                 </DropdownMenuItem>
-//               ) : (
-//                 <DropdownMenuItem
-//                   onClick={() => onActivate(customer.userId)}
-//                   className="cursor-pointer text-green-600 focus:text-green-600"
-//                 >
-//                   <CheckCircle className="w-4 h-4 mr-2" />
-//                   Kích hoạt
-//                 </DropdownMenuItem>
-//               )}
-//             </DropdownMenuContent>
-//           </DropdownMenu>
-//         </div>
-//       ),
-//     },
-//   ];
-
-//   return (
-//     <DataTable
-//       columns={columns}
-//       data={customers}
-//       keyExtractor={(customer) => customer.userId}
-//       emptyMessage="Không tìm thấy khách hàng nào"
-//     />
-//   );
-// }
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead>
+          <tr className="border-b border-gray-200 bg-gray-50">
+            <th className="text-left py-4 px-6 font-medium text-gray-700">Thông tin khách hàng</th>
+            <th className="text-left py-4 px-6 font-medium text-gray-700">Email</th>
+            <th className="text-left py-4 px-6 font-medium text-gray-700">Ngày tham gia</th>
+            <th className="text-left py-4 px-6 font-medium text-gray-700">Trạng thái</th>
+            <th className="text-center py-4 px-6 font-medium text-gray-700">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          {customers.map((customer) => (
+            <tr key={customer.userId} className="border-b border-gray-100 hover:bg-gray-50">
+              <td className="py-4 px-6">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <span className="text-blue-600 font-medium text-sm">
+                      {customer.fullName?.charAt(0)?.toUpperCase() || 'U'}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900">
+                      {customer.fullName || 'Chưa có tên'}
+                    </h3>
+                    <p className="text-sm text-gray-500">ID: {customer.userId}</p>
+                  </div>
+                </div>
+              </td>
+              <td className="py-4 px-6">
+                <div className="flex items-center space-x-2">
+                  <Mail className="w-4 h-4 text-gray-400" />
+                  <span className="text-gray-900">{customer.email}</span>
+                </div>
+              </td>
+              <td className="py-4 px-6">
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-4 h-4 text-gray-400" />
+                  <span className="text-gray-600">
+                    {customer.createdAt ? format(new Date(customer.createdAt), 'dd/MM/yyyy', { locale: vi }) : 'N/A'}
+                  </span>
+                </div>
+              </td>
+              <td className="py-4 px-6">
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  customer.isActive 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-red-100 text-red-800'
+                }`}>
+                  {customer.isActive ? 'Hoạt động' : 'Tạm ngưng'}
+                </span>
+              </td>
+              <td className="py-4 px-6">
+                <div className="flex items-center justify-center space-x-2">
+                  <button
+                    onClick={() => onView(customer)}
+                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="Xem chi tiết"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  {customer.isActive ? (
+                    <button
+                      onClick={() => onSuspend(customer.userId)}
+                      className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                      title="Tạm ngưng tài khoản"
+                    >
+                      <UserMinus className="w-4 h-4" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => onActivate(customer.userId)}
+                      className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                      title="Kích hoạt tài khoản"
+                    >
+                      <UserCheck className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};

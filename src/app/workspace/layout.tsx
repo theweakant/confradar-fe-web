@@ -11,11 +11,11 @@ export default function WorkspaceLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, role: userRole } = useAuth();
+  const { user } = useAuth();
   const { profile, isLoading } = useProfile();
 
   // Lấy role trực tiếp từ useAuth
-  const role = userRole || "";
+  const roles: string[] = user?.role ?? [];
 
   // Ưu tiên fullName từ profile, fallback về email
   const fullName = profile?.fullName || user?.email || "User";
@@ -41,7 +41,7 @@ export default function WorkspaceLayout({
     >
       <div className="flex h-screen bg-gray-50">
         {/* Sidebar */}
-        <WorkspaceSidebar role={role} />
+        <WorkspaceSidebar role={roles} />
 
         {/* Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
@@ -72,7 +72,7 @@ export default function WorkspaceLayout({
                   <p className="text-sm font-medium text-gray-800">
                     {isLoading ? "Đang tải..." : fullName}
                   </p>
-                  <p className="text-xs text-gray-500 capitalize">{role}</p>
+                  <p className="text-xs text-gray-500 capitalize">{roles.join(", ")}</p>
                 </div>
                 <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
                   <span className="text-white font-semibold text-sm">

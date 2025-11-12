@@ -17,7 +17,7 @@ import { formatDate } from "@/helper/format";
 import { useSubmitFullPaperReviewMutation, useDecideFullPaperStatusMutation } from "@/redux/services/paper.service";
 import { toast } from "sonner";
 import { ApiError } from "@/types/api.type";
-import { CurrentResearchConferencePhaseForReviewer, PaperDetailForReviewer } from "@/types/paper.type";
+import { CurrentResearchConferencePhaseForReviewer, FullPaperReview, PaperDetailForReviewer } from "@/types/paper.type";
 import { isValidUrl, isWithinDateRange } from "@/helper/paper";
 
 interface FullPaperPhaseProps {
@@ -570,7 +570,7 @@ export default function FullPaperPhase({
 
                 {paperDetail.fullPaper.fullPaperReviews?.length > 0 ? (
                     <div className="space-y-4">
-                        {paperDetail.fullPaper.fullPaperReviews.map((review: any) => (
+                        {paperDetail.fullPaper.fullPaperReviews.map((review: FullPaperReview) => (
                             <div
                                 key={review.fullPaperReviewId}
                                 className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow"

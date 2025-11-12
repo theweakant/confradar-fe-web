@@ -25,7 +25,7 @@ import {
 } from "@/redux/services/paper.service";
 import { toast } from "sonner";
 import { ApiError } from "@/types/api.type";
-import { CurrentPaperPhaseForReviewer, CurrentResearchConferencePhaseForReviewer, PaperDetailForReviewer, RevisionPaperSubmissionForReviewer } from "@/types/paper.type";
+import { CurrentPaperPhaseForReviewer, CurrentResearchConferencePhaseForReviewer, PaperDetailForReviewer, RevisionPaperSubmissionForReviewer, RevisionSubmissionFeedbackForReviewer } from "@/types/paper.type";
 import { isValidUrl } from "@/helper/paper";
 
 interface RevisionPaperPhaseProps {
@@ -273,30 +273,30 @@ export default function RevisionPaperPhase({
         return now >= start && now <= end;
     };
 
-    const getRevisionFeedbackPeriod = (
-        roundNumber: number,
-    ): { start: string; end: string } | null => {
-        if (!currentPhase?.revisionRoundsDetail) return null;
+    // const getRevisionFeedbackPeriod = (
+    //     roundNumber: number,
+    // ): { start: string; end: string } | null => {
+    //     if (!currentPhase?.revisionRoundsDetail) return null;
 
-        const sortedRounds = [...currentPhase.revisionRoundsDetail].sort(
-            (a: any, b: any) => a.roundNumber - b.roundNumber,
-        );
-        const currentRoundIndex = sortedRounds.findIndex(
-            (r: any) => r.roundNumber === roundNumber,
-        );
+    //     const sortedRounds = [...currentPhase.revisionRoundsDetail].sort(
+    //         (a, b) => a.roundNumber - b.roundNumber,
+    //     );
+    //     const currentRoundIndex = sortedRounds.findIndex(
+    //         (r: any) => r.roundNumber === roundNumber,
+    //     );
 
-        if (currentRoundIndex === -1) return null;
+    //     if (currentRoundIndex === -1) return null;
 
-        const currentRound = sortedRounds[currentRoundIndex];
-        const nextRound = sortedRounds[currentRoundIndex + 1];
+    //     const currentRound = sortedRounds[currentRoundIndex];
+    //     const nextRound = sortedRounds[currentRoundIndex + 1];
 
-        if (!nextRound) return null;
+    //     if (!nextRound) return null;
 
-        return {
-            start: currentRound.endSubmissionDate ?? "??",
-            end: nextRound.endSubmissionDate ?? "",
-        };
-    };
+    //     return {
+    //         start: currentRound.endSubmissionDate ?? "??",
+    //         end: nextRound.endSubmissionDate ?? "",
+    //     };
+    // };
 
     // const getRevisionFeedbackPeriod = (
     //     roundNumber: number,
@@ -491,7 +491,7 @@ export default function RevisionPaperPhase({
         }
 
         const submission = paperDetail.revisionPaper.revisionPaperSubmissions.find(
-            (s: any) => s.revisionPaperSubmissionId === submissionId,
+            (s) => s.revisionPaperSubmissionId === submissionId,
         );
 
         if (!submission) return;
@@ -874,7 +874,7 @@ export default function RevisionPaperPhase({
                                             </h5>
                                             <div className="space-y-2">
                                                 {submission.revisionSubmissionFeedbacks.map(
-                                                    (feedback: any) => (
+                                                    (feedback: RevisionSubmissionFeedbackForReviewer) => (
                                                         <div
                                                             key={feedback.revisionSubmissionFeedbackId}
                                                             className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm"

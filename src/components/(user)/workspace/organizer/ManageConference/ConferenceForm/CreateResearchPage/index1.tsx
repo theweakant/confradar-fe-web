@@ -27,7 +27,7 @@ import { ResearchDetailForm } from "../../../../collaborator/ManageConference/Cr
 import { ResearchPhaseForm } from "../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchPhaseForm";
 import { ResearchPriceForm } from "../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchPriceForm";
 import { MaterialsForm } from "../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/MaterialsForm";
-import { SessionForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/SessionForm"; 
+import { SessionForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/SessionForm";
 
 // Hooks
 import {
@@ -124,7 +124,7 @@ export default function CreateResearchConferenceStepPage() {
 
   // Initialize
   useEffect(() => {
-    dispatch(setMaxStep(RESEARCH_MAX_STEP)); 
+    dispatch(setMaxStep(RESEARCH_MAX_STEP));
     handleSetMode("create");
     handleGoToStep(1);
 
@@ -213,21 +213,21 @@ export default function CreateResearchConferenceStepPage() {
     await submitResearchDetail(researchDetail);
   };
 
-const handleTimelineSubmit = async () => {
-  for (const [index, phase] of researchPhases.entries()) {
-    const validationResult = validateResearchTimeline(phase, basicForm.ticketSaleStart);
-    if (!validationResult.isValid) {
-      toast.error(`Lỗi ở phase ${index + 1}: ${validationResult.error}`);
-      return; 
+  const handleTimelineSubmit = async () => {
+    for (const [index, phase] of researchPhases.entries()) {
+      const validationResult = validateResearchTimeline(phase, basicForm.ticketSaleStart);
+      if (!validationResult.isValid) {
+        toast.error(`Lỗi ở phase ${index + 1}: ${validationResult.error}`);
+        return;
+      }
+      if (validationResult.warning) {
+        toast.warning(`Cảnh báo ở phase ${index + 1}: ${validationResult.warning}`);
+      }
     }
-    if (validationResult.warning) {
-      toast.warning(`Cảnh báo ở phase ${index + 1}: ${validationResult.warning}`);
-    }
-  }
 
-  // Nếu tất cả phase hợp lệ → submit
-  await submitResearchPhase(researchPhases);
-};
+    // Nếu tất cả phase hợp lệ → submit
+    await submitResearchPhase(researchPhases);
+  };
 
   const handlePriceSubmit = async () => {
     await submitPrice(tickets);
@@ -345,7 +345,7 @@ const handleTimelineSubmit = async () => {
       {/* STEP 4: Price */}
       {currentStep === 4 && (
         <StepContainer stepNumber={4} title="Giá vé" isCompleted={isStepCompleted(4)}>
-          <ResearchPriceForm
+          {/* <ResearchPriceForm
             tickets={tickets}
             onTicketsChange={setTickets}
             ticketSaleStart={basicForm.ticketSaleStart}
@@ -353,7 +353,7 @@ const handleTimelineSubmit = async () => {
             researchPhases={researchPhases}
             maxTotalSlot={basicForm.totalSlot}
             onOpenPhaseModal={openPhaseModal}
-          />
+          /> */}
 
           {/* Phase Modal */}
           <PhaseModal

@@ -68,14 +68,15 @@ export const useFirebaseLogin = () => {
 
       // 3️⃣ FE decode token giống login thường
       const decoded = decodeToken(accessToken);
-      const rawRole = getRolesFromToken(accessToken);
+      // const rawRole = getRolesFromToken(accessToken);
+      const role = getRolesFromToken(accessToken);
       const email = decoded?.email || result.user.email || "";
       const userId = decoded?.sub || "";
 
-      let role: string | null = null;
+      // let role: string | null = null;
 
-      const customerRole = getCustomerRole(accessToken);
-      role = customerRole || (rawRole.length > 0 ? rawRole[0] : null);
+      // const customerRole = getCustomerRole(accessToken);
+      // role = customerRole || (rawRole.length > 0 ? rawRole[0] : null);
       // if (Array.isArray(rawRole)) {
       //   role = getCustomerRole(accessToken)
       // } else if (typeof rawRole === "string") {

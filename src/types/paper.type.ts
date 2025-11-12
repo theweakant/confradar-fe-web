@@ -52,19 +52,15 @@ export interface AssignedPaperGroup {
 
 export interface AssignedPaper {
   paperId: string;
-  presenterId: string;
+  title: string | null;
+  description: string | null;
+  abstractId: string;
   fullPaperId: string | null;
   revisionPaperId: string | null;
   cameraReadyId: string | null;
-  abstractId: string;
-  conferenceId: string;
   paperPhaseId: string;
+  paperPhaseName: string | null;
   createdAt: string;
-  cameraReady: CameraReadyForReviewer | null;
-  conference: unknown | null;
-  paperAuthors: unknown[];
-  paperPhase: unknown | null;
-  presenter: unknown | null;
 }
 
 //------------------------------------------
@@ -207,7 +203,6 @@ export interface CurrentPaperPhaseForReviewer {
   paperPhaseId?: string;
   phaseName?: string;
 }
-
 export interface RevisionRoundDeadlineForReviewer {
   revisionRoundDeadlineId: string;
   startSubmissionDate?: string;
@@ -233,7 +228,6 @@ export interface CurrentResearchConferencePhaseForReviewer {
   isActive?: boolean;
   revisionRoundsDetail?: RevisionRoundDeadlineForReviewer[];
 }
-
 
 //--------------------------------------------------------
 //SUBMIT FULL PAPER REVIEW

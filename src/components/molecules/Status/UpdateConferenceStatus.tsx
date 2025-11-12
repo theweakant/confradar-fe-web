@@ -47,7 +47,15 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
   onClose,
   conference,
 }) => {
-  const { role } = useAuth();
+  // ⚠️ @TEMP(T): tạm thời sửa để build không lỗi
+  // const { role } = useAuth();
+  const { user } = useAuth();
+  const roles: string[] = Array.isArray(user?.role)
+    ? user.role.filter((r): r is string => typeof r === "string")
+    : user?.role
+      ? [user.role]
+      : [];
+
   const { data: statusData, refetch } = useGetAllConferenceStatusesQuery();
   const [updateStatus, { isLoading }] = useUpdateOwnConferenceStatusMutation();
 
@@ -86,11 +94,15 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
   };
 
   const availableStatuses = useMemo<string[]>(() => {
-    if (!role || normalizedCurrentStatus === "unknown") return [];
+    // ⚠️ @TEMP(T): tạm thời sửa vầy để build không lỗi
+    // if (!role || normalizedCurrentStatus === "unknown") return [];
 
-    const roleLower = role.toLowerCase();
+    // const roleLower = role.toLowerCase();
 
-    if (roleLower.includes("collaborator")) {
+    // if (roleLower.includes("collaborator")) {
+    const hasCollaboratorRole = roles.some((r) => typeof r === "string" && r.toLowerCase().includes("collaborator"));
+
+    if (hasCollaboratorRole) {
       switch (normalizedCurrentStatus) {
         case "preparing":
           return ["Ready", "Cancelled"];
@@ -104,7 +116,7 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
     }
 
     return [];
-  }, [role, normalizedCurrentStatus]);
+  }, [roles, normalizedCurrentStatus]);
 
   const handleSubmit = async () => {
     if (!newStatus) return toast.error("Vui lòng chọn trạng thái mới");

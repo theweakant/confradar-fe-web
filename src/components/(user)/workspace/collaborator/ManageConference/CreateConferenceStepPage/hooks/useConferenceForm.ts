@@ -27,6 +27,8 @@ const INITIAL_BASIC_FORM: ConferenceBasicForm = {
   ticketSaleDuration: 0,
   createdby: "",
   targetAudienceTechnicalConference: "",
+  contractURL: "", // ⚠️ @TEMP(T): tạm thời để trống để build không lỗi
+  commission: 0, // ⚠️ @TEMP(T): tạm thời để trống để build không lỗi
 };
 
 export function useConferenceForm() {

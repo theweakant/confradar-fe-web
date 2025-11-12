@@ -195,6 +195,8 @@ export default function CreateConferenceStepPage() {
     ticketSaleDuration: 0,
     createdby: "",
     targetAudienceTechnicalConference: "",
+    contractURL: "", // ⚠️ @TEMP(T): tạm thời để trống để build không lỗi
+    commission: 0, // ⚠️ @TEMP(T): tạm thời để trống để build không lỗi
   });
 
 
@@ -744,6 +746,7 @@ export default function CreateConferenceStepPage() {
             startDate: phase.startDate,
             endDate: phase.endDate,
             totalslot: phase.totalslot,
+            refundInPhase: [] // ⚠️ @TEMP(T): tạm thời để trống để build không lỗi
           })),
         })),
       };
@@ -1066,6 +1069,7 @@ export default function CreateConferenceStepPage() {
         startDate,
         endDate: phaseEnd.toISOString().split("T")[0],
         totalslot,
+        refundInPhase: [] // ⚠️ @TEMP(T): tạm thời để trống để build không lỗi
       };
 
       setNewTicket((prev) => ({

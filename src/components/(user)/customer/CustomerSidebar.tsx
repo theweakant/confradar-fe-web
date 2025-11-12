@@ -16,6 +16,7 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/redux/hooks/useAuth";
+import { getRouteByRole } from "@/constants/roles";
 
 interface SidebarProps {
   className?: string;
@@ -25,7 +26,7 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
   const pathname = usePathname();
 
   const router = useRouter();
-  const { signout } = useAuth();
+  const { user, signout } = useAuth();
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   // const [activeItem, setActiveItem] = useState('home');
@@ -131,6 +132,25 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
       >
         <nav className="py-4">
           <ul className="space-y-1">
+            {Array.isArray(user?.role) &&
+              user.role.length > 1 &&
+              user.role.some(r => typeof r === "string" && r.toLowerCase().replace(/\s+/g, "") === "externalreviewer") && (
+                <div className="mt-4 px-4">
+                  <button
+                    onClick={() => {
+                      const externalRole = user.role?.find(
+                        r => typeof r === "string" && r.toLowerCase().replace(/\s+/g, "") === "externalreviewer"
+                      );
+                      const redirectUrl = getRouteByRole(externalRole);
+                      router.push(redirectUrl);
+                    }}
+                    className="w-full flex items-center space-x-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                  >
+                    {/* Button content */}
+                  </button>
+                </div>
+              )}
+
             {menuItems.map((item) => {
               const IconComponent = item.icon;
               // const isActive = activeItem === item.id;

@@ -27,7 +27,7 @@ import { toast } from "sonner";
 import { ROLES } from "@/constants/roles";
 
 interface WorkspaceSidebarProps {
-  role: string;
+  role: string[];
 }
 
 export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
@@ -35,7 +35,10 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const dispatch = useDispatch();
-  const normalizedRole = role.toLowerCase().replace(/\s+/g, "");
+  // const normalizedRole = role.toLowerCase().replace(/\s+/g, "");
+  const normalizedRoles = role
+    .filter(r => typeof r === "string")
+    .map(r => r.toLowerCase().replace(/\s+/g, ""));
 
   // State để quản lý sub-menu  mở/đóng
   const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({});
@@ -100,26 +103,26 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
         href: "/workspace/organizer/manage-user",
         icon: Users,
         subMenu: [
-          { label: "Phản biện", href: "/workspace/organizer/manage-conference" },
-          { label: "Đối tác", href: "/workspace/organizer/my-conference" },
-          { label: "Khách hàng", href: "/workspace/organizer/my-conference" },
+          { label: "Người đánh giá", href: "/workspace/organizer/manage-user/manage-reviewer" },
+          { label: "Đối tác", href: "/workspace/organizer/manage-user/manage-collaborator" },
+          { label: "Khách hàng", href: "/workspace/organizer/manage-user/manage-customer" },
         ],
       },
-      {
-        label: "Đối tác",
-        href: "/workspace/organizer/manage-user",
-        icon: Users,
-      },
-      {
-        label: "Đánh giá viên",
-        href: "/workspace/organizer/manage-reviewer",
-        icon: Users,
-      },
-      {
-        label: "Yêu cầu",
-        href: "/workspace/organizer/manage-request",
-        icon: Building2,
-      },
+      // {
+      //   label: "Đối tác",
+      //   href: "/workspace/organizer/manage-user",
+      //   icon: Users,
+      // },
+      // {
+      //   label: "Đánh giá viên",
+      //   href: "/workspace/organizer/manage-reviewer",
+      //   icon: Users,
+      // },
+      // {
+      //   label: "Yêu cầu",
+      //   href: "/workspace/organizer/manage-request",
+      //   icon: Building2,
+      // },
     ],
     [ROLES.COLLABORATOR]: [
       {
@@ -216,9 +219,18 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
     },
   };
 
-  const roleMenu = roleMenus[normalizedRole] ?? [];
+  // const roleMenu = roleMenus[normalizedRole] ?? [];
 
-  const info = roleInfo[normalizedRole] ?? {
+  const allMenus = normalizedRoles.flatMap(r => roleMenus[r] ?? []);
+
+  const activeRole = normalizedRoles.find(r =>
+    (roleMenus[r] ?? []).some(item =>
+      item.href === pathname ||
+      item.subMenu?.some(sub => sub.href === pathname)
+    )
+  );
+
+  const info = roleInfo[activeRole ?? ""] ?? {
     name: "Không xác định",
     color: "bg-gray-400",
     icon: Shield,
@@ -283,7 +295,7 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
         <div className="space-y-1">
-          {roleMenu.map((item) => {
+          {allMenus.map((item) => {
             const Icon = item.icon;
             const active = pathname === item.href;
             const hasSubMenu = item.subMenu && item.subMenu.length > 0;
