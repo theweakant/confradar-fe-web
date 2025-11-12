@@ -29,6 +29,7 @@ export function ResearchDetailForm({
   isRankingLoading,
   validationErrors = {},
 }: ResearchDetailFormProps) {
+  const currentYear = new Date().getFullYear();
   const handleChange = <K extends keyof ResearchDetail>(
     field: K,
     value: ResearchDetail[K]
@@ -135,9 +136,9 @@ export function ResearchDetailForm({
                 error={validationErrors.rankValue}
                 placeholder={
                   rankType === "IF" || rankType === "CiteScore"
-                    ? "VD: 1.25"
+                    ? "1.25"
                     : rankType === "H5"
-                    ? "VD: 15"
+                    ? "15"
                     : "Nhập giá trị > 0"
                 }
                 required
@@ -156,9 +157,21 @@ export function ResearchDetailForm({
           type="number"
           value={formData.rankYear}
           onChange={(val) => handleChange("rankYear", Number(val))}
+          max={currentYear}
           error={validationErrors.rankYear}
-          placeholder="VD: 2024"
         />
+        {formData.rankingCategoryId && (
+        <div className="text-xs text-gray-600 bg-blue-50 p-2 rounded">
+          <strong>Lưu ý:</strong>{" "}
+          {rankType === "Core" || rankType === "CoreRanking"
+            ? "Chọn Q1–Q4 cho xếp hạng Core."
+            : rankType === "IF" || rankType === "CiteScore"
+            ? "Nhập số thập phân không âm (ví dụ: 1.25)."
+            : rankType === "H5"
+            ? "Nhập số nguyên không âm (ví dụ: 15)."
+            : "Nhập giá trị xếp hạng hợp lệ."}
+        </div>
+      )}
       </div>
 
       <FormTextArea
@@ -171,18 +184,7 @@ export function ResearchDetailForm({
         placeholder="Mô tả chi tiết về xếp hạng của hội thảo..."
       />
 
-      {formData.rankingCategoryId && (
-        <div className="text-xs text-gray-600 bg-blue-50 p-2 rounded">
-          <strong>Lưu ý:</strong>{" "}
-          {rankType === "Core" || rankType === "CoreRanking"
-            ? "Chọn Q1–Q4 cho xếp hạng Core."
-            : rankType === "IF" || rankType === "CiteScore"
-            ? "Nhập số thập phân không âm (ví dụ: 1.25)."
-            : rankType === "H5"
-            ? "Nhập số nguyên không âm (ví dụ: 15)."
-            : "Nhập giá trị xếp hạng hợp lệ."}
-        </div>
-      )}
+
 
       <FormInput
         label="Phí đánh giá bài báo (VND)"

@@ -30,6 +30,7 @@ import type {
   ResearchPhase,
   Ticket,
   Session,
+  ResearchSession,
   Policy,
   RefundPolicy,
   ResearchMaterial,
@@ -201,71 +202,45 @@ export function useResearchFormSubmit() {
   };
 
   // Step 5: Sessions
-  const submitSessions = async (
-    sessions: Session[],
-    eventStartDate: string,
-    eventEndDate: string
-  ) => {
-    if (!conferenceId) {
-      toast.error("Không tìm thấy conference ID!");
-      return { success: false };
-    }
+// Step 5: Sessions
+const submitSessions = async (
+  sessions: Session[],
+  eventStartDate: string,
+  eventEndDate: string
+) => {
+  if (!conferenceId) {
+    toast.error("Không tìm thấy conference ID!");
+    return { success: false };
+  }
 
-    if (sessions.length === 0) {
-      dispatch(markStepCompleted(5));
-      dispatch(nextStep());
-      toast.info("Đã bỏ qua phần phiên họp");
-      return { success: true, skipped: true };
-    }
+  if (sessions.length === 0) {
+    dispatch(markStepCompleted(5));
+    dispatch(nextStep());
+    toast.info("Đã bỏ qua phần phiên họp");
+    return { success: true, skipped: true };
+  }
 
-    try {
-      setIsSubmitting(true);
+  try {
+    setIsSubmitting(true);
 
-      const formattedSessions = sessions.map((s) => {
-        const startDateTime = new Date(s.startTime);
-        const endDateTime = new Date(s.endTime);
-        const startTime = startDateTime.toTimeString().slice(0, 8);
-        const endTime = endDateTime.toTimeString().slice(0, 8);
+    await createSessions({
+      conferenceId,
+      data: { sessions }, 
+    }).unwrap();
 
-        return {
-          title: s.title,
-          description: s.description,
-          date: s.date,
-          startTime: startTime,
-          endTime: endTime,
-          roomId: s.roomId,
-          speaker: (s.speaker || []).map((sp) => ({
-            name: sp.name,
-            description: sp.description,
-            image: sp.image instanceof File ? sp.image : undefined,
-            imageUrl: typeof sp.image === "string" ? sp.image : undefined,
-          })),
-          sessionMedias: (s.sessionMedias || []).map((media) => ({
-            mediaFile: media.mediaFile instanceof File ? media.mediaFile : undefined,
-            mediaUrl: typeof media.mediaFile === "string" ? media.mediaFile : undefined,
-          })),
-        };
-      });
-
-      await createSessions({
-        conferenceId,
-        data: { sessions: formattedSessions },
-      }).unwrap();
-
-      dispatch(markStepCompleted(5));
-      dispatch(nextStep());
-      toast.success("Lưu phiên họp thành công!");
-      return { success: true };
-    } catch (error) {
-      const apiError = error as { data?: ApiError };
-      console.error("Failed to create sessions:", error);
-      toast.error(apiError?.data?.message || "Lưu phiên họp thất bại!");
-      return { success: false, error };
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
+    dispatch(markStepCompleted(5));
+    dispatch(nextStep());
+    toast.success("Lưu phiên họp thành công!");
+    return { success: true };
+  } catch (error) {
+    const apiError = error as { data?: ApiError };
+    console.error("Failed to create sessions:", error);
+    toast.error(apiError?.data?.message || "Lưu phiên họp thất bại!");
+    return { success: false, error };
+  } finally {
+    setIsSubmitting(false);
+  }
+};
   // Step 6: Policies
   const submitPolicies = async (policies: Policy[], refundPolicies: RefundPolicy[]) => {
     if (!conferenceId) {
@@ -423,7 +398,7 @@ export function useResearchFormSubmit() {
       dispatch(markStepCompleted(9));
       toast.success("Tạo hội thảo nghiên cứu thành công!");
       dispatch(resetWizard());
-      router.push(`/workspace/collaborator/manage-conference`);
+      router.push(`/workspace/organizer/manage-conference`);
       return { success: true };
     } catch (error) {
       const apiError = error as { data?: ApiError };

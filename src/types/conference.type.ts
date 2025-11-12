@@ -86,8 +86,8 @@ export interface ConferenceBasicForm {
   targetAudienceTechnicalConference?: string; //for tech conf
   customTarget?: string;
 
-  contractURL:string;
-  commission:number;
+  contractURL?:string;
+  commission?:number;
 }
 
 export interface ConferenceBasicResponse {
@@ -178,6 +178,9 @@ export interface Session {
   sessionMedias?: SessionMedia[];
 }
 
+export type ResearchSession = Omit<Session, 'speaker'>;
+
+
 export interface Speaker {
   speakerId?: string;
   name: string;
@@ -194,6 +197,10 @@ export interface SessionMedia {
 
 export interface ConferenceSessionData {
   sessions: Session[];
+}
+
+export interface ConferenceResearchSessionData {
+  sessions: ResearchSession[];
 }
 
 //POLICY STEP

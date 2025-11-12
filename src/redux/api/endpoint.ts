@@ -137,7 +137,17 @@ export const endpoint = {
     DELETE_SESSION: (sessionId: string) =>`/conferencestep/sessions/${sessionId}`,  
     DELETE_POLICY: (policyId: string) =>`/conferencestep/policies/${policyId}`,  
     DELETE_MEDIA: (mediaId: string) =>`/conferencestep/media/${mediaId}`,  
-    DELETE_SPONSOR: (sponsorId: string) =>`/conferencestep/sponsors/${sponsorId}`,  
+    DELETE_SPONSOR: (sponsorId: string) =>`/conferencestep/sponsors/${sponsorId}`,
+    DELETE_RESEARCH_MATERIAL: (materialId: string) =>
+      `/conferencestep/research/materials/${materialId}`,
+    DELETE_RESEARCH_RANKING_FILE: (fileId: string) =>
+      `/conferencestep/research/ranking-file-urls/${fileId}`,
+    DELETE_RESEARCH_SESSION: (sessionId: string) =>
+      `/conferencestep/research/sessions/${sessionId}`,
+    DELETE_RESEARCH_RANKING_REFERENCE: (referenceId: string) =>
+      `/conferencestep/research/ranking-reference-urls/${referenceId}`,
+    DELETE_REVISION_ROUND_DEADLINE: (id: string) =>
+      `/conferencestep/revision-round-deadlines/${id}`,      
 
     //GET
     GET_BASIC: (conferenceId: string) =>
@@ -157,6 +167,24 @@ export const endpoint = {
       `/conferencestep/${conferenceId}/research/ranking-reference-urls`,
     CREATE_RESEARCH_MATERIAL: (conferenceId: string) =>
       `/conferencestep/${conferenceId}/research/materials`,
+
+    //UPDATE
+    UPDATE_DRAFT_RESEARCH_BASIC: (conferenceId: string) =>
+  `/conferencestep/d/research/${conferenceId}/basic`,
+    UPDATE_RESEARCH_DETAIL: (conferenceId: string) =>
+  `/conferencestep/${conferenceId}/research/detail`,
+    UPDATE_RESEARCH_PHASE: (researchPhaseId: string) =>
+  `/conferencestep/research/phases/${researchPhaseId}`,
+    UPDATE_RESEARCH_MATERIAL: (materialId: string) =>
+      `/conferencestep/research/materials/${materialId}`,
+    UPDATE_RESEARCH_RANKING_FILE: (rankingFileId: string) =>
+      `/conferencestep/research/ranking-file-urls/${rankingFileId}`,
+    UPDATE_RESEARCH_SESSION: (sessionId: string) =>
+      `/conferencestep/research/sessions/${sessionId}`,
+    UPDATE_RESEARCH_RANKING_REFERENCE: (referenceId: string) =>
+  `/conferencestep/research/ranking-reference-urls/${referenceId}`,
+    UPDATE_REVISION_ROUND_DEADLINE: (deadlineId: string) =>
+  `/conferencestep/revision-round-deadlines/${deadlineId}`,
   },
 
   CITY: {

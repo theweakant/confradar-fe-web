@@ -147,7 +147,7 @@ export function ResearchBasicInfoForm({
       {formData.ticketSaleStart && formData.startDate && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
           <p className="text-sm text-amber-800">
-            <strong>⚠️ Lưu ý:</strong> Timeline nghiên cứu (Registration, Full Paper, Review, etc.) 
+            <strong>Lưu ý:</strong> Timeline nghiên cứu (Registration, Full Paper, Review, etc.) 
             phải hoàn thành TRƯỚC ngày bắt đầu bán vé ({formatDate(formData.ticketSaleStart)})
           </p>
         </div>
@@ -211,7 +211,7 @@ export function ResearchBasicInfoForm({
       {/* Info Note */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
         <p className="text-sm text-blue-800">
-          <strong>📝 Ghi chú:</strong> Hội thảo nghiên cứu yêu cầu thiết lập Timeline 
+          <strong>Chú ý:</strong> Hội thảo nghiên cứu yêu cầu thiết lập Timeline 
           (Registration, Full Paper, Review, Revision, Camera Ready) ở bước tiếp theo.
         </p>
       </div>

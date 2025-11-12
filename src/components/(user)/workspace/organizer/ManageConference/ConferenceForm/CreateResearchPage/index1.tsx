@@ -28,6 +28,7 @@ import { ResearchPhaseForm } from "../../../../collaborator/ManageConference/Cre
 import { ResearchPriceForm } from "../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchPriceForm";
 import { MaterialsForm } from "../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/MaterialsForm";
 import { SessionForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/SessionForm"; 
+import { ResearchSessionForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchSessionForm";
 
 // Hooks
 import {
@@ -121,6 +122,9 @@ export default function CreateResearchConferenceStepPage() {
   } = useResearchForm();
 
   const { isPhaseModalOpen, openPhaseModal, closePhaseModal } = useModalState();
+
+  //test
+
 
   // Initialize
   useEffect(() => {
@@ -352,7 +356,7 @@ const handleTimelineSubmit = async () => {
             ticketSaleEnd={basicForm.ticketSaleEnd}
             researchPhases={researchPhases}
             maxTotalSlot={basicForm.totalSlot}
-            onOpenPhaseModal={openPhaseModal}
+            allowListener={researchDetail.allowListener} 
           />
 
           {/* Phase Modal */}
@@ -384,7 +388,7 @@ const handleTimelineSubmit = async () => {
       {/* STEP 5: Sessions */}
       {currentStep === 5 && (
         <StepContainer stepNumber={5} title="Phiên họp (Tùy chọn)" isCompleted={isStepCompleted(5)}>
-          <SessionForm
+          <ResearchSessionForm
             sessions={sessions}
             onSessionsChange={setSessions}
             eventStartDate={basicForm.startDate}
@@ -392,7 +396,7 @@ const handleTimelineSubmit = async () => {
             roomOptions={roomOptions}
             roomsData={roomsData}
             isRoomsLoading={isRoomsLoading}
-          />
+          />          
 
           <NavigationButtons
             currentStep={5}

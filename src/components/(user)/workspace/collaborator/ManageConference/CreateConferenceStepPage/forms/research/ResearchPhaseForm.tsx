@@ -1,11 +1,12 @@
+"use client";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/molecules/FormInput";
+import { DatePickerInput } from "@/components/atoms/DatePickerInput"; 
 import { formatDate } from "@/helper/format";
 import { toast } from "sonner";
 import type { ResearchPhase, RevisionRoundDeadline } from "@/types/conference.type";
 
-// Cập nhật interface props
 interface ResearchPhaseFormProps {
   phases: ResearchPhase[];
   onPhasesChange: (phases: ResearchPhase[]) => void;
@@ -13,8 +14,7 @@ interface ResearchPhaseFormProps {
   ticketSaleEnd: string;
   eventStartDate: string;
   eventEndDate: string;
-  // Thêm prop mới
-  revisionAttemptAllowed: number; 
+  revisionAttemptAllowed: number;
 }
 
 export function ResearchPhaseForm({
@@ -24,9 +24,9 @@ export function ResearchPhaseForm({
   ticketSaleEnd,
   eventStartDate,
   eventEndDate,
-  // Nhận giá trị mới
-  revisionAttemptAllowed = 2, // Giá trị mặc định nếu không truyền
+  revisionAttemptAllowed = 2,
 }: ResearchPhaseFormProps) {
+  
   const [newRevisionRound, setNewRevisionRound] = useState({
     roundNumber: 1,
     startDate: "",
@@ -35,7 +35,32 @@ export function ResearchPhaseForm({
 
   const mainPhase = phases[0];
   const activePhase = phases.find((p) => p.isActive) || mainPhase;
-  
+  const getEmptyPhase = (isWaitlist: boolean = false): ResearchPhase => ({
+    registrationStartDate: "",
+    registrationEndDate: "",
+    registrationDuration: 1,
+
+    fullPaperStartDate: "",
+    fullPaperEndDate: "",
+    fullPaperDuration: 1,
+
+    reviewStartDate: "",
+    reviewEndDate: "",
+    reviewDuration: 1,
+
+    reviseStartDate: "",
+    reviseEndDate: "",
+    reviseDuration: 1,
+
+    cameraReadyStartDate: "",
+    cameraReadyEndDate: "",
+    cameraReadyDuration: 1,
+
+    isWaitlist,
+    isActive: false, 
+    revisionRoundDeadlines: [],
+  });
+
   const updateActivePhase = (updates: Partial<ResearchPhase>) => {
     onPhasesChange(phases.map((p) => (p.isActive ? { ...p, ...updates } : p)));
   };
@@ -57,32 +82,25 @@ export function ResearchPhaseForm({
   };
 
   const handleAddRevisionRound = () => {
-    const { roundNumber, startDate, durationInDays } = newRevisionRound;
-
-    // --- Cập nhật: Kiểm tra số lượng vòng đã đạt tối đa ---
     if (activePhase.revisionRoundDeadlines.length >= revisionAttemptAllowed) {
       toast.error(`Số lượng vòng chỉnh sửa tối đa là ${revisionAttemptAllowed}!`);
       return;
     }
-    // ---
-
-    if (!startDate) {
+    if (!newRevisionRound.startDate) {
       toast.error("Vui lòng chọn ngày bắt đầu vòng chỉnh sửa!");
       return;
     }
-
-    if (durationInDays <= 0) {
+    if (newRevisionRound.durationInDays <= 0) {
       toast.error("Số ngày phải lớn hơn 0!");
       return;
     }
 
-    const endDate = calculateEndDate(startDate, durationInDays);
+    const endDate = calculateEndDate(newRevisionRound.startDate, newRevisionRound.durationInDays);
 
-    // Check overlap
     const isOverlapping = activePhase.revisionRoundDeadlines.some((round) => {
       const existingStart = new Date(round.startSubmissionDate);
       const existingEnd = new Date(round.endSubmissionDate);
-      const newStart = new Date(startDate);
+      const newStart = new Date(newRevisionRound.startDate);
       const newEnd = new Date(endDate);
       return newStart <= existingEnd && newEnd >= existingStart;
     });
@@ -92,16 +110,17 @@ export function ResearchPhaseForm({
       return;
     }
 
+    const nextRoundNumber = activePhase.revisionRoundDeadlines.length + 1;
     const newRound: RevisionRoundDeadline = {
-      roundNumber,
-      startSubmissionDate: startDate,
+      roundNumber: nextRoundNumber,
+      startSubmissionDate: newRevisionRound.startDate,
       endSubmissionDate: endDate,
     };
 
     updateRevisionDeadlines([...activePhase.revisionRoundDeadlines, newRound]);
 
     setNewRevisionRound({
-      roundNumber: activePhase.revisionRoundDeadlines.length + 2,
+      roundNumber: nextRoundNumber + 1,
       startDate: "",
       durationInDays: 3,
     });
@@ -131,54 +150,106 @@ export function ResearchPhaseForm({
   };
 
   const createWaitlistFromMain = () => {
-    // Calculate the start date for the new waitlist phase (one day after main phase's cameraReadyEndDate)
-    let newWaitlistStartDate = mainPhase.cameraReadyEndDate;
-    if (newWaitlistStartDate) {
-      const nextDay = new Date(new Date(newWaitlistStartDate).getTime() + 86400000); // Add 1 day in milliseconds
-      newWaitlistStartDate = nextDay.toISOString().split("T")[0];
+    let currentStartDate = mainPhase.cameraReadyEndDate
+      ? new Date(mainPhase.cameraReadyEndDate)
+      : new Date();
+
+    if (mainPhase.cameraReadyEndDate) {
+      currentStartDate.setDate(currentStartDate.getDate() + 1);
     }
 
-    // Create the new waitlist phase based on main phase durations, but with new start date
+    const formatDateISO = (date: Date) => date.toISOString().split("T")[0];
+
+    // Registration
+    const regisDuration = mainPhase.registrationDuration ?? 1;
+    const regisStart = formatDateISO(currentStartDate);
+    currentStartDate.setDate(currentStartDate.getDate() + regisDuration - 1);
+    const regisEnd = formatDateISO(currentStartDate);
+    currentStartDate.setDate(currentStartDate.getDate() + 1);
+
+    // Full Paper
+    const fullPaperDuration = mainPhase.fullPaperDuration ?? 1;
+    const fullPaperStart = formatDateISO(currentStartDate);
+    currentStartDate.setDate(currentStartDate.getDate() + fullPaperDuration - 1);
+    const fullPaperEnd = formatDateISO(currentStartDate);
+    currentStartDate.setDate(currentStartDate.getDate() + 1);
+
+    // Review
+    const reviewDuration = mainPhase.reviewDuration ?? 1;
+    const reviewStart = formatDateISO(currentStartDate);
+    currentStartDate.setDate(currentStartDate.getDate() + reviewDuration - 1);
+    const reviewEnd = formatDateISO(currentStartDate);
+    currentStartDate.setDate(currentStartDate.getDate() + 1);
+
+    // Revise
+    const reviseDuration = mainPhase.reviseDuration ?? 1;
+    const reviseStart = formatDateISO(currentStartDate);
+    currentStartDate.setDate(currentStartDate.getDate() + reviseDuration - 1);
+    const reviseEnd = formatDateISO(currentStartDate);
+    currentStartDate.setDate(currentStartDate.getDate() + 1);
+
+    // Camera Ready
+    const cameraReadyDuration = mainPhase.cameraReadyDuration ?? 1;
+    const cameraReadyStart = formatDateISO(currentStartDate);
+    currentStartDate.setDate(currentStartDate.getDate() + cameraReadyDuration - 1);
+    const cameraReadyEnd = formatDateISO(currentStartDate);
+
     const copiedWaitlist: ResearchPhase = {
-      // Registration
-      registrationStartDate: newWaitlistStartDate,
-      registrationEndDate: newWaitlistStartDate ? calculateEndDate(newWaitlistStartDate, mainPhase.registrationDuration ?? 1) : "",
-      registrationDuration: mainPhase.registrationDuration ?? 1,
-      
-      // Full Paper
-      fullPaperStartDate: newWaitlistStartDate ? calculateEndDate(newWaitlistStartDate, mainPhase.registrationDuration ?? 1) : "",
-      fullPaperEndDate: newWaitlistStartDate ? calculateEndDate(newWaitlistStartDate, (mainPhase.registrationDuration ?? 1) + (mainPhase.fullPaperDuration ?? 1) - 1) : "",
-      fullPaperDuration: mainPhase.fullPaperDuration ?? 1,
-      
-      // Review
-      reviewStartDate: newWaitlistStartDate ? calculateEndDate(newWaitlistStartDate, (mainPhase.registrationDuration ?? 1) + (mainPhase.fullPaperDuration ?? 1) - 1) : "",
-      reviewEndDate: newWaitlistStartDate ? calculateEndDate(newWaitlistStartDate, (mainPhase.registrationDuration ?? 1) + (mainPhase.fullPaperDuration ?? 1) + (mainPhase.reviewDuration ?? 1) - 2) : "",
-      reviewDuration: mainPhase.reviewDuration ?? 1,
-      
-      // Revise
-      reviseStartDate: newWaitlistStartDate ? calculateEndDate(newWaitlistStartDate, (mainPhase.registrationDuration ?? 1) + (mainPhase.fullPaperDuration ?? 1) + (mainPhase.reviewDuration ?? 1) - 2) : "",
-      reviseEndDate: newWaitlistStartDate ? calculateEndDate(newWaitlistStartDate, (mainPhase.registrationDuration ?? 1) + (mainPhase.fullPaperDuration ?? 1) + (mainPhase.reviewDuration ?? 1) + (mainPhase.reviseDuration ?? 1) - 3) : "",
-      reviseDuration: mainPhase.reviseDuration ?? 1,
-      
-      // Camera Ready
-      cameraReadyStartDate: newWaitlistStartDate ? calculateEndDate(newWaitlistStartDate, (mainPhase.registrationDuration ?? 1) + (mainPhase.fullPaperDuration ?? 1) + (mainPhase.reviewDuration ?? 1) + (mainPhase.reviseDuration ?? 1) - 3) : "",
-      cameraReadyEndDate: newWaitlistStartDate ? calculateEndDate(newWaitlistStartDate, (mainPhase.registrationDuration ?? 1) + (mainPhase.fullPaperDuration ?? 1) + (mainPhase.reviewDuration ?? 1) + (mainPhase.reviseDuration ?? 1) + (mainPhase.cameraReadyDuration ?? 1) - 4) : "",
-      cameraReadyDuration: mainPhase.cameraReadyDuration ?? 1,
-      
+      registrationStartDate: regisStart,
+      registrationEndDate: regisEnd,
+      registrationDuration: regisDuration,
+      fullPaperStartDate: fullPaperStart,
+      fullPaperEndDate: fullPaperEnd,
+      fullPaperDuration: fullPaperDuration,
+      reviewStartDate: reviewStart,
+      reviewEndDate: reviewEnd,
+      reviewDuration: reviewDuration,
+      reviseStartDate: reviseStart,
+      reviseEndDate: reviseEnd,
+      reviseDuration: reviseDuration,
+      cameraReadyStartDate: cameraReadyStart,
+      cameraReadyEndDate: cameraReadyEnd,
+      cameraReadyDuration: cameraReadyDuration,
       isWaitlist: true,
       isActive: true,
-      revisionRoundDeadlines: [], // Start with no revision rounds
+      revisionRoundDeadlines: [],
     };
 
     onPhasesChange([mainPhase, copiedWaitlist]);
-    toast.success("Đã tạo waitlist timeline từ main!");
+    toast.success("Đã tạo waitlist timeline từ main (không chồng lấn)!");
+  };
+
+  const resetActiveTimeline = () => {
+    if (mainPhase.isActive) {
+      // Đang ở timeline chính → reset main (phases[0])
+      const newMain = getEmptyPhase(false);
+      newMain.isActive = true;
+
+      // Giữ nguyên waitlist nếu có
+      const newPhases = [newMain];
+      if (phases[1]) {
+        // Giữ waitlist nguyên vẹn, nhưng đảm bảo không active
+        newPhases.push({ ...phases[1], isActive: false });
+      }
+
+      onPhasesChange(newPhases);
+      toast.success("Đã reset Timeline chính!");
+    } else if (phases[1]?.isActive) {
+      // Đang ở waitlist → reset chỉ waitlist (phases[1])
+      const newWaitlist = getEmptyPhase(true);
+      newWaitlist.isActive = true;
+
+      // Giữ nguyên main phase
+      const newPhases = [{ ...mainPhase, isActive: false }, newWaitlist];
+      onPhasesChange(newPhases);
+      toast.success("Đã reset Waitlist timeline!");
+    }
   };
 
   const createEmptyWaitlist = () => {
-    // Calculate the start date for the new waitlist phase (one day after main phase's cameraReadyEndDate)
     let newWaitlistStartDate = mainPhase.cameraReadyEndDate;
     if (newWaitlistStartDate) {
-      const nextDay = new Date(new Date(newWaitlistStartDate).getTime() + 86400000); // Add 1 day in milliseconds
+      const nextDay = new Date(new Date(newWaitlistStartDate).getTime() + 86400000);
       newWaitlistStartDate = nextDay.toISOString().split("T")[0];
     }
 
@@ -206,61 +277,78 @@ export function ResearchPhaseForm({
     toast.success("Đã tạo waitlist timeline mới!");
   };
 
+const addOneDay = (dateStr: string | undefined): string | undefined => {
+  if (!dateStr) return undefined;
+  const date = new Date(dateStr);
+  date.setDate(date.getDate() + 1);
+  return date.toISOString().split("T")[0];
+};
+
   return (
     <div className="space-y-6">
       {/* Info Header */}
       {eventStartDate && eventEndDate && (
-        <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-          <div className="text-sm">
-            <strong>Ngày tổ chức:</strong> {formatDate(eventStartDate)} → {formatDate(eventEndDate)}
+        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <div className="text-gray-600 mb-1">Ngày tổ chức</div>
+              <div className="font-medium">{formatDate(eventStartDate)} → {formatDate(eventEndDate)}</div>
+            </div>
+            <div>
+              <div className="text-gray-600 mb-1">Ngày bán vé</div>
+              <div className="font-medium">{formatDate(ticketSaleStart)} → {formatDate(ticketSaleEnd)}</div>
+            </div>
+            <div>
+              <div className="text-gray-600 mb-1">Số lần chỉnh sửa cho phép</div>
+              <div className="font-medium text-purple-600">{revisionAttemptAllowed}</div>
+            </div>
+            <div>
+              <div className="text-gray-600 mb-1">Đã tạo vòng</div>
+              <div className="font-medium">{activePhase.revisionRoundDeadlines.length} / {revisionAttemptAllowed}</div>
+            </div>
           </div>
-          <div className="text-sm">
-            <strong>Ngày bán vé:</strong> {formatDate(ticketSaleStart)} → {formatDate(ticketSaleEnd)}
+          <div className="text-xs text-blue-600 mt-3 pt-3 border-t border-blue-200">
+            Timeline research phải kết thúc trước ngày bán vé
           </div>
-          <div className="text-xs text-blue-600 mt-1">
-            ⚠️ Timeline research phải kết thúc trước ngày bán vé
-          </div>
-          {/* --- Cập nhật UI: Hiển thị số lượng vòng tối đa --- */}
-          <div className="text-xs text-purple-600 mt-1">
-            📝 Số lần chỉnh sửa cho phép: <strong>{revisionAttemptAllowed}</strong>
-          </div>
-          <div className="text-xs text-gray-500">
-             Đã tạo: <strong>{activePhase.revisionRoundDeadlines.length}</strong> vòng / {revisionAttemptAllowed}
-          </div>
-          {/* --- Kết thúc cập nhật UI --- */}
         </div>
       )}
 
-      {/* Tab Switching */}
       <div>
-        <h4 className="font-medium mb-3">Chọn timeline</h4>
         <div className="flex gap-2 mb-4">
           <Button
+            size="sm"
             variant={mainPhase.isActive ? "default" : "outline"}
             onClick={switchToMainPhase}
           >
             Timeline chính
           </Button>
           <Button
+            size="sm"
             variant={phases[1]?.isActive ? "default" : "outline"}
             onClick={switchToWaitlistPhase}
-            disabled={!phases[1]} // Disable if waitlist doesn't exist
+            disabled={!phases[1]}
           >
-            Waitlist Timeline
+            Waitlist
+          </Button>
+            <Button
+            size="sm"
+            variant="ghost"
+            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            onClick={resetActiveTimeline}
+          >
+            Reset timeline hiện tại
           </Button>
         </div>
 
-        {/* Waitlist Creation Buttons */}
-        {!phases[1]?.isActive && ( // Show only if waitlist doesn't exist or isn't active
-          <div className="flex gap-3">
-            <Button variant="outline" size="sm" onClick={createWaitlistFromMain}>
-              Tạo waitlist timeline tương tự (nối tiếp main)
+        {/* Nút tạo waitlist - chỉ hiện khi chưa có */}
+          <div className="flex gap-2 mb-6">
+            <Button size="sm" variant="outline" onClick={createWaitlistFromMain}>
+              Tạo waitlist từ chính (nối tiếp)
             </Button>
-            <Button variant="outline" size="sm" onClick={createEmptyWaitlist}>
-              Tạo waitlist timeline mới
+            <Button size="sm" variant="outline" onClick={createEmptyWaitlist}>
+              Tạo waitlist mới
             </Button>
           </div>
-        )}
       </div>
 
       {/* Registration Phase */}
@@ -271,7 +359,7 @@ export function ResearchPhaseForm({
         duration={activePhase.registrationDuration ?? 1}
         onStartDateChange={(val) => updateActivePhase({ registrationStartDate: val })}
         onDurationChange={(val) => updateActivePhase({ registrationDuration: Number(val) })}
-        minDate={activePhase.isWaitlist ? mainPhase.cameraReadyEndDate ? new Date(new Date(mainPhase.cameraReadyEndDate).getTime() + 86400000).toISOString().split("T")[0] : undefined : undefined}
+        minDate={activePhase.isWaitlist && mainPhase.cameraReadyEndDate ? new Date(new Date(mainPhase.cameraReadyEndDate).getTime() + 86400000).toISOString().split("T")[0] : undefined}
         maxDate={ticketSaleStart ? new Date(new Date(ticketSaleStart).getTime() - 86400000).toISOString().split("T")[0] : undefined}
       />
 
@@ -283,7 +371,7 @@ export function ResearchPhaseForm({
         duration={activePhase.fullPaperDuration ?? 1}
         onStartDateChange={(val) => updateActivePhase({ fullPaperStartDate: val })}
         onDurationChange={(val) => updateActivePhase({ fullPaperDuration: Number(val) })}
-        minDate={activePhase.registrationEndDate || undefined}
+        minDate={addOneDay(activePhase.registrationEndDate) || undefined}
       />
 
       {/* Review Phase */}
@@ -294,7 +382,7 @@ export function ResearchPhaseForm({
         duration={activePhase.reviewDuration ?? 1}
         onStartDateChange={(val) => updateActivePhase({ reviewStartDate: val })}
         onDurationChange={(val) => updateActivePhase({ reviewDuration: Number(val) })}
-        minDate={activePhase.fullPaperEndDate || undefined}
+        minDate={addOneDay(activePhase.fullPaperEndDate) || undefined}
       />
 
       {/* Revision Phase with Rounds */}
@@ -307,14 +395,13 @@ export function ResearchPhaseForm({
             </span>
           )}
         </h4>
-        
+
         <div className="grid grid-cols-3 gap-4 mb-4">
-          <FormInput
+          <DatePickerInput
             label="Ngày bắt đầu"
-            type="date"
             value={activePhase.reviseStartDate}
             onChange={(val) => updateActivePhase({ reviseStartDate: val })}
-            min={activePhase.reviewEndDate || undefined}
+            minDate={addOneDay(activePhase.reviewEndDate) || undefined}
             required
           />
           <FormInput
@@ -323,7 +410,7 @@ export function ResearchPhaseForm({
             min="1"
             value={activePhase.reviseDuration}
             onChange={(val) => updateActivePhase({ reviseDuration: Number(val) })}
-            placeholder="VD: 15 ngày"
+            placeholder="VD: 15"
           />
           <div>
             <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
@@ -338,83 +425,83 @@ export function ResearchPhaseForm({
         </div>
 
         {/* Revision Rounds */}
-        <div className="pl-4 border-l-2 border-orange-200">
-          <h5 className="font-medium mb-2">
-            Deadline từng vòng chỉnh sửa ({activePhase.revisionRoundDeadlines.length})
-          </h5>
+        {revisionAttemptAllowed > 0 && (
+          <div className="pl-4 border-l-2 border-orange-200">
+            <h5 className="font-medium mb-2">
+              Deadline từng vòng chỉnh sửa ({activePhase.revisionRoundDeadlines.length})
+            </h5>
 
-          {activePhase.revisionRoundDeadlines.length > 0 && (
-            <div className="grid grid-cols-4 gap-2 mb-3">
-              {activePhase.revisionRoundDeadlines.map((round, idx) => (
-                <div key={idx} className="p-2 bg-gray-50 rounded border border-gray-200">
-                  <div className="text-sm font-medium">Vòng {round.roundNumber}</div>
-                  <div className="text-xs text-gray-600">
-                    {formatDate(round.startSubmissionDate)} → {formatDate(round.endSubmissionDate)}
+            {activePhase.revisionRoundDeadlines.length > 0 && (
+              <div className="grid grid-cols-4 gap-2 mb-3">
+                {activePhase.revisionRoundDeadlines.map((round, idx) => (
+                  <div key={idx} className="p-2 bg-gray-50 rounded border border-gray-200">
+                    <div className="text-sm font-medium">Vòng {idx + 1}</div>
+                    <div className="text-xs text-gray-600">
+                      {formatDate(round.startSubmissionDate)} → {formatDate(round.endSubmissionDate)}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleRemoveRevisionRound(idx)}
+                      className="w-full mt-2"
+                    >
+                      Xóa
+                    </Button>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => handleRemoveRevisionRound(idx)}
-                    className="w-full mt-2"
-                  >
-                    Xóa
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Add Round Form */}
-          <div className="grid grid-cols-4 gap-2">
-            <FormInput
-              label="Vòng thứ"
-              type="number"
-              min="1"
-              value={newRevisionRound.roundNumber}
-              onChange={(val) =>
-                setNewRevisionRound({ ...newRevisionRound, roundNumber: Number(val) })
-              }
-            />
-            <FormInput
-              label="Ngày bắt đầu"
-              type="date"
-              value={newRevisionRound.startDate}
-              onChange={(val) => setNewRevisionRound({ ...newRevisionRound, startDate: val })}
-              min={activePhase.reviseStartDate || undefined}
-              max={activePhase.reviseEndDate || undefined}
-            />
-            <FormInput
-              label="Số ngày"
-              type="number"
-              min="1"
-              value={newRevisionRound.durationInDays}
-              onChange={(val) =>
-                setNewRevisionRound({ ...newRevisionRound, durationInDays: Number(val) })
-              }
-            />
-            <div>
-              <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
-              <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
-                {newRevisionRound.startDate && newRevisionRound.durationInDays > 0 ? (
-                  <span className="text-gray-900">
-                    {formatDate(calculateEndDate(newRevisionRound.startDate, newRevisionRound.durationInDays))}
-                  </span>
-                ) : (
-                  <span className="text-gray-400">--/--/----</span>
-                )}
+                ))}
               </div>
+            )}
+
+            <div className="grid grid-cols-4 gap-2">
+              <FormInput
+                label="Vòng thứ"
+                type="number"
+                min="1"
+                value={newRevisionRound.roundNumber}
+                onChange={(val) =>
+                  setNewRevisionRound({ ...newRevisionRound, roundNumber: Number(val) })
+                }
+                disabled
+              />
+              <DatePickerInput
+                label="Ngày bắt đầu"
+                value={newRevisionRound.startDate}
+                onChange={(val) => setNewRevisionRound({ ...newRevisionRound, startDate: val })}
+                minDate={activePhase.reviseStartDate || undefined}
+                maxDate={activePhase.reviseEndDate || undefined}
+              />
+              <FormInput
+                label="Số ngày"
+                type="number"
+                min="1"
+                value={newRevisionRound.durationInDays}
+                onChange={(val) =>
+                  setNewRevisionRound({ ...newRevisionRound, durationInDays: Number(val) })
+                }
+              />
+              <div>
+                <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
+                <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
+                  {newRevisionRound.startDate && newRevisionRound.durationInDays > 0 ? (
+                    <span className="text-gray-900">
+                      {formatDate(calculateEndDate(newRevisionRound.startDate, newRevisionRound.durationInDays))}
+                    </span>
+                  ) : (
+                    <span className="text-gray-400">--/--/----</span>
+                  )}
+                </div>
+              </div>
+              <Button
+                onClick={handleAddRevisionRound}
+                className="mt-6"
+                size="sm"
+                disabled={activePhase.revisionRoundDeadlines.length >= revisionAttemptAllowed}
+              >
+                Thêm vòng
+              </Button>
             </div>
-            {/* --- Cập nhật UI: Disable nút nếu đạt max --- */}
-            <Button 
-              onClick={handleAddRevisionRound} 
-              className="mt-6"
-              disabled={activePhase.revisionRoundDeadlines.length >= revisionAttemptAllowed}
-            >
-              Thêm vòng
-            </Button>
-            {/* --- Kết thúc cập nhật UI --- */}
           </div>
-        </div>
+        )}
       </div>
 
       {/* Camera Ready Phase */}
@@ -425,14 +512,14 @@ export function ResearchPhaseForm({
         duration={activePhase.cameraReadyDuration ?? 1}
         onStartDateChange={(val) => updateActivePhase({ cameraReadyStartDate: val })}
         onDurationChange={(val) => updateActivePhase({ cameraReadyDuration: Number(val) })}
-        minDate={activePhase.reviseEndDate || undefined}
-        maxDate={ticketSaleStart ? new Date(new Date(ticketSaleStart).getTime() - 86400000).toISOString().split("T")[0] : undefined}
+        minDate={addOneDay(activePhase.reviseEndDate) || undefined}
+        maxDate={ticketSaleStart ? addOneDay(new Date(ticketSaleStart).toISOString().split("T")[0]) : undefined}
       />
     </div>
   );
 }
 
-// Helper Component
+// Helper Component - Cập nhật để dùng DatePickerInput
 interface PhaseSectionProps {
   title: string;
   startDate: string;
@@ -474,13 +561,12 @@ function PhaseSection({
         )}
       </h4>
       <div className="grid grid-cols-3 gap-4">
-        <FormInput
+        <DatePickerInput
           label="Ngày bắt đầu"
-          type="date"
           value={startDate}
           onChange={onStartDateChange}
-          min={minDate}
-          max={maxDate}
+          minDate={minDate}
+          maxDate={maxDate}
           required
         />
         <FormInput
@@ -489,7 +575,7 @@ function PhaseSection({
           min="1"
           value={duration}
           onChange={(val) => onDurationChange(Number(val))}
-          placeholder="VD: 30 ngày"
+          placeholder="VD: 30"
         />
         <div>
           <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
