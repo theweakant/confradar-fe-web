@@ -98,6 +98,7 @@ export const endpoint = {
 
     GET_OWN_CONFERENCES_FOR_SCHEDULE:
       "/Conference/own-conferences-for-schedule",
+    GET_CONFERENCES_HAS_ASSIGNED_PAPERS: "/Conference/get-conferences-assigned-papers-belong-to",
   },
 
   CONFERENCE_STEP: {
@@ -133,11 +134,11 @@ export const endpoint = {
       `/conferencestep/sponsors/${sponsorId}`,
 
     //DELETE
-    DELETE_PRICE: (priceId : string) =>`/conferencestep/prices/${priceId}`,  
-    DELETE_SESSION: (sessionId: string) =>`/conferencestep/sessions/${sessionId}`,  
-    DELETE_POLICY: (policyId: string) =>`/conferencestep/policies/${policyId}`,  
-    DELETE_MEDIA: (mediaId: string) =>`/conferencestep/media/${mediaId}`,  
-    DELETE_SPONSOR: (sponsorId: string) =>`/conferencestep/sponsors/${sponsorId}`,  
+    DELETE_PRICE: (priceId: string) => `/conferencestep/prices/${priceId}`,
+    DELETE_SESSION: (sessionId: string) => `/conferencestep/sessions/${sessionId}`,
+    DELETE_POLICY: (policyId: string) => `/conferencestep/policies/${policyId}`,
+    DELETE_MEDIA: (mediaId: string) => `/conferencestep/media/${mediaId}`,
+    DELETE_SPONSOR: (sponsorId: string) => `/conferencestep/sponsors/${sponsorId}`,
 
     //GET
     GET_BASIC: (conferenceId: string) =>

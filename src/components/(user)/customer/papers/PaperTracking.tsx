@@ -52,6 +52,7 @@ const PaperTracking = () => {
         // } else {
         //   setPaperDetailError("Có lỗi xảy ra khi tải chi tiết bài báo");
         // }
+        setPaperDetailError("Có lỗi xảy ra khi tải chi tiết bài báo");
       } finally {
         setIsLoadingPaperDetail(false);
       }

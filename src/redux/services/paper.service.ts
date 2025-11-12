@@ -22,6 +22,7 @@ import {
   PaperCustomer,
   PaperDetailResponse,
   PaperPhase,
+  AssignedPaperGroup,
 } from "@/types/paper.type";
 
 import type { ApiResponse } from "@/types/api.type";
@@ -62,10 +63,13 @@ export const paperApi = createApi({
       },
     ),
 
-    listAssignedPapers: builder.query<ApiResponse<AssignedPaper[]>, void>({
-      query: () => ({
+    listAssignedPapers: builder.query<ApiResponse<AssignedPaperGroup[]>, { confId: string }>({
+      query: ({ confId }) => ({
         url: endpoint.PAPER.LIST_ASSIGN_PAPER_REVIEWER,
         method: "GET",
+        params: {
+          confId,
+        },
       }),
       providesTags: ["Paper"],
     }),
@@ -412,6 +416,7 @@ export const {
 
   //FULL PAPER
   useGetPaperDetailForReviewerQuery,
+  useLazyGetPaperDetailForReviewerQuery,
   useSubmitFullPaperReviewMutation,
   useGetFullPaperReviewsQuery,
   useDecideFullPaperStatusMutation,

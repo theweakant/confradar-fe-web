@@ -24,3 +24,20 @@ export function getFileTypeFromUrl(url: string): FileType {
 
     return "unknown"
 }
+
+export const isValidUrl = (url: string | undefined): boolean => {
+    if (!url) return false;
+    try {
+        const parsed = new URL(url);
+        return parsed.protocol === "http:" || parsed.protocol === "https:";
+    } catch {
+        return false;
+    }
+};
+
+export const isWithinDateRange = (startDate: string, endDate: string): boolean => {
+    const now = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    return now >= start && now <= end;
+};

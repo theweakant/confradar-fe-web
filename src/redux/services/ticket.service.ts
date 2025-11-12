@@ -2,7 +2,7 @@ import { ApiResponse, ApiResponsePagination } from "@/types/api.type";
 // import { CreateTechPaymentRequest } from "@/types/transaction.type";
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { apiClient } from "../api/apiClient";
-import { CustomerPaidTicketResponse } from "@/types/ticket.type";
+import { CustomerPaidTicketResponse, RefundTicketRequest } from "@/types/ticket.type";
 
 export const ticketApi = createApi({
   reducerPath: "ticketApi",
@@ -36,16 +36,29 @@ export const ticketApi = createApi({
           sessionEndTime,
         },
       }),
+
       providesTags: (result) =>
         result?.data?.items
           ? [
-              ...result.data.items.map(({ ticketId }) => ({
-                type: "Ticket" as const,
-                id: ticketId,
-              })),
-              { type: "Ticket", id: "LIST" },
-            ]
+            ...result.data.items.map(({ ticketId }) => ({
+              type: "Ticket" as const,
+              id: ticketId,
+            })),
+            { type: "Ticket", id: "LIST" },
+          ]
           : [{ type: "Ticket", id: "LIST" }],
+    }),
+
+    refundTicket: builder.mutation<ApiResponse<number>, RefundTicketRequest>({
+      query: (body) => ({
+        url: "/Ticket/refund-ticket",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (result, error, { ticketId }) => [
+        { type: "Ticket", id: ticketId },
+        { type: "Ticket", id: "LIST" },
+      ],
     }),
   }),
 });
@@ -53,6 +66,7 @@ export const ticketApi = createApi({
 export const {
   useGetOwnPaidTicketsQuery,
   useLazyGetOwnPaidTicketsQuery,
+  useRefundTicketMutation,
   // useGetTicketByIdQuery,
   // useLazyGetTicketByIdQuery,
 } = ticketApi;
