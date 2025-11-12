@@ -393,7 +393,7 @@ export default function CreateResearchConferenceStepPage() {
       {/* STEP 4: Price */}
       {currentStep === 4 && (
         <StepContainer stepNumber={4} title="Giá vé" isCompleted={isStepCompleted(4)}>
-          {/* <ResearchPriceForm
+          <ResearchPriceForm
             tickets={tickets}
             onTicketsChange={setTickets}
             ticketSaleStart={basicForm.ticketSaleStart}
@@ -402,7 +402,7 @@ export default function CreateResearchConferenceStepPage() {
             maxTotalSlot={basicForm.totalSlot}
             allowListener={researchDetail.allowListener} 
           />
-             */}
+            
 
           <PhaseModal
             isOpen={isPhaseModalOpen}
