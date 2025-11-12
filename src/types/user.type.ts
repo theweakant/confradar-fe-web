@@ -3,7 +3,7 @@
 export interface AuthUser {
   userId: string;
   email: string;
-  role: string | null;
+  role: string[] | null;
 }
 
 export interface UserProfileResponse {
@@ -16,9 +16,9 @@ export interface UserProfileResponse {
   avatarUrl: string | null;
   bioDescription: string | null;
   createdAt: string;
-  roles?: string[];
+  // roles?: string[];
 
-  status?:string
+  // status?: string
 }
 
 export interface ProfileUpdateRequest {

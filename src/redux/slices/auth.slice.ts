@@ -9,10 +9,10 @@ import {
 import { UserProfileResponse, AuthUser } from "@/types/user.type";
 
 export interface AuthState {
-  user: UserProfileResponse | AuthUser | null;
+  user: AuthUser | null;
   accessToken: string | null;
   refreshToken: string | null;
-  role: string | null;
+  // role: string[] | null;
   loading: boolean;
   isRegistered: boolean;
 }
@@ -20,7 +20,7 @@ const initialState: AuthState = {
   user: null,
   accessToken: null,
   refreshToken: null,
-  role: null,
+  // role: null,
   loading: false,
   isRegistered: false,
 };
@@ -38,7 +38,7 @@ const authSlice = createSlice({
     setCredentials: (
       state,
       action: PayloadAction<{
-        user: UserProfileResponse | AuthUser;
+        user: AuthUser;
         accessToken: string;
         refreshToken: string;
       }>,
@@ -56,7 +56,7 @@ const authSlice = createSlice({
       state.accessToken = accessToken;
       state.refreshToken = refreshToken;
       // state.role = getRoleFromToken(accessToken) || null
-      state.role = role || null;
+      // state.role = role || null;
       setTokens(accessToken, refreshToken);
       state.loading = false;
     },
@@ -64,7 +64,7 @@ const authSlice = createSlice({
       state.user = null;
       state.accessToken = null;
       state.refreshToken = null;
-      state.role = null;
+      // state.role = null;
       clearTokens();
       state.loading = false;
     },

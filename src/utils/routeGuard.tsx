@@ -17,7 +17,7 @@ export default function RouteGuard({
   children,
 }: RouteGuardProps) {
   const router = useRouter();
-  const { accessToken, role } = useSelector((state: RootState) => state.auth);
+  const { accessToken, user } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     if (!accessToken) {
@@ -25,10 +25,10 @@ export default function RouteGuard({
       return;
     }
 
-    if (role && !canAccessRoute(role, allowedRoles)) {
+    if (!user || !canAccessRoute(user.role ?? null, allowedRoles)) {
       router.push("/403");
     }
-  }, [accessToken, role, router, allowedRoles]);
+  }, [accessToken, user, router, allowedRoles]);
 
   return <>{children}</>;
 }

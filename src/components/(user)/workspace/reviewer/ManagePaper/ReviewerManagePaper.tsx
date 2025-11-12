@@ -58,12 +58,12 @@ export default function ReviewerManagePaperPage() {
   const [expandedStats, setExpandedStats] = useState(false);
 
   // API calls
-  const {
-    lazyAssignedConferences,
-    fetchAssignedConferences,
-    assignedConferencesLoading,
-    assignedConferencesError,
-  } = useConference();
+  // const {
+  //   lazyAssignedConferences,
+  //   fetchAssignedConferences,
+  //   assignedConferencesLoading,
+  //   assignedConferencesError,
+  // } = useConference();
 
   const {
     data: allAssignedPapersData,
@@ -76,9 +76,9 @@ export default function ReviewerManagePaperPage() {
 
   const assignedPaperGroups: AssignedPaperGroup[] = allAssignedPapersData?.data || [];
 
-  useEffect(() => {
-    fetchAssignedConferences();
-  }, [fetchAssignedConferences]);
+  // useEffect(() => {
+  //   fetchAssignedConferences();
+  // }, [fetchAssignedConferences]);
 
   // Flatten all papers for "all" view
   const allPapers: (AssignedPaper & { conferenceName: string })[] = useMemo(() => {
@@ -278,12 +278,12 @@ export default function ReviewerManagePaperPage() {
     router.push(`/workspace/reviewer/manage-paper/${paper.paperId}`);
   };
 
-  const handleConferenceClick = (conference: AssignedPaperGroup) => {
-    const conf = lazyAssignedConferences?.find(c => c.conferenceId === conference.conferenceId);
-    if (conf) {
-      setSelectedConference(conf);
-    }
-  };
+  // const handleConferenceClick = (conference: AssignedPaperGroup) => {
+  //   const conf = lazyAssignedConferences?.find(c => c.conferenceId === conference.conferenceId);
+  //   if (conf) {
+  //     setSelectedConference(conf);
+  //   }
+  // };
 
   // const toggleFilter = (type: keyof FilterState, value: string) => {
   //   setFilters(prev => ({
@@ -302,7 +302,7 @@ export default function ReviewerManagePaperPage() {
   const activeFilterCount = selectedPhase ? 1 : 0;
 
   // Loading UI
-  if (assignedConferencesLoading || loadingAllPapers) {
+  if (loadingAllPapers) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -314,7 +314,7 @@ export default function ReviewerManagePaperPage() {
   }
 
   // Error UI
-  if (assignedConferencesError || allPapersError) {
+  if (allPapersError) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -713,7 +713,7 @@ export default function ReviewerManagePaperPage() {
                 <div key={group.conferenceId} className="bg-white rounded-lg shadow-sm overflow-hidden">
                   <div
                     className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b cursor-pointer hover:from-blue-100 hover:to-indigo-100 transition-colors"
-                    onClick={() => handleConferenceClick(group)}
+                  // onClick={() => handleConferenceClick(group)}
                   >
                     <div className="flex items-center justify-between">
                       <div>
