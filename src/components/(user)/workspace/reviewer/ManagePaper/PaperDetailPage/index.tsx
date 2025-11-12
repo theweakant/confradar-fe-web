@@ -1790,6 +1790,8 @@ export default function ReviewPaperPage() {
             {activeTab === "cameraReady" && (
               <CameraReadyPhase
                 paperDetail={paperDetail}
+                currentPhase={currentPhase}
+                paperId={paperId}
                 getStatusIcon={getStatusIcon}
                 getStatusColor={getStatusColor}
               />

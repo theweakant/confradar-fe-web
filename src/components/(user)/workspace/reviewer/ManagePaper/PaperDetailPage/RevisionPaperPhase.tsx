@@ -778,7 +778,7 @@ export default function RevisionPaperPhase({
                 </h3>
 
                 {/* Overall Status */}
-                <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                {/* <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
                     <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-gray-700">
                             Trạng thái tổng thể:
@@ -790,7 +790,9 @@ export default function RevisionPaperPhase({
                             {paperDetail.revisionPaper.globalStatusName}
                         </span>
                     </div>
-                </div>
+                </div> */}
+
+
 
                 {/* Revision Submissions */}
                 <div className="space-y-6">
@@ -825,7 +827,7 @@ export default function RevisionPaperPhase({
                                                 Deadline: {formatDate(submission.endDate)}
                                             </p>
                                         </div> */}
-                                        <a
+                                        {/* <a
                                             href={submission.revisionPaperUrl}
                                             target="_blank"
                                             rel="noopener noreferrer"
@@ -833,7 +835,7 @@ export default function RevisionPaperPhase({
                                         >
                                             <Download className="w-4 h-4" />
                                             Tải xuống
-                                        </a>
+                                        </a> */}
 
                                         <div className="pt-4 border-t max-h-[600px] overflow-auto">
                                             {docAvailability[submission.revisionPaperSubmissionId] === null && (
@@ -1065,7 +1067,7 @@ export default function RevisionPaperPhase({
                                         [submission.revisionPaperSubmissionId]: true
                                     }))}
                                     className="bg-blue-600 hover:bg-blue-700"
-                                    disabled={!canSubmitRevisionFeedback(submission.revisionPaperSubmissionId)}
+                                // disabled={!canSubmitRevisionFeedback(submission.revisionPaperSubmissionId)}
                                 >
                                     <MessageSquare className="w-4 h-4 mr-2" />
                                     {canSubmitRevisionFeedback(submission.revisionPaperSubmissionId)
@@ -1083,89 +1085,129 @@ export default function RevisionPaperPhase({
                                 <Dialog
                                     as="div"
                                     className="relative z-50"
-                                    onClose={() => setShowFeedbackDialogs(prev => ({
-                                        ...prev,
-                                        [submission.revisionPaperSubmissionId]: false
-                                    }))}
+                                    onClose={() =>
+                                        setShowFeedbackDialogs((prev) => ({
+                                            ...prev,
+                                            [submission.revisionPaperSubmissionId]: false,
+                                        }))
+                                    }
                                 >
-                                    {/* Tương tự dialog review, nhưng chứa form feedback */}
-                                    <div className="ml-13 space-y-3">
-                                        {(
-                                            revisionFeedbacks[submission.revisionPaperSubmissionId] || []
-                                        ).map((feedback, index) => (
-                                            <div key={index} className="flex gap-3 items-start">
-                                                <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 text-blue-700 text-sm font-bold flex items-center justify-center mt-2">
-                                                    {feedback.sortOrder}
-                                                </span>
-                                                <div className="flex-1 flex gap-2 items-start">
-                                                    <textarea
-                                                        placeholder={`Viết feedback #${feedback.sortOrder}...`}
-                                                        className="flex-1 border border-gray-300 rounded-lg p-3 text-sm min-h-[90px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none hover:border-gray-400 transition-colors"
-                                                        value={feedback.feedback}
-                                                        onChange={(e) =>
-                                                            updateFeedback(
-                                                                submission.revisionPaperSubmissionId,
-                                                                index,
-                                                                e.target.value,
-                                                            )
-                                                        }
-                                                    />
-                                                    <button
-                                                        onClick={() =>
-                                                            removeFeedback(
-                                                                submission.revisionPaperSubmissionId,
-                                                                index,
-                                                            )
-                                                        }
-                                                        className="mt-2 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                        title="Xóa feedback"
-                                                    >
-                                                        <XCircle className="w-5 h-5" />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
+                                    {/* Overlay nền tối */}
+                                    <Transition.Child
+                                        as={Fragment}
+                                        enter="ease-out duration-300"
+                                        enterFrom="opacity-0"
+                                        enterTo="opacity-100"
+                                        leave="ease-in duration-200"
+                                        leaveFrom="opacity-100"
+                                        leaveTo="opacity-0"
+                                    >
+                                        <div className="fixed inset-0 bg-black bg-opacity-50" />
+                                    </Transition.Child>
 
-                                        {/* Add Feedback Button */}
-                                        <div className="flex gap-3">
-                                            <div className="w-8"></div>
-                                            <Button
-                                                onClick={() =>
-                                                    addFeedbackField(submission.revisionPaperSubmissionId)
-                                                }
-                                                variant="outline"
-                                                className="flex-1 border-dashed border-2 hover:bg-blue-50 hover:border-blue-300 text-blue-600"
+                                    {/* Container chính */}
+                                    <div className="fixed inset-0 overflow-y-auto">
+                                        <div className="flex min-h-full items-center justify-center p-4 text-center">
+                                            <Transition.Child
+                                                as={Fragment}
+                                                enter="ease-out duration-300"
+                                                enterFrom="opacity-0 scale-95"
+                                                enterTo="opacity-100 scale-100"
+                                                leave="ease-in duration-200"
+                                                leaveFrom="opacity-100 scale-100"
+                                                leaveTo="opacity-0 scale-95"
                                             >
-                                                <Plus className="w-4 h-4 mr-2" />
-                                                Thêm feedback
-                                            </Button>
-                                        </div>
-
-                                        {/* Submit Button */}
-                                        {(revisionFeedbacks[submission.revisionPaperSubmissionId]
-                                            ?.length || 0) > 0 && (
-                                                <div className="flex gap-3 pt-2">
-                                                    <div className="w-8"></div>
-                                                    <Button
-                                                        onClick={() =>
-                                                            handleSubmitRevisionFeedback(
-                                                                submission.revisionPaperSubmissionId,
-                                                            )
-                                                        }
-                                                        disabled={isSubmittingRevision}
-                                                        className="bg-blue-600 hover:bg-blue-700"
+                                                {/* Nội dung chính của dialog feedback */}
+                                                <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                                                    <Dialog.Title
+                                                        as="h3"
+                                                        className="text-lg font-medium leading-6 text-gray-900 mb-4"
                                                     >
-                                                        <Send className="w-4 h-4 mr-2" />
-                                                        {isSubmittingRevision
-                                                            ? "Đang gửi..."
-                                                            : `Gửi ${revisionFeedbacks[submission.revisionPaperSubmissionId]?.length || 0} feedback`}
-                                                    </Button>
-                                                </div>
-                                            )}
+                                                        Feedback cho Revision Paper
+                                                    </Dialog.Title>
+
+                                                    {/* Nội dung form feedback bạn đang có */}
+                                                    <div className="space-y-3">
+                                                        {(revisionFeedbacks[submission.revisionPaperSubmissionId] || []).map(
+                                                            (feedback, index) => (
+                                                                <div key={index} className="flex gap-3 items-start">
+                                                                    <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 text-blue-700 text-sm font-bold flex items-center justify-center mt-2">
+                                                                        {feedback.sortOrder}
+                                                                    </span>
+                                                                    <div className="flex-1 flex gap-2 items-start">
+                                                                        <textarea
+                                                                            placeholder={`Viết feedback #${feedback.sortOrder}...`}
+                                                                            className="flex-1 border border-gray-300 rounded-lg p-3 text-sm min-h-[90px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none hover:border-gray-400 transition-colors"
+                                                                            value={feedback.feedback}
+                                                                            onChange={(e) =>
+                                                                                updateFeedback(
+                                                                                    submission.revisionPaperSubmissionId,
+                                                                                    index,
+                                                                                    e.target.value,
+                                                                                )
+                                                                            }
+                                                                        />
+                                                                        <button
+                                                                            onClick={() =>
+                                                                                removeFeedback(
+                                                                                    submission.revisionPaperSubmissionId,
+                                                                                    index,
+                                                                                )
+                                                                            }
+                                                                            className="mt-2 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                                            title="Xóa feedback"
+                                                                        >
+                                                                            <XCircle className="w-5 h-5" />
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            )
+                                                        )}
+
+                                                        {/* Add Feedback Button */}
+                                                        <div className="flex gap-3">
+                                                            <div className="w-8"></div>
+                                                            <Button
+                                                                onClick={() =>
+                                                                    addFeedbackField(submission.revisionPaperSubmissionId)
+                                                                }
+                                                                variant="outline"
+                                                                className="flex-1 border-dashed border-2 hover:bg-blue-50 hover:border-blue-300 text-blue-600"
+                                                            >
+                                                                <Plus className="w-4 h-4 mr-2" />
+                                                                Thêm feedback
+                                                            </Button>
+                                                        </div>
+
+                                                        {/* Submit Button */}
+                                                        {(revisionFeedbacks[submission.revisionPaperSubmissionId]?.length || 0) > 0 && (
+                                                            <div className="flex gap-3 pt-2">
+                                                                <div className="w-8"></div>
+                                                                <Button
+                                                                    onClick={() =>
+                                                                        handleSubmitRevisionFeedback(
+                                                                            submission.revisionPaperSubmissionId,
+                                                                        )
+                                                                    }
+                                                                    disabled={isSubmittingRevision}
+                                                                    className="bg-blue-600 hover:bg-blue-700"
+                                                                >
+                                                                    <Send className="w-4 h-4 mr-2" />
+                                                                    {isSubmittingRevision
+                                                                        ? "Đang gửi..."
+                                                                        : `Gửi ${revisionFeedbacks[submission.revisionPaperSubmissionId]?.length || 0
+                                                                        } feedback`}
+                                                                </Button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </Dialog.Panel>
+                                            </Transition.Child>
+                                        </div>
                                     </div>
-                                    {/* ... */}
                                 </Dialog>
                             </Transition>
+
 
                         </div>
                     ),

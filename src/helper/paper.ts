@@ -34,3 +34,10 @@ export const isValidUrl = (url: string | undefined): boolean => {
         return false;
     }
 };
+
+export const isWithinDateRange = (startDate: string, endDate: string): boolean => {
+    const now = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    return now >= start && now <= end;
+};

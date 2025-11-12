@@ -18,7 +18,7 @@ import { useSubmitFullPaperReviewMutation, useDecideFullPaperStatusMutation } fr
 import { toast } from "sonner";
 import { ApiError } from "@/types/api.type";
 import { CurrentResearchConferencePhaseForReviewer, PaperDetailForReviewer } from "@/types/paper.type";
-import { isValidUrl } from "@/helper/paper";
+import { isValidUrl, isWithinDateRange } from "@/helper/paper";
 
 interface FullPaperPhaseProps {
     paperDetail: PaperDetailForReviewer;
@@ -72,13 +72,6 @@ export default function FullPaperPhase({
             .then((res) => setDocAvailable(res.ok))
             .catch(() => setDocAvailable(false));
     }, [paperDetail.fullPaper?.fullPaperUrl]);
-
-    const isWithinDateRange = (startDate: string, endDate: string): boolean => {
-        const now = new Date();
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        return now >= start && now <= end;
-    };
 
     const canSubmitFullPaperReview = (): boolean => {
         if (
