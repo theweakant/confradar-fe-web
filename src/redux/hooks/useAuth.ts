@@ -18,13 +18,13 @@ import { ApiResponse } from "@/types/api.type";
 
 type LoginResult = {
   success: boolean;
-  user: { userId: string | null; email: string; role: string | null } | null;
+  user: { userId: string | null; email: string; role: string[] | null } | null;
   message?: string;
 };
 
 export const useAuth = () => {
   const dispatch = useAppDispatch();
-  const { user, accessToken, role, loading } = useAppSelector(
+  const { user, accessToken, loading } = useAppSelector(
     (state) => state.auth,
   );
   const [loginMutation] = useLoginMutation();
@@ -41,14 +41,15 @@ export const useAuth = () => {
       if (!accessToken) throw new Error("Access token missing");
 
       const decoded = decodeToken(accessToken);
-      const rawRole = getRolesFromToken(accessToken);
+      // const rawRole = getRolesFromToken(accessToken);
+      const role = getRolesFromToken(accessToken);
       const email = decoded?.email || credentials.email;
       const userId = decoded?.sub || "";
 
-      let role: string | null = null;
+      // let role: string | null = null;
 
-      const customerRole = getCustomerRole(accessToken);
-      role = customerRole || (rawRole.length > 0 ? rawRole[0] : null);
+      // const customerRole = getCustomerRole(accessToken);
+      // role = customerRole || (rawRole.length > 0 ? rawRole[0] : null);
 
       const userInfo = { userId, email, role };
 
@@ -66,8 +67,8 @@ export const useAuth = () => {
         err instanceof Error
           ? err.message
           : err?.message ||
-            err?.errors?.message ||
-            "Đăng nhập thất bại, vui lòng thử lại.";
+          err?.errors?.message ||
+          "Đăng nhập thất bại, vui lòng thử lại.";
 
       console.error("Login failed:", error);
       toast.error(message);
@@ -81,7 +82,7 @@ export const useAuth = () => {
 
   return {
     user,
-    role,
+    // role,
     token: accessToken,
     loading,
     isAuthenticated: !!accessToken,

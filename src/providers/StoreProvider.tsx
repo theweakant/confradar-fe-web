@@ -4,7 +4,7 @@ import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
 import { persistor, store } from '../redux/store'
 import { useRouter, usePathname } from 'next/navigation'
-import { getRouteByRole } from '@/constants/roles'
+import { getRoleForRedirect, getRouteByRole } from '@/constants/roles'
 import { AuthUser } from '@/types/user.type'
 
 export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
@@ -21,7 +21,10 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
         (auth?.user as AuthUser)?.role &&
         (pathname === '/' || pathname.startsWith('/auth'))
       ) {
-        const redirectUrl = getRouteByRole((auth?.user as AuthUser)?.role || undefined)
+        const roleToUse = getRoleForRedirect(auth?.user?.role ?? null);
+        const redirectUrl = getRouteByRole(roleToUse ?? "");
+
+        // const redirectUrl = getRouteByRole((auth?.user as AuthUser)?.role || undefined)
 
         if (pathname !== redirectUrl) {
           router.push(redirectUrl)

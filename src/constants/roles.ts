@@ -22,6 +22,14 @@ export const ROLE_ROUTES: Record<RoleType, string> = {
 
 export const DEFAULT_ROUTE = "/";
 
+export const getRoleForRedirect = (roles: string[] | null): string => {
+  if (!roles || roles.length === 0) return "Guest";
+  if (roles.length === 1) return roles[0];
+
+  const customerRole = roles.find(r => r.toLowerCase() === "customer");
+  return customerRole ?? roles[0];
+};
+
 export const getRouteByRole = (role?: string): string => {
   if (!role) return DEFAULT_ROUTE;
   const normalizedRole = role.toLowerCase().replace(/\s+/g, "");
@@ -29,11 +37,26 @@ export const getRouteByRole = (role?: string): string => {
 };
 
 export const canAccessRoute = (
-  userRole: string,
+  userRoles: string[] | null,
   requiredRoles: string[],
 ): boolean => {
-  const normalizedUserRole = userRole.toLowerCase().replace(/\s+/g, "");
-  return requiredRoles
-    .map((r) => r.toLowerCase().replace(/\s+/g, ""))
-    .includes(normalizedUserRole);
+  if (!userRoles || userRoles.length === 0) return false;
+
+  const normalizedUserRoles = userRoles
+    .filter(r => typeof r === "string")
+    .map(r => r.toLowerCase().replace(/\s+/g, ""));
+  const normalizedRequiredRoles = requiredRoles.map(r => r.toLowerCase().replace(/\s+/g, ""));
+
+  for (const role of normalizedUserRoles) {
+    if (normalizedRequiredRoles.includes(role)) {
+      return true;
+    }
+  }
+
+  return false;
+
+  // const normalizedUserRole = userRole.toLowerCase().replace(/\s+/g, "");
+  // return requiredRoles
+  //   .map((r) => r.toLowerCase().replace(/\s+/g, ""))
+  //   .includes(normalizedUserRole);
 };

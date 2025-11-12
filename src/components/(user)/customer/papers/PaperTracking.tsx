@@ -10,6 +10,7 @@ import RevisionPhase from "./RevisionPhase";
 import CameraReadyPhase from "./CameraReadyPhase";
 import { usePaperCustomer } from "@/redux/hooks/paper/usePaper";
 import type { PaperPhase, PaperDetailResponse } from "@/types/paper.type";
+import { stages4Step } from "@/helper/paper";
 
 const PaperTracking = () => {
   const [currentStage, setCurrentStage] = useState<number>(1);
@@ -52,6 +53,7 @@ const PaperTracking = () => {
         // } else {
         //   setPaperDetailError("Có lỗi xảy ra khi tải chi tiết bài báo");
         // }
+        setPaperDetailError("Có lỗi xảy ra khi tải chi tiết bài báo");
       } finally {
         setIsLoadingPaperDetail(false);
       }
@@ -66,7 +68,7 @@ const PaperTracking = () => {
       //   (phase: PaperPhase) => phase.paperPhaseId === paperDetail.currentPhase.paperPhaseId
       // );
 
-      const currentPhaseIndex = stages.findIndex(
+      const currentPhaseIndex = stages4Step.findIndex(
         (obj) =>
           obj.label.toLowerCase() ===
           paperDetail.currentPhase!.phaseName?.toLowerCase(),
@@ -79,12 +81,12 @@ const PaperTracking = () => {
     }
   }, [paperPhases, paperDetail]);
 
-  const stages = [
-    { id: 1, label: "Abstract" },
-    { id: 2, label: "FullPaper" },
-    { id: 3, label: "Revise" },
-    { id: 4, label: "CameraReady" },
-  ];
+  // const stages = [
+  //   { id: 1, label: "Abstract" },
+  //   { id: 2, label: "FullPaper" },
+  //   { id: 3, label: "Revise" },
+  //   { id: 4, label: "CameraReady" },
+  // ];
 
   // const stages = paperPhases.length > 0
   //   ? paperPhases.map((phase: PaperPhase, index: number) => ({
@@ -249,9 +251,9 @@ const PaperTracking = () => {
                   <div className="px-6">
                     <Slider
                       min={1}
-                      max={stages.length}
+                      max={stages4Step.length}
                       step={1}
-                      marks={stages.reduce(
+                      marks={stages4Step.reduce(
                         (acc, stage) => {
                           acc[stage.id] = (
                             <span className="text-xs text-gray-300">
@@ -299,7 +301,7 @@ const PaperTracking = () => {
                   <div className="mt-4 text-sm text-gray-400 text-center">
                     Giai đoạn hiện tại:{" "}
                     <span className="text-blue-400 font-semibold">
-                      {stages.find((s) => s.id === currentStage)?.label}
+                      {stages4Step.find((s) => s.id === currentStage)?.label}
                     </span>
                     {paperDetail?.currentPhase && (
                       <span className="text-gray-500 ml-2">
@@ -416,7 +418,7 @@ const PaperTracking = () => {
                   {currentStage > 4 && (
                     <div className="text-center py-8">
                       <h3 className="text-lg font-semibold text-white mb-2">
-                        {stages.find((s) => s.id === currentStage)?.label}
+                        {stages4Step.find((s) => s.id === currentStage)?.label}
                       </h3>
                       <p className="text-gray-400">
                         Giai đoạn này chưa có component hiển thị cụ thể.

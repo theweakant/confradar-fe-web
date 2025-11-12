@@ -10,6 +10,7 @@ import {
   useLazyGetAllConferencesPaginationQuery,
   useLazyGetAllConferencesWithPricesPaginationQuery,
   useLazyGetConferencesByStatusQuery,
+  useLazyGetConferencesHasAssignedPaperForLocalReviewerQuery,
   useLazyGetOwnConferencesForScheduleQuery,
   useLazyGetOwnFavouriteConferencesQuery,
 } from "@/redux/services/conference.service";
@@ -123,6 +124,15 @@ export const useConference = (params?: {
     },
   ] = useLazyGetOwnConferencesForScheduleQuery();
 
+  const [
+    triggerGetAssignedConferences,
+    {
+      data: assignedConferencesData,
+      error: assignedConferencesError,
+      isLoading: assignedConferencesLoading,
+    },
+  ] = useLazyGetConferencesHasAssignedPaperForLocalReviewerQuery();
+
   // Favourite mutations
   const [
     addToFavourite,
@@ -187,6 +197,11 @@ export const useConference = (params?: {
   const fetchOwnConferencesForSchedule = useCallback(
     () => triggerGetOwnConferencesSchedule().unwrap(),
     [triggerGetOwnConferencesSchedule],
+  );
+
+  const fetchAssignedConferences = useCallback(
+    () => triggerGetAssignedConferences().unwrap(),
+    [triggerGetAssignedConferences],
   );
 
   return {
@@ -269,6 +284,12 @@ export const useConference = (params?: {
     ownConferencesForScheduleError: parseApiError<
       ConferenceDetailForScheduleResponse[]
     >(lazyOwnConferencesScheduleError),
+
+    // Assigned conferences for local reviewer
+    lazyAssignedConferences: assignedConferencesData?.data as ConferenceResponse[] | undefined,
+    fetchAssignedConferences,
+    assignedConferencesLoading,
+    assignedConferencesError: parseApiError<ConferenceResponse[]>(assignedConferencesError),
 
     //   ownConferencesForScheduleLoading:
     //     ownConferencesScheduleLoading || ownConferencesScheduleFetching || lazyOwnConferencesScheduleLoading,

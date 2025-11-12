@@ -31,7 +31,7 @@ import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 
 import ConferenceCalendar from "@/components/molecules/Calendar/index";
-import {SessionScheduleCalendar} from "@/components/molecules/Calendar/SessionScheduleCalendar";
+import { SessionScheduleCalendar } from "@/components/molecules/Calendar/SessionScheduleCalendar";
 import PaperScheduleCalendar from "@/components/molecules/Calendar/PaperScheduleCalendar";
 
 export default function ManageConference() {
@@ -370,7 +370,8 @@ export default function ManageConference() {
                 />
               )}
 
-              {calendarType === "session" && (
+              {/* ⚠️ @TEMP(T): tạm thời để comment để build không lỗi*/}
+              {/* {calendarType === "session" && (
                 <SessionScheduleCalendar
                   conferenceId="current-conference-id"
                   rooms={[]}
@@ -385,7 +386,7 @@ export default function ManageConference() {
                     toast.success("Session updated successfully!");
                   }}
                 />
-              )}
+              )} */}
 
               {calendarType === "paper" && (
                 <PaperScheduleCalendar

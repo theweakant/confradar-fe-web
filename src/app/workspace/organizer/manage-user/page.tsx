@@ -1,5 +1,5 @@
-import ManageUser from "@/components/(user)/workspace/organizer/ManageUser/ManageUser";
+import { redirect } from "next/navigation";
 
 export default function ManageUserPage() {
-  return <ManageUser />;
+  redirect("/workspace/organizer/manage-user/manage-collaborator");
 }

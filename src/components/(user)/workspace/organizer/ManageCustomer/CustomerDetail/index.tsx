@@ -1,144 +1,180 @@
-// "use client";
+import React from 'react';
+import { X, User, Mail, Calendar, Shield, Activity } from 'lucide-react';
+import { UserDetailForAdminAndOrganizerResponse } from '@/types/user.type';
+import { format } from 'date-fns';
+import { vi } from 'date-fns/locale';
 
-// import {
-//   User as UserIcon,
-//   Mail,
-//   Shield,
-//   Activity,
-//   Calendar,
-//   FileText
-// } from "lucide-react";
-// import { Button } from "@/components/ui/button";
-// import { StatusBadge } from "@/components/atoms/StatusBadge";
-// import { formatDate } from "@/helper/format";
-// import { UserProfileResponse } from "@/types/user.type";
+interface CustomerDetailProps {
+  customer: UserDetailForAdminAndOrganizerResponse;
+  onClose: () => void;
+}
 
-// interface CustomerDetailProps {
-//   customer: UserProfileResponse;
-//   onClose: () => void;
-// }
+export const CustomerDetail: React.FC<CustomerDetailProps> = ({
+  customer,
+  onClose
+}) => {
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-4 border-b">
+        <h2 className="text-xl font-semibold text-gray-900">
+          Chi tiết khách hàng
+        </h2>
+        <button
+          onClick={onClose}
+          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
 
-// export function CustomerDetail({ customer, onClose }: CustomerDetailProps) {
-//   const getRoleLabel = (role: string) => {
-//     const labels: Record<string, string> = {
-//       customer: "Khách hàng",
-//       conferenceorganizer: "Người tổ chức hội nghị",
-//       collaborator: "Cộng tác viên",
-//       localreviewer: "Phản biện nội bộ",
-//       externalreviewer: "Phản biện bên ngoài",
-//       admin: "Quản trị viên"
-//     };
-//     return labels[role] || role;
-//   };
+      {/* Profile Section */}
+      <div className="flex items-start space-x-4">
+        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+          <span className="text-blue-600 font-semibold text-xl">
+            {customer.fullName?.charAt(0)?.toUpperCase() || 'U'}
+          </span>
+        </div>
+        <div className="flex-1">
+          <h3 className="text-lg font-medium text-gray-900">
+            {customer.fullName || 'Chưa có tên'}
+          </h3>
+          <p className="text-sm text-gray-500 mt-1">ID: {customer.userId}</p>
+          <div className="mt-2">
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${customer.isActive
+              ? 'bg-green-100 text-green-800'
+              : 'bg-red-100 text-red-800'
+              }`}>
+              {customer.isActive ? 'Hoạt động' : 'Tạm ngưng'}
+            </span>
+          </div>
+        </div>
+      </div>
 
-//   const getRoleVariant = (role: string): "success" | "danger" | "warning" | "info" => {
-//     const variants: Record<string, "success" | "danger" | "warning" | "info"> = {
-//       customer: "info",
-//       conferenceorganizer: "warning",
-//       collaborator: "success",
-//       localreviewer: "info",
-//       externalreviewer: "warning",
-//       admin: "danger"
-//     };
-//     return variants[role] || "info";
-//   };
+      {/* Information Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Basic Information */}
+        <div className="space-y-4">
+          <h4 className="font-medium text-gray-900 flex items-center">
+            <User className="w-4 h-4 mr-2" />
+            Thông tin cơ bản
+          </h4>
+          <div className="space-y-3 pl-6">
+            <div>
+              <label className="text-sm font-medium text-gray-500">Họ và tên</label>
+              <p className="text-gray-900">{customer.fullName || 'Chưa cập nhật'}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-500">Email</label>
+              <div className="flex items-center space-x-2">
+                <Mail className="w-4 h-4 text-gray-400" />
+                <p className="text-gray-900">{customer.email}</p>
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-500">Số điện thoại</label>
+              <p className="text-gray-900">{customer.phoneNumber || 'Chưa cập nhật'}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-500">Giới tính</label>
+              <p className="text-gray-900">
+                {customer.gender === 'Male' ? 'Nam' :
+                  customer.gender === 'Female' ? 'Nữ' :
+                    customer.gender === 'Other' ? 'Khác' : 'Chưa cập nhật'}
+              </p>
+            </div>
+            {/* <div>
+              <label className="text-sm font-medium text-gray-500">Địa chỉ</label>
+              <p className="text-gray-900">{customer.address || 'Chưa cập nhật'}</p>
+            </div> */}
+          </div>
+        </div>
 
-//   const getStatusLabel = (status: string) => {
-//     const labels: Record<string, string> = {
-//       active: "Hoạt động",
-//       inactive: "Tạm ngưng"
-//     };
-//     return labels[status] || status;
-//   };
+        {/* Account Information */}
+        <div className="space-y-4">
+          <h4 className="font-medium text-gray-900 flex items-center">
+            <Shield className="w-4 h-4 mr-2" />
+            Thông tin tài khoản
+          </h4>
+          <div className="space-y-3 pl-6">
+            <div>
+              <label className="text-sm font-medium text-gray-500">Ngày tham gia</label>
+              <div className="flex items-center space-x-2">
+                <Calendar className="w-4 h-4 text-gray-400" />
+                <p className="text-gray-900">
+                  {customer.createdAt
+                    ? format(new Date(customer.createdAt), 'dd/MM/yyyy HH:mm', { locale: vi })
+                    : 'N/A'
+                  }
+                </p>
+              </div>
+            </div>
+            {/* <div>
+              <label className="text-sm font-medium text-gray-500">Cập nhật lần cuối</label>
+              <div className="flex items-center space-x-2">
+                <Activity className="w-4 h-4 text-gray-400" />
+                <p className="text-gray-900">
+                  {customer.updatedAt
+                    ? format(new Date(customer.updatedAt), 'dd/MM/yyyy HH:mm', { locale: vi })
+                    : 'N/A'
+                  }
+                </p>
+              </div>
+            </div> */}
+            <div>
+              <label className="text-sm font-medium text-gray-500">Trạng thái tài khoản</label>
+              <div className="flex items-center space-x-2">
+                <div className={`w-2 h-2 rounded-full ${customer.isActive ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                <p className={`font-medium ${customer.isActive ? 'text-green-700' : 'text-red-700'}`}>
+                  {customer.isActive ? 'Đang hoạt động' : 'Tạm ngưng'}
+                </p>
+              </div>
+            </div>
+            {customer.isEmailConfirmed !== undefined && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">Xác thực email</label>
+                <div className="flex items-center space-x-2">
+                  <div className={`w-2 h-2 rounded-full ${customer.isEmailConfirmed ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                  <p className={`font-medium ${customer.isEmailConfirmed ? 'text-green-700' : 'text-yellow-700'}`}>
+                    {customer.isEmailConfirmed ? 'Đã xác thực' : 'Chưa xác thực'}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
-//   const getStatusVariant = (status: string): "success" | "danger" | "warning" | "info" => {
-//     const variants: Record<string, "success" | "danger" | "warning" | "info"> = {
-//       active: "success",
-//       inactive: "danger"
-//     };
-//     return variants[status] || "info";
-//   };
+      {/* Organization Information if available */}
+      {/* {customer.organizationName && (
+        <div className="border-t pt-4">
+          <h4 className="font-medium text-gray-900 mb-3">Thông tin tổ chức</h4>
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-500">Tên tổ chức</label>
+                <p className="text-gray-900">{customer.organizationName}</p>
+              </div>
+              {customer.organizationAddress && (
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Địa chỉ tổ chức</label>
+                  <p className="text-gray-900">{customer.organizationAddress}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )} */}
 
-//   return (
-//     <div className="space-y-6">
-//       <div className="flex items-start justify-between">
-//         <div className="flex-1">
-//           <h3 className="text-2xl font-bold text-gray-900 mb-2">{customer.fullName}</h3>
-//           <div className="flex items-center gap-3 mb-4">
-//             <StatusBadge
-//               status={getRoleLabel(customer.role)}
-//               variant={getRoleVariant(customer.role)}
-//             />
-//             <StatusBadge
-//               status={getStatusLabel(customer.status)}
-//               variant={getStatusVariant(customer.status)}
-//             />
-//           </div>
-//         </div>
-//       </div>
-
-//       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//         <div className="space-y-4">
-//           <div className="flex items-start gap-3">
-//             <UserIcon className="w-5 h-5 text-blue-600 mt-0.5" />
-//             <div>
-//               <p className="text-sm font-medium text-gray-700">Tên khách hàng</p>
-//               <p className="text-gray-900">{customer.fullName}</p>
-//             </div>
-//           </div>
-
-//           <div className="flex items-start gap-3">
-//             <Mail className="w-5 h-5 text-blue-600 mt-0.5" />
-//             <div>
-//               <p className="text-sm font-medium text-gray-700">Email</p>
-//               <p className="text-gray-900">{customer.email}</p>
-//             </div>
-//           </div>
-
-//           <div className="flex items-start gap-3">
-//             <Shield className="w-5 h-5 text-blue-600 mt-0.5" />
-//             <div>
-//               <p className="text-sm font-medium text-gray-700">Vai trò</p>
-//               <p className="text-gray-900">{getRoleLabel(customer.role)}</p>
-//             </div>
-//           </div>
-//         </div>
-
-//         <div className="space-y-4">
-//           <div className="flex items-start gap-3">
-//             <Activity className="w-5 h-5 text-blue-600 mt-0.5" />
-//             <div>
-//               <p className="text-sm font-medium text-gray-700">Trạng thái</p>
-//               <p className="text-gray-900">{getStatusLabel(customer.status)}</p>
-//             </div>
-//           </div>
-
-//           <div className="flex items-start gap-3">
-//             <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
-//             <div>
-//               <p className="text-sm font-medium text-gray-700">Số hội nghị đã đăng ký</p>
-//               <p className="text-gray-900 font-semibold">{customer.registeredConferences || 0} hội nghị</p>
-//             </div>
-//           </div>
-
-//           <div className="flex items-start gap-3">
-//             <Calendar className="w-5 h-5 text-blue-600 mt-0.5" />
-//             <div>
-//               <p className="text-sm font-medium text-gray-700">Ngày tham gia</p>
-//               <p className="text-gray-900">{formatDate(customer.joinedDate)}</p>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-
-//       <div className="flex justify-end pt-4 border-t">
-//         <Button
-//           onClick={onClose}
-//           className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-//         >
-//           Đóng
-//         </Button>
-//       </div>
-//     </div>
-//   );
-// }
+      {/* Footer */}
+      <div className="border-t pt-4">
+        <button
+          onClick={onClose}
+          className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+        >
+          Đóng
+        </button>
+      </div>
+    </div>
+  );
+};

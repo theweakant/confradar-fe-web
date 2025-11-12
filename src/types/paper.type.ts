@@ -18,7 +18,7 @@ export interface ListPaper {
   } | null;
   fullPaper: unknown | null;
   revisionPaper: unknown | null;
-  cameraReady: CameraReadyA | null;
+  cameraReady: CameraReadyForReviewer | null;
 }
 
 export interface UnassignAbstract {
@@ -44,27 +44,29 @@ export interface PendingAbstract {
 }
 
 // Paper đã được assign cho reviewer
+export interface AssignedPaperGroup {
+  conferenceId: string;
+  conferenceName: string;
+  assignedPapers: AssignedPaper[];
+}
+
 export interface AssignedPaper {
   paperId: string;
-  presenterId: string;
+  title: string | null;
+  description: string | null;
+  abstractId: string;
   fullPaperId: string | null;
   revisionPaperId: string | null;
   cameraReadyId: string | null;
-  abstractId: string;
-  conferenceId: string;
   paperPhaseId: string;
+  paperPhaseName: string | null;
   createdAt: string;
-  cameraReady: CameraReadyA | null;
-  conference: unknown | null;
-  paperAuthors: unknown[];
-  paperPhase: unknown | null;
-  presenter: unknown | null;
 }
 
 //------------------------------------------
 //CAMERA READY
 
-export interface CameraReadyA {
+export interface CameraReadyForReviewer {
   paperId: string;
   cameraReadyId: string;
   globalStatusId: string;
@@ -90,7 +92,7 @@ export interface PendingCameraReady {
 //------------------------------------------
 //DETAIL PAPER
 
-export interface RevisionSubmissionFeedbackA {
+export interface RevisionSubmissionFeedbackForReviewer {
   revisionSubmissionFeedbackId: string;
   userId: string | null;
   fullName: string | null;
@@ -115,16 +117,18 @@ export interface RevisionPaperReview {
   revisionPaperId: string;
 }
 
-export interface RevisionPaperSubmission {
+export interface RevisionPaperSubmissionForReviewer {
   revisionPaperSubmissionId: string;
   revisionPaperUrl: string;
   revisionPaperId: string;
-  revisionDeadlineRoundId: string;
-  startDate: string;
-  endDate: string;
-  roundNumber: number;
-  revisionSubmissionFeedbacks: RevisionSubmissionFeedbackA[];
-  revisionPaperReviews: RevisionPaperReview[];
+  title?: string;
+  description?: string;
+  revisionDeadlineRoundId?: string;
+  // startDate: string;
+  // endDate: string;
+  // roundNumber: number;
+  revisionSubmissionFeedbacks: RevisionSubmissionFeedbackForReviewer[];
+  // revisionPaperReviews: RevisionPaperReview[];
 }
 
 export interface RevisionRoundDetail {
@@ -134,14 +138,17 @@ export interface RevisionRoundDetail {
   roundNumber: number;
   researchConferencePhaseId: string;
 }
-export interface RevisionPaperA {
+export interface RevisionPaperForReviewer {
   revisionPaperId: string;
   revisionRound: number;
   globalStatusId: string;
   globalStatusName: string;
+  title: string;
+  description: string;
+  createdAt: string;
   isAllSubmittedRevisionPaperReview: boolean;
   isAnsweredAllDiscussion: boolean;
-  revisionPaperSubmissions: RevisionPaperSubmission[];
+  revisionPaperSubmissions: RevisionPaperSubmissionForReviewer[];
 }
 
 export interface CurrentResearchConferencePhase {
@@ -162,7 +169,7 @@ export interface CurrentResearchConferencePhase {
   revisionRoundsDetail: RevisionRoundDetail[];
 }
 
-export interface FullPaperA {
+export interface FullPaperForReviewer {
   fullPaperId: string;
   reviewStatusId: string;
   reviewStatusName: string;
@@ -177,16 +184,49 @@ export interface FullPaperA {
 
 export interface PaperDetailForReviewer {
   isHeadReviewer: boolean;
-  fullPaper: FullPaperA | null;
-  revisionPaper: RevisionPaperA | null;
-  cameraReady: CameraReadyA | null;
+  fullPaper: FullPaperForReviewer | null;
+  revisionPaper: RevisionPaperForReviewer | null;
+  cameraReady: CameraReadyForReviewer | null;
 
-  currentPaperPhase?: {
-    paperPhaseId: string;
-    phaseName: string;
-  } | null;
+  currentPaperPhase?: CurrentPaperPhaseForReviewer | null;
+  currentResearchConferencePhase?: CurrentResearchConferencePhaseForReviewer | null;
 
-  currentResearchConferencePhase?: CurrentResearchConferencePhase | null;
+  // currentPaperPhase?: {
+  //   paperPhaseId: string;
+  //   phaseName: string;
+  // } | null;
+
+  // currentResearchConferencePhase?: CurrentResearchConferencePhase | null;
+}
+
+export interface CurrentPaperPhaseForReviewer {
+  paperPhaseId?: string;
+  phaseName?: string;
+}
+export interface RevisionRoundDeadlineForReviewer {
+  revisionRoundDeadlineId: string;
+  startSubmissionDate?: string;
+  endSubmissionDate?: string;
+  roundNumber?: number;
+  researchConferencePhaseId?: string;
+}
+
+export interface CurrentResearchConferencePhaseForReviewer {
+  researchConferencePhaseId: string;
+  conferenceId?: string;
+  registrationStartDate?: string;
+  registrationEndDate?: string;
+  fullPaperStartDate?: string;
+  fullPaperEndDate?: string;
+  reviewStartDate?: string;
+  reviewEndDate?: string;
+  reviseStartDate?: string;
+  reviseEndDate?: string;
+  cameraReadyStartDate?: string;
+  cameraReadyEndDate?: string;
+  isWaitlist?: boolean;
+  isActive?: boolean;
+  revisionRoundsDetail?: RevisionRoundDeadlineForReviewer[];
 }
 
 //--------------------------------------------------------

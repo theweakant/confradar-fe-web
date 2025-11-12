@@ -1,203 +1,350 @@
-// "use client";
+"use client";
 
-// import { useState, useEffect } from "react";
-// import { Search, Plus, Users } from "lucide-react";
-// import { Modal } from "@/components/molecules/Modal";
-// import { SearchBar } from "@/components/molecules/SearchBar";
-// import { StatCard } from "@/components/molecules/StatCard";
-// import { CustomerTable } from "./CustomerTable";
-// import { CustomerDetail } from "./CustomerDetail";
-// import { CustomerForm } from "./CustomerForm";
-// import {
-//   useGetAllUsersQuery,
-//   useSuspendUserMutation,
-//   useActivateUserMutation,
-//   useCreateCollaboratorMutation
-// } from "@/redux/services/user.service";
-// import { UserProfileResponse } from "@/types/user.type";
-// import { CollaboratorRequest } from "@/types/user.type";
+import { useState, useEffect } from "react";
+import { Plus, Users } from "lucide-react";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Modal } from "@/components/molecules/Modal";
+import { SearchBar } from "@/components/molecules/SearchBar";
+import { StatCard } from "@/components/molecules/StatCard";
+import { CustomerTable } from "./CustomerTable";
+import { CustomerDetail } from "./CustomerDetail";
+import { CustomerForm } from "./CustomerForm";
+import {
+    useGetUsersListQuery,
+    useGetProfileByIdQuery,
+    useSuspendAccountMutation,
+    useActivateAccountMutation,
+    useCreateCollaboratorMutation
+} from "@/redux/services/user.service";
+import {
+    ListUserDetailForAdminAndOrganizerResponse,
+    UserDetailForAdminAndOrganizerResponse,
+    CollaboratorRequest
+} from "@/types/user.type";
+import { toast } from "sonner";
+import { ApiError } from "@/types/api.type";
+import { parseApiError } from "@/helper/api";
 
-// export default function ManageCustomer() {
-//   const [searchTerm, setSearchTerm] = useState("");
-//   const [selectedCustomer, setSelectedCustomer] = useState<UserProfileResponse | null>(null);
-//   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-//   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+export default function ManageCustomer() {
+    const [searchTerm, setSearchTerm] = useState("");
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+    const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+    const [viewingUserId, setViewingUserId] = useState<string | null>(null);
+    const [suspendUserId, setSuspendUserId] = useState<string | null>(null);
+    const [activateUserId, setActivateUserId] = useState<string | null>(null);
 
-//   // API hooks
-//   const {
-//     data: allUsers = [],
-//     isLoading,
-//     error,
-//     refetch
-//   } = useGetAllUsersQuery();
+    // API hooks
+    const {
+        data: allUsers,
+        isLoading: isLoadingList,
+        error: errorList,
+        refetch
+    } = useGetUsersListQuery();
 
-//   const [suspendUser, { isLoading: isSuspending }] = useSuspendUserMutation();
-//   const [activateUser, { isLoading: isActivating }] = useActivateUserMutation();
-//   const [createCollaborator, { isLoading: isCreating }] = useCreateCollaboratorMutation();
+    const [suspendAccount, { isLoading: isSuspending }] = useSuspendAccountMutation();
+    const [activateAccount, { isLoading: isActivating }] = useActivateAccountMutation();
+    const [createCustomer, { isLoading: isCreating, error: createRawError }] = useCreateCollaboratorMutation();
 
-//   // Filter users to only show customers
-//   const customers = allUsers.filter(
-//     user => user.role === "customer"
-//   );
+    const createError = parseApiError<string>(createRawError);
 
-//   // Search functionality
-//   const filteredCustomers = customers.filter(customer =>
-//     customer.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//     customer.email.toLowerCase().includes(searchTerm.toLowerCase())
-//   );
+    // API: Lấy chi tiết user khi view
+    const {
+        data: userProfileData,
+        isLoading: isLoadingProfile
+    } = useGetProfileByIdQuery(
+        viewingUserId || "",
+        { skip: !viewingUserId }
+    );
 
-//   const handleViewCustomer = (customer: UserProfileResponse) => {
-//     setSelectedCustomer(customer);
-//     setIsDetailModalOpen(true);
-//   };
+    const allUsersData: ListUserDetailForAdminAndOrganizerResponse[] =
+        Array.isArray(allUsers?.data) ? allUsers.data : [];
 
-//   const handleSuspendCustomer = async (userId: string) => {
-//     try {
-//       await suspendUser(userId).unwrap();
-//       refetch();
-//       console.log("Customer suspended successfully");
-//     } catch (error) {
-//       console.error("Failed to suspend customer:", error);
-//     }
-//   };
+    // Filter users to only show customers
+    const customerRole = allUsersData.find(
+        (roleGroup): roleGroup is ListUserDetailForAdminAndOrganizerResponse =>
+            roleGroup.roleName.toLowerCase() === "customer"
+    );
 
-//   const handleActivateCustomer = async (userId: string) => {
-//     try {
-//       await activateUser(userId).unwrap();
-//       refetch();
-//       console.log("Customer activated successfully");
-//     } catch (error) {
-//       console.error("Failed to activate customer:", error);
-//     }
-//   };
+    const customers: UserDetailForAdminAndOrganizerResponse[] =
+        customerRole?.users ?? [];
 
-//   const handleCreateCustomer = async (data: CollaboratorRequest) => {
-//     try {
-//       await createCollaborator(data).unwrap();
-//       setIsFormModalOpen(false);
-//       refetch();
-//       console.log("Customer created successfully");
-//     } catch (error) {
-//       console.error("Failed to create customer:", error);
-//     }
-//   };
+    const viewingUserProfile = customers.find(
+        c => c.userId === viewingUserId
+    );
 
-//   const stats = [
-//     {
-//       title: "Tổng số Khách hàng",
-//       value: customers.length.toString(),
-//       icon: Users,
-//       variant: "info" as const
-//     },
-//     {
-//       title: "Đang hoạt động",
-//       value: customers.filter(c => c.status === "active").length.toString(),
-//       icon: Users,
-//       variant: "success" as const
-//     },
-//     {
-//       title: "Tạm ngưng",
-//       value: customers.filter(c => c.status === "inactive").length.toString(),
-//       icon: Users,
-//       variant: "danger" as const
-//     }
-//   ];
+    // Search functionality
+    const filteredCustomers = customers.filter(customer =>
+        customer.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        customer.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
-//   if (isLoading) {
-//     return (
-//       <div className="flex items-center justify-center min-h-screen">
-//         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-//       </div>
-//     );
-//   }
+    // Show toast when create error occurs
+    useEffect(() => {
+        if (createError) toast.error(createError.data?.message);
+    }, [createError]);
 
-//   if (error) {
-//     return (
-//       <div className="flex items-center justify-center min-h-screen">
-//         <div className="text-red-600">Đã xảy ra lỗi khi tải dữ liệu</div>
-//       </div>
-//     );
-//   }
+    const handleCreate = () => {
+        setIsFormModalOpen(true);
+    };
 
-//   return (
-//     <div className="space-y-6">
-//       {/* Header */}
-//       <div className="flex items-center justify-between">
-//         <div>
-//           <h1 className="text-2xl font-bold text-gray-900">Quản lý Khách hàng</h1>
-//           <p className="text-gray-600">Quản lý tài khoản khách hàng trong hệ thống</p>
-//         </div>
-//         <button
-//           onClick={() => setIsFormModalOpen(true)}
-//           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-//         >
-//           <Plus className="w-5 h-5" />
-//           Thêm Khách hàng
-//         </button>
-//       </div>
+    const handleView = (customer: UserDetailForAdminAndOrganizerResponse) => {
+        setViewingUserId(customer.userId);
+        setIsDetailModalOpen(true);
+    };
 
-//       {/* Stats */}
-//       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-//         {stats.map((stat, index) => (
-//           <StatCard
-//             key={index}
-//             title={stat.title}
-//             value={stat.value}
-//             icon={stat.icon}
-//             variant={stat.variant}
-//           />
-//         ))}
-//       </div>
+    const handleSave = async (data: CollaboratorRequest) => {
+        try {
+            const response = await createCustomer(data).unwrap();
+            toast.success(response.message || "Thêm khách hàng thành công!");
+            setIsFormModalOpen(false);
+            refetch();
+        } catch (error: unknown) {
+            // Error already handled by useEffect with createError
+        }
+    };
 
-//       {/* Search */}
-//       <div className="flex items-center gap-4">
-//         <div className="flex-1">
-//           <SearchBar
-//             value={searchTerm}
-//             onChange={setSearchTerm}
-//             placeholder="Tìm kiếm khách hàng..."
-//             className="w-full"
-//           />
-//         </div>
-//       </div>
+    const handleSuspend = (userId: string) => {
+        setSuspendUserId(userId);
+    };
 
-//       {/* Table */}
-//       <div className="bg-white rounded-lg shadow overflow-hidden">
-//         <CustomerTable
-//           customers={filteredCustomers}
-//           onView={handleViewCustomer}
-//           onSuspend={handleSuspendCustomer}
-//           onActivate={handleActivateCustomer}
-//         />
-//       </div>
+    const confirmSuspend = async () => {
+        if (suspendUserId) {
+            try {
+                const response = await suspendAccount(suspendUserId).unwrap();
+                toast.success(response.message || "Tạm ngưng tài khoản thành công!");
+                setSuspendUserId(null);
+                refetch();
+            } catch (error: unknown) {
+                const err = error as ApiError;
+                const errorMessage = err?.message || "Tạm ngưng tài khoản thất bại";
+                toast.error(errorMessage);
+            }
+        }
+    };
 
-//       {/* Customer Detail Modal */}
-//       <Modal
-//         isOpen={isDetailModalOpen}
-//         onClose={() => setIsDetailModalOpen(false)}
-//         title="Chi tiết Khách hàng"
-//         size="lg"
-//       >
-//         {selectedCustomer && (
-//           <CustomerDetail
-//             customer={selectedCustomer}
-//             onClose={() => setIsDetailModalOpen(false)}
-//           />
-//         )}
-//       </Modal>
+    const handleActivate = (userId: string) => {
+        setActivateUserId(userId);
+    };
 
-//       {/* Customer Form Modal */}
-//       <Modal
-//         isOpen={isFormModalOpen}
-//         onClose={() => setIsFormModalOpen(false)}
-//         title="Thêm Khách hàng mới"
-//         size="md"
-//       >
-//         <CustomerForm
-//           onSave={handleCreateCustomer}
-//           onCancel={() => setIsFormModalOpen(false)}
-//         />
-//       </Modal>
-//     </div>
-//   );
-// }
+    const confirmActivate = async () => {
+        if (activateUserId) {
+            try {
+                const response = await activateAccount(activateUserId).unwrap();
+                toast.success(response.message || "Kích hoạt tài khoản thành công!");
+                setActivateUserId(null);
+                refetch();
+            } catch (error: unknown) {
+                const err = error as ApiError;
+                const errorMessage = err?.message || "Kích hoạt tài khoản thất bại";
+                toast.error(errorMessage);
+            }
+        }
+    };
+
+    const stats = [
+        {
+            title: "Tổng số Khách hàng",
+            value: customers.length.toString(),
+            icon: Users,
+        },
+        {
+            title: "Đang hoạt động",
+            value: customers.filter(c => c.isActive === true).length.toString(),
+            icon: Users,
+        },
+        {
+            title: "Tạm ngưng",
+            value: customers.filter(c => c.isActive === false).length.toString(),
+            icon: Users,
+        }
+    ];
+
+    if (isLoadingList) {
+        return (
+            <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Đang tải danh sách khách hàng...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (errorList) {
+        return (
+            <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+                <div className="text-center">
+                    <p className="text-red-600 mb-4">
+                        Không thể tải danh sách khách hàng
+                    </p>
+                    <button
+                        onClick={() => refetch()}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                        Thử lại
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-gray-50 p-6">
+            <div className="max-w-7xl mx-auto">
+                {/* Header */}
+                <div className="mb-8">
+                    <div className="flex items-center justify-between">
+                        <h1 className="text-3xl font-bold text-gray-900">
+                            Quản lý Khách hàng
+                        </h1>
+                        <button
+                            onClick={handleCreate}
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={isCreating}
+                        >
+                            <Plus className="w-5 h-5" />
+                            {isCreating ? "Đang thêm..." : "Thêm Khách hàng"}
+                        </button>
+                    </div>
+                    <p className="text-gray-600 mt-2">
+                        Quản lý tài khoản khách hàng trong hệ thống
+                    </p>
+                </div>
+
+                {/* Search */}
+                <div className="mb-6">
+                    <SearchBar
+                        value={searchTerm}
+                        onChange={setSearchTerm}
+                        placeholder="Tìm kiếm theo tên, email..."
+                    />
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    {stats.map((stat, index) => (
+                        <StatCard
+                            key={index}
+                            title={stat.title}
+                            value={stat.value}
+                            icon={<stat.icon className="w-5 h-5" />}
+                            color="green"
+                        />
+                    ))}
+                </div>
+
+                {/* Table */}
+                <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <CustomerTable
+                        customers={filteredCustomers}
+                        onView={handleView}
+                        onSuspend={handleSuspend}
+                        onActivate={handleActivate}
+                    />
+                </div>
+            </div>
+
+            {/* Form Modal */}
+            <Modal
+                isOpen={isFormModalOpen}
+                onClose={() => setIsFormModalOpen(false)}
+                title="Thêm khách hàng mới"
+            >
+                <CustomerForm
+                    onSave={handleSave}
+                    onCancel={() => setIsFormModalOpen(false)}
+                />
+            </Modal>
+
+            {/* Detail Modal */}
+            <Modal
+                isOpen={isDetailModalOpen}
+                onClose={() => {
+                    setIsDetailModalOpen(false);
+                    setViewingUserId(null);
+                }}
+                title="Chi tiết khách hàng"
+            >
+                {isLoadingProfile ? (
+                    <div className="flex items-center justify-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <p className="text-gray-600 ml-3">Đang tải thông tin chi tiết...</p>
+                    </div>
+                ) : viewingUserProfile ? (
+                    <CustomerDetail
+                        customer={viewingUserProfile}
+                        onClose={() => {
+                            setIsDetailModalOpen(false);
+                            setViewingUserId(null);
+                        }}
+                    />
+                ) : (
+                    <p className="text-center text-gray-600 py-8">
+                        Không tìm thấy thông tin khách hàng
+                    </p>
+                )}
+            </Modal>
+
+            {/* Suspend Confirmation Dialog */}
+            <AlertDialog
+                open={!!suspendUserId}
+                onOpenChange={() => setSuspendUserId(null)}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Xác nhận tạm ngưng</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Bạn có chắc chắn muốn tạm ngưng tài khoản khách hàng này?
+                            Họ sẽ không thể đăng nhập cho đến khi được kích hoạt lại.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Hủy</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmSuspend}
+                            className="bg-orange-600 hover:bg-orange-700"
+                            disabled={isSuspending}
+                        >
+                            {isSuspending ? "Đang xử lý..." : "Tạm ngưng"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Activate Confirmation Dialog */}
+            <AlertDialog
+                open={!!activateUserId}
+                onOpenChange={() => setActivateUserId(null)}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Xác nhận kích hoạt</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Bạn có chắc chắn muốn kích hoạt lại tài khoản khách hàng này?
+                            Họ sẽ có thể đăng nhập và sử dụng hệ thống.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Hủy</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmActivate}
+                            className="bg-green-600 hover:bg-green-700"
+                            disabled={isActivating}
+                        >
+                            {isActivating ? "Đang xử lý..." : "Kích hoạt"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </div>
+    );
+}

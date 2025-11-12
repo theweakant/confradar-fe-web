@@ -1,4 +1,5 @@
 import {
+  useCreatePaymentForAttendeeResearchMutation,
   useCreatePaymentForResearchPaperMutation,
   useCreatePaymentForTechMutation,
   useGetAllPaymentMethodsQuery,
@@ -34,6 +35,15 @@ export const useTransaction = () => {
   ] = useCreatePaymentForResearchPaperMutation();
 
   const [
+    createAttendeeResearchPayment,
+    {
+      isLoading: attendeeResearchPaymentLoading,
+      error: attendeeResearchPaymentRawError,
+      data: attendeeResearchPaymentData,
+    },
+  ] = useCreatePaymentForAttendeeResearchMutation();
+
+  const [
     getTransactions,
     {
       isLoading: transactionsLoading,
@@ -50,6 +60,7 @@ export const useTransaction = () => {
 
   const techPaymentError = parseApiError<string>(techPaymentRawError);
   const researchPaymentError = parseApiError<string>(researchPaymentRawError);
+  const attendeeResearchPaymentError = parseApiError<string>(attendeeResearchPaymentRawError);
   const transactionsError = parseApiError<string>(transactionsRawError);
   const paymentMethodsError = parseApiError<string>(error || lazyError);
 
@@ -69,6 +80,17 @@ export const useTransaction = () => {
   ): Promise<ApiResponse<GeneralPaymentResultResponse>> => {
     try {
       const result = await createResearchPayment(request).unwrap();
+      return result;
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  const purchaseAttendeeResearch = async (
+    request: CreateTechPaymentRequest
+  ): Promise<ApiResponse<GeneralPaymentResultResponse>> => {
+    try {
+      const result = await createAttendeeResearchPayment(request).unwrap();
       return result;
     } catch (err) {
       throw err;
@@ -97,6 +119,7 @@ export const useTransaction = () => {
     // Actions
     purchaseTechTicket,
     purchaseResearchPaper,
+    purchaseAttendeeResearch,
     fetchTransactions,
     fetchAllPaymentMethods,
 
@@ -104,6 +127,7 @@ export const useTransaction = () => {
     loading:
       techPaymentLoading ||
       researchPaymentLoading ||
+      attendeeResearchPaymentLoading ||
       transactionsLoading ||
       isLoading ||
       lazyLoading,
@@ -111,12 +135,14 @@ export const useTransaction = () => {
     //Error
     techPaymentError,
     researchPaymentError,
+    attendeeResearchPaymentError,
     transactionsError,
     paymentMethodsError,
 
     //Data responses
     techPaymentResponse: techPaymentData,
     researchPaymentResponse: researchPaymentData,
+    attendeeResearchPaymentResponse: attendeeResearchPaymentData,
     transactions: transactionsData?.data || [],
     paymentMethods: data?.data || lazyData?.data || [],
 

@@ -22,6 +22,7 @@ import {
   PaperCustomer,
   PaperDetailResponse,
   PaperPhase,
+  AssignedPaperGroup,
 } from "@/types/paper.type";
 
 import type { ApiResponse } from "@/types/api.type";
@@ -43,14 +44,14 @@ export const paperApi = createApi({
       providesTags: ["Paper"],
     }),
 
-  listPendingAbstracts: builder.query<
-    ApiResponse<PendingAbstract[]>,string >({
-    query: (confId?: string) => ({
-      url: endpoint.PAPER.LIST_PENDING_ABSTRACT(confId),
-      method: "GET",
-    }),
-    providesTags: ["Paper"],
-  }),
+    listPendingAbstracts: builder.query<
+      ApiResponse<PendingAbstract[]>, string>({
+        query: (confId?: string) => ({
+          url: endpoint.PAPER.LIST_PENDING_ABSTRACT(confId),
+          method: "GET",
+        }),
+        providesTags: ["Paper"],
+      }),
 
     listUnassignAbstracts: builder.query<ApiResponse<UnassignAbstract[]>, void>(
       {
@@ -62,11 +63,15 @@ export const paperApi = createApi({
       },
     ),
 
-    listAssignedPapers: builder.query<ApiResponse<AssignedPaper[]>, void>({
-      query: () => ({
-        url: endpoint.PAPER.LIST_ASSIGN_PAPER_REVIEWER,
-        method: "GET",
-      }),
+    listAssignedPapers: builder.query<ApiResponse<AssignedPaperGroup[]>, { confId?: string } | void>({
+      query: (arg) => {
+        const confId = arg?.confId;
+        return {
+          url: endpoint.PAPER.LIST_ASSIGN_PAPER_REVIEWER,
+          method: "GET",
+          params: confId ? { confId } : {},
+        };
+      },
       providesTags: ["Paper"],
     }),
 
@@ -412,6 +417,7 @@ export const {
 
   //FULL PAPER
   useGetPaperDetailForReviewerQuery,
+  useLazyGetPaperDetailForReviewerQuery,
   useSubmitFullPaperReviewMutation,
   useGetFullPaperReviewsQuery,
   useDecideFullPaperStatusMutation,

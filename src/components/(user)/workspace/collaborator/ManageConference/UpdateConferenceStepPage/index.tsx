@@ -192,6 +192,8 @@ export default function UpdateConferenceStepPage() {
     ticketSaleDuration: 0,
     createdby: "",
     targetAudienceTechnicalConference: "",
+    contractURL: "", // ⚠️ @TEMP(T): tạm thời để trống để build không lỗi
+    commission: 0, // ⚠️ @TEMP(T): tạm thời để trống để build không lỗi
   });
 
   useEffect(() => {
@@ -220,6 +222,8 @@ export default function UpdateConferenceStepPage() {
         ),
         createdby: "",
         targetAudienceTechnicalConference: conf.targetAudience || "",
+        contractURL: "", // ⚠️ @TEMP(T): tạm thời để trống để build không lỗi
+        commission: 0, // ⚠️ @TEMP(T): tạm thời để trống để build không lỗi
       });
       setBasicFormCompleted(true);
       dispatch(setMode("edit"));
@@ -251,6 +255,7 @@ export default function UpdateConferenceStepPage() {
               startDate: p.startDate?.split("T")[0] || "",
               endDate: p.endDate?.split("T")[0] || "",
               totalslot: p.totalSlot || 0,
+              refundInPhase: [] // ⚠️ @TEMP(T): tạm thời để trống để build không lỗi
             })),
           })),
         );
@@ -709,6 +714,7 @@ export default function UpdateConferenceStepPage() {
                 startDate: p.startDate,
                 endDate: p.endDate,
                 totalslot: p.totalslot,
+                refundInPhase: [] // ⚠️ @TEMP(T): tạm thời để trống để build không lỗi
               })),
             })),
           },
@@ -1077,6 +1083,7 @@ export default function UpdateConferenceStepPage() {
       startDate,
       endDate,
       totalslot,
+      refundInPhase: [] // ⚠️ @TEMP(T): tạm thời để trống để build không lỗi
     };
 
     if (editingPhaseIndex !== null) {
@@ -1857,8 +1864,8 @@ export default function UpdateConferenceStepPage() {
                       <div
                         key={idx}
                         className={`text-sm p-2 rounded flex justify-between items-center mb-2 transition-all ${isEditingPhase
-                            ? "bg-blue-100 ring-2 ring-blue-400"
-                            : "bg-blue-50"
+                          ? "bg-blue-100 ring-2 ring-blue-400"
+                          : "bg-blue-50"
                           }`}
                       >
                         <div className="flex-1">

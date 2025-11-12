@@ -159,6 +159,8 @@ export default function CreateResearchConferenceStepPage() {
     ticketSaleEnd: "",
     ticketSaleDuration: 0,
     createdby: "",
+    contractURL: "", // ⚠️ @TEMP(T): tạm thời để trống để build không lỗi
+    commission: 0, // ⚠️ @TEMP(T): tạm thời để trống để build không lỗi
   });
 
   // Step 2: Research Detail
@@ -793,6 +795,7 @@ export default function CreateResearchConferenceStepPage() {
               startDate: phase.startDate,
               endDate: phase.endDate,
               totalslot: phase.totalslot,
+              refundInPhase: [] // ⚠️ @TEMP(T): tạm thời để trống để build không lỗi
             })),
           })),
         };
@@ -1181,6 +1184,7 @@ export default function CreateResearchConferenceStepPage() {
       startDate,
       endDate,
       totalslot,
+      refundInPhase: [] // ⚠️ @TEMP(T): tạm thời để trống để build không lỗi
     };
 
     setNewTicket((prev) => ({

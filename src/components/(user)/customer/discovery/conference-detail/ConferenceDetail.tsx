@@ -52,11 +52,14 @@ const ConferenceDetail = () => {
   const {
     purchaseTechTicket,
     purchaseResearchPaper,
+    purchaseAttendeeResearch,
     loading: paymentLoading,
     techPaymentError,
     researchPaymentError,
+    attendeeResearchPaymentError,
     techPaymentResponse,
     researchPaymentResponse,
+    attendeeResearchPaymentResponse,
   } = useTransaction();
 
   const [activeTab, setActiveTab] = useState("info");
@@ -92,9 +95,8 @@ const ConferenceDetail = () => {
   useEffect(() => {
     if (techPaymentError) toast.error(techPaymentError.data?.message);
     if (researchPaymentError) toast.error(researchPaymentError.data?.message);
-    console.log(techPaymentError);
-    console.log(researchPaymentError);
-  }, [techPaymentError, researchPaymentError]);
+    if (attendeeResearchPaymentError) toast.error(attendeeResearchPaymentError.data?.message);
+  }, [techPaymentError, researchPaymentError, attendeeResearchPaymentError]);
 
   const handlePurchaseTicket = async () => {
     if (!accessToken) {
@@ -125,6 +127,11 @@ const ConferenceDetail = () => {
           conferencePriceId: selectedTicket.conferencePriceId,
           title: authorInfo.title,
           description: authorInfo.description,
+          paymentMethodId: selectedPaymentMethod,
+        });
+      } else if (isResearch) {
+        response = await purchaseAttendeeResearch({
+          conferencePriceId: selectedTicket.conferencePriceId,
           paymentMethodId: selectedPaymentMethod,
         });
       } else {
@@ -291,8 +298,8 @@ const ConferenceDetail = () => {
                 <button
                   onClick={() => setActiveTab("info")}
                   className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "info"
-                      ? "text-blue-500 border-b-2 border-coral-500"
-                      : "text-white/70 hover:text-white"
+                    ? "text-blue-500 border-b-2 border-coral-500"
+                    : "text-white/70 hover:text-white"
                     }`}
                 >
                   Thông tin & Hình ảnh
@@ -300,8 +307,8 @@ const ConferenceDetail = () => {
                 <button
                   onClick={() => setActiveTab("sessions")}
                   className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "sessions"
-                      ? "text-blue-500 border-b-2 border-coral-500"
-                      : "text-white/70 hover:text-white"
+                    ? "text-blue-500 border-b-2 border-coral-500"
+                    : "text-white/70 hover:text-white"
                     }`}
                 >
                   Lịch trình Sessions
@@ -309,8 +316,8 @@ const ConferenceDetail = () => {
                 <button
                   onClick={() => setActiveTab("prices")}
                   className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "prices"
-                      ? "text-blue-500 border-b-2 border-coral-400"
-                      : "text-white/70 hover:text-white"
+                    ? "text-blue-500 border-b-2 border-coral-400"
+                    : "text-white/70 hover:text-white"
                     }`}
                 >
                   Các loại vé
@@ -319,8 +326,8 @@ const ConferenceDetail = () => {
                   <button
                     onClick={() => setActiveTab("research")}
                     className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "research"
-                        ? "text-blue-500 border-b-2 border-coral-500"
-                        : "text-white/70 hover:text-white"
+                      ? "text-blue-500 border-b-2 border-coral-500"
+                      : "text-white/70 hover:text-white"
                       }`}
                   >
                     Research Paper Information
@@ -329,8 +336,8 @@ const ConferenceDetail = () => {
                 <button
                   onClick={() => setActiveTab("policy")}
                   className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "policy"
-                      ? "text-blue-500 border-b-2 border-coral-500"
-                      : "text-white/70 hover:text-white"
+                    ? "text-blue-500 border-b-2 border-coral-500"
+                    : "text-white/70 hover:text-white"
                     }`}
                 >
                   Chính sách & Hoàn tiền
@@ -338,8 +345,8 @@ const ConferenceDetail = () => {
                 <button
                   onClick={() => setActiveTab("feedback")}
                   className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "feedback"
-                      ? "text-blue-500 border-b-2 border-coral-500"
-                      : "text-white/70 hover:text-white"
+                    ? "text-blue-500 border-b-2 border-coral-500"
+                    : "text-white/70 hover:text-white"
                     }`}
                 >
                   Đánh giá

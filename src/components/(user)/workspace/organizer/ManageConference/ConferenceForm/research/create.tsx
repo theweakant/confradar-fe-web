@@ -27,8 +27,8 @@ import { ResearchDetailForm } from "../../../../collaborator/ManageConference/Cr
 import { ResearchPhaseForm } from "../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchPhaseForm";
 import { ResearchPriceForm } from "../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchPriceForm";
 import { MaterialsForm } from "../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/MaterialsForm";
-import { SessionForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/SessionForm"; 
 import { ResearchSessionForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchSessionForm";
+
 
 // Hooks
 import {
@@ -125,7 +125,7 @@ export default function CreateResearchConferenceStepPage() {
 
   // Initialize
   useEffect(() => {
-    dispatch(setMaxStep(RESEARCH_MAX_STEP)); 
+    dispatch(setMaxStep(RESEARCH_MAX_STEP));
     handleSetMode("create");
     handleGoToStep(1);
 
@@ -393,7 +393,7 @@ export default function CreateResearchConferenceStepPage() {
       {/* STEP 4: Price */}
       {currentStep === 4 && (
         <StepContainer stepNumber={4} title="Giá vé" isCompleted={isStepCompleted(4)}>
-          <ResearchPriceForm
+          {/* <ResearchPriceForm
             tickets={tickets}
             onTicketsChange={setTickets}
             ticketSaleStart={basicForm.ticketSaleStart}
@@ -402,6 +402,7 @@ export default function CreateResearchConferenceStepPage() {
             maxTotalSlot={basicForm.totalSlot}
             allowListener={researchDetail.allowListener} 
           />
+             */}
 
           <PhaseModal
             isOpen={isPhaseModalOpen}

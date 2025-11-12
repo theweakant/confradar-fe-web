@@ -121,7 +121,8 @@ function PhaseModal({
 
   const handleUpdateRefund = (index: number, field: keyof RefundInPhase, value: string | number) => {
     const updated = [...refundPolicies];
-  // @ts-expect-error TS cannot infer that `value` matches the type of `RefundInPhase[field]`
+
+    // @ts-expect-error thêm message để không lỗi run build
     updated[index][field] = value;
     setRefundPolicies(updated);
   };

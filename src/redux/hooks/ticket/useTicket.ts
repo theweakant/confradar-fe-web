@@ -1,8 +1,10 @@
 import {
   useGetOwnPaidTicketsQuery,
   useLazyGetOwnPaidTicketsQuery,
+  useRefundTicketMutation,
 } from "@/redux/services/ticket.service";
 import { parseApiError } from "@/helper/api";
+import { RefundTicketRequest } from "@/types/ticket.type";
 
 export const useTicket = (filters?: {
   keyword?: string;
@@ -23,13 +25,34 @@ export const useTicket = (filters?: {
     { isLoading: lazyTicketsLoading, error: lazyTicketsRawError },
   ] = useLazyGetOwnPaidTicketsQuery();
 
+  const [
+    refundTicket,
+    {
+      data: refundData,
+      error: refundError,
+      isLoading: refunding,
+      isSuccess: refundSuccess,
+      isError: refundFailed,
+    },
+  ] = useRefundTicketMutation();
+
   const ticketsError = parseApiError<string>(ticketsRawError);
   const lazyTicketsError = parseApiError<string>(lazyTicketsRawError);
+  const refundParsedError = parseApiError<string>(refundError);
 
   const fetchTickets = async (params?: typeof filters) => {
     try {
       const result = await getTickets(params ?? {}).unwrap();
       return result;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const handleRefundTicket = async (request: RefundTicketRequest) => {
+    try {
+      const res = await refundTicket(request).unwrap();
+      return res;
     } catch (error) {
       throw error;
     }
@@ -44,11 +67,14 @@ export const useTicket = (filters?: {
     // Methods
     fetchTickets,
     refetchTickets,
+    handleRefundTicket,
 
     // Loading states
     loading: ticketsLoading || lazyTicketsLoading,
+    refunding,
 
     // Errors
     ticketsError: ticketsError || lazyTicketsError,
+    refundError: refundParsedError,
   };
 };
