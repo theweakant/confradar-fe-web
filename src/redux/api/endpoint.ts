@@ -33,6 +33,9 @@ export const endpoint = {
     UPDATE: "/Room",
     DELETE: "/Room",
     DETAIL: "/room",
+
+    AVAILABLE_ROOM:"/room/available-rooms-between-dates"
+
   },
 
   CATEGORY: {
@@ -175,7 +178,10 @@ export const endpoint = {
     LIST_ALL_PAPERS: "/Paper/list-all-papers",
 
     //ABSTRACT
-    LIST_PENDING_ABSTRACT: "/Paper/list-pending-abstract",
+    LIST_PENDING_ABSTRACT: (confId?: string) =>
+      confId
+        ? `/Paper/list-pending-abstract?confId=${confId}`
+        : `/Paper/list-pending-abstract`,   
     DECIDE_ABSTRACT: "/Paper/decide-abstract-paper-status",
     ASSIGN_PAPER_TO_REVIEWER: "/Paper/assign-reviewer-to-paper",
     LIST_UNASSIGN_ABSTRACT: "/Paper/list-unassign-abstract",
@@ -237,5 +243,11 @@ export const endpoint = {
       "/assigningpresentersession/approve-change-presenter",
     LIST_PENDING_CHANGE_REQUEST:
       "/assigningpresentersession/get-pending-presenter-change-requests",
+  },
+
+  REQUEST: {
+    REFUND_REQUEST: "/ticket/refunds-request",
+    REFUND_REQUEST_BY_CONFID: (conferenceId: string) =>
+      `/ticket/conferences/${conferenceId}/refunds-request`,    
   },
 };

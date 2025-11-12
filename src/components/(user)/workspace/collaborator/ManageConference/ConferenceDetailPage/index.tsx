@@ -420,6 +420,7 @@ function InformationTab({
         </div>
 
         <div className="flex flex-wrap gap-2">
+          {/* ConfRadar / Đối tác */}
           <div
             className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
               conference.isInternalHosted
@@ -427,10 +428,10 @@ function InformationTab({
                 : "bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-900/20 dark:text-gray-400 dark:border-gray-800"
             }`}
           >
-            <span>{conference.isInternalHosted ? "✓" : "✗"}</span>
-            <span>Tổ chức nội bộ</span>
+            <span>{conference.isInternalHosted ? "ConfRadar" : "Đối tác"}</span>
           </div>
 
+          {/* Công nghệ / Nghiên cứu */}
           <div
             className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
               conference.isResearchConference
@@ -438,10 +439,10 @@ function InformationTab({
                 : "bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-900/20 dark:text-gray-400 dark:border-gray-800"
             }`}
           >
-            <span>{conference.isResearchConference ? "✓" : "✗"}</span>
-            <span>Hội nghị nghiên cứu</span>
+            <span>{conference.isResearchConference ? "Nghiên cứu" : "Công nghệ"}</span>
           </div>
         </div>
+
       </div>
 
       {/* Basic Information Section */}

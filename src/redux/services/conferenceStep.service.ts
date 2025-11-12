@@ -61,7 +61,10 @@ export const conferenceStepApi = createApi({
             "targetAudienceTechnicalConference",
             body.targetAudienceTechnicalConference,
           );
-
+        if (body.contractURL) formData.append("contractURL", body.contractURL);
+        if (body.commission !== undefined && body.commission !== null)
+          
+      formData.append("commission", String(body.commission));
         return {
           url: endpoint.CONFERENCE_STEP.CREATE_BASIC,
           method: "POST",

@@ -11,6 +11,7 @@ import { cityApi } from "../services/city.service";
 import { userApi } from "../services/user.service";
 import { paperApi } from "../services/paper.service";
 import { statusApi } from "../services/status.service";
+import { requestApi } from "../services/request.service";
 
 export const apiMiddlewares: Middleware[] = [
   authApi.middleware,
@@ -25,4 +26,5 @@ export const apiMiddlewares: Middleware[] = [
   userApi.middleware,
   paperApi.middleware,
   statusApi.middleware,
+  requestApi.middleware,
 ];

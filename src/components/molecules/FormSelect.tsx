@@ -1,3 +1,5 @@
+// @/components/molecules/FormSelect.tsx
+
 interface FormSelectProps {
   label: string;
   name?: string;
@@ -19,6 +21,8 @@ export function FormSelect({
   error,
   disabled = false,
 }: FormSelectProps) {
+  const safeValue = value ?? "";
+
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -26,16 +30,18 @@ export function FormSelect({
       </label>
       <select
         name={name}
-        value={value}
+        value={safeValue}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
           error ? "border-red-500" : "border-gray-300"
         } ${disabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
       >
-        <option value="">Chọn {label.toLowerCase()}</option>
-        {options.map((option, index) => (
-          <option key={`${option.value}-${index}`} value={option.value}>
+        <option value="" disabled={!required}>
+          Chọn {label.toLowerCase()}
+        </option>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
             {option.label}
           </option>
         ))}

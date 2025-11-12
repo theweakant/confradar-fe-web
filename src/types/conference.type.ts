@@ -85,6 +85,9 @@ export interface ConferenceBasicForm {
 
   targetAudienceTechnicalConference?: string; //for tech conf
   customTarget?: string;
+
+  contractURL:string;
+  commission:number;
 }
 
 export interface ConferenceBasicResponse {
@@ -109,6 +112,11 @@ export interface ConferenceBasicResponse {
 }
 
 //PRICE STEP
+export interface RefundInPhase {
+  percentRefund: number;
+  refundDeadline: string;
+}
+
 export interface Phase {
   pricePhaseId?: string;
   phaseName: string;
@@ -116,6 +124,7 @@ export interface Phase {
   startDate: string;
   endDate: string;
   totalslot: number;
+  refundInPhase:RefundInPhase[];
 }
 
 export interface Ticket {
@@ -241,6 +250,7 @@ export interface RegisteredUserInConference {
   registeredDate: string;
   conferenceId: string;
   conferenceName: string;
+  isRefunded:boolean;
 }
 
 //not in use

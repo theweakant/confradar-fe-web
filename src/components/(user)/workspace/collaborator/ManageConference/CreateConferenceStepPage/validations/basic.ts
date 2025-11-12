@@ -1,40 +1,48 @@
+import { toast } from "sonner";
 import type { ConferenceBasicForm } from "@/types/conference.type";
 
+// ============================================
+// TYPE
+// ============================================
 export interface ValidationResult {
   isValid: boolean;
   error?: string;
   warning?: string;
 }
 
+// ============================================
+// COMMON VALIDATORS (DÙNG CHUNG CHO CẢ CONFERENCE & RESEARCH)
+// ============================================
+
 export const validateConferenceName = (value: string): ValidationResult => {
   if (!value.trim()) {
-    return { isValid: false, error: 'Tên hội thảo không được để trống' };
+    return { isValid: false, error: "Tên hội thảo không được để trống" };
   }
   if (value.trim().length < 10) {
-    return { isValid: false, error: 'Tên hội thảo phải có ít nhất 10 ký tự' };
+    return { isValid: false, error: "Tên hội thảo phải có ít nhất 10 ký tự" };
   }
   if (value.trim().length > 200) {
-    return { isValid: false, error: 'Tên hội thảo không được vượt quá 200 ký tự' };
+    return { isValid: false, error: "Tên hội thảo không được vượt quá 200 ký tự" };
   }
   return { isValid: true };
 };
 
 export const validateDateRange = (value: number): ValidationResult => {
   if (value < 1) {
-    return { isValid: false, error: 'Số ngày phải lớn hơn 0' };
+    return { isValid: false, error: "Số ngày phải lớn hơn 0" };
   }
   if (value > 365) {
-    return { isValid: false, error: 'Số ngày không được vượt quá 365' };
+    return { isValid: false, error: "Số ngày không được vượt quá 365" };
   }
   return { isValid: true };
 };
 
 export const validateTotalSlot = (value: number): ValidationResult => {
   if (value < 1) {
-    return { isValid: false, error: 'Sức chứa phải lớn hơn 0' };
+    return { isValid: false, error: "Sức chứa phải lớn hơn 0" };
   }
   if (value > 100000) {
-    return { isValid: false, error: 'Sức chứa không được vượt quá 100,000' };
+    return { isValid: false, error: "Sức chứa không được vượt quá 100,000" };
   }
   return { isValid: true };
 };
@@ -44,7 +52,7 @@ export const validateTicketSaleStart = (
   eventStart: string
 ): ValidationResult => {
   if (!saleStart) {
-    return { isValid: false, error: 'Vui lòng chọn ngày bắt đầu bán vé' };
+    return { isValid: false, error: "Vui lòng chọn ngày bắt đầu bán vé" };
   }
   if (!eventStart) {
     return { isValid: true };
@@ -54,7 +62,7 @@ export const validateTicketSaleStart = (
   const eventDate = new Date(eventStart);
 
   if (saleDate >= eventDate) {
-    return { isValid: false, error: 'Ngày bán vé phải trước ngày sự kiện' };
+    return { isValid: false, error: "Ngày bán vé phải trước ngày sự kiện" };
   }
 
   const daysDiff = Math.floor(
@@ -63,7 +71,7 @@ export const validateTicketSaleStart = (
   if (daysDiff < 7) {
     return {
       isValid: true,
-      warning: 'Khuyến nghị: Nên bán vé trước ít nhất 7 ngày',
+      warning: "Khuyến nghị: Nên bán vé trước ít nhất 7 ngày",
     };
   }
 
@@ -76,7 +84,7 @@ export const validateTicketSaleDuration = (
   eventStart: string
 ): ValidationResult => {
   if (duration < 1) {
-    return { isValid: false, error: 'Thời gian bán vé phải ít nhất 1 ngày' };
+    return { isValid: false, error: "Thời gian bán vé phải ít nhất 1 ngày" };
   }
 
   if (saleStart && eventStart) {
@@ -88,7 +96,7 @@ export const validateTicketSaleDuration = (
     if (saleEndDate >= eventStartDate) {
       return {
         isValid: false,
-        error: 'Ngày kết thúc bán vé phải trước ngày sự kiện',
+        error: "Ngày kết thúc bán vé phải trước ngày sự kiện",
       };
     }
   }
@@ -98,24 +106,28 @@ export const validateTicketSaleDuration = (
 
 export const validateAddress = (value: string): ValidationResult => {
   if (!value.trim()) {
-    return { isValid: false, error: 'Địa chỉ không được để trống' };
+    return { isValid: false, error: "Địa chỉ không được để trống" };
   }
   return { isValid: true };
 };
 
 export const validateCityId = (value: string): ValidationResult => {
   if (!value) {
-    return { isValid: false, error: 'Vui lòng chọn thành phố' };
+    return { isValid: false, error: "Vui lòng chọn thành phố" };
   }
   return { isValid: true };
 };
 
 export const validateConferenceCategoryId = (value: string): ValidationResult => {
   if (!value) {
-    return { isValid: false, error: 'Vui lòng chọn danh mục' };
+    return { isValid: false, error: "Vui lòng chọn danh mục" };
   }
   return { isValid: true };
 };
+
+// ============================================
+// BASIC FORM VALIDATION
+// ============================================
 
 export const validateBasicForm = (form: ConferenceBasicForm): ValidationResult => {
   const saleStart = new Date(form.ticketSaleStart);
@@ -125,20 +137,148 @@ export const validateBasicForm = (form: ConferenceBasicForm): ValidationResult =
   if (saleStart >= eventStart || saleEnd >= eventStart) {
     return {
       isValid: false,
-      error: 'Hãy chọn ngày bán vé trước ngày bắt đầu sự kiện',
+      error: "Hãy chọn ngày bán vé trước ngày bắt đầu sự kiện",
     };
   }
   if (!form.conferenceName.trim()) {
-    return { isValid: false, error: 'Vui lòng nhập tên hội thảo!' };
+    return { isValid: false, error: "Vui lòng nhập tên hội thảo!" };
   }
   if (!form.startDate || !form.endDate) {
     return {
       isValid: false,
-      error: 'Vui lòng chọn ngày bắt đầu và kết thúc!',
+      error: "Vui lòng chọn ngày bắt đầu và kết thúc!",
     };
   }
   if (!form.conferenceCategoryId) {
-    return { isValid: false, error: 'Vui lòng chọn danh mục!' };
+    return { isValid: false, error: "Vui lòng chọn danh mục!" };
   }
+  return { isValid: true };
+};
+
+// ============================================
+// RESEARCH-SPECIFIC EXTENSIONS
+// ============================================
+
+export const validateResearchTimingConstraint = (
+  ticketSaleStart: string,
+  eventStartDate: string
+): ValidationResult => {
+  if (!ticketSaleStart || !eventStartDate) {
+    return { isValid: true };
+  }
+
+  const saleStart = new Date(ticketSaleStart);
+  const eventStart = new Date(eventStartDate);
+  const daysBetween = Math.floor(
+    (saleStart.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  if (daysBetween < 90) {
+    return {
+      isValid: true,
+      warning: `⚠️ Chỉ còn ${daysBetween} ngày để hoàn thành Timeline nghiên cứu (Registration, Full Paper, Review, Revision, Camera Ready). Đảm bảo đủ thời gian!`,
+    };
+  }
+
+  return { isValid: true };
+};
+
+export const validateResearchBasicForm = (form: ConferenceBasicForm) => {
+  const nameResult = validateConferenceName(form.conferenceName);
+  if (!nameResult.isValid) {
+    toast.error(nameResult.error);
+    return { isValid: false };
+  }
+
+  if (!form.description?.trim()) {
+    toast.error("Vui lòng nhập mô tả hội thảo");
+    return { isValid: false };
+  }
+
+  if (!form.startDate) {
+    toast.error("Vui lòng chọn ngày bắt đầu sự kiện");
+    return { isValid: false };
+  }
+
+  const rangeResult = validateDateRange(form.dateRange ?? 0);
+  if (!rangeResult.isValid) {
+    toast.error(rangeResult.error);
+    return { isValid: false };
+  }
+
+  if (!form.endDate) {
+    toast.error("Ngày kết thúc sự kiện chưa được tính toán");
+    return { isValid: false };
+  }
+
+  const saleStartResult = validateTicketSaleStart(
+    form.ticketSaleStart,
+    form.startDate
+  );
+  if (!saleStartResult.isValid) {
+    toast.error(saleStartResult.error);
+    return { isValid: false };
+  }
+
+  const saleDurationResult = validateTicketSaleDuration(
+    form.ticketSaleDuration ?? 0,
+    form.ticketSaleStart,
+    form.startDate
+  );
+  if (!saleDurationResult.isValid) {
+    toast.error(saleDurationResult.error);
+    return { isValid: false };
+  }
+
+  if (!form.ticketSaleEnd) {
+    toast.error("Ngày kết thúc bán vé chưa được tính toán");
+    return { isValid: false };
+  }
+
+  const totalResult = validateTotalSlot(form.totalSlot);
+  if (!totalResult.isValid) {
+    toast.error(totalResult.error);
+    return { isValid: false };
+  }
+
+  if (!form.conferenceCategoryId) {
+    toast.error("Vui lòng chọn danh mục hội thảo");
+    return { isValid: false };
+  }
+
+  if (!form.cityId) {
+    toast.error("Vui lòng chọn thành phố");
+    return { isValid: false };
+  }
+
+  const saleStart = new Date(form.ticketSaleStart);
+  const saleEnd = new Date(form.ticketSaleEnd);
+  const eventStart = new Date(form.startDate);
+  const eventEnd = new Date(form.endDate);
+
+  if (saleStart >= saleEnd) {
+    toast.error("Ngày bắt đầu bán vé phải trước ngày kết thúc bán vé");
+    return { isValid: false };
+  }
+
+  if (saleEnd >= eventStart) {
+    toast.error("Ngày kết thúc bán vé phải trước ngày bắt đầu sự kiện");
+    return { isValid: false };
+  }
+
+  if (eventStart >= eventEnd) {
+    toast.error("Ngày bắt đầu sự kiện phải trước ngày kết thúc sự kiện");
+    return { isValid: false };
+  }
+
+  const timingWarning = validateResearchTimingConstraint(
+    form.ticketSaleStart,
+    form.startDate
+  );
+  if (timingWarning.warning) {
+    toast.warning(timingWarning.warning);
+  }
+
+  toast.success("✅ Thông tin cơ bản hợp lệ!");
   return { isValid: true };
 };
