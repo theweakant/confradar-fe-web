@@ -38,6 +38,7 @@ import FullPaperPhase from "./FullPaperPhase";
 import RevisionPaperPhase from "./RevisionPaperPhase";
 import CameraReadyPhase from "./CameraReadyPhase";
 import { PaperDetailForReviewer } from "@/types/paper.type";
+import { stages3step } from "@/helper/paper";
 
 // Component for Revision Reviews List
 function RevisionReviewsList({
@@ -204,11 +205,11 @@ export default function ReviewPaperPage() {
   const [maxReachedStage, setMaxReachedStage] = useState<number>(1);
   const [isValidPhase, setIsValidPhase] = useState<boolean>(true);
 
-  const stages = [
-    { id: 1, label: "FullPaper" },
-    { id: 2, label: "Revise" },
-    { id: 3, label: "CameraReady" },
-  ];
+  // const stages = [
+  //   { id: 1, label: "FullPaper" },
+  //   { id: 2, label: "Revise" },
+  //   { id: 3, label: "CameraReady" },
+  // ];
 
   // Tab state
   const [activeTab, setActiveTab] = useState<
@@ -314,7 +315,7 @@ export default function ReviewPaperPage() {
   useEffect(() => {
     if (paperDetail?.currentPaperPhase) {
 
-      const currentPhaseIndex = stages.findIndex(
+      const currentPhaseIndex = stages3step.findIndex(
         (obj) =>
           obj.label.toLowerCase() ===
           paperDetail.currentPaperPhase!.phaseName?.toLowerCase(),
@@ -806,7 +807,7 @@ export default function ReviewPaperPage() {
                   Các giai đoạn có thể review:
                 </h4>
                 <div className="flex flex-wrap justify-center gap-2">
-                  {stages.map((stage) => (
+                  {stages3step.map((stage) => (
                     <span
                       key={stage.id}
                       className="px-3 py-1 bg-white text-blue-700 rounded-full text-xs font-medium border border-blue-200"
