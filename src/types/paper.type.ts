@@ -203,7 +203,6 @@ export interface CurrentPaperPhaseForReviewer {
   paperPhaseId?: string;
   phaseName?: string;
 }
-
 export interface RevisionRoundDeadlineForReviewer {
   revisionRoundDeadlineId: string;
   startSubmissionDate?: string;
@@ -229,7 +228,6 @@ export interface CurrentResearchConferencePhaseForReviewer {
   isActive?: boolean;
   revisionRoundsDetail?: RevisionRoundDeadlineForReviewer[];
 }
-
 
 //--------------------------------------------------------
 //SUBMIT FULL PAPER REVIEW

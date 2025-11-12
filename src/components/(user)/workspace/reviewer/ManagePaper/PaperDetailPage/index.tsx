@@ -314,7 +314,6 @@ export default function ReviewPaperPage() {
 
   useEffect(() => {
     if (paperDetail?.currentPaperPhase) {
-
       const currentPhaseIndex = stages3step.findIndex(
         (obj) =>
           obj.label.toLowerCase() ===

@@ -779,6 +779,55 @@ export default function ReviewerManagePaperPage() {
       </div>
     </div>
   );
+
+  // return (
+  //   <div className="min-h-screen bg-gray-50 p-6">
+  //     <div className="max-w-7xl mx-auto space-y-8">
+  //       {/* Header */}
+  //       <div className="flex items-center justify-between">
+  //         <div>
+  //           <h1 className="text-3xl font-bold text-gray-900">
+  //             Quản lý Bài báo - Reviewer
+  //           </h1>
+  //           <p className="text-gray-600 mt-2">
+  //             Danh sách các bài báo được giao cho bạn
+  //           </p>
+  //         </div>
+  //       </div>
+
+  //       {/* Thống kê số lượng bài báo */}
+  //       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+  //         <p className="text-sm text-blue-800">
+  //           <span className="font-semibold">Tổng số bài báo được giao:</span>{" "}
+  //           {assignedPapers.length}
+  //         </p>
+  //       </div>
+
+  //       {/* Danh sách bài báo */}
+  //       {assignedPapers.length > 0 ? (
+  //         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+  //           <PaperTable papers={assignedPapers} onView={handleViewPaper} />
+  //         </div>
+  //       ) : (
+  //         <div className="text-center py-12">
+  //           <p className="text-gray-500 text-lg">
+  //             Bạn chưa được giao bài báo nào.
+  //           </p>
+  //         </div>
+  //       )}
+
+  //       {/* Dialog Camera Ready */}
+  //       <Dialog open={showCameraReady} onOpenChange={setShowCameraReady}>
+  //         <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+  //           <DialogHeader>
+  //             <DialogTitle>Duyệt Camera Ready</DialogTitle>
+  //           </DialogHeader>
+  //           <CameraReadyList />
+  //         </DialogContent>
+  //       </Dialog>
+  //     </div>
+  //   </div>
+  // );
 }
 
 // "use client";
