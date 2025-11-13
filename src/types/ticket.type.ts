@@ -15,6 +15,8 @@ export interface CustomerPaidTicketResponse {
   actualPrice?: number;
   transactions: CustomerTransactionDetailResponse[];
   userCheckIns: CustomerCheckInDetailResponse[];
+  ticketPricePhase?: TicketPricePhaseResponse;
+  hasRefundPolicy?: boolean;
 }
 
 export interface CustomerTransactionDetailResponse {
@@ -57,6 +59,43 @@ export interface CustomerSessionDetailResponse {
   cityName?: string;
   district?: string;
   street?: string;
+}
+
+export interface TicketPricePhaseResponse {
+  pricePhaseId: string;
+  phaseName?: string;
+  startDate?: string;
+  endDate?: string;
+  applyPercent?: number;
+  totalSlot?: number;
+  availableSlot?: number;
+  conferencePriceId?: string;
+  conferencePrice?: ConferencePriceForCustomerTicketResponse;
+  refundPolicies?: RefundPolicyForCustomerTicketResponse[];
+}
+
+export interface ConferencePriceForCustomerTicketResponse {
+  conferencePriceId: string;
+  ticketPrice?: number;
+  ticketName?: string;
+  ticketDescription?: string;
+  isAuthor?: boolean;
+  totalSlot?: number;
+  availableSlot?: number;
+  conferenceId?: string;
+  paperId?: string;
+  registrationStartDate?: string;
+  registrationEndDate?: string;
+}
+
+export interface RefundPolicyForCustomerTicketResponse {
+  refundPolicyId: string;
+  conferenceId?: string;
+  pricePhaseId?: string;
+  percentRefund?: number;
+  pricePhaseStartDate?: string;
+  refundDeadline?: string;
+  refundOrder?: number;
 }
 
 export interface RefundTicketRequest {

@@ -563,7 +563,7 @@ export function useResearchFormSubmit() {
             newRankingFiles.map((file) =>
               createResearchRankingFile({
                 conferenceId,
-                fileUrl: file.fileUrl??"",
+                fileUrl: file.fileUrl ?? "",
                 file: file.file instanceof File ? file.file : undefined,
               }).unwrap()
             )
@@ -612,7 +612,7 @@ export function useResearchFormSubmit() {
           ...rankingFiles.map((file) =>
             createResearchRankingFile({
               conferenceId,
-              fileUrl: file.fileUrl??"",
+              fileUrl: file.fileUrl ?? "",
               file: file.file instanceof File ? file.file : undefined,
             }).unwrap()
           ),
@@ -735,7 +735,7 @@ export function useResearchFormSubmit() {
           dispatch(markStepCompleted(9));
           toast.success("Tạo hội thảo thành công!");
           dispatch(resetWizard());
-          router.push(`/workspace/collaborator/manage-conference`);
+          router.push(`/workspace/organizer/manage-conference`);
           return { success: true, skipped: true };
         }
 
@@ -743,7 +743,7 @@ export function useResearchFormSubmit() {
         dispatch(markStepCompleted(9));
         toast.success("Tạo hội thảo thành công!");
         dispatch(resetWizard());
-        router.push(`/workspace/collaborator/manage-conference`);
+        router.push(`/workspace/organizer/manage-conference`);
         return { success: true };
       }
     } catch (error) {
