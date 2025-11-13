@@ -273,11 +273,17 @@ export default function CreateResearchConferenceStepPage() {
     });
   };
 
+  // const handleSessionsSubmit = () => {
+  //   submitSessions(sessions, basicForm.startDate, basicForm.endDate).then((result) => {
+  //     if (result.success) handleNext();
+  //   });
+  // };
+
   const handleSessionsSubmit = () => {
-    submitSessions(sessions, basicForm.startDate, basicForm.endDate).then((result) => {
-      if (result.success) handleNext();
-    });
-  };
+  submitSessions(sessions).then((result) => {
+    if (result.success) handleNext();
+  });
+};
 
   const handlePoliciesSubmit = () => {
     submitPolicies(policies, refundPolicies).then((result) => {
