@@ -36,19 +36,15 @@ interface UpdateConferenceStatusProps {
   open: boolean;
   onClose: () => void;
   conference: Conference;
+  onSuccess?: () => void;
 }
-
-const normalizeStatus = (name: string): string => {
-  return name.toLowerCase().replace(/\s+/g, "");
-};
 
 export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
   open,
   onClose,
   conference,
+  onSuccess
 }) => {
-  // ⚠️ @TEMP(T): tạm thời sửa để build không lỗi
-  // const { role } = useAuth();
   const { user } = useAuth();
   const roles: string[] = Array.isArray(user?.role)
     ? user.role.filter((r): r is string => typeof r === "string")
@@ -59,67 +55,78 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
   const { data: statusData, refetch } = useGetAllConferenceStatusesQuery();
   const [updateStatus, { isLoading }] = useUpdateOwnConferenceStatusMutation();
 
-  const [newStatus, setNewStatus] = useState<string>("");
+  const [selectedStatusId, setSelectedStatusId] = useState<string>(""); // ✅ lưu ID, không lưu tên
   const [reason, setReason] = useState<string>("");
 
-  const currentStatus = useMemo(() => {
-    const statusId = conference?.conferenceStatusId;
-    if (!statusId || !statusData?.data) return "N/A";
+  // Map statusId -> name
+  const statusIdToNameMap = useMemo<Record<string, string>>(() => {
+    if (!statusData?.data) return {};
+    return statusData.data.reduce((acc, s: ConferenceStatus) => {
+      acc[s.conferenceStatusId] = s.conferenceStatusName;
+      return acc;
+    }, {} as Record<string, string>);
+  }, [statusData]);
 
-    const matchedStatus = statusData.data.find(
-      (s: ConferenceStatus) => s.conferenceStatusId === statusId,
-    );
-    return matchedStatus?.conferenceStatusName || "N/A";
-  }, [conference?.conferenceStatusId, statusData]);
+  // Tên trạng thái hiện tại
+  const currentStatusName = statusIdToNameMap[conference?.conferenceStatusId || ""] || "N/A";
 
-  const normalizedCurrentStatus = normalizeStatus(currentStatus);
-
-  const getStatusColor = (status: string): string => {
-    const normalized = normalizeStatus(status);
-
-    switch (normalized) {
-      case "preparing":
+  const getStatusColor = (statusName: string): string => {
+    switch (statusName) {
+      case "Preparing":
         return "text-yellow-600 bg-yellow-100 border border-yellow-300";
-      case "ready":
+      case "Ready":
         return "text-blue-600 bg-blue-100 border border-blue-300";
-      case "completed":
+      case "Completed":
         return "text-green-600 bg-green-100 border border-green-300";
-      case "onhold":
+      case "OnHold":
         return "text-orange-600 bg-orange-100 border border-orange-300";
-      case "canceled":
+      case "Cancelled":
         return "text-red-600 bg-red-100 border border-red-300";
       default:
         return "text-gray-600 bg-gray-100 border border-gray-300";
     }
   };
 
-  const availableStatuses = useMemo<string[]>(() => {
-    // ⚠️ @TEMP(T): tạm thời sửa vầy để build không lỗi
-    // if (!role || normalizedCurrentStatus === "unknown") return [];
+  const availableStatusOptions = useMemo<{ id: string; name: string }[]>(() => {
+    const hasCollaboratorRole = roles.some((r) =>
+      typeof r === "string" && r.toLowerCase().includes("collaborator")
+    );
 
-    // const roleLower = role.toLowerCase();
+    if (!hasCollaboratorRole || !statusData?.data) return [];
 
-    // if (roleLower.includes("collaborator")) {
-    const hasCollaboratorRole = roles.some((r) => typeof r === "string" && r.toLowerCase().includes("collaborator"));
+    const nameToIdMap: Record<string, string> = {};
+    statusData.data.forEach((s: ConferenceStatus) => {
+      nameToIdMap[s.conferenceStatusName] = s.conferenceStatusId;
+    });
 
-    if (hasCollaboratorRole) {
-      switch (normalizedCurrentStatus) {
-        case "preparing":
-          return ["Ready", "Cancelled"];
-        case "ready":
-          return ["Completed", "OnHold"];
-        case "onhold":
-          return ["Ready", "Cancelled"];
-        default:
-          return [];
-      }
+    let allowedNames: string[] = [];
+
+    switch (currentStatusName) {
+      case "Preparing":
+        allowedNames = ["Ready", "Cancelled"];
+        break;
+      case "Ready":
+        allowedNames = ["Completed", "OnHold"];
+        break;
+      case "OnHold":
+        allowedNames = ["Ready", "Cancelled"];
+        break;
+      default:
+        return [];
     }
 
-    return [];
-  }, [roles, normalizedCurrentStatus]);
+    return allowedNames
+      .map((name) => ({
+        id: nameToIdMap[name],
+        name,
+      }))
+      .filter((opt) => opt.id); // loại bỏ nếu không tìm thấy ID
+  }, [roles, currentStatusName, statusData]);
 
   const handleSubmit = async () => {
-    if (!newStatus) return toast.error("Vui lòng chọn trạng thái mới");
+    if (!selectedStatusId) {
+      return toast.error("Vui lòng chọn trạng thái mới");
+    }
 
     try {
       if (!conference?.conferenceId) {
@@ -129,14 +136,14 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
 
       const res: ApiResponse = await updateStatus({
         confid: conference.conferenceId,
-        newStatus,
+        newStatus: selectedStatusId, // ✅ GỬI ID, KHÔNG GỬI TÊN
         reason,
       }).unwrap();
 
       if (res.success) {
-        toast.success("Cập nhật trạng thái  thành công!");
-        await refetch();
-        setNewStatus("");
+        toast.success("Cập nhật trạng thái thành công!");
+        onSuccess?.();
+        setSelectedStatusId("");
         setReason("");
         onClose();
       } else {
@@ -155,38 +162,37 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
           <DialogTitle>Cập nhật trạng thái hội thảo</DialogTitle>
         </DialogHeader>
 
-        {/* Current & New Status trên cùng hàng */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
           <div>
             <Label className="text-sm font-medium">Trạng thái hiện tại</Label>
             <p
               className={`text-sm font-semibold mt-3 px-2 py-1 rounded-md inline-block ${getStatusColor(
-                currentStatus,
+                currentStatusName
               )}`}
             >
-              {currentStatus}
+              {currentStatusName}
             </p>
           </div>
 
           <div>
             <Label className="text-sm font-medium">Trạng thái mới</Label>
             <Select
-              onValueChange={setNewStatus}
-              value={newStatus}
-              disabled={availableStatuses.length === 0}
+              onValueChange={setSelectedStatusId}
+              value={selectedStatusId}
+              disabled={availableStatusOptions.length === 0}
             >
               <SelectTrigger className="mt-3">
                 <SelectValue placeholder="Chọn trạng thái mới" />
               </SelectTrigger>
               <SelectContent>
-                {availableStatuses.map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {status}
+                {availableStatusOptions.map((opt) => (
+                  <SelectItem key={opt.id} value={opt.id}>
+                    {opt.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {availableStatuses.length === 0 && (
+            {availableStatusOptions.length === 0 && (
               <p className="text-xs text-gray-400 mt-1">
                 Không có trạng thái chuyển tiếp hợp lệ.
               </p>

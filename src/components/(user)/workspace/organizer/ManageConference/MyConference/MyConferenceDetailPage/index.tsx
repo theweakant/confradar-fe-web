@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { formatDate, formatCurrency } from "@/helper/format";
 import { useRouter, useParams } from "next/navigation";
 
-import { UpdateConferenceStatus } from "@/components/molecules/Status/UpdateConferenceStatus";
+import { UpdateConferenceStatus } from "@/components/molecules/Status/UpdateStatus";
 
 import { useGetTechnicalConferenceDetailInternalQuery } from "@/redux/services/conference.service";
 import { useGetResearchConferenceDetailInternalQuery } from "@/redux/services/conference.service";

@@ -9,7 +9,7 @@ import {
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { UpdateConferenceStatus } from "@/components/molecules/Status/UpdateConferenceStatus";
+import { UpdateConferenceStatus } from "@/components/molecules/Status/UpdateStatus";
 import type { CommonConference } from "./index1"; 
 
 interface BannerSectionProps {

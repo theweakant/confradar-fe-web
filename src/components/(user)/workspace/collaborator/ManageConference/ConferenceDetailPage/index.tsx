@@ -12,6 +12,10 @@ import {
   FileText,
   BookOpen,
   ChevronDown,
+  MoreVertical,
+  Pencil,
+  RotateCcw,
+  SendHorizonal,
 } from "lucide-react";
 import {
   Accordion,
@@ -19,6 +23,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
@@ -26,7 +36,8 @@ import { Button } from "@/components/ui/button";
 import { formatDate, formatCurrency } from "@/helper/format";
 import { useRouter, useParams } from "next/navigation";
 
-import { UpdateConferenceStatus } from "@/components/molecules/Status/UpdateConferenceStatus";
+import { UpdateConferenceStatus } from "@/components/molecules/Status/UpdateStatus";
+import { RequestConferenceApproval } from "@/components/molecules/Status/RequestStatus";
 
 import { useGetTechnicalConferenceDetailInternalQuery } from "@/redux/services/conference.service";
 import { useGetResearchConferenceDetailInternalQuery } from "@/redux/services/conference.service";
@@ -69,16 +80,19 @@ export default function ConferenceDetailPage() {
     "technical" | "research" | null
   >(null);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
   const {
     data: techData,
     isLoading: techLoading,
     error: techError,
+    refetch: techRefetch,
   } = useGetTechnicalConferenceDetailInternalQuery(conferenceId);
 
   const {
     data: researchData,
     isLoading: researchLoading,
     error: researchError,
+    refetch: researchRefetch,
   } = useGetResearchConferenceDetailInternalQuery(conferenceId);
 
   const { data: categoriesData } = useGetAllCategoriesQuery();
@@ -105,8 +119,7 @@ export default function ConferenceDetailPage() {
     // ... fallback logic
   }, [techData, researchData, techError, researchError]);
 
-  const conference =
-    conferenceType === "technical" ? techData?.data : researchData?.data;
+  const conference = conferenceType === "technical" ? techData?.data : researchData?.data;
   const isLoading =
     conferenceType === null ||
     (conferenceType === "technical" ? techLoading : researchLoading);
@@ -218,36 +231,77 @@ export default function ConferenceDetailPage() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 
-            <div className="absolute top-4 right-4 flex gap-2">
-              {(conference.conferenceStatusId === "Preparing" ||
-                conference.conferenceStatusId === "Pending" ||
-                getCurrentStatusName() === "Preparing" ||
-                getCurrentStatusName() === "Pending") && (
+          <div className="absolute top-4 right-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <Button
-                  onClick={() => router.push(updateRoute)}
-                  className="bg-white/90 hover:bg-white text-gray-900 backdrop-blur-sm shadow-lg border border-white/50"
+                  variant="ghost"
+                  size="icon"
+                  className="bg-white/90 hover:bg-white text-black-900 backdrop-blur-sm shadow-lg border border-white/50"
                 >
-                  Chỉnh sửa
+                  <MoreVertical className="w-5 h-5" />
                 </Button>
-              )}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                {conference.conferenceStatusId &&
+                  ["Draft", "Preparing", "Pending"].includes(
+                    getStatusName(conference.conferenceStatusId)
+                  ) && (
+                    <DropdownMenuItem
+                      onClick={() => router.push(updateRoute)}
+                      className="cursor-pointer flex items-center gap-2 text-blue-600 focus:text-blue-700 focus:bg-blue-50"
+                    >
+                      <Pencil className="w-4 h-4" />
+                      Chỉnh sửa thông tin
+                    </DropdownMenuItem>
+                  )}
+                  {conference.conferenceStatusId &&
+                    !["Draft", "Pending"].includes(getStatusName(conference.conferenceStatusId)) && (
+                      <DropdownMenuItem
+                        onClick={() => setStatusDialogOpen(true)}
+                        className="cursor-pointer flex items-center gap-2 text-purple-600 focus:text-purple-700 focus:bg-purple-50"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                        Cập nhật trạng thái
+                      </DropdownMenuItem>
+                    )}
+                  {conference.conferenceStatusId &&
+                  getStatusName(conference.conferenceStatusId) === "Draft" && (
+                    <DropdownMenuItem
+                      onClick={() => setApprovalDialogOpen(true)}
+                      className="cursor-pointer flex items-center gap-2 text-emerald-600 focus:text-emerald-700 focus:bg-emerald-50"
+                    >
+                      <SendHorizonal className="w-4 h-4" />
+                      Gửi yêu cầu duyệt
+                    </DropdownMenuItem>
+                  )}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-              <Button
-                variant="outline"
-                onClick={() => setStatusDialogOpen(true)}
-                className="bg-white/90 hover:bg-white text-gray-900 backdrop-blur-sm shadow-lg border border-white/50"
-              >
-                Cập nhật trạng thái
-              </Button>
-
-              <UpdateConferenceStatus
-                open={statusDialogOpen}
-                onClose={() => setStatusDialogOpen(false)}
-                conference={{
-                  ...conference,
-                  conferenceStatusId: conference.conferenceStatusId,
-                }}
-              />
-            </div>
+            {/* Dialogs */}
+            <UpdateConferenceStatus
+              open={statusDialogOpen}
+              onClose={() => setStatusDialogOpen(false)}
+              conference={{
+                conferenceId: conference.conferenceId,
+                conferenceName: conference.conferenceName,
+                conferenceStatusId: conference.conferenceStatusId,
+              }}
+              onSuccess={() => {
+                if (conferenceType === "technical") techRefetch();
+                else researchRefetch();
+              }}
+            />
+            <RequestConferenceApproval
+              open={approvalDialogOpen}
+              onClose={() => setApprovalDialogOpen(false)}
+              conference={{
+                conferenceId: conference.conferenceId,
+                conferenceName: conference.conferenceName,
+                conferenceStatusId: conference.conferenceStatusId,
+              }}
+            />
+          </div>
 
             {/* Title Overlay */}
             <div className="absolute bottom-0 left-0 right-0 p-6">

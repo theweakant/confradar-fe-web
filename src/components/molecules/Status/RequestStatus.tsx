@@ -63,29 +63,46 @@ export const RequestConferenceApproval: React.FC<RequestConferenceApprovalProps>
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-md p-6">
         <DialogHeader>
-          <DialogTitle>Gửi yêu cầu duyệt hội thảo</DialogTitle>
+          <DialogTitle>Gửi yêu cầu duyệt</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {conference.conferenceName && (
-            <div>
-              <Label className="text-sm font-medium">Tên hội thảo</Label>
-              <p className="mt-1 text-sm font-medium text-gray-900">
-                {conference.conferenceName}
-              </p>
-            </div>
-          )}
+<div className="space-y-6">
+  {/* Grid 2 cột */}
+  <div className="grid grid-cols-2 gap-6">
+    {conference.conferenceName && (
+      <div>
+        <Label className="text-sm font-semibold text-gray-800">
+          Tên hội thảo
+        </Label>
+        <p className="mt-1 text-base font-semibold text-indigo-700">
+          {conference.conferenceName}
+        </p>
+      </div>
+    )}
 
-          <div>
-            <Label className="text-sm font-medium">Trạng thái hiện tại</Label>
-            <p className="mt-1 text-sm font-medium text-gray-900">{currentStatusName}</p>
-          </div>
+    <div>
+      <Label className="text-sm font-semibold text-gray-800">
+        Trạng thái hiện tại
+      </Label>
+      <p className="mt-1 text-base text-gray-400 font-semibold">
+        {currentStatusName}
+      </p>
+    </div>
+  </div>
 
-          <div className="text-sm text-gray-600">
-            Bạn đang gửi yêu cầu để ban quản trị duyệt hội thảo này. Sau khi được duyệt, hội
-            thảo sẽ chuyển sang trạng thái <span className="font-semibold">"Ready"</span>.
-          </div>
-        </div>
+    {/* Thông tin thêm */}
+    <div className=" text-black-800 text-sm p-4 rounded-xl leading-relaxed">
+      <p>
+        Hội thảo hiện đang ở trạng thái{" "}
+        <span className="font-semibold text-yellow-700">"Draft"</span>. Bạn đang gửi yêu
+        cầu để <span className="font-semibold">ConfRadar</span> duyệt hội thảo này. Sau khi
+        được duyệt, hội thảo sẽ chuyển sang trạng thái{" "}
+        <span className="font-semibold text-blue-900">"Pending"</span>.
+      </p>
+    </div>
+  </div>
+
+
 
         <DialogFooter className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose} disabled={isLoading}>

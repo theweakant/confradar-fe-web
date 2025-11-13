@@ -46,7 +46,7 @@ export const statusApi = createApi({
     >({
       query: ({ confId }) => ({
         url: endpoint.CONFERENCE.REQUEST_CONFERENCE_APPROVE,
-        method: "POST",
+        method: "PUT",
         params: { confId }, 
       }),
       invalidatesTags: ["Status"], 
