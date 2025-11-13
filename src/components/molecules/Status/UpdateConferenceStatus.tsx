@@ -100,7 +100,11 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
     // const roleLower = role.toLowerCase();
 
     // if (roleLower.includes("collaborator")) {
-    const hasCollaboratorRole = roles.some((r) => typeof r === "string" && r.toLowerCase().includes("collaborator"));
+    const hasCollaboratorRole = roles.some((r) => typeof r === "string" && r.toLowerCase().replace(/\s+/g, "").includes("collaborator"));
+
+    const hasOrganizerRole = roles.some(
+      (r) => typeof r === "string" && r.toLowerCase().replace(/\s+/g, "").includes("conferenceorganizer")
+    );
 
     if (hasCollaboratorRole) {
       switch (normalizedCurrentStatus) {
@@ -110,6 +114,22 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
           return ["Completed", "OnHold"];
         case "onhold":
           return ["Ready", "Cancelled"];
+        default:
+          return [];
+      }
+    }
+
+    if (hasOrganizerRole) {
+      switch (normalizedCurrentStatus) {
+        case "preparing":
+          return ["Ready", "Cancelled"];
+        case "ready":
+          return ["Completed", "OnHold", "Cancelled"];
+        case "onhold":
+          return ["Ready", "Cancelled"];
+        case "completed":
+        case "cancelled":
+          return [];
         default:
           return [];
       }

@@ -23,6 +23,7 @@ import type {
   CustomerTransactionDetailResponse,
   CustomerCheckInDetailResponse,
   CustomerPaidTicketResponse,
+  RefundPolicyForCustomerTicketResponse,
 } from "@/types/ticket.type";
 import { isSameDay, isThisWeek, isThisMonth, isAfter, startOfToday } from "date-fns";
 import { toast } from "sonner";
@@ -70,6 +71,80 @@ export default function TicketConferences() {
   useEffect(() => {
     if (refundError) toast.error(refundError.data?.message);
   }, [refundError]);
+
+  const canRefundTicket = (ticket: CustomerPaidTicketResponse): {
+    canRefund: boolean;
+    refundAmount?: number;
+    refundPercent?: number;
+    applicableDeadline?: string;
+  } => {
+    const now = new Date();
+    const isAuthor = ticket.ticketPricePhase?.conferencePrice?.isAuthor;
+
+    // Trường hợp 1: Vé không phải Author - check refund policy
+    if (!isAuthor) {
+      const refundPolicies = ticket.ticketPricePhase?.refundPolicies;
+
+      if (!refundPolicies || refundPolicies.length === 0) {
+        return { canRefund: false };
+      }
+
+      // Sort policies theo refundDeadline tăng dần
+      const sortedPolicies = [...refundPolicies].sort((a, b) => {
+        const dateA = a.refundDeadline ? new Date(a.refundDeadline).getTime() : 0;
+        const dateB = b.refundDeadline ? new Date(b.refundDeadline).getTime() : 0;
+        return dateA - dateB;
+      });
+
+      // Tìm policy áp dụng (ngày hiện tại < deadline)
+      const applicablePolicy = sortedPolicies.find(policy => {
+        if (!policy.refundDeadline) return false;
+        return now < new Date(policy.refundDeadline);
+      });
+
+      if (applicablePolicy && applicablePolicy.percentRefund) {
+        const refundAmount = (ticket.actualPrice || 0) * (applicablePolicy.percentRefund / 100);
+        return {
+          canRefund: true,
+          refundAmount,
+          refundPercent: applicablePolicy.percentRefund,
+          applicableDeadline: applicablePolicy.refundDeadline
+        };
+      }
+
+      return { canRefund: false };
+    }
+
+    // Trường hợp 2: Vé Author - check registration dates
+    const registrationStartDate = ticket.ticketPricePhase?.conferencePrice?.registrationStartDate;
+    const registrationEndDate = ticket.ticketPricePhase?.conferencePrice?.registrationEndDate;
+
+    if (!registrationStartDate || !registrationEndDate) {
+      return { canRefund: false };
+    }
+
+    const startDate = new Date(registrationStartDate);
+    const endDate = new Date(registrationEndDate);
+
+    // Trong khoảng registration dates thì được refund
+    if (now >= startDate && now <= endDate) {
+      return { canRefund: true };
+    }
+
+    return { canRefund: false };
+  };
+
+  const getAllRefundDeadlines = (ticket: CustomerPaidTicketResponse): RefundPolicyForCustomerTicketResponse[] => {
+    const refundPolicies = ticket.ticketPricePhase?.refundPolicies;
+    if (!refundPolicies || refundPolicies.length === 0) return [];
+
+    // Sort theo refundDeadline tăng dần
+    return [...refundPolicies].sort((a, b) => {
+      const dateA = a.refundDeadline ? new Date(a.refundDeadline).getTime() : 0;
+      const dateB = b.refundDeadline ? new Date(b.refundDeadline).getTime() : 0;
+      return dateA - dateB;
+    });
+  };
 
   const handleOpenRefundDialog = (ticketId: string, transactionId: string) => {
     setSelectedRefundTicket({ ticketId, transactionId });
@@ -294,7 +369,50 @@ export default function TicketConferences() {
                         </div>
 
                         {/* Right: Refund Button */}
-                        {!ticket.isRefunded && ticket.transactions && ticket.transactions.length > 0 && (
+                        {!ticket.isRefunded && ticket.transactions && ticket.transactions.length > 0 && (() => {
+                          const refundInfo = canRefundTicket(ticket);
+                          const isAuthor = ticket.ticketPricePhase?.conferencePrice?.isAuthor;
+
+                          return (
+                            <Button
+                              variant="outline"
+                              size="lg"
+                              onClick={() =>
+                                handleOpenRefundDialog(
+                                  ticket.ticketId,
+                                  ticket.transactions[0].transactionId
+                                )
+                              }
+                              disabled={!refundInfo.canRefund}
+                              className={`
+        flex items-center gap-2
+        text-white
+        font-semibold
+        transition-all
+        ${refundInfo.canRefund
+                                  ? 'bg-red-600 border-red-700 hover:bg-red-700 hover:shadow-lg shadow-red-500/50'
+                                  : 'bg-gray-600 border-gray-500 cursor-not-allowed opacity-50'
+                                }
+      `}
+                              title={!refundInfo.canRefund
+                                ? (isAuthor
+                                  ? 'Ngoài thời gian đăng ký'
+                                  : 'Đã hết hạn hoàn vé'
+                                )
+                                : undefined
+                              }
+                            >
+                              <X className="h-4 w-4" />
+                              Hoàn vé
+                              {refundInfo.canRefund && !isAuthor && refundInfo.refundPercent && (
+                                <span className="text-xs">
+                                  ({refundInfo.refundPercent}%)
+                                </span>
+                              )}
+                            </Button>
+                          );
+                        })()}
+                        {/* {!ticket.isRefunded && ticket.transactions && ticket.transactions.length > 0 && (
                           <Button
                             variant="outline"
                             size="lg"
@@ -319,7 +437,7 @@ export default function TicketConferences() {
                             <X className="h-4 w-4" />
                             Hoàn vé
                           </Button>
-                        )}
+                        )} */}
                       </div>
 
 
@@ -347,6 +465,98 @@ export default function TicketConferences() {
                         </div>
                       </div>
 
+                      {/* Refund Information Section - Thêm sau Ticket Info và trước Actions */}
+                      {(() => {
+                        const refundInfo = canRefundTicket(ticket);
+                        const isAuthor = ticket.ticketPricePhase?.conferencePrice?.isAuthor;
+                        const allDeadlines = getAllRefundDeadlines(ticket);
+
+                        if (!ticket.isRefunded && (refundInfo.canRefund || allDeadlines.length > 0 || isAuthor)) {
+                          return (
+                            <div className="bg-blue-900/20 border border-blue-600/50 p-4 rounded-lg space-y-2">
+                              <h4 className="text-sm font-semibold text-blue-400 flex items-center gap-2">
+                                <CreditCard className="h-4 w-4" />
+                                Thông tin hoàn vé
+                              </h4>
+
+                              {isAuthor ? (
+                                // Author ticket info
+                                <div className="space-y-2">
+                                  <div className="text-sm text-gray-300">
+                                    <Badge className="bg-purple-800 text-purple-200 border-purple-600 mb-2">
+                                      Vé tác giả
+                                    </Badge>
+                                    <div className="mt-2">
+                                      Thời gian đăng ký: {' '}
+                                      <span className="text-white font-medium">
+                                        {formatDate(ticket.ticketPricePhase?.conferencePrice?.registrationStartDate)} - {formatDate(ticket.ticketPricePhase?.conferencePrice?.registrationEndDate)}
+                                      </span>
+                                    </div>
+                                    {refundInfo.canRefund ? (
+                                      <div className="text-green-400 text-xs mt-1">
+                                        ✓ Hiện tại trong thời gian được phép hoàn vé
+                                      </div>
+                                    ) : (
+                                      <div className="text-red-400 text-xs mt-1">
+                                        ✗ Ngoài thời gian đăng ký, không thể hoàn vé
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              ) : (
+                                // Non-author ticket info
+                                <div className="space-y-2">
+                                  {refundInfo.canRefund && refundInfo.refundAmount !== undefined && (
+                                    <div className="bg-green-900/30 border border-green-600/50 p-3 rounded">
+                                      <div className="text-green-400 font-semibold mb-1">
+                                        Bạn sẽ được hoàn lại: {formatPrice(refundInfo.refundAmount)}
+                                      </div>
+                                      <div className="text-xs text-gray-400">
+                                        ({refundInfo.refundPercent}% giá vé gốc)
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {allDeadlines.length > 0 && (
+                                    <div className="text-sm text-gray-300">
+                                      <div className="font-medium mb-2">Các mốc thời gian hoàn vé:</div>
+                                      <div className="space-y-1">
+                                        {allDeadlines.map((policy, index) => (
+                                          <div
+                                            key={policy.refundPolicyId}
+                                            className={`flex justify-between items-center text-xs p-2 rounded ${refundInfo.applicableDeadline === policy.refundDeadline
+                                              ? 'bg-green-900/30 border border-green-600/50'
+                                              : 'bg-gray-800/50'
+                                              }`}
+                                          >
+                                            <span>
+                                              {refundInfo.applicableDeadline === policy.refundDeadline && (
+                                                <span className="text-green-400 mr-1">→</span>
+                                              )}
+                                              Trước {formatDateTime(policy.refundDeadline)}
+                                            </span>
+                                            <span className="font-medium text-white">
+                                              {policy.percentRefund}%
+                                            </span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {!refundInfo.canRefund && (
+                                    <div className="text-red-400 text-xs">
+                                      ✗ Đã hết hạn hoàn vé
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+
                       {/* Actions */}
                       <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-2">
                         <div className="flex flex-wrap gap-2">
@@ -370,7 +580,45 @@ export default function TicketConferences() {
                               </Button>
                             </>
                           )}
-                          {!ticket.isRefunded && ticket.transactions && ticket.transactions.length > 0 && (
+                          {!ticket.isRefunded && ticket.transactions && ticket.transactions.length > 0 && (() => {
+                            const refundInfo = canRefundTicket(ticket);
+                            const isAuthor = ticket.ticketPricePhase?.conferencePrice?.isAuthor;
+
+                            return (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleOpenRefundDialog(
+                                  ticket.ticketId,
+                                  ticket.transactions[0].transactionId
+                                )}
+                                disabled={!refundInfo.canRefund}
+                                className={`
+        flex items-center gap-2
+        ${refundInfo.canRefund
+                                    ? 'text-red-400 border-red-600 hover:bg-red-900/50 bg-gray-800'
+                                    : 'text-gray-500 border-gray-600 bg-gray-800 cursor-not-allowed opacity-50'
+                                  }
+      `}
+                                title={!refundInfo.canRefund
+                                  ? (isAuthor
+                                    ? 'Ngoài thời gian đăng ký'
+                                    : 'Đã hết hạn hoàn vé'
+                                  )
+                                  : undefined
+                                }
+                              >
+                                <X className="h-4 w-4" />
+                                Hoàn vé
+                                {refundInfo.canRefund && !isAuthor && refundInfo.refundPercent && (
+                                  <span className="text-xs ml-1">
+                                    ({refundInfo.refundPercent}%)
+                                  </span>
+                                )}
+                              </Button>
+                            );
+                          })()}
+                          {/* {!ticket.isRefunded && ticket.transactions && ticket.transactions.length > 0 && (
                             <Button
                               variant="outline"
                               size="sm"
@@ -383,7 +631,7 @@ export default function TicketConferences() {
                               <X className="h-4 w-4" />
                               Hoàn vé
                             </Button>
-                          )}
+                          )} */}
 
                           <Button
                             variant="outline"
@@ -820,7 +1068,73 @@ export default function TicketConferences() {
       `}</style>
 
       {/* Refund Confirmation Dialog */}
-      <Transition appear show={refundDialogOpen} as={Fragment}>
+      <div className="px-6 py-4">
+        {selectedRefundTicket && (() => {
+          const ticket = tickets.find(t => t.ticketId === selectedRefundTicket.ticketId);
+          const refundInfo = ticket ? canRefundTicket(ticket) : null;
+          const isAuthor = ticket?.ticketPricePhase?.conferencePrice?.isAuthor;
+
+          return (
+            <>
+              <div className="bg-red-900/20 border border-red-600/50 rounded-lg p-4 mb-4">
+                <p className="text-red-400 text-sm font-medium mb-2">
+                  ⚠️ Cảnh báo
+                </p>
+                <p className="text-gray-300 text-sm">
+                  Bạn có chắc chắn muốn hoàn vé này không?
+                </p>
+                {refundInfo?.canRefund && !isAuthor && refundInfo.refundAmount !== undefined && (
+                  <div className="mt-3 p-3 bg-blue-900/30 border border-blue-600/50 rounded">
+                    <div className="text-blue-400 font-semibold">
+                      Số tiền hoàn lại: {formatPrice(refundInfo.refundAmount)}
+                    </div>
+                    <div className="text-xs text-gray-400 mt-1">
+                      ({refundInfo.refundPercent}% giá vé gốc)
+                    </div>
+                  </div>
+                )}
+                <p className="text-gray-400 text-xs mt-2">
+                  Hành động này không thể hoàn tác.
+                </p>
+              </div>
+
+              {refundError && (
+                <div className="bg-red-900/30 border border-red-600 rounded-lg p-3 mb-4">
+                  <p className="text-red-400 text-sm">
+                    {refundError.data?.message || "Có lỗi xảy ra"}
+                  </p>
+                </div>
+              )}
+
+              <div className="flex gap-3 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => setRefundDialogOpen(false)}
+                  disabled={refunding}
+                  className="bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600"
+                >
+                  Hủy
+                </Button>
+                <Button
+                  onClick={handleConfirmRefund}
+                  disabled={refunding}
+                  className="bg-red-600 text-white hover:bg-red-700 border-red-600"
+                >
+                  {refunding ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Đang xử lý...
+                    </>
+                  ) : (
+                    "Xác nhận hoàn vé"
+                  )}
+                </Button>
+              </div>
+            </>
+          );
+        })()}
+      </div>
+      {/* <Transition appear show={refundDialogOpen} as={Fragment}>
         <Dialog
           as="div"
           className="relative z-50"
@@ -908,7 +1222,7 @@ export default function TicketConferences() {
             </div>
           </div>
         </Dialog>
-      </Transition>
+      </Transition> */}
     </div>
   );
 }

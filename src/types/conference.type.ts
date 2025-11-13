@@ -484,6 +484,7 @@ export interface TechnicalConferenceDetailResponse {
   sessions?: TechnicalConferenceSessionResponse[];
   conferencePrices?: ConferencePriceResponse[];
   conferenceTimelines?: ConferenceTimelineResponse[];
+  purchasedInfo?: PurchasedInfo;
 
   contractURL: File | string;
   commission: number;
@@ -536,6 +537,7 @@ export interface ResearchConferenceDetailResponse {
   conferenceMedia?: ConferenceMediaResponse[];
   conferencePrices?: ConferencePriceResponse[];
   conferenceTimelines?: ConferenceTimelineResponse[];
+  purchasedInfo?: PurchasedInfo;
 }
 
 export interface ConferencePolicyResponse {
@@ -687,6 +689,12 @@ export interface ConferenceTimelineResponse {
   previousStatusName: string;
   afterwardStatusName: string;
   conferenceName: string;
+}
+
+export interface PurchasedInfo {
+  ticketId: string | null;
+  conferencePriceId: string | null;
+  pricePhaseId: string | null;
 }
 
 export interface FavouriteConferenceDetailResponse {

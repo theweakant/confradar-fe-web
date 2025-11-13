@@ -53,6 +53,7 @@ export function useFormSubmit() {
     (state) => state.conferenceStep.conferenceId
   );
   const mode = useAppSelector((state) => state.conferenceStep.mode);
+  const roles = useAppSelector((state) => state.auth.user?.role);
 
   // === RTK Query Mutations ===
   const [createBasic] = useCreateBasicConferenceMutation();
@@ -563,7 +564,14 @@ export function useFormSubmit() {
           dispatch(markStepCompleted(6));
           toast.success("Tạo hội thảo thành công!");
           dispatch(resetWizard());
-          router.push(`/workspace/collaborator/manage-conference`);
+          // router.push(`/workspace/collaborator/manage-conference`);
+          if (roles?.includes("Collaborator")) {
+            router.push(`/workspace/collaborator/manage-conference`);
+          } else if (roles?.includes("Conference Organizer")) {
+            router.push(`/workspace/organizer/manage-conference`);
+          } else {
+            router.push(`/workspace`);
+          }
           return { success: true, skipped: true };
         }
 
@@ -571,7 +579,15 @@ export function useFormSubmit() {
         dispatch(markStepCompleted(6));
         toast.success("Tạo hội thảo thành công!");
         dispatch(resetWizard());
-        router.push(`/workspace/collaborator/manage-conference`);
+        // router.push(`/workspace/collaborator/manage-conference`);
+        if (roles?.includes("Collaborator")) {
+          router.push(`/workspace/collaborator/manage-conference`);
+        } else if (roles?.includes("Conference Organizer")) {
+          router.push(`/workspace/organizer/manage-conference`);
+        } else {
+          // fallback nếu không thuộc 2 loại trên
+          router.push(`/workspace`);
+        }
         return { success: true };
       }
     } catch (error) {
