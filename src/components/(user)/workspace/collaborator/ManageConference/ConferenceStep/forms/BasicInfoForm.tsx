@@ -7,6 +7,7 @@ import { ImageUpload } from "@/components/atoms/ImageUpload";
 import { formatDate } from "@/helper/format";
 import type { ConferenceBasicForm } from "@/types/conference.type";
 import { TARGET_OPTIONS } from "../constants";
+import { useStepNavigation } from "../hooks";
 
 interface BasicInfoFormProps {
   value: ConferenceBasicForm;
@@ -29,10 +30,16 @@ export function BasicInfoForm({
   isCategoriesLoading,
   isCitiesLoading,
 }: BasicInfoFormProps) {
+  const { isStepCompleted, handleUnmarkCompleted } = useStepNavigation();
+
   const handleChange = <K extends keyof ConferenceBasicForm>(
     field: K,
     value: ConferenceBasicForm[K]
   ) => {
+    if (isStepCompleted(1)) {
+      handleUnmarkCompleted(1);
+    }
+
     onChange({ ...formData, [field]: value });
   };
 
@@ -186,7 +193,7 @@ export function BasicInfoForm({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FileUpload
           label="Hợp đồng"
-          value={formData.contractURL} 
+          value={formData.contractURL}
           onChange={(file) => handleChange("contractURL", file)}
           accept=".pdf,.doc,.docx"
           placeholder="Chọn file hợp đồng (PDF/DOC)"

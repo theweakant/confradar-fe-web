@@ -6,6 +6,7 @@ import { DatePickerInput } from "@/components/atoms/DatePickerInput";
 import { formatCurrency, formatDate } from "@/helper/format";
 import { toast } from "sonner";
 import type { Ticket, Phase, RefundInPhase } from "@/types/conference.type";
+import { useStepNavigation } from "../hooks";
 
 interface PriceFormProps {
   tickets: Ticket[];
@@ -71,48 +72,48 @@ function PhaseModal({
     return Math.max(1, diffDays);
   }, [phaseData.startDate, ticketSaleEnd]);
 
-useEffect(() => {
-  if (editingPhase) {
-    const percentValue =
-      editingPhase.applyPercent > 100
-        ? editingPhase.applyPercent - 100
-        : 100 - editingPhase.applyPercent;
-    const percentType = editingPhase.applyPercent > 100 ? "increase" : "decrease";
+  useEffect(() => {
+    if (editingPhase) {
+      const percentValue =
+        editingPhase.applyPercent > 100
+          ? editingPhase.applyPercent - 100
+          : 100 - editingPhase.applyPercent;
+      const percentType = editingPhase.applyPercent > 100 ? "increase" : "decrease";
 
-    const start = new Date(editingPhase.startDate);
-    const end = new Date(editingPhase.endDate);
-    const durationInDays =
-      Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      const start = new Date(editingPhase.startDate);
+      const end = new Date(editingPhase.endDate);
+      const durationInDays =
+        Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
-    setPhaseData({
-      phaseName: editingPhase.phaseName,
-      percentValue,
-      percentType,
-      startDate: editingPhase.startDate,
-      durationInDays: Math.min(durationInDays, maxDuration),
-      totalslot: editingPhase.totalslot,
-    });
+      setPhaseData({
+        phaseName: editingPhase.phaseName,
+        percentValue,
+        percentType,
+        startDate: editingPhase.startDate,
+        durationInDays: Math.min(durationInDays, maxDuration),
+        totalslot: editingPhase.totalslot,
+      });
 
-    const sortedRefunds = [...(editingPhase.refundInPhase || [])].sort(
-      (a, b) => new Date(a.refundDeadline).getTime() - new Date(b.refundDeadline).getTime()
-    );
-    setRefundPolicies(sortedRefunds.length > 0 ? sortedRefunds : [{ percentRefund: 100, refundDeadline: editingPhase.startDate }]);
-  }
-}, [editingPhase, maxDuration]); // ← Bỏ ticketSaleStart khỏi dependency
+      const sortedRefunds = [...((editingPhase.refundInPhase as RefundInPhase[]) || [])].sort(
+        (a, b) => new Date(a.refundDeadline).getTime() - new Date(b.refundDeadline).getTime()
+      );
+      setRefundPolicies(sortedRefunds.length > 0 ? sortedRefunds : [{ percentRefund: 100, refundDeadline: editingPhase.startDate }]);
+    }
+  }, [editingPhase, maxDuration]); // ← Bỏ ticketSaleStart khỏi dependency
 
-useEffect(() => {
-  if (isOpen && !editingPhase) {
-    setPhaseData({
-      phaseName: "",
-      percentValue: 0,
-      percentType: "increase",
-      startDate: ticketSaleStart,
-      durationInDays: 1,
-      totalslot: 0,
-    });
-    setRefundPolicies([{ percentRefund: 100, refundDeadline: ticketSaleStart }]);
-  }
-}, [isOpen]);
+  useEffect(() => {
+    if (isOpen && !editingPhase) {
+      setPhaseData({
+        phaseName: "",
+        percentValue: 0,
+        percentType: "increase",
+        startDate: ticketSaleStart,
+        durationInDays: 1,
+        totalslot: 0,
+      });
+      setRefundPolicies([{ percentRefund: 100, refundDeadline: ticketSaleStart }]);
+    }
+  }, [isOpen]);
 
   const handleAddRefund = () => {
     setRefundPolicies([...refundPolicies, { percentRefund: 100, refundDeadline: ticketSaleStart }]);
@@ -126,12 +127,12 @@ useEffect(() => {
     setRefundPolicies(refundPolicies.filter((_, i) => i !== index));
   };
 
-const handleUpdateRefund = (index: number, field: keyof RefundInPhase, value: string | number) => {
-  const updated = [...refundPolicies];
-  // @ts-expect-error: Dynamic assignment to keyof RefundInPhase may not align with exact property types (e.g., number vs string).
-  updated[index][field] = value;
-  setRefundPolicies(updated);
-};
+  const handleUpdateRefund = (index: number, field: keyof RefundInPhase, value: string | number) => {
+    const updated = [...refundPolicies];
+    // @ts-expect-error: Dynamic assignment to keyof RefundInPhase may not align with exact property types (e.g., number vs string).
+    updated[index][field] = value;
+    setRefundPolicies(updated);
+  };
 
   const handleAdd = () => {
     if (!phaseData.phaseName.trim()) {
@@ -297,14 +298,14 @@ const handleUpdateRefund = (index: number, field: keyof RefundInPhase, value: st
 
           <div className="grid grid-cols-4 gap-3">
             <div>
-            <DatePickerInput
-              label="Ngày bắt đầu"
-              value={phaseData.startDate}
-              onChange={(val) => setPhaseData({ ...phaseData, startDate: val })}
-              minDate={ticketSaleStart }
-              maxDate={ticketSaleEnd }
-              required
-            />
+              <DatePickerInput
+                label="Ngày bắt đầu"
+                value={phaseData.startDate}
+                onChange={(val) => setPhaseData({ ...phaseData, startDate: val })}
+                minDate={ticketSaleStart}
+                maxDate={ticketSaleEnd}
+                required
+              />
             </div>
 
             <FormInput
@@ -435,6 +436,13 @@ export function PriceForm({
   const [isPhaseModalOpen, setIsPhaseModalOpen] = useState(false);
   const [editingTicketIndex, setEditingTicketIndex] = useState<number | null>(null);
 
+  const { currentStep, handleUnmarkCompleted } = useStepNavigation();
+
+  useEffect(() => {
+    // Nếu step đã hoàn thành thì unmark
+    handleUnmarkCompleted(currentStep);
+  }, [newTicket.ticketName, newTicket.ticketPrice, newTicket.totalSlot, newTicket.ticketDescription, newTicket.phases, currentStep, handleUnmarkCompleted]);
+
   const handleAddPhase = (phase: Phase) => {
     setNewTicket({
       ...newTicket,
@@ -514,6 +522,7 @@ export function PriceForm({
       updatedTickets[editingTicketIndex] = {
         ...newTicket,
         ticketId: updatedTickets[editingTicketIndex]?.ticketId,
+        priceId: updatedTickets[editingTicketIndex]?.priceId,
         isAuthor: false,
       };
       onTicketsChange(updatedTickets);
@@ -550,7 +559,7 @@ export function PriceForm({
 
   const handleRemoveTicket = (index: number) => {
     const ticket = tickets[index];
-    
+
     if (onRemoveTicket && ticket.priceId) {
       onRemoveTicket(ticket.priceId);
     } else {
@@ -657,7 +666,7 @@ export function PriceForm({
         <h4 className="font-medium mb-3">
           {editingTicketIndex !== null ? "Chỉnh sửa vé" : "Thêm vé mới"}
         </h4>
-        
+
         <FormInput
           label="Tên vé"
           value={newTicket.ticketName}

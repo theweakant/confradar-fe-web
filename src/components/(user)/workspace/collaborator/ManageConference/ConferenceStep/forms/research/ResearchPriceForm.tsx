@@ -86,7 +86,7 @@ function PhaseModal({
         totalslot: editingPhase.totalslot,
       });
 
-      const sortedRefunds = [...(editingPhase.refundInPhase || [])].sort(
+      const sortedRefunds = [...((editingPhase.refundInPhase as RefundInPhase[]) || [])].sort(
         (a, b) => new Date(a.refundDeadline).getTime() - new Date(b.refundDeadline).getTime()
       );
       setRefundPolicies(sortedRefunds.length > 0 ? sortedRefunds : [{ percentRefund: 100, refundDeadline: editingPhase.startDate }]);
@@ -419,7 +419,7 @@ interface ResearchPriceFormProps {
   ticketSaleEnd: string;
   researchPhases: ResearchPhase[];
   maxTotalSlot: number;
-  allowListener: boolean; 
+  allowListener: boolean;
   numberPaperAccept: number;
 }
 
@@ -445,7 +445,7 @@ export function ResearchPriceForm({
 
   const [isPhaseModalOpen, setIsPhaseModalOpen] = useState(false);
   const [editingTicketIndex, setEditingTicketIndex] = useState<number | null>(null);
-  const [editingPhaseIndex, setEditingPhaseIndex] = useState<number | null>(null); 
+  const [editingPhaseIndex, setEditingPhaseIndex] = useState<number | null>(null);
 
   const mainPhase = researchPhases.find((p) => !p.isWaitlist);
   const authorTimelineStart = mainPhase?.registrationStartDate || "";
@@ -613,7 +613,7 @@ export function ResearchPriceForm({
 
   const handleRemoveTicket = (index: number) => {
     const ticket = tickets[index];
-    
+
     if (onRemoveTicket && ticket.ticketId) {
       onRemoveTicket(ticket.ticketId);
     }

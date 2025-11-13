@@ -1,5 +1,6 @@
 interface StepIndicatorProps {
   currentStep: number;
+  activeStep: number;
   completedSteps: number[];
   maxStep: number;
   stepLabels: string[];
@@ -8,6 +9,7 @@ interface StepIndicatorProps {
 
 export function StepIndicator({
   currentStep,
+  activeStep,
   completedSteps,
   maxStep,
   stepLabels,
@@ -20,7 +22,7 @@ export function StepIndicator({
         {Array.from({ length: maxStep }, (_, i) => i + 1).map((step) => {
           const isCompleted = completedSteps.includes(step);
           const isCurrent = currentStep === step;
-          const isAccessible = isCompleted || step <= currentStep;
+          const isAccessible = isCompleted || step <= activeStep;
 
           return (
             <div
@@ -46,9 +48,8 @@ export function StepIndicator({
 
               {step < maxStep && (
                 <div
-                  className={`flex-1 h-1 mx-2 transition-colors ${
-                    isCompleted ? "bg-green-600" : "bg-gray-200"
-                  }`}
+                  className={`flex-1 h-1 mx-2 transition-colors ${isCompleted ? "bg-green-600" : "bg-gray-200"
+                    }`}
                 />
               )}
             </div>
@@ -65,11 +66,10 @@ export function StepIndicator({
           return (
             <span
               key={step}
-              className={`text-xs ${
-                isCurrent ? "font-semibold text-blue-600" : "text-gray-500"
-              }`}
-              style={{ 
-                width: `${100 / maxStep}%`, 
+              className={`text-xs ${isCurrent ? "font-semibold text-blue-600" : "text-gray-500"
+                }`}
+              style={{
+                width: `${100 / maxStep}%`,
                 textAlign: "center",
                 whiteSpace: maxStep > 6 ? "nowrap" : "normal"
               }}
