@@ -14,20 +14,20 @@ import {
   LoadingOverlay,
   PageHeader,
   PhaseModal,
-} from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/components/index";
+} from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/components/index";
 
 // Shared Forms
-import { PolicyForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/PolicyForm"
-import { MediaForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/MediaForm";
-import { SponsorForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/SponsorForm";
+import { PolicyForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/PolicyForm"
+import { MediaForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/MediaForm";
+import { SponsorForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/SponsorForm";
 
 // Research-Specific Forms
-import { ResearchBasicInfoForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchBasicInfoForm";
-import { ResearchDetailForm } from "../../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchDetailForm";
-import { ResearchPhaseForm } from "../../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchPhaseForm";
-import { ResearchPriceForm } from "../../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchPriceForm";
-import { MaterialsForm } from "../../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/MaterialsForm";
-import { ResearchSessionForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchSessionForm";
+import { ResearchBasicInfoForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/research/ResearchBasicInfoForm";
+import { ResearchDetailForm } from "../../../../../collaborator/ManageConference/ConferenceStep/forms/research/ResearchDetailForm";
+import { ResearchPhaseForm } from "../../../../../collaborator/ManageConference/ConferenceStep/forms/research/ResearchPhaseForm";
+import { ResearchPriceForm } from "../../../../../collaborator/ManageConference/ConferenceStep/forms/research/ResearchPriceForm";
+import { MaterialsForm } from "../../../../../collaborator/ManageConference/ConferenceStep/forms/research/MaterialsForm";
+import { ResearchSessionForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/research/ResearchSessionForm";
 
 
 // Hooks
@@ -37,7 +37,7 @@ import {
   useValidation,
   useResearchForm,
   useModalState,
-} from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/hooks/index";
+} from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/hooks/index";
 
 // Validations
 import {
@@ -48,10 +48,10 @@ import {
   validateTicketSaleDuration,
   validateBasicForm,
   validateResearchTimeline,
-} from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/validations";
+} from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/validations";
 
 // Constants
-import { RESEARCH_STEP_LABELS, RESEARCH_MAX_STEP } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/constants";
+import { RESEARCH_STEP_LABELS, RESEARCH_MAX_STEP } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/constants";
 
 // Redux
 import { useAppDispatch } from "@/redux/hooks/hooks";
