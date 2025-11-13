@@ -55,10 +55,9 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
   const { data: statusData, refetch } = useGetAllConferenceStatusesQuery();
   const [updateStatus, { isLoading }] = useUpdateOwnConferenceStatusMutation();
 
-  const [selectedStatusId, setSelectedStatusId] = useState<string>(""); // ✅ lưu ID, không lưu tên
+  const [selectedStatusId, setSelectedStatusId] = useState<string>("");
   const [reason, setReason] = useState<string>("");
 
-  // Map statusId -> name
   const statusIdToNameMap = useMemo<Record<string, string>>(() => {
     if (!statusData?.data) return {};
     return statusData.data.reduce((acc, s: ConferenceStatus) => {
@@ -67,7 +66,6 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
     }, {} as Record<string, string>);
   }, [statusData]);
 
-  // Tên trạng thái hiện tại
   const currentStatusName = statusIdToNameMap[conference?.conferenceStatusId || ""] || "N/A";
 
   const getStatusColor = (statusName: string): string => {
@@ -120,7 +118,7 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
         id: nameToIdMap[name],
         name,
       }))
-      .filter((opt) => opt.id); // loại bỏ nếu không tìm thấy ID
+      .filter((opt) => opt.id); 
   }, [roles, currentStatusName, statusData]);
 
   const handleSubmit = async () => {
@@ -136,7 +134,7 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
 
       const res: ApiResponse = await updateStatus({
         confid: conference.conferenceId,
-        newStatus: selectedStatusId, // ✅ GỬI ID, KHÔNG GỬI TÊN
+        newStatus: selectedStatusId, 
         reason,
       }).unwrap();
 

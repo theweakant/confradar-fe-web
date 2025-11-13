@@ -25,12 +25,14 @@ interface RequestConferenceApprovalProps {
     conferenceStatusId?: string;
     [key: string]: unknown;
   };
+  onSuccess?: () => void;
 }
 
 export const RequestConferenceApproval: React.FC<RequestConferenceApprovalProps> = ({
   open,
   onClose,
   conference,
+  onSuccess,
 }) => {
   const { data: statusData } = useGetAllConferenceStatusesQuery();
   const [requestApproval, { isLoading }] = useRequestConferenceApprovalMutation();
@@ -52,6 +54,7 @@ export const RequestConferenceApproval: React.FC<RequestConferenceApprovalProps>
     try {
       await requestApproval({ confId: conference.conferenceId }).unwrap();
       toast.success("Gửi yêu cầu duyệt thành công!");
+      onSuccess?.();
       onClose();
     } catch (err) {
       console.error("Lỗi khi gửi yêu cầu duyệt:", err);
@@ -91,15 +94,16 @@ export const RequestConferenceApproval: React.FC<RequestConferenceApprovalProps>
   </div>
 
     {/* Thông tin thêm */}
-    <div className=" text-black-800 text-sm p-4 rounded-xl leading-relaxed">
-      <p>
-        Hội thảo hiện đang ở trạng thái{" "}
-        <span className="font-semibold text-yellow-700">"Draft"</span>. Bạn đang gửi yêu
-        cầu để <span className="font-semibold">ConfRadar</span> duyệt hội thảo này. Sau khi
-        được duyệt, hội thảo sẽ chuyển sang trạng thái{" "}
-        <span className="font-semibold text-blue-900">"Pending"</span>.
-      </p>
-    </div>
+  <div className="text-black-800 text-sm p-4 rounded-xl leading-relaxed">
+    <p>
+      Hội thảo hiện đang ở trạng thái{" "}
+      <span className="font-semibold text-yellow-700">&quot;Draft&quot;</span>. Bạn đang gửi yêu
+      cầu để <span className="font-semibold">ConfRadar</span> duyệt hội thảo này. Sau khi
+      được duyệt, hội thảo sẽ chuyển sang trạng thái{" "}
+      <span className="font-semibold text-blue-900">&quot;Pending&quot;</span>.
+    </p>
+  </div>
+
   </div>
 
 

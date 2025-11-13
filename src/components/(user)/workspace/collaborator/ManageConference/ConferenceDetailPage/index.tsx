@@ -16,6 +16,7 @@ import {
   Pencil,
   RotateCcw,
   SendHorizonal,
+  Trash2 
 } from "lucide-react";
 import {
   Accordion,
@@ -38,6 +39,7 @@ import { useRouter, useParams } from "next/navigation";
 
 import { UpdateConferenceStatus } from "@/components/molecules/Status/UpdateStatus";
 import { RequestConferenceApproval } from "@/components/molecules/Status/RequestStatus";
+import { DeleteConferenceStatus } from "@/components/molecules/Status/DeleteStatus";
 
 import { useGetTechnicalConferenceDetailInternalQuery } from "@/redux/services/conference.service";
 import { useGetResearchConferenceDetailInternalQuery } from "@/redux/services/conference.service";
@@ -79,8 +81,11 @@ export default function ConferenceDetailPage() {
   const [conferenceType, setConferenceType] = useState<
     "technical" | "research" | null
   >(null);
+
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
   const {
     data: techData,
     isLoading: techLoading,
@@ -116,7 +121,6 @@ export default function ConferenceDetailPage() {
         return;
       }
     }
-    // ... fallback logic
   }, [techData, researchData, techError, researchError]);
 
   const conference = conferenceType === "technical" ? techData?.data : researchData?.data;
@@ -275,6 +279,17 @@ export default function ConferenceDetailPage() {
                       Gửi yêu cầu duyệt
                     </DropdownMenuItem>
                   )}
+
+                  {conference.conferenceStatusId &&
+                  ["Draft", "Pending"].includes(getStatusName(conference.conferenceStatusId)) && (
+                    <DropdownMenuItem
+                      onClick={() => setDeleteDialogOpen(true)}
+                      className="cursor-pointer flex items-center gap-2 text-red-600 focus:text-red-700 focus:bg-red-50"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Xóa hội thảo
+                    </DropdownMenuItem>
+                  )}
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -299,6 +314,23 @@ export default function ConferenceDetailPage() {
                 conferenceId: conference.conferenceId,
                 conferenceName: conference.conferenceName,
                 conferenceStatusId: conference.conferenceStatusId,
+              }}
+              onSuccess={() => {
+                if (conferenceType === "technical") techRefetch();
+                else researchRefetch();
+              }}
+            />
+            <DeleteConferenceStatus
+              open={deleteDialogOpen}
+              onClose={() => setDeleteDialogOpen(false)}
+              conference={{
+                conferenceId: conference.conferenceId,
+                conferenceName: conference.conferenceName,
+                conferenceStatusId: conference.conferenceStatusId,
+              }}
+              onSuccess={() => {
+                if (conferenceType === "technical") techRefetch();
+                else researchRefetch();
               }}
             />
           </div>
