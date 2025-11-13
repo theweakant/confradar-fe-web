@@ -30,9 +30,10 @@ import { useGetAllConferenceStatusesQuery } from "@/redux/services/status.servic
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 
-import ConferenceCalendar from "@/components/molecules/Calendar/index";
-import { SessionScheduleCalendar } from "@/components/molecules/Calendar/SessionScheduleCalendar";
-import PaperScheduleCalendar from "@/components/molecules/Calendar/PaperScheduleCalendar";
+import { RoomCalendar } from "@/components/(user)/workspace/TestRoomCalendar/RoomCalendar";
+// import ConferenceCalendar from "@/components/molecules/Calendar/index";
+// import { SessionScheduleCalendar } from "@/components/molecules/Calendar/RoomCalendar";
+// import PaperScheduleCalendar from "@/components/molecules/Calendar/PaperScheduleCalendar";
 
 export default function ManageConference() {
   const router = useRouter();
@@ -50,7 +51,7 @@ export default function ManageConference() {
   const [calendarType, setCalendarType] = useState<
     "conference" | "session" | "paper"
   >("conference");
-
+const [showRoomCalendar, setShowRoomCalendar] = useState(false);
   // RTK Query hooks
   const { data, isLoading, isFetching, error, refetch } =
     useGetTechConferencesForCollaboratorAndOrganizerQuery({
@@ -176,42 +177,15 @@ export default function ManageConference() {
               </h1>
 
               <div className="flex items-center gap-3">
-                <Button
-                  variant="outline"
-                  className="flex items-center gap-2 whitespace-nowrap"
-                  onClick={() => {
-                    setCalendarType("conference");
-                    setShowCalendarDialog(true);
-                  }}
-                >
-                  <Calendar className="w-5 h-5" />
-                  Xem Lịch Hội nghị
-                </Button>
 
-                <Button
+                {/* <Button
                   variant="outline"
-                  className="flex items-center gap-2 whitespace-nowrap border-blue-300 text-blue-700 hover:bg-blue-50"
-                  // onClick={() => {
-                  //   setCalendarType('session');
-                  //   setShowCalendarDialog(true);
-                  // }}
-                  onClick={() => handleOpenCalendar("session")}
+                  className="flex items-center gap-2 whitespace-nowrap border-purple-300 text-purple-700 hover:bg-purple-50"
+                  onClick={() => setShowRoomCalendar(true)}
                 >
                   <Calendar className="w-5 h-5" />
-                  Lịch xếp phòng cho session
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="flex items-center gap-2 whitespace-nowrap border-green-300 text-green-700 hover:bg-green-50"
-                  onClick={() => {
-                    setCalendarType("paper");
-                    setShowCalendarDialog(true);
-                  }}
-                >
-                  <Calendar className="w-5 h-5" />
-                  Paper Calendar
-                </Button>
+                  Xem danh sách phòng
+                </Button> */}
 
                 <Link href="/workspace/collaborator/manage-conference/create-tech-conference">
                   <Button className="flex items-center gap-2 whitespace-nowrap">
@@ -360,51 +334,7 @@ export default function ManageConference() {
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-6">
-              {calendarType === "conference" && (
-                <ConferenceCalendar
-                  conferences={conferencesWithCategory}
-                  onClose={() => setShowCalendarDialog(false)}
-                  isLoading={isLoading || isFetching}
-                  title="Lịch Hội nghị & Hội thảo"
-                  subtitle="Theo dõi và quản lý các sự kiện sắp tới"
-                />
-              )}
 
-              {/* ⚠️ @TEMP(T): tạm thời để comment để build không lỗi*/}
-              {/* {calendarType === "session" && (
-                <SessionScheduleCalendar
-                  conferenceId="current-conference-id"
-                  rooms={[]}
-                  sessions={[]}
-                  useMockData={true}
-                  onCreateSession={async (session) => {
-                    console.log("Create session:", session);
-                    toast.success("Session created successfully!");
-                  }}
-                  onUpdateSession={async (id, session) => {
-                    console.log("Update session:", id, session);
-                    toast.success("Session updated successfully!");
-                  }}
-                />
-              )} */}
-
-              {calendarType === "paper" && (
-                <PaperScheduleCalendar
-                  conferenceId="current-conference-id"
-                  papers={[]}
-                  presentations={[]}
-                  rooms={[]}
-                  useMockData={true}
-                  onSchedulePaper={async (presentation) => {
-                    console.log("Schedule paper:", presentation);
-                    toast.success("Paper scheduled successfully!");
-                  }}
-                  onUpdatePresentation={async (id, presentation) => {
-                    console.log("Update presentation:", id, presentation);
-                    toast.success("Presentation updated successfully!");
-                  }}
-                />
-              )}
             </div>
 
             {/* Footer */}
@@ -419,7 +349,41 @@ export default function ManageConference() {
           </div>
         </div>
       )}
+{/* Room Calendar Modal */}
+{showRoomCalendar && (
+  <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+    <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] flex flex-col">
+      <div className="px-6 py-4 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-gray-900">
+            Danh sách phòng khả dụng
+          </h2>
+          <button
+            onClick={() => setShowRoomCalendar(false)}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <p className="text-sm text-gray-500 mt-1">
+          Hiển thị tất cả phòng trong khoảng thời gian hội nghị
+        </p>
+      </div>
 
+      <div className="flex-1 overflow-y-auto p-6">
+        <RoomCalendar/>
+      </div>
+
+      <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
+        <Button variant="outline" onClick={() => setShowRoomCalendar(false)}>
+          Đóng
+        </Button>
+      </div>
+    </div>
+  </div>
+)}
       {/* Alert Dialog */}
       <AlertDialog
         open={!!deleteConferenceId}

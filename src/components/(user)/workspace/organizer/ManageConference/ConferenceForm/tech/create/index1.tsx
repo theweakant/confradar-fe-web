@@ -11,15 +11,15 @@ import {
   StepContainer,
   LoadingOverlay,
   PageHeader,
-} from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/components/index";
+} from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/components/index";
 
 // Forms
-import { BasicInfoForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/BasicInfoForm";
-import { PriceForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/PriceForm";
-import { SessionForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/SessionForm";
-import { PolicyForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/PolicyForm";
-import { MediaForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/MediaForm";
-import { SponsorForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/SponsorForm";
+import { BasicInfoForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/BasicInfoForm";
+import { PriceForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/PriceForm";
+import { SessionForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/SessionForm";
+import { PolicyForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/PolicyForm";
+import { MediaForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/MediaForm";
+import { SponsorForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/SponsorForm";
 
 // Hooks
 import {
@@ -28,7 +28,7 @@ import {
   useValidation,
   useConferenceForm,
   useTechConferenceData,
-} from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/hooks";
+} from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/hooks";
 
 // Validations
 import {
@@ -38,9 +38,9 @@ import {
   validateTicketSaleStart,
   validateTicketSaleDuration,
   validateBasicForm,
-} from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/validations";
+} from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/validations";
 
-import { TECH_STEP_LABELS, TECH_MAX_STEP } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/constants";
+import { TECH_STEP_LABELS, TECH_MAX_STEP } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/constants";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks/hooks";
 import { setMaxStep } from "@/redux/slices/conferenceStep.slice";
 import { toast } from "sonner";

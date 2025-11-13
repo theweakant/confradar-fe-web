@@ -1,5 +1,5 @@
 // src/hooks/useResearchConferenceData.ts
-import { useEffect, useCallback } from "react"; // ✅ thêm useCallback
+import { useEffect, useCallback, useRef } from "react";
 import { useGetResearchConferenceDetailInternalQuery } from "@/redux/services/conference.service";
 import { useAppDispatch } from "@/redux/hooks/hooks";
 import { loadExistingConference } from "@/redux/slices/conferenceStep.slice";
@@ -8,7 +8,7 @@ import type {
   Ticket,
   Session,
   Policy,
-  RefundPolicy, // ✅ thêm type
+  RefundPolicy,
   Media,
   Sponsor,
   ResearchDetail,
@@ -16,7 +16,7 @@ import type {
   ResearchMaterial,
   ResearchRankingFile,
   ResearchRankingReference,
-  RefundPolicyResponse, // ✅ thêm nếu chưa import
+  RefundPolicyResponse,
 } from "@/types/conference.type";
 
 interface UseResearchConferenceDataProps {
@@ -28,7 +28,7 @@ interface UseResearchConferenceDataProps {
     tickets: Ticket[];
     sessions: Session[];
     policies: Policy[];
-    refundPolicies: RefundPolicy[]; // ✅ thêm vào payload
+    refundPolicies: RefundPolicy[];
     researchMaterials: ResearchMaterial[];
     rankingFiles: ResearchRankingFile[];
     rankingReferences: ResearchRankingReference[];
@@ -44,10 +44,11 @@ export function useResearchConferenceData({
   onError,
 }: UseResearchConferenceDataProps) {
   const dispatch = useAppDispatch();
+  const hasDispatchedRef = useRef(false); // ✅ Dùng để tránh dispatch nhiều lần
+
   const { data: conferenceDetailResponse, isLoading, isError, error } = 
     useGetResearchConferenceDetailInternalQuery(conferenceId);
 
-  // ✅ Thêm useCallback để ổn định reference
   const stableOnLoad = useCallback(onLoad || (() => {}), [onLoad]);
   const stableOnError = useCallback(onError || (() => {}), [onError]);
 
@@ -57,7 +58,7 @@ export function useResearchConferenceData({
       return;
     }
 
-    if (conferenceDetailResponse?.data) {
+    if (conferenceDetailResponse?.data && !hasDispatchedRef.current) {
       const data = conferenceDetailResponse.data;
 
       // === Map Basic Form ===
@@ -71,7 +72,7 @@ export function useResearchConferenceData({
         address: data.address ?? "",
         bannerImageFile: null,
         isInternalHosted: data.isInternalHosted ?? false,
-        isResearchConference: true, 
+        isResearchConference: true,
         conferenceCategoryId: data.conferenceCategoryId ?? "",
         cityId: data.cityId ?? "",
         ticketSaleStart: data.ticketSaleStart ?? "",
@@ -80,7 +81,7 @@ export function useResearchConferenceData({
 
       // === Map Research Detail ===
       const researchDetail: ResearchDetail = {
-        researchDetailId: "detail", 
+        researchDetailId: "detail",
         name: data.name ?? "",
         paperFormat: data.paperFormat ?? "",
         numberPaperAccept: data.numberPaperAccept ?? 0,
@@ -158,13 +159,13 @@ export function useResearchConferenceData({
           endDate: ph.endDate ?? "",
           applyPercent: ph.applyPercent ?? 0,
           totalslot: ph.totalSlot ?? 0,
-          refundInPhase: [], // ✅ giữ nguyên (có thể fill sau từ refundPolicies)
+          refundInPhase: [],
         })),
       }));
 
       // === Map Sessions ===
       const sessions: Session[] = (data.researchSessions || []).map((s) => ({
-        sessionId: s.conferenceSessionId,               
+        sessionId: s.conferenceSessionId,
         title: s.title ?? "",
         description: s.description ?? "",
         startTime: s.startTime ?? "",
@@ -173,7 +174,7 @@ export function useResearchConferenceData({
         roomId: s.roomId ?? "",
         speaker: [],
         sessionMedias: (s.sessionMedia || []).map((m) => ({
-          sessionMediaId: m.conferenceSessionMediaId, 
+          sessionMediaId: m.conferenceSessionMediaId,
           mediaFile: m.conferenceSessionMediaUrl ?? null,
           mediaUrl: m.conferenceSessionMediaUrl ?? "",
         })),
@@ -186,7 +187,7 @@ export function useResearchConferenceData({
         description: p.description ?? "",
       }));
 
-      // === 🔥 BỔ SUNG: Map Refund Policies (giống tech) ===
+      // === Map Refund Policies ===
       const refundPolicies: RefundPolicy[] = (data.refundPolicies || []).map((rp: RefundPolicyResponse) => ({
         refundPolicyId: rp.refundPolicyId ?? "",
         percentRefund: rp.percentRefund ?? 0,
@@ -196,7 +197,7 @@ export function useResearchConferenceData({
 
       // === Map Research Materials ===
       const researchMaterials: ResearchMaterial[] = (data.materialDownloads || []).map((m) => ({
-        materialId: m.materialDownloadId,    
+        materialId: m.materialDownloadId,
         fileName: m.fileName ?? "Tài liệu",
         fileDescription: m.fileDescription ?? "",
         fileUrl: m.fileUrl ?? "",
@@ -210,24 +211,24 @@ export function useResearchConferenceData({
       }));
 
       const rankingReferences: ResearchRankingReference[] = (data.rankingReferenceUrls || []).map((r) => ({
-        rankingReferenceId: r.referenceUrlId, 
+        rankingReferenceId: r.referenceUrlId,
         referenceUrl: r.referenceUrl ?? "",
       }));
 
       const mediaList: Media[] = (data.conferenceMedia || []).map((m) => ({
         mediaId: m.mediaId,
-        mediaFile: m.mediaUrl ?? null,   
+        mediaFile: m.mediaUrl ?? null,
         mediaUrl: m.mediaUrl ?? "",
       }));
 
       const sponsors: Sponsor[] = (data.sponsors || []).map((s) => ({
         sponsorId: s.sponsorId,
         name: s.name ?? "",
-        imageFile: s.imageUrl ?? null,   
+        imageFile: s.imageUrl ?? null,
         imageUrl: s.imageUrl ?? "",
       }));
 
-      // Gửi vào Redux
+      // ✅ Chỉ dispatch 1 lần
       dispatch(
         loadExistingConference({
           id: conferenceId,
@@ -235,8 +236,8 @@ export function useResearchConferenceData({
           basicData: basicForm,
         })
       );
+      hasDispatchedRef.current = true;
 
-      // ✅ Gọi callback ổn định + có đủ refundPolicies
       stableOnLoad({
         basicForm,
         researchDetail,
@@ -244,7 +245,7 @@ export function useResearchConferenceData({
         tickets,
         sessions,
         policies,
-        refundPolicies, // ✅ đã thêm
+        refundPolicies,
         researchMaterials,
         rankingFiles,
         rankingReferences,
@@ -255,7 +256,6 @@ export function useResearchConferenceData({
   }, [
     conferenceDetailResponse,
     conferenceId,
-    dispatch,
     isError,
     error,
     stableOnLoad,

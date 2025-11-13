@@ -14,22 +14,22 @@ import {
   StepContainer,
   LoadingOverlay,
   PageHeader,
-} from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/components/index";
+} from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/components/index";
 
-import { FlexibleNavigationButtons } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/components/FlexibleNavigationButtons";
+import { FlexibleNavigationButtons } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/components/FlexibleNavigationButtons";
 
 // Shared Forms
-import { PolicyForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/PolicyForm";
-import { MediaForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/MediaForm";
-import { SponsorForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/SponsorForm";
+import { PolicyForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/PolicyForm";
+import { MediaForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/MediaForm";
+import { SponsorForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/SponsorForm";
 
 // Research-Specific Forms
-import { ResearchBasicInfoForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchBasicInfoForm";
-import { ResearchDetailForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchDetailForm";
-import { ResearchPhaseForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchPhaseForm";
-import { ResearchPriceForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchPriceForm";
-import { MaterialsForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/research/MaterialsForm";
-import { ResearchSessionForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchSessionForm";
+import { ResearchBasicInfoForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/research/ResearchBasicInfoForm";
+import { ResearchDetailForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/research/ResearchDetailForm";
+import { ResearchPhaseForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/research/ResearchPhaseForm";
+import { ResearchPriceForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/research/ResearchPriceForm";
+import { MaterialsForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/research/MaterialsForm";
+import { ResearchSessionForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/research/ResearchSessionForm";
 
 // Hooks
 import {
@@ -39,7 +39,7 @@ import {
   useResearchForm,
   useDeleteTracking,
   useResearchConferenceData,
-} from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/hooks/index";
+} from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/hooks/index";
 
 // Validations
 import {
@@ -50,10 +50,10 @@ import {
   validateTicketSaleDuration,
   validateBasicForm,
   validateResearchTimeline,
-} from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/validations";
+} from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/validations";
 
 // Constants
-import { RESEARCH_STEP_LABELS, RESEARCH_MAX_STEP } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/constants";
+import { RESEARCH_STEP_LABELS, RESEARCH_MAX_STEP } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/constants";
 
 // Redux
 import { useAppDispatch } from "@/redux/hooks/hooks";
@@ -517,6 +517,7 @@ export default function UpdateResearchConferenceStepPage() {
             researchPhases={researchPhases}
             maxTotalSlot={basicForm.totalSlot}
             allowListener={researchDetail.allowListener}
+            numberPaperAccept={researchDetail.numberPaperAccept ?? 0}
           />
           <FlexibleNavigationButtons
             currentStep={4}

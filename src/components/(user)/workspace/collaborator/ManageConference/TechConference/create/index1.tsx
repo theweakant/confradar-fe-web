@@ -11,15 +11,15 @@ import {
   StepContainer,
   LoadingOverlay,
   PageHeader,
-} from "./components";
+} from "../../ConferenceStep/components";
 
 // Forms
-import { BasicInfoForm } from "./forms/BasicInfoForm";
-import { PriceForm } from "./forms/PriceForm";
-import { SessionForm } from "./forms/SessionForm";
-import { PolicyForm } from "./forms/PolicyForm";
-import { MediaForm } from "./forms/MediaForm";
-import { SponsorForm } from "./forms/SponsorForm";
+import { BasicInfoForm } from "../../ConferenceStep/forms/BasicInfoForm";
+import { PriceForm } from "../../ConferenceStep/forms/PriceForm";
+import { SessionForm } from "../../ConferenceStep/forms/SessionForm";
+import { PolicyForm } from "../../ConferenceStep/forms/PolicyForm";
+import { MediaForm } from "../../ConferenceStep/forms/MediaForm";
+import { SponsorForm } from "../../ConferenceStep/forms/SponsorForm";
 
 // Hooks
 import {
@@ -28,7 +28,7 @@ import {
   useValidation,
   useConferenceForm,
   useTechConferenceData,
-} from "./hooks";
+} from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/hooks";
 
 // Validations
 import {
@@ -38,9 +38,9 @@ import {
   validateTicketSaleStart,
   validateTicketSaleDuration,
   validateBasicForm,
-} from "./validations";
+} from "../../ConferenceStep/validations";
 
-import { TECH_STEP_LABELS, TECH_MAX_STEP } from "./constants";
+import { TECH_STEP_LABELS, TECH_MAX_STEP } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/constants";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks/hooks";
 import { setMaxStep } from "@/redux/slices/conferenceStep.slice";
 import { toast } from "sonner";

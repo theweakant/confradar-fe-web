@@ -420,6 +420,7 @@ interface ResearchPriceFormProps {
   researchPhases: ResearchPhase[];
   maxTotalSlot: number;
   allowListener: boolean; 
+  numberPaperAccept: number;
 }
 
 export function ResearchPriceForm({
@@ -430,7 +431,8 @@ export function ResearchPriceForm({
   ticketSaleEnd,
   researchPhases,
   maxTotalSlot,
-  allowListener
+  allowListener,
+  numberPaperAccept
 }: ResearchPriceFormProps) {
   const [newTicket, setNewTicket] = useState<Omit<Ticket, "ticketId">>({
     ticketPrice: 0,
@@ -443,13 +445,12 @@ export function ResearchPriceForm({
 
   const [isPhaseModalOpen, setIsPhaseModalOpen] = useState(false);
   const [editingTicketIndex, setEditingTicketIndex] = useState<number | null>(null);
-  const [editingPhaseIndex, setEditingPhaseIndex] = useState<number | null>(null); // ✅ Thêm state
+  const [editingPhaseIndex, setEditingPhaseIndex] = useState<number | null>(null); 
 
   const mainPhase = researchPhases.find((p) => !p.isWaitlist);
   const authorTimelineStart = mainPhase?.registrationStartDate || "";
   const authorTimelineEnd = mainPhase?.registrationEndDate || "";
 
-  // ✅ Ép isAuthor = true nếu không cho phép listener
   useEffect(() => {
     if (!allowListener) {
       setNewTicket(prev => ({ ...prev, isAuthor: true }));
@@ -460,10 +461,8 @@ export function ResearchPriceForm({
   const currentTimelineStart = newTicket.isAuthor ? authorTimelineStart : ticketSaleStart;
   const currentTimelineEnd = newTicket.isAuthor ? authorTimelineEnd : ticketSaleEnd;
 
-  // ✅ Xử lý thêm hoặc cập nhật phase
   const handleAddOrUpdatePhase = (phase: Phase) => {
     if (editingPhaseIndex !== null) {
-      // Cập nhật phase đã chọn
       const updatedPhases = [...newTicket.phases];
       updatedPhases[editingPhaseIndex] = phase;
       setNewTicket({ ...newTicket, phases: updatedPhases });
@@ -488,7 +487,6 @@ export function ResearchPriceForm({
     toast.success("Đã xóa giai đoạn!");
   };
 
-  // ✅ Hàm sửa phase
   const handleEditPhase = (phase: Phase, index: number) => {
     setEditingPhaseIndex(index);
     setIsPhaseModalOpen(true);
@@ -510,6 +508,14 @@ export function ResearchPriceForm({
       return;
     }
 
+    if (newTicket.isAuthor) {
+      if (newTicket.totalSlot > numberPaperAccept) {
+        toast.error(
+          `Số lượng vé tác giả (${newTicket.totalSlot}) không được vượt quá số bài báo được chấp nhận (${numberPaperAccept})!`
+        );
+        return;
+      }
+    }
     if (newTicket.isAuthor) {
       if (!authorTimelineStart || !authorTimelineEnd) {
         toast.error("Vui lòng điền Timeline (Registration) trước khi thêm vé tác giả!");

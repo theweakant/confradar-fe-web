@@ -14,20 +14,20 @@ import {
   LoadingOverlay,
   PageHeader,
   PhaseModal,
-} from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/components/index";
+} from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/components/index";
 
 // Shared Forms
-import { PolicyForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/PolicyForm"
-import { MediaForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/MediaForm";
-import { SponsorForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/SponsorForm";
+import { PolicyForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/PolicyForm"
+import { MediaForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/MediaForm";
+import { SponsorForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/SponsorForm";
 
 // Research-Specific Forms
-import { ResearchBasicInfoForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchBasicInfoForm";
-import { ResearchDetailForm } from "../../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchDetailForm";
-import { ResearchPhaseForm } from "../../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchPhaseForm";
-import { ResearchPriceForm } from "../../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchPriceForm";
-import { MaterialsForm } from "../../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/MaterialsForm";
-import { ResearchSessionForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchSessionForm";
+import { ResearchBasicInfoForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/research/ResearchBasicInfoForm";
+import { ResearchDetailForm } from "../../../../../collaborator/ManageConference/ConferenceStep/forms/research/ResearchDetailForm";
+import { ResearchPhaseForm } from "../../../../../collaborator/ManageConference/ConferenceStep/forms/research/ResearchPhaseForm";
+import { ResearchPriceForm } from "../../../../../collaborator/ManageConference/ConferenceStep/forms/research/ResearchPriceForm";
+import { MaterialsForm } from "../../../../../collaborator/ManageConference/ConferenceStep/forms/research/MaterialsForm";
+import { ResearchSessionForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/research/ResearchSessionForm";
 
 
 // Hooks
@@ -37,7 +37,7 @@ import {
   useValidation,
   useResearchForm,
   useModalState,
-} from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/hooks/index";
+} from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/hooks/index";
 
 // Validations
 import {
@@ -46,12 +46,12 @@ import {
   validateTotalSlot,
   validateTicketSaleStart,
   validateTicketSaleDuration,
-  validateBasicForm,
+  validateBasicForm,  
   validateResearchTimeline,
-} from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/validations";
+} from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/validations";
 
 // Constants
-import { RESEARCH_STEP_LABELS, RESEARCH_MAX_STEP } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/constants";
+import { RESEARCH_STEP_LABELS, RESEARCH_MAX_STEP } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/constants";
 
 // Redux
 import { useAppDispatch } from "@/redux/hooks/hooks";
@@ -215,57 +215,58 @@ export default function CreateResearchConferenceStepPage() {
     });
   };
 
-  const handleTimelineSubmit = () => {
-    const mainPhase = researchPhases[0];
-    if (!mainPhase) {
-      toast.error("Main timeline là bắt buộc!");
+const handleTimelineSubmit = () => {
+  const mainPhase = researchPhases[0];
+  if (!mainPhase) {
+    toast.error("Main timeline là bắt buộc!");
+    return;
+  }
+
+  const waitlistPhase = researchPhases[1];
+  if (!waitlistPhase || !waitlistPhase.isWaitlist) {
+    toast.error("Bạn phải tạo Waitlist timeline trước khi tiếp tục!");
+    return;
+  }
+
+  if (!waitlistPhase.registrationStartDate) {
+    toast.error("Waitlist timeline chưa được điền — vui lòng điền đầy đủ timeline");
+    return;
+  }
+
+  // Validate Main Timeline
+  const mainValidation = validateResearchTimeline(mainPhase, basicForm.ticketSaleStart);
+  if (!mainValidation.isValid) {
+    toast.error(`Lỗi ở Main Timeline: ${mainValidation.error}`);
+    return;
+  }
+  if (mainValidation.warning) {
+    toast.warning(`Cảnh báo ở Main Timeline: ${mainValidation.warning}`);
+  }
+
+  const waitlistValidation = validateResearchTimeline(waitlistPhase, basicForm.ticketSaleStart);
+  if (!waitlistValidation.isValid) {
+    toast.error(`Lỗi ở Waitlist Timeline: ${waitlistValidation.error}`);
+    return;
+  }
+  if (waitlistValidation.warning) {
+    toast.warning(`Cảnh báo ở Waitlist Timeline: ${waitlistValidation.warning}`);
+  }
+
+  if (mainPhase.cameraReadyEndDate && waitlistPhase.registrationStartDate) {
+    const mainEnd = new Date(mainPhase.cameraReadyEndDate);
+    const waitlistStart = new Date(waitlistPhase.registrationStartDate);
+
+    if (waitlistStart <= mainEnd) {
+      toast.error("Waitlist timeline phải bắt đầu sau khi Main timeline kết thúc!");
       return;
     }
+  }
 
-    const mainValidation = validateResearchTimeline(mainPhase, basicForm.ticketSaleStart);
-    if (!mainValidation.isValid) {
-      toast.error(`Lỗi ở Main Timeline: ${mainValidation.error}`);
-      return;
-    }
-    if (mainValidation.warning) {
-      toast.warning(`Cảnh báo ở Main Timeline: ${mainValidation.warning}`);
-    }
-
-    const waitlistPhase = researchPhases[1];
-    if (waitlistPhase) {
-      const hasWaitlistData = 
-        waitlistPhase.registrationStartDate || 
-        waitlistPhase.fullPaperStartDate || 
-        waitlistPhase.reviewStartDate || 
-        waitlistPhase.reviseStartDate || 
-        waitlistPhase.cameraReadyStartDate;
-
-      if (hasWaitlistData) {
-        const waitlistValidation = validateResearchTimeline(waitlistPhase, basicForm.ticketSaleStart);
-        if (!waitlistValidation.isValid) {
-          toast.error(`Lỗi ở Waitlist Timeline: ${waitlistValidation.error}`);
-          return;
-        }
-        if (waitlistValidation.warning) {
-          toast.warning(`Cảnh báo ở Waitlist Timeline: ${waitlistValidation.warning}`);
-        }
-
-        if (mainPhase.cameraReadyEndDate && waitlistPhase.registrationStartDate) {
-          const mainEnd = new Date(mainPhase.cameraReadyEndDate);
-          const waitlistStart = new Date(waitlistPhase.registrationStartDate);
-          
-          if (waitlistStart <= mainEnd) {
-            toast.error("Waitlist timeline phải bắt đầu sau khi Main timeline kết thúc!");
-            return;
-          }
-        }
-      }
-    }
-
-    submitResearchPhase(researchPhases).then((result) => {
-      if (result.success) handleNext();
-    });
-  };
+  // Submit nếu tất cả hợp lệ
+  submitResearchPhase(researchPhases).then((result) => {
+    if (result.success) handleNext();
+  });
+};
 
   const handlePriceSubmit = () => {
     submitPrice(tickets).then((result) => {
@@ -406,7 +407,8 @@ export default function CreateResearchConferenceStepPage() {
             ticketSaleEnd={basicForm.ticketSaleEnd}
             researchPhases={researchPhases}
             maxTotalSlot={basicForm.totalSlot}
-            allowListener={researchDetail.allowListener} 
+            allowListener={researchDetail.allowListener}
+            numberPaperAccept={researchDetail.numberPaperAccept ?? 0} 
           />
             
 

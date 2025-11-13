@@ -31,7 +31,7 @@ export const truncateContent = (
 };
 
 //date
-export const formatDate = (date?: string | null) => {
+export const formatDate = (date?: string |Date | null) => {
   if (!date) return "-";
 
   const d = new Date(date);

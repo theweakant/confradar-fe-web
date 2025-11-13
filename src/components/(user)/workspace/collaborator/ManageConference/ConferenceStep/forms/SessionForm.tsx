@@ -178,6 +178,16 @@ export function SessionForm({
       return;
     }
 
+    if (newSession.startTime) {
+      const timePart = newSession.startTime.split("T")[1]?.slice(0, 5); 
+      const [hours, minutes] = timePart.split(":").map(Number);
+      const totalMinutes = hours * 60 + minutes;
+
+      if (totalMinutes < 6 * 60 || totalMinutes > 23 * 60 + 59) {
+        toast.error("Thời gian bắt đầu phải từ 06:00 đến 23:59!");
+        return;
+      }
+    }
     if (!eventStartDate || !eventEndDate) {
       toast.error("Không tìm thấy thông tin thời gian sự kiện!");
       return;
@@ -342,6 +352,8 @@ export function SessionForm({
           <FormInput
             label="Thời gian bắt đầu"
             type="time"
+            min="06:00"
+            max="23:59"
             value={newSession.startTime ? newSession.startTime.split("T")[1]?.slice(0, 5) : ""}
             onChange={(val) => {
               if (newSession.date) {
