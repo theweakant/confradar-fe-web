@@ -64,6 +64,10 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
 
   const [isFavorite, setIsFavorite] = useState(false);
 
+  useEffect(() => {
+    fetchFavouriteConferences();
+  }, [fetchFavouriteConferences]);
+
   // Check if current conference is in favorites
   useEffect(() => {
     if (lazyFavouriteConferences && conference.conferenceId) {
@@ -73,6 +77,26 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
       setIsFavorite(isInFavorites);
     }
   }, [lazyFavouriteConferences, conference.conferenceId]);
+
+  const getPurchasedTicketInfo = () => {
+    if (!conference.purchasedInfo?.conferencePriceId) return null;
+
+    const purchasedTicket = conference.conferencePrices?.find(
+      price => price.conferencePriceId === conference.purchasedInfo?.conferencePriceId
+    );
+
+    if (!purchasedTicket) return null;
+
+    const purchasedPhase = purchasedTicket.pricePhases?.find(
+      phase => phase.pricePhaseId === conference.purchasedInfo?.pricePhaseId
+    );
+
+    return {
+      ticket: purchasedTicket,
+      phase: purchasedPhase
+    };
+  };
+
 
   const handleFavoriteToggle = async () => {
     if (!conference.conferenceId || !accessToken) {
@@ -185,6 +209,63 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
             Nhấn để chọn khung giá vé và thanh toán
           </p>
           {(() => {
+            const purchasedInfo = getPurchasedTicketInfo();
+
+            console.log('ne', purchasedInfo);
+
+            if (purchasedInfo) {
+              return (
+                <div className="space-y-3">
+                  <div className="p-4 bg-green-500/20 border border-green-400/40 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <svg
+                        className="w-6 h-6 text-green-400 flex-shrink-0 mt-0.5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <div className="flex-1">
+                        <p className="text-green-300 font-semibold mb-1">
+                          Bạn đã mua vé thành công!
+                        </p>
+                        <div className="text-sm text-green-200/80 space-y-1">
+                          <p>
+                            <span className="font-medium">Loại vé:</span> {purchasedInfo.ticket.ticketName}
+                          </p>
+                          {purchasedInfo.phase && (
+                            <p>
+                              <span className="font-medium">Giai đoạn:</span> {purchasedInfo.phase.phaseName}
+                            </p>
+                          )}
+                          <p>
+                            <span className="font-medium">Giá:</span>{" "}
+                            {(purchasedInfo.ticket.ticketPrice || 0).toLocaleString("vi-VN")}₫
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    disabled
+                    className="w-full bg-gray-500/50 text-white/70 px-6 py-3 rounded-lg font-semibold
+                 cursor-not-allowed opacity-60"
+                  >
+                    Đã sở hữu vé
+                  </button>
+
+                  <p className="text-white/60 text-xs text-center">
+                    Bạn có thể xem chi tiết vé trong phần &quot;Vé của tôi&quot;
+                  </p>
+                </div>
+              );
+            }
+
             const now = new Date();
 
             const allPhases = (conference.conferencePrices || []).flatMap(ticket => ticket.pricePhases || []);
@@ -361,7 +442,9 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                     currentPrice < (ticket.ticketPrice ?? 0) &&
                     currentPhase?.applyPercent !== undefined;
 
-                  const isDisabled = currentPhaseSoldOut || isTicketSoldOut || isBeforeSale;
+                  const isPurchasedTicket = conference.purchasedInfo?.conferencePriceId === ticket.conferencePriceId;
+
+                  const isDisabled = currentPhaseSoldOut || isTicketSoldOut || isBeforeSale || isPurchasedTicket;
 
                   return (
                     <label
@@ -484,6 +567,15 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                       {isTicketSoldOut && isLastPhase && (
                         <div className="mt-3 p-2 bg-red-500/20 border border-red-400/40 rounded-lg">
                           <p className="text-xs text-red-200">Vé đã bán hết</p>
+                        </div>
+                      )}
+
+                      {isPurchasedTicket && (
+                        <div className="mb-2 inline-flex items-center gap-1 px-2 py-1 bg-green-500/30 border border-green-400/40 rounded-full">
+                          <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                          <span className="text-xs text-green-300 font-medium">Đã mua</span>
                         </div>
                       )}
                     </label>

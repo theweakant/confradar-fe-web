@@ -818,7 +818,7 @@ export default function RevisionPaperPhase({
                                     className="bg-gradient-to-br from-orange-50 to-white rounded-lg p-6 border-2 border-orange-200"
                                 >
                                     {/* Submission Header */}
-                                    <div className="flex items-center justify-between mb-4 pb-4 border-b border-orange-200">
+                                    <div className="flex flex-col items-start justify-between mb-4 pb-4 border-b border-orange-200">
                                         {/* <div>
                                             <h4 className="text-lg font-bold text-gray-900">
                                                 Round {submission.roundNumber}
@@ -836,6 +836,32 @@ export default function RevisionPaperPhase({
                                             <Download className="w-4 h-4" />
                                             Tải xuống
                                         </a> */}
+
+                                        <div className="flex w-full items-start justify-between mb-4 pb-4 border-b border-orange-200">
+                                            <div className="flex-1">
+                                                <h4 className="text-lg font-bold text-gray-900">{submission.title}</h4>
+                                                <p className="text-sm text-gray-600 mt-1">{submission.description || "N/A"}</p>
+                                            </div>
+
+                                            <div className="ml-4 flex-shrink-0">
+                                                <Button
+                                                    onClick={() =>
+                                                        setShowFeedbackDialogs((prev) => ({
+                                                            ...prev,
+                                                            [submission.revisionPaperSubmissionId]: true,
+                                                        }))
+                                                    }
+                                                    className="bg-blue-600 hover:bg-blue-700"
+                                                    size="sm"
+                                                // disabled={!canSubmitRevisionFeedback(submission.revisionPaperSubmissionId)}
+                                                >
+                                                    <MessageSquare className="w-4 h-4 mr-2" />
+                                                    {canSubmitRevisionFeedback(submission.revisionPaperSubmissionId)
+                                                        ? "Nhập feedback"
+                                                        : "Chưa đến hạn feedback"}
+                                                </Button>
+                                            </div>
+                                        </div>
 
                                         <div className="pt-4 border-t max-h-[600px] overflow-auto">
                                             {docAvailability[submission.revisionPaperSubmissionId] === null && (
@@ -1022,8 +1048,9 @@ export default function RevisionPaperPhase({
             </div>
 
             {/* Feedback Section - Separated Like YouTube Comments */}
-            <div className="bg-white border rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+            {/* <div className="bg-white border rounded-lg p-6"> */}
+            <div>
+                {/* <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
                     <MessageSquare className="w-5 h-5 text-blue-600" />
                     Feedbacks chi tiết
                 </h3>
@@ -1032,7 +1059,7 @@ export default function RevisionPaperPhase({
                     <p className="text-gray-500 italic text-sm">
                         Chưa có đợt revision nào để gửi feedback.
                     </p>
-                )}
+                )} */}
 
                 {/* Feedback for each submission */}
                 {(paperDetail.revisionPaper?.revisionPaperSubmissions || []).map(
@@ -1059,7 +1086,7 @@ export default function RevisionPaperPhase({
                             </div> */}
 
                             {/* Feedback Form */}
-                            <div className="flex gap-3">
+                            {/* <div className="flex gap-3">
                                 <div className="w-8"></div>
                                 <Button
                                     onClick={() => setShowFeedbackDialogs(prev => ({
@@ -1074,7 +1101,7 @@ export default function RevisionPaperPhase({
                                         ? "Nhập feedback"
                                         : "Chưa đến hạn feedback"}
                                 </Button>
-                            </div>
+                            </div> */}
 
                             {/* Dialog feedback cho submission này */}
                             <Transition
