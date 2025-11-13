@@ -11,7 +11,7 @@ import {
   ExternalLink,
   AlertCircle,
 } from "lucide-react";
-import { usePaperCustomer } from "@/redux/hooks/paper/usePaper";
+import { usePaperCustomer } from "@/redux/hooks/usePaper";
 import type { PaperCustomer } from "@/types/paper.type";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useConference } from "@/redux/hooks/conference/useConference";
+import { useConference } from "@/redux/hooks/useConference";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { CategoryOption, ConferenceResponse } from "@/types/conference.type";

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FullPaper, ResearchPhaseDtoDetail } from "@/types/paper.type";
-import { usePaperCustomer } from "@/redux/hooks/paper/usePaper";
+import { usePaperCustomer } from "@/redux/hooks/usePaper";
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 import "@cyntler/react-doc-viewer/dist/index.css";
 import { validatePhaseTime } from "@/helper/timeValidation";

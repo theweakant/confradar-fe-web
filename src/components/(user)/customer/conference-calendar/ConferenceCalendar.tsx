@@ -6,7 +6,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { EventClickArg } from "@fullcalendar/core";
 import type { Calendar as FullCalendarInstance } from "@fullcalendar/core";
 import { Calendar, Clock, MapPin, Users, Tag, X, Eye } from "lucide-react";
-import { useConference } from "@/redux/hooks/conference/useConference";
+import { useConference } from "@/redux/hooks/useConference";
 import type {
   ConferenceDetailForScheduleResponse,
   SessionDetailForScheduleResponse,
@@ -267,11 +267,10 @@ const ConferenceCalendar: React.FC = () => {
                   key={conf.conferenceId}
                   id={`conference-${conf.conferenceId}`}
                   onClick={() => handleConferenceClick(conf)}
-                  className={`bg-gray-700 rounded-lg p-4 cursor-pointer transition-all hover:bg-gray-600 hover:shadow-lg border-2 ${
-                    selectedConference === conf.conferenceId
+                  className={`bg-gray-700 rounded-lg p-4 cursor-pointer transition-all hover:bg-gray-600 hover:shadow-lg border-2 ${selectedConference === conf.conferenceId
                       ? "border-blue-500 bg-gray-600"
                       : "border-transparent"
-                  }`}
+                    }`}
                 >
                   {conf.bannerImageUrl && (
                     <img
@@ -404,7 +403,7 @@ const ConferenceCalendar: React.FC = () => {
                   {/* Content */}
                   <div className="mt-4">
                     {selectedConferenceForDialog?.sessions &&
-                    selectedConferenceForDialog.sessions.length > 0 ? (
+                      selectedConferenceForDialog.sessions.length > 0 ? (
                       <div className="space-y-3 overflow-y-auto max-h-96 pr-2 custom-scrollbar">
                         {selectedConferenceForDialog.sessions.map((session) => (
                           <div

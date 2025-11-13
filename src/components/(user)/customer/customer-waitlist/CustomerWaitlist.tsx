@@ -4,7 +4,7 @@ import { Clock, MapPin, Calendar, Users, ExternalLink, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { usePaperCustomer } from "@/redux/hooks/paper/usePaper";
+import { usePaperCustomer } from "@/redux/hooks/usePaper";
 import { CustomerWaitListResponse } from "@/types/waitlist.type";
 import React, { useEffect, useState } from "react";
 
@@ -184,8 +184,8 @@ export default function CustomerWaitlist() {
                 onClick={() => handleFilterChange(option.id)}
                 disabled={waitListLoading}
                 className={`whitespace-nowrap ${option.active
-                    ? "bg-blue-600 text-white hover:bg-blue-700 border-blue-600"
-                    : "bg-gray-800 text-gray-300 hover:bg-gray-700 border-gray-600"
+                  ? "bg-blue-600 text-white hover:bg-blue-700 border-blue-600"
+                  : "bg-gray-800 text-gray-300 hover:bg-gray-700 border-gray-600"
                   }`}
               >
                 {option.label}

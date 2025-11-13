@@ -4,13 +4,13 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
 import { X, Ticket } from "lucide-react";
-import { useConference } from "@/redux/hooks/conference/useConference";
+import { useConference } from "@/redux/hooks/useConference";
 import {
   ConferencePriceResponse,
   SponsorResponse,
 } from "@/types/conference.type";
 import { useParams, useRouter } from "next/navigation";
-import { useTransaction } from "@/redux/hooks/transaction/useTransaction";
+import { useTransaction } from "@/redux/hooks/useTransaction";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import ConferenceHeader from "./ConferenceHeader";

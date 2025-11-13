@@ -26,7 +26,7 @@ import { PaperTable } from "@/components/(user)/workspace/reviewer/ManagePaper/P
 import { AssignedPaper, AssignedPaperGroup } from "@/types/paper.type";
 import { useListAssignedPapersQuery } from "@/redux/services/paper.service";
 import CameraReadyList from "@/components/(user)/workspace/reviewer/CameraReadyList/index";
-import { useConference } from "@/redux/hooks/conference/useConference";
+import { useConference } from "@/redux/hooks/useConference";
 import { ConferenceResponse } from "@/types/conference.type";
 import { stages4Step } from "@/helper/paper";
 

@@ -4,7 +4,7 @@ import { CreditCard, Calendar, Download, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useTransaction } from "@/redux/hooks/transaction/useTransaction";
+import { useTransaction } from "@/redux/hooks/useTransaction";
 import { useEffect } from "react";
 
 export default function TransactionHistory() {
