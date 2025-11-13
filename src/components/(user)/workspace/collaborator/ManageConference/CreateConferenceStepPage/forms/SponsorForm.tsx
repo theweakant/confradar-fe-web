@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/molecules/FormInput";
 import { ImageUpload } from "@/components/atoms/ImageUpload";
 import { toast } from "sonner";
 import type { Sponsor } from "@/types/conference.type";
+import { useStepNavigation } from "../hooks";
 
 interface SponsorFormProps {
   sponsors: Sponsor[];
@@ -12,11 +13,19 @@ interface SponsorFormProps {
 }
 
 export function SponsorForm({ sponsors, onSponsorsChange, onRemoveSponsor }: SponsorFormProps) {
+  const { currentStep, isStepCompleted, handleUnmarkCompleted } = useStepNavigation();
+
   const [newSponsor, setNewSponsor] = useState<Sponsor>({
     name: "",
     imageFile: null,
   });
   const [resetSponsorUpload, setResetSponsorUpload] = useState(false);
+
+  useEffect(() => {
+    if (isStepCompleted(currentStep)) {
+      handleUnmarkCompleted(currentStep);
+    }
+  }, [sponsors]);
 
   const handleAddSponsor = () => {
     if (!newSponsor.name || !newSponsor.imageFile) {
@@ -30,7 +39,7 @@ export function SponsorForm({ sponsors, onSponsorsChange, onRemoveSponsor }: Spo
 
   const handleRemoveSponsor = (index: number) => {
     const sponsor = sponsors[index];
-    
+
     if (onRemoveSponsor && sponsor.sponsorId) {
       onRemoveSponsor(sponsor.sponsorId);
     } else {

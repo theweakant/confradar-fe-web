@@ -106,8 +106,8 @@ export default function CreateConferenceStepPage() {
     conferenceId: conferenceId || "",
     onLoad: (data) => {
       // Update all form states when data is loaded
-      // setBasicForm(data.basicForm);
-      // setTickets(data.tickets);
+      setBasicForm(data.basicForm);
+      setTickets(data.tickets);
       setSessions(data.sessions);
       setPolicies(data.policies);
       setRefundPolicies(data.refundPolicies);
@@ -115,8 +115,8 @@ export default function CreateConferenceStepPage() {
       setSponsors(data.sponsors);
     },
     onError: (error) => {
-      console.error("Failed to load conference data:", error);
-      toast.error("Không thể tải dữ liệu hội thảo!");
+      // console.error("Failed to load conference data:", error);
+      // toast.error("Không thể tải dữ liệu hội thảo!");
     }
   });
 
@@ -207,6 +207,10 @@ export default function CreateConferenceStepPage() {
         if (confId) {
           setConferenceId(confId);
         }
+
+        if (conferenceId && mode === "edit") {
+          refetchConferenceData();
+        }
       }
     });
   };
@@ -215,8 +219,12 @@ export default function CreateConferenceStepPage() {
     submitPrice(tickets).then((result) => {
       if (result.success) {
         handleMarkCompleted(2);
-        setTickets(result.data ?? [])
-        console.log('roi ne nha', tickets)
+
+        if (conferenceId && mode === "edit") {
+          refetchConferenceData();
+        }
+        // setTickets(result.data ?? [])
+        // console.log('roi ne nha', tickets)
       }
     });
   };

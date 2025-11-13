@@ -1,10 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/molecules/FormInput";
 import { FormTextArea } from "@/components/molecules/FormTextArea";
 import { toast } from "sonner";
 import type { Policy } from "@/types/conference.type";
+import { useStepNavigation } from "../hooks/useStepNavigation";
 
 interface PolicyFormProps {
   policies: Policy[];
@@ -23,10 +24,18 @@ export function PolicyForm({
   ticketSaleStart,
   ticketSaleEnd,
 }: PolicyFormProps) {
+  const { currentStep, isStepCompleted, handleUnmarkCompleted } = useStepNavigation();
+
   const [newPolicy, setNewPolicy] = useState<Policy>({
     policyName: "",
     description: "",
   });
+
+  useEffect(() => {
+    if (isStepCompleted(currentStep)) {
+      handleUnmarkCompleted(currentStep);
+    }
+  }, [policies]);
 
   const handleAddPolicy = () => {
     if (!newPolicy.policyName.trim()) {
@@ -40,7 +49,7 @@ export function PolicyForm({
 
   const handleRemovePolicy = (index: number) => {
     const policy = policies[index];
-    
+
     if (onRemovePolicy && policy.policyId) {
       onRemovePolicy(policy.policyId);
     } else {

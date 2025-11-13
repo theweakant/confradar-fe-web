@@ -91,6 +91,7 @@ export default function UpdateResearchConferenceStepPage() {
   // Custom Hooks
   const {
     currentStep,
+    activeStep,
     completedSteps,
     handleNext,
     handlePrevious,
@@ -111,7 +112,7 @@ export default function UpdateResearchConferenceStepPage() {
     submitMaterials,
     submitMedia,
     submitSponsors,
-    submitAll, 
+    submitAll,
   } = useResearchFormSubmit();
 
   const { validationErrors, validate, clearError } = useValidation();
@@ -428,6 +429,7 @@ export default function UpdateResearchConferenceStepPage() {
 
       <StepIndicator
         currentStep={currentStep}
+        activeStep={activeStep}
         completedSteps={completedSteps}
         maxStep={RESEARCH_MAX_STEP}
         stepLabels={RESEARCH_STEP_LABELS}
@@ -644,7 +646,7 @@ export default function UpdateResearchConferenceStepPage() {
             isLastStep={true}
             onPrevious={handlePreviousStep}
             onUpdate={handleUpdateCurrentStep}
-            onUpdateAll={handleUpdateAll} 
+            onUpdateAll={handleUpdateAll}
           />
         </StepContainer>
       )}

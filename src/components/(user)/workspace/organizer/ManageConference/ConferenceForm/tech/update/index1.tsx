@@ -79,6 +79,7 @@ export default function UpdateTechConferenceStepPage() {
   // Custom Hooks
   const {
     currentStep,
+    activeStep,
     completedSteps,
     handleNext,
     handlePrevious,
@@ -96,7 +97,7 @@ export default function UpdateTechConferenceStepPage() {
     submitPolicies,
     submitMedia,
     submitSponsors,
-    submitAll, 
+    submitAll,
   } = useFormSubmit();
 
   const { validationErrors, validate, clearError } = useValidation();
@@ -229,48 +230,48 @@ export default function UpdateTechConferenceStepPage() {
   const handlePreviousStep = () => handlePrevious();
   const handleNextStep = () => handleNext();
 
-  const   handleUpdateCurrentStep = async () => {
-  switch (currentStep) {
-    case 1:
-      const basicValidation = validateBasicForm(basicForm);
-      if (!basicValidation.isValid) {
-        toast.error(`Thông tin cơ bản: ${basicValidation.message}`);
-        return { success: false };
-      }
-      return await submitBasicInfo(basicForm);
-
-    case 2:
-      if (tickets.length === 0) {
-        toast.error("Vui lòng thêm ít nhất 1 loại vé!");
-        return { success: false };
-      }
-      return await submitPrice(tickets);
-
-    case 3:
-      if (sessions.length > 0) {
-        if (!basicForm.startDate || !basicForm.endDate) {
-          toast.error("Thiếu ngày bắt đầu/kết thúc hội thảo!");
+  const handleUpdateCurrentStep = async () => {
+    switch (currentStep) {
+      case 1:
+        const basicValidation = validateBasicForm(basicForm);
+        if (!basicValidation.isValid) {
+          toast.error(`Thông tin cơ bản: ${basicValidation.message}`);
           return { success: false };
         }
-        const hasStart = sessions.some(s => s.date === basicForm.startDate);
-        const hasEnd = sessions.some(s => s.date === basicForm.endDate);
-        if (!hasStart || !hasEnd) {
-          toast.error("Phải có phiên họp vào ngày bắt đầu và kết thúc!");
+        return await submitBasicInfo(basicForm);
+
+      case 2:
+        if (tickets.length === 0) {
+          toast.error("Vui lòng thêm ít nhất 1 loại vé!");
           return { success: false };
         }
-      }
-      return await submitSessions(sessions, basicForm.startDate!, basicForm.endDate!);
+        return await submitPrice(tickets);
 
-    case 4:
-      return await submitPolicies(policies);
-    case 5:
-      return await submitMedia(mediaList);
-    case 6:
-      return await submitSponsors(sponsors);
-    default:
-      toast.error(`Bước không hợp lệ: ${currentStep}`);
-      return { success: false };
-  }
+      case 3:
+        if (sessions.length > 0) {
+          if (!basicForm.startDate || !basicForm.endDate) {
+            toast.error("Thiếu ngày bắt đầu/kết thúc hội thảo!");
+            return { success: false };
+          }
+          const hasStart = sessions.some(s => s.date === basicForm.startDate);
+          const hasEnd = sessions.some(s => s.date === basicForm.endDate);
+          if (!hasStart || !hasEnd) {
+            toast.error("Phải có phiên họp vào ngày bắt đầu và kết thúc!");
+            return { success: false };
+          }
+        }
+        return await submitSessions(sessions, basicForm.startDate!, basicForm.endDate!);
+
+      case 4:
+        return await submitPolicies(policies);
+      case 5:
+        return await submitMedia(mediaList);
+      case 6:
+        return await submitSponsors(sponsors);
+      default:
+        toast.error(`Bước không hợp lệ: ${currentStep}`);
+        return { success: false };
+    }
   };
 
   // === UPDATE ALL STEPS (ONLY FOR STEP 6) ===
@@ -306,6 +307,7 @@ export default function UpdateTechConferenceStepPage() {
 
       <StepIndicator
         currentStep={currentStep}
+        activeStep={activeStep}
         completedSteps={completedSteps}
         maxStep={TECH_MAX_STEP}
         stepLabels={TECH_STEP_LABELS}

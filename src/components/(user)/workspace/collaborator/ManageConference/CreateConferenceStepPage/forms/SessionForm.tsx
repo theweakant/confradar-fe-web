@@ -8,6 +8,7 @@ import { ImageUpload } from "@/components/atoms/ImageUpload";
 import { formatDate, formatTimeDate } from "@/helper/format";
 import { toast } from "sonner";
 import type { Session, Speaker, RoomInfoResponse } from "@/types/conference.type";
+import { useStepNavigation } from "../hooks";
 
 interface SessionFormProps {
   sessions: Session[];
@@ -116,6 +117,8 @@ export function SessionForm({
   roomsData,
   isRoomsLoading,
 }: SessionFormProps) {
+  const { currentStep, isStepCompleted, handleUnmarkCompleted } = useStepNavigation();
+
   const [newSession, setNewSession] = useState<Session>({
     title: "",
     description: "",
@@ -129,6 +132,13 @@ export function SessionForm({
   });
 
   const [isSpeakerModalOpen, setIsSpeakerModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (isStepCompleted(currentStep)) {
+      handleUnmarkCompleted(currentStep);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [newSession]);
 
   // Auto calculate end time when startTime or timeRange changes
   useEffect(() => {
@@ -222,7 +232,7 @@ export function SessionForm({
 
   const handleRemoveSession = (index: number) => {
     const session = sessions[index];
-    
+
     if (onRemoveSession && session.sessionId) {
       onRemoveSession(session.sessionId);
     } else {
