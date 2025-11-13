@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ImageUpload } from "@/components/atoms/ImageUpload";
 import { toast } from "sonner";
 import type { Media } from "@/types/conference.type";
+import { useStepNavigation } from "../hooks/useStepNavigation";
 
 interface MediaFormProps {
   mediaList: Media[];
@@ -12,7 +13,15 @@ interface MediaFormProps {
 }
 
 export function MediaForm({ mediaList, onMediaListChange, onRemoveMedia }: MediaFormProps) {
+  const { currentStep, isStepCompleted, handleUnmarkCompleted } = useStepNavigation();
+
   const [newMedia, setNewMedia] = useState<Media>({ mediaFile: null });
+
+  useEffect(() => {
+    if (isStepCompleted(currentStep)) {
+      handleUnmarkCompleted(currentStep);
+    }
+  }, [mediaList]);
 
   const handleAddMedia = () => {
     if (!newMedia.mediaFile) {
@@ -26,7 +35,7 @@ export function MediaForm({ mediaList, onMediaListChange, onRemoveMedia }: Media
 
   const handleRemoveMedia = (index: number) => {
     const media = mediaList[index];
-    
+
     if (onRemoveMedia && media.mediaId) {
       onRemoveMedia(media.mediaId);
     } else {

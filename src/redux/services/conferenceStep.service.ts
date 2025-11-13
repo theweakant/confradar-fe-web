@@ -1,5 +1,9 @@
 // conferenceStepApi.ts
 
+interface CreatePriceApiResponse {
+  conferencePriceWithPhasesResponses: ConferencePriceResponse[];
+}
+
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { apiClient } from "../api/apiClient";
 import { endpoint } from "../api/endpoint";
@@ -8,7 +12,7 @@ import type {
   ConferenceBasicForm,
   ConferencePriceData,
   ConferenceSessionData,
-  ConferenceResearchSessionData,  
+  ConferenceResearchSessionData,
   ConferencePolicyData,
   ConferenceMediaData,
   ConferenceSponsorData,
@@ -23,7 +27,8 @@ import type {
   ResearchDetail,
   ResearchPhase,
   ConferenceRefundPolicyData,
-  UpdateResearchPhaseRequest
+  UpdateResearchPhaseRequest,
+  ConferencePriceResponse
 } from "@/types/conference.type";
 
 export const conferenceStepApi = createApi({
@@ -34,7 +39,8 @@ export const conferenceStepApi = createApi({
   endpoints: (builder) => ({
     //CREATE BASIC (TECH)
     createBasicConference: builder.mutation<
-      ApiResponse<{ conferenceId: string }>,
+      // ApiResponse<{ conferenceId: string }>,
+      ApiResponse<ConferenceBasicResponse>,
       ConferenceBasicForm
     >({
       query: (body) => {
@@ -65,10 +71,10 @@ export const conferenceStepApi = createApi({
           );
         if (body.contractURL instanceof File) {
           formData.append("contractURL", body.contractURL);
-        }        
+        }
         if (body.commission !== undefined && body.commission !== null)
-          
-      formData.append("commission", String(body.commission));
+
+          formData.append("commission", String(body.commission));
         return {
           url: endpoint.CONFERENCE_STEP.CREATE_BASIC,
           method: "POST",
@@ -79,43 +85,43 @@ export const conferenceStepApi = createApi({
     }),
 
     // UPDATE BASIC
-updateBasicConference: builder.mutation<
-  ApiResponse<{ conferenceId: string }>,
-  { conferenceId: string; data: ConferenceBasicForm }
->({
-  query: ({ conferenceId, data }) => {
-    const formData = new FormData();
+    updateBasicConference: builder.mutation<
+      ApiResponse<{ conferenceId: string }>,
+      { conferenceId: string; data: ConferenceBasicForm }
+    >({
+      query: ({ conferenceId, data }) => {
+        const formData = new FormData();
 
-    // Required fields (the API docs mark these as required or have no indication of optional)
-    formData.append("conferenceName", data.conferenceName);
-    formData.append("startDate", data.startDate);
-    formData.append("endDate", data.endDate);
-    formData.append("totalSlot", String(data.totalSlot));
-    formData.append("isInternalHosted", String(data.isInternalHosted));
-    formData.append("isResearchConference", String(data.isResearchConference));
-    formData.append("conferenceCategoryId", data.conferenceCategoryId);
-    formData.append("cityId", data.cityId);
-    formData.append("ticketSaleStart", data.ticketSaleStart);
-    formData.append("ticketSaleEnd", data.ticketSaleEnd);
+        // Required fields (the API docs mark these as required or have no indication of optional)
+        formData.append("conferenceName", data.conferenceName);
+        formData.append("startDate", data.startDate);
+        formData.append("endDate", data.endDate);
+        formData.append("totalSlot", String(data.totalSlot));
+        formData.append("isInternalHosted", String(data.isInternalHosted));
+        formData.append("isResearchConference", String(data.isResearchConference));
+        formData.append("conferenceCategoryId", data.conferenceCategoryId);
+        formData.append("cityId", data.cityId);
+        formData.append("ticketSaleStart", data.ticketSaleStart);
+        formData.append("ticketSaleEnd", data.ticketSaleEnd);
 
-    if (data.description) formData.append("description", data.description);
-    if (data.address) formData.append("address", data.address);
-    if (data.bannerImageFile) formData.append("bannerImageFile", data.bannerImageFile);
-    if (data.contractURL) formData.append("contractURL", data.contractURL);
-    if (data.commission !== undefined) formData.append("commission", String(data.commission));
-    if (data.targetAudienceTechnicalConference) {formData.append("targetAudienceTechnicalConference", data.targetAudienceTechnicalConference);}
-    return {
-      url: endpoint.CONFERENCE_STEP.UPDATE_BASIC(conferenceId),
-      method: "PUT",
-      body: formData,
-    };
-  },
-  invalidatesTags: ["ConferenceStep"],
-}),
+        if (data.description) formData.append("description", data.description);
+        if (data.address) formData.append("address", data.address);
+        if (data.bannerImageFile) formData.append("bannerImageFile", data.bannerImageFile);
+        if (data.contractURL) formData.append("contractURL", data.contractURL);
+        if (data.commission !== undefined) formData.append("commission", String(data.commission));
+        if (data.targetAudienceTechnicalConference) { formData.append("targetAudienceTechnicalConference", data.targetAudienceTechnicalConference); }
+        return {
+          url: endpoint.CONFERENCE_STEP.UPDATE_BASIC(conferenceId),
+          method: "PUT",
+          body: formData,
+        };
+      },
+      invalidatesTags: ["ConferenceStep"],
+    }),
 
     //CREATE PRICE (TECH)
     createConferencePrice: builder.mutation<
-      ApiResponse<string>,
+      ApiResponse<CreatePriceApiResponse>,
       { conferenceId: string; data: ConferencePriceData }
     >({
       query: ({ conferenceId, data }) => ({
@@ -517,72 +523,72 @@ updateBasicConference: builder.mutation<
     }),
 
     //CREATE SESSION
-  createResearchSessions: builder.mutation<
-    ApiResponse<string>,
-    { conferenceId: string; data: ConferenceResearchSessionData }
-  >({
-    query: ({ conferenceId, data }) => {
+    createResearchSessions: builder.mutation<
+      ApiResponse<string>,
+      { conferenceId: string; data: ConferenceResearchSessionData }
+    >({
+      query: ({ conferenceId, data }) => {
 
-    
-    data.sessions.forEach((session, idx) => {
-      console.log(`Session ${idx}:`, {
-        title: session.title,
-        mediaCount: session.sessionMedias?.length,
-        mediaFiles: session.sessionMedias?.map(m => ({
-          isFile: m.mediaFile instanceof File,
-          fileName: m.mediaFile instanceof File ? m.mediaFile.name : 'NOT A FILE',
-          type: typeof m.mediaFile
-        }))
-      });
-    });
-    
-    
-      const formData = new FormData();
 
-      const formatTime = (datetime: string): string => {
-        const date = new Date(datetime);
-        return date.toTimeString().split(" ")[0]; 
-      };
-
-      const formatDate = (datetime: string): string => {
-        const date = new Date(datetime);
-        return date.toISOString().split("T")[0];
-      };
-
-      data.sessions.forEach((session, index) => {
-        formData.append(`sessions[${index}].title`, session.title);
-        formData.append(`sessions[${index}].description`, session.description || "");
-
-        formData.append(`sessions[${index}].startTime`, formatTime(session.startTime));
-        formData.append(`sessions[${index}].endTime`, formatTime(session.endTime));
-        formData.append(`sessions[${index}].date`, formatDate(session.date || session.startTime));
-
-        formData.append(`sessions[${index}].roomId`, session.roomId);
-
-        if (session.sessionMedias && session.sessionMedias.length > 0) {
-          session.sessionMedias.forEach((media, mediaIndex) => {
-            if (media.mediaFile && media.mediaFile instanceof File) {
-              formData.append(
-                `sessions[${index}].SessionMedias[${mediaIndex}].MediaFile`,
-                media.mediaFile
-              );  
-            }
-
-            formData.append(
-              `sessions[${index}].SessionMedias[${mediaIndex}].MediaUrl`,
-              (typeof media.mediaFile === "string" && media.mediaFile) || media.mediaUrl || ""
-            );
+        data.sessions.forEach((session, idx) => {
+          console.log(`Session ${idx}:`, {
+            title: session.title,
+            mediaCount: session.sessionMedias?.length,
+            mediaFiles: session.sessionMedias?.map(m => ({
+              isFile: m.mediaFile instanceof File,
+              fileName: m.mediaFile instanceof File ? m.mediaFile.name : 'NOT A FILE',
+              type: typeof m.mediaFile
+            }))
           });
-        }
-      });
-      return {
-        url: endpoint.CONFERENCE_STEP.CREATE_RESEARCH_SESSION(conferenceId),
-        method: "POST",
-        body: formData,
-      };
-    },
-    invalidatesTags: ["ConferenceStep"],
-  }),
+        });
+
+
+        const formData = new FormData();
+
+        const formatTime = (datetime: string): string => {
+          const date = new Date(datetime);
+          return date.toTimeString().split(" ")[0];
+        };
+
+        const formatDate = (datetime: string): string => {
+          const date = new Date(datetime);
+          return date.toISOString().split("T")[0];
+        };
+
+        data.sessions.forEach((session, index) => {
+          formData.append(`sessions[${index}].title`, session.title);
+          formData.append(`sessions[${index}].description`, session.description || "");
+
+          formData.append(`sessions[${index}].startTime`, formatTime(session.startTime));
+          formData.append(`sessions[${index}].endTime`, formatTime(session.endTime));
+          formData.append(`sessions[${index}].date`, formatDate(session.date || session.startTime));
+
+          formData.append(`sessions[${index}].roomId`, session.roomId);
+
+          if (session.sessionMedias && session.sessionMedias.length > 0) {
+            session.sessionMedias.forEach((media, mediaIndex) => {
+              if (media.mediaFile && media.mediaFile instanceof File) {
+                formData.append(
+                  `sessions[${index}].SessionMedias[${mediaIndex}].MediaFile`,
+                  media.mediaFile
+                );
+              }
+
+              formData.append(
+                `sessions[${index}].SessionMedias[${mediaIndex}].MediaUrl`,
+                (typeof media.mediaFile === "string" && media.mediaFile) || media.mediaUrl || ""
+              );
+            });
+          }
+        });
+        return {
+          url: endpoint.CONFERENCE_STEP.CREATE_RESEARCH_SESSION(conferenceId),
+          method: "POST",
+          body: formData,
+        };
+      },
+      invalidatesTags: ["ConferenceStep"],
+    }),
 
 
 
@@ -705,179 +711,179 @@ updateBasicConference: builder.mutation<
       invalidatesTags: ["ConferenceStep"],
     }),
 
-//PUT
-updateResearchBasic: builder.mutation<
-  ApiResponse<{ conferenceId: string }>,
-  { conferenceId: string; data: ConferenceBasicForm }
->({
-  query: ({ conferenceId, data }) => {
-    const formData = new FormData();
+    //PUT
+    updateResearchBasic: builder.mutation<
+      ApiResponse<{ conferenceId: string }>,
+      { conferenceId: string; data: ConferenceBasicForm }
+    >({
+      query: ({ conferenceId, data }) => {
+        const formData = new FormData();
 
-    // Required fields
-    formData.append("conferenceName", data.conferenceName);
-    formData.append("startDate", data.startDate);
-    formData.append("endDate", data.endDate);
-    formData.append("totalSlot", String(data.totalSlot));
+        // Required fields
+        formData.append("conferenceName", data.conferenceName);
+        formData.append("startDate", data.startDate);
+        formData.append("endDate", data.endDate);
+        formData.append("totalSlot", String(data.totalSlot));
 
-    formData.append("conferenceCategoryId", data.conferenceCategoryId);
-    formData.append("cityId", data.cityId);
-    formData.append("ticketSaleStart", data.ticketSaleStart);
-    formData.append("ticketSaleEnd", data.ticketSaleEnd);
+        formData.append("conferenceCategoryId", data.conferenceCategoryId);
+        formData.append("cityId", data.cityId);
+        formData.append("ticketSaleStart", data.ticketSaleStart);
+        formData.append("ticketSaleEnd", data.ticketSaleEnd);
 
-    if (data.description) formData.append("description", data.description);
-    if (data.address) formData.append("address", data.address);
-    if (data.bannerImageFile)
-      formData.append("bannerImageFile", data.bannerImageFile);
+        if (data.description) formData.append("description", data.description);
+        if (data.address) formData.append("address", data.address);
+        if (data.bannerImageFile)
+          formData.append("bannerImageFile", data.bannerImageFile);
 
-    return {
-      url: endpoint.CONFERENCE_STEP.UPDATE_DRAFT_RESEARCH_BASIC(conferenceId),
-      method: "PUT",
-      body: formData,
-    };
-  },
-  invalidatesTags: ["ConferenceStep"],
-}), 
-
-  updateResearchDetail: builder.mutation<
-    ApiResponse<{ success: boolean }>, 
-    { conferenceId: string; data: ResearchDetail }
-  >({
-    query: ({ conferenceId, data }) => ({
-      url: endpoint.CONFERENCE_STEP.UPDATE_RESEARCH_DETAIL(conferenceId),
-      method: "PUT",
-      body: data, 
-    }),
-    invalidatesTags: ["ConferenceStep"],
-  }),
-
-updateResearchPhase: builder.mutation<
-  ApiResponse<{ success: boolean }>,
-  { researchPhaseId: string; data: UpdateResearchPhaseRequest }
->({
-  query: ({ researchPhaseId, data }) => {
-    const {
-      registrationStartDate,registrationEndDate,fullPaperStartDate,fullPaperEndDate,reviewStartDate,reviewEndDate,
-      reviseStartDate,reviseEndDate,cameraReadyStartDate,cameraReadyEndDate,isWaitlist,isActive
-    } = data;
-
-    return {
-      url: endpoint.CONFERENCE_STEP.UPDATE_RESEARCH_PHASE(researchPhaseId),
-      method: "PUT",
-      body: {
-        registrationStartDate,registrationEndDate,fullPaperStartDate,fullPaperEndDate,reviewStartDate,reviewEndDate,
-        reviseStartDate,reviseEndDate,cameraReadyStartDate,cameraReadyEndDate,isWaitlist,isActive,
+        return {
+          url: endpoint.CONFERENCE_STEP.UPDATE_DRAFT_RESEARCH_BASIC(conferenceId),
+          method: "PUT",
+          body: formData,
+        };
       },
-    };
-  },
-  invalidatesTags: ["ConferenceStep"],
-}),
+      invalidatesTags: ["ConferenceStep"],
+    }),
 
-  updateResearchMaterial: builder.mutation<
-    ApiResponse<{ success: boolean }>,
-    { materialId: string; fileDescription?: string; file?: File | null }
-  >({
-    query: ({ materialId, fileDescription, file }) => {
-      const formData = new FormData();
-
-      if (fileDescription !== undefined) {
-        formData.append("fileDescription", fileDescription);
-      }
-
-      if (file) {
-        formData.append("file", file);
-      }
-
-      return {
-        url: endpoint.CONFERENCE_STEP.UPDATE_RESEARCH_MATERIAL(materialId),
+    updateResearchDetail: builder.mutation<
+      ApiResponse<{ success: boolean }>,
+      { conferenceId: string; data: ResearchDetail }
+    >({
+      query: ({ conferenceId, data }) => ({
+        url: endpoint.CONFERENCE_STEP.UPDATE_RESEARCH_DETAIL(conferenceId),
         method: "PUT",
-        body: formData,
-      };
-    },
-    invalidatesTags: ["ConferenceStep"],
-  }),  
+        body: data,
+      }),
+      invalidatesTags: ["ConferenceStep"],
+    }),
 
-  updateResearchRankingFile: builder.mutation<
-    ApiResponse<{ success: boolean }>,
-    { rankingFileId: string; fileUrl?: string; file?: File | null }
-  >({
-    query: ({ rankingFileId, fileUrl, file }) => {
-      const formData = new FormData();
+    updateResearchPhase: builder.mutation<
+      ApiResponse<{ success: boolean }>,
+      { researchPhaseId: string; data: UpdateResearchPhaseRequest }
+    >({
+      query: ({ researchPhaseId, data }) => {
+        const {
+          registrationStartDate, registrationEndDate, fullPaperStartDate, fullPaperEndDate, reviewStartDate, reviewEndDate,
+          reviseStartDate, reviseEndDate, cameraReadyStartDate, cameraReadyEndDate, isWaitlist, isActive
+        } = data;
 
-      if (fileUrl !== undefined) {
-        formData.append("fileUrl", fileUrl);
-      }
+        return {
+          url: endpoint.CONFERENCE_STEP.UPDATE_RESEARCH_PHASE(researchPhaseId),
+          method: "PUT",
+          body: {
+            registrationStartDate, registrationEndDate, fullPaperStartDate, fullPaperEndDate, reviewStartDate, reviewEndDate,
+            reviseStartDate, reviseEndDate, cameraReadyStartDate, cameraReadyEndDate, isWaitlist, isActive,
+          },
+        };
+      },
+      invalidatesTags: ["ConferenceStep"],
+    }),
 
-      if (file) {
-        formData.append("file", file);
-      }
+    updateResearchMaterial: builder.mutation<
+      ApiResponse<{ success: boolean }>,
+      { materialId: string; fileDescription?: string; file?: File | null }
+    >({
+      query: ({ materialId, fileDescription, file }) => {
+        const formData = new FormData();
 
-      return {
-        url: endpoint.CONFERENCE_STEP.UPDATE_RESEARCH_RANKING_FILE(rankingFileId),
+        if (fileDescription !== undefined) {
+          formData.append("fileDescription", fileDescription);
+        }
+
+        if (file) {
+          formData.append("file", file);
+        }
+
+        return {
+          url: endpoint.CONFERENCE_STEP.UPDATE_RESEARCH_MATERIAL(materialId),
+          method: "PUT",
+          body: formData,
+        };
+      },
+      invalidatesTags: ["ConferenceStep"],
+    }),
+
+    updateResearchRankingFile: builder.mutation<
+      ApiResponse<{ success: boolean }>,
+      { rankingFileId: string; fileUrl?: string; file?: File | null }
+    >({
+      query: ({ rankingFileId, fileUrl, file }) => {
+        const formData = new FormData();
+
+        if (fileUrl !== undefined) {
+          formData.append("fileUrl", fileUrl);
+        }
+
+        if (file) {
+          formData.append("file", file);
+        }
+
+        return {
+          url: endpoint.CONFERENCE_STEP.UPDATE_RESEARCH_RANKING_FILE(rankingFileId),
+          method: "PUT",
+          body: formData,
+        };
+      },
+      invalidatesTags: ["ConferenceStep"],
+    }),
+
+    updateResearchSession: builder.mutation<
+      ApiResponse<Session>,
+      { sessionId: string; data: Session }
+    >({
+      query: ({ sessionId, data }) => {
+        const { title, description, startTime, endTime, date, roomId } = data;
+
+        return {
+          url: endpoint.CONFERENCE_STEP.UPDATE_RESEARCH_SESSION(sessionId),
+          method: "PUT",
+          body: { title, description, startTime, endTime, date, roomId },
+        };
+      },
+      invalidatesTags: ["ConferenceStep"],
+    }),
+
+    updateResearchRankingReference: builder.mutation<
+      ApiResponse<{ success: boolean }>,
+      { referenceId: string; referenceUrl: string }
+    >({
+      query: ({ referenceId, referenceUrl }) => ({
+        url: endpoint.CONFERENCE_STEP.UPDATE_RESEARCH_RANKING_REFERENCE(referenceId),
         method: "PUT",
-        body: formData,
-      };
-    },
-    invalidatesTags: ["ConferenceStep"],
-  }),  
+        body: { referenceUrl },
+      }),
+      invalidatesTags: ["ConferenceStep"],
+    }),
 
-updateResearchSession: builder.mutation<
-  ApiResponse<Session>,
-  { sessionId: string; data: Session }
->({
-  query: ({ sessionId, data }) => {
-    const {title,description,startTime,endTime,date,roomId} = data;
-
-    return {
-      url: endpoint.CONFERENCE_STEP.UPDATE_RESEARCH_SESSION(sessionId),
-      method: "PUT",
-      body: {title,description,startTime,endTime,date,roomId},
-    };
-  },
-  invalidatesTags: ["ConferenceStep"],
-}),
-
-updateResearchRankingReference: builder.mutation<
-  ApiResponse<{ success: boolean }>,
-  { referenceId: string; referenceUrl: string }
->({
-  query: ({ referenceId, referenceUrl }) => ({
-    url: endpoint.CONFERENCE_STEP.UPDATE_RESEARCH_RANKING_REFERENCE(referenceId),
-    method: "PUT",
-    body: { referenceUrl },
-  }),
-  invalidatesTags: ["ConferenceStep"],
-}),
-
-updateRevisionRoundDeadline: builder.mutation<
-  ApiResponse<{ success: boolean }>, 
-  {
-    deadlineId: string;
-    startSubmissionDate: string;
-    endSubmissionDate: string;
-  }
->({
-  query: ({ deadlineId, startSubmissionDate, endSubmissionDate }) => ({
-    url: endpoint.CONFERENCE_STEP.UPDATE_REVISION_ROUND_DEADLINE(deadlineId),
-    method: "PUT",
-    body: {
-      startSubmissionDate,
-      endSubmissionDate,
-    },
-  }),
-  invalidatesTags: ["ConferenceStep"],
-}),
+    updateRevisionRoundDeadline: builder.mutation<
+      ApiResponse<{ success: boolean }>,
+      {
+        deadlineId: string;
+        startSubmissionDate: string;
+        endSubmissionDate: string;
+      }
+    >({
+      query: ({ deadlineId, startSubmissionDate, endSubmissionDate }) => ({
+        url: endpoint.CONFERENCE_STEP.UPDATE_REVISION_ROUND_DEADLINE(deadlineId),
+        method: "PUT",
+        body: {
+          startSubmissionDate,
+          endSubmissionDate,
+        },
+      }),
+      invalidatesTags: ["ConferenceStep"],
+    }),
 
     //DELETE
-deleteRefundPolicy: builder.mutation<
-  ApiResponse<null>,
-  string // refundPolicyId
->({
-  query: (refundPolicyId) => ({
-    url: endpoint.CONFERENCE_STEP.DELETE_REFUND_POLICY(refundPolicyId),
-    method: "DELETE",
-  }),
-  invalidatesTags: ["ConferenceStep"],
-}),
+    deleteRefundPolicy: builder.mutation<
+      ApiResponse<null>,
+      string // refundPolicyId
+    >({
+      query: (refundPolicyId) => ({
+        url: endpoint.CONFERENCE_STEP.DELETE_REFUND_POLICY(refundPolicyId),
+        method: "DELETE",
+      }),
+      invalidatesTags: ["ConferenceStep"],
+    }),
 
     deleteResearchMaterial: builder.mutation<ApiResponse<null>, string>({
       query: (materialId) => ({
@@ -957,7 +963,7 @@ export const {
   useUpdateResearchPhaseMutation,
   useUpdateResearchMaterialMutation,
   useUpdateResearchRankingFileMutation,
-  useUpdateResearchSessionMutation, 
+  useUpdateResearchSessionMutation,
   useUpdateResearchRankingReferenceMutation,
   useUpdateRevisionRoundDeadlineMutation,
 
@@ -974,5 +980,5 @@ export const {
   useDeleteResearchRankingFileMutation,
   useDeleteResearchSessionMutation,
   useDeleteResearchRankingReferenceMutation,
-  useDeleteRevisionRoundDeadlineMutation, 
+  useDeleteRevisionRoundDeadlineMutation,
 } = conferenceStepApi;

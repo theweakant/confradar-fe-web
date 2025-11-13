@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 import { useGetAllRoomsQuery } from "@/redux/services/room.service";
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
@@ -27,7 +27,8 @@ import {
   useFormSubmit,
   useValidation,
   useConferenceForm,
-} from "../../ConferenceStep/hooks";
+  useTechConferenceData,
+} from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/hooks";
 
 // Validations
 import {
@@ -39,12 +40,17 @@ import {
   validateBasicForm,
 } from "../../ConferenceStep/validations";
 
-import { TECH_STEP_LABELS, TECH_MAX_STEP } from "../../ConferenceStep/constants";
-import { useAppDispatch } from "@/redux/hooks/hooks";
+import { TECH_STEP_LABELS, TECH_MAX_STEP } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/constants";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks/hooks";
 import { setMaxStep } from "@/redux/slices/conferenceStep.slice";
+import { toast } from "sonner";
 
 export default function CreateConferenceStepPage() {
   const dispatch = useAppDispatch();
+
+  const [conferenceId, setConferenceId] = useState<string | null>(null);
+
+  const mode = useAppSelector((state) => state.conferenceStep.mode);
 
   const { data: categoriesData, isLoading: isCategoriesLoading } =
     useGetAllCategoriesQuery();
@@ -55,6 +61,7 @@ export default function CreateConferenceStepPage() {
   // Custom Hooks
   const {
     currentStep,
+    activeStep,
     completedSteps,
     handleNext,
     handlePrevious,
@@ -95,9 +102,27 @@ export default function CreateConferenceStepPage() {
     resetAllForms,
   } = useConferenceForm();
 
+  const { refetch: refetchConferenceData } = useTechConferenceData({
+    conferenceId: conferenceId || "",
+    onLoad: (data) => {
+      // Update all form states when data is loaded
+      setBasicForm(data.basicForm);
+      setTickets(data.tickets);
+      setSessions(data.sessions);
+      setPolicies(data.policies);
+      setRefundPolicies(data.refundPolicies);
+      setMediaList(data.mediaList);
+      setSponsors(data.sponsors);
+    },
+    onError: (error) => {
+      // console.error("Failed to load conference data:", error);
+      // toast.error("Không thể tải dữ liệu hội thảo!");
+    }
+  });
+
   // Initialize
   useEffect(() => {
-    dispatch(setMaxStep(TECH_MAX_STEP)); 
+    dispatch(setMaxStep(TECH_MAX_STEP));
     handleSetMode("create");
     handleGoToStep(1);
 
@@ -176,6 +201,16 @@ export default function CreateConferenceStepPage() {
     submitBasicInfo(basicForm).then((result) => {
       if (result.success) {
         handleMarkCompleted(1);
+        handleSetMode("edit");
+
+        const confId = result.data?.conferenceId;
+        if (confId) {
+          setConferenceId(confId);
+        }
+
+        if (conferenceId && mode === "edit") {
+          refetchConferenceData();
+        }
       }
     });
   };
@@ -184,6 +219,12 @@ export default function CreateConferenceStepPage() {
     submitPrice(tickets).then((result) => {
       if (result.success) {
         handleMarkCompleted(2);
+
+        if (conferenceId && mode === "edit") {
+          refetchConferenceData();
+        }
+        // setTickets(result.data ?? [])
+        // console.log('roi ne nha', tickets)
       }
     });
   };
@@ -192,6 +233,9 @@ export default function CreateConferenceStepPage() {
     submitSessions(sessions, basicForm.startDate, basicForm.endDate).then((result) => {
       if (result.success) {
         handleMarkCompleted(3);
+        if (conferenceId && mode === "edit") {
+          refetchConferenceData();
+        }
       }
     });
   };
@@ -200,6 +244,9 @@ export default function CreateConferenceStepPage() {
     submitPolicies(policies).then((result) => {
       if (result.success) {
         handleMarkCompleted(4);
+        if (conferenceId && mode === "edit") {
+          refetchConferenceData();
+        }
       }
     });
   };
@@ -208,6 +255,9 @@ export default function CreateConferenceStepPage() {
     submitMedia(mediaList).then((result) => {
       if (result.success) {
         handleMarkCompleted(5);
+        if (conferenceId && mode === "edit") {
+          refetchConferenceData();
+        }
       }
     });
   };
@@ -216,6 +266,9 @@ export default function CreateConferenceStepPage() {
     submitSponsors(sponsors).then((result) => {
       if (result.success) {
         handleMarkCompleted(6);
+        if (conferenceId && mode === "edit") {
+          refetchConferenceData();
+        }
       }
     });
   };
@@ -229,9 +282,10 @@ export default function CreateConferenceStepPage() {
 
       <StepIndicator
         currentStep={currentStep}
+        activeStep={activeStep}
         completedSteps={completedSteps}
-        maxStep={TECH_MAX_STEP} 
-        stepLabels={TECH_STEP_LABELS} 
+        maxStep={TECH_MAX_STEP}
+        stepLabels={TECH_STEP_LABELS}
         onStepClick={handleGoToStep}
       />
 

@@ -6,6 +6,7 @@ import {
   prevStep,
   goToStep,
   markStepCompleted,
+  unmarkStepCompleted,
   resetWizard,
   setMode,
 } from "@/redux/slices/conferenceStep.slice";
@@ -13,6 +14,7 @@ import {
 export function useStepNavigation() {
   const dispatch = useAppDispatch();
   const currentStep = useAppSelector((state) => state.conferenceStep.currentStep);
+  const activeStep = useAppSelector((state) => state.conferenceStep.activeStep);
   const completedSteps = useAppSelector(
     (state) => state.conferenceStep.completedSteps
   );
@@ -41,6 +43,10 @@ export function useStepNavigation() {
     dispatch(markStepCompleted(step));
   }, [dispatch]);
 
+  const handleUnmarkCompleted = useCallback((step: number) => {
+    dispatch(unmarkStepCompleted(step));
+  }, [dispatch]);
+
   const handleReset = useCallback(() => {
     dispatch(resetWizard());
   }, [dispatch]);
@@ -67,12 +73,14 @@ export function useStepNavigation() {
 
   return {
     currentStep,
+    activeStep,
     completedSteps,
     mode,
     handleNext,
     handlePrevious,
     handleGoToStep,
     handleMarkCompleted,
+    handleUnmarkCompleted,
     handleReset,
     handleSetMode,
     isStepCompleted,

@@ -4,6 +4,7 @@ import type { ConferenceBasicResponse } from "@/types/conference.type";
 
 interface ConferenceStepState {
   currentStep: number;
+  activeStep: number;
   conferenceId: string | null;
   conferenceBasicData: Partial<ConferenceBasicResponse> | null;
   completedSteps: number[];
@@ -15,6 +16,7 @@ interface ConferenceStepState {
 
 const initialState: ConferenceStepState = {
   currentStep: 1,
+  activeStep: 1,
   conferenceId: null,
   conferenceBasicData: null,
   completedSteps: [],
@@ -74,7 +76,7 @@ const conferenceStepSlice = createSlice({
       if (state.mode === "edit" && newMode === "create") {
         state.currentStep = 1;
         state.conferenceId = null;
-        state.conferenceBasicData = null; 
+        state.conferenceBasicData = null;
         state.completedSteps = [];
         state.error = null;
       }
@@ -87,6 +89,7 @@ const conferenceStepSlice = createSlice({
         if (!state.completedSteps.includes(state.currentStep)) {
           state.completedSteps.push(state.currentStep);
         }
+        state.activeStep = state.currentStep;
         state.currentStep += 1;
       }
     },
@@ -94,6 +97,7 @@ const conferenceStepSlice = createSlice({
     // Quay lại step trước
     prevStep: (state) => {
       if (state.currentStep > 1) {
+        state.activeStep = state.currentStep;
         state.currentStep -= 1;
       }
     },
@@ -105,6 +109,7 @@ const conferenceStepSlice = createSlice({
         targetStep >= 1 &&
         targetStep <= state.maxStep
       ) {
+        state.activeStep = state.currentStep;
         state.currentStep = targetStep;
       }
     },
@@ -115,6 +120,11 @@ const conferenceStepSlice = createSlice({
       if (!state.completedSteps.includes(step)) {
         state.completedSteps.push(step);
       }
+    },
+
+    unmarkStepCompleted: (state, action: PayloadAction<number>) => {
+      const step = action.payload;
+      state.completedSteps = state.completedSteps.filter((s) => s !== step);
     },
 
     // Reset toàn bộ wizard về trạng thái ban đầu
@@ -149,6 +159,7 @@ export const {
   prevStep,
   goToStep,
   markStepCompleted,
+  unmarkStepCompleted,
   resetWizard,
   startLoading,
   stopLoading,

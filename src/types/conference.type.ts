@@ -86,8 +86,8 @@ export interface ConferenceBasicForm {
   targetAudienceTechnicalConference?: string; //for tech conf
   customTarget?: string;
 
-  contractURL?:File|string|null;
-  commission?:number;
+  contractURL?: File | string | null;
+  commission?: number;
 }
 
 export interface ConferenceBasicResponse {
@@ -124,7 +124,7 @@ export interface Phase {
   startDate: string;
   endDate: string;
   totalslot: number;
-  refundInPhase:RefundInPhase[];
+  refundInPhase: RefundInPhase[] | RefundPolicyResponse[];
 }
 
 export interface Ticket {
@@ -191,7 +191,7 @@ export interface Speaker {
 
 export interface SessionMedia {
   sessionMediaId?: string;
-  mediaFile?: File | string|null;
+  mediaFile?: File | string | null;
   mediaUrl?: string;
 }
 
@@ -228,7 +228,7 @@ export interface ConferenceRefundPolicyData {
 //MEDIA STEP
 export interface Media {
   mediaId?: string;
-  mediaFile: File | null |string;
+  mediaFile: File | null | string;
   mediaUrl?: string;
 }
 
@@ -240,7 +240,7 @@ export interface ConferenceMediaData {
 export interface Sponsor {
   sponsorId?: string;
   name: string;
-  imageFile: File | null |string;
+  imageFile: File | null | string;
   imageUrl?: string;
 }
 
@@ -257,7 +257,7 @@ export interface RegisteredUserInConference {
   registeredDate: string;
   conferenceId: string;
   conferenceName: string;
-  isRefunded:boolean;
+  isRefunded: boolean;
 }
 
 //not in use
@@ -485,8 +485,8 @@ export interface TechnicalConferenceDetailResponse {
   conferencePrices?: ConferencePriceResponse[];
   conferenceTimelines?: ConferenceTimelineResponse[];
 
-  contractURL:File|string;
-  commission:number;
+  contractURL: File | string;
+  commission: number;
 
 }
 
@@ -574,6 +574,7 @@ export interface ConferencePricePhaseResponse {
   applyPercent?: number;
   totalSlot?: number;
   availableSlot?: number;
+  refundPolicies?: RefundPolicyResponse[];
 }
 
 export interface TechnicalConferenceSessionResponse {
@@ -650,7 +651,7 @@ export interface ResearchConferencePhaseResponse {
 
 export interface RevisionRoundDeadlineResponse {
   revisionRoundDeadlineId?: string;
-  startDate?:string;
+  startDate?: string;
   endDate?: string;
   roundNumber?: number;
   researchConferencePhaseId?: string;

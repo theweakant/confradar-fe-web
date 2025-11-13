@@ -128,6 +128,8 @@ export function useFormSubmit() {
     try {
       setIsSubmitting(true);
 
+      let createdTickets: Ticket[] = [];
+
       if (mode === "edit") {
         if (deletedTicketIds.length > 0) {
           await Promise.all(
@@ -135,7 +137,10 @@ export function useFormSubmit() {
           );
         }
 
+        const t = tickets[0];
+
         const existingTickets = tickets.filter((t) => t.priceId);
+        console.log('ticketlist', existingTickets);
         if (existingTickets.length > 0) {
           await Promise.all(
             existingTickets.map((ticket) =>
@@ -174,7 +179,31 @@ export function useFormSubmit() {
               })),
             })),
           };
-          await createPrice({ conferenceId, data: priceData }).unwrap();
+          const result = await createPrice({ conferenceId, data: priceData }).unwrap();
+
+          createdTickets = (result.data.conferencePriceWithPhasesResponses || []).map((p) => ({
+            ticketId: p.conferencePriceId,
+            priceId: p.conferencePriceId,
+            ticketPrice: p.ticketPrice ?? 0,
+            ticketName: p.ticketName ?? "",
+            ticketDescription: p.ticketDescription ?? "",
+            isAuthor: p.isAuthor ?? false,
+            totalSlot: p.totalSlot ?? 0,
+            phases: (p.pricePhases || []).map((ph) => ({
+              pricePhaseId: ph.pricePhaseId,
+              phaseName: ph.phaseName ?? "",
+              startDate: ph.startDate ?? "",
+              endDate: ph.endDate ?? "",
+              applyPercent: ph.applyPercent ?? 0,
+              totalslot: ph.totalSlot ?? 0,
+              refundInPhase: (ph.refundPolicies || []).map((rp) => ({
+                refundPolicyId: rp.refundPolicyId ?? "",
+                percentRefund: rp.percentRefund ?? 0,
+                refundDeadline: rp.refundDeadline ?? "",
+                refundOrder: rp.refundOrder ?? 0,
+              })),
+            })),
+          }));
         }
       } else {
         if (tickets.length === 0) {
@@ -203,13 +232,42 @@ export function useFormSubmit() {
           })),
         };
 
-        await createPrice({ conferenceId, data: priceData }).unwrap();
+        const result = await createPrice({ conferenceId, data: priceData }).unwrap();
+
+        createdTickets = (result.data.conferencePriceWithPhasesResponses || []).map((p) => ({
+          ticketId: p.conferencePriceId,
+          priceId: p.conferencePriceId,
+          ticketPrice: p.ticketPrice ?? 0,
+          ticketName: p.ticketName ?? "",
+          ticketDescription: p.ticketDescription ?? "",
+          isAuthor: p.isAuthor ?? false,
+          totalSlot: p.totalSlot ?? 0,
+          phases: (p.pricePhases || []).map((ph) => ({
+            pricePhaseId: ph.pricePhaseId,
+            phaseName: ph.phaseName ?? "",
+            startDate: ph.startDate ?? "",
+            endDate: ph.endDate ?? "",
+            applyPercent: ph.applyPercent ?? 0,
+            totalslot: ph.totalSlot ?? 0,
+            refundInPhase: (ph.refundPolicies || []).map((rp) => ({
+              refundPolicyId: rp.refundPolicyId ?? "",
+              percentRefund: rp.percentRefund ?? 0,
+              refundDeadline: rp.refundDeadline ?? "",
+              refundOrder: rp.refundOrder ?? 0,
+            })),
+          })),
+        }));
       }
 
       dispatch(markStepCompleted(2));
       // ⚠️ KHÔNG auto nextStep() ở đây
       toast.success("Lưu thông tin giá vé thành công!");
-      return { success: true };
+
+      const allTickets = mode === "edit"
+        ? [...tickets.filter(t => t.priceId), ...createdTickets]
+        : createdTickets;
+
+      return { success: true, data: allTickets };
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Price submit failed:", error);
@@ -655,7 +713,7 @@ export function useFormSubmit() {
     submitPolicies,
     submitMedia,
     submitSponsors,
-    submitAll,       
-    validateAllSteps, 
+    submitAll,
+    validateAllSteps,
   };
 }

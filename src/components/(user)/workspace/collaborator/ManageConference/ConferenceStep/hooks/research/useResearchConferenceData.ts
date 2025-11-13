@@ -46,11 +46,11 @@ export function useResearchConferenceData({
   const dispatch = useAppDispatch();
   const hasDispatchedRef = useRef(false); // ✅ Dùng để tránh dispatch nhiều lần
 
-  const { data: conferenceDetailResponse, isLoading, isError, error } = 
+  const { data: conferenceDetailResponse, isLoading, isError, error } =
     useGetResearchConferenceDetailInternalQuery(conferenceId);
 
-  const stableOnLoad = useCallback(onLoad || (() => {}), [onLoad]);
-  const stableOnError = useCallback(onError || (() => {}), [onError]);
+  const stableOnLoad = useCallback(onLoad || (() => { }), [onLoad]);
+  const stableOnError = useCallback(onError || (() => { }), [onError]);
 
   useEffect(() => {
     if (isError) {
@@ -159,7 +159,14 @@ export function useResearchConferenceData({
           endDate: ph.endDate ?? "",
           applyPercent: ph.applyPercent ?? 0,
           totalslot: ph.totalSlot ?? 0,
-          refundInPhase: [],
+          refundInPhase: (ph.refundPolicies || []).map((rp: RefundPolicyResponse) => ({
+            ...rp,
+            refundPolicyId: rp.refundPolicyId ?? "",
+            refundOrder: rp.refundOrder ?? 0,
+            percentRefund: rp.percentRefund ?? 0,
+            refundDeadline: rp.refundDeadline ?? "",
+          })),
+          // refundInPhase: [],
         })),
       }));
 
