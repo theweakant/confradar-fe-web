@@ -1,3 +1,4 @@
+"use client";
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/molecules/FormInput";
@@ -14,7 +15,6 @@ interface PhaseModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (phase: Phase) => void;
-  // Dùng timeline động: nếu isAuthor → dùng registration, else → dùng ticket sale
   timelineStart: string;
   timelineEnd: string;
   ticketPrice: number;
@@ -121,6 +121,7 @@ function PhaseModal({
 
   const handleUpdateRefund = (index: number, field: keyof RefundInPhase, value: string | number) => {
     const updated = [...refundPolicies];
+
     // @ts-expect-error thêm message để không lỗi run build
     updated[index][field] = value;
     setRefundPolicies(updated);
@@ -413,19 +414,23 @@ function PhaseModal({
 interface ResearchPriceFormProps {
   tickets: Ticket[];
   onTicketsChange: (tickets: Ticket[]) => void;
+  onRemoveTicket?: (ticketId: string) => void;
   ticketSaleStart: string;
   ticketSaleEnd: string;
   researchPhases: ResearchPhase[];
   maxTotalSlot: number;
+  allowListener: boolean; 
 }
 
 export function ResearchPriceForm({
   tickets,
   onTicketsChange,
+  onRemoveTicket,
   ticketSaleStart,
   ticketSaleEnd,
   researchPhases,
   maxTotalSlot,
+  allowListener
 }: ResearchPriceFormProps) {
   const [newTicket, setNewTicket] = useState<Omit<Ticket, "ticketId">>({
     ticketPrice: 0,
@@ -438,21 +443,41 @@ export function ResearchPriceForm({
 
   const [isPhaseModalOpen, setIsPhaseModalOpen] = useState(false);
   const [editingTicketIndex, setEditingTicketIndex] = useState<number | null>(null);
+  const [editingPhaseIndex, setEditingPhaseIndex] = useState<number | null>(null); // ✅ Thêm state
 
   const mainPhase = researchPhases.find((p) => !p.isWaitlist);
   const authorTimelineStart = mainPhase?.registrationStartDate || "";
   const authorTimelineEnd = mainPhase?.registrationEndDate || "";
 
+  // ✅ Ép isAuthor = true nếu không cho phép listener
+  useEffect(() => {
+    if (!allowListener) {
+      setNewTicket(prev => ({ ...prev, isAuthor: true }));
+    }
+  }, [allowListener]);
+
   // Xác định timeline dựa trên isAuthor
   const currentTimelineStart = newTicket.isAuthor ? authorTimelineStart : ticketSaleStart;
   const currentTimelineEnd = newTicket.isAuthor ? authorTimelineEnd : ticketSaleEnd;
 
-  const handleAddPhase = (phase: Phase) => {
-    setNewTicket({
-      ...newTicket,
-      phases: [...newTicket.phases, phase],
-    });
-    toast.success("Đã thêm giai đoạn giá!");
+  // ✅ Xử lý thêm hoặc cập nhật phase
+  const handleAddOrUpdatePhase = (phase: Phase) => {
+    if (editingPhaseIndex !== null) {
+      // Cập nhật phase đã chọn
+      const updatedPhases = [...newTicket.phases];
+      updatedPhases[editingPhaseIndex] = phase;
+      setNewTicket({ ...newTicket, phases: updatedPhases });
+      toast.success("Đã cập nhật giai đoạn!");
+    } else {
+      // Thêm phase mới
+      setNewTicket({
+        ...newTicket,
+        phases: [...newTicket.phases, phase],
+      });
+      toast.success("Đã thêm giai đoạn giá!");
+    }
+    setIsPhaseModalOpen(false);
+    setEditingPhaseIndex(null);
   };
 
   const handleRemovePhase = (phaseIndex: number) => {
@@ -463,7 +488,13 @@ export function ResearchPriceForm({
     toast.success("Đã xóa giai đoạn!");
   };
 
-  const usedPhaseSlots = newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0);
+  // ✅ Hàm sửa phase
+  const handleEditPhase = (phase: Phase, index: number) => {
+    setEditingPhaseIndex(index);
+    setIsPhaseModalOpen(true);
+  };
+
+  const usedPhaseSlots = newTicket.phases.reduce((sum, p, i) => sum + (i === editingPhaseIndex ? 0 : p.totalslot), 0);
 
   const handleAddTicket = () => {
     if (!newTicket.ticketName.trim()) {
@@ -479,7 +510,6 @@ export function ResearchPriceForm({
       return;
     }
 
-    // Kiểm tra timeline trước khi validate phase
     if (newTicket.isAuthor) {
       if (!authorTimelineStart || !authorTimelineEnd) {
         toast.error("Vui lòng điền Timeline (Registration) trước khi thêm vé tác giả!");
@@ -505,7 +535,6 @@ export function ResearchPriceForm({
         (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
       );
 
-      // Kiểm tra phase đầu
       if (sortedPhases[0].startDate !== currentTimelineStart) {
         toast.error(
           `Giai đoạn đầu tiên phải bắt đầu từ ${formatDate(currentTimelineStart)}`
@@ -513,7 +542,6 @@ export function ResearchPriceForm({
         return;
       }
 
-      // Kiểm tra phase cuối
       const lastPhase = sortedPhases[sortedPhases.length - 1];
       if (lastPhase.endDate !== currentTimelineEnd) {
         toast.error(
@@ -522,11 +550,9 @@ export function ResearchPriceForm({
         return;
       }
 
-      // Kiểm tra liên tục
       for (let i = 0; i < sortedPhases.length - 1; i++) {
         const current = sortedPhases[i];
         const next = sortedPhases[i + 1];
-
         const currentDate = new Date(current.endDate);
         const nextStartDate = new Date(next.startDate);
         const expectedNextDate = new Date(currentDate);
@@ -580,6 +606,12 @@ export function ResearchPriceForm({
   };
 
   const handleRemoveTicket = (index: number) => {
+    const ticket = tickets[index];
+    
+    if (onRemoveTicket && ticket.ticketId) {
+      onRemoveTicket(ticket.ticketId);
+    }
+
     onTicketsChange(tickets.filter((_, i) => i !== index));
     toast.success("Đã xóa vé!");
   };
@@ -714,18 +746,28 @@ export function ResearchPriceForm({
           rows={2}
         />
 
-        <div className="flex items-center gap-2 mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <input
-            type="checkbox"
-            id="isAuthor"
-            checked={newTicket.isAuthor}
-            onChange={(e) => setNewTicket({ ...newTicket, isAuthor: e.target.checked })}
-            className="w-4 h-4 text-blue-600"
-          />
-          <label htmlFor="isAuthor" className="text-sm font-medium text-blue-900">
-            Đây là vé dành cho tác giả
-          </label>
-        </div>
+        {allowListener && (
+          <div className="flex items-center gap-2 mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <input
+              type="checkbox"
+              id="isAuthor"
+              checked={newTicket.isAuthor}
+              onChange={(e) => setNewTicket({ ...newTicket, isAuthor: e.target.checked })}
+              className="w-4 h-4 text-blue-600"
+            />
+            <label htmlFor="isAuthor" className="text-sm font-medium text-blue-900">
+              Đây là vé dành cho tác giả
+            </label>
+          </div>
+        )}
+
+        {!allowListener && (
+          <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="text-sm text-amber-800">
+              ⚠️ Chỉ cho phép tạo vé dành cho tác giả.
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-3 mt-2">
           <FormInput
@@ -751,7 +793,10 @@ export function ResearchPriceForm({
             </h5>
             <Button
               size="sm"
-              onClick={() => setIsPhaseModalOpen(true)}
+              onClick={() => {
+                setEditingPhaseIndex(null);
+                setIsPhaseModalOpen(true);
+              }}
               disabled={!newTicket.ticketPrice || !newTicket.totalSlot}
             >
               + Thêm giai đoạn
@@ -789,13 +834,22 @@ export function ResearchPriceForm({
                         ))}
                       </div>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => handleRemovePhase(idx)}
-                    >
-                      Xóa
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleEditPhase(phase, idx)}
+                      >
+                        Sửa
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleRemovePhase(idx)}
+                      >
+                        Xóa
+                      </Button>
+                    </div>
                   </div>
                 );
               })}
@@ -811,14 +865,17 @@ export function ResearchPriceForm({
       {/* Phase Modal */}
       <PhaseModal
         isOpen={isPhaseModalOpen}
-        onClose={() => setIsPhaseModalOpen(false)}
-        onAdd={handleAddPhase}
+        onClose={() => {
+          setIsPhaseModalOpen(false);
+          setEditingPhaseIndex(null);
+        }}
+        onAdd={handleAddOrUpdatePhase}
         timelineStart={currentTimelineStart}
         timelineEnd={currentTimelineEnd}
         ticketPrice={newTicket.ticketPrice}
         maxSlot={newTicket.totalSlot}
         usedSlots={usedPhaseSlots}
-        editingPhase={null}
+        editingPhase={editingPhaseIndex !== null ? newTicket.phases[editingPhaseIndex] : null}
       />
     </div>
   );

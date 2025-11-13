@@ -7,7 +7,7 @@ import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 // Components
 import {
   StepIndicator,
-  NavigationButtons,
+  CreateNavigationButtons as NavigationButtons,
   StepContainer,
   LoadingOverlay,
   PageHeader,
@@ -133,12 +133,12 @@ export default function CreateConferenceStepPage() {
         validate(field, () => validateConferenceName(basicForm.conferenceName));
         break;
       case "dateRange":
-      if (basicForm.dateRange != null) {
-        validate(field, () => validateDateRange(basicForm.dateRange!));
-      } else {
-        clearError("dateRange");
-      }
-      break;
+        if (basicForm.dateRange != null) {
+          validate(field, () => validateDateRange(basicForm.dateRange!));
+        } else {
+          clearError("dateRange");
+        }
+        break;
       case "totalSlot":
         validate(field, () => validateTotalSlot(basicForm.totalSlot));
         break;
@@ -148,75 +148,76 @@ export default function CreateConferenceStepPage() {
         );
         break;
       case "ticketSaleDuration":
-      if (
-        basicForm.ticketSaleDuration != null &&
-        basicForm.ticketSaleStart &&
-        basicForm.startDate
-      ) {
-        validate(field, () =>
-          validateTicketSaleDuration(
-            basicForm.ticketSaleDuration!,
-            basicForm.ticketSaleStart!,
-            basicForm.startDate!
-          )
-        );
-      } else {
-        clearError("ticketSaleDuration");
-      }
-      break;
+        if (
+          basicForm.ticketSaleDuration != null &&
+          basicForm.ticketSaleStart &&
+          basicForm.startDate
+        ) {
+          validate(field, () =>
+            validateTicketSaleDuration(
+              basicForm.ticketSaleDuration!,
+              basicForm.ticketSaleStart!,
+              basicForm.startDate!
+            )
+          );
+        } else {
+          clearError("ticketSaleDuration");
+        }
+        break;
     }
   };
 
-  // Submit handlers
-  const handleBasicSubmit = async () => {
+  // Submit handlers — ✅ KHÔNG CẦN return { success: boolean }
+  const handleBasicSubmit = () => {
     const validationResult = validateBasicForm(basicForm);
     if (!validationResult.isValid) {
       return;
     }
-
-    const result = await submitBasicInfo(basicForm);
-    if (result.success) {
-      handleMarkCompleted(1);
-    }
+    submitBasicInfo(basicForm).then((result) => {
+      if (result.success) {
+        handleMarkCompleted(1);
+      }
+    });
   };
 
-  const handlePriceSubmit = async () => {
-    const result = await submitPrice(tickets);
-    if (result.success) {
-      handleMarkCompleted(2);
-    }
+  const handlePriceSubmit = () => {
+    submitPrice(tickets).then((result) => {
+      if (result.success) {
+        handleMarkCompleted(2);
+      }
+    });
   };
 
-  const handleSessionsSubmit = async () => {
-    const result = await submitSessions(
-      sessions,
-      basicForm.startDate,
-      basicForm.endDate
-    );
-    if (result.success) {
-      handleMarkCompleted(3);
-    }
+  const handleSessionsSubmit = () => {
+    submitSessions(sessions, basicForm.startDate, basicForm.endDate).then((result) => {
+      if (result.success) {
+        handleMarkCompleted(3);
+      }
+    });
   };
 
-  const handlePoliciesSubmit = async () => {
-    const result = await submitPolicies(policies);
-    if (result.success) {
-      handleMarkCompleted(4);
-    }
+  const handlePoliciesSubmit = () => {
+    submitPolicies(policies).then((result) => {
+      if (result.success) {
+        handleMarkCompleted(4);
+      }
+    });
   };
 
-  const handleMediaSubmit = async () => {
-    const result = await submitMedia(mediaList);
-    if (result.success) {
-      handleMarkCompleted(5);
-    }
+  const handleMediaSubmit = () => {
+    submitMedia(mediaList).then((result) => {
+      if (result.success) {
+        handleMarkCompleted(5);
+      }
+    });
   };
 
-  const handleSponsorsSubmit = async () => {
-    const result = await submitSponsors(sponsors);
-    if (result.success) {
-      handleMarkCompleted(6);
-    }
+  const handleSponsorsSubmit = () => {
+    submitSponsors(sponsors).then((result) => {
+      if (result.success) {
+        handleMarkCompleted(6);
+      }
+    });
   };
 
   return (
@@ -244,7 +245,7 @@ export default function CreateConferenceStepPage() {
           isCompleted={isStepCompleted(1)}
         >
           <BasicInfoForm
-            formData={basicForm}
+            value={basicForm}
             onChange={setBasicForm}
             validationErrors={validationErrors}
             onFieldBlur={handleFieldBlur}
@@ -331,9 +332,7 @@ export default function CreateConferenceStepPage() {
         >
           <PolicyForm
             policies={policies}
-            refundPolicies={refundPolicies}
             onPoliciesChange={setPolicies}
-            onRefundPoliciesChange={setRefundPolicies}
             eventStartDate={basicForm.startDate}
             ticketSaleStart={basicForm.ticketSaleStart}
             ticketSaleEnd={basicForm.ticketSaleEnd}

@@ -35,7 +35,6 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const dispatch = useDispatch();
-  // const normalizedRole = role.toLowerCase().replace(/\s+/g, "");
   const normalizedRoles = role
     .filter(r => typeof r === "string")
     .map(r => r.toLowerCase().replace(/\s+/g, ""));

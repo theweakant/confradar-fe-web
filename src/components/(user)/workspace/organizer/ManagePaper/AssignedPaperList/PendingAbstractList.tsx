@@ -3,10 +3,42 @@ import { useParams } from "next/navigation";
 import { FileText, Calendar, User, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   useListPendingAbstractsQuery,
   useDecideAbstractStatusMutation,
 } from "@/redux/services/paper.service";
 import { toast } from "sonner";
+import { useState } from "react";
+import { ApiError } from "@/types/api.type";
+
+interface Abstract {
+  abstractId: string;
+  paperId: string;
+  presenterName: string;
+  conferenceName: string;
+  globalStatusName: string;
+  createdAt: string;
+  abstractUrl: string;
+}
+
+type DecisionType = "Accepted" | "Rejected";
 
 export default function PendingAbstractList() {
   const { confId } = useParams();
@@ -16,19 +48,53 @@ export default function PendingAbstractList() {
 
   const pendingAbstracts = response?.data || [];
 
-  const handleAccept = async (paperId: string, abstractId: string) => {
+  const [selectedAbstract, setSelectedAbstract] = useState<Abstract | null>(null);
+  const [showDecisionDialog, setShowDecisionDialog] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [pendingDecision, setPendingDecision] = useState<DecisionType | null>(null);
+
+  const handleOpenDecisionDialog = (abstract:unknown) => {
+    setSelectedAbstract(abstract as Abstract);
+    setShowDecisionDialog(true);
+  };
+
+  const handleDecisionClick = (decision:unknown) => {
+    setPendingDecision(decision as DecisionType);
+    setShowDecisionDialog(false);
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmDecision = async () => {
+    if (!selectedAbstract || !pendingDecision) return;
+
     try {
-      const result = await decideAbstractStatus({
-        paperId,
-        abstractId,
-        globalStatus: "Accepted",
+      await decideAbstractStatus({
+        paperId: selectedAbstract.paperId,
+        abstractId: selectedAbstract.abstractId,
+        globalStatus: pendingDecision,
       }).unwrap();
 
-      toast.success("Đã chấp nhận bài báo thành công!");
+      toast.success(
+        pendingDecision === "Accepted"
+          ? "Đã chấp nhận bài báo thành công!"
+          : "Đã từ chối bài báo thành công!"
+      );
+      
+      setShowConfirmDialog(false);
+      setSelectedAbstract(null);
+      setPendingDecision(null);
     } catch (error) {
-      toast.error("Có lỗi xảy ra khi chấp nhận bài báo");
-      console.error("Error accepting abstract:", error);
-    }
+    const apiError = error as { data?: ApiError };
+    const message = apiError.data?.message || "Có lỗi xảy ra khi xử lý bài báo";
+    toast.error(message);
+    console.error("Error processing abstract:", error);
+    setShowConfirmDialog(false);
+  }
+  };
+
+  const handleCancelConfirm = () => {
+    setShowConfirmDialog(false);
+    setShowDecisionDialog(true);
   };
 
   if (isLoading) {
@@ -130,12 +196,10 @@ export default function PendingAbstractList() {
 
                 <Button
                   className="ml-4"
-                  onClick={() =>
-                    handleAccept(abstract.paperId, abstract.abstractId)
-                  }
+                  onClick={() => handleOpenDecisionDialog(abstract)}
                   disabled={isDeciding}
                 >
-                  {isDeciding ? "Đang xử lý..." : "Chấp nhận"}
+                  Quyết định
                 </Button>
               </div>
             </div>
@@ -154,6 +218,62 @@ export default function PendingAbstractList() {
           </div>
         )}
       </div>
+
+      {/* Decision Dialog */}
+      <Dialog open={showDecisionDialog} onOpenChange={setShowDecisionDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Quyết định bài báo</DialogTitle>
+            <DialogDescription>
+              Vui lòng chọn quyết định cho bài báo này
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 sm:gap-2">
+            <Button
+              variant="default"
+              className="bg-green-600 hover:bg-green-700"
+              onClick={() => handleDecisionClick("Accepted")}
+            >
+              Chấp nhận
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => handleDecisionClick("Rejected")}
+            >
+              Từ chối
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm Dialog */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận quyết định</AlertDialogTitle>
+            <AlertDialogDescription>
+              Thao tác này sẽ không thể hoàn tác. Bạn có chắc chắn muốn{" "}
+              {pendingDecision === "Accepted" ? "chấp nhận" : "từ chối"} bài báo này?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelConfirm}>
+              Hủy
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDecision}
+              disabled={isDeciding}
+              className={
+                pendingDecision === "Accepted"
+                  ? "bg-green-600 hover:bg-green-700"
+                  : "bg-red-600 hover:bg-red-700"
+              }
+            >
+              {isDeciding ? "Đang xử lý..." : "Xác nhận"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

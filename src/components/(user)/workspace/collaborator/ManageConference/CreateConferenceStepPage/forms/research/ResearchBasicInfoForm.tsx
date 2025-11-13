@@ -7,7 +7,7 @@ import { formatDate } from "@/helper/format";
 import type { ConferenceBasicForm } from "@/types/conference.type";
 
 interface ResearchBasicInfoFormProps {
-  formData: ConferenceBasicForm;
+  value: ConferenceBasicForm;
   onChange: (data: ConferenceBasicForm) => void;
   validationErrors: Record<string, string>;
   onFieldBlur: (field: string) => void;
@@ -18,7 +18,7 @@ interface ResearchBasicInfoFormProps {
 }
 
 export function ResearchBasicInfoForm({
-  formData,
+  value,
   onChange,
   validationErrors,
   onFieldBlur,
@@ -29,9 +29,9 @@ export function ResearchBasicInfoForm({
 }: ResearchBasicInfoFormProps) {
   const handleChange = <K extends keyof ConferenceBasicForm>(
     field: K,
-    value: ConferenceBasicForm[K]
+    newValue: ConferenceBasicForm[K]
   ) => {
-    onChange({ ...formData, [field]: value });
+    onChange({ ...value, [field]: newValue });
   };
 
   return (
@@ -40,11 +40,11 @@ export function ResearchBasicInfoForm({
       <FormInput
         label="Tên hội thảo nghiên cứu"
         name="conferenceName"
-        value={formData.conferenceName}
+        value={value.conferenceName}
         onChange={(val) => handleChange("conferenceName", val)}
         onBlur={() => onFieldBlur("conferenceName")}
         error={validationErrors.conferenceName}
-        success={!validationErrors.conferenceName && formData.conferenceName.length >= 10}
+        success={!validationErrors.conferenceName && value.conferenceName.length >= 10}
         required
         placeholder="VD: International Conference on AI Research 2025"
       />
@@ -52,7 +52,7 @@ export function ResearchBasicInfoForm({
       {/* Description */}
       <FormTextArea
         label="Mô tả"
-        value={formData.description ?? ""}
+        value={value.description ?? ""}
         onChange={(val) => handleChange("description", val)}
         rows={3}
         required
@@ -63,7 +63,7 @@ export function ResearchBasicInfoForm({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <DatePickerInput
           label="Ngày bắt đầu sự kiện"
-          value={formData.startDate}
+          value={value.startDate}
           onChange={(val) => handleChange("startDate", val)}
           required
         />
@@ -71,8 +71,8 @@ export function ResearchBasicInfoForm({
         <FormInput
           label="Số ngày diễn ra"
           type="number"
-          value={formData.dateRange?? ""}
-          onChange={(val) => handleChange("dateRange", Number(val))}
+          value={value.dateRange ?? ""}
+          onChange={(val) => handleChange("dateRange", val === "" ? undefined : Number(val))}
           onBlur={() => onFieldBlur("dateRange")}
           error={validationErrors.dateRange}
           min="1"
@@ -86,9 +86,9 @@ export function ResearchBasicInfoForm({
             Ngày kết thúc sự kiện
           </label>
           <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
-            {formData.endDate ? (
+            {value.endDate ? (
               <span className="text-gray-900">
-                {new Date(formData.endDate).toLocaleDateString("vi-VN")}
+                {new Date(value.endDate).toLocaleDateString("vi-VN")}
               </span>
             ) : (
               <span className="text-gray-400">--/--/----</span>
@@ -102,16 +102,16 @@ export function ResearchBasicInfoForm({
         <DatePickerInput
           label="Ngày bắt đầu bán vé"
           sublabel={
-            formData.startDate
-              ? `Trước ngày bắt đầu sự kiện ${formatDate(formData.startDate)}`
+            value.startDate
+              ? `Trước ngày bắt đầu sự kiện ${formatDate(value.startDate)}`
               : undefined
           }
-          value={formData.ticketSaleStart}
+          value={value.ticketSaleStart}
           onChange={(val) => {
             handleChange("ticketSaleStart", val);
-            onFieldBlur("ticketSaleStart");  
-          }}          
-          maxDate={formData.endDate}
+            onFieldBlur("ticketSaleStart");
+          }}
+          maxDate={value.endDate}
           required
         />
 
@@ -119,8 +119,8 @@ export function ResearchBasicInfoForm({
           label="Số ngày bán vé"
           type="number"
           min="1"
-          value={formData.ticketSaleDuration}
-          onChange={(val) => handleChange("ticketSaleDuration", Number(val))}
+          value={value.ticketSaleDuration ?? ""}
+          onChange={(val) => handleChange("ticketSaleDuration", val === "" ? undefined : Number(val))}
           onBlur={() => onFieldBlur("ticketSaleDuration")}
           error={validationErrors.ticketSaleDuration}
           required
@@ -132,9 +132,9 @@ export function ResearchBasicInfoForm({
             Ngày kết thúc bán vé
           </label>
           <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
-            {formData.ticketSaleEnd ? (
+            {value.ticketSaleEnd ? (
               <span className="text-gray-900">
-                {new Date(formData.ticketSaleEnd).toLocaleDateString("vi-VN")}
+                {new Date(value.ticketSaleEnd).toLocaleDateString("vi-VN")}
               </span>
             ) : (
               <span className="text-gray-400">--/--/----</span>
@@ -144,11 +144,11 @@ export function ResearchBasicInfoForm({
       </div>
 
       {/* Warning Note for Research Conference */}
-      {formData.ticketSaleStart && formData.startDate && (
+      {value.ticketSaleStart && value.startDate && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
           <p className="text-sm text-amber-800">
-            <strong>⚠️ Lưu ý:</strong> Timeline nghiên cứu (Registration, Full Paper, Review, etc.) 
-            phải hoàn thành TRƯỚC ngày bắt đầu bán vé ({formatDate(formData.ticketSaleStart)})
+            <strong>Lưu ý:</strong> Timeline nghiên cứu (Registration, Full Paper, Review, etc.) 
+            phải hoàn thành TRƯỚC ngày bắt đầu bán vé ({formatDate(value.ticketSaleStart)})
           </p>
         </div>
       )}
@@ -159,11 +159,11 @@ export function ResearchBasicInfoForm({
           label="Sức chứa"
           name="totalSlot"
           type="number"
-          value={formData.totalSlot}
+          value={value.totalSlot}
           onChange={(val) => handleChange("totalSlot", Number(val))}
           onBlur={() => onFieldBlur("totalSlot")}
           error={validationErrors.totalSlot}
-          success={!validationErrors.totalSlot && formData.totalSlot > 0}
+          success={!validationErrors.totalSlot && value.totalSlot > 0}
           min="1"
           required
           placeholder="VD: 200"
@@ -171,7 +171,7 @@ export function ResearchBasicInfoForm({
         <FormSelect
           label="Danh mục"
           name="categoryId"
-          value={formData.conferenceCategoryId}
+          value={value.conferenceCategoryId}
           onChange={(val) => handleChange("conferenceCategoryId", val)}
           options={categoryOptions}
           required
@@ -184,14 +184,14 @@ export function ResearchBasicInfoForm({
         <FormInput
           label="Địa chỉ"
           name="address"
-          value={formData.address}
+          value={value.address}
           onChange={(val) => handleChange("address", val)}
           placeholder="VD: 123 Nguyen Hue, District 1"
         />
         <FormSelect
           label="Thành phố"
           name="cityId"
-          value={formData.cityId}
+          value={value.cityId}
           onChange={(val) => handleChange("cityId", val)}
           options={cityOptions}
           required
@@ -211,7 +211,7 @@ export function ResearchBasicInfoForm({
       {/* Info Note */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
         <p className="text-sm text-blue-800">
-          <strong>📝 Ghi chú:</strong> Hội thảo nghiên cứu yêu cầu thiết lập Timeline 
+          <strong>Chú ý:</strong> Hội thảo nghiên cứu yêu cầu thiết lập Timeline 
           (Registration, Full Paper, Review, Revision, Camera Ready) ở bước tiếp theo.
         </p>
       </div>

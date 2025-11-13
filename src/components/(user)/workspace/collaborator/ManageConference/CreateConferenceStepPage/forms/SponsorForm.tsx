@@ -8,9 +8,10 @@ import type { Sponsor } from "@/types/conference.type";
 interface SponsorFormProps {
   sponsors: Sponsor[];
   onSponsorsChange: (sponsors: Sponsor[]) => void;
+  onRemoveSponsor?: (sponsorId: string) => void;
 }
 
-export function SponsorForm({ sponsors, onSponsorsChange }: SponsorFormProps) {
+export function SponsorForm({ sponsors, onSponsorsChange, onRemoveSponsor }: SponsorFormProps) {
   const [newSponsor, setNewSponsor] = useState<Sponsor>({
     name: "",
     imageFile: null,
@@ -28,8 +29,14 @@ export function SponsorForm({ sponsors, onSponsorsChange }: SponsorFormProps) {
   };
 
   const handleRemoveSponsor = (index: number) => {
-    onSponsorsChange(sponsors.filter((_, i) => i !== index));
-    toast.success("Đã xóa nhà tài trợ!");
+    const sponsor = sponsors[index];
+    
+    if (onRemoveSponsor && sponsor.sponsorId) {
+      onRemoveSponsor(sponsor.sponsorId);
+    } else {
+      onSponsorsChange(sponsors.filter((_, i) => i !== index));
+      toast.success("Đã xóa nhà tài trợ!");
+    }
   };
 
   const handleEditSponsor = (sponsor: Sponsor, index: number) => {

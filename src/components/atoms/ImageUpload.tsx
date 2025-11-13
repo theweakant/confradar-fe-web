@@ -8,7 +8,7 @@ interface ImageUploadProps {
   height?: string;
   isList?: boolean;
   onChange?: (file: File | File[] | null) => void;
-  resetTrigger?: boolean; // 👈 thêm prop mới
+  resetTrigger?: boolean; 
 }
 
 export const ImageUpload: React.FC<ImageUploadProps> = ({

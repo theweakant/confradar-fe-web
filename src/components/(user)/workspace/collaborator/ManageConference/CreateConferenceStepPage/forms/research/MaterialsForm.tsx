@@ -16,6 +16,10 @@ interface MaterialsFormProps {
   onMaterialsChange: (materials: ResearchMaterial[]) => void;
   onRankingFilesChange: (files: ResearchRankingFile[]) => void;
   onRankingReferencesChange: (refs: ResearchRankingReference[]) => void;
+
+  onRemoveMaterial?: (materialId: string) => void;
+  onRemoveRankingFile?: (rankingFileId: string) => void;
+  onRemoveRankingReference?: (rankingReferenceId: string) => void;
 }
 
 export function MaterialsForm({
@@ -25,6 +29,9 @@ export function MaterialsForm({
   onMaterialsChange,
   onRankingFilesChange,
   onRankingReferencesChange,
+  onRemoveMaterial,
+  onRemoveRankingFile,
+  onRemoveRankingReference
 }: MaterialsFormProps) {
   const [newMaterial, setNewMaterial] = useState<ResearchMaterial>({
     fileName: "",
@@ -59,6 +66,12 @@ export function MaterialsForm({
   };
 
   const handleRemoveMaterial = (index: number) => {
+    const material = materials[index];
+    
+    if (onRemoveMaterial && material.materialId) {
+      onRemoveMaterial(material.materialId); 
+    }
+    
     onMaterialsChange(materials.filter((_, i) => i !== index));
     toast.success("Đã xóa tài liệu!");
   };
@@ -76,6 +89,12 @@ export function MaterialsForm({
   };
 
   const handleRemoveRankingFile = (index: number) => {
+    const file = rankingFiles[index];
+    
+    if (onRemoveRankingFile && file.rankingFileId) {
+      onRemoveRankingFile(file.rankingFileId); 
+    }
+    
     onRankingFilesChange(rankingFiles.filter((_, i) => i !== index));
     toast.success("Đã xóa file xếp hạng!");
   };
@@ -101,6 +120,12 @@ export function MaterialsForm({
   };
 
   const handleRemoveRankingReference = (index: number) => {
+    const ref = rankingReferences[index];
+    
+    if (onRemoveRankingReference && ref.rankingReferenceId) {
+      onRemoveRankingReference(ref.rankingReferenceId); 
+    }
+    
     onRankingReferencesChange(rankingReferences.filter((_, i) => i !== index));
     toast.success("Đã xóa URL tham khảo!");
   };
@@ -110,7 +135,7 @@ export function MaterialsForm({
       {/* Research Materials Section */}
       <div className="border p-4 rounded">
         <h4 className="font-medium mb-3">
-          📚 Tài liệu nghiên cứu ({materials.length})
+          Tài liệu nghiên cứu ({materials.length})
         </h4>
 
         {materials.length > 0 && (
@@ -130,7 +155,7 @@ export function MaterialsForm({
                 )}
                 {m.file && (
                   <div className="text-xs text-blue-600 mt-1">
-                    📎 {m.file instanceof File ? m.file.name : "File attached"}
+                    {m.file instanceof File ? m.file.name : "File attached"}
                   </div>
                 )}
                 <Button
@@ -154,7 +179,7 @@ export function MaterialsForm({
             value={newMaterial.fileName}
             onChange={(val) => setNewMaterial({ ...newMaterial, fileName: val })}
             required
-            placeholder="VD: Template bài báo, Hướng dẫn..."
+            placeholder="Template bài báo, Hướng dẫn..."
           />
           <FormTextArea
             label="Mô tả"
@@ -185,7 +210,7 @@ export function MaterialsForm({
       {/* Ranking Files Section */}
       <div className="border p-4 rounded">
         <h4 className="font-medium mb-3">
-          🏆 File xếp hạng ({rankingFiles.length})
+          File xếp hạng ({rankingFiles.length})
         </h4>
 
         {rankingFiles.length > 0 && (
@@ -219,7 +244,6 @@ export function MaterialsForm({
             label="URL file (tùy chọn)"
             value={newRankingFile.fileUrl || ""}
             onChange={(val) => setNewRankingFile({ ...newRankingFile, fileUrl: val })}
-            placeholder="https://..."
           />
           <div>
             <label className="block text-sm font-medium mb-2">
@@ -245,7 +269,7 @@ export function MaterialsForm({
       {/* Ranking References Section */}
       <div className="border p-4 rounded">
         <h4 className="font-medium mb-3">
-          🔗 Tham khảo xếp hạng ({rankingReferences.length})
+          Tham khảo xếp hạng ({rankingReferences.length})
         </h4>
 
         {rankingReferences.length > 0 && (
@@ -287,7 +311,7 @@ export function MaterialsForm({
             required
           />
           <div className="text-xs text-gray-600 bg-blue-50 p-2 rounded">
-            💡 <strong>Tip:</strong> Thêm link đến trang xếp hạng chính thức (CORE, Scopus, Web of Science, etc.)
+            <strong>Tip:</strong> Thêm link đến trang xếp hạng chính thức (CORE, Scopus, Web of Science, etc.)
           </div>
           <Button onClick={handleAddRankingReference} className="w-full">
             + Thêm URL

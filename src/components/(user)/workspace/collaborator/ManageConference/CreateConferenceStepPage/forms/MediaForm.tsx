@@ -8,9 +8,10 @@ import type { Media } from "@/types/conference.type";
 interface MediaFormProps {
   mediaList: Media[];
   onMediaListChange: (mediaList: Media[]) => void;
+  onRemoveMedia?: (mediaId: string) => void;
 }
 
-export function MediaForm({ mediaList, onMediaListChange }: MediaFormProps) {
+export function MediaForm({ mediaList, onMediaListChange, onRemoveMedia }: MediaFormProps) {
   const [newMedia, setNewMedia] = useState<Media>({ mediaFile: null });
 
   const handleAddMedia = () => {
@@ -24,8 +25,14 @@ export function MediaForm({ mediaList, onMediaListChange }: MediaFormProps) {
   };
 
   const handleRemoveMedia = (index: number) => {
-    onMediaListChange(mediaList.filter((_, i) => i !== index));
-    toast.success("Đã xóa media!");
+    const media = mediaList[index];
+    
+    if (onRemoveMedia && media.mediaId) {
+      onRemoveMedia(media.mediaId);
+    } else {
+      onMediaListChange(mediaList.filter((_, i) => i !== index));
+      toast.success("Đã xóa media!");
+    }
   };
 
   return (

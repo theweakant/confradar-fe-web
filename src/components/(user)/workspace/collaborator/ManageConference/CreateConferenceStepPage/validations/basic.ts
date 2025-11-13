@@ -8,6 +8,7 @@ export interface ValidationResult {
   isValid: boolean;
   error?: string;
   warning?: string;
+  message?:string
 }
 
 // ============================================

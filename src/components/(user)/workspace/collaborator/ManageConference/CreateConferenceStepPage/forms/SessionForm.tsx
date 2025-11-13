@@ -12,6 +12,7 @@ import type { Session, Speaker, RoomInfoResponse } from "@/types/conference.type
 interface SessionFormProps {
   sessions: Session[];
   onSessionsChange: (sessions: Session[]) => void;
+  onRemoveSession?: (sessionId: string) => void;
   eventStartDate: string;
   eventEndDate: string;
   roomOptions: Array<{ value: string; label: string }>;
@@ -108,6 +109,7 @@ function SpeakerModal({ isOpen, onClose, onAdd }: SpeakerModalProps) {
 export function SessionForm({
   sessions,
   onSessionsChange,
+  onRemoveSession,
   eventStartDate,
   eventEndDate,
   roomOptions,
@@ -219,8 +221,14 @@ export function SessionForm({
   };
 
   const handleRemoveSession = (index: number) => {
-    onSessionsChange(sessions.filter((_, i) => i !== index));
-    toast.success("Đã xóa session!");
+    const session = sessions[index];
+    
+    if (onRemoveSession && session.sessionId) {
+      onRemoveSession(session.sessionId);
+    } else {
+      onSessionsChange(sessions.filter((_, i) => i !== index));
+      toast.success("Đã xóa session!");
+    }
   };
 
   const handleEditSession = (session: Session, index: number) => {

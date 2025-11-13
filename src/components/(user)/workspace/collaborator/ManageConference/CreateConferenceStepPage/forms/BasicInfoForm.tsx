@@ -2,13 +2,14 @@ import { FormInput } from "@/components/molecules/FormInput";
 import { FormSelect } from "@/components/molecules/FormSelect";
 import { FormTextArea } from "@/components/molecules/FormTextArea";
 import { DatePickerInput } from "@/components/atoms/DatePickerInput";
+import { FileUpload } from "@/components/atoms/FileUpload";
 import { ImageUpload } from "@/components/atoms/ImageUpload";
 import { formatDate } from "@/helper/format";
 import type { ConferenceBasicForm } from "@/types/conference.type";
 import { TARGET_OPTIONS } from "../constants";
 
 interface BasicInfoFormProps {
-  formData: ConferenceBasicForm;
+  value: ConferenceBasicForm;
   onChange: (data: ConferenceBasicForm) => void;
   validationErrors: Record<string, string>;
   onFieldBlur: (field: string) => void;
@@ -19,7 +20,7 @@ interface BasicInfoFormProps {
 }
 
 export function BasicInfoForm({
-  formData,
+  value: formData,
   onChange,
   validationErrors,
   onFieldBlur,
@@ -183,15 +184,15 @@ export function BasicInfoForm({
       </div>
       {/* Contract & Commission */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormInput
+        <FileUpload
           label="Hợp đồng"
-          name="contractURL"
-          type="url"
-          value={formData.contractURL}
-          onChange={(val) => handleChange("contractURL", val)}
-          placeholder="https://example.com/contract.pdf"
+          value={formData.contractURL} 
+          onChange={(file) => handleChange("contractURL", file)}
+          accept=".pdf,.doc,.docx"
+          placeholder="Chọn file hợp đồng (PDF/DOC)"
           error={validationErrors.contractURL}
           required
+          maxSizeMB={10}
         />
 
         <FormInput

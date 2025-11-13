@@ -9,7 +9,7 @@ import { useGetAllRankingCategoriesQuery } from "@/redux/services/category.servi
 // Shared Components
 import {
   StepIndicator,
-  NavigationButtons,
+  CreateNavigationButtons as NavigationButtons, 
   StepContainer,
   LoadingOverlay,
   PageHeader,
@@ -27,7 +27,8 @@ import { ResearchDetailForm } from "../../../../collaborator/ManageConference/Cr
 import { ResearchPhaseForm } from "../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchPhaseForm";
 import { ResearchPriceForm } from "../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchPriceForm";
 import { MaterialsForm } from "../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/MaterialsForm";
-import { SessionForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/SessionForm";
+import { ResearchSessionForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchSessionForm";
+
 
 // Hooks
 import {
@@ -159,7 +160,6 @@ export default function CreateResearchConferenceStepPage() {
       label: ranking.rankName || "N/A",
     })) || [];
 
-
   const handleFieldBlur = (field: string) => {
     switch (field) {
       case "conferenceName":
@@ -200,61 +200,111 @@ export default function CreateResearchConferenceStepPage() {
     }
   };
 
-  // Submit handlers
-  const handleBasicSubmit = async () => {
+  // Submit handlers — ✅ KHÔNG TRẢ VỀ { success: boolean }
+  const handleBasicSubmit = () => {
     const validationResult = validateBasicForm(basicForm);
-    if (!validationResult.isValid) {
+    if (!validationResult.isValid) return;
+    submitBasicInfo(basicForm).then((result) => {
+      if (result.success) handleNext();
+    });
+  };
+
+  const handleResearchDetailSubmit = () => {
+    submitResearchDetail(researchDetail).then((result) => {
+      if (result.success) handleNext();
+    });
+  };
+
+  const handleTimelineSubmit = () => {
+    const mainPhase = researchPhases[0];
+    if (!mainPhase) {
+      toast.error("Main timeline là bắt buộc!");
       return;
     }
-    await submitBasicInfo(basicForm);
-  };
 
-  const handleResearchDetailSubmit = async () => {
-    await submitResearchDetail(researchDetail);
-  };
+    const mainValidation = validateResearchTimeline(mainPhase, basicForm.ticketSaleStart);
+    if (!mainValidation.isValid) {
+      toast.error(`Lỗi ở Main Timeline: ${mainValidation.error}`);
+      return;
+    }
+    if (mainValidation.warning) {
+      toast.warning(`Cảnh báo ở Main Timeline: ${mainValidation.warning}`);
+    }
 
-  const handleTimelineSubmit = async () => {
-    for (const [index, phase] of researchPhases.entries()) {
-      const validationResult = validateResearchTimeline(phase, basicForm.ticketSaleStart);
-      if (!validationResult.isValid) {
-        toast.error(`Lỗi ở phase ${index + 1}: ${validationResult.error}`);
-        return;
-      }
-      if (validationResult.warning) {
-        toast.warning(`Cảnh báo ở phase ${index + 1}: ${validationResult.warning}`);
+    const waitlistPhase = researchPhases[1];
+    if (waitlistPhase) {
+      const hasWaitlistData = 
+        waitlistPhase.registrationStartDate || 
+        waitlistPhase.fullPaperStartDate || 
+        waitlistPhase.reviewStartDate || 
+        waitlistPhase.reviseStartDate || 
+        waitlistPhase.cameraReadyStartDate;
+
+      if (hasWaitlistData) {
+        const waitlistValidation = validateResearchTimeline(waitlistPhase, basicForm.ticketSaleStart);
+        if (!waitlistValidation.isValid) {
+          toast.error(`Lỗi ở Waitlist Timeline: ${waitlistValidation.error}`);
+          return;
+        }
+        if (waitlistValidation.warning) {
+          toast.warning(`Cảnh báo ở Waitlist Timeline: ${waitlistValidation.warning}`);
+        }
+
+        if (mainPhase.cameraReadyEndDate && waitlistPhase.registrationStartDate) {
+          const mainEnd = new Date(mainPhase.cameraReadyEndDate);
+          const waitlistStart = new Date(waitlistPhase.registrationStartDate);
+          
+          if (waitlistStart <= mainEnd) {
+            toast.error("Waitlist timeline phải bắt đầu sau khi Main timeline kết thúc!");
+            return;
+          }
+        }
       }
     }
 
-    // Nếu tất cả phase hợp lệ → submit
-    await submitResearchPhase(researchPhases);
+    submitResearchPhase(researchPhases).then((result) => {
+      if (result.success) handleNext();
+    });
   };
 
-  const handlePriceSubmit = async () => {
-    await submitPrice(tickets);
+  const handlePriceSubmit = () => {
+    submitPrice(tickets).then((result) => {
+      if (result.success) handleNext();
+    });
   };
 
-  const handleSessionsSubmit = async () => {
-    await submitSessions(sessions, basicForm.startDate, basicForm.endDate);
+  const handleSessionsSubmit = () => {
+    submitSessions(sessions, basicForm.startDate, basicForm.endDate).then((result) => {
+      if (result.success) handleNext();
+    });
   };
 
-  const handlePoliciesSubmit = async () => {
-    await submitPolicies(policies, refundPolicies);
+  const handlePoliciesSubmit = () => {
+    submitPolicies(policies, refundPolicies).then((result) => {
+      if (result.success) handleNext();
+    });
   };
 
-  const handleMaterialsSubmit = async () => {
-    await submitMaterials(researchMaterials, rankingFiles, rankingReferences);
+  const handleMaterialsSubmit = () => {
+    submitMaterials(researchMaterials, rankingFiles, rankingReferences).then((result) => {
+      if (result.success) handleNext();
+    });
   };
 
-  const handleMediaSubmit = async () => {
-    await submitMedia(mediaList);
+  const handleMediaSubmit = () => {
+    submitMedia(mediaList).then((result) => {
+      if (result.success) handleNext();
+    });
   };
 
-  const handleSponsorsSubmit = async () => {
-    await submitSponsors(sponsors);
+  const handleSponsorsSubmit = () => {
+    submitSponsors(sponsors).then((result) => {
+      if (result.success) handleNext();
+    });
   };
 
   return (
-    <div className="max-w-5xl mx-a uto p-6">
+    <div className="max-w-5xl mx-auto p-6">
       <PageHeader
         title="Tạo hội thảo nghiên cứu mới"
         description="Điền đầy đủ thông tin để tạo hội thảo nghiên cứu"
@@ -273,9 +323,8 @@ export default function CreateResearchConferenceStepPage() {
       {/* STEP 1: Basic Info */}
       {currentStep === 1 && (
         <StepContainer stepNumber={1} title="Thông tin cơ bản" isCompleted={isStepCompleted(1)}>
-          {/* Reuse BasicInfoForm from tech with some modifications */}
           <ResearchBasicInfoForm
-            formData={basicForm}
+            value={basicForm}
             onChange={setBasicForm}
             validationErrors={validationErrors}
             onFieldBlur={handleFieldBlur}
@@ -306,7 +355,6 @@ export default function CreateResearchConferenceStepPage() {
             isRankingLoading={isRankingLoading}
             validationErrors={validationErrors}
           />
-
           <NavigationButtons
             currentStep={2}
             isStepCompleted={isStepCompleted(2)}
@@ -345,17 +393,17 @@ export default function CreateResearchConferenceStepPage() {
       {/* STEP 4: Price */}
       {currentStep === 4 && (
         <StepContainer stepNumber={4} title="Giá vé" isCompleted={isStepCompleted(4)}>
-          {/* <ResearchPriceForm
+          <ResearchPriceForm
             tickets={tickets}
             onTicketsChange={setTickets}
             ticketSaleStart={basicForm.ticketSaleStart}
             ticketSaleEnd={basicForm.ticketSaleEnd}
             researchPhases={researchPhases}
             maxTotalSlot={basicForm.totalSlot}
-            onOpenPhaseModal={openPhaseModal}
-          /> */}
+            allowListener={researchDetail.allowListener} 
+          />
+            
 
-          {/* Phase Modal */}
           <PhaseModal
             isOpen={isPhaseModalOpen}
             onClose={closePhaseModal}
@@ -384,7 +432,7 @@ export default function CreateResearchConferenceStepPage() {
       {/* STEP 5: Sessions */}
       {currentStep === 5 && (
         <StepContainer stepNumber={5} title="Phiên họp (Tùy chọn)" isCompleted={isStepCompleted(5)}>
-          <SessionForm
+          <ResearchSessionForm
             sessions={sessions}
             onSessionsChange={setSessions}
             eventStartDate={basicForm.startDate}
@@ -392,7 +440,7 @@ export default function CreateResearchConferenceStepPage() {
             roomOptions={roomOptions}
             roomsData={roomsData}
             isRoomsLoading={isRoomsLoading}
-          />
+          />          
 
           <NavigationButtons
             currentStep={5}
@@ -412,9 +460,7 @@ export default function CreateResearchConferenceStepPage() {
         <StepContainer stepNumber={6} title="Chính sách (Tùy chọn)" isCompleted={isStepCompleted(6)}>
           <PolicyForm
             policies={policies}
-            refundPolicies={refundPolicies}
             onPoliciesChange={setPolicies}
-            onRefundPoliciesChange={setRefundPolicies}
             eventStartDate={basicForm.startDate}
             ticketSaleStart={basicForm.ticketSaleStart}
             ticketSaleEnd={basicForm.ticketSaleEnd}

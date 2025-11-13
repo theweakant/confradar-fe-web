@@ -86,8 +86,8 @@ export interface ConferenceBasicForm {
   targetAudienceTechnicalConference?: string; //for tech conf
   customTarget?: string;
 
-  contractURL:string;
-  commission:number;
+  contractURL?:File|string|null;
+  commission?:number;
 }
 
 export interface ConferenceBasicResponse {
@@ -178,6 +178,9 @@ export interface Session {
   sessionMedias?: SessionMedia[];
 }
 
+export type ResearchSession = Omit<Session, 'speaker'>;
+
+
 export interface Speaker {
   speakerId?: string;
   name: string;
@@ -188,12 +191,16 @@ export interface Speaker {
 
 export interface SessionMedia {
   sessionMediaId?: string;
-  mediaFile?: File | string;
+  mediaFile?: File | string|null;
   mediaUrl?: string;
 }
 
 export interface ConferenceSessionData {
   sessions: Session[];
+}
+
+export interface ConferenceResearchSessionData {
+  sessions: ResearchSession[];
 }
 
 //POLICY STEP
@@ -221,7 +228,7 @@ export interface ConferenceRefundPolicyData {
 //MEDIA STEP
 export interface Media {
   mediaId?: string;
-  mediaFile: File | null;
+  mediaFile: File | null |string;
   mediaUrl?: string;
 }
 
@@ -233,7 +240,7 @@ export interface ConferenceMediaData {
 export interface Sponsor {
   sponsorId?: string;
   name: string;
-  imageFile: File | null;
+  imageFile: File | null |string;
   imageUrl?: string;
 }
 
@@ -322,7 +329,25 @@ export interface ResearchPhase {
   reviseDuration?: number;
   cameraReadyDuration?: number;
 }
-
+export type UpdateResearchPhaseRequest = {
+  registrationStartDate: string;
+  registrationEndDate: string;
+  fullPaperStartDate: string;
+  fullPaperEndDate: string;
+  reviewStartDate: string;
+  reviewEndDate: string;
+  reviseStartDate: string;
+  reviseEndDate: string;
+  cameraReadyStartDate: string;
+  cameraReadyEndDate: string;
+  isWaitlist: boolean;
+  isActive: boolean;
+  registrationDuration?: number;
+  fullPaperDuration?: number;
+  reviewDuration?: number;
+  reviseDuration?: number;
+  cameraReadyDuration?: number;
+};
 export interface ConferenceResearchPhaseData {
   researchPhase: ResearchPhase;
 }
@@ -459,6 +484,10 @@ export interface TechnicalConferenceDetailResponse {
   sessions?: TechnicalConferenceSessionResponse[];
   conferencePrices?: ConferencePriceResponse[];
   conferenceTimelines?: ConferenceTimelineResponse[];
+
+  contractURL:File|string;
+  commission:number;
+
 }
 
 export interface ResearchConferenceDetailResponse {
@@ -615,10 +644,13 @@ export interface ResearchConferencePhaseResponse {
   isWaitlist?: boolean;
   isActive?: boolean;
   revisionRoundDeadlines?: RevisionRoundDeadlineResponse[];
+
+  waitlistPhase?: ResearchConferencePhaseResponse;
 }
 
 export interface RevisionRoundDeadlineResponse {
   revisionRoundDeadlineId?: string;
+  startDate?:string;
   endDate?: string;
   roundNumber?: number;
   researchConferencePhaseId?: string;
