@@ -27,7 +27,6 @@ export function useTechConferenceData({
   const dispatch = useAppDispatch();
   const { data: conferenceDetail, isLoading, isError, error } = useGetTechnicalConferenceDetailInternalQuery(conferenceId);
 
-  // Wrap callbacks với useCallback để tránh thay đổi reference
   const stableOnLoad = useCallback(onLoad || (() => {}), []);
   const stableOnError = useCallback(onError || (() => {}), []);
 

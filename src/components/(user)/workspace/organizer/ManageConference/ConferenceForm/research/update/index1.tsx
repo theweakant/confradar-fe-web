@@ -515,6 +515,7 @@ export default function UpdateResearchConferenceStepPage() {
             researchPhases={researchPhases}
             maxTotalSlot={basicForm.totalSlot}
             allowListener={researchDetail.allowListener}
+            numberPaperAccept={researchDetail.numberPaperAccept ?? 0}
           />
           <FlexibleNavigationButtons
             currentStep={4}

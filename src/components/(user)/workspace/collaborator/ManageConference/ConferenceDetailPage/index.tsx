@@ -201,7 +201,7 @@ export default function ConferenceDetailPage() {
 
   const updateRoute =
     conference.isResearchConference === true
-      ? `/workspace/collaborator/manage-conference/update-research-conference/${conference.conferenceId}`
+      ? `/workspace/organizer/manage-conference/update-research-conference/${conference.conferenceId}`
       : `/workspace/collaborator/manage-conference/update-tech-conference/${conference.conferenceId}`;
 
   return (

@@ -877,10 +877,10 @@ export function useResearchFormSubmit() {
 
       // Chỉ redirect khi ở mode EDIT
       if (mode === "edit") {
-        toast.success("🎉 Cập nhật hội thảo nghiên cứu thành công!");
+        toast.success("Cập nhật hội thảo nghiên cứu thành công!");
         dispatch(resetWizard());
         resetDeleteTracking();
-        router.push(`/workspace/collaborator/manage-conference`);
+        router.push(`/workspace/organizer/manage-conference`);
       }
 
       return { success: true };
