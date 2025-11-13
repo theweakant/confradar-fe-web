@@ -68,7 +68,7 @@ const appReducer = combineReducers({
   [paperApi.reducerPath]: paperApi.reducer,
   [statusApi.reducerPath]: statusApi.reducer,
   [requestApi.reducerPath]: requestApi.reducer,
-  [contractApi.reducerPath]: requestApi.reducer,
+  [contractApi.reducerPath]: contractApi.reducer,
 });
 
 export type AppState = ReturnType<typeof appReducer>;

@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Users } from "lucide-react";
+import { Plus, Users, FileText } from "lucide-react";
+import { Dialog, Transition } from "@headlessui/react";
+import { Fragment } from "react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -26,10 +28,16 @@ import {
     useCreateCollaboratorMutation
 } from "@/redux/services/user.service";
 import {
+    useCreateReviewContractMutation,
+    useGetUsersForReviewerContractQuery
+} from "@/redux/services/contract.service";
+import { useGetTechConferencesForCollaboratorAndOrganizerQuery } from "@/redux/services/conference.service";
+import {
     ListUserDetailForAdminAndOrganizerResponse,
     UserDetailForAdminAndOrganizerResponse,
     CollaboratorRequest
 } from "@/types/user.type";
+import { CreateReviewerContractRequest } from "@/types/contract.type";
 import { toast } from "sonner";
 import { ApiError } from "@/types/api.type";
 import { parseApiError } from "@/helper/api";
@@ -38,9 +46,19 @@ export default function ManageExternalReviewer() {
     const [searchTerm, setSearchTerm] = useState("");
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+    const [isContractModalOpen, setIsContractModalOpen] = useState(false);
     const [viewingUserId, setViewingUserId] = useState<string | null>(null);
     const [suspendUserId, setSuspendUserId] = useState<string | null>(null);
     const [activateUserId, setActivateUserId] = useState<string | null>(null);
+
+    // Contract form state
+    const [contractForm, setContractForm] = useState({
+        reviewerId: "",
+        wage: "",
+        conferenceId: "",
+        signDay: "",
+        contractFile: null as File | null
+    });
 
     // API hooks
     const {
@@ -54,7 +72,24 @@ export default function ManageExternalReviewer() {
     const [activateAccount, { isLoading: isActivating }] = useActivateAccountMutation();
     const [createExternalReviewer, { isLoading: isCreating, error: createRawError }] = useCreateCollaboratorMutation();
 
+    // Contract API hooks
+    const [createReviewContract, { isLoading: isCreatingContract, error: contractRawError }] = useCreateReviewContractMutation();
+    const { data: conferencesData } = useGetTechConferencesForCollaboratorAndOrganizerQuery({
+        page: 1,
+        pageSize: 10,
+        conferenceStatusId: "Id",   // ví dụ
+        searchKeyword: "AI",
+        cityId: "Hanoi",
+        startDate: "2025-01-01",
+        endDate: "2025-12-31"
+    });
+    const { data: reviewersData } = useGetUsersForReviewerContractQuery(
+        { conferenceId: contractForm.conferenceId },
+        { skip: !contractForm.conferenceId }
+    );
+
     const createError = parseApiError<string>(createRawError);
+    const contractError = parseApiError<string>(contractRawError);
 
     // API: Lấy chi tiết user khi view
     const {
@@ -87,13 +122,28 @@ export default function ManageExternalReviewer() {
         reviewer.email?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Show toast when create error occurs
+    // Show toast when errors occur
     useEffect(() => {
         if (createError) toast.error(createError.data?.message);
     }, [createError]);
 
+    useEffect(() => {
+        if (contractError) toast.error(contractError.data?.message);
+    }, [contractError]);
+
     const handleCreate = () => {
         setIsFormModalOpen(true);
+    };
+
+    const handleCreateContract = () => {
+        setIsContractModalOpen(true);
+        setContractForm({
+            reviewerId: "",
+            wage: "",
+            conferenceId: "",
+            signDay: "",
+            contractFile: null
+        });
     };
 
     const handleView = (reviewer: UserDetailForAdminAndOrganizerResponse) => {
@@ -148,6 +198,39 @@ export default function ManageExternalReviewer() {
                 const errorMessage = err?.message || "Kích hoạt tài khoản thất bại";
                 toast.error(errorMessage);
             }
+        }
+    };
+
+    const handleContractSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!contractForm.reviewerId || !contractForm.wage || !contractForm.conferenceId ||
+            !contractForm.signDay || !contractForm.contractFile) {
+            toast.error("Vui lòng điền đầy đủ thông tin");
+            return;
+        }
+
+        try {
+            const contractData: CreateReviewerContractRequest = {
+                reviewerId: contractForm.reviewerId,
+                wage: parseFloat(contractForm.wage),
+                conferenceId: contractForm.conferenceId,
+                signDay: contractForm.signDay,
+                contractFile: contractForm.contractFile
+            };
+
+            const response = await createReviewContract(contractData).unwrap();
+            toast.success(response.message || "Tạo hợp đồng reviewer thành công!");
+            setIsContractModalOpen(false);
+            setContractForm({
+                reviewerId: "",
+                wage: "",
+                conferenceId: "",
+                signDay: "",
+                contractFile: null
+            });
+        } catch (error: unknown) {
+            // Error already handled by useEffect with contractError
         }
     };
 
@@ -207,14 +290,24 @@ export default function ManageExternalReviewer() {
                         <h1 className="text-3xl font-bold text-gray-900">
                             Quản lý Người đánh giá thuê theo hợp đồng
                         </h1>
-                        <button
-                            onClick={handleCreate}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
-                            disabled={isCreating}
-                        >
-                            <Plus className="w-5 h-5" />
-                            {isCreating ? "Đang thêm..." : "Thêm người đánh giá theo hợp đồng"}
-                        </button>
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={handleCreate}
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={isCreating}
+                            >
+                                <Plus className="w-5 h-5" />
+                                {isCreating ? "Đang thêm..." : "Thêm người đánh giá theo hợp đồng"}
+                            </button>
+                            <button
+                                onClick={handleCreateContract}
+                                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={isCreatingContract}
+                            >
+                                <FileText className="w-5 h-5" />
+                                {isCreatingContract ? "Đang tạo..." : "Tạo hợp đồng"}
+                            </button>
+                        </div>
                     </div>
                     <p className="text-gray-600 mt-2">
                         Quản lý tài khoản người đánh giá theo hợp đồng trong hệ thống
@@ -346,6 +439,151 @@ export default function ManageExternalReviewer() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* Create Contract Dialog */}
+            <Transition appear show={isContractModalOpen} as={Fragment}>
+                <Dialog as="div" className="relative z-10" onClose={() => setIsContractModalOpen(false)}>
+                    <Transition.Child
+                        as={Fragment}
+                        enter="ease-out duration-300"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="ease-in duration-200"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                    >
+                        <div className="fixed inset-0 bg-black bg-opacity-25" />
+                    </Transition.Child>
+
+                    <div className="fixed inset-0 overflow-y-auto">
+                        <div className="flex min-h-full items-center justify-center p-4 text-center">
+                            <Transition.Child
+                                as={Fragment}
+                                enter="ease-out duration-300"
+                                enterFrom="opacity-0 scale-95"
+                                enterTo="opacity-100 scale-100"
+                                leave="ease-in duration-200"
+                                leaveFrom="opacity-100 scale-100"
+                                leaveTo="opacity-0 scale-95"
+                            >
+                                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                                    <Dialog.Title
+                                        as="h3"
+                                        className="text-lg font-medium leading-6 text-gray-900 mb-4"
+                                    >
+                                        Tạo hợp đồng reviewer
+                                    </Dialog.Title>
+
+                                    <form onSubmit={handleContractSubmit} className="space-y-4">
+                                        {/* Conference Selection */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Hội nghị *
+                                            </label>
+                                            <select
+                                                value={contractForm.conferenceId}
+                                                onChange={(e) => setContractForm({ ...contractForm, conferenceId: e.target.value })}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                required
+                                            >
+                                                <option value="">Chọn hội nghị</option>
+                                                {conferencesData?.data?.items.map((conf) => (
+                                                    <option key={conf.conferenceId} value={conf.conferenceId}>
+                                                        {conf.conferenceName}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        {/* Reviewer Selection */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Reviewer *
+                                            </label>
+                                            <select
+                                                value={contractForm.reviewerId}
+                                                onChange={(e) => setContractForm({ ...contractForm, reviewerId: e.target.value })}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                required
+                                                disabled={!contractForm.conferenceId}
+                                            >
+                                                <option value="">Chọn reviewer</option>
+                                                {reviewersData?.data?.map((reviewer) => (
+                                                    <option key={reviewer.userId} value={reviewer.userId}>
+                                                        {reviewer.fullName} ({reviewer.email})
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        {/* Wage */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Lương (VND) *
+                                            </label>
+                                            <input
+                                                type="number"
+                                                value={contractForm.wage}
+                                                onChange={(e) => setContractForm({ ...contractForm, wage: e.target.value })}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                required
+                                                min="0"
+                                                step="1000"
+                                            />
+                                        </div>
+
+                                        {/* Sign Day */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Ngày ký hợp đồng *
+                                            </label>
+                                            <input
+                                                type="date"
+                                                value={contractForm.signDay}
+                                                onChange={(e) => setContractForm({ ...contractForm, signDay: e.target.value })}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                required
+                                            />
+                                        </div>
+
+                                        {/* Contract File */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                File hợp đồng *
+                                            </label>
+                                            <input
+                                                type="file"
+                                                onChange={(e) => setContractForm({ ...contractForm, contractFile: e.target.files?.[0] || null })}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                required
+                                                accept=".pdf,.doc,.docx"
+                                            />
+                                        </div>
+
+                                        <div className="flex justify-end gap-3 mt-6">
+                                            <button
+                                                type="button"
+                                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-transparent rounded-md hover:bg-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
+                                                onClick={() => setIsContractModalOpen(false)}
+                                                disabled={isCreatingContract}
+                                            >
+                                                Hủy
+                                            </button>
+                                            <button
+                                                type="submit"
+                                                className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                disabled={isCreatingContract}
+                                            >
+                                                {isCreatingContract ? "Đang tạo..." : "Tạo hợp đồng"}
+                                            </button>
+                                        </div>
+                                    </form>
+                                </Dialog.Panel>
+                            </Transition.Child>
+                        </div>
+                    </div>
+                </Dialog>
+            </Transition>
         </div>
     );
 }
