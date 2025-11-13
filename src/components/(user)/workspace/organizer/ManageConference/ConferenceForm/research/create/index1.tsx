@@ -23,10 +23,10 @@ import { SponsorForm } from "@/components/(user)/workspace/collaborator/ManageCo
 
 // Research-Specific Forms
 import { ResearchBasicInfoForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchBasicInfoForm";
-import { ResearchDetailForm } from "../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchDetailForm";
-import { ResearchPhaseForm } from "../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchPhaseForm";
-import { ResearchPriceForm } from "../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchPriceForm";
-import { MaterialsForm } from "../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/MaterialsForm";
+import { ResearchDetailForm } from "../../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchDetailForm";
+import { ResearchPhaseForm } from "../../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchPhaseForm";
+import { ResearchPriceForm } from "../../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchPriceForm";
+import { MaterialsForm } from "../../../../../collaborator/ManageConference/CreateConferenceStepPage/forms/research/MaterialsForm";
 import { ResearchSessionForm } from "@/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/forms/research/ResearchSessionForm";
 
 
