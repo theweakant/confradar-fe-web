@@ -88,6 +88,7 @@ export const endpoint = {
     //STATUS
     LIST_ALL_CONF_STATUS: "/ConferenceStatus/get-all-conference-statuses",
     UPDATE_OWN_STATUS: "/Conference/Update-own-conference-Status",
+    REQUEST_CONFERENCE_APPROVE:"/Conference/request-a-conference-to-be-approved",
 
     DETAIL: "/Conference",
     TECHNICAL_DETAIL: "/Conference/technical-detail",
