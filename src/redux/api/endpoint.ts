@@ -174,7 +174,7 @@ export const endpoint = {
 
     //UPDATE
     UPDATE_DRAFT_RESEARCH_BASIC: (conferenceId: string) =>
-  `/conferencestep/research/${conferenceId}/basic`,
+  `/conferencestep/${conferenceId}/research/basic`,
     UPDATE_RESEARCH_DETAIL: (conferenceId: string) =>
   `/conferencestep/${conferenceId}/research/detail`,
     UPDATE_RESEARCH_PHASE: (researchPhaseId: string) =>
