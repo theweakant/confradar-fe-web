@@ -1,5 +1,5 @@
 // src/hooks/useResearchConferenceData.ts
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react"; // ✅ thêm useCallback
 import { useGetResearchConferenceDetailInternalQuery } from "@/redux/services/conference.service";
 import { useAppDispatch } from "@/redux/hooks/hooks";
 import { loadExistingConference } from "@/redux/slices/conferenceStep.slice";
@@ -8,7 +8,7 @@ import type {
   Ticket,
   Session,
   Policy,
-  RefundPolicy,
+  RefundPolicy, // ✅ thêm type
   Media,
   Sponsor,
   ResearchDetail,
@@ -16,6 +16,7 @@ import type {
   ResearchMaterial,
   ResearchRankingFile,
   ResearchRankingReference,
+  RefundPolicyResponse, // ✅ thêm nếu chưa import
 } from "@/types/conference.type";
 
 interface UseResearchConferenceDataProps {
@@ -27,6 +28,7 @@ interface UseResearchConferenceDataProps {
     tickets: Ticket[];
     sessions: Session[];
     policies: Policy[];
+    refundPolicies: RefundPolicy[]; // ✅ thêm vào payload
     researchMaterials: ResearchMaterial[];
     rankingFiles: ResearchRankingFile[];
     rankingReferences: ResearchRankingReference[];
@@ -45,9 +47,13 @@ export function useResearchConferenceData({
   const { data: conferenceDetailResponse, isLoading, isError, error } = 
     useGetResearchConferenceDetailInternalQuery(conferenceId);
 
+  // ✅ Thêm useCallback để ổn định reference
+  const stableOnLoad = useCallback(onLoad || (() => {}), [onLoad]);
+  const stableOnError = useCallback(onError || (() => {}), [onError]);
+
   useEffect(() => {
     if (isError) {
-      onError?.(error);
+      stableOnError(error);
       return;
     }
 
@@ -90,7 +96,6 @@ export function useResearchConferenceData({
       // === Map Research Phases ===
       const researchPhases: ResearchPhase[] = [];
       if (data.researchPhase) {
-        // Main phase
         researchPhases.push({
           researchPhaseId: data.researchPhase.researchConferencePhaseId ?? "main",
           registrationStartDate: data.researchPhase.registrationStartDate ?? "",
@@ -113,7 +118,6 @@ export function useResearchConferenceData({
           })),
         });
 
-        // Waitlist phase (nếu có)
         if (data.researchPhase.waitlistPhase) {
           researchPhases.push({
             researchPhaseId: data.researchPhase.waitlistPhase.researchConferencePhaseId ?? "waitlist",
@@ -139,7 +143,7 @@ export function useResearchConferenceData({
         }
       }
 
-      // === Map Tickets (Giá vé) ===
+      // === Map Tickets ===
       const tickets: Ticket[] = (data.conferencePrices || []).map((p) => ({
         priceId: p.conferencePriceId,
         ticketPrice: p.ticketPrice ?? 0,
@@ -154,11 +158,11 @@ export function useResearchConferenceData({
           endDate: ph.endDate ?? "",
           applyPercent: ph.applyPercent ?? 0,
           totalslot: ph.totalSlot ?? 0,
-          refundInPhase: [], 
+          refundInPhase: [], // ✅ giữ nguyên (có thể fill sau từ refundPolicies)
         })),
       }));
 
-      // === Map Research Sessions ===
+      // === Map Sessions ===
       const sessions: Session[] = (data.researchSessions || []).map((s) => ({
         sessionId: s.conferenceSessionId,               
         title: s.title ?? "",
@@ -173,7 +177,7 @@ export function useResearchConferenceData({
           mediaFile: m.conferenceSessionMediaUrl ?? null,
           mediaUrl: m.conferenceSessionMediaUrl ?? "",
         })),
-      }))
+      }));
 
       // === Map Policies ===
       const policies: Policy[] = (data.policies || []).map((p) => ({
@@ -182,36 +186,40 @@ export function useResearchConferenceData({
         description: p.description ?? "",
       }));
 
+      // === 🔥 BỔ SUNG: Map Refund Policies (giống tech) ===
+      const refundPolicies: RefundPolicy[] = (data.refundPolicies || []).map((rp: RefundPolicyResponse) => ({
+        refundPolicyId: rp.refundPolicyId ?? "",
+        percentRefund: rp.percentRefund ?? 0,
+        refundDeadline: rp.refundDeadline ?? "",
+        refundOrder: rp.refundOrder ?? 0,
+      }));
+
       // === Map Research Materials ===
       const researchMaterials: ResearchMaterial[] = (data.materialDownloads || []).map((m) => ({
         materialId: m.materialDownloadId,    
         fileName: m.fileName ?? "Tài liệu",
         fileDescription: m.fileDescription ?? "",
         fileUrl: m.fileUrl ?? "",
-        file: null, // hoặc File | null nếu cần upload sau
+        file: null,
       }));
 
-      // === Map Ranking Files ===
       const rankingFiles: ResearchRankingFile[] = (data.rankingFileUrls || []).map((f) => ({
         rankingFileId: f.rankingFileUrlId,
         fileUrl: f.fileUrl,
         file: null,
       }));
 
-      // === Map Ranking References ===
       const rankingReferences: ResearchRankingReference[] = (data.rankingReferenceUrls || []).map((r) => ({
         rankingReferenceId: r.referenceUrlId, 
         referenceUrl: r.referenceUrl ?? "",
       }));
 
-      // === Map Media ===
       const mediaList: Media[] = (data.conferenceMedia || []).map((m) => ({
         mediaId: m.mediaId,
         mediaFile: m.mediaUrl ?? null,   
         mediaUrl: m.mediaUrl ?? "",
       }));
 
-      // === Map Sponsors ===
       const sponsors: Sponsor[] = (data.sponsors || []).map((s) => ({
         sponsorId: s.sponsorId,
         name: s.name ?? "",
@@ -223,19 +231,20 @@ export function useResearchConferenceData({
       dispatch(
         loadExistingConference({
           id: conferenceId,
-          maxStep: 9, // RESEARCH_MAX_STEP
+          maxStep: 9,
           basicData: basicForm,
         })
       );
 
-      // Callback cho component
-      onLoad?.({
+      // ✅ Gọi callback ổn định + có đủ refundPolicies
+      stableOnLoad({
         basicForm,
         researchDetail,
         researchPhases,
         tickets,
         sessions,
         policies,
+        refundPolicies, // ✅ đã thêm
         researchMaterials,
         rankingFiles,
         rankingReferences,
@@ -243,7 +252,15 @@ export function useResearchConferenceData({
         sponsors,
       });
     }
-  }, [conferenceDetailResponse, conferenceId, dispatch, isError, error, onLoad, onError]);
+  }, [
+    conferenceDetailResponse,
+    conferenceId,
+    dispatch,
+    isError,
+    error,
+    stableOnLoad,
+    stableOnError,
+  ]);
 
   return { isLoading, isError };
 }

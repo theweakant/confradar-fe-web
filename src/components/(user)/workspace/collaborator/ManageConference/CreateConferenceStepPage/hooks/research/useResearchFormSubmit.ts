@@ -1,3 +1,4 @@
+// src/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/hooks/useResearchFormSubmit.ts
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -6,10 +7,10 @@ import {
   setConferenceId,
   setConferenceBasicData,
   markStepCompleted,
-  nextStep,
   resetWizard,
 } from "@/redux/slices/conferenceStep.slice";
 import {
+  // CREATE
   useCreateBasicResearchConferenceMutation,
   useCreateResearchDetailMutation,
   useCreateResearchPhaseMutation,
@@ -22,6 +23,31 @@ import {
   useCreateResearchRankingReferenceMutation,
   useCreateConferenceMediaMutation,
   useCreateConferenceSponsorsMutation,
+  // UPDATE
+  useUpdateResearchBasicMutation,
+  useUpdateResearchDetailMutation,
+  useUpdateResearchPhaseMutation,
+  useUpdateConferencePriceMutation,
+  useUpdateConferencePricePhaseMutation,
+  useUpdateConferenceSessionMutation,
+  useUpdateConferencePolicyMutation,
+  useUpdateConferenceRefundPolicyMutation,
+  useUpdateResearchMaterialMutation,
+  useUpdateResearchRankingFileMutation,
+  useUpdateResearchRankingReferenceMutation,
+  useUpdateConferenceMediaMutation,
+  useUpdateConferenceSponsorMutation,
+  // DELETE
+  useDeleteConferencePriceMutation,
+  useDeleteConferenceSessionMutation,
+  useDeleteConferencePolicyMutation,
+  useDeleteRefundPolicyMutation,
+  useDeleteResearchMaterialMutation,
+  useDeleteResearchRankingFileMutation,
+  useDeleteResearchRankingReferenceMutation,
+  useDeleteConferenceMediaMutation,
+  useDeleteConferenceSponsorMutation,
+  useDeleteRevisionRoundDeadlineMutation,
 } from "@/redux/services/conferenceStep.service";
 import type { ApiError } from "@/types/api.type";
 import type {
@@ -30,7 +56,6 @@ import type {
   ResearchPhase,
   Ticket,
   Session,
-  ResearchSession,
   Policy,
   RefundPolicy,
   ResearchMaterial,
@@ -41,14 +66,18 @@ import type {
   ConferencePriceData,
 } from "@/types/conference.type";
 
+import { useDeleteTracking } from "../useDeleteTracking";
+import { validateBasicForm, validateResearchTimeline } from "../../validations";
+
 export function useResearchFormSubmit() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const conferenceId = useAppSelector((state) => state.conferenceStep.conferenceId);
+  const mode = useAppSelector((state) => state.conferenceStep.mode); // "create" | "edit"
 
-  // RTK Query mutations
+  // === CREATE MUTATIONS ===
   const [createBasicResearch] = useCreateBasicResearchConferenceMutation();
   const [createResearchDetail] = useCreateResearchDetailMutation();
   const [createResearchPhase] = useCreateResearchPhaseMutation();
@@ -62,31 +91,101 @@ export function useResearchFormSubmit() {
   const [createMedia] = useCreateConferenceMediaMutation();
   const [createSponsors] = useCreateConferenceSponsorsMutation();
 
-  // Step 1: Basic Info
+  // === UPDATE MUTATIONS ===
+  const [updateBasicResearch] = useUpdateResearchBasicMutation();
+  const [updateResearchDetail] = useUpdateResearchDetailMutation();
+  const [updateResearchPhase] = useUpdateResearchPhaseMutation();
+  const [updatePrice] = useUpdateConferencePriceMutation();
+  const [updatePricePhase] = useUpdateConferencePricePhaseMutation();
+  const [updateSession] = useUpdateConferenceSessionMutation();
+  const [updatePolicy] = useUpdateConferencePolicyMutation();
+  const [updateRefundPolicy] = useUpdateConferenceRefundPolicyMutation();
+  const [updateMaterial] = useUpdateResearchMaterialMutation();
+  const [updateRankingFile] = useUpdateResearchRankingFileMutation();
+  const [updateRankingReference] = useUpdateResearchRankingReferenceMutation();
+  const [updateMedia] = useUpdateConferenceMediaMutation();
+  const [updateSponsor] = useUpdateConferenceSponsorMutation();
+
+  // === DELETE MUTATIONS ===
+  const [deletePrice] = useDeleteConferencePriceMutation();
+  const [deleteSession] = useDeleteConferenceSessionMutation();
+  const [deletePolicy] = useDeleteConferencePolicyMutation();
+  const [deleteRefundPolicy] = useDeleteRefundPolicyMutation();
+  const [deleteMaterial] = useDeleteResearchMaterialMutation();
+  const [deleteRankingFile] = useDeleteResearchRankingFileMutation();
+  const [deleteRankingReference] = useDeleteResearchRankingReferenceMutation();
+  const [deleteMedia] = useDeleteConferenceMediaMutation();
+  const [deleteSponsor] = useDeleteConferenceSponsorMutation();
+  const [deleteRevisionDeadline] = useDeleteRevisionRoundDeadlineMutation();
+
+  // === DELETE TRACKING ===
+  const {
+    deletedTicketIds,
+    deletedSessionIds,
+    deletedPolicyIds,
+    deletedRefundPolicyIds,
+    deletedMaterialIds,
+    deletedRankingFileIds,
+    deletedRankingReferenceIds,
+    deletedMediaIds,
+    deletedSponsorIds,
+    deletedRevisionDeadlineIds,
+    resetDeleteTracking,
+  } = useDeleteTracking();
+
+  // === HELPER: Format ticket data for API ===
+  const formatTicketData = (tickets: Ticket[]): ConferencePriceData => ({
+    typeOfTicket: tickets.map((ticket) => ({
+      ticketPrice: parseFloat(ticket.ticketPrice.toFixed(2)),
+      ticketName: ticket.ticketName,
+      ticketDescription: ticket.ticketDescription,
+      isAuthor: ticket.isAuthor ?? false,
+      totalSlot: ticket.totalSlot,
+      phases: (ticket.phases || []).map((phase) => ({
+        phaseName: phase.phaseName,
+        applyPercent: parseFloat(phase.applyPercent.toFixed(2)),
+        startDate: phase.startDate,
+        endDate: phase.endDate,
+        totalslot: phase.totalslot,
+        refundInPhase: (phase.refundInPhase || []).map((rp) => ({
+          percentRefund: rp.percentRefund,
+          refundDeadline: rp.refundDeadline,
+        })),
+      })),
+    })),
+  });
+
+  // === STEP 1: Basic Info ===
   const submitBasicInfo = async (formData: ConferenceBasicForm) => {
+    if (!formData) return { success: false };
     try {
       setIsSubmitting(true);
-      const result = await createBasicResearch(formData).unwrap();
-      const confId = result.data.conferenceId;
+      let result;
 
-      dispatch(setConferenceId(confId));
-      dispatch(setConferenceBasicData(result.data));
+      if (mode === "edit" && conferenceId) {
+        result = await updateBasicResearch({ conferenceId, data: formData }).unwrap();
+        toast.success("Cập nhật thông tin cơ bản thành công!");
+      } else {
+        result = await createBasicResearch(formData).unwrap();
+        const confId = result.data.conferenceId;
+        dispatch(setConferenceId(confId));
+        dispatch(setConferenceBasicData(result.data));
+        toast.success("Tạo thông tin cơ bản thành công!");
+      }
+
       dispatch(markStepCompleted(1));
-      dispatch(nextStep());
-
-      toast.success("Tạo thông tin cơ bản thành công!");
       return { success: true, data: result.data };
     } catch (error) {
       const apiError = error as { data?: ApiError };
-      console.error("Failed to create basic info:", error);
-      toast.error(apiError?.data?.message || "Tạo thông tin cơ bản thất bại!");
+      console.error("Basic submit failed:", error);
+      toast.error(apiError?.data?.message || "Thao tác thất bại!");
       return { success: false, error };
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Step 2: Research Detail
+  // === STEP 2: Research Detail ===
   const submitResearchDetail = async (detail: ResearchDetail) => {
     if (!conferenceId) {
       toast.error("Không tìm thấy conference ID!");
@@ -95,15 +194,21 @@ export function useResearchFormSubmit() {
 
     try {
       setIsSubmitting(true);
-      await createResearchDetail({ conferenceId, data: detail }).unwrap();
+      let result;
+
+      if (mode === "edit") {
+        result = await updateResearchDetail({ conferenceId, data: detail }).unwrap();
+        toast.success("Cập nhật chi tiết nghiên cứu thành công!");
+      } else {
+        result = await createResearchDetail({ conferenceId, data: detail }).unwrap();
+        toast.success("Lưu chi tiết nghiên cứu thành công!");
+      }
 
       dispatch(markStepCompleted(2));
-      dispatch(nextStep());
-      toast.success("Lưu chi tiết nghiên cứu thành công!");
       return { success: true };
     } catch (error) {
       const apiError = error as { data?: ApiError };
-      console.error("Failed to create research detail:", error);
+      console.error("Research detail submit failed:", error);
       toast.error(apiError?.data?.message || "Lưu chi tiết nghiên cứu thất bại!");
       return { success: false, error };
     } finally {
@@ -111,7 +216,7 @@ export function useResearchFormSubmit() {
     }
   };
 
-  // Step 3: Research Phase (Timeline)
+  // === STEP 3: Research Phase (Timeline) ===
   const submitResearchPhase = async (phases: ResearchPhase[]) => {
     if (!conferenceId) {
       toast.error("Không tìm thấy conference ID!");
@@ -120,21 +225,60 @@ export function useResearchFormSubmit() {
 
     try {
       setIsSubmitting(true);
-      await createResearchPhase({
-        conferenceId,
-        data: phases.map((phase) => ({
-          ...phase,
-          revisionRoundDeadlines: phase.revisionRoundDeadlines || [],
-        })),
-      }).unwrap();
+
+      if (mode === "edit") {
+        // Handle revision deadlines deletion
+        if (deletedRevisionDeadlineIds?.length) {
+          await Promise.all(
+            deletedRevisionDeadlineIds.map((id) => deleteRevisionDeadline(id).unwrap())
+          );
+        }
+
+        // Update existing phases
+        const updatePromises = phases
+          .filter((p) => p.researchPhaseId)
+          .map((phase) =>
+            updateResearchPhase({
+              researchPhaseId: phase.researchPhaseId!,
+              data: {
+                registrationStartDate: phase.registrationStartDate,
+                registrationEndDate: phase.registrationEndDate,
+                fullPaperStartDate: phase.fullPaperStartDate,
+                fullPaperEndDate: phase.fullPaperEndDate,
+                reviewStartDate: phase.reviewStartDate,
+                reviewEndDate: phase.reviewEndDate,
+                reviseStartDate: phase.reviseStartDate,
+                reviseEndDate: phase.reviseEndDate,
+                cameraReadyStartDate: phase.cameraReadyStartDate,
+                cameraReadyEndDate: phase.cameraReadyEndDate,
+                isWaitlist: phase.isWaitlist,
+                isActive: phase.isActive,
+              },
+            }).unwrap()
+          );
+
+        // Create new phases
+        const createPromises = phases
+          .filter((p) => !p.researchPhaseId)
+          .map((phase) =>
+            createResearchPhase({
+              conferenceId,
+              data: [phase],
+            }).unwrap()
+          );
+
+        await Promise.all([...updatePromises, ...createPromises]);
+        toast.success("Cập nhật timeline thành công!");
+      } else {
+        await createResearchPhase({ conferenceId, data: phases }).unwrap();
+        toast.success("Lưu timeline thành công!");
+      }
 
       dispatch(markStepCompleted(3));
-      dispatch(nextStep());
-      toast.success("Lưu timeline thành công!");
       return { success: true };
     } catch (error) {
       const apiError = error as { data?: ApiError };
-      console.error("Failed to create research phase:", error);
+      console.error("Research phase submit failed:", error);
       toast.error(apiError?.data?.message || "Lưu timeline thất bại!");
       return { success: false, error };
     } finally {
@@ -142,58 +286,63 @@ export function useResearchFormSubmit() {
     }
   };
 
-  // Step 4: Price
+  // === STEP 4: Price ===
   const submitPrice = async (tickets: Ticket[]) => {
     if (!conferenceId) {
       toast.error("Không tìm thấy conference ID!");
       return { success: false };
     }
 
-    if (tickets.length === 0) {
+    if (mode !== "edit" && tickets.length === 0) {
       toast.error("Vui lòng thêm ít nhất 1 loại vé!");
       return { success: false };
     }
 
-    // Check for at least one author ticket
     const hasAuthorTicket = tickets.some((t) => t.isAuthor === true);
-    if (!hasAuthorTicket) {
+    if (mode !== "edit" && !hasAuthorTicket) {
       toast.error("Hội nghị nghiên cứu cần có ít nhất một loại vé dành cho tác giả!");
       return { success: false };
     }
 
     try {
       setIsSubmitting(true);
- 
-      const priceData: ConferencePriceData = {
-        typeOfTicket: tickets.map((ticket) => ({
-          ticketPrice: parseFloat(ticket.ticketPrice.toFixed(2)),
-          ticketName: ticket.ticketName,
-          ticketDescription: ticket.ticketDescription,
-          isAuthor: ticket.isAuthor ?? false,
-          totalSlot: ticket.totalSlot,
-          phases: (ticket.phases || []).map((phase) => ({
-            phaseName: phase.phaseName,
-            applyPercent: parseFloat(phase.applyPercent.toFixed(2)),
-            startDate: phase.startDate,
-            endDate: phase.endDate,
-            totalslot: phase.totalslot,
-            refundInPhase: (phase.refundInPhase || []).map((rp) => ({
-              percentRefund: rp.percentRefund,
-              refundDeadline: rp.refundDeadline,
-          })),
-          })),
-        })),
-      };
 
-      await createPrice({ conferenceId, data: priceData }).unwrap();
+      if (mode === "edit") {
+        if (deletedTicketIds.length > 0) {
+          await Promise.all(deletedTicketIds.map((id) => deletePrice(id).unwrap()));
+        }
+
+        const existing = tickets.filter((t) => t.priceId);
+        if (existing.length > 0) {
+          await Promise.all(
+            existing.map((ticket) =>
+              updatePrice({
+                priceId: ticket.priceId!,
+                data: {
+                  ticketPrice: parseFloat(ticket.ticketPrice.toFixed(2)),
+                  ticketName: ticket.ticketName,
+                  ticketDescription: ticket.ticketDescription,
+                  totalSlot: ticket.totalSlot,
+                },
+              }).unwrap()
+            )
+          );
+        }
+
+        const newTickets = tickets.filter((t) => !t.priceId);
+        if (newTickets.length > 0) {
+          await createPrice({ conferenceId, data: formatTicketData(newTickets) }).unwrap();
+        }
+      } else {
+        await createPrice({ conferenceId, data: formatTicketData(tickets) }).unwrap();
+      }
 
       dispatch(markStepCompleted(4));
-      dispatch(nextStep());
-      toast.success("Lưu thông tin giá vé thành công!");
+      toast.success("Lưu giá vé thành công!");
       return { success: true };
     } catch (error) {
       const apiError = error as { data?: ApiError };
-      console.error("Failed to create price:", error);
+      console.error("Price submit failed:", error);
       toast.error(apiError?.data?.message || "Lưu giá vé thất bại!");
       return { success: false, error };
     } finally {
@@ -201,79 +350,141 @@ export function useResearchFormSubmit() {
     }
   };
 
-  // Step 5: Sessions
-// Step 5: Sessions
-const submitSessions = async (
-  sessions: Session[],
-  eventStartDate: string,
-  eventEndDate: string
-) => {
-  if (!conferenceId) {
-    toast.error("Không tìm thấy conference ID!");
-    return { success: false };
-  }
+  // === STEP 5: Sessions ===
+  const submitSessions = async (sessions: Session[]) => {
+    if (!conferenceId) {
+      toast.error("Không tìm thấy conference ID!");
+      return { success: false };
+    }
 
-  if (sessions.length === 0) {
-    dispatch(markStepCompleted(5));
-    dispatch(nextStep());
-    toast.info("Đã bỏ qua phần phiên họp");
-    return { success: true, skipped: true };
-  }
+    try {
+      setIsSubmitting(true);
 
-  try {
-    setIsSubmitting(true);
+      if (mode === "edit") {
+        if (deletedSessionIds.length > 0) {
+          await Promise.all(deletedSessionIds.map((id) => deleteSession(id).unwrap()));
+        }
 
-    await createSessions({
-      conferenceId,
-      data: { sessions }, 
-    }).unwrap();
+        const existing = sessions.filter((s) => s.sessionId);
+        if (existing.length > 0) {
+          await Promise.all(
+            existing.map((session) =>
+              updateSession({
+                sessionId: session.sessionId!,
+                data: {
+                  title: session.title,
+                  description: session.description,
+                  date: session.date,
+                  startTime: session.startTime,
+                  endTime: session.endTime,
+                  roomId: session.roomId,
+                },
+              }).unwrap()
+            )
+          );
+        }
 
-    dispatch(markStepCompleted(5));
-    dispatch(nextStep());
-    toast.success("Lưu phiên họp thành công!");
-    return { success: true };
-  } catch (error) {
-    const apiError = error as { data?: ApiError };
-    console.error("Failed to create sessions:", error);
-    toast.error(apiError?.data?.message || "Lưu phiên họp thất bại!");
-    return { success: false, error };
-  } finally {
-    setIsSubmitting(false);
-  }
-};
-  // Step 6: Policies
+        const newSessions = sessions.filter((s) => !s.sessionId);
+        if (newSessions.length > 0) {
+          await createSessions({ conferenceId, data: { sessions: newSessions } }).unwrap();
+        }
+      } else {
+        if (sessions.length === 0) {
+          dispatch(markStepCompleted(5));
+          toast.info("Đã bỏ qua phần phiên họp");
+          return { success: true, skipped: true };
+        }
+        await createSessions({ conferenceId, data: { sessions } }).unwrap();
+      }
+
+      dispatch(markStepCompleted(5));
+      toast.success("Lưu phiên họp thành công!");
+      return { success: true };
+    } catch (error) {
+      const apiError = error as { data?: ApiError };
+      console.error("Sessions submit failed:", error);
+      toast.error(apiError?.data?.message || "Lưu phiên họp thất bại!");
+      return { success: false, error };
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // === STEP 6: Policies & Refund Policies ===
   const submitPolicies = async (policies: Policy[], refundPolicies: RefundPolicy[]) => {
     if (!conferenceId) {
       toast.error("Không tìm thấy conference ID!");
       return { success: false };
     }
 
-    if (policies.length === 0 && refundPolicies.length === 0) {
-      dispatch(markStepCompleted(6));
-      dispatch(nextStep());
-      toast.info("Đã bỏ qua phần chính sách");
-      return { success: true, skipped: true };
-    }
-
     try {
       setIsSubmitting(true);
 
-      await Promise.all([
-        policies.length > 0
-          ? createPolicies({ conferenceId, data: { policies } }).unwrap()
-          : Promise.resolve(),
-        refundPolicies.length > 0
-          ? createRefundPolicies({ conferenceId, data: { refundPolicies } }).unwrap()
-          : Promise.resolve(),
-      ]);
+      if (mode === "edit") {
+        if (deletedPolicyIds.length > 0) {
+          await Promise.all(deletedPolicyIds.map((id) => deletePolicy(id).unwrap()));
+        }
+        if (deletedRefundPolicyIds.length > 0) {
+          await Promise.all(deletedRefundPolicyIds.map((id) => deleteRefundPolicy(id).unwrap()));
+        }
+
+        const existingPolicies = policies.filter((p) => p.policyId);
+        const newPolicies = policies.filter((p) => !p.policyId);
+        if (existingPolicies.length > 0) {
+          await Promise.all(
+            existingPolicies.map((policy) =>
+              updatePolicy({
+                policyId: policy.policyId!,
+                data: { policyName: policy.policyName, description: policy.description },
+              }).unwrap()
+            )
+          );
+        }
+        if (newPolicies.length > 0) {
+          await createPolicies({ conferenceId, data: { policies: newPolicies } }).unwrap();
+        }
+
+        const existingRefunds = refundPolicies.filter((r) => r.refundPolicyId);
+        const newRefunds = refundPolicies.filter((r) => !r.refundPolicyId);
+        if (existingRefunds.length > 0) {
+          await Promise.all(
+            existingRefunds.map((refund) =>
+              updateRefundPolicy({
+                refundPolicyId: refund.refundPolicyId!,
+                data: {
+                  percentRefund: refund.percentRefund,
+                  refundDeadline: refund.refundDeadline,
+                  refundOrder: refund.refundOrder,
+                },
+              }).unwrap()
+            )
+          );
+        }
+        if (newRefunds.length > 0) {
+          await createRefundPolicies({ conferenceId, data: { refundPolicies: newRefunds } }).unwrap();
+        }
+      } else {
+        if (policies.length === 0 && refundPolicies.length === 0) {
+          dispatch(markStepCompleted(6));
+          toast.info("Đã bỏ qua phần chính sách");
+          return { success: true, skipped: true };
+        }
+        await Promise.all([
+          policies.length > 0
+            ? createPolicies({ conferenceId, data: { policies } }).unwrap()
+            : Promise.resolve(),
+          refundPolicies.length > 0
+            ? createRefundPolicies({ conferenceId, data: { refundPolicies } }).unwrap()
+            : Promise.resolve(),
+        ]);
+      }
 
       dispatch(markStepCompleted(6));
-      dispatch(nextStep());
       toast.success("Lưu chính sách thành công!");
       return { success: true };
     } catch (error) {
       const apiError = error as { data?: ApiError };
-      console.error("Failed to create policies:", error);
+      console.error("Policies submit failed:", error);
       toast.error(apiError?.data?.message || "Lưu chính sách thất bại!");
       return { success: false, error };
     } finally {
@@ -281,7 +492,7 @@ const submitSessions = async (
     }
   };
 
-  // Step 7: Materials & Rankings
+  // === STEP 7: Materials & Rankings ===
   const submitMaterials = async (
     materials: ResearchMaterial[],
     rankingFiles: ResearchRankingFile[],
@@ -292,51 +503,134 @@ const submitSessions = async (
       return { success: false };
     }
 
-    if (materials.length === 0 && rankingFiles.length === 0 && rankingReferences.length === 0) {
-      dispatch(markStepCompleted(7));
-      dispatch(nextStep());
-      toast.info("Đã bỏ qua phần tài liệu");
-      return { success: true, skipped: true };
-    }
-
     try {
       setIsSubmitting(true);
 
-      const materialPromises = materials.map((material) =>
-        createResearchMaterial({
-          conferenceId,
-          fileName: material.fileName,
-          fileDescription: material.fileDescription,
-          file: material.file || undefined,
-        }).unwrap()
-      );
+      if (mode === "edit") {
+        if (deletedMaterialIds.length > 0) {
+          await Promise.all(deletedMaterialIds.map((id) => deleteMaterial(id).unwrap()));
+        }
+        if (deletedRankingFileIds.length > 0) {
+          await Promise.all(deletedRankingFileIds.map((id) => deleteRankingFile(id).unwrap()));
+        }
+        if (deletedRankingReferenceIds.length > 0) {
+          await Promise.all(deletedRankingReferenceIds.map((id) => deleteRankingReference(id).unwrap()));
+        }
 
-      const rankingFilePromises = rankingFiles
-        .filter((f) => f.fileUrl || f.file)
-        .map((file) =>
-          createResearchRankingFile({
-            conferenceId,
-            fileUrl: file.fileUrl || "",
-            file: file.file || undefined,
-          }).unwrap()
-        );
+        // Update materials
+        const existingMaterials = materials.filter((m) => m.materialId);
+        if (existingMaterials.length > 0) {
+          await Promise.all(
+            existingMaterials.map((mat) =>
+              updateMaterial({
+                materialId: mat.materialId!,
+                fileDescription: mat.fileDescription,
+                file: mat.file instanceof File ? mat.file : undefined,
+              }).unwrap()
+            )
+          );
+        }
+        const newMaterials = materials.filter((m) => !m.materialId);
+        if (newMaterials.length > 0) {
+          await Promise.all(
+            newMaterials.map((mat) =>
+              createResearchMaterial({
+                conferenceId,
+                fileName: mat.fileName,
+                fileDescription: mat.fileDescription,
+                file: mat.file instanceof File ? mat.file : undefined,
+              }).unwrap()
+            )
+          );
+        }
 
-      const rankingRefPromises = rankingReferences.map((ref) =>
-        createResearchRankingReference({
-          conferenceId,
-          referenceUrl: ref.referenceUrl,
-        }).unwrap()
-      );
+        // Update ranking files
+        const existingRankingFiles = rankingFiles.filter((f) => f.rankingFileId);
+        if (existingRankingFiles.length > 0) {
+          await Promise.all(
+            existingRankingFiles.map((file) =>
+              updateRankingFile({
+                rankingFileId: file.rankingFileId!,
+                fileUrl: file.fileUrl,
+                file: file.file instanceof File ? file.file : undefined,
+              }).unwrap()
+            )
+          );
+        }
+        const newRankingFiles = rankingFiles.filter((f) => !f.rankingFileId);
+        if (newRankingFiles.length > 0) {
+          await Promise.all(
+            newRankingFiles.map((file) =>
+              createResearchRankingFile({
+                conferenceId,
+                fileUrl: file.fileUrl??"",
+                file: file.file instanceof File ? file.file : undefined,
+              }).unwrap()
+            )
+          );
+        }
 
-      await Promise.all([...materialPromises, ...rankingFilePromises, ...rankingRefPromises]);
+        // Update ranking references
+        const existingRefs = rankingReferences.filter((r) => r.rankingReferenceId);
+        if (existingRefs.length > 0) {
+          await Promise.all(
+            existingRefs.map((ref) =>
+              updateRankingReference({
+                referenceId: ref.rankingReferenceId!,
+                referenceUrl: ref.referenceUrl,
+              }).unwrap()
+            )
+          );
+        }
+        const newRefs = rankingReferences.filter((r) => !r.rankingReferenceId);
+        if (newRefs.length > 0) {
+          await Promise.all(
+            newRefs.map((ref) =>
+              createResearchRankingReference({
+                conferenceId,
+                referenceUrl: ref.referenceUrl,
+              }).unwrap()
+            )
+          );
+        }
+      } else {
+        if (materials.length === 0 && rankingFiles.length === 0 && rankingReferences.length === 0) {
+          dispatch(markStepCompleted(7));
+          toast.info("Đã bỏ qua phần tài liệu");
+          return { success: true, skipped: true };
+        }
+
+        await Promise.all([
+          ...materials.map((mat) =>
+            createResearchMaterial({
+              conferenceId,
+              fileName: mat.fileName,
+              fileDescription: mat.fileDescription,
+              file: mat.file instanceof File ? mat.file : undefined,
+            }).unwrap()
+          ),
+          ...rankingFiles.map((file) =>
+            createResearchRankingFile({
+              conferenceId,
+              fileUrl: file.fileUrl??"",
+              file: file.file instanceof File ? file.file : undefined,
+            }).unwrap()
+          ),
+          ...rankingReferences.map((ref) =>
+            createResearchRankingReference({
+              conferenceId,
+              referenceUrl: ref.referenceUrl,
+            }).unwrap()
+          ),
+        ]);
+      }
 
       dispatch(markStepCompleted(7));
-      dispatch(nextStep());
       toast.success("Lưu tài liệu thành công!");
       return { success: true };
     } catch (error) {
       const apiError = error as { data?: ApiError };
-      console.error("Failed to create materials:", error);
+      console.error("Materials submit failed:", error);
       toast.error(apiError?.data?.message || "Lưu tài liệu thất bại!");
       return { success: false, error };
     } finally {
@@ -344,31 +638,53 @@ const submitSessions = async (
     }
   };
 
-  // Step 8: Media
+  // === STEP 8: Media ===
   const submitMedia = async (mediaList: Media[]) => {
     if (!conferenceId) {
       toast.error("Không tìm thấy conference ID!");
       return { success: false };
     }
 
-    if (mediaList.length === 0) {
-      dispatch(markStepCompleted(8));
-      dispatch(nextStep());
-      toast.info("Đã bỏ qua phần media");
-      return { success: true, skipped: true };
-    }
-
     try {
       setIsSubmitting(true);
-      await createMedia({ conferenceId, data: { media: mediaList } }).unwrap();
+
+      if (mode === "edit") {
+        if (deletedMediaIds.length > 0) {
+          await Promise.all(deletedMediaIds.map((id) => deleteMedia(id).unwrap()));
+        }
+
+        const existing = mediaList.filter((m) => m.mediaId);
+        if (existing.length > 0) {
+          await Promise.all(
+            existing.map((media) =>
+              updateMedia({
+                mediaId: media.mediaId!,
+                mediaFile: media.mediaFile instanceof File ? media.mediaFile : undefined,
+                mediaUrl: typeof media.mediaFile === "string" ? media.mediaFile : media.mediaUrl,
+              }).unwrap()
+            )
+          );
+        }
+
+        const newMedia = mediaList.filter((m) => !m.mediaId);
+        if (newMedia.length > 0) {
+          await createMedia({ conferenceId, data: { media: newMedia } }).unwrap();
+        }
+      } else {
+        if (mediaList.length === 0) {
+          dispatch(markStepCompleted(8));
+          toast.info("Đã bỏ qua phần media");
+          return { success: true, skipped: true };
+        }
+        await createMedia({ conferenceId, data: { media: mediaList } }).unwrap();
+      }
 
       dispatch(markStepCompleted(8));
-      dispatch(nextStep());
       toast.success("Lưu media thành công!");
       return { success: true };
     } catch (error) {
       const apiError = error as { data?: ApiError };
-      console.error("Failed to create media:", error);
+      console.error("Media submit failed:", error);
       toast.error(apiError?.data?.message || "Lưu media thất bại!");
       return { success: false, error };
     } finally {
@@ -376,35 +692,202 @@ const submitSessions = async (
     }
   };
 
-  // Step 9: Sponsors (Final)
+  // === STEP 9: Sponsors ===
   const submitSponsors = async (sponsors: Sponsor[]) => {
     if (!conferenceId) {
       toast.error("Không tìm thấy conference ID!");
       return { success: false };
     }
 
-    if (sponsors.length === 0) {
-      dispatch(markStepCompleted(9));
-      toast.success("Tạo hội thảo nghiên cứu thành công!");
-      dispatch(resetWizard());
-      router.push(`/workspace/organizer/manage-conference`);
-      return { success: true, skipped: true };
-    }
-
     try {
       setIsSubmitting(true);
-      await createSponsors({ conferenceId, data: { sponsors } }).unwrap();
 
-      dispatch(markStepCompleted(9));
-      toast.success("Tạo hội thảo nghiên cứu thành công!");
-      dispatch(resetWizard());
-      router.push(`/workspace/organizer/manage-conference`);
-      return { success: true };
+      if (mode === "edit") {
+        if (deletedSponsorIds.length > 0) {
+          await Promise.all(deletedSponsorIds.map((id) => deleteSponsor(id).unwrap()));
+        }
+
+        const existing = sponsors.filter((s) => s.sponsorId);
+        if (existing.length > 0) {
+          await Promise.all(
+            existing.map((sponsor) =>
+              updateSponsor({
+                sponsorId: sponsor.sponsorId!,
+                name: sponsor.name,
+                imageFile: sponsor.imageFile instanceof File ? sponsor.imageFile : undefined,
+                imageUrl: typeof sponsor.imageFile === "string" ? sponsor.imageFile : sponsor.imageUrl,
+              }).unwrap()
+            )
+          );
+        }
+
+        const newSponsors = sponsors.filter((s) => !s.sponsorId);
+        if (newSponsors.length > 0) {
+          await createSponsors({ conferenceId, data: { sponsors: newSponsors } }).unwrap();
+        }
+
+        dispatch(markStepCompleted(9));
+        toast.success("Cập nhật nhà tài trợ thành công!");
+        // KHÔNG redirect — để submitAll xử lý
+        return { success: true };
+      } else {
+        if (sponsors.length === 0) {
+          dispatch(markStepCompleted(9));
+          toast.success("Tạo hội thảo thành công!");
+          dispatch(resetWizard());
+          router.push(`/workspace/collaborator/manage-conference`);
+          return { success: true, skipped: true };
+        }
+
+        await createSponsors({ conferenceId, data: { sponsors } }).unwrap();
+        dispatch(markStepCompleted(9));
+        toast.success("Tạo hội thảo thành công!");
+        dispatch(resetWizard());
+        router.push(`/workspace/collaborator/manage-conference`);
+        return { success: true };
+      }
     } catch (error) {
       const apiError = error as { data?: ApiError };
-      console.error("Failed to create sponsors:", error);
+      console.error("Sponsors submit failed:", error);
       toast.error(apiError?.data?.message || "Lưu nhà tài trợ thất bại!");
       return { success: false, error };
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // ✨ MỚI: VALIDATE TẤT CẢ CÁC BƯỚC
+  const validateAllSteps = (stepsData: {
+    basicForm: ConferenceBasicForm;
+    researchDetail: ResearchDetail;
+    researchPhases: ResearchPhase[];
+    tickets: Ticket[];
+    sessions: Session[];
+    policies: Policy[];
+    refundPolicies: RefundPolicy[];
+    researchMaterials: ResearchMaterial[];
+    rankingFiles: ResearchRankingFile[];
+    rankingReferences: ResearchRankingReference[];
+    mediaList: Media[];
+    sponsors: Sponsor[];
+  }) => {
+    const errors: string[] = [];
+
+    // Step 1: Basic Info
+    const basicValidation = validateBasicForm(stepsData.basicForm);
+    if (!basicValidation.isValid) {
+      errors.push(`Bước 1 - Thông tin cơ bản: ${basicValidation.error}`);
+    }
+
+    // Step 2: Research Detail (ít nhất phải có rankingCategoryId)
+    if (!stepsData.researchDetail.rankingCategoryId) {
+      errors.push(`Bước 2 - Chi tiết nghiên cứu: Vui lòng chọn loại xếp hạng!`);
+    }
+
+    // Step 3: Timeline
+    const mainPhase = stepsData.researchPhases[0];
+    if (!mainPhase) {
+      errors.push(`Bước 3 - Timeline: Main timeline là bắt buộc!`);
+    } else {
+      const mainValidation = validateResearchTimeline(mainPhase, stepsData.basicForm.ticketSaleStart);
+      if (!mainValidation.isValid) {
+        errors.push(`Bước 3 - Main Timeline: ${mainValidation.error}`);
+      }
+    }
+
+    const waitlistPhase = stepsData.researchPhases[1];
+    if (waitlistPhase) {
+      const hasWaitlistData =
+        waitlistPhase.registrationStartDate ||
+        waitlistPhase.fullPaperStartDate ||
+        waitlistPhase.reviewStartDate ||
+        waitlistPhase.reviseStartDate ||
+        waitlistPhase.cameraReadyStartDate;
+
+      if (hasWaitlistData) {
+        const waitlistValidation = validateResearchTimeline(waitlistPhase, stepsData.basicForm.ticketSaleStart);
+        if (!waitlistValidation.isValid) {
+          errors.push(`Bước 3 - Waitlist Timeline: ${waitlistValidation.error}`);
+        }
+
+        if (mainPhase && mainPhase.cameraReadyEndDate && waitlistPhase.registrationStartDate) {
+          const mainEnd = new Date(mainPhase.cameraReadyEndDate);
+          const waitlistStart = new Date(waitlistPhase.registrationStartDate);
+          if (waitlistStart <= mainEnd) {
+            errors.push(`Bước 3 - Waitlist timeline phải bắt đầu sau khi Main timeline kết thúc!`);
+          }
+        }
+      }
+    }
+
+    // Step 4: Price
+    if (stepsData.tickets.length === 0) {
+      errors.push(`Bước 4 - Giá vé: Vui lòng thêm ít nhất 1 loại vé!`);
+    } else {
+      const hasAuthorTicket = stepsData.tickets.some((t) => t.isAuthor === true);
+      if (!hasAuthorTicket) {
+        errors.push(`Bước 4 - Giá vé: Hội nghị nghiên cứu cần có ít nhất một loại vé dành cho tác giả!`);
+      }
+    }
+
+    // Steps 5-9: Optional → không bắt lỗi nếu rỗng
+
+    return { isValid: errors.length === 0, errors };
+  };
+
+  // ✨ MỚI: SUBMIT TOÀN BỘ
+  const submitAll = async (stepsData: {
+    basicForm: ConferenceBasicForm;
+    researchDetail: ResearchDetail;
+    researchPhases: ResearchPhase[];
+    tickets: Ticket[];
+    sessions: Session[];
+    policies: Policy[];
+    refundPolicies: RefundPolicy[];
+    researchMaterials: ResearchMaterial[];
+    rankingFiles: ResearchRankingFile[];
+    rankingReferences: ResearchRankingReference[];
+    mediaList: Media[];
+    sponsors: Sponsor[];
+  }) => {
+    try {
+      setIsSubmitting(true);
+
+      // 1. Validate toàn bộ
+      const validation = validateAllSteps(stepsData);
+      if (!validation.isValid) {
+        validation.errors.forEach((err) => toast.error(err));
+        return { success: false, errors: validation.errors };
+      }
+
+      // 2. Submit tuần tự
+      await submitBasicInfo(stepsData.basicForm);
+      await submitResearchDetail(stepsData.researchDetail);
+      await submitResearchPhase(stepsData.researchPhases);
+      await submitPrice(stepsData.tickets);
+      if (stepsData.sessions.length > 0) await submitSessions(stepsData.sessions);
+      if (stepsData.policies.length > 0 || stepsData.refundPolicies.length > 0) {
+        await submitPolicies(stepsData.policies, stepsData.refundPolicies);
+      }
+      if (stepsData.researchMaterials.length > 0 || stepsData.rankingFiles.length > 0 || stepsData.rankingReferences.length > 0) {
+        await submitMaterials(stepsData.researchMaterials, stepsData.rankingFiles, stepsData.rankingReferences);
+      }
+      if (stepsData.mediaList.length > 0) await submitMedia(stepsData.mediaList);
+      await submitSponsors(stepsData.sponsors);
+
+      // Chỉ redirect khi ở mode EDIT
+      if (mode === "edit") {
+        toast.success("🎉 Cập nhật hội thảo nghiên cứu thành công!");
+        dispatch(resetWizard());
+        resetDeleteTracking();
+        router.push(`/workspace/collaborator/manage-conference`);
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error("Submit all failed:", error);
+      toast.error("Cập nhật toàn bộ thất bại!");
+      return { success: false };
     } finally {
       setIsSubmitting(false);
     }
@@ -421,5 +904,7 @@ const submitSessions = async (
     submitMaterials,
     submitMedia,
     submitSponsors,
+    submitAll,
+    validateAllSteps,
   };
 }

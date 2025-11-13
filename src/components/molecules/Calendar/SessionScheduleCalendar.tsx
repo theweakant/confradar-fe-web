@@ -32,9 +32,9 @@ export interface SessionMedia {
 export interface Session {
   title: string;
   description?: string;
-  date: string; // "2025-11-15"
-  startTime: string; // ISO string: "2025-11-15T09:00:00.000Z"
-  endTime: string; // ISO string: do người dùng nhập
+  date: string; 
+  startTime: string; 
+  endTime: string;
   roomId: string;
   speaker: Speaker[];
   sessionMedias: SessionMedia[];
@@ -43,8 +43,8 @@ export interface Session {
 export interface SessionScheduleCalendarProps {
   sessions: Session[];
   onSessionsChange: (sessions: Session[]) => void;
-  eventStartDate: string; // "2025-11-15"
-  eventEndDate: string;   // "2025-12-15"
+  eventStartDate: string;
+  eventEndDate: string;   
   conferenceId: string;
 }
 

@@ -135,7 +135,9 @@ export const endpoint = {
 
     //DELETE
     DELETE_PRICE: (priceId : string) =>`/conferencestep/prices/${priceId}`,  
-    DELETE_SESSION: (sessionId: string) =>`/conferencestep/sessions/${sessionId}`,  
+    DELETE_SESSION: (sessionId: string) =>`/conferencestep/sessions/${sessionId}`,
+    DELETE_REFUND_POLICY: (refundPolicyId: string) =>
+  `/conferencestep/refund-policies/${refundPolicyId}`, 
     DELETE_POLICY: (policyId: string) =>`/conferencestep/policies/${policyId}`,  
     DELETE_MEDIA: (mediaId: string) =>`/conferencestep/media/${mediaId}`,  
     DELETE_SPONSOR: (sponsorId: string) =>`/conferencestep/sponsors/${sponsorId}`,

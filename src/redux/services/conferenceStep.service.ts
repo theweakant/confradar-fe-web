@@ -23,6 +23,7 @@ import type {
   ResearchDetail,
   ResearchPhase,
   ConferenceRefundPolicyData,
+  UpdateResearchPhaseRequest
 } from "@/types/conference.type";
 
 export const conferenceStepApi = createApi({
@@ -751,7 +752,7 @@ updateResearchBasic: builder.mutation<
 
 updateResearchPhase: builder.mutation<
   ApiResponse<{ success: boolean }>,
-  { researchPhaseId: string; data: ResearchPhase }
+  { researchPhaseId: string; data: UpdateResearchPhaseRequest }
 >({
   query: ({ researchPhaseId, data }) => {
     const {
@@ -867,6 +868,17 @@ updateRevisionRoundDeadline: builder.mutation<
 }),
 
     //DELETE
+deleteRefundPolicy: builder.mutation<
+  ApiResponse<null>,
+  string // refundPolicyId
+>({
+  query: (refundPolicyId) => ({
+    url: endpoint.CONFERENCE_STEP.DELETE_REFUND_POLICY(refundPolicyId),
+    method: "DELETE",
+  }),
+  invalidatesTags: ["ConferenceStep"],
+}),
+
     deleteResearchMaterial: builder.mutation<ApiResponse<null>, string>({
       query: (materialId) => ({
         url: endpoint.CONFERENCE_STEP.DELETE_RESEARCH_MATERIAL(materialId),
@@ -943,6 +955,7 @@ export const {
   useUpdateResearchBasicMutation,
   useUpdateResearchDetailMutation,
   useUpdateResearchPhaseMutation,
+  useUpdateResearchMaterialMutation,
   useUpdateResearchRankingFileMutation,
   useUpdateResearchSessionMutation, 
   useUpdateResearchRankingReferenceMutation,
@@ -952,6 +965,7 @@ export const {
   //DELETE
   useDeleteConferencePriceMutation,
   useDeleteConferenceSessionMutation,
+  useDeleteRefundPolicyMutation,
   useDeleteConferencePolicyMutation,
   useDeleteConferenceMediaMutation,
   useDeleteConferenceSponsorMutation,

@@ -6,6 +6,7 @@ export function useDeleteTracking() {
   const [deletedTicketIds, setDeletedTicketIds] = useState<string[]>([]);
   const [deletedSessionIds, setDeletedSessionIds] = useState<string[]>([]);
   const [deletedPolicyIds, setDeletedPolicyIds] = useState<string[]>([]);
+  const [deletedRefundPolicyIds, setDeletedRefundPolicyIds] = useState<string[]>([]);
   const [deletedMediaIds, setDeletedMediaIds] = useState<string[]>([]);
   const [deletedSponsorIds, setDeletedSponsorIds] = useState<string[]>([]);
 
@@ -32,6 +33,12 @@ export function useDeleteTracking() {
   const trackDeletedPolicy = (id: string) => {
     if (id && !deletedPolicyIds.includes(id)) {
       setDeletedPolicyIds(prev => [...prev, id]);
+    }
+  };
+
+  const trackDeletedRefundPolicy = (id: string) => {
+    if (id && !deletedRefundPolicyIds.includes(id)) {
+      setDeletedRefundPolicyIds((prev) => [...prev, id]);
     }
   };
 
@@ -83,6 +90,7 @@ export function useDeleteTracking() {
     setDeletedTicketIds([]);
     setDeletedSessionIds([]);
     setDeletedPolicyIds([]);
+    setDeletedRefundPolicyIds([]);
     setDeletedMediaIds([]);
     setDeletedSponsorIds([]);
     setDeletedMaterialIds([]);
@@ -97,6 +105,7 @@ export function useDeleteTracking() {
     deletedTicketIds,
     deletedSessionIds,
     deletedPolicyIds,
+    deletedRefundPolicyIds, 
     deletedMediaIds,
     deletedSponsorIds,
 
@@ -111,6 +120,7 @@ export function useDeleteTracking() {
     trackDeletedTicket,
     trackDeletedSession,
     trackDeletedPolicy,
+    trackDeletedRefundPolicy,
     trackDeletedMedia,
     trackDeletedSponsor,
     trackDeletedMaterial,

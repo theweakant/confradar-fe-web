@@ -329,7 +329,25 @@ export interface ResearchPhase {
   reviseDuration?: number;
   cameraReadyDuration?: number;
 }
-
+export type UpdateResearchPhaseRequest = {
+  registrationStartDate: string;
+  registrationEndDate: string;
+  fullPaperStartDate: string;
+  fullPaperEndDate: string;
+  reviewStartDate: string;
+  reviewEndDate: string;
+  reviseStartDate: string;
+  reviseEndDate: string;
+  cameraReadyStartDate: string;
+  cameraReadyEndDate: string;
+  isWaitlist: boolean;
+  isActive: boolean;
+  registrationDuration?: number;
+  fullPaperDuration?: number;
+  reviewDuration?: number;
+  reviseDuration?: number;
+  cameraReadyDuration?: number;
+};
 export interface ConferenceResearchPhaseData {
   researchPhase: ResearchPhase;
 }
