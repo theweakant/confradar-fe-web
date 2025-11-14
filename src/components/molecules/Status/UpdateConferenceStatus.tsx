@@ -72,7 +72,73 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
     return matchedStatus?.conferenceStatusName || "N/A";
   }, [conference?.conferenceStatusId, statusData]);
 
-  const normalizedCurrentStatus = normalizeStatus(currentStatus);
+  // const normalizedCurrentStatus = normalizeStatus(currentStatus);
+
+  const currentStatusObj = useMemo(() => {
+    if (!conference?.conferenceStatusId || !statusData?.data) return null;
+
+    return statusData.data.find(
+      (s: ConferenceStatus) => s.conferenceStatusId === conference.conferenceStatusId
+    ) || null;
+  }, [conference?.conferenceStatusId, statusData]);
+
+  const normalizedCurrentStatus = useMemo(() => {
+    if (!currentStatusObj) return "";
+    return normalizeStatus(currentStatusObj.conferenceStatusName);
+  }, [currentStatusObj]);
+
+  const normalizedToIdMap = useMemo(() => {
+    if (!statusData?.data) return {};
+    return statusData.data.reduce<Record<string, string>>((acc, s) => {
+      const norm = normalizeStatus(s.conferenceStatusName);
+      acc[norm] = s.conferenceStatusId;
+      return acc;
+    }, {});
+  }, [statusData]);
+
+  const availableStatusIds = useMemo(() => {
+    if (!currentStatusObj || !statusData?.data) return [];
+
+    const hasCollaboratorRole = roles.some(
+      (r) => typeof r === "string" && r.toLowerCase().replace(/\s+/g, "").includes("collaborator")
+    );
+    const hasOrganizerRole = roles.some(
+      (r) => typeof r === "string" && r.toLowerCase().replace(/\s+/g, "").includes("conferenceorganizer")
+    );
+
+    const getId = (norm: string) => normalizedToIdMap[norm] || "";
+
+    if (hasCollaboratorRole) {
+      switch (normalizedCurrentStatus) {
+        case "preparing":
+          return ["ready", "cancelled"].map(getId).filter(Boolean);
+        case "ready":
+          return ["completed", "onhold"].map(getId).filter(Boolean);
+        case "onhold":
+          return ["ready", "cancelled"].map(getId).filter(Boolean);
+        default:
+          return [];
+      }
+    }
+
+    if (hasOrganizerRole) {
+      switch (normalizedCurrentStatus) {
+        case "preparing":
+          return ["ready", "cancelled"].map(getId).filter(Boolean);
+        case "ready":
+          return ["completed", "onhold", "cancelled"].map(getId).filter(Boolean);
+        case "onhold":
+          return ["ready", "cancelled"].map(getId).filter(Boolean);
+        case "completed":
+        case "cancelled":
+          return [];
+        default:
+          return [];
+      }
+    }
+
+    return [];
+  }, [roles, normalizedCurrentStatus, currentStatusObj, normalizedToIdMap]);
 
   const getStatusColor = (status: string): string => {
     const normalized = normalizeStatus(status);
@@ -93,50 +159,50 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
     }
   };
 
-  const availableStatuses = useMemo<string[]>(() => {
-    // ⚠️ @TEMP(T): tạm thời sửa vầy để build không lỗi
-    // if (!role || normalizedCurrentStatus === "unknown") return [];
+  // const availableStatuses = useMemo<string[]>(() => {
+  //   // ⚠️ @TEMP(T): tạm thời sửa vầy để build không lỗi
+  //   // if (!role || normalizedCurrentStatus === "unknown") return [];
 
-    // const roleLower = role.toLowerCase();
+  //   // const roleLower = role.toLowerCase();
 
-    // if (roleLower.includes("collaborator")) {
-    const hasCollaboratorRole = roles.some((r) => typeof r === "string" && r.toLowerCase().replace(/\s+/g, "").includes("collaborator"));
+  //   // if (roleLower.includes("collaborator")) {
+  //   const hasCollaboratorRole = roles.some((r) => typeof r === "string" && r.toLowerCase().replace(/\s+/g, "").includes("collaborator"));
 
-    const hasOrganizerRole = roles.some(
-      (r) => typeof r === "string" && r.toLowerCase().replace(/\s+/g, "").includes("conferenceorganizer")
-    );
+  //   const hasOrganizerRole = roles.some(
+  //     (r) => typeof r === "string" && r.toLowerCase().replace(/\s+/g, "").includes("conferenceorganizer")
+  //   );
 
-    if (hasCollaboratorRole) {
-      switch (normalizedCurrentStatus) {
-        case "preparing":
-          return ["Ready", "Cancelled"];
-        case "ready":
-          return ["Completed", "OnHold"];
-        case "onhold":
-          return ["Ready", "Cancelled"];
-        default:
-          return [];
-      }
-    }
+  //   if (hasCollaboratorRole) {
+  //     switch (normalizedCurrentStatus) {
+  //       case "preparing":
+  //         return ["Ready", "Cancelled"];
+  //       case "ready":
+  //         return ["Completed", "OnHold"];
+  //       case "onhold":
+  //         return ["Ready", "Cancelled"];
+  //       default:
+  //         return [];
+  //     }
+  //   }
 
-    if (hasOrganizerRole) {
-      switch (normalizedCurrentStatus) {
-        case "preparing":
-          return ["Ready", "Cancelled"];
-        case "ready":
-          return ["Completed", "OnHold", "Cancelled"];
-        case "onhold":
-          return ["Ready", "Cancelled"];
-        case "completed":
-        case "cancelled":
-          return [];
-        default:
-          return [];
-      }
-    }
+  //   if (hasOrganizerRole) {
+  //     switch (normalizedCurrentStatus) {
+  //       case "preparing":
+  //         return ["Ready", "Cancelled"];
+  //       case "ready":
+  //         return ["Completed", "OnHold", "Cancelled"];
+  //       case "onhold":
+  //         return ["Ready", "Cancelled"];
+  //       case "completed":
+  //       case "cancelled":
+  //         return [];
+  //       default:
+  //         return [];
+  //     }
+  //   }
 
-    return [];
-  }, [roles, normalizedCurrentStatus]);
+  //   return [];
+  // }, [roles, normalizedCurrentStatus]);
 
   const handleSubmit = async () => {
     if (!newStatus) return toast.error("Vui lòng chọn trạng thái mới");
@@ -193,20 +259,28 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
             <Select
               onValueChange={setNewStatus}
               value={newStatus}
-              disabled={availableStatuses.length === 0}
+              disabled={availableStatusIds.length === 0}
             >
               <SelectTrigger className="mt-3">
                 <SelectValue placeholder="Chọn trạng thái mới" />
               </SelectTrigger>
               <SelectContent>
-                {availableStatuses.map((status) => (
+                {availableStatusIds.map((statusId) => {
+                  const statusObj = statusData?.data.find(s => s.conferenceStatusId === statusId);
+                  return (
+                    <SelectItem key={statusId} value={statusId}>
+                      {statusObj?.conferenceStatusName || statusId}
+                    </SelectItem>
+                  );
+                })}
+                {/* {availableStatuses.map((status) => (
                   <SelectItem key={status} value={status}>
                     {status}
                   </SelectItem>
-                ))}
+                ))} */}
               </SelectContent>
             </Select>
-            {availableStatuses.length === 0 && (
+            {availableStatusIds.length === 0 && (
               <p className="text-xs text-gray-400 mt-1">
                 Không có trạng thái chuyển tiếp hợp lệ.
               </p>

@@ -60,6 +60,12 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
       href: "/customer/papers",
     },
     {
+      id: "calendar",
+      label: "Lịch hội nghị của bạn",
+      icon: UserCircle,
+      href: "/customer/conference-calendar",
+    },
+    {
       id: "notifications",
       label: "Thông báo",
       icon: Bell,
