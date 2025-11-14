@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { usePaperCustomer } from '@/redux/hooks/usePaper';
-import { RevisionPaper, RevisionSubmission, RevisionSubmissionFeedback } from '@/types/paper.type';
+import { ResearchPhaseDtoDetail, RevisionPaper, RevisionSubmission, RevisionSubmissionFeedback, RevisionDeadlineDetail } from '@/types/paper.type';
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 import "@cyntler/react-doc-viewer/dist/index.css";
 import FeedbackDialog from './FeedbackDialog';
@@ -11,10 +11,13 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { toast } from 'sonner';
+import { validatePhaseTime, PhaseValidationResult } from '@/helper/timeValidation';
 
 interface RevisionPhaseProps {
   paperId: string;
   revisionPaper: RevisionPaper | null;
+  researchPhase?: ResearchPhaseDtoDetail;
+  revisionDeadline?: RevisionDeadlineDetail[];
 }
 
 const MemoizedDocViewer = memo<{ fileUrl: string }>(({ fileUrl }) => {
@@ -37,7 +40,7 @@ const MemoizedDocViewer = memo<{ fileUrl: string }>(({ fileUrl }) => {
 
 MemoizedDocViewer.displayName = 'MemoizedDocViewer';
 
-const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper }) => {
+const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, researchPhase, revisionDeadline }) => {
   const { handleSubmitPaperRevision, handleSubmitPaperRevisionResponse, loading, submitRevisionError } = usePaperCustomer();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
@@ -46,6 +49,94 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
   const [activeSubmissionId, setActiveSubmissionId] = useState<string | null>(null);
 
   const [swiperInstance, setSwiperInstance] = useState<unknown>(null);
+
+  // Validate revision deadline timing
+  const revisionValidation: PhaseValidationResult = useMemo(() => {
+    if (!revisionDeadline || revisionDeadline.length === 0) {
+      return {
+        isAvailable: false,
+        isExpired: false,
+        isPending: true,
+        message: "Thông tin deadline revision chưa được cập nhật"
+      };
+    }
+
+    // Current submission count (number of existing submissions)
+    const currentSubmissionCount = revisionPaper?.submissions?.length || 0;
+
+    // Sort deadlines by round number and then by start date to ensure correct order
+    const sortedDeadlines = [...revisionDeadline].sort((a, b) => {
+      if (a.roundNumber !== b.roundNumber) {
+        return (a.roundNumber || 0) - (b.roundNumber || 0);
+      }
+      if (a.startSubmissionDate && b.startSubmissionDate) {
+        return new Date(a.startSubmissionDate).getTime() - new Date(b.startSubmissionDate).getTime();
+      }
+      return 0;
+    });
+
+    // Get the next round deadline (current submission count + 1)
+    const nextRoundIndex = currentSubmissionCount;
+    const nextDeadline = sortedDeadlines[nextRoundIndex];
+
+    if (!nextDeadline) {
+      return {
+        isAvailable: false,
+        isExpired: true,
+        isPending: false,
+        message: "Đã hết round deadline để nộp revision submission"
+      };
+    }
+
+    return validatePhaseTime(
+      nextDeadline.startSubmissionDate,
+      nextDeadline.endSubmissionDate
+    );
+  }, [revisionDeadline, revisionPaper?.submissions?.length]);
+
+  useEffect(() => {
+    console.log("=== RevisionPhase Debug ===");
+
+    // Dữ liệu paper và submissions
+    console.log("revisionPaper:", revisionPaper);
+    console.log("revisionPaper.submissions:", revisionPaper?.submissions || []);
+
+    // Dữ liệu deadlines
+    console.log("revisionDeadline:", revisionDeadline || []);
+
+    // Số lượt submit hiện tại
+    const currentSubmissionCount = revisionPaper?.submissions?.length || 0;
+    console.log("currentSubmissionCount:", currentSubmissionCount);
+
+    if (revisionDeadline && revisionDeadline.length > 0) {
+      // Sắp xếp deadlines theo roundNumber + startSubmissionDate
+      const sortedDeadlines = [...revisionDeadline].sort((a, b) => {
+        if (a.roundNumber !== b.roundNumber) {
+          return (a.roundNumber || 0) - (b.roundNumber || 0);
+        }
+        if (a.startSubmissionDate && b.startSubmissionDate) {
+          return new Date(a.startSubmissionDate).getTime() - new Date(b.startSubmissionDate).getTime();
+        }
+        return 0;
+      });
+      console.log("sortedDeadlines:", sortedDeadlines);
+
+      // Lấy deadline tiếp theo
+      const nextRoundIndex = currentSubmissionCount;
+      const nextDeadline = sortedDeadlines[nextRoundIndex];
+      console.log("nextRoundIndex:", nextRoundIndex);
+      console.log("nextDeadline:", nextDeadline);
+
+      if (!nextDeadline) {
+        console.warn("Đã hết round deadline để nộp revision submission hoặc dữ liệu thiếu");
+      }
+    } else {
+      console.warn("revisionDeadline chưa có dữ liệu hoặc rỗng");
+    }
+
+    // Log kết quả useMemo hiện tại
+    console.log("revisionValidation:", revisionValidation);
+  }, [revisionPaper, revisionDeadline, revisionValidation]);
 
   const MemoizedFeedbackDialog = memo(FeedbackDialog);
 
@@ -148,6 +239,12 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
 
   const handleSubmitResponses = useCallback(
     async (submissionId: string) => {
+      // Check if current time allows response submission
+      if (!revisionValidation.isAvailable) {
+        alert(`Không thể gửi phản hồi: ${revisionValidation.message}`);
+        return;
+      }
+
       const submission = revisionPaper?.submissions.find(s => s.submissionId === submissionId);
       if (!submission || !paperId) return;
 
@@ -176,7 +273,7 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
         alert("Có lỗi xảy ra khi gửi phản hồi");
       }
     },
-    [feedbackResponses, paperId, revisionPaper?.submissions, handleSubmitPaperRevisionResponse]
+    [feedbackResponses, paperId, revisionPaper?.submissions, handleSubmitPaperRevisionResponse, revisionValidation]
   );
 
   // const handleSubmitResponses = async (submissionId: string) => {
@@ -317,6 +414,34 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
             {/* New Submission Section */}
             <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 mb-6">
               <h3 className="text-lg font-bold mb-4">Nộp Submission Mới</h3>
+
+              {/* Deadline Information */}
+              {revisionDeadline && revisionDeadline.length > 0 && (
+                <div className="mb-4 p-4 bg-gray-700 rounded-lg">
+                  <h4 className="font-medium text-white mb-2">Thông tin Deadline</h4>
+                  {revisionValidation.formattedPeriod && (
+                    <p className="text-sm text-gray-300 mb-2">
+                      <span className="font-medium">Thời gian nộp:</span> {revisionValidation.formattedPeriod}
+                    </p>
+                  )}
+                  <div className={`text-sm font-medium ${revisionValidation.isAvailable ? 'text-green-400' :
+                    revisionValidation.isExpired ? 'text-red-400' : 'text-yellow-400'
+                    }`}>
+                    {revisionValidation.message}
+                  </div>
+                  {revisionValidation.daysRemaining && (
+                    <div className="text-sm text-blue-400 mt-1">
+                      Còn {revisionValidation.daysRemaining} ngày
+                    </div>
+                  )}
+                  {revisionValidation.daysUntilStart && (
+                    <div className="text-sm text-yellow-400 mt-1">
+                      Còn {revisionValidation.daysUntilStart} ngày nữa mới có thể nộp
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -327,6 +452,7 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Nhập tiêu đề bài báo"
+                    disabled={!revisionValidation.isAvailable}
                     className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
@@ -339,6 +465,7 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Nhập mô tả bài báo"
+                    disabled={!revisionValidation.isAvailable}
                     rows={3}
                     className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                   />
@@ -351,6 +478,7 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
                   <input
                     type="file"
                     accept=".pdf,.doc,.docx"
+                    disabled={!revisionValidation.isAvailable}
                     onChange={handleFileSelect}
                     className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
@@ -362,7 +490,7 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
                 </div>
                 <button
                   onClick={handleSubmitNewSubmission}
-                  disabled={!selectedFile || !title.trim() || !description.trim() || loading}
+                  disabled={!revisionValidation.isAvailable || !selectedFile || !title.trim() || !description.trim() || loading}
                   className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white py-2 px-4 rounded-lg font-medium transition-colors"
                 >
                   {loading ? 'Đang nộp...' : 'Nộp Submission'}
@@ -453,6 +581,7 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper })
                             onSubmitResponses={() => handleSubmitResponses(submission.submissionId)}
                             loading={loading}
                             canRespondToFeedback={canRespondToFeedback}
+                            revisionValidation={revisionValidation}
                           />
                         )}
                       </div>
