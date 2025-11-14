@@ -6,7 +6,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import ResearchConferenceStepForm from "@/components/(user)/workspace/organizer/ManageConference/ConferenceForm/research/index";
+import ResearchConferenceStepForm from "@/components/molecules/Conference/ConferenceForm/research/index";
 
 export default function UpdateResearchConferencePage() {
   const params = useParams();

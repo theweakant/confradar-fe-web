@@ -172,6 +172,8 @@ export const endpoint = {
       `/conferencestep/${conferenceId}/research/ranking-reference-urls`,
     CREATE_RESEARCH_MATERIAL: (conferenceId: string) =>
       `/conferencestep/${conferenceId}/research/materials`,
+    CREATE_REVISION_ROUND_DEADLINE: (researchConferencePhaseId: string) =>
+      `/conferencestep/research/phases/${researchConferencePhaseId}/revision-round-deadlines`,
 
     //UPDATE
     UPDATE_DRAFT_RESEARCH_BASIC: (conferenceId: string) =>

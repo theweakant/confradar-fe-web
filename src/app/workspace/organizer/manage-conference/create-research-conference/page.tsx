@@ -7,7 +7,7 @@
 
 "use client";
 
-import ResearchConferenceStepForm from "@/components/(user)/workspace/organizer/ManageConference/ConferenceForm/research/index";
+import ResearchConferenceStepForm from "@/components/molecules/Conference/ConferenceForm/research/index";
 
 export default function CreateResearchConferencePage() {
   return <ResearchConferenceStepForm mode="create" />;

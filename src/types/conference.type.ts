@@ -301,6 +301,7 @@ export interface ConferenceResearchDetailData {
 
 //RESEARCH PHASE STEP
 export interface RevisionRoundDeadline {
+  researchPhaseId?: string;
   revisionRoundDeadlineId?: string;
   startSubmissionDate: string;
   endSubmissionDate: string;

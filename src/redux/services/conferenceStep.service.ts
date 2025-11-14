@@ -651,6 +651,24 @@ export const conferenceStepApi = createApi({
       invalidatesTags: ["ConferenceStep"],
     }),
 
+    createRevisionRoundDeadline: builder.mutation<
+      ApiResponse<{ success: boolean }>,
+      {
+        researchConferencePhaseId: string;
+        data: {
+          startSubmissionDate: string;
+          endSubmissionDate: string;
+        };
+      }
+    >({
+      query: ({ researchConferencePhaseId, data }) => ({
+        url: endpoint.CONFERENCE_STEP.CREATE_REVISION_ROUND_DEADLINE(researchConferencePhaseId),
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["ConferenceStep"],
+    }),
+
     // DELETE PRICE
     deleteConferencePrice: builder.mutation<
       ApiResponse<null>,
@@ -956,6 +974,7 @@ export const {
   useCreateResearchRankingFileMutation,
   useCreateResearchRankingReferenceMutation,
   useCreateResearchMaterialMutation,
+  useCreateRevisionRoundDeadlineMutation,
 
   //UPDATE RESEARCH
   useUpdateResearchBasicMutation,

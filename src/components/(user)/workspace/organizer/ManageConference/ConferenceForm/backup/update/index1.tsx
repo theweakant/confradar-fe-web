@@ -13,17 +13,18 @@
 //   StepContainer,
 //   LoadingOverlay,
 //   PageHeader,
-// } from "@/components/molecules/Conference/ConferenceStep/components/index";
+// } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/components/index";
 
-// import { FlexibleNavigationButtons } from "@/components/molecules/Conference/ConferenceStep/components/FlexibleNavigationButtons";
+// // Flexible Navigation Buttons (MỚI)
+// import { FlexibleNavigationButtons } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/components/FlexibleNavigationButtons";
 
 // // Shared Forms
-// import { PolicyForm } from "@/components/molecules/Conference/ConferenceStep/forms/PolicyForm";
-// import { MediaForm } from "@/components/molecules/Conference/ConferenceStep/forms/MediaForm";
-// import { SponsorForm } from "@/components/molecules/Conference/ConferenceStep/forms/SponsorForm";
-// import { BasicInfoForm } from "@/components/molecules/Conference/ConferenceStep/forms/BasicInfoForm";
-// import { PriceForm } from "@/components/molecules/Conference/ConferenceStep/forms/PriceForm";
-// import { SessionForm } from "@/components/molecules/Conference/ConferenceStep/forms/SessionForm";
+// import { PolicyForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/PolicyForm";
+// import { MediaForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/MediaForm";
+// import { SponsorForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/SponsorForm";
+// import { BasicInfoForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/BasicInfoForm";
+// import { PriceForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/PriceForm";
+// import { SessionForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/SessionForm";
 
 // import {
 //   useStepNavigation,
@@ -32,7 +33,7 @@
 //   useConferenceForm,
 //   useDeleteTracking,
 //   useTechConferenceData,
-// } from "@/components/molecules/Conference/ConferenceStep/hooks/index";
+// } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/hooks/index";
 
 // // Validations
 // import {
@@ -42,10 +43,10 @@
 //   validateTicketSaleStart,
 //   validateTicketSaleDuration,
 //   validateBasicForm,
-// } from "@/components/molecules/Conference/ConferenceStep/validations";
+// } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/validations";
 
 // // Constants
-// import { TECH_STEP_LABELS, TECH_MAX_STEP } from "@/components/molecules/Conference/ConferenceStep/constants";
+// import { TECH_STEP_LABELS, TECH_MAX_STEP } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/constants";
 
 // // Redux
 // import { useAppDispatch } from "@/redux/hooks/hooks";
@@ -83,7 +84,6 @@
 //     handleNext,
 //     handlePrevious,
 //     handleGoToStep,
-//     handleMarkCompleted,
 //     handleSetMode,
 //     handleReset,
 //     isStepCompleted,
@@ -149,7 +149,7 @@
 //   useEffect(() => {
 //     dispatch(setMaxStep(TECH_MAX_STEP));
 //     handleSetMode("edit");
-//     // handleGoToStep(1);
+//     handleGoToStep(1);
 
 //     return () => {
 //       handleReset();
@@ -231,8 +231,6 @@
 //   const handleNextStep = () => handleNext();
 
 //   const handleUpdateCurrentStep = async () => {
-//     let result: { success: boolean } = { success: false };
-
 //     switch (currentStep) {
 //       case 1:
 //         const basicValidation = validateBasicForm(basicForm);
@@ -240,19 +238,14 @@
 //           toast.error(`Thông tin cơ bản: ${basicValidation.message}`);
 //           return { success: false };
 //         }
-//         result = await submitBasicInfo(basicForm);
-//         break;
+//         return await submitBasicInfo(basicForm);
 
 //       case 2:
 //         if (tickets.length === 0) {
 //           toast.error("Vui lòng thêm ít nhất 1 loại vé!");
 //           return { success: false };
 //         }
-//         const t = tickets[0];
-//         console.log(t.ticketId, t.priceId);
-//         console.log('ticket list tech.ts', tickets)
-//         result = await submitPrice(tickets);
-//         break;
+//         return await submitPrice(tickets);
 
 //       case 3:
 //         if (sessions.length > 0) {
@@ -267,28 +260,18 @@
 //             return { success: false };
 //           }
 //         }
-//         result = await submitSessions(sessions, basicForm.startDate!, basicForm.endDate!);
-//         break;
+//         return await submitSessions(sessions, basicForm.startDate!, basicForm.endDate!);
 
 //       case 4:
-//         result = await submitPolicies(policies);
-//         break;
+//         return await submitPolicies(policies);
 //       case 5:
-//         result = await submitMedia(mediaList);
-//         break;
+//         return await submitMedia(mediaList);
 //       case 6:
-//         result = await submitSponsors(sponsors);
-//         break;
+//         return await submitSponsors(sponsors);
 //       default:
 //         toast.error(`Bước không hợp lệ: ${currentStep}`);
 //         return { success: false };
 //     }
-
-//     if (result.success) {
-//       handleMarkCompleted(currentStep);
-//     }
-
-//     return result;
 //   };
 
 //   // === UPDATE ALL STEPS (ONLY FOR STEP 6) ===

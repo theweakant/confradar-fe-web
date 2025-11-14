@@ -11,15 +11,15 @@
 //   StepContainer,
 //   LoadingOverlay,
 //   PageHeader,
-// } from "../../../../../../molecules/Conference/ConferenceStep/components";
+// } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/components/index";
 
 // // Forms
-// import { BasicInfoForm } from "../../../../../../molecules/Conference/ConferenceStep/forms/BasicInfoForm";
-// import { PriceForm } from "../../../../../../molecules/Conference/ConferenceStep/forms/PriceForm";
-// import { SessionForm } from "../../../../../../molecules/Conference/ConferenceStep/forms/SessionForm";
-// import { PolicyForm } from "../../../../../../molecules/Conference/ConferenceStep/forms/PolicyForm";
-// import { MediaForm } from "../../../../../../molecules/Conference/ConferenceStep/forms/MediaForm";
-// import { SponsorForm } from "../../../../../../molecules/Conference/ConferenceStep/forms/SponsorForm";
+// import { BasicInfoForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/BasicInfoForm";
+// import { PriceForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/PriceForm";
+// import { SessionForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/SessionForm";
+// import { PolicyForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/PolicyForm";
+// import { MediaForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/MediaForm";
+// import { SponsorForm } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/forms/SponsorForm";
 
 // // Hooks
 // import {
@@ -28,7 +28,7 @@
 //   useValidation,
 //   useConferenceForm,
 //   useTechConferenceData,
-// } from "@/components/molecules/Conference/ConferenceStep/hooks";
+// } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/hooks";
 
 // // Validations
 // import {
@@ -38,9 +38,9 @@
 //   validateTicketSaleStart,
 //   validateTicketSaleDuration,
 //   validateBasicForm,
-// } from "../../../../../../molecules/Conference/ConferenceStep/validations";
+// } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/validations";
 
-// import { TECH_STEP_LABELS, TECH_MAX_STEP } from "@/components/molecules/Conference/ConferenceStep/constants";
+// import { TECH_STEP_LABELS, TECH_MAX_STEP } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceStep/constants";
 // import { useAppDispatch, useAppSelector } from "@/redux/hooks/hooks";
 // import { setMaxStep } from "@/redux/slices/conferenceStep.slice";
 // import { toast } from "sonner";
@@ -61,8 +61,8 @@
 //   // Custom Hooks
 //   const {
 //     currentStep,
-//     activeStep,
 //     completedSteps,
+//     activeStep,
 //     handleNext,
 //     handlePrevious,
 //     handleGoToStep,
@@ -210,29 +210,32 @@
 
 //         if (conferenceId && mode === "edit") {
 //           refetchConferenceData();
+//           console.log('ticketlist organzier', tickets)
 //         }
 //       }
 //     });
 //   };
 
 //   const handlePriceSubmit = () => {
+//     console.log('price cua organizer', tickets)
 //     submitPrice(tickets).then((result) => {
 //       if (result.success) {
 //         handleMarkCompleted(2);
 
 //         if (conferenceId && mode === "edit") {
 //           refetchConferenceData();
+//           console.log('ticketlist organzier', tickets)
 //         }
-//         // setTickets(result.data ?? [])
-//         // console.log('roi ne nha', tickets)
 //       }
 //     });
 //   };
 
 //   const handleSessionsSubmit = () => {
+//     console.log('session', sessions)
 //     submitSessions(sessions, basicForm.startDate, basicForm.endDate).then((result) => {
 //       if (result.success) {
 //         handleMarkCompleted(3);
+
 //         if (conferenceId && mode === "edit") {
 //           refetchConferenceData();
 //         }
@@ -244,6 +247,7 @@
 //     submitPolicies(policies).then((result) => {
 //       if (result.success) {
 //         handleMarkCompleted(4);
+
 //         if (conferenceId && mode === "edit") {
 //           refetchConferenceData();
 //         }
@@ -255,6 +259,7 @@
 //     submitMedia(mediaList).then((result) => {
 //       if (result.success) {
 //         handleMarkCompleted(5);
+
 //         if (conferenceId && mode === "edit") {
 //           refetchConferenceData();
 //         }
@@ -266,6 +271,7 @@
 //     submitSponsors(sponsors).then((result) => {
 //       if (result.success) {
 //         handleMarkCompleted(6);
+
 //         if (conferenceId && mode === "edit") {
 //           refetchConferenceData();
 //         }

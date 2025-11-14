@@ -1,4 +1,4 @@
-import ConferenceDetailPage from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceDetailPage/index";
+import ConferenceDetailPage from "@/components/molecules/Conference/ConferenceDetail/index";
 
 export default function Page() {
   return <ConferenceDetailPage />;
