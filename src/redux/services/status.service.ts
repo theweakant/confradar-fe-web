@@ -40,6 +40,18 @@ export const statusApi = createApi({
       }),
       invalidatesTags: ["Status"],
     }),
+    requestConferenceApproval: builder.mutation<
+      ApiResponse<null>,
+      { confId: string }
+    >({
+      query: ({ confId }) => ({
+        url: endpoint.CONFERENCE.REQUEST_CONFERENCE_APPROVE,
+        method: "PUT",
+        params: { confId }, 
+      }),
+      invalidatesTags: ["Status"], 
+    }),
+
   }),
 });
 
@@ -47,4 +59,5 @@ export const {
   useGetAllConferenceStatusesQuery,
   useLazyGetAllConferenceStatusesQuery,
   useUpdateOwnConferenceStatusMutation,
+  useRequestConferenceApprovalMutation
 } = statusApi;
