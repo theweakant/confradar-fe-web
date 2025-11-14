@@ -49,6 +49,8 @@ export function ConferenceTable({
         return "bg-orange-100 text-orange-700";
       case "Cancelled":
         return "bg-gray-200 text-gray-700";
+      case "Deleted":
+        return "bg-red-600 text-white font-semibold";  
       default:
         return "text-gray-700";
     }
@@ -159,7 +161,7 @@ export function ConferenceTable({
                 className="cursor-pointer"
               >
                 <Eye className="w-4 h-4 mr-2 text-green-600" />
-                <span>Xem chi tiết</span>
+                <span>Tổng quan</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

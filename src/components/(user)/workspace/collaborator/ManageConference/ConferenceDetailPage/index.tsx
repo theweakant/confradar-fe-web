@@ -260,7 +260,7 @@ export default function ConferenceDetailPage() {
                     </DropdownMenuItem>
                   )}
                   {conference.conferenceStatusId &&
-                    !["Draft", "Pending"].includes(getStatusName(conference.conferenceStatusId)) && (
+                    !["Draft", "Pending", "Deleted"].includes(getStatusName(conference.conferenceStatusId)) && (
                       <DropdownMenuItem
                         onClick={() => setStatusDialogOpen(true)}
                         className="cursor-pointer flex items-center gap-2 text-purple-600 focus:text-purple-700 focus:bg-purple-50"

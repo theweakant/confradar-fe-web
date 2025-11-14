@@ -111,7 +111,7 @@ export function ResearchBasicInfoForm({
             handleChange("ticketSaleStart", val);
             onFieldBlur("ticketSaleStart");
           }}
-          maxDate={value.endDate}
+          maxDate={value.startDate}
           required
         />
 
