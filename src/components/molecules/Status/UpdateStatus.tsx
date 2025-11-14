@@ -86,14 +86,18 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
   };
 
   const availableStatusOptions = useMemo<{ id: string; name: string }[]>(() => {
-    const hasCollaboratorRole = roles.some((r) =>
-      typeof r === "string" && r.toLowerCase().includes("collaborator")
+    const hasCollaboratorRole = roles.some(
+      (r) => typeof r === "string" && r.toLowerCase().replace(/\s+/g, "").includes("collaborator")
+    );
+    const hasOrganizerRole = roles.some(
+      (r) => typeof r === "string" && r.toLowerCase().replace(/\s+/g, "").includes("conferenceorganizer")
     );
 
-    if (!hasCollaboratorRole || !statusData?.data) return [];
+    // if (!hasCollaboratorRole || !statusData?.data) return [];
+    if (!hasOrganizerRole && !hasCollaboratorRole) return [];
 
     const nameToIdMap: Record<string, string> = {};
-    statusData.data.forEach((s: ConferenceStatus) => {
+    statusData?.data.forEach((s: ConferenceStatus) => {
       nameToIdMap[s.conferenceStatusName] = s.conferenceStatusId;
     });
 
@@ -118,7 +122,7 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
         id: nameToIdMap[name],
         name,
       }))
-      .filter((opt) => opt.id); 
+      .filter((opt) => opt.id);
   }, [roles, currentStatusName, statusData]);
 
   const handleSubmit = async () => {
@@ -134,7 +138,7 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
 
       const res: ApiResponse = await updateStatus({
         confid: conference.conferenceId,
-        newStatus: selectedStatusId, 
+        newStatus: selectedStatusId,
         reason,
       }).unwrap();
 
