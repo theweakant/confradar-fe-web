@@ -145,9 +145,6 @@ export function FlexibleNavigationButtons({
   const showPrevious = currentStep > 1 && onPrevious;
   const showNext = currentStep < maxStep && onNext && mode === "edit";
 
-  // ============================================
-  // CREATE MODE: Submit & Next (1 nút duy nhất)
-  // ============================================
   if (mode === "create") {
     return (
       <div className="flex flex-wrap gap-3 mt-6">

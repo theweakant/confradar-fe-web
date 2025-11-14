@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import type { Ticket, Phase, RefundInPhase, ResearchPhase } from "@/types/conference.type";
 
 // ======================
-// PhaseModal (giống hệt PriceForm)
+// PhaseModal
 // ======================
 interface PhaseModalProps {
   isOpen: boolean;
@@ -21,6 +21,7 @@ interface PhaseModalProps {
   maxSlot: number;
   usedSlots: number;
   editingPhase?: Phase | null;
+  isAuthorTicket?: boolean;
 }
 
 function PhaseModal({
@@ -33,6 +34,7 @@ function PhaseModal({
   maxSlot,
   usedSlots,
   editingPhase,
+  isAuthorTicket = false,
 }: PhaseModalProps) {
   const [phaseData, setPhaseData] = useState({
     phaseName: "",
@@ -105,7 +107,7 @@ function PhaseModal({
       });
       setRefundPolicies([{ percentRefund: 100, refundDeadline: timelineStart }]);
     }
-  }, [isOpen, timelineStart]);
+  }, [isOpen, timelineStart, editingPhase]);
 
   const handleAddRefund = () => {
     setRefundPolicies([...refundPolicies, { percentRefund: 100, refundDeadline: timelineStart }]);
@@ -121,7 +123,6 @@ function PhaseModal({
 
   const handleUpdateRefund = (index: number, field: keyof RefundInPhase, value: string | number) => {
     const updated = [...refundPolicies];
-
     // @ts-expect-error thêm message để không lỗi run build
     updated[index][field] = value;
     setRefundPolicies(updated);
@@ -148,6 +149,8 @@ function PhaseModal({
     }
 
     const phaseEndDate = calculateEndDate(phaseData.startDate, phaseData.durationInDays);
+    
+    // Validation refund policies
     for (const refund of refundPolicies) {
       if (!refund.refundDeadline) {
         toast.error("Vui lòng chọn hạn hoàn tiền!");
@@ -155,14 +158,20 @@ function PhaseModal({
       }
       const deadline = new Date(refund.refundDeadline);
       const start = new Date(phaseData.startDate);
-      const timelineEndDt = new Date(timelineEnd);
+
+      const maxDeadline = isAuthorTicket 
+        ? new Date(timelineEnd)  // registrationEndDate cho author
+        : new Date(timelineEnd); // ticketSaleEnd cho listener
 
       if (deadline < start) {
         toast.error("Hạn hoàn tiền phải sau ngày bắt đầu giai đoạn!");
         return;
       }
-      if (deadline > timelineEndDt) {
-        toast.error("Hạn hoàn tiền không được sau ngày kết thúc!");
+      if (deadline > maxDeadline) {
+        const deadlineLabel = isAuthorTicket 
+          ? "ngày kết thúc đăng ký (Registration End)" 
+          : "ngày kết thúc bán vé (Ticket Sale End)";
+        toast.error(`Hạn hoàn tiền không được sau ${deadlineLabel}!`);
         return;
       }
     }
@@ -219,6 +228,15 @@ function PhaseModal({
             ✕
           </button>
         </div>
+
+        {isAuthorTicket && (
+          <div className="mb-4 p-2.5 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center gap-2 text-xs text-blue-800">
+              <span className="font-semibold">Vé tác giả:</span>
+              <span>Hạn hoàn tiền không được vượt quá ngày kết thúc đăng ký</span>
+            </div>
+          </div>
+        )}
 
         <div className="space-y-4">
           <FormInput
@@ -366,7 +384,16 @@ function PhaseModal({
                   />
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      {idx === 0 ? "Hạn hoàn tiền" : ""}
+                      {idx === 0 ? (
+                        <span className="flex items-center gap-1">
+                          Hạn hoàn tiền
+                          {isAuthorTicket && (
+                            <span className="text-xs text-blue-600 font-normal">
+                              (≤ Registration End)
+                            </span>
+                          )}
+                        </span>
+                      ) : ""}
                     </label>
                     <DatePickerInput
                       value={refund.refundDeadline}
@@ -882,6 +909,7 @@ export function ResearchPriceForm({
         maxSlot={newTicket.totalSlot}
         usedSlots={usedPhaseSlots}
         editingPhase={editingPhaseIndex !== null ? newTicket.phases[editingPhaseIndex] : null}
+        isAuthorTicket={newTicket.isAuthor}
       />
     </div>
   );

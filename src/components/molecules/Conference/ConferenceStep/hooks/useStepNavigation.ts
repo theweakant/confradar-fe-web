@@ -20,13 +20,29 @@ export function useStepNavigation() {
   );
   const mode = useAppSelector((state) => state.conferenceStep.mode);
 
-  const handleNext = useCallback(() => {
+const handleNext = useCallback(() => {
+  if (mode === "edit") {
     dispatch(nextStep());
-  }, [dispatch]);
+    return;
+  }
+  
+  if (completedSteps.includes(currentStep)) {
+    dispatch(nextStep());
+  } else {
+    console.warn("Cannot navigate forward: Current step not completed");
+  }
+}, [dispatch, mode, currentStep, completedSteps]);
 
   const handlePrevious = useCallback(() => {
-    dispatch(prevStep());
-  }, [dispatch]);
+    if (mode === "edit") {
+      dispatch(prevStep());
+      return;
+    }
+    
+    if (currentStep > 1) {
+      dispatch(prevStep());
+    }
+  }, [dispatch, mode, currentStep]);
 
   const handleGoToStep = useCallback((step: number) => {
     if (mode === "edit") {
@@ -36,6 +52,8 @@ export function useStepNavigation() {
     // Trong chế độ "create", chỉ cho phép nhảy đến step đã hoàn thành hoặc step tiếp theo
     if (step <= currentStep || completedSteps.includes(step)) {
       dispatch(goToStep(step));
+    } else {
+      console.warn(`Cannot navigate to step ${step}: Step not accessible`);
     }
   }, [dispatch, mode, currentStep, completedSteps]);
 

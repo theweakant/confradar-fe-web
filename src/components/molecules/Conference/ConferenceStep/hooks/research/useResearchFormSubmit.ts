@@ -841,7 +841,7 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
     }
   };
 
-  // ✨ MỚI: VALIDATE TẤT CẢ CÁC BƯỚC
+  //VALIDATE TẤT CẢ CÁC BƯỚC
   const validateAllSteps = (stepsData: {
     basicForm: ConferenceBasicForm;
     researchDetail: ResearchDetail;
@@ -864,7 +864,7 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
       errors.push(`Bước 1 - Thông tin cơ bản: ${basicValidation.error}`);
     }
 
-    // Step 2: Research Detail (ít nhất phải có rankingCategoryId)
+    // Step 2: Research Detail
     if (!stepsData.researchDetail.rankingCategoryId) {
       errors.push(`Bước 2 - Chi tiết nghiên cứu: Vui lòng chọn loại xếp hạng!`);
     }
@@ -920,7 +920,6 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
     return { isValid: errors.length === 0, errors };
   };
 
-  // ✨ MỚI: SUBMIT TOÀN BỘ
   const submitAll = async (stepsData: {
     basicForm: ConferenceBasicForm;
     researchDetail: ResearchDetail;

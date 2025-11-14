@@ -2,7 +2,7 @@
 "use client";
 
 import { toast } from "sonner";
-import { useEffect, useMemo, useCallback } from "react";
+import { useEffect, useMemo, useCallback, useRef } from "react";
 import { useAppDispatch } from "@/redux/hooks/hooks";
 import { setMaxStep, setMode } from "@/redux/slices/conferenceStep.slice";
 
@@ -195,18 +195,36 @@ export default function ResearchConferenceStepForm({
         : undefined,
   });
 
-  // INIT MODE IN REDUX
+  //INIT MODE & MAX STEP
   useEffect(() => {
     dispatch(setMode(mode));
     dispatch(setMaxStep(RESEARCH_MAX_STEP));
-    handleGoToStep(1);
+  }, [dispatch, mode]);
 
+  //CLEANUP KHI UNMOUNT 
+  useEffect(() => {
     return () => {
       handleReset();
       resetAllForms();
       if (mode === "edit") deleteTracking.resetDeleteTracking();
     };
-  }, [dispatch, mode, handleReset, resetAllForms, deleteTracking]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); 
+
+
+  const hasInitializedRef = useRef(false);
+
+  useEffect(() => {
+    if (hasInitializedRef.current) return;
+
+    if (mode === "create") {
+      handleGoToStep(1);
+      hasInitializedRef.current = true;
+    } else if (mode === "edit" && !isConferenceLoading) {
+      handleGoToStep(1);
+      hasInitializedRef.current = true;
+    }
+  }, [mode, isConferenceLoading, handleGoToStep]);  
 
   // OPTIONS
   const categoryOptions = useMemo(

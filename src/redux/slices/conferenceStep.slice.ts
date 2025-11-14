@@ -86,6 +86,12 @@ const conferenceStepSlice = createSlice({
 
     nextStep: (state) => {
       if (state.currentStep < state.maxStep) {
+
+        if (state.mode === "edit") {
+          state.activeStep = state.currentStep;
+          state.currentStep += 1;
+          return;
+        }
         if (!state.completedSteps.includes(state.currentStep)) {
           state.completedSteps.push(state.currentStep);
         }
@@ -104,11 +110,21 @@ const conferenceStepSlice = createSlice({
 
     goToStep: (state, action: PayloadAction<number>) => {
       const targetStep = action.payload;
-      if (
-        state.mode === "edit" &&
-        targetStep >= 1 &&
-        targetStep <= state.maxStep
-      ) {
+      
+      // Validate range
+      if (targetStep < 1 || targetStep > state.maxStep) {
+        return;
+      }
+
+      // Edit mode: cho phép jump đến bất kỳ step nào
+      if (state.mode === "edit") {
+        state.activeStep = state.currentStep;
+        state.currentStep = targetStep;
+        return;
+      }
+
+      // Create mode: chỉ cho phép jump đến step đã completed hoặc step kế tiếp
+      if (targetStep <= state.currentStep || state.completedSteps.includes(targetStep)) {
         state.activeStep = state.currentStep;
         state.currentStep = targetStep;
       }

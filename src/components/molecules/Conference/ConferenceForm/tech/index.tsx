@@ -2,7 +2,7 @@
 "use client";
 
 import { toast } from "sonner";
-import { useEffect, useMemo, useCallback } from "react";
+import { useEffect, useMemo, useCallback, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks/hooks";
 import { setMaxStep, setMode } from "@/redux/slices/conferenceStep.slice";
 
@@ -169,7 +169,6 @@ export default function TechConferenceStepForm({
 
     useEffect(() => {
     if (mode === "create") {
-      // Đảm bảo basicForm.isInternalHosted phản ánh đúng role
       setBasicForm((prev) => ({ ...prev, isInternalHosted }));
     }
   }, [mode, isInternalHosted, setBasicForm]);
@@ -188,12 +187,17 @@ export default function TechConferenceStepForm({
       };
     }, []); 
 
-    // Navigate to step 1 sau khi load xong data
+    const hasInitializedStep = useRef(false);
+
     useEffect(() => {
+      if (hasInitializedStep.current) return;
+
       if (mode === "create") {
         handleGoToStep(1);
+        hasInitializedStep.current = true;
       } else if (mode === "edit" && !isConferenceLoading) {
         handleGoToStep(1);
+        hasInitializedStep.current = true;
       }
     }, [mode, isConferenceLoading, handleGoToStep]);
 
