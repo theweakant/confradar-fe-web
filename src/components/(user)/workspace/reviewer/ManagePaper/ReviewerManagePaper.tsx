@@ -215,7 +215,7 @@ export default function ReviewerManagePaperPage() {
 
     // Sorting
     if (viewMode === "all") {
-      const papers = result as typeof allPapers;
+      const papers = [...result] as typeof allPapers;
       switch (sortOption) {
         case "date-asc":
           papers.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
@@ -234,7 +234,7 @@ export default function ReviewerManagePaperPage() {
           break;
       }
     } else {
-      const groups = result as AssignedPaperGroup[];
+      const groups = [...result] as AssignedPaperGroup[];
       switch (sortOption) {
         case "name-asc":
         case "conference-asc":

@@ -367,6 +367,10 @@ export default function RevisionPaperPhase({
         if (!roundDetail?.startSubmissionDate || !roundDetail?.endSubmissionDate) {
             return false;
         }
+        console.log("start:", roundDetail.startSubmissionDate);
+        console.log("end:", roundDetail.endSubmissionDate);
+        console.log("now:", new Date());
+        console.log("check:", isWithinDateRange(roundDetail.startSubmissionDate, roundDetail.endSubmissionDate));
 
         return isWithinDateRange(
             roundDetail.startSubmissionDate,
@@ -505,7 +509,8 @@ export default function RevisionPaperPhase({
             return;
         }
 
-        if (!canSubmitRevisionFeedback(roundDeadline.revisionRoundDeadlineId)) {
+        if (!canSubmitRevisionFeedback(submission.revisionPaperSubmissionId)) {
+            console.log(Date.now)
 
             if (roundDeadline.startSubmissionDate && roundDeadline.endSubmissionDate) {
                 toast.error(
