@@ -22,6 +22,7 @@ interface PhaseModalProps {
   usedSlots: number;
   editingPhase?: Phase | null;
   isAuthorTicket?: boolean;
+  onRemoveRefundPolicy?: (refundPolicyId: string) => void;
 }
 
 function PhaseModal({
@@ -35,6 +36,8 @@ function PhaseModal({
   usedSlots,
   editingPhase,
   isAuthorTicket = false,
+  onRemoveRefundPolicy
+  
 }: PhaseModalProps) {
   const [phaseData, setPhaseData] = useState({
     phaseName: "",
@@ -45,9 +48,7 @@ function PhaseModal({
     totalslot: 0,
   });
 
-  const [refundPolicies, setRefundPolicies] = useState<RefundInPhase[]>([
-    { percentRefund: 100, refundDeadline: timelineStart },
-  ]);
+  const [refundPolicies, setRefundPolicies] = useState<RefundInPhase[]>([]); // ← Bắt đầu với mảng rỗng
 
   const calculateEndDate = (startDate: string, duration: number): string => {
     if (!startDate || duration <= 0) return "";
@@ -65,6 +66,13 @@ function PhaseModal({
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
     return Math.max(1, diffDays);
   }, [phaseData.startDate, timelineEnd]);
+
+  const calculateMinRefundDate = (startDate: string): string => {
+    if (!startDate) return timelineStart;
+    const nextDay = new Date(startDate);
+    nextDay.setDate(nextDay.getDate() + 1);
+    return nextDay.toISOString().split("T")[0];
+  };
 
   useEffect(() => {
     if (editingPhase) {
@@ -91,39 +99,41 @@ function PhaseModal({
       const sortedRefunds = [...((editingPhase.refundInPhase as RefundInPhase[]) || [])].sort(
         (a, b) => new Date(a.refundDeadline).getTime() - new Date(b.refundDeadline).getTime()
       );
-      setRefundPolicies(sortedRefunds.length > 0 ? sortedRefunds : [{ percentRefund: 100, refundDeadline: editingPhase.startDate }]);
+      setRefundPolicies(sortedRefunds); // ← Không thêm mặc định
     }
   }, [editingPhase, maxDuration]);
 
   useEffect(() => {
     if (isOpen && !editingPhase) {
+      const startDate = timelineStart;
       setPhaseData({
         phaseName: "",
         percentValue: 0,
         percentType: "increase",
-        startDate: timelineStart,
+        startDate,
         durationInDays: 1,
         totalslot: 0,
       });
-      setRefundPolicies([{ percentRefund: 100, refundDeadline: timelineStart }]);
+      setRefundPolicies([]); // ← Luôn bắt đầu trống
     }
   }, [isOpen, timelineStart, editingPhase]);
 
   const handleAddRefund = () => {
-    setRefundPolicies([...refundPolicies, { percentRefund: 100, refundDeadline: timelineStart }]);
+    const minDeadline = calculateMinRefundDate(phaseData.startDate);
+    setRefundPolicies([...refundPolicies, { percentRefund: 100, refundDeadline: minDeadline }]);
   };
 
   const handleRemoveRefund = (index: number) => {
-    if (refundPolicies.length <= 1) {
-      toast.error("Phải có ít nhất 1 chính sách hoàn tiền!");
-      return;
+    const refund = refundPolicies[index];
+    if (refund.refundPolicyId && onRemoveRefundPolicy) {
+      onRemoveRefundPolicy(refund.refundPolicyId);
     }
     setRefundPolicies(refundPolicies.filter((_, i) => i !== index));
   };
 
   const handleUpdateRefund = (index: number, field: keyof RefundInPhase, value: string | number) => {
     const updated = [...refundPolicies];
-    // @ts-expect-error thêm message để không lỗi run build
+    // @ts-expect-error — field type is constrained by usage
     updated[index][field] = value;
     setRefundPolicies(updated);
   };
@@ -149,30 +159,31 @@ function PhaseModal({
     }
 
     const phaseEndDate = calculateEndDate(phaseData.startDate, phaseData.durationInDays);
-    
-    // Validation refund policies
-    for (const refund of refundPolicies) {
-      if (!refund.refundDeadline) {
-        toast.error("Vui lòng chọn hạn hoàn tiền!");
-        return;
-      }
-      const deadline = new Date(refund.refundDeadline);
-      const start = new Date(phaseData.startDate);
 
-      const maxDeadline = isAuthorTicket 
-        ? new Date(timelineEnd)  // registrationEndDate cho author
-        : new Date(timelineEnd); // ticketSaleEnd cho listener
+    // ✅ Chỉ validate refund nếu có ít nhất 1 chính sách
+    if (refundPolicies.length > 0) {
+      for (const refund of refundPolicies) {
+        if (!refund.refundDeadline) {
+          toast.error("Vui lòng chọn hạn hoàn tiền!");
+          return;
+        }
 
-      if (deadline < start) {
-        toast.error("Hạn hoàn tiền phải sau ngày bắt đầu giai đoạn!");
-        return;
-      }
-      if (deadline > maxDeadline) {
-        const deadlineLabel = isAuthorTicket 
-          ? "ngày kết thúc đăng ký (Registration End)" 
-          : "ngày kết thúc bán vé (Ticket Sale End)";
-        toast.error(`Hạn hoàn tiền không được sau ${deadlineLabel}!`);
-        return;
+        const deadline = new Date(refund.refundDeadline);
+        const minAllowedDeadline = new Date(phaseData.startDate);
+        minAllowedDeadline.setDate(minAllowedDeadline.getDate() + 1);
+        const maxDeadline = new Date(timelineEnd);
+
+        if (deadline < minAllowedDeadline) {
+          toast.error("Hạn hoàn tiền phải sau ngày bắt đầu giai đoạn ít nhất 1 ngày!");
+          return;
+        }
+        if (deadline > maxDeadline) {
+          const deadlineLabel = isAuthorTicket
+            ? "ngày kết thúc đăng ký (Registration End)"
+            : "ngày kết thúc bán vé (Ticket Sale End)";
+          toast.error(`Hạn hoàn tiền không được sau ${deadlineLabel}!`);
+          return;
+        }
       }
     }
 
@@ -191,7 +202,7 @@ function PhaseModal({
       startDate: phaseData.startDate,
       endDate: phaseEndDate,
       totalslot: phaseData.totalslot,
-      refundInPhase: sortedRefunds,
+      refundInPhase: sortedRefunds, // có thể là []
     };
 
     onAdd(phase);
@@ -297,10 +308,13 @@ function PhaseModal({
                       phaseData.percentType === "increase"
                         ? "text-red-600"
                         : "text-green-600"
-                    }>
+                    }
+                  >
                     {calculatedPrice.toLocaleString()} VND
                   </strong>
-                  {" "}({phaseData.percentType === "increase" ? "+" : "-"}{phaseData.percentValue}%)
+                  {" "}(
+                  {phaseData.percentType === "increase" ? "+" : "-"}
+                  {phaseData.percentValue}%)
                 </div>
               )}
             </div>
@@ -370,54 +384,57 @@ function PhaseModal({
             </div>
 
             <div className="space-y-2">
-              {refundPolicies.map((refund, idx) => (
-                <div key={idx} className="grid grid-cols-[1fr,1fr,auto] gap-2 items-end">
-                  <FormInput
-                    label={idx === 0 ? "Tỷ lệ hoàn (%)" : ""}
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={refund.percentRefund}
-                    onChange={(val) =>
-                      handleUpdateRefund(idx, "percentRefund", Number(val))
-                    }
-                  />
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      {idx === 0 ? (
-                        <span className="flex items-center gap-1">
-                          Hạn hoàn tiền
-                          {isAuthorTicket && (
-                            <span className="text-xs text-blue-600 font-normal">
-                              (≤ Registration End)
-                            </span>
-                          )}
-                        </span>
-                      ) : ""}
-                    </label>
-                    <DatePickerInput
-                      value={refund.refundDeadline}
+              {refundPolicies.map((refund, idx) => {
+                const minRefundDate = calculateMinRefundDate(phaseData.startDate);
+                return (
+                  <div key={idx} className="grid grid-cols-[1fr,1fr,auto] gap-2 items-end">
+                    <FormInput
+                      label={idx === 0 ? "Tỷ lệ hoàn (%)" : ""}
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={refund.percentRefund}
                       onChange={(val) =>
-                        handleUpdateRefund(idx, "refundDeadline", val)
+                        handleUpdateRefund(idx, "percentRefund", Number(val))
                       }
-                      minDate={phaseData.startDate}
-                      maxDate={timelineEnd}
-                      className="text-sm py-1.5"
                     />
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        {idx === 0 ? (
+                          <span className="flex items-center gap-1">
+                            Hạn hoàn tiền
+                            {isAuthorTicket && (
+                              <span className="text-xs text-blue-600 font-normal">
+                                (≤ Registration End)
+                              </span>
+                            )}
+                          </span>
+                        ) : ""}
+                      </label>
+                      <DatePickerInput
+                        value={refund.refundDeadline}
+                        onChange={(val) =>
+                          handleUpdateRefund(idx, "refundDeadline", val)
+                        }
+                        minDate={minRefundDate}
+                        maxDate={timelineEnd}
+                        className="text-sm py-1.5"
+                      />
+                    </div>
+                    {refundPolicies.length > 1 && (
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleRemoveRefund(idx)}
+                        className="h-[34px] w-[34px] p-0 flex items-center justify-center text-xs"
+                        title="Xoá mức hoàn"
+                      >
+                        ✕
+                      </Button>
+                    )}
                   </div>
-                  {refundPolicies.length > 1 && (
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => handleRemoveRefund(idx)}
-                      className="h-[34px] w-[34px] p-0 flex items-center justify-center text-xs"
-                      title="Xoá mức hoàn"
-                    >
-                      ✕
-                    </Button>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -442,6 +459,8 @@ interface ResearchPriceFormProps {
   tickets: Ticket[];
   onTicketsChange: (tickets: Ticket[]) => void;
   onRemoveTicket?: (ticketId: string) => void;
+  onRemovePhase?: (pricePhaseId: string) => void;
+  onRemoveRefundPolicy?: (refundPolicyId: string) => void;
   ticketSaleStart: string;
   ticketSaleEnd: string;
   researchPhases: ResearchPhase[];
@@ -454,12 +473,14 @@ export function ResearchPriceForm({
   tickets,
   onTicketsChange,
   onRemoveTicket,
+  onRemovePhase,
+  onRemoveRefundPolicy,
   ticketSaleStart,
   ticketSaleEnd,
   researchPhases,
   maxTotalSlot,
   allowListener,
-  numberPaperAccept
+  numberPaperAccept,
 }: ResearchPriceFormProps) {
   const [newTicket, setNewTicket] = useState<Omit<Ticket, "ticketId">>({
     ticketPrice: 0,
@@ -480,25 +501,26 @@ export function ResearchPriceForm({
 
   useEffect(() => {
     if (!allowListener) {
-      setNewTicket(prev => ({ ...prev, isAuthor: true }));
+      setNewTicket((prev) => ({ ...prev, isAuthor: true }));
     }
   }, [allowListener]);
 
-  // Xác định timeline dựa trên isAuthor
   const currentTimelineStart = newTicket.isAuthor ? authorTimelineStart : ticketSaleStart;
   const currentTimelineEnd = newTicket.isAuthor ? authorTimelineEnd : ticketSaleEnd;
 
   const handleAddOrUpdatePhase = (phase: Phase) => {
     if (editingPhaseIndex !== null) {
       const updatedPhases = [...newTicket.phases];
-      updatedPhases[editingPhaseIndex] = phase;
+      updatedPhases[editingPhaseIndex] = {
+        ...phase,
+        pricePhaseId: newTicket.phases[editingPhaseIndex]?.pricePhaseId,
+      };
       setNewTicket({ ...newTicket, phases: updatedPhases });
       toast.success("Đã cập nhật giai đoạn!");
     } else {
-      // Thêm phase mới
       setNewTicket({
         ...newTicket,
-        phases: [...newTicket.phases, phase],
+        phases: [...newTicket.phases, phase], 
       });
       toast.success("Đã thêm giai đoạn giá!");
     }
@@ -507,6 +529,10 @@ export function ResearchPriceForm({
   };
 
   const handleRemovePhase = (phaseIndex: number) => {
+    const phase = newTicket.phases[phaseIndex];
+    if (phase.pricePhaseId && onRemovePhase) {
+      onRemovePhase(phase.pricePhaseId);
+    }
     setNewTicket({
       ...newTicket,
       phases: newTicket.phases.filter((_, i) => i !== phaseIndex),
@@ -519,7 +545,10 @@ export function ResearchPriceForm({
     setIsPhaseModalOpen(true);
   };
 
-  const usedPhaseSlots = newTicket.phases.reduce((sum, p, i) => sum + (i === editingPhaseIndex ? 0 : p.totalslot), 0);
+  const usedPhaseSlots = newTicket.phases.reduce(
+    (sum, p, i) => sum + (i === editingPhaseIndex ? 0 : p.totalslot),
+    0
+  );
 
   const handleAddTicket = () => {
     if (!newTicket.ticketName.trim()) {
@@ -542,8 +571,6 @@ export function ResearchPriceForm({
         );
         return;
       }
-    }
-    if (newTicket.isAuthor) {
       if (!authorTimelineStart || !authorTimelineEnd) {
         toast.error("Vui lòng điền Timeline (Registration) trước khi thêm vé tác giả!");
         return;
@@ -555,50 +582,65 @@ export function ResearchPriceForm({
       }
     }
 
-    if (newTicket.phases.length > 0) {
-      const totalPhaseSlots = newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0);
-      if (totalPhaseSlots !== newTicket.totalSlot) {
-        toast.error(
-          `Tổng slot các giai đoạn (${totalPhaseSlots}) phải bằng tổng slot vé (${newTicket.totalSlot})!`
-        );
+    if (allowListener) {
+      const hasListenerTicket = tickets.some((t) => !t.isAuthor) || 
+                                (!newTicket.isAuthor && editingTicketIndex === null); //đang tạo mới vé thính giả
+
+      //kiểm tra toàn bộ danh sách SAU khi thêm vé mới
+      const finalTickets = editingTicketIndex !== null
+        ? tickets.map((t, i) => i === editingTicketIndex ? newTicket : t)
+        : [...tickets, newTicket];
+
+      const hasAnyListenerTicket = finalTickets.some(t => !t.isAuthor);
+      
+      if (!hasAnyListenerTicket) {
+        toast.error("Hội nghị nghiên cứu này cho phép thính giả, do đó cần có ít nhất một loại vé không dành cho tác giả.");
         return;
       }
+    }
 
-      const sortedPhases = [...newTicket.phases].sort(
-        (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
-      );
-
-      if (sortedPhases[0].startDate !== currentTimelineStart) {
-        toast.error(
-          `Giai đoạn đầu tiên phải bắt đầu từ ${formatDate(currentTimelineStart)}`
-        );
-        return;
-      }
-
-      const lastPhase = sortedPhases[sortedPhases.length - 1];
-      if (lastPhase.endDate !== currentTimelineEnd) {
-        toast.error(
-          `Giai đoạn cuối cùng phải kết thúc vào ${formatDate(currentTimelineEnd)}`
-        );
-        return;
-      }
-
-      for (let i = 0; i < sortedPhases.length - 1; i++) {
-        const current = sortedPhases[i];
-        const next = sortedPhases[i + 1];
-        const currentDate = new Date(current.endDate);
-        const nextStartDate = new Date(next.startDate);
-        const expectedNextDate = new Date(currentDate);
-        expectedNextDate.setDate(currentDate.getDate() + 1);
-
-        if (nextStartDate.getTime() !== expectedNextDate.getTime()) {
-          toast.error(`Giai đoạn "${current.phaseName}" và "${next.phaseName}" bị đứt quãng hoặc chồng lấn!`);
-          return;
-        }
-      }
-    } else {
+    if (newTicket.phases.length === 0) {
       toast.error("Phải có ít nhất 1 giai đoạn giá!");
       return;
+    }
+
+    const totalPhaseSlots = newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0);
+    if (totalPhaseSlots !== newTicket.totalSlot) {
+      toast.error(
+        `Tổng slot các giai đoạn (${totalPhaseSlots}) phải bằng tổng slot vé (${newTicket.totalSlot})!`
+      );
+      return;
+    }
+
+    const sortedPhases = [...newTicket.phases].sort(
+      (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+    );
+
+    if (sortedPhases[0].startDate !== currentTimelineStart) {
+      toast.error(`Giai đoạn đầu tiên phải bắt đầu từ ${formatDate(currentTimelineStart)}`);
+      return;
+    }
+
+    const lastPhase = sortedPhases[sortedPhases.length - 1];
+    if (lastPhase.endDate !== currentTimelineEnd) {
+      toast.error(`Giai đoạn cuối cùng phải kết thúc vào ${formatDate(currentTimelineEnd)}`);
+      return;
+    }
+
+    for (let i = 0; i < sortedPhases.length - 1; i++) {
+      const current = sortedPhases[i];
+      const next = sortedPhases[i + 1];
+      const currentDate = new Date(current.endDate);
+      const nextStartDate = new Date(next.startDate);
+      const expectedNextDate = new Date(currentDate);
+      expectedNextDate.setDate(currentDate.getDate() + 1);
+
+      if (nextStartDate.getTime() !== expectedNextDate.getTime()) {
+        toast.error(
+          `Giai đoạn "${current.phaseName}" và "${next.phaseName}" bị đứt quãng hoặc chồng lấn!`
+        );
+        return;
+      }
     }
 
     if (editingTicketIndex !== null) {
@@ -606,6 +648,7 @@ export function ResearchPriceForm({
       updatedTickets[editingTicketIndex] = {
         ...newTicket,
         ticketId: updatedTickets[editingTicketIndex]?.ticketId,
+        priceId: updatedTickets[editingTicketIndex]?.priceId
       };
       onTicketsChange(updatedTickets);
       toast.success("Cập nhật vé thành công!");
@@ -632,32 +675,35 @@ export function ResearchPriceForm({
       ticketDescription: ticket.ticketDescription || "",
       isAuthor: ticket.isAuthor ?? false,
       totalSlot: ticket.totalSlot,
-      phases: ticket.phases || [],
+      phases: (ticket.phases || []).map(phase => ({
+        ...phase,
+        pricePhaseId: phase.pricePhaseId, 
+        refundInPhase: (phase.refundInPhase || []).map(refund => ({
+          ...refund,
+          refundPolicyId: refund.refundPolicyId, 
+        })),
+      })),
     });
     setEditingTicketIndex(index);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleRemoveTicket = (index: number) => {
-    const ticket = tickets[index];
-
-    const updatedList = tickets.filter((_, i) => i !== index);
-    onTicketsChange(updatedList);
-
-    if (onRemoveTicket && ticket.ticketId) {
-      onRemoveTicket(ticket.ticketId);
-    }
-
-    toast.success("Đã xóa vé!");
-  };
+const handleRemoveTicket = (index: number) => {
+  const ticket = tickets[index];
+  const updatedList = tickets.filter((_, i) => i !== index);
+  onTicketsChange(updatedList);
+  
+  if (onRemoveTicket && ticket.priceId) {
+    onRemoveTicket(ticket.priceId);
+  }
+  toast.success("Đã xóa vé!");
+};
 
   return (
     <div className="space-y-4">
       {/* Ticket List */}
       <div className="border p-4 rounded mb-4">
-        <h4 className="font-medium mb-3 text-blue-600">
-          Danh sách vé ({tickets.length})
-        </h4>
+        <h4 className="font-medium mb-3 text-blue-600">Danh sách vé ({tickets.length})</h4>
 
         {tickets.map((t, idx) => (
           <div
@@ -717,7 +763,9 @@ export function ResearchPriceForm({
                         <div className="space-y-0.5">
                           <div className="flex items-center justify-between">
                             <span className="text-gray-600 text-xs">Tổng: {p.totalslot}</span>
-                            <span className={`font-bold ${isIncrease ? "text-red-600" : "text-green-600"} text-xs`}>
+                            <span
+                              className={`font-bold ${isIncrease ? "text-red-600" : "text-green-600"} text-xs`}
+                            >
                               {percentDisplay}
                             </span>
                           </div>
@@ -757,7 +805,6 @@ export function ResearchPriceForm({
           {editingTicketIndex !== null ? "Chỉnh sửa vé" : "Thêm vé mới"}
         </h4>
 
-        {/* Author timeline info */}
         {newTicket.isAuthor && mainPhase?.registrationStartDate && mainPhase?.registrationEndDate && (
           <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
             <div className="text-sm text-amber-800">
@@ -798,9 +845,7 @@ export function ResearchPriceForm({
 
         {!allowListener && (
           <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <div className="text-sm text-amber-800">
-              ⚠️ Chỉ cho phép tạo vé dành cho tác giả.
-            </div>
+            <div className="text-sm text-amber-800">⚠️ Chỉ cho phép tạo vé dành cho tác giả.</div>
           </div>
         )}
 
@@ -813,7 +858,11 @@ export function ResearchPriceForm({
             placeholder="500000"
           />
           <FormInput
-            label={`Tổng số lượng vé (Sức chứa: ${maxTotalSlot})`}
+            label={
+              newTicket.isAuthor
+                ? `Số lượng vé tác giả (Tối đa: ${numberPaperAccept})`
+                : `Tổng số lượng vé (Sức chứa: ${maxTotalSlot})`
+            }         
             type="number"
             value={newTicket.totalSlot}
             onChange={(val) => setNewTicket({ ...newTicket, totalSlot: Number(val) })}
@@ -856,9 +905,7 @@ export function ResearchPriceForm({
                       </div>
                       <div className="space-y-0.5">
                         <div className="text-xs">
-                          <span className={isIncrease ? "text-red-600" : "text-green-600"}>
-                            {percentDisplay}
-                          </span>
+                          <span className={isIncrease ? "text-red-600" : "text-green-600"}>{percentDisplay}</span>
                           {" → "}
                           <span className="font-medium">{formatCurrency(adjustedPrice)}</span>
                         </div>
@@ -870,18 +917,10 @@ export function ResearchPriceForm({
                       </div>
                     </div>
                     <div className="flex gap-1">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleEditPhase(phase, idx)}
-                      >
+                      <Button size="sm" variant="outline" onClick={() => handleEditPhase(phase, idx)}>
                         Sửa
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleRemovePhase(idx)}
-                      >
+                      <Button size="sm" variant="destructive" onClick={() => handleRemovePhase(idx)}>
                         Xóa
                       </Button>
                     </div>
@@ -912,6 +951,7 @@ export function ResearchPriceForm({
         usedSlots={usedPhaseSlots}
         editingPhase={editingPhaseIndex !== null ? newTicket.phases[editingPhaseIndex] : null}
         isAuthorTicket={newTicket.isAuthor}
+        onRemoveRefundPolicy={onRemoveRefundPolicy}
       />
     </div>
   );

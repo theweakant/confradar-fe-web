@@ -57,11 +57,13 @@ const useMockDeleteTracking = () => {
   return useMemo(
     () => ({
       trackDeletedTicket: () => {},
+      trackDeletedPhase: () => {},
       trackDeletedSession: () => {},
       trackDeletedPolicy: () => {},
       trackDeletedMedia: () => {},
       trackDeletedSponsor: () => {},
       resetDeleteTracking: () => {},
+
     }),
     []
   );
@@ -550,6 +552,7 @@ export default function TechConferenceStepForm({
             tickets={tickets}
             onTicketsChange={setTickets}
             onRemoveTicket={deleteTracking.trackDeletedTicket}
+            onRemovePhase={deleteTracking.trackDeletedPhase}
             ticketSaleStart={basicForm.ticketSaleStart}
             ticketSaleEnd={basicForm.ticketSaleEnd}
             maxTotalSlot={basicForm.totalSlot}

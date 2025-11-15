@@ -33,19 +33,16 @@ export default function ReviewerManagePage() {
     error: reviewersError,
   } = useGetReviewersListQuery();
 
-  // ✅ State quản lý xem chi tiết, gán reviewer và mở Camera Ready
   const [viewPaper, setViewPaper] = useState<UnassignAbstract | null>(null);
   const [assignPaper, setAssignPaper] = useState<UnassignAbstract | null>(null);
   const [showCameraReady, setShowCameraReady] = useState(false);
 
-  // ✅ Extract data từ API
   const papers = papersData?.data || [];
 
   const handleView = (paper: UnassignAbstract) => {
     setViewPaper(paper);
   };
 
-  // ✅ Loading state
   if (papersLoading || reviewersLoading) {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
@@ -57,7 +54,6 @@ export default function ReviewerManagePage() {
     );
   }
 
-  // ✅ Error state
   if (papersError || reviewersError) {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
@@ -88,12 +84,10 @@ export default function ReviewerManagePage() {
           </div>
         </div>
 
-        {/* ✅ Bảng danh sách bài báo */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <PaperTable papers={papers} onView={handleView} />
         </div>
 
-        {/* ✅ Dialog xem chi tiết bài báo */}
         <Dialog open={!!viewPaper} onOpenChange={() => setViewPaper(null)}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
@@ -109,7 +103,6 @@ export default function ReviewerManagePage() {
           </DialogContent>
         </Dialog>
 
-        {/* ✅ Dialog hiển thị danh sách Camera Ready */}
         <Dialog open={showCameraReady} onOpenChange={setShowCameraReady}>
           <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>

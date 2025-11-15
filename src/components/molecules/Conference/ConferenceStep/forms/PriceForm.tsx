@@ -14,6 +14,8 @@ interface PriceFormProps {
   tickets: Ticket[];
   onTicketsChange: (tickets: Ticket[]) => void;
   onRemoveTicket?: (priceId: string) => void;
+  onRemovePhase?: (pricePhaseId: string) => void; 
+  onRemoveRefundPolicy?: (refundPolicyId: string) => void; 
   ticketSaleStart: string;
   ticketSaleEnd: string;
   maxTotalSlot: number;
@@ -32,7 +34,8 @@ interface PhaseModalProps {
   maxSlot: number;
   usedSlots: number;
   editingPhase?: Phase | null;
-  minStartDateForNewPhase?: string; // ← Thêm prop mới
+  minStartDateForNewPhase?: string;
+  onRemoveRefundPolicy?: (refundPolicyId: string) => void;
 }
 
 function PhaseModal({
@@ -46,6 +49,7 @@ function PhaseModal({
   usedSlots,
   editingPhase,
   minStartDateForNewPhase,
+  onRemoveRefundPolicy
 }: PhaseModalProps) {
   const [phaseData, setPhaseData] = useState({
     phaseName: "",
@@ -98,6 +102,7 @@ function PhaseModal({
         totalslot: editingPhase.totalslot,
       });
 
+      // ✅ Giữ nguyên refundPolicyId khi map
       const sortedRefunds = [...((editingPhase.refundInPhase as RefundInPhase[]) || [])].sort(
         (a, b) => new Date(a.refundDeadline).getTime() - new Date(b.refundDeadline).getTime()
       );
@@ -135,6 +140,10 @@ function PhaseModal({
   };
 
   const handleRemoveRefund = (index: number) => {
+    const refund = refundPolicies[index];
+    if (refund.refundPolicyId && onRemoveRefundPolicy) {
+      onRemoveRefundPolicy(refund.refundPolicyId);
+    }
     setRefundPolicies(refundPolicies.filter((_, i) => i !== index));
   };
 
@@ -198,13 +207,18 @@ function PhaseModal({
         ? 100 + phaseData.percentValue
         : 100 - phaseData.percentValue;
 
+    // ✅ Giữ lại pricePhaseId khi edit
     const phase: Phase = {
+      pricePhaseId: editingPhase?.pricePhaseId, // ✅ Preserve ID
       phaseName: phaseData.phaseName,
       applyPercent,
       startDate: phaseData.startDate,
       endDate: calculateEndDate(phaseData.startDate, phaseData.durationInDays),
       totalslot: phaseData.totalslot,
-      refundInPhase: sortedRefunds,
+      refundInPhase: sortedRefunds.map(refund => ({
+        ...refund,
+        refundPolicyId: refund.refundPolicyId || undefined, // ✅ Preserve ID
+      })),
     };
 
     onAdd(phase);
@@ -449,6 +463,8 @@ export function PriceForm({
   tickets,
   onTicketsChange,
   onRemoveTicket,
+  onRemovePhase,
+  onRemoveRefundPolicy,
   ticketSaleStart,
   ticketSaleEnd,
   maxTotalSlot,
@@ -489,6 +505,12 @@ export function PriceForm({
   };
 
   const handleRemovePhase = (phaseIndex: number) => {
+    const phase = newTicket.phases[phaseIndex];
+    
+    if (phase.pricePhaseId && onRemovePhase) {
+      onRemovePhase(phase.pricePhaseId);
+    }
+    
     setNewTicket({
       ...newTicket,
       phases: newTicket.phases.filter((_, i) => i !== phaseIndex),
@@ -599,6 +621,7 @@ export function PriceForm({
     setEditingTicketIndex(null);
   };
 
+  // ✅ FIX: Preserve all IDs when editing ticket
   const handleEditTicket = (ticket: Ticket, index: number) => {
     setNewTicket({
       ticketPrice: ticket.ticketPrice,
@@ -606,24 +629,32 @@ export function PriceForm({
       ticketDescription: ticket.ticketDescription || "",
       isAuthor: ticket.isAuthor ?? false,
       totalSlot: ticket.totalSlot,
-      phases: ticket.phases || [],
+      // ✅ Deep copy phases với tất cả IDs
+      phases: (ticket.phases || []).map(phase => ({
+        ...phase,
+        pricePhaseId: phase.pricePhaseId, // ✅ Preserve phase ID
+        refundInPhase: (phase.refundInPhase || []).map(refund => ({
+          ...refund,
+          refundPolicyId: refund.refundPolicyId, // ✅ Preserve refund policy ID
+        })),
+      })),
     });
     setEditingTicketIndex(index);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-    const handleRemoveTicket = (index: number) => {
-      const ticket = tickets[index];
+  const handleRemoveTicket = (index: number) => {
+    const ticket = tickets[index];
 
-      const updatedList = tickets.filter((_, i) => i !== index);
-      onTicketsChange(updatedList);
+    const updatedList = tickets.filter((_, i) => i !== index);
+    onTicketsChange(updatedList);
 
-      if (onRemoveTicket && ticket.priceId) {
-        onRemoveTicket(ticket.priceId);
-      }
+    if (onRemoveTicket && ticket.priceId) {
+      onRemoveTicket(ticket.priceId);
+    }
 
-      toast.success("Đã xóa vé!");
-    };
+    toast.success("Đã xóa vé!");
+  };
 
   const minStartDateForNewPhase = getNextValidStartDate();
 
@@ -859,6 +890,7 @@ export function PriceForm({
         usedSlots={usedPhaseSlots}
         editingPhase={isEditingPhaseIndex !== null ? newTicket.phases[isEditingPhaseIndex] : null}
         minStartDateForNewPhase={minStartDateForNewPhase}
+        onRemoveRefundPolicy={onRemoveRefundPolicy}
       />
     </div>
   );

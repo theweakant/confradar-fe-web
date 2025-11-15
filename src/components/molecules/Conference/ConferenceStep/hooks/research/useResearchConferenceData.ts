@@ -46,11 +46,23 @@ export function useResearchConferenceData({
   const dispatch = useAppDispatch();
   const hasDispatchedRef = useRef(false); 
 
-  const { data: conferenceDetailResponse, isLoading, isError, error,isFetching, refetch } =
-    useGetResearchConferenceDetailInternalQuery(conferenceId);
+  const { 
+    data: conferenceDetailResponse, 
+    isLoading, 
+    isError, 
+    error,
+    isFetching,
+    refetch 
+  } = useGetResearchConferenceDetailInternalQuery(conferenceId, {
+    skip: !conferenceId,
+    refetchOnMountOrArgChange: true, 
+  });
 
   const stableOnLoad = useCallback(onLoad || (() => { }), [onLoad]);
   const stableOnError = useCallback(onError || (() => { }), [onError]);
+  useEffect(() => {
+    hasDispatchedRef.current = false;
+  }, [conferenceId]);
 
   useEffect(() => {
     if (isError) {
@@ -166,7 +178,7 @@ export function useResearchConferenceData({
             percentRefund: rp.percentRefund ?? 0,
             refundDeadline: rp.refundDeadline ?? "",
           })),
-          // refundInPhase: [],
+         
         })),
       }));
 

@@ -113,6 +113,7 @@ export interface ConferenceBasicResponse {
 
 //PRICE STEP
 export interface RefundInPhase {
+  refundPolicyId?:string
   percentRefund: number;
   refundDeadline: string;
 }
@@ -125,6 +126,7 @@ export interface Phase {
   endDate: string;
   totalslot: number;
   refundInPhase: RefundInPhase[] | RefundPolicyResponse[];
+  forWaitlist?:boolean
 }
 
 export interface Ticket {
@@ -578,6 +580,7 @@ export interface ConferencePricePhaseResponse {
   totalSlot?: number;
   availableSlot?: number;
   refundPolicies?: RefundPolicyResponse[];
+  forWaitlist?:boolean;
 }
 
 export interface TechnicalConferenceSessionResponse {

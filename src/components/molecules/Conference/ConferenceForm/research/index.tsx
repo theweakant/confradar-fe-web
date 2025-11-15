@@ -60,6 +60,7 @@
     return useMemo(
       () => ({
         trackDeletedTicket: () => {},
+        trackDeletedPhase: () => {},
         trackDeletedSession: () => {},
         trackDeletedPolicy: () => {},
         trackDeletedRefundPolicy: () => {},
@@ -128,6 +129,7 @@
         }
       },
       deletedTicketIds: realDeleteTracking.deletedTicketIds,
+      deletedPhaseIds: realDeleteTracking.deletedPhaseIds,
       deletedSessionIds: realDeleteTracking.deletedSessionIds,
       deletedPolicyIds: realDeleteTracking.deletedPolicyIds,
       deletedRefundPolicyIds: realDeleteTracking.deletedRefundPolicyIds,
@@ -703,6 +705,8 @@
               tickets={tickets}
               onTicketsChange={setTickets}
               onRemoveTicket={deleteTracking.trackDeletedTicket}
+              onRemovePhase={deleteTracking.trackDeletedPhase}
+              onRemoveRefundPolicy={deleteTracking.trackDeletedRefundPolicy}
               ticketSaleStart={basicForm.ticketSaleStart}
               ticketSaleEnd={basicForm.ticketSaleEnd}
               researchPhases={researchPhases}

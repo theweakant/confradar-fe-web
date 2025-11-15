@@ -4,6 +4,7 @@ import { useState } from "react";
 export function useDeleteTracking() {
   // =============== TECH CONFERENCE ===============
   const [deletedTicketIds, setDeletedTicketIds] = useState<string[]>([]);
+  const [deletedPhaseIds, setDeletedPhaseIds] = useState<string[]>([]);
   const [deletedSessionIds, setDeletedSessionIds] = useState<string[]>([]);
   const [deletedPolicyIds, setDeletedPolicyIds] = useState<string[]>([]);
   const [deletedRefundPolicyIds, setDeletedRefundPolicyIds] = useState<string[]>([]);
@@ -23,7 +24,11 @@ export function useDeleteTracking() {
       setDeletedTicketIds(prev => [...prev, id]);
     }
   };
-
+  const trackDeletedPhase = (id: string) => {
+    if (id && !deletedPhaseIds.includes(id)) {
+      setDeletedPhaseIds(prev => [...prev, id]);
+    }
+  };
   const trackDeletedSession = (id: string) => {
     if (id && !deletedSessionIds.includes(id)) {
       setDeletedSessionIds(prev => [...prev, id]);
@@ -88,6 +93,7 @@ export function useDeleteTracking() {
   // --- Reset all tracking (useful when switching conferences or canceling) ---
   const resetDeleteTracking = () => {
     setDeletedTicketIds([]);
+    setDeletedPhaseIds([]);
     setDeletedSessionIds([]);
     setDeletedPolicyIds([]);
     setDeletedRefundPolicyIds([]);
@@ -103,6 +109,7 @@ export function useDeleteTracking() {
   return {
     // Tech IDs
     deletedTicketIds,
+    deletedPhaseIds,
     deletedSessionIds,
     deletedPolicyIds,
     deletedRefundPolicyIds, 
@@ -118,6 +125,7 @@ export function useDeleteTracking() {
 
     // Track functions
     trackDeletedTicket,
+    trackDeletedPhase,
     trackDeletedSession,
     trackDeletedPolicy,
     trackDeletedRefundPolicy,

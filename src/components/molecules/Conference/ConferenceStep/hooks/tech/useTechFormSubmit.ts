@@ -12,10 +12,14 @@ import {
 } from "@/redux/slices/conferenceStep.slice";
 import {
   useCreateBasicConferenceMutation,
-  useUpdateBasicConferenceMutation,
   useCreateConferencePriceMutation,
+  useCreatePhaseForPriceMutation,
+
+  useUpdateBasicConferenceMutation,
   useUpdateConferencePriceMutation,
   useDeleteConferencePriceMutation,
+  useDeleteConferencePricePhaseMutation,
+  useUpdateConferencePricePhaseMutation,
   useCreateConferenceSessionsMutation,
   useUpdateConferenceSessionMutation,
   useDeleteConferenceSessionMutation,
@@ -28,6 +32,9 @@ import {
   useCreateConferenceSponsorsMutation,
   useUpdateConferenceSponsorMutation,
   useDeleteConferenceSponsorMutation,
+
+  //DELETE
+  useDeleteRefundPolicyMutation
 } from "@/redux/services/conferenceStep.service";
 import type { ApiError } from "@/types/api.type";
 import type {
@@ -44,7 +51,6 @@ import type {
 import { useDeleteTracking } from "../useDeleteTracking";
 import { validateBasicForm } from "../../validations";
 
-// ✅ Thêm type cho refetch callback
 interface UseFormSubmitProps {
   onRefetchNeeded?: () => Promise<void>;
   deletedTicketIds?: string[];
@@ -52,6 +58,9 @@ interface UseFormSubmitProps {
   deletedPolicyIds?: string[];
   deletedMediaIds?: string[];
   deletedSponsorIds?: string[];
+  deletedPhaseIds?: string[]; 
+  deletedRefundPolicyIds?: string[]; 
+
 }
 
 export function useFormSubmit(props?: UseFormSubmitProps) {
@@ -67,8 +76,11 @@ export function useFormSubmit(props?: UseFormSubmitProps) {
   const [createBasic] = useCreateBasicConferenceMutation();
   const [updateBasic] = useUpdateBasicConferenceMutation();
   const [createPrice] = useCreateConferencePriceMutation();
+  const [createPhaseForPrice] = useCreatePhaseForPriceMutation();
   const [updatePrice] = useUpdateConferencePriceMutation();
   const [deletePrice] = useDeleteConferencePriceMutation();
+  const [deletePhase] = useDeleteConferencePricePhaseMutation();
+  const [updatePhase] = useUpdateConferencePricePhaseMutation(); 
   const [createSessions] = useCreateConferenceSessionsMutation();
   const [updateSession] = useUpdateConferenceSessionMutation();
   const [deleteSession] = useDeleteConferenceSessionMutation();
@@ -81,15 +93,7 @@ export function useFormSubmit(props?: UseFormSubmitProps) {
   const [createSponsors] = useCreateConferenceSponsorsMutation();
   const [updateSponsor] = useUpdateConferenceSponsorMutation();
   const [deleteSponsor] = useDeleteConferenceSponsorMutation();
-
-  // const {
-  //   deletedTicketIds,
-  //   deletedSessionIds,
-  //   deletedPolicyIds,
-  //   deletedMediaIds,
-  //   deletedSponsorIds,
-  //   resetDeleteTracking,
-  // } = useDeleteTracking();
+  const [deleteRefundPolicy] = useDeleteRefundPolicyMutation();
 
   const {
   deletedTicketIds = [],
@@ -97,6 +101,9 @@ export function useFormSubmit(props?: UseFormSubmitProps) {
   deletedPolicyIds = [],
   deletedMediaIds = [],
   deletedSponsorIds = [],
+  deletedPhaseIds = [],
+  deletedRefundPolicyIds = [], 
+
 } = props || {};
 
   // ✅ Helper: Trigger refetch sau update
@@ -144,99 +151,132 @@ export function useFormSubmit(props?: UseFormSubmitProps) {
     }
   };
 
-  // === STEP 2: PRICE (TICKETS) ===
-  const submitPrice = async (tickets: Ticket[]) => {
-    if (!conferenceId) {
-      toast.error("Không tìm thấy conference ID!");
-      return { success: false };
-    }
+// === STEP 2: PRICE (TICKETS) ===
+const submitPrice = async (tickets: Ticket[]) => {
+  if (!conferenceId) {
+    toast.error("Không tìm thấy conference ID!");
+    return { success: false };
+  }
 
-    try {
-      setIsSubmitting(true);
-      let createdTickets: Ticket[] = [];
+  try {
+    setIsSubmitting(true);
+    let createdTickets: Ticket[] = [];
 
-      if (mode === "edit") {
-        // Delete removed tickets
-        if (deletedTicketIds.length > 0) {
-          await Promise.all(deletedTicketIds.map((id) => deletePrice(id).unwrap()));
+    if (mode === "edit") {
+      // BƯỚC 0: Xóa refund policies bị đánh dấu xóa
+      if (deletedRefundPolicyIds.length > 0) {
+        const refundDeleteResults = await Promise.allSettled(
+          deletedRefundPolicyIds.map((id: string) => deleteRefundPolicy(id).unwrap())
+        );
+        const failedCount = refundDeleteResults.filter(
+          (result): result is PromiseRejectedResult => result.status === 'rejected'
+        ).length;
+
+        if (failedCount > 0) {
+          toast.warning(`Xóa ${failedCount}/${deletedRefundPolicyIds.length} chính sách hoàn tiền thất bại`);
         }
+      }
 
-        // Update existing tickets
-        const existingTickets = tickets.filter((t) => t.priceId);
-        if (existingTickets.length > 0) {
-          await Promise.all(
-            existingTickets.map((ticket) =>
-              updatePrice({
-                priceId: ticket.priceId!,
+      // BƯỚC 1: Xóa phases bị xóa
+      if (deletedPhaseIds.length > 0) {
+        const deleteResults = await Promise.allSettled(
+          deletedPhaseIds.map((id: string) => deletePhase(id).unwrap())
+        );
+        const failedCount = deleteResults.filter(
+          (result): result is PromiseRejectedResult => result.status === 'rejected'
+        ).length;
+
+        if (failedCount > 0) {
+          toast.warning(`Xóa ${failedCount}/${deletedPhaseIds.length} phase thất bại`);
+        }
+      }
+
+      // BƯỚC 2: Xóa tickets bị xóa
+      if (deletedTicketIds.length > 0) {
+        await Promise.all(deletedTicketIds.map((id) => deletePrice(id).unwrap()));
+      }
+
+      // BƯỚC 3: Cập nhật thông tin cơ bản của tickets hiện có
+      const existingTickets = tickets.filter((t) => t.priceId);
+      if (existingTickets.length > 0) {
+        await Promise.all(
+          existingTickets.map((ticket) =>
+            updatePrice({
+              priceId: ticket.priceId!,
+              data: {
+                ticketPrice: parseFloat(ticket.ticketPrice.toFixed(2)),
+                ticketName: ticket.ticketName,
+                ticketDescription: ticket.ticketDescription,
+                totalSlot: ticket.totalSlot,
+              },
+            }).unwrap()
+          )
+        );
+      }
+
+      // BƯỚC 4: Cập nhật phases hiện có & thêm phases mới vào ticket đã tồn tại
+      for (const ticket of existingTickets) {
+        if (!ticket.phases || ticket.phases.length === 0) continue;
+
+        // Cập nhật phases có sẵn
+        const existingPhases = ticket.phases.filter((p) => p.pricePhaseId);
+        if (existingPhases.length > 0) {
+          const updateResults = await Promise.allSettled(
+            existingPhases.map((phase) =>
+              updatePhase({
+                pricePhaseId: phase.pricePhaseId!,
                 data: {
-                  ticketPrice: parseFloat(ticket.ticketPrice.toFixed(2)),
-                  ticketName: ticket.ticketName,
-                  ticketDescription: ticket.ticketDescription,
-                  totalSlot: ticket.totalSlot,
+                  phaseName: phase.phaseName,
+                  applyPercent: parseFloat(phase.applyPercent.toFixed(2)),
+                  startDate: phase.startDate,
+                  endDate: phase.endDate,
+                  totalSlot: phase.totalslot,
+                  forWaitlist: phase.forWaitlist ?? false,
                 },
               }).unwrap()
             )
           );
+
+          const failedUpdates = updateResults.filter(r => r.status === 'rejected');
+          if (failedUpdates.length > 0) {
+            toast.error(`Cập nhật ${failedUpdates.length}/${existingPhases.length} phase thất bại`);
+            return { success: false };
+          }
         }
 
-        // Create new tickets
-        const newTickets = tickets.filter((t) => !t.priceId);
-        if (newTickets.length > 0) {
-          const priceData: ConferencePriceData = {
-            typeOfTicket: newTickets.map((ticket) => ({
-              ticketPrice: parseFloat(ticket.ticketPrice.toFixed(2)),
-              ticketName: ticket.ticketName,
-              ticketDescription: ticket.ticketDescription,
-              isAuthor: ticket.isAuthor ?? false,
-              totalSlot: ticket.totalSlot,
-              phases: (ticket.phases || []).map((phase) => ({
-                phaseName: phase.phaseName,
-                applyPercent: parseFloat(phase.applyPercent.toFixed(2)),
-                startDate: phase.startDate,
-                endDate: phase.endDate,
-                totalslot: phase.totalslot,
-                refundInPhase: (phase.refundInPhase || []).map((rp) => ({
-                  percentRefund: rp.percentRefund,
-                  refundDeadline: rp.refundDeadline,
+        // Thêm phases mới vào ticket đã tồn tại
+        const newPhasesInExistingTicket = ticket.phases.filter((p) => !p.pricePhaseId);
+        if (newPhasesInExistingTicket.length > 0) {
+          try {
+            await createPhaseForPrice({
+              conferencePriceId: ticket.priceId!,
+              data: {
+                pricePhases: newPhasesInExistingTicket.map((phase) => ({
+                  phaseName: phase.phaseName,
+                  applyPercent: parseFloat(phase.applyPercent.toFixed(2)),
+                  startDate: phase.startDate,
+                  endDate: phase.endDate,
+                  totalslot: phase.totalslot, 
+                  forWaitlist: phase.forWaitlist ?? false,
+                  refundInPhase: phase.refundInPhase?.map((rp) => ({
+                    percentRefund: rp.percentRefund,
+                    refundDeadline: rp.refundDeadline,
+                  })) || [],
                 })),
-              })),
-            })),
-          };
-          const result = await createPrice({ conferenceId, data: priceData }).unwrap();
-          createdTickets = (result.data.conferencePriceWithPhasesResponses || []).map((p) => ({
-            ticketId: p.conferencePriceId,
-            priceId: p.conferencePriceId,
-            ticketPrice: p.ticketPrice ?? 0,
-            ticketName: p.ticketName ?? "",
-            ticketDescription: p.ticketDescription ?? "",
-            isAuthor: p.isAuthor ?? false,
-            totalSlot: p.totalSlot ?? 0,
-            phases: (p.pricePhases || []).map((ph) => ({
-              pricePhaseId: ph.pricePhaseId,
-              phaseName: ph.phaseName ?? "",
-              startDate: ph.startDate ?? "",
-              endDate: ph.endDate ?? "",
-              applyPercent: ph.applyPercent ?? 0,
-              totalslot: ph.totalSlot ?? 0,
-              refundInPhase: (ph.refundPolicies || []).map((rp) => ({
-                refundPolicyId: rp.refundPolicyId ?? "",
-                percentRefund: rp.percentRefund ?? 0,
-                refundDeadline: rp.refundDeadline ?? "",
-                refundOrder: rp.refundOrder ?? 0,
-              })),
-            })),
-          }));
+              },
+            }).unwrap();
+          } catch (error) {
+            toast.error(`Không thể thêm phase mới cho vé "${ticket.ticketName}"`);
+            return { success: false };
+          }
         }
+      }
 
-        await triggerRefetch();
-      } else {
-        if (tickets.length === 0) {
-          toast.error("Vui lòng thêm ít nhất 1 loại vé!");
-          return { success: false };
-        }
-
+      // BƯỚC 5: Tạo tickets mới (nếu có)
+      const newTickets = tickets.filter((t) => !t.priceId);
+      if (newTickets.length > 0) {
         const priceData: ConferencePriceData = {
-          typeOfTicket: tickets.map((ticket) => ({
+          typeOfTicket: newTickets.map((ticket) => ({
             ticketPrice: parseFloat(ticket.ticketPrice.toFixed(2)),
             ticketName: ticket.ticketName,
             ticketDescription: ticket.ticketDescription,
@@ -248,6 +288,7 @@ export function useFormSubmit(props?: UseFormSubmitProps) {
               startDate: phase.startDate,
               endDate: phase.endDate,
               totalslot: phase.totalslot,
+              forWaitlist: phase.forWaitlist ?? false,
               refundInPhase: (phase.refundInPhase || []).map((rp) => ({
                 percentRefund: rp.percentRefund,
                 refundDeadline: rp.refundDeadline,
@@ -272,6 +313,7 @@ export function useFormSubmit(props?: UseFormSubmitProps) {
             endDate: ph.endDate ?? "",
             applyPercent: ph.applyPercent ?? 0,
             totalslot: ph.totalSlot ?? 0,
+            forWaitlist: ph.forWaitlist ?? false,
             refundInPhase: (ph.refundPolicies || []).map((rp) => ({
               refundPolicyId: rp.refundPolicyId ?? "",
               percentRefund: rp.percentRefund ?? 0,
@@ -282,23 +324,87 @@ export function useFormSubmit(props?: UseFormSubmitProps) {
         }));
       }
 
-      dispatch(markStepCompleted(2));
-      toast.success("Lưu thông tin giá vé thành công!");
+      // BƯỚC 6: Refetch dữ liệu mới nhất
+      await triggerRefetch();
+    } else {
+      // MODE CREATE
+      if (tickets.length === 0) {
+        toast.error("Vui lòng thêm ít nhất 1 loại vé!");
+        return { success: false };
+      }
 
-      const allTickets = mode === "edit"
-        ? [...tickets.filter((t) => t.priceId), ...createdTickets]
-        : createdTickets;
+      // 🔴 VALIDATION: Mỗi ticket phải có ít nhất 1 phase (theo yêu cầu của bạn)
+      const ticketWithoutPhases = tickets.some(ticket => !ticket.phases || ticket.phases.length === 0);
+      if (ticketWithoutPhases) {
+        toast.error("Mỗi loại vé phải có ít nhất 1 giai đoạn (phase)!");
+        return { success: false };
+      }
 
-      return { success: true, data: allTickets };
-    } catch (error) {
-      const apiError = error as { data?: ApiError };
-      console.error("Price submit failed:", error);
-      toast.error(apiError?.data?.message || "Lưu giá vé thất bại!");
-      return { success: false, error };
-    } finally {
-      setIsSubmitting(false);
+      const priceData: ConferencePriceData = {
+        typeOfTicket: tickets.map((ticket) => ({
+          ticketPrice: parseFloat(ticket.ticketPrice.toFixed(2)),
+          ticketName: ticket.ticketName,
+          ticketDescription: ticket.ticketDescription,
+          isAuthor: ticket.isAuthor ?? false,
+          totalSlot: ticket.totalSlot,
+          phases: (ticket.phases || []).map((phase) => ({
+            phaseName: phase.phaseName,
+            applyPercent: parseFloat(phase.applyPercent.toFixed(2)),
+            startDate: phase.startDate,
+            endDate: phase.endDate,
+            totalslot: phase.totalslot,
+            forWaitlist: phase.forWaitlist ?? false,
+            refundInPhase: (phase.refundInPhase || []).map((rp) => ({
+              percentRefund: rp.percentRefund,
+              refundDeadline: rp.refundDeadline,
+            })),
+          })),
+        })),
+      };
+
+      const result = await createPrice({ conferenceId, data: priceData }).unwrap();
+      createdTickets = (result.data.conferencePriceWithPhasesResponses || []).map((p) => ({
+        ticketId: p.conferencePriceId,
+        priceId: p.conferencePriceId,
+        ticketPrice: p.ticketPrice ?? 0,
+        ticketName: p.ticketName ?? "",
+        ticketDescription: p.ticketDescription ?? "",
+        isAuthor: p.isAuthor ?? false,
+        totalSlot: p.totalSlot ?? 0,
+        phases: (p.pricePhases || []).map((ph) => ({
+          pricePhaseId: ph.pricePhaseId,
+          phaseName: ph.phaseName ?? "",
+          startDate: ph.startDate ?? "",
+          endDate: ph.endDate ?? "",
+          applyPercent: ph.applyPercent ?? 0,
+          totalslot: ph.totalSlot ?? 0,
+          forWaitlist: ph.forWaitlist ?? false,
+          refundInPhase: (ph.refundPolicies || []).map((rp) => ({
+            refundPolicyId: rp.refundPolicyId ?? "",
+            percentRefund: rp.percentRefund ?? 0,
+            refundDeadline: rp.refundDeadline ?? "",
+            refundOrder: rp.refundOrder ?? 0,
+          })),
+        })),
+      }));
     }
-  };
+
+    dispatch(markStepCompleted(2));
+    toast.success("Lưu thông tin giá vé thành công!");
+
+    const allTickets = mode === "edit"
+      ? [...tickets.filter((t) => t.priceId), ...createdTickets]
+      : createdTickets;
+
+    return { success: true, data: allTickets };
+  } catch (error) {
+    const apiError = error as { data?: ApiError };
+    toast.error(apiError?.data?.message || "Lưu giá vé thất bại!");
+    return { success: false, error };
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   // === STEP 3: SESSIONS ===
   const submitSessions = async (
