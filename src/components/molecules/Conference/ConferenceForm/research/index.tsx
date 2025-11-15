@@ -657,6 +657,7 @@
               rankingOptions={rankingOptions}
               isRankingLoading={isRankingLoading}
               validationErrors={validationErrors}
+              totalSlot={basicForm.totalSlot}
             />
             <FlexibleNavigationButtons
               currentStep={2}

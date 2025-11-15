@@ -140,17 +140,55 @@ export function SessionForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newSession]);
 
-  // Auto calculate end time when startTime or timeRange changes
-  useEffect(() => {
-    if (newSession.startTime && newSession.timeRange && newSession.timeRange > 0) {
-      const start = new Date(newSession.startTime);
-      const end = new Date(start);
-      end.setHours(end.getHours() + Number(newSession.timeRange));
 
-      const formattedEnd = end.toLocaleString("sv-SE").replace(" ", "T").slice(0, 16);
-      setNewSession((prev) => ({ ...prev, endTime: formattedEnd }));
+useEffect(() => {
+  if (!newSession.startTime || !newSession.timeRange || newSession.timeRange <= 0) {
+    return;
+  }
+
+  const start = new Date(newSession.startTime);
+  const startDay = new Date(start);
+  startDay.setHours(0, 0, 0, 0);
+
+  // Đề xuất endTime theo timeRange
+  const endProposed = new Date(start);
+  endProposed.setHours(endProposed.getHours() + Number(newSession.timeRange));
+
+  // Giới hạn: 23:59:59.999 cùng ngày
+  const endOfDay = new Date(startDay);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  let finalEndTime = endProposed;
+  let finalTimeRange = newSession.timeRange;
+
+  if (endProposed > endOfDay) {
+    finalEndTime = endOfDay;
+
+    // Tính lại timeRange theo phút, làm tròn xuống 0.5h
+    const diffMs = finalEndTime.getTime() - start.getTime();
+    const diffHours = diffMs / (1000 * 60 * 60);
+    finalTimeRange = Math.floor(diffHours * 2) / 2;
+
+    // Đảm bảo tối thiểu 0.5h nếu còn ≥30 phút
+    if (finalTimeRange < 0.5) {
+      finalTimeRange = 0.5;
+      finalEndTime = new Date(start);
+      finalEndTime.setHours(start.getHours() + 0.5);
     }
-  }, [newSession.startTime, newSession.timeRange]);
+  }
+
+  const formattedEnd = finalEndTime.toISOString().slice(0, 16);
+
+  if (finalTimeRange !== newSession.timeRange || formattedEnd !== newSession.endTime) {
+    setNewSession((prev) => ({
+      ...prev,
+      timeRange: finalTimeRange,
+      endTime: formattedEnd,
+    }));
+  }
+}, [newSession.startTime, newSession.timeRange]);
+
+
 
   const handleAddSpeaker = (speaker: Speaker) => {
     setNewSession({
@@ -220,6 +258,15 @@ export function SessionForm({
 
       if (durationMinutes < 0) {
         toast.error("Thời gian kết thúc phải sau thời gian bắt đầu!");
+        return;
+      }
+    }
+
+    if (newSession.endTime) {
+      const sessionDatePart = newSession.date; 
+      const endTimeDatePart = newSession.endTime.split("T")[0];
+      if (sessionDatePart !== endTimeDatePart) {
+        toast.error("Thời gian kết thúc không được phép sang ngày hôm sau!");
         return;
       }
     }
@@ -371,12 +418,12 @@ export function SessionForm({
 
           <FormInput
             label="Thời lượng (giờ)"
+            sublabel="Phiên họp phải kết thúc trước 00:00 cùng ngày"
             type="number"
-            min="0.5"
             step="0.5"
+            min="0.5"
             value={newSession.timeRange}
             onChange={(val) => setNewSession({ ...newSession, timeRange: Number(val) })}
-            placeholder="VD: 2 giờ"
             required
           />
         </div>
@@ -385,10 +432,10 @@ export function SessionForm({
         {newSession.startTime && newSession.endTime && (
           <div className="bg-blue-50 p-3 rounded space-y-1">
             <div className="text-sm text-gray-700">
-              <span className="font-medium">Bắt đầu:</span> {formatTimeDate(newSession.startTime)}
+              <span className="font-medium">Ngày:</span> {formatDate(newSession.date)}
             </div>
             <div className="text-sm text-gray-700">
-              <span className="font-medium">Kết thúc:</span> {formatTimeDate(newSession.endTime)}
+              <span className="font-medium">Thời gian:</span> {formatTimeDate(newSession.startTime).split(' ')[0]} – {formatTimeDate(newSession.endTime).split(' ')[0]}
             </div>
           </div>
         )}

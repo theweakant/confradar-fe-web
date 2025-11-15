@@ -1,3 +1,4 @@
+import { useEffect } from "react"; 
 import { FormInput } from "@/components/molecules/FormInput";
 import { FormSelect } from "@/components/molecules/FormSelect";
 import { FormTextArea } from "@/components/molecules/FormTextArea";
@@ -9,6 +10,7 @@ interface ResearchDetailFormProps {
   rankingOptions: Array<{ value: string; label: string }>;
   isRankingLoading: boolean;
   validationErrors?: Record<string, string>;
+  totalSlot: number;
 }
 
 const PAPER_FORMAT_OPTIONS = [
@@ -28,6 +30,7 @@ export function ResearchDetailForm({
   rankingOptions,
   isRankingLoading,
   validationErrors = {},
+  totalSlot
 }: ResearchDetailFormProps) {
   const currentYear = new Date().getFullYear();
   const handleChange = <K extends keyof ResearchDetail>(
@@ -36,6 +39,29 @@ export function ResearchDetailForm({
   ) => {
     onChange({ ...formData, [field]: value });
   };
+
+
+  useEffect(() => {
+    const allowListener = formData.allowListener;
+    let newNumberPaperAccept: number | undefined;
+
+    if (!allowListener) {
+      if (formData.numberPaperAccept !== totalSlot) {
+        newNumberPaperAccept = totalSlot;
+      }
+    } else {
+      if (totalSlot > 0 && formData.numberPaperAccept >= totalSlot) {
+        newNumberPaperAccept = Math.max(0, totalSlot - 1);
+      }
+    }
+
+    if (newNumberPaperAccept !== undefined) {
+      onChange({
+        ...formData,
+        numberPaperAccept: newNumberPaperAccept,
+      });
+    }
+  }, [formData.allowListener, formData.numberPaperAccept, totalSlot, formData, onChange]);
 
   const handleRankingCategoryChange = (newCategoryId: string) => {
     onChange({
@@ -83,6 +109,9 @@ export function ResearchDetailForm({
           onChange={(val) => handleChange("numberPaperAccept", Number(val))}
           error={validationErrors.numberPaperAccept}
           placeholder="VD: 50"
+          disabled={!formData.allowListener} 
+          max={formData.allowListener ? totalSlot - 1 : totalSlot}
+          min="0"
         />
 
         <FormInput
@@ -164,7 +193,7 @@ export function ResearchDetailForm({
         <div className="text-xs text-gray-600 bg-blue-50 p-2 rounded">
           <strong>Lưu ý:</strong>{" "}
           {rankType === "Core" || rankType === "CoreRanking"
-            ? "Chọn Q1–Q4 cho xếp hạng Core."
+            ? "Chọn Q1-Q4 cho xếp hạng Core."
             : rankType === "IF" || rankType === "CiteScore"
             ? "Nhập số thập phân không âm (ví dụ: 1.25)."
             : rankType === "H5"

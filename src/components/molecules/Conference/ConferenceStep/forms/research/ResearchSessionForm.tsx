@@ -43,15 +43,46 @@ export function ResearchSessionForm({
   });
   const sessionMedias = newSession.sessionMedias;
 
-  useEffect(() => {
-    if (newSession.startTime && newSession.timeRange && newSession.timeRange > 0) {
-      const start = new Date(newSession.startTime);
-      const end = new Date(start);
-      end.setHours(end.getHours() + Number(newSession.timeRange));
-      const formattedEnd = end.toISOString().split("T")[0] + "T" + end.toTimeString().slice(0, 5);
-      setNewSession((prev) => ({ ...prev, endTime: formattedEnd }));
+useEffect(() => {
+  if (!newSession.startTime || !newSession.timeRange || newSession.timeRange <= 0) {
+    return;
+  }
+
+  const start = new Date(newSession.startTime);
+  const startDay = new Date(start);
+  startDay.setHours(0, 0, 0, 0);
+
+  const endProposed = new Date(start);
+  endProposed.setHours(endProposed.getHours() + Number(newSession.timeRange));
+
+  const endOfDay = new Date(startDay);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  let finalEndTime = endProposed;
+  let finalTimeRange = newSession.timeRange;
+
+  if (endProposed > endOfDay) {
+    finalEndTime = endOfDay;
+    const diffMs = finalEndTime.getTime() - start.getTime();
+    const diffHours = diffMs / (1000 * 60 * 60);
+    finalTimeRange = Math.floor(diffHours * 2) / 2;
+    if (finalTimeRange < 0.5) {
+      finalTimeRange = 0.5;
+      finalEndTime = new Date(start);
+      finalEndTime.setHours(start.getHours() + 0.5);
     }
-  }, [newSession.startTime, newSession.timeRange]);
+  }
+
+  const formattedEnd = finalEndTime.toISOString().slice(0, 16);
+
+  if (finalTimeRange !== newSession.timeRange || formattedEnd !== newSession.endTime) {
+    setNewSession((prev) => ({
+      ...prev,
+      timeRange: finalTimeRange,
+      endTime: formattedEnd,
+    }));
+  }
+}, [newSession.startTime, newSession.timeRange]);
 
   const handleMediaChange = (fileOrFiles: File | File[] | null) => {
     let files: File[] | null = null;
@@ -86,6 +117,16 @@ export function ResearchSessionForm({
       toast.error("Vui lòng nhập đầy đủ ngày và thời gian!");
       return;
     }
+
+    if (newSession.endTime) {
+      const sessionDatePart = newSession.date;
+      const endTimeDatePart = newSession.endTime.split("T")[0];
+      if (sessionDatePart !== endTimeDatePart) {
+        toast.error("Thời gian kết thúc không được phép sang ngày hôm sau!");
+        return;
+      }
+    }
+
     if (!newSession.roomId) {
       toast.error("Vui lòng chọn phòng!");
       return;
@@ -94,11 +135,10 @@ export function ResearchSessionForm({
     // ✅ Format datetime đúng trước khi thêm vào sessions
     const formattedSession: Session = {
       ...newSession,
-      // Đảm bảo startTime, endTime có đầy đủ date + time
-      startTime: newSession.startTime, // Format: "YYYY-MM-DDTHH:mm"
-      endTime: newSession.endTime,     // Format: "YYYY-MM-DDTHH:mm"
-      date: newSession.date,           // Format: "YYYY-MM-DD"
-      speaker: [], // BE research không dùng
+      startTime: newSession.startTime,
+      endTime: newSession.endTime,    
+      date: newSession.date,   
+      speaker: [], 
     };
 
     onSessionsChange([...sessions, formattedSession]);
@@ -144,48 +184,38 @@ export function ResearchSessionForm({
       <div className="space-y-2 mb-4">
         {sessions.length === 0 ? (
           <div className="p-3 bg-gray-50 text-gray-600 rounded text-sm">
-            Chưa có phiên họp nào.
+            Chưa có phiên họp nào. Bạn có thể bỏ qua hoặc thêm phiên họp mới bên dưới.
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
             {sessions.map((s, idx) => {
               const room = roomsData?.data.find((r) => r.roomId === s.roomId);
-              
-              // Format thời gian để hiển thị
-              const formatPreviewTime = (datetime: string) => {
-                if (!datetime) return "";
-                try {
-                  // Nếu datetime có dạng "YYYY-MM-DDTHH:mm"
-                  const [datePart, timePart] = datetime.split("T");
-                  if (timePart) {
-                    return timePart.slice(0, 5); // Chỉ lấy HH:mm
-                  }
-                  return formatTimeDate(datetime);
-                } catch {
-                  return formatTimeDate(datetime);
-                }
-              };
 
-              const startTimeDisplay = formatPreviewTime(s.startTime);
-              const endTimeDisplay = formatPreviewTime(s.endTime);
-              
               return (
-                <div key={idx} className="bg-white border rounded-xl p-4 shadow-sm">
-                  <div className="font-semibold">{s.title}</div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    {s.date && formatDate(s.date)} • {startTimeDisplay} – {endTimeDisplay}
+                <div
+                  key={idx}
+                  className="relative bg-white border border-gray-300 rounded-xl p-4 shadow-sm flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="font-semibold text-gray-900">{s.title}</div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      {formatTimeDate(s.startTime)} – {formatTimeDate(s.endTime)}
+                    </div>
+                    {room && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        Phòng: <span className="font-medium">{room.number}</span> – {room.displayName}
+                      </div>
+                    )}
+                    {s.sessionMedias && s.sessionMedias.length > 0 && (
+                      <div className="mt-2">
+                        <div className="text-xs text-gray-600">
+                          {s.sessionMedias.length} file đính kèm
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  {room && (
-                    <div className="text-xs text-gray-500 mt-1">
-                      Phòng: {room.number} – {room.displayName}
-                    </div>
-                  )}
-                  {s.sessionMedias && s.sessionMedias.length > 0 && (
-                    <div className="mt-2 text-xs text-gray-500">
-                      {s.sessionMedias.length} file đã chọn
-                    </div>
-                  )}
-                  <div className="flex justify-end gap-2 mt-3">
+
+                  <div className="flex justify-end gap-2 mt-4">
                     <Button size="sm" variant="outline" onClick={() => handleEditSession(s, idx)}>
                       Sửa
                     </Button>
@@ -243,6 +273,7 @@ export function ResearchSessionForm({
 
           <FormInput
             label="Thời lượng (giờ)"
+            sublabel="Tối đa đến 23h59 cùng ngày"
             type="number"
             min="0.5"
             step="0.5"
@@ -252,19 +283,16 @@ export function ResearchSessionForm({
           />
         </div>
 
-        {/* Preview thời gian kết thúc */}
+        {/* Preview time */}
         {newSession.startTime && newSession.endTime && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <div className="text-sm text-blue-800">
-              <span className="font-medium">Preview:</span> Phiên họp diễn ra từ{" "}
-              <span className="font-semibold">
-                {newSession.startTime.split("T")[1]?.slice(0, 5)}
-              </span>{" "}
-              đến{" "}
-              <span className="font-semibold">
-                {newSession.endTime.split("T")[1]?.slice(0, 5)}
-              </span>
-              {" "}({newSession.timeRange} giờ)
+          <div className="bg-blue-50 p-3 rounded space-y-1">
+            <div className="text-sm text-gray-700">
+              <span className="font-medium">Ngày:</span> {formatDate(newSession.date)}
+            </div>
+            <div className="text-sm text-gray-700">
+              <span className="font-medium">Thời gian:</span>{" "}
+              {formatTimeDate(newSession.startTime).split(" ")[0]} –{" "}
+              {formatTimeDate(newSession.endTime).split(" ")[0]}
             </div>
           </div>
         )}
