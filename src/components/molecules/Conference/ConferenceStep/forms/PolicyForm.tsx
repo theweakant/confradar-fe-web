@@ -50,14 +50,16 @@ export function PolicyForm({
   const handleRemovePolicy = (index: number) => {
     const policy = policies[index];
 
+    const updatedList = policies.filter((_, i) => i !== index);
+    onPoliciesChange(updatedList);
+
     if (onRemovePolicy && policy.policyId) {
       onRemovePolicy(policy.policyId);
-    } else {
-      onPoliciesChange(policies.filter((_, i) => i !== index));
-      toast.success("Đã xóa chính sách!");
     }
-  };
 
+    toast.success("Đã xóa chính sách!");
+  };
+  
   const handleEditPolicy = (policy: Policy, index: number) => {
     setNewPolicy(policy);
     onPoliciesChange(policies.filter((_, i) => i !== index));

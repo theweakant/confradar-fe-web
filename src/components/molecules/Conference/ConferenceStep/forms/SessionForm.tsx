@@ -243,12 +243,14 @@ export function SessionForm({
   const handleRemoveSession = (index: number) => {
     const session = sessions[index];
 
+    const updatedList = sessions.filter((_, i) => i !== index);
+    onSessionsChange(updatedList);
+
     if (onRemoveSession && session.sessionId) {
       onRemoveSession(session.sessionId);
-    } else {
-      onSessionsChange(sessions.filter((_, i) => i !== index));
-      toast.success("Đã xóa session!");
     }
+
+    toast.success("Đã xóa session!");
   };
 
   const handleEditSession = (session: Session, index: number) => {

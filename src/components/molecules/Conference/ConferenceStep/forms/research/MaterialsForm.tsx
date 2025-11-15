@@ -67,12 +67,14 @@ export function MaterialsForm({
 
   const handleRemoveMaterial = (index: number) => {
     const material = materials[index];
-    
+
+    const updatedList = materials.filter((_, i) => i !== index);
+    onMaterialsChange(updatedList);
+
     if (onRemoveMaterial && material.materialId) {
-      onRemoveMaterial(material.materialId); 
+      onRemoveMaterial(material.materialId);
     }
-    
-    onMaterialsChange(materials.filter((_, i) => i !== index));
+
     toast.success("Đã xóa tài liệu!");
   };
 
@@ -90,12 +92,14 @@ export function MaterialsForm({
 
   const handleRemoveRankingFile = (index: number) => {
     const file = rankingFiles[index];
-    
+
+    const updatedList = rankingFiles.filter((_, i) => i !== index);
+    onRankingFilesChange(updatedList);
+
     if (onRemoveRankingFile && file.rankingFileId) {
-      onRemoveRankingFile(file.rankingFileId); 
+      onRemoveRankingFile(file.rankingFileId);
     }
-    
-    onRankingFilesChange(rankingFiles.filter((_, i) => i !== index));
+
     toast.success("Đã xóa file xếp hạng!");
   };
 
@@ -121,12 +125,14 @@ export function MaterialsForm({
 
   const handleRemoveRankingReference = (index: number) => {
     const ref = rankingReferences[index];
-    
+
+    const updatedList = rankingReferences.filter((_, i) => i !== index);
+    onRankingReferencesChange(updatedList);
+
     if (onRemoveRankingReference && ref.rankingReferenceId) {
-      onRemoveRankingReference(ref.rankingReferenceId); 
+      onRemoveRankingReference(ref.rankingReferenceId);
     }
-    
-    onRankingReferencesChange(rankingReferences.filter((_, i) => i !== index));
+
     toast.success("Đã xóa URL tham khảo!");
   };
 

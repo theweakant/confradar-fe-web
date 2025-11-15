@@ -82,6 +82,7 @@ export default function TechConferenceStepForm({
 
   const userRole = useAppSelector((state) => state.auth.user?.role);
   const isInternalHosted = Boolean(userRole?.includes("Conference Organizer"));
+  
   // === DELETE TRACKING ===
   const realDeleteTracking = useDeleteTracking();
   const mockDeleteTracking = useMockDeleteTracking();
@@ -105,19 +106,6 @@ export default function TechConferenceStepForm({
   } = useStepNavigation();
 
   const {
-    isSubmitting,
-    submitBasicInfo,
-    submitPrice,
-    submitSessions,
-    submitPolicies,
-    submitMedia,
-    submitSponsors,
-    submitAll,
-  } = useFormSubmit();
-
-  const { validationErrors, validate, clearError } = useValidation();
-
-  const {
     basicForm,
     setBasicForm,
     tickets,
@@ -135,8 +123,8 @@ export default function TechConferenceStepForm({
     resetAllForms,
   } = useConferenceForm();
 
-  // === LOAD EXISTING DATA (EDIT ONLY) ===
-  const { isLoading: isConferenceLoading } = useTechConferenceData({
+
+  const { isLoading: isConferenceLoading, isFetching, refetch } = useTechConferenceData({
     conferenceId: mode === "edit" ? conferenceId! : "",
     onLoad:
       mode === "edit"
@@ -167,40 +155,63 @@ export default function TechConferenceStepForm({
         : () => {},
   });
 
-    useEffect(() => {
+  const {
+    isSubmitting,
+    submitBasicInfo,
+    submitPrice,
+    submitSessions,
+    submitPolicies,
+    submitMedia,
+    submitSponsors,
+    submitAll,
+  } = useFormSubmit({
+    onRefetchNeeded: async () => {
+      if (mode === "edit" && refetch) {
+        await refetch();
+      }
+    },
+    deletedTicketIds: realDeleteTracking.deletedTicketIds,
+    deletedSessionIds: realDeleteTracking.deletedSessionIds,
+    deletedPolicyIds: realDeleteTracking.deletedPolicyIds,
+    deletedMediaIds: realDeleteTracking.deletedMediaIds,
+    deletedSponsorIds: realDeleteTracking.deletedSponsorIds,
+  });
+
+  const { validationErrors, validate, clearError } = useValidation();
+
+  // === EFFECTS ===
+  useEffect(() => {
     if (mode === "create") {
       setBasicForm((prev) => ({ ...prev, isInternalHosted }));
     }
   }, [mode, isInternalHosted, setBasicForm]);
 
-    useEffect(() => {
-      dispatch(setMode(mode));
-      dispatch(setMaxStep(TECH_MAX_STEP));
-    }, [dispatch, mode]);
+  useEffect(() => {
+    dispatch(setMode(mode));
+    dispatch(setMaxStep(TECH_MAX_STEP));
+  }, [dispatch, mode]);
 
-    
-    useEffect(() => {
-      return () => {
-        handleReset();
-        resetAllForms();
-        if (mode === "edit") deleteTracking.resetDeleteTracking();
-      };
-    }, []); 
+  useEffect(() => {
+    return () => {
+      handleReset();
+      resetAllForms();
+      if (mode === "edit") deleteTracking.resetDeleteTracking();
+    };
+  }, []); 
 
-    const hasInitializedStep = useRef(false);
+  const hasInitializedStep = useRef(false);
 
-    useEffect(() => {
-      if (hasInitializedStep.current) return;
+  useEffect(() => {
+    if (hasInitializedStep.current) return;
 
-      if (mode === "create") {
-        handleGoToStep(1);
-        hasInitializedStep.current = true;
-      } else if (mode === "edit" && !isConferenceLoading) {
-        handleGoToStep(1);
-        hasInitializedStep.current = true;
-      }
-    }, [mode, isConferenceLoading, handleGoToStep]);
-
+    if (mode === "create") {
+      handleGoToStep(1);
+      hasInitializedStep.current = true;
+    } else if (mode === "edit" && !isConferenceLoading) {
+      handleGoToStep(1);
+      hasInitializedStep.current = true;
+    }
+  }, [mode, isConferenceLoading, handleGoToStep]);
 
   // === OPTIONS ===
   const categoryOptions = useMemo(
@@ -289,8 +300,7 @@ export default function TechConferenceStepForm({
       toast.error(`Thông tin cơ bản: ${basicValidation.error || "Dữ liệu không hợp lệ"}`);
       return;
     }
-    const result = await submitBasicInfo(basicForm);
-    if (result.success) handleNext();
+    await submitBasicInfo(basicForm, true);
   };
 
   const handlePriceSubmit = async () => {
@@ -331,55 +341,113 @@ export default function TechConferenceStepForm({
 
   const handleSponsorsSubmit = async () => {
     await submitSponsors(sponsors);
-    // Bước cuối → không cần handleNext()
   };
 
   // ========================================
   // UPDATE MODE: UPDATE CURRENT STEP
   // ========================================
-  const handleUpdateCurrentStep = async () => {
-    switch (currentStep) {
-      case 1: {
-        const basicValidation = validateBasicForm(basicForm);
-        if (!basicValidation.isValid) {
-          toast.error(`Thông tin cơ bản: ${basicValidation.error || "Dữ liệu không hợp lệ"}`);
-          return { success: false };
-        }
-        return await submitBasicInfo(basicForm);
-      }
-      case 2: {
-        if (tickets.length === 0) {
-          toast.error("Vui lòng thêm ít nhất 1 loại vé!");
-          return { success: false };
-        }
-        return await submitPrice(tickets);
-      }
-      case 3: {
-        if (sessions.length > 0) {
-          if (!basicForm.startDate || !basicForm.endDate) {
-            toast.error("Thiếu ngày bắt đầu/kết thúc hội thảo!");
-            return { success: false };
-          }
-          const hasStart = sessions.some((s) => s.date === basicForm.startDate);
-          const hasEnd = sessions.some((s) => s.date === basicForm.endDate);
-          if (!hasStart || !hasEnd) {
-            toast.error("Phải có phiên họp vào ngày bắt đầu và kết thúc!");
-            return { success: false };
-          }
-        }
-        return await submitSessions(sessions, basicForm.startDate!, basicForm.endDate!);
-      }
-      case 4:
-        return await submitPolicies(policies);
-      case 5:
-        return await submitMedia(mediaList);
-      case 6:
-        return await submitSponsors(sponsors);
-      default:
-        toast.error(`Bước không hợp lệ: ${currentStep}`);
+  // const handleUpdateCurrentStep = async () => {
+  //   switch (currentStep) {
+  //     case 1: {
+  //       const basicValidation = validateBasicForm(basicForm);
+  //       if (!basicValidation.isValid) {
+  //         toast.error(`Thông tin cơ bản: ${basicValidation.error || "Dữ liệu không hợp lệ"}`);
+  //         return { success: false };
+  //       }
+  //       return await submitBasicInfo(basicForm);
+  //     }
+  //     case 2: {
+  //       if (tickets.length === 0) {
+  //         toast.error("Vui lòng thêm ít nhất 1 loại vé!");
+  //         return { success: false };
+  //       }
+  //       return await submitPrice(tickets);
+  //     }
+  //     case 3: {
+  //       if (sessions.length > 0) {
+  //         if (!basicForm.startDate || !basicForm.endDate) {
+  //           toast.error("Thiếu ngày bắt đầu/kết thúc hội thảo!");
+  //           return { success: false };
+  //         }
+  //         const hasStart = sessions.some((s) => s.date === basicForm.startDate);
+  //         const hasEnd = sessions.some((s) => s.date === basicForm.endDate);
+  //         if (!hasStart || !hasEnd) {
+  //           toast.error("Phải có phiên họp vào ngày bắt đầu và kết thúc!");
+  //           return { success: false };
+  //         }
+  //       }
+  //       return await submitSessions(sessions, basicForm.startDate!, basicForm.endDate!);
+  //     }
+  //     case 4:
+  //       return await submitPolicies(policies);
+  //     case 5:
+  //       return await submitMedia(mediaList);
+  //     case 6:
+  //       return await submitSponsors(sponsors);
+  //     default:
+  //       toast.error(`Bước không hợp lệ: ${currentStep}`);
+  //       return { success: false };
+  //   }
+  // };
+
+  const handleUpdateCurrentStep = useCallback(async () => {
+  switch (currentStep) {
+    case 1: {
+      const basicValidation = validateBasicForm(basicForm);
+      if (!basicValidation.isValid) {
+        toast.error(`Thông tin cơ bản: ${basicValidation.error || "Dữ liệu không hợp lệ"}`);
         return { success: false };
+      }
+      return await submitBasicInfo(basicForm);
     }
-  };
+    case 2: {
+      if (tickets.length === 0) {
+        toast.error("Vui lòng thêm ít nhất 1 loại vé!");
+        return { success: false };
+      }
+      return await submitPrice(tickets);
+    }
+    case 3: {
+      if (sessions.length > 0) {
+        if (!basicForm.startDate || !basicForm.endDate) {
+          toast.error("Thiếu ngày bắt đầu/kết thúc hội thảo!");
+          return { success: false };
+        }
+        const hasStart = sessions.some((s) => s.date === basicForm.startDate);
+        const hasEnd = sessions.some((s) => s.date === basicForm.endDate);
+        if (!hasStart || !hasEnd) {
+          toast.error("Phải có phiên họp vào ngày bắt đầu và kết thúc!");
+          return { success: false };
+        }
+      }
+      return await submitSessions(sessions, basicForm.startDate!, basicForm.endDate!);
+    }
+    case 4:
+      return await submitPolicies(policies);
+    case 5:
+      return await submitMedia(mediaList); // ✅ Đảm bảo mediaList là mới nhất
+    case 6:
+      return await submitSponsors(sponsors);
+    default:
+      toast.error(`Bước không hợp lệ: ${currentStep}`);
+      return { success: false };
+  }
+}, [
+  currentStep,
+  basicForm,
+  tickets,
+  sessions,
+  policies,
+  mediaList,      
+  sponsors,
+  submitBasicInfo,
+  submitPrice,
+  submitSessions,
+  submitPolicies,
+  submitMedia,
+  submitSponsors,
+  toast,
+]);
 
   // ========================================
   // UPDATE ALL (edit mode only, step 6)
@@ -392,12 +460,13 @@ export default function TechConferenceStepForm({
       tickets,
       sessions,
       policies,
-      mediaList,
+      mediaList, 
       sponsors,
     });
 
     if (result?.success) {
       toast.success("Cập nhật toàn bộ hội thảo thành công!");
+      realDeleteTracking.resetDeleteTracking();
     } else {
       const errorMsg = result?.errors?.join("; ") || "Lưu toàn bộ thất bại";
       toast.error(errorMsg);
@@ -440,7 +509,12 @@ export default function TechConferenceStepForm({
         onStepClick={handleGoToStep}
       />
 
-      {isSubmitting && <LoadingOverlay message="Đang xử lý... Vui lòng đợi" />}
+      {/* ✅ Show loading overlay for both submitting AND refetching */}
+      {(isSubmitting || isFetching) && (
+        <LoadingOverlay 
+          message={isFetching ? "Đang tải dữ liệu mới nhất..." : "Đang xử lý... Vui lòng đợi"} 
+        />
+      )}
 
       {/* STEP 1: Basic Info */}
       {currentStep === 1 && (
@@ -459,11 +533,12 @@ export default function TechConferenceStepForm({
           <FlexibleNavigationButtons
             currentStep={1}
             maxStep={TECH_MAX_STEP}
-            isSubmitting={isSubmitting}
+            isSubmitting={isSubmitting || isFetching}
             mode={mode}
-            onNext={mode === "edit" ? handleNextStep : undefined}
-            onSubmit={mode === "create" ? handleBasicSubmit : undefined}
-            onUpdate={mode === "edit" ? handleUpdateCurrentStep : undefined}
+            isStepCompleted={isStepCompleted}
+            onNext={handleNextStep}
+            onSubmit={handleBasicSubmit}
+            onUpdate={handleUpdateCurrentStep}
           />
         </StepContainer>
       )}
@@ -482,12 +557,13 @@ export default function TechConferenceStepForm({
           <FlexibleNavigationButtons
             currentStep={2}
             maxStep={TECH_MAX_STEP}
-            isSubmitting={isSubmitting}
+            isSubmitting={isSubmitting || isFetching}
             mode={mode}
+            isStepCompleted={isStepCompleted}
             onPrevious={handlePreviousStep}
-            onNext={mode === "edit" ? handleNextStep : undefined}
-            onSubmit={mode === "create" ? handlePriceSubmit : undefined}
-            onUpdate={mode === "edit" ? handleUpdateCurrentStep : undefined}
+            onNext={handleNextStep} 
+            onSubmit={handlePriceSubmit}
+            onUpdate={handleUpdateCurrentStep}
           />
         </StepContainer>
       )}
@@ -508,14 +584,15 @@ export default function TechConferenceStepForm({
           <FlexibleNavigationButtons
             currentStep={3}
             maxStep={TECH_MAX_STEP}
-            isSubmitting={isSubmitting}
+            isSubmitting={isSubmitting || isFetching}
             mode={mode}
+            isStepCompleted={isStepCompleted}
             isOptionalStep={true}
             isSkippable={sessions.length === 0}
             onPrevious={handlePreviousStep}
             onNext={handleNextStep}
-            onSubmit={mode === "create" ? handleSessionsSubmit : undefined}
-            onUpdate={mode === "edit" ? handleUpdateCurrentStep : undefined}
+            onSubmit={handleSessionsSubmit}
+            onUpdate={handleUpdateCurrentStep}
           />
         </StepContainer>
       )}
@@ -534,14 +611,15 @@ export default function TechConferenceStepForm({
           <FlexibleNavigationButtons
             currentStep={4}
             maxStep={TECH_MAX_STEP}
-            isSubmitting={isSubmitting}
+            isSubmitting={isSubmitting || isFetching}
             mode={mode}
+            isStepCompleted={isStepCompleted}
             isOptionalStep={true}
             isSkippable={policies.length === 0 && refundPolicies.length === 0}
             onPrevious={handlePreviousStep}
-            onNext={handleNextStep}
-            onSubmit={mode === "create" ? handlePoliciesSubmit : undefined}
-            onUpdate={mode === "edit" ? handleUpdateCurrentStep : undefined}
+            onNext={handleNextStep} 
+            onSubmit={handlePoliciesSubmit}
+            onUpdate={handleUpdateCurrentStep}
           />
         </StepContainer>
       )}
@@ -557,14 +635,15 @@ export default function TechConferenceStepForm({
           <FlexibleNavigationButtons
             currentStep={5}
             maxStep={TECH_MAX_STEP}
-            isSubmitting={isSubmitting}
+            isSubmitting={isSubmitting || isFetching}
             mode={mode}
+            isStepCompleted={isStepCompleted}
             isOptionalStep={true}
             isSkippable={mediaList.length === 0}
             onPrevious={handlePreviousStep}
-            onNext={handleNextStep}
-            onSubmit={mode === "create" ? handleMediaSubmit : undefined}
-            onUpdate={mode === "edit" ? handleUpdateCurrentStep : undefined}
+            onNext={handleNextStep} 
+            onSubmit={handleMediaSubmit}
+            onUpdate={handleUpdateCurrentStep}
           />
         </StepContainer>
       )}
@@ -580,14 +659,16 @@ export default function TechConferenceStepForm({
           <FlexibleNavigationButtons
             currentStep={6}
             maxStep={TECH_MAX_STEP}
-            isSubmitting={isSubmitting}
+            isSubmitting={isSubmitting || isFetching}
             mode={mode}
+            isStepCompleted={isStepCompleted}
             isLastStep={true}
-            isOptionalStep={true}
+            // isOptionalStep={true}
             isSkippable={sponsors.length === 0}
             onPrevious={handlePreviousStep}
-            onSubmit={mode === "create" ? handleSponsorsSubmit : undefined}
-            onUpdate={mode === "edit" ? handleUpdateCurrentStep : undefined}
+            onNext={handleNextStep}
+            onSubmit={handleSponsorsSubmit}
+            onUpdate={handleUpdateCurrentStep}
             onUpdateAll={mode === "edit" ? handleUpdateAll : undefined}
           />
         </StepContainer>

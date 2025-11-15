@@ -1,4 +1,4 @@
-// src/components/(user)/workspace/collaborator/ManageConference/CreateConferenceStepPage/hooks/useFormSubmit.ts
+// src/hooks/useFormSubmit.ts
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -44,53 +44,74 @@ import type {
 import { useDeleteTracking } from "../useDeleteTracking";
 import { validateBasicForm } from "../../validations";
 
-export function useFormSubmit() {
+// ✅ Thêm type cho refetch callback
+interface UseFormSubmitProps {
+  onRefetchNeeded?: () => Promise<void>;
+  deletedTicketIds?: string[];
+  deletedSessionIds?: string[];
+  deletedPolicyIds?: string[];
+  deletedMediaIds?: string[];
+  deletedSponsorIds?: string[];
+}
+
+export function useFormSubmit(props?: UseFormSubmitProps) {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const conferenceId = useAppSelector(
-    (state) => state.conferenceStep.conferenceId
-  );
+  const conferenceId = useAppSelector((state) => state.conferenceStep.conferenceId);
   const mode = useAppSelector((state) => state.conferenceStep.mode);
   const roles = useAppSelector((state) => state.auth.user?.role);
 
-  // === RTK Query Mutations ===
+  // RTK Query Mutations
   const [createBasic] = useCreateBasicConferenceMutation();
   const [updateBasic] = useUpdateBasicConferenceMutation();
-
   const [createPrice] = useCreateConferencePriceMutation();
   const [updatePrice] = useUpdateConferencePriceMutation();
   const [deletePrice] = useDeleteConferencePriceMutation();
-
   const [createSessions] = useCreateConferenceSessionsMutation();
   const [updateSession] = useUpdateConferenceSessionMutation();
   const [deleteSession] = useDeleteConferenceSessionMutation();
-
   const [createPolicies] = useCreateConferencePoliciesMutation();
   const [updatePolicy] = useUpdateConferencePolicyMutation();
   const [deletePolicy] = useDeleteConferencePolicyMutation();
-
   const [createMedia] = useCreateConferenceMediaMutation();
   const [updateMedia] = useUpdateConferenceMediaMutation();
   const [deleteMedia] = useDeleteConferenceMediaMutation();
-
   const [createSponsors] = useCreateConferenceSponsorsMutation();
   const [updateSponsor] = useUpdateConferenceSponsorMutation();
   const [deleteSponsor] = useDeleteConferenceSponsorMutation();
 
-  // === Delete Tracking ===
+  // const {
+  //   deletedTicketIds,
+  //   deletedSessionIds,
+  //   deletedPolicyIds,
+  //   deletedMediaIds,
+  //   deletedSponsorIds,
+  //   resetDeleteTracking,
+  // } = useDeleteTracking();
+
   const {
-    deletedTicketIds,
-    deletedSessionIds,
-    deletedPolicyIds,
-    deletedMediaIds,
-    deletedSponsorIds,
-    resetDeleteTracking,
-  } = useDeleteTracking();
+  deletedTicketIds = [],
+  deletedSessionIds = [],
+  deletedPolicyIds = [],
+  deletedMediaIds = [],
+  deletedSponsorIds = [],
+} = props || {};
+
+  // ✅ Helper: Trigger refetch sau update
+  const triggerRefetch = async () => {
+    if (mode === "edit" && props?.onRefetchNeeded) {
+      try {
+        await props.onRefetchNeeded();
+      } catch (error) {
+        console.error("Refetch failed:", error);
+      }
+    }
+  };
 
   // === STEP 1: BASIC INFO ===
-  const submitBasicInfo = async (formData: ConferenceBasicForm) => {
+  const submitBasicInfo = async (formData: ConferenceBasicForm, autoNext: boolean = true) => {
     try {
       setIsSubmitting(true);
       let result;
@@ -98,6 +119,8 @@ export function useFormSubmit() {
       if (mode === "edit" && conferenceId) {
         result = await updateBasic({ conferenceId, data: formData }).unwrap();
         toast.success("Cập nhật thông tin cơ bản thành công!");
+        
+        await triggerRefetch();
       } else {
         result = await createBasic(formData).unwrap();
         const confId = result.data.conferenceId;
@@ -107,6 +130,9 @@ export function useFormSubmit() {
       }
 
       dispatch(markStepCompleted(1));
+      if (autoNext && mode === "create") {
+        dispatch(nextStep());
+      }
       return { success: true, data: result.data };
     } catch (error) {
       const apiError = error as { data?: ApiError };
@@ -127,20 +153,16 @@ export function useFormSubmit() {
 
     try {
       setIsSubmitting(true);
-
       let createdTickets: Ticket[] = [];
 
       if (mode === "edit") {
+        // Delete removed tickets
         if (deletedTicketIds.length > 0) {
-          await Promise.all(
-            deletedTicketIds.map((id) => deletePrice(id).unwrap())
-          );
+          await Promise.all(deletedTicketIds.map((id) => deletePrice(id).unwrap()));
         }
 
-        const t = tickets[0];
-
+        // Update existing tickets
         const existingTickets = tickets.filter((t) => t.priceId);
-        console.log('ticketlist', existingTickets);
         if (existingTickets.length > 0) {
           await Promise.all(
             existingTickets.map((ticket) =>
@@ -157,6 +179,7 @@ export function useFormSubmit() {
           );
         }
 
+        // Create new tickets
         const newTickets = tickets.filter((t) => !t.priceId);
         if (newTickets.length > 0) {
           const priceData: ConferencePriceData = {
@@ -180,7 +203,6 @@ export function useFormSubmit() {
             })),
           };
           const result = await createPrice({ conferenceId, data: priceData }).unwrap();
-
           createdTickets = (result.data.conferencePriceWithPhasesResponses || []).map((p) => ({
             ticketId: p.conferencePriceId,
             priceId: p.conferencePriceId,
@@ -205,6 +227,8 @@ export function useFormSubmit() {
             })),
           }));
         }
+
+        await triggerRefetch();
       } else {
         if (tickets.length === 0) {
           toast.error("Vui lòng thêm ít nhất 1 loại vé!");
@@ -233,7 +257,6 @@ export function useFormSubmit() {
         };
 
         const result = await createPrice({ conferenceId, data: priceData }).unwrap();
-
         createdTickets = (result.data.conferencePriceWithPhasesResponses || []).map((p) => ({
           ticketId: p.conferencePriceId,
           priceId: p.conferencePriceId,
@@ -260,11 +283,10 @@ export function useFormSubmit() {
       }
 
       dispatch(markStepCompleted(2));
-      // ⚠️ KHÔNG auto nextStep() ở đây
       toast.success("Lưu thông tin giá vé thành công!");
 
       const allTickets = mode === "edit"
-        ? [...tickets.filter(t => t.priceId), ...createdTickets]
+        ? [...tickets.filter((t) => t.priceId), ...createdTickets]
         : createdTickets;
 
       return { success: true, data: allTickets };
@@ -298,9 +320,7 @@ export function useFormSubmit() {
     const hasSessionOnStartDay = sessions.some((s) => s.date === eventStartDate);
     const hasSessionOnEndDay = sessions.some((s) => s.date === eventEndDate);
     if (!hasSessionOnStartDay || !hasSessionOnEndDay) {
-      toast.error(
-        "Phải có ít nhất 1 phiên họp vào ngày bắt đầu và 1 phiên họp vào ngày kết thúc hội thảo!"
-      );
+      toast.error("Phải có ít nhất 1 phiên họp vào ngày bắt đầu và 1 phiên họp vào ngày kết thúc hội thảo!");
       return { success: false };
     }
 
@@ -332,19 +352,15 @@ export function useFormSubmit() {
             imageUrl: typeof sp.image === "string" ? sp.image : undefined,
           })),
           sessionMedias: (s.sessionMedias || []).map((media) => ({
-            mediaFile:
-              media.mediaFile instanceof File ? media.mediaFile : undefined,
-            mediaUrl:
-              typeof media.mediaFile === "string" ? media.mediaFile : undefined,
+            mediaFile: media.mediaFile instanceof File ? media.mediaFile : undefined,
+            mediaUrl: typeof media.mediaFile === "string" ? media.mediaFile : undefined,
           })),
         };
       };
 
       if (mode === "edit") {
         if (deletedSessionIds.length > 0) {
-          await Promise.all(
-            deletedSessionIds.map((id) => deleteSession(id).unwrap())
-          );
+          await Promise.all(deletedSessionIds.map((id) => deleteSession(id).unwrap()));
         }
 
         const existingSessions = sessions.filter((s) => s.sessionId);
@@ -374,13 +390,14 @@ export function useFormSubmit() {
             data: { sessions: formattedNewSessions },
           }).unwrap();
         }
+
+        await triggerRefetch();
       } else {
         const formattedSessions = sessions.map(formatSession);
         await createSessions({ conferenceId, data: { sessions: formattedSessions } }).unwrap();
       }
 
       dispatch(markStepCompleted(3));
-      // ⚠️ KHÔNG auto nextStep() ở đây
       toast.success("Lưu phiên họp thành công!");
       return { success: true };
     } catch (error) {
@@ -393,7 +410,8 @@ export function useFormSubmit() {
     }
   };
 
-  // === STEP 4: POLICIES ===
+  
+  
   const submitPolicies = async (policies: Policy[]) => {
     if (!conferenceId) {
       toast.error("Không tìm thấy conference ID!");
@@ -405,9 +423,7 @@ export function useFormSubmit() {
 
       if (mode === "edit") {
         if (deletedPolicyIds.length > 0) {
-          await Promise.all(
-            deletedPolicyIds.map((id) => deletePolicy(id).unwrap())
-          );
+          await Promise.all(deletedPolicyIds.map((id) => deletePolicy(id).unwrap()));
         }
 
         const existing = policies.filter((p) => p.policyId);
@@ -432,6 +448,8 @@ export function useFormSubmit() {
             data: { policies: newPolicies },
           }).unwrap();
         }
+
+        await triggerRefetch();
       } else {
         if (policies.length === 0) {
           dispatch(markStepCompleted(4));
@@ -442,7 +460,6 @@ export function useFormSubmit() {
       }
 
       dispatch(markStepCompleted(4));
-      // ⚠️ KHÔNG auto nextStep() ở đây
       toast.success("Lưu chính sách thành công!");
       return { success: true };
     } catch (error) {
@@ -455,7 +472,6 @@ export function useFormSubmit() {
     }
   };
 
-  // === STEP 5: MEDIA ===
   const submitMedia = async (mediaList: Media[]) => {
     if (!conferenceId) {
       toast.error("Không tìm thấy conference ID!");
@@ -467,9 +483,7 @@ export function useFormSubmit() {
 
       if (mode === "edit") {
         if (deletedMediaIds.length > 0) {
-          await Promise.all(
-            deletedMediaIds.map((id) => deleteMedia(id).unwrap())
-          );
+          await Promise.all(deletedMediaIds.map((id) => deleteMedia(id).unwrap()));
         }
 
         const existing = mediaList.filter((m) => m.mediaId);
@@ -492,6 +506,8 @@ export function useFormSubmit() {
             data: { media: newMedia },
           }).unwrap();
         }
+
+        await triggerRefetch();
       } else {
         if (mediaList.length === 0) {
           dispatch(markStepCompleted(5));
@@ -502,7 +518,6 @@ export function useFormSubmit() {
       }
 
       dispatch(markStepCompleted(5));
-      // ⚠️ KHÔNG auto nextStep() ở đây
       toast.success("Lưu media thành công!");
       return { success: true };
     } catch (error) {
@@ -515,7 +530,6 @@ export function useFormSubmit() {
     }
   };
 
-  // === STEP 6: SPONSORS ===
   const submitSponsors = async (sponsors: Sponsor[]) => {
     if (!conferenceId) {
       toast.error("Không tìm thấy conference ID!");
@@ -527,9 +541,7 @@ export function useFormSubmit() {
 
       if (mode === "edit") {
         if (deletedSponsorIds.length > 0) {
-          await Promise.all(
-            deletedSponsorIds.map((id) => deleteSponsor(id).unwrap())
-          );
+          await Promise.all(deletedSponsorIds.map((id) => deleteSponsor(id).unwrap()));
         }
 
         const existing = sponsors.filter((s) => s.sponsorId);
@@ -554,16 +566,16 @@ export function useFormSubmit() {
           }).unwrap();
         }
 
+        await triggerRefetch();
+        
         dispatch(markStepCompleted(6));
         toast.success("Cập nhật thông tin nhà tài trợ thành công!");
-        // KHÔNG redirect ở đây — để submitAll xử lý
         return { success: true };
       } else {
         if (sponsors.length === 0) {
           dispatch(markStepCompleted(6));
           toast.success("Tạo hội thảo thành công!");
           dispatch(resetWizard());
-          // router.push(`/workspace/collaborator/manage-conference`);
           if (roles?.includes("Collaborator")) {
             router.push(`/workspace/collaborator/manage-conference`);
           } else if (roles?.includes("Conference Organizer")) {
@@ -578,13 +590,11 @@ export function useFormSubmit() {
         dispatch(markStepCompleted(6));
         toast.success("Tạo hội thảo thành công!");
         dispatch(resetWizard());
-        // router.push(`/workspace/collaborator/manage-conference`);
         if (roles?.includes("Collaborator")) {
           router.push(`/workspace/collaborator/manage-conference`);
         } else if (roles?.includes("Conference Organizer")) {
           router.push(`/workspace/organizer/manage-conference`);
         } else {
-          // fallback nếu không thuộc 2 loại trên
           router.push(`/workspace`);
         }
         return { success: true };
@@ -599,7 +609,6 @@ export function useFormSubmit() {
     }
   };
 
-  // ✨ MỚI: VALIDATE TẤT CẢ CÁC BƯỚC
   const validateAllSteps = (stepsData: {
     basicForm: ConferenceBasicForm;
     tickets: Ticket[];
@@ -612,36 +621,30 @@ export function useFormSubmit() {
   }) => {
     const errors: string[] = [];
 
-    // Step 1: Basic Info
     const basicValidation = validateBasicForm(stepsData.basicForm);
     if (!basicValidation.isValid) {
       errors.push(`Bước 1 - Thông tin cơ bản: ${basicValidation.message}`);
     }
 
-    // Step 2: Price
     if (stepsData.tickets.length === 0) {
       errors.push(`Bước 2 - Giá vé: Vui lòng thêm ít nhất 1 loại vé!`);
     }
 
-    // Step 3: Sessions (nếu có data)
     if (stepsData.sessions.length > 0) {
       if (!stepsData.eventStartDate || !stepsData.eventEndDate) {
         errors.push(`Bước 3 - Phiên họp: Thiếu ngày bắt đầu/kết thúc hội thảo!`);
       } else {
-        const hasStart = stepsData.sessions.some(s => s.date === stepsData.eventStartDate);
-        const hasEnd = stepsData.sessions.some(s => s.date === stepsData.eventEndDate);
+        const hasStart = stepsData.sessions.some((s) => s.date === stepsData.eventStartDate);
+        const hasEnd = stepsData.sessions.some((s) => s.date === stepsData.eventEndDate);
         if (!hasStart || !hasEnd) {
           errors.push(`Bước 3 - Phiên họp: Phải có phiên họp vào ngày bắt đầu và kết thúc!`);
         }
       }
     }
 
-    // Steps 4-6: Optional → không bắt lỗi nếu rỗng
-
     return { isValid: errors.length === 0, errors };
   };
 
-  // ✨ MỚI: SUBMIT TOÀN BỘ
   const submitAll = async (stepsData: {
     basicForm: ConferenceBasicForm;
     tickets: Ticket[];
@@ -653,7 +656,6 @@ export function useFormSubmit() {
     try {
       setIsSubmitting(true);
 
-      // 1. Validate toàn bộ
       const validation = validateAllSteps({
         ...stepsData,
         eventStartDate: stepsData.basicForm.startDate,
@@ -661,11 +663,10 @@ export function useFormSubmit() {
       });
 
       if (!validation.isValid) {
-        validation.errors.forEach(err => toast.error(err));
+        validation.errors.forEach((err) => toast.error(err));
         return { success: false, errors: validation.errors };
       }
 
-      // 2. Submit tuần tự
       const results = [];
 
       const basicResult = await submitBasicInfo(stepsData.basicForm);
@@ -702,11 +703,9 @@ export function useFormSubmit() {
       if (!sponsorResult.success) return { success: false };
       results.push(sponsorResult);
 
-      // Chỉ redirect khi ở mode EDIT (mode CREATE đã redirect trong submitSponsors)
       if (mode === "edit") {
-        toast.success("🎉 Cập nhật hội thảo thành công!");
+        toast.success("Cập nhật hội thảo thành công!");
         dispatch(resetWizard());
-        resetDeleteTracking();
         router.push(`/workspace/collaborator/manage-conference`);
       }
 

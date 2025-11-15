@@ -641,11 +641,13 @@ export function ResearchPriceForm({
   const handleRemoveTicket = (index: number) => {
     const ticket = tickets[index];
 
+    const updatedList = tickets.filter((_, i) => i !== index);
+    onTicketsChange(updatedList);
+
     if (onRemoveTicket && ticket.ticketId) {
       onRemoveTicket(ticket.ticketId);
     }
 
-    onTicketsChange(tickets.filter((_, i) => i !== index));
     toast.success("Đã xóa vé!");
   };
 

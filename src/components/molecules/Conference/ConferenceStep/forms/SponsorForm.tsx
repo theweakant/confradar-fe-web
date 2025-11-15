@@ -40,12 +40,14 @@ export function SponsorForm({ sponsors, onSponsorsChange, onRemoveSponsor }: Spo
   const handleRemoveSponsor = (index: number) => {
     const sponsor = sponsors[index];
 
+    const updatedList = sponsors.filter((_, i) => i !== index);
+    onSponsorsChange(updatedList);
+
     if (onRemoveSponsor && sponsor.sponsorId) {
       onRemoveSponsor(sponsor.sponsorId);
-    } else {
-      onSponsorsChange(sponsors.filter((_, i) => i !== index));
-      toast.success("Đã xóa nhà tài trợ!");
     }
+
+    toast.success("Đã xóa nhà tài trợ!");
   };
 
   const handleEditSponsor = (sponsor: Sponsor, index: number) => {

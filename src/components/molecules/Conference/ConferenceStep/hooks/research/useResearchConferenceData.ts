@@ -46,7 +46,7 @@ export function useResearchConferenceData({
   const dispatch = useAppDispatch();
   const hasDispatchedRef = useRef(false); 
 
-  const { data: conferenceDetailResponse, isLoading, isError, error } =
+  const { data: conferenceDetailResponse, isLoading, isError, error,isFetching, refetch } =
     useGetResearchConferenceDetailInternalQuery(conferenceId);
 
   const stableOnLoad = useCallback(onLoad || (() => { }), [onLoad]);
@@ -269,5 +269,5 @@ export function useResearchConferenceData({
     stableOnError,
   ]);
 
-  return { isLoading, isError };
+  return { isLoading, isError, isFetching, refetch };
 }

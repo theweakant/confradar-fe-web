@@ -8,6 +8,7 @@ import {
   setConferenceBasicData,
   markStepCompleted,
   resetWizard,
+  nextStep
 } from "@/redux/slices/conferenceStep.slice";
 import {
   // CREATE
@@ -74,13 +75,27 @@ import type {
 import { useDeleteTracking } from "../useDeleteTracking";
 import { validateBasicForm, validateResearchTimeline } from "../../validations";
 
-export function useResearchFormSubmit() {
+interface UseResearchFormSubmitProps {
+  onRefetchNeeded?: () => Promise<void>;
+  deletedTicketIds?: string[];
+  deletedSessionIds?: string[];
+  deletedPolicyIds?: string[];
+  deletedRefundPolicyIds?: string[];
+  deletedMaterialIds?: string[];
+  deletedRankingFileIds?: string[];
+  deletedRankingReferenceIds?: string[];
+  deletedMediaIds?: string[];
+  deletedSponsorIds?: string[];
+  deletedRevisionDeadlineIds?: string[];
+}
+
+export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const conferenceId = useAppSelector((state) => state.conferenceStep.conferenceId);
-  const mode = useAppSelector((state) => state.conferenceStep.mode); // "create" | "edit"
+  const mode = useAppSelector((state) => state.conferenceStep.mode);
 
   // === CREATE MUTATIONS ===
   const [createBasicResearch] = useCreateBasicResearchConferenceMutation();
@@ -126,19 +141,28 @@ export function useResearchFormSubmit() {
   const [deleteRevisionDeadline] = useDeleteRevisionRoundDeadlineMutation();
 
   // === DELETE TRACKING ===
-  const {
-    deletedTicketIds,
-    deletedSessionIds,
-    deletedPolicyIds,
-    deletedRefundPolicyIds,
-    deletedMaterialIds,
-    deletedRankingFileIds,
-    deletedRankingReferenceIds,
-    deletedMediaIds,
-    deletedSponsorIds,
-    deletedRevisionDeadlineIds,
-    resetDeleteTracking,
-  } = useDeleteTracking();
+const {
+  deletedTicketIds = [],
+  deletedSessionIds = [],
+  deletedPolicyIds = [],
+  deletedRefundPolicyIds = [],
+  deletedMaterialIds = [],
+  deletedRankingFileIds = [],
+  deletedRankingReferenceIds = [],
+  deletedMediaIds = [],
+  deletedSponsorIds = [],
+  deletedRevisionDeadlineIds = [],
+} = props || {};
+
+  const triggerRefetch = async () => {
+    if (mode === "edit" && props?.onRefetchNeeded) {
+      try {
+        await props.onRefetchNeeded();
+      } catch (error) {
+        console.error("Refetch failed:", error);
+      }
+    }
+  };
 
   // === HELPER: Format ticket data for API ===
   const formatTicketData = (tickets: Ticket[]): ConferencePriceData => ({
@@ -163,7 +187,7 @@ export function useResearchFormSubmit() {
   });
 
   // === STEP 1: Basic Info ===
-  const submitBasicInfo = async (formData: ConferenceBasicForm) => {
+  const submitBasicInfo = async (formData: ConferenceBasicForm, autoNext: boolean = true) => {
     if (!formData) return { success: false };
     try {
       setIsSubmitting(true);
@@ -172,6 +196,7 @@ export function useResearchFormSubmit() {
       if (mode === "edit" && conferenceId) {
         result = await updateBasicResearch({ conferenceId, data: formData }).unwrap();
         toast.success("Cập nhật thông tin cơ bản thành công!");
+        await triggerRefetch()
       } else {
         result = await createBasicResearch(formData).unwrap();
         const confId = result.data.conferenceId;
@@ -181,6 +206,9 @@ export function useResearchFormSubmit() {
       }
 
       dispatch(markStepCompleted(1));
+      if (autoNext && mode === "create") {
+        dispatch(nextStep());
+      }
       return { success: true, data: result.data };
     } catch (error) {
       const apiError = error as { data?: ApiError };
@@ -206,6 +234,7 @@ export function useResearchFormSubmit() {
       if (mode === "edit") {
         result = await updateResearchDetail({ conferenceId, data: detail }).unwrap();
         toast.success("Cập nhật chi tiết nghiên cứu thành công!");
+        await triggerRefetch();
       } else {
         result = await createResearchDetail({ conferenceId, data: detail }).unwrap();
         toast.success("Lưu chi tiết nghiên cứu thành công!");
@@ -324,6 +353,7 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
       }
 
       toast.success("Cập nhật timeline và các đợt nộp bản sửa thành công!");
+      await triggerRefetch();
     } else {
       // Mode CREATE
       const createdResponse = await createResearchPhase({ conferenceId, data: phases }).unwrap();
@@ -418,6 +448,7 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
         if (newTickets.length > 0) {
           await createPrice({ conferenceId, data: formatTicketData(newTickets) }).unwrap();
         }
+        await triggerRefetch();
       } else {
         await createPrice({ conferenceId, data: formatTicketData(tickets) }).unwrap();
       }
@@ -473,6 +504,7 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
         if (newSessions.length > 0) {
           await createSessions({ conferenceId, data: { sessions: newSessions } }).unwrap();
         }
+        await triggerRefetch();
       } else {
         if (sessions.length === 0) {
           dispatch(markStepCompleted(5));
@@ -548,6 +580,7 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
         if (newRefunds.length > 0) {
           await createRefundPolicies({ conferenceId, data: { refundPolicies: newRefunds } }).unwrap();
         }
+        await triggerRefetch();
       } else {
         if (policies.length === 0 && refundPolicies.length === 0) {
           dispatch(markStepCompleted(6));
@@ -678,6 +711,7 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
             )
           );
         }
+        await triggerRefetch();
       } else {
         if (materials.length === 0 && rankingFiles.length === 0 && rankingReferences.length === 0) {
           dispatch(markStepCompleted(7));
@@ -755,6 +789,7 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
         if (newMedia.length > 0) {
           await createMedia({ conferenceId, data: { media: newMedia } }).unwrap();
         }
+        await triggerRefetch();
       } else {
         if (mediaList.length === 0) {
           dispatch(markStepCompleted(8));
@@ -810,10 +845,9 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
         if (newSponsors.length > 0) {
           await createSponsors({ conferenceId, data: { sponsors: newSponsors } }).unwrap();
         }
-
+        await triggerRefetch();
         dispatch(markStepCompleted(9));
         toast.success("Cập nhật nhà tài trợ thành công!");
-        // KHÔNG redirect — để submitAll xử lý
         return { success: true };
       } else {
         if (sponsors.length === 0) {
@@ -963,7 +997,6 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
       if (mode === "edit") {
         toast.success("Cập nhật hội thảo nghiên cứu thành công!");
         dispatch(resetWizard());
-        resetDeleteTracking();
         router.push(`/workspace/organizer/manage-conference`);
       }
 

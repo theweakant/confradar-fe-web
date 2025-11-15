@@ -33,16 +33,29 @@ export function MediaForm({ mediaList, onMediaListChange, onRemoveMedia }: Media
     toast.success("Đã thêm media!");
   };
 
-  const handleRemoveMedia = (index: number) => {
-    const media = mediaList[index];
+  // const handleRemoveMedia = (index: number) => {
+  //   const media = mediaList[index];
 
-    if (onRemoveMedia && media.mediaId) {
-      onRemoveMedia(media.mediaId);
-    } else {
-      onMediaListChange(mediaList.filter((_, i) => i !== index));
-      toast.success("Đã xóa media!");
-    }
-  };
+  //   if (onRemoveMedia && media.mediaId) {
+  //     onRemoveMedia(media.mediaId);
+  //   } else {
+  //     onMediaListChange(mediaList.filter((_, i) => i !== index));
+  //     toast.success("Đã xóa media!");
+  //   }
+  // };
+
+  const handleRemoveMedia = (index: number) => {
+  const media = mediaList[index];
+
+  const updatedList = mediaList.filter((_, i) => i !== index);
+  onMediaListChange(updatedList);
+
+  if (onRemoveMedia && media.mediaId) {
+    onRemoveMedia(media.mediaId);
+  }
+
+  toast.success("Đã xóa media!");
+};
 
   return (
     <div className="space-y-4">

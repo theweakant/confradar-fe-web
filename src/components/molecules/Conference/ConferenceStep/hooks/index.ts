@@ -1,12 +1,13 @@
 // Export all custom hooks
 export { useStepNavigation } from './useStepNavigation';
-export { useFormSubmit } from './tech/useFormSubmit';
 export { useValidation } from './useValidation';
-export { useConferenceForm } from './tech/useConferenceForm';
 export { useModalState } from './useModalState';
 export {useDeleteTracking} from './useDeleteTracking'
-export {useTechConferenceData} from './tech/useTechConferenceData'
 
+//tech
+export {useTechConferenceData} from './tech/useTechConferenceData'
+export { useConferenceForm } from './tech/useTechConferenceForm';
+export { useFormSubmit } from './tech/useTechFormSubmit';
 
 //research 
 export {useResearchConferenceData} from './research/useResearchConferenceData'
