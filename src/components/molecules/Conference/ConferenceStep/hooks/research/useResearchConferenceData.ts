@@ -122,7 +122,7 @@ export function useResearchConferenceData({
           cameraReadyStartDate: data.researchPhase.cameraReadyStartDate ?? "",
           cameraReadyEndDate: data.researchPhase.cameraReadyEndDate ?? "",
           isWaitlist: false,
-          isActive: data.researchPhase.isActive ?? false,
+          isActive: true,
           revisionRoundDeadlines: (data.researchPhase.revisionRoundDeadlines || []).map((rd) => ({
             revisionRoundDeadlineId: rd.revisionRoundDeadlineId ?? "",
             startSubmissionDate: rd.startDate ?? "",
@@ -144,7 +144,7 @@ export function useResearchConferenceData({
             reviseEndDate: data.researchPhase.waitlistPhase.reviseEndDate ?? "",
             cameraReadyStartDate: data.researchPhase.waitlistPhase.cameraReadyStartDate ?? "",
             cameraReadyEndDate: data.researchPhase.waitlistPhase.cameraReadyEndDate ?? "",
-            isWaitlist: true,
+            isWaitlist: false,
             isActive: data.researchPhase.waitlistPhase.isActive ?? false,
             revisionRoundDeadlines: (data.researchPhase.waitlistPhase.revisionRoundDeadlines || []).map((rd) => ({
               revisionRoundDeadlineId: rd.revisionRoundDeadlineId ?? "",

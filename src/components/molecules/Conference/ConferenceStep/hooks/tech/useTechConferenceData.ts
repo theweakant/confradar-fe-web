@@ -70,6 +70,7 @@ export function useTechConferenceData({
         targetAudienceTechnicalConference: data.targetAudience ?? "",
         contractURL: null,
         commission: data.commission ?? "",
+        conferenceStatusId: data.conferenceStatusId ?? ""
       };
 
       // === Map Tickets ===

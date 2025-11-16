@@ -67,7 +67,7 @@ const INITIAL_RESEARCH_PHASES: ResearchPhase[] = [
     cameraReadyEndDate: "",
     cameraReadyDuration: 1,
     isWaitlist: false,
-    isActive: false,
+    isActive: true,
     revisionRoundDeadlines: [],
   },
   {

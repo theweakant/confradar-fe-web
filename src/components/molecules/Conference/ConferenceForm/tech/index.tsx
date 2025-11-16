@@ -1,8 +1,7 @@
-// components/(user)/workspace/organizer/ManageConference/ConferenceForm/tech/TechConferenceStepForm.tsx
 "use client";
 
 import { toast } from "sonner";
-import { useEffect, useMemo, useCallback, useRef } from "react";
+import { useEffect, useMemo, useCallback, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks/hooks";
 import { setMaxStep, setMode } from "@/redux/slices/conferenceStep.slice";
 
@@ -51,8 +50,8 @@ import {
 
 // Constants
 import { TECH_STEP_LABELS, TECH_MAX_STEP } from "@/components/molecules/Conference/ConferenceStep/constants";
-
-
+import { RequestConferenceApproval } from "@/components/molecules/Status/RequestStatus";
+import { Button } from "@/components/ui/button";
 const useMockDeleteTracking = () => {
   return useMemo(
     () => ({
@@ -83,8 +82,12 @@ export default function TechConferenceStepForm({
   const dispatch = useAppDispatch();
 
   const userRole = useAppSelector((state) => state.auth.user?.role);
+  const isCollaborator = Boolean(userRole?.includes("Collaborator"));
   const isInternalHosted = Boolean(userRole?.includes("Conference Organizer"));
-  
+
+  const [isApprovalDialogOpen, setIsApprovalDialogOpen] = useState(false);
+
+
   // === DELETE TRACKING ===
   const realDeleteTracking = useDeleteTracking();
   const mockDeleteTracking = useMockDeleteTracking();
@@ -287,15 +290,11 @@ export default function TechConferenceStepForm({
     [basicForm, validate, clearError]
   );
 
-  // ========================================
   // NAVIGATION
-  // ========================================
   const handlePreviousStep = () => handlePrevious();
   const handleNextStep = () => handleNext();
 
-  // ========================================
   // CREATE MODE: SUBMIT & NEXT
-  // ========================================
   const handleBasicSubmit = async () => {
     const basicValidation = validateBasicForm(basicForm);
     if (!basicValidation.isValid) {
@@ -345,52 +344,8 @@ export default function TechConferenceStepForm({
     await submitSponsors(sponsors);
   };
 
-  // ========================================
   // UPDATE MODE: UPDATE CURRENT STEP
-  // ========================================
-  // const handleUpdateCurrentStep = async () => {
-  //   switch (currentStep) {
-  //     case 1: {
-  //       const basicValidation = validateBasicForm(basicForm);
-  //       if (!basicValidation.isValid) {
-  //         toast.error(`Thông tin cơ bản: ${basicValidation.error || "Dữ liệu không hợp lệ"}`);
-  //         return { success: false };
-  //       }
-  //       return await submitBasicInfo(basicForm);
-  //     }
-  //     case 2: {
-  //       if (tickets.length === 0) {
-  //         toast.error("Vui lòng thêm ít nhất 1 loại vé!");
-  //         return { success: false };
-  //       }
-  //       return await submitPrice(tickets);
-  //     }
-  //     case 3: {
-  //       if (sessions.length > 0) {
-  //         if (!basicForm.startDate || !basicForm.endDate) {
-  //           toast.error("Thiếu ngày bắt đầu/kết thúc hội thảo!");
-  //           return { success: false };
-  //         }
-  //         const hasStart = sessions.some((s) => s.date === basicForm.startDate);
-  //         const hasEnd = sessions.some((s) => s.date === basicForm.endDate);
-  //         if (!hasStart || !hasEnd) {
-  //           toast.error("Phải có phiên họp vào ngày bắt đầu và kết thúc!");
-  //           return { success: false };
-  //         }
-  //       }
-  //       return await submitSessions(sessions, basicForm.startDate!, basicForm.endDate!);
-  //     }
-  //     case 4:
-  //       return await submitPolicies(policies);
-  //     case 5:
-  //       return await submitMedia(mediaList);
-  //     case 6:
-  //       return await submitSponsors(sponsors);
-  //     default:
-  //       toast.error(`Bước không hợp lệ: ${currentStep}`);
-  //       return { success: false };
-  //   }
-  // };
+
 
   const handleUpdateCurrentStep = useCallback(async () => {
   switch (currentStep) {
@@ -427,7 +382,7 @@ export default function TechConferenceStepForm({
     case 4:
       return await submitPolicies(policies);
     case 5:
-      return await submitMedia(mediaList); // ✅ Đảm bảo mediaList là mới nhất
+      return await submitMedia(mediaList);
     case 6:
       return await submitSponsors(sponsors);
     default:
@@ -477,6 +432,15 @@ export default function TechConferenceStepForm({
     return result || { success: false };
   };
 
+  const handleApprovalSuccess = useCallback(() => {
+    // Refetch data sau khi approval thành công
+    if (refetch) {
+      refetch();
+    }
+    // Có thể thêm logic khác nếu cần
+    toast.success("Đã gửi yêu cầu duyệt thành công!");
+  }, [refetch]);
+
   // ========================================
   // LOADING
   // ========================================
@@ -493,14 +457,23 @@ export default function TechConferenceStepForm({
   // ========================================
   return (
     <div className="max-w-5xl mx-auto p-6">
-      <PageHeader
-        title={mode === "create" ? "Tạo hội thảo công nghệ mới" : "Chỉnh sửa hội thảo công nghệ"}
-        description={
-          mode === "create"
-            ? "Điền đầy đủ thông tin để tạo hội thảo công nghệ"
-            : "Cập nhật thông tin hội thảo công nghệ"
-        }
-      />
+      <div className="flex items-center justify-between mb-6">
+        <PageHeader
+          title={mode === "create" ? "Tạo hội thảo công nghệ mới" : "Chỉnh sửa hội thảo công nghệ"}
+          description={
+            mode === "create"
+              ? "Điền đầy đủ thông tin để tạo hội thảo công nghệ"
+              : "Cập nhật thông tin hội thảo công nghệ"
+          }
+        />
+        
+          {mode === "edit" && conferenceId && isCollaborator && (
+            <RequestConferenceApproval
+              conferenceId={conferenceId}
+              onSuccess={handleApprovalSuccess}
+            />
+          )}
+      </div>
 
       <StepIndicator
         currentStep={currentStep}
@@ -511,14 +484,12 @@ export default function TechConferenceStepForm({
         onStepClick={handleGoToStep}
       />
 
-      {/* ✅ Show loading overlay for both submitting AND refetching */}
       {(isSubmitting || isFetching) && (
         <LoadingOverlay 
           message={isFetching ? "Đang tải dữ liệu mới nhất..." : "Đang xử lý... Vui lòng đợi"} 
         />
       )}
 
-      {/* STEP 1: Basic Info */}
       {currentStep === 1 && (
         <StepContainer stepNumber={1} title="Thông tin cơ bản" isCompleted={isStepCompleted(1)}>
           <BasicInfoForm

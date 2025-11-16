@@ -88,6 +88,7 @@ export interface ConferenceBasicForm {
 
   contractURL?: File | string | null;
   commission?: number;
+  conferenceStatusId?:string
 }
 
 export interface ConferenceBasicResponse {
