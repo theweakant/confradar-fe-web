@@ -5,7 +5,7 @@ import { FormSelect } from "@/components/molecules/FormSelect";
 import { FormTextArea } from "@/components/molecules/FormTextArea";
 import { DatePickerInput } from "@/components/atoms/DatePickerInput";
 import { ImageUpload } from "@/components/atoms/ImageUpload";
-import { formatDate, formatTimeDate } from "@/helper/format";
+import { formatDate, formatLocalTimeRange } from "@/helper/format"; // ✅ Đã thay formatTimeDate → formatLocalTimeRange
 import { toast } from "sonner";
 import type { Session, Speaker, RoomInfoResponse } from "@/types/conference.type";
 import { useStepNavigation } from "../hooks";
@@ -140,55 +140,53 @@ export function SessionForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newSession]);
 
-
-useEffect(() => {
-  if (!newSession.startTime || !newSession.timeRange || newSession.timeRange <= 0) {
-    return;
-  }
-
-  const start = new Date(newSession.startTime);
-  const startDay = new Date(start);
-  startDay.setHours(0, 0, 0, 0);
-
-  // Đề xuất endTime theo timeRange
-  const endProposed = new Date(start);
-  endProposed.setHours(endProposed.getHours() + Number(newSession.timeRange));
-
-  // Giới hạn: 23:59:59.999 cùng ngày
-  const endOfDay = new Date(startDay);
-  endOfDay.setHours(23, 59, 59, 999);
-
-  let finalEndTime = endProposed;
-  let finalTimeRange = newSession.timeRange;
-
-  if (endProposed > endOfDay) {
-    finalEndTime = endOfDay;
-
-    // Tính lại timeRange theo phút, làm tròn xuống 0.5h
-    const diffMs = finalEndTime.getTime() - start.getTime();
-    const diffHours = diffMs / (1000 * 60 * 60);
-    finalTimeRange = Math.floor(diffHours * 2) / 2;
-
-    // Đảm bảo tối thiểu 0.5h nếu còn ≥30 phút
-    if (finalTimeRange < 0.5) {
-      finalTimeRange = 0.5;
-      finalEndTime = new Date(start);
-      finalEndTime.setHours(start.getHours() + 0.5);
+  // ✅ useEffect đã sửa: tính timeRange và endTime an toàn theo local time
+  useEffect(() => {
+    if (!newSession.startTime || !newSession.timeRange || newSession.timeRange <= 0) {
+      return;
     }
-  }
 
-  const formattedEnd = finalEndTime.toISOString().slice(0, 16);
+    const start = new Date(newSession.startTime);
+    const endProposed = new Date(start.getTime() + Number(newSession.timeRange) * 60 * 60 * 1000);
 
-  if (finalTimeRange !== newSession.timeRange || formattedEnd !== newSession.endTime) {
-    setNewSession((prev) => ({
-      ...prev,
-      timeRange: finalTimeRange,
-      endTime: formattedEnd,
-    }));
-  }
-}, [newSession.startTime, newSession.timeRange]);
+    const startDay = new Date(start);
+    startDay.setHours(0, 0, 0, 0);
 
+    const endOfDay = new Date(startDay);
+    endOfDay.setHours(23, 59, 59, 999);
 
+    let finalEndTime = endProposed;
+    let finalTimeRange = newSession.timeRange;
+
+    if (endProposed > endOfDay) {
+      finalEndTime = endOfDay;
+
+      const diffMs = finalEndTime.getTime() - start.getTime();
+      const diffHours = diffMs / (1000 * 60 * 60);
+      finalTimeRange = Math.floor(diffHours * 2) / 2;
+
+      if (finalTimeRange < 0.5) {
+        finalTimeRange = 0.5;
+        finalEndTime = new Date(start.getTime() + 0.5 * 60 * 60 * 1000);
+      }
+    }
+
+    const year = finalEndTime.getFullYear();
+    const month = String(finalEndTime.getMonth() + 1).padStart(2, "0");
+    const day = String(finalEndTime.getDate()).padStart(2, "0");
+    const hours = String(finalEndTime.getHours()).padStart(2, "0");
+    const minutes = String(finalEndTime.getMinutes()).padStart(2, "0");
+
+    const formattedEndLocal = `${year}-${month}-${day}T${hours}:${minutes}`;
+
+    if (finalTimeRange !== newSession.timeRange || formattedEndLocal !== newSession.endTime) {
+      setNewSession((prev) => ({
+        ...prev,
+        timeRange: finalTimeRange,
+        endTime: formattedEndLocal,
+      }));
+    }
+  }, [newSession.startTime, newSession.timeRange]);
 
   const handleAddSpeaker = (speaker: Speaker) => {
     setNewSession({
@@ -217,7 +215,7 @@ useEffect(() => {
     }
 
     if (newSession.startTime) {
-      const timePart = newSession.startTime.split("T")[1]?.slice(0, 5); 
+      const timePart = newSession.startTime.split("T")[1]?.slice(0, 5);
       const [hours, minutes] = timePart.split(":").map(Number);
       const totalMinutes = hours * 60 + minutes;
 
@@ -226,6 +224,7 @@ useEffect(() => {
         return;
       }
     }
+
     if (!eventStartDate || !eventEndDate) {
       toast.error("Không tìm thấy thông tin thời gian sự kiện!");
       return;
@@ -263,7 +262,7 @@ useEffect(() => {
     }
 
     if (newSession.endTime) {
-      const sessionDatePart = newSession.date; 
+      const sessionDatePart = newSession.date;
       const endTimeDatePart = newSession.endTime.split("T")[0];
       if (sessionDatePart !== endTimeDatePart) {
         toast.error("Thời gian kết thúc không được phép sang ngày hôm sau!");
@@ -327,7 +326,8 @@ useEffect(() => {
                   <div>
                     <div className="font-semibold text-gray-900">{s.title}</div>
                     <div className="text-sm text-gray-600 mt-1">
-                      {formatTimeDate(s.startTime)} - {formatTimeDate(s.endTime)}
+                      {/* ✅ Cập nhật: dùng formatLocalTimeRange cho hiển thị danh sách */}
+                      {formatDate(s.date)} • {formatLocalTimeRange(s.startTime, s.endTime)}
                     </div>
                     {room && (
                       <div className="text-xs text-gray-500 mt-1">
@@ -428,14 +428,14 @@ useEffect(() => {
           />
         </div>
 
-        {/* Preview time */}
+        {/* ✅ Preview time: DÙNG HELPER MỚI */}
         {newSession.startTime && newSession.endTime && (
           <div className="bg-blue-50 p-3 rounded space-y-1">
             <div className="text-sm text-gray-700">
               <span className="font-medium">Ngày:</span> {formatDate(newSession.date)}
             </div>
             <div className="text-sm text-gray-700">
-              <span className="font-medium">Thời gian:</span> {formatTimeDate(newSession.startTime).split(' ')[0]} – {formatTimeDate(newSession.endTime).split(' ')[0]}
+              <span className="font-medium">Thời gian:</span> {formatLocalTimeRange(newSession.startTime, newSession.endTime)}
             </div>
           </div>
         )}

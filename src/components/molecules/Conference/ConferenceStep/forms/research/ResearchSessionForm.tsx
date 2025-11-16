@@ -49,11 +49,10 @@ useEffect(() => {
   }
 
   const start = new Date(newSession.startTime);
+  const endProposed = new Date(start.getTime() + Number(newSession.timeRange) * 60 * 60 * 1000);
+
   const startDay = new Date(start);
   startDay.setHours(0, 0, 0, 0);
-
-  const endProposed = new Date(start);
-  endProposed.setHours(endProposed.getHours() + Number(newSession.timeRange));
 
   const endOfDay = new Date(startDay);
   endOfDay.setHours(23, 59, 59, 999);
@@ -63,23 +62,31 @@ useEffect(() => {
 
   if (endProposed > endOfDay) {
     finalEndTime = endOfDay;
+
     const diffMs = finalEndTime.getTime() - start.getTime();
     const diffHours = diffMs / (1000 * 60 * 60);
-    finalTimeRange = Math.floor(diffHours * 2) / 2;
+    finalTimeRange = Math.floor(diffHours * 2) / 2; // Làm tròn xuống 0.5h
+
     if (finalTimeRange < 0.5) {
       finalTimeRange = 0.5;
-      finalEndTime = new Date(start);
-      finalEndTime.setHours(start.getHours() + 0.5);
+      finalEndTime = new Date(start.getTime() + 0.5 * 60 * 60 * 1000);
     }
   }
 
-  const formattedEnd = finalEndTime.toISOString().slice(0, 16);
+  // ✅ Format theo LOCAL TIME (không dùng toISOString)
+  const year = finalEndTime.getFullYear();
+  const month = String(finalEndTime.getMonth() + 1).padStart(2, "0");
+  const day = String(finalEndTime.getDate()).padStart(2, "0");
+  const hours = String(finalEndTime.getHours()).padStart(2, "0");
+  const minutes = String(finalEndTime.getMinutes()).padStart(2, "0");
 
-  if (finalTimeRange !== newSession.timeRange || formattedEnd !== newSession.endTime) {
+  const formattedEndLocal = `${year}-${month}-${day}T${hours}:${minutes}`;
+
+  if (finalTimeRange !== newSession.timeRange || formattedEndLocal !== newSession.endTime) {
     setNewSession((prev) => ({
       ...prev,
       timeRange: finalTimeRange,
-      endTime: formattedEnd,
+      endTime: formattedEndLocal,
     }));
   }
 }, [newSession.startTime, newSession.timeRange]);
@@ -188,44 +195,44 @@ useEffect(() => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-            {sessions.map((s, idx) => {
-              const room = roomsData?.data.find((r) => r.roomId === s.roomId);
+{sessions.map((s, idx) => {
+  const room = roomsData?.data.find((r) => r.roomId === s.roomId);
 
-              return (
-                <div
-                  key={idx}
-                  className="relative bg-white border border-gray-300 rounded-xl p-4 shadow-sm flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="font-semibold text-gray-900">{s.title}</div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      {formatTimeDate(s.startTime)} – {formatTimeDate(s.endTime)}
-                    </div>
-                    {room && (
-                      <div className="text-xs text-gray-500 mt-1">
-                        Phòng: <span className="font-medium">{room.number}</span> – {room.displayName}
-                      </div>
-                    )}
-                    {s.sessionMedias && s.sessionMedias.length > 0 && (
-                      <div className="mt-2">
-                        <div className="text-xs text-gray-600">
-                          {s.sessionMedias.length} file đính kèm
-                        </div>
-                      </div>
-                    )}
-                  </div>
+  return (
+    <div
+      key={idx}
+      className="relative bg-white border border-gray-300 rounded-xl p-4 shadow-sm flex flex-col justify-between"
+    >
+      <div>
+        <div className="font-semibold text-gray-900">{s.title}</div>
+        <div className="text-sm text-gray-600 mt-1">
+          {formatDate(s.date)} • {formatTimeDate(s.startTime).split(" ")[1]} – {formatTimeDate(s.endTime).split(" ")[1]}
+        </div>
+        {room && (
+          <div className="text-xs text-gray-500 mt-1">
+            Phòng: <span className="font-medium">{room.number}</span> – {room.displayName}
+          </div>
+        )}
+        {s.sessionMedias && s.sessionMedias.length > 0 && (
+          <div className="mt-2">
+            <div className="text-xs text-gray-600">
+              {s.sessionMedias.length} file đính kèm
+            </div>
+          </div>
+        )}
+      </div>
 
-                  <div className="flex justify-end gap-2 mt-4">
-                    <Button size="sm" variant="outline" onClick={() => handleEditSession(s, idx)}>
-                      Sửa
-                    </Button>
-                    <Button size="sm" variant="destructive" onClick={() => handleRemoveSession(idx)}>
-                      Xóa
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
+      <div className="flex justify-end gap-2 mt-4">
+        <Button size="sm" variant="outline" onClick={() => handleEditSession(s, idx)}>
+          Sửa
+        </Button>
+        <Button size="sm" variant="destructive" onClick={() => handleRemoveSession(idx)}>
+          Xóa
+        </Button>
+      </div>
+    </div>
+  );
+})}
           </div>
         )}
       </div>
