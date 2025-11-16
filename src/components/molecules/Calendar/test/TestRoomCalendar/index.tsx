@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react";
-import { RoomCalendar, type RoomCalendarProps } from "@/components/(user)/workspace/TestRoomCalendar/RoomCalendar";
+import { RoomCalendar, type RoomCalendarProps } from "@/components/molecules/Calendar/test/TestRoomCalendar/RoomCalendar";
 import { SingleSessionForm } from "./SingleSessionForm";
 import { Session } from "@/types/conference.type";
 

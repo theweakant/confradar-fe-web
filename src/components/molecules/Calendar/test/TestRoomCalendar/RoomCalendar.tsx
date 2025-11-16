@@ -1,10 +1,9 @@
 // components/molecules/Calendar/RoomCalendar.tsx
 "use client";
 import React, { useState, useMemo } from "react";
-import BaseCalendar from "../../../molecules/Calendar/BaseCalendar";
+import BaseCalendar from "../BaseCalendar";
 import { SingleSessionForm } from "./SingleSessionForm";
-import { useGetAvailableRoomsBetweenDatesQuery } from "@/redux/services/room.service";
-import { useGetAvailableTimesInRoomQuery } from "@/redux/services/room.service";
+import { useGetAvailableRoomsBetweenDatesQuery, useGetAvailableTimesInRoomQuery } from "@/redux/services/room.service";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import type { Session } from "@/types/conference.type";

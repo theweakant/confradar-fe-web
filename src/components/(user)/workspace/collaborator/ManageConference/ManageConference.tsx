@@ -5,16 +5,6 @@ import { useRouter } from "next/navigation";
 
 import Link from "next/link";
 import { Plus, Calendar, Loader2 } from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -30,10 +20,9 @@ import { useGetAllConferenceStatusesQuery } from "@/redux/services/status.servic
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 
-import { RoomCalendar } from "@/components/(user)/workspace/TestRoomCalendar/RoomCalendar";
-// import ConferenceCalendar from "@/components/molecules/Calendar/index";
-// import { SessionScheduleCalendar } from "@/components/molecules/Calendar/RoomCalendar";
-// import PaperScheduleCalendar from "@/components/molecules/Calendar/PaperScheduleCalendar";
+// ✅ THAY ĐỔI: Import RoomCalendar với FullCalendar (dark theme version)
+import RoomCalendar from "@/components/molecules/Calendar/Room/RoomCalendar";
+
 
 export default function ManageConference() {
   const router = useRouter();
@@ -51,7 +40,8 @@ export default function ManageConference() {
   const [calendarType, setCalendarType] = useState<
     "conference" | "session" | "paper"
   >("conference");
-const [showRoomCalendar, setShowRoomCalendar] = useState(false);
+  const [showRoomCalendar, setShowRoomCalendar] = useState(false);
+
   // RTK Query hooks
   const { data, isLoading, isFetching, error, refetch } =
     useGetTechConferencesForCollaboratorAndOrganizerQuery({
@@ -82,10 +72,10 @@ const [showRoomCalendar, setShowRoomCalendar] = useState(false);
   const categories = categoriesData?.data || [];
 
   const handleOpenCalendar = (type: "conference" | "session" | "paper") => {
-    console.log("Opening calendar:", type); // Debug log
+    console.log("Opening calendar:", type);
     setCalendarType(type);
     setShowCalendarDialog(true);
-    console.log("showCalendarDialog:", true); // Debug log
+    console.log("showCalendarDialog:", true);
   };
 
   const conferencesWithCategory = conferences.map((conf) => ({
@@ -177,7 +167,6 @@ const [showRoomCalendar, setShowRoomCalendar] = useState(false);
               </h1>
 
               <div className="flex items-center gap-3">
-
                 <Button
                   variant="outline"
                   className="flex items-center gap-2 whitespace-nowrap border-purple-300 text-purple-700 hover:bg-purple-50"
@@ -256,7 +245,6 @@ const [showRoomCalendar, setShowRoomCalendar] = useState(false);
                 statuses={statuses}
               />
 
-              {/* Pagination */}
               {totalPages > 1 && (
                 <div className="mt-6 flex items-center justify-center gap-2">
                   <Button
@@ -288,7 +276,6 @@ const [showRoomCalendar, setShowRoomCalendar] = useState(false);
       {showCalendarDialog && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-7xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            {/* Header */}
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <div>
@@ -328,12 +315,10 @@ const [showRoomCalendar, setShowRoomCalendar] = useState(false);
               </div>
             </div>
 
-            {/* Content */}
             <div className="flex-1 overflow-y-auto p-6">
-
+              {/* Calendar content */}
             </div>
 
-            {/* Footer */}
             <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
               <Button
                 variant="outline"
@@ -345,41 +330,46 @@ const [showRoomCalendar, setShowRoomCalendar] = useState(false);
           </div>
         </div>
       )}
-{/* Room Calendar Modal */}
-{showRoomCalendar && (
-  <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-    <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] flex flex-col">
-      <div className="px-6 py-4 border-b border-gray-200">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Danh sách phòng khả dụng
-          </h2>
-          <button
-            onClick={() => setShowRoomCalendar(false)}
-            className="text-gray-400 hover:text-gray-600"
-          >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+
+      {showRoomCalendar && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex min-h-screen items-center justify-center p-4">
+            {/* Backdrop */}
+            <div 
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+              onClick={() => setShowRoomCalendar(false)}
+            />
+            
+            {/* Modal Container - Removed outer wrapper to let RoomCalendar handle its own styling */}
+            <div className="relative w-full max-w-[95vw] max-h-[95vh] overflow-hidden rounded-lg shadow-2xl">
+              {/* Close Button Overlay */}
+              <button
+                onClick={() => setShowRoomCalendar(false)}
+                className="absolute top-4 right-4 z-50 p-2 bg-gray-800/80 hover:bg-gray-700 rounded-lg transition-colors backdrop-blur-sm"
+              >
+                <svg 
+                  className="w-6 h-6 text-white" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M6 18L18 6M6 6l12 12" 
+                  />
+                </svg>
+              </button>
+
+              {/* RoomCalendar Component (handles its own dark theme) */}
+              <div className="overflow-y-auto max-h-[95vh]">
+                <RoomCalendar />
+              </div>
+            </div>
+          </div>
         </div>
-        <p className="text-sm text-gray-500 mt-1">
-          Hiển thị tất cả phòng trong khoảng thời gian hội nghị
-        </p>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-6">
-        <RoomCalendar/>
-      </div>
-
-      <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
-        <Button variant="outline" onClick={() => setShowRoomCalendar(false)}>
-          Đóng
-        </Button>
-      </div>
-    </div>
-  </div>
-)}
+      )}
     </>
   );
 }
