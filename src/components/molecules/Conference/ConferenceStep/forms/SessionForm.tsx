@@ -418,7 +418,6 @@ export function SessionForm({
 
           <FormInput
             label="Thời lượng (giờ)"
-            sublabel="Phiên họp phải kết thúc trước 00:00 cùng ngày"
             type="number"
             step="0.5"
             min="0.5"

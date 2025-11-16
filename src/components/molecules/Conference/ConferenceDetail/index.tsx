@@ -90,7 +90,6 @@ export default function ConferenceDetailPage() {
   >(null);
 
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
-  const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const {
@@ -275,6 +274,19 @@ export default function ConferenceDetailPage() {
                       Chỉnh sửa thông tin
                     </DropdownMenuItem>
                   )}
+
+{conference.conferenceStatusId &&
+  conference.conferenceId && // ✅ đảm bảo không undefined
+  getStatusName(conference.conferenceStatusId) === "Draft" && (
+    <RequestConferenceApproval
+      conferenceId={conference.conferenceId}
+      onSuccess={() => {
+        if (conferenceType === "technical") techRefetch();
+        else researchRefetch();
+      }}
+      asDropdownItem={true} // ✅ render như DropdownMenuItem
+    />
+  )}
                   {conference.conferenceStatusId &&
                     !["Draft", "Pending", "Deleted"].includes(getStatusName(conference.conferenceStatusId)) && (
                       <DropdownMenuItem
@@ -285,17 +297,6 @@ export default function ConferenceDetailPage() {
                         Cập nhật trạng thái
                       </DropdownMenuItem>
                     )}
-                  {conference.conferenceStatusId &&
-                  getStatusName(conference.conferenceStatusId) === "Draft" && (
-                    <DropdownMenuItem
-                      onClick={() => setApprovalDialogOpen(true)}
-                      className="cursor-pointer flex items-center gap-2 text-emerald-600 focus:text-emerald-700 focus:bg-emerald-50"
-                    >
-                      <SendHorizonal className="w-4 h-4" />
-                      Gửi yêu cầu duyệt
-                    </DropdownMenuItem>
-                  )}
-
                   {conference.conferenceStatusId &&
                   ["Draft", "Pending"].includes(getStatusName(conference.conferenceStatusId)) && (
                     <DropdownMenuItem
@@ -313,19 +314,6 @@ export default function ConferenceDetailPage() {
             <UpdateConferenceStatus
               open={statusDialogOpen}
               onClose={() => setStatusDialogOpen(false)}
-              conference={{
-                conferenceId: conference.conferenceId,
-                conferenceName: conference.conferenceName,
-                conferenceStatusId: conference.conferenceStatusId,
-              }}
-              onSuccess={() => {
-                if (conferenceType === "technical") techRefetch();
-                else researchRefetch();
-              }}
-            />
-            <RequestConferenceApproval
-              open={approvalDialogOpen}
-              onClose={() => setApprovalDialogOpen(false)}
               conference={{
                 conferenceId: conference.conferenceId,
                 conferenceName: conference.conferenceName,

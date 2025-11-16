@@ -1,4 +1,5 @@
-// src/components/conference/RequestConferenceApproval.tsx
+"use client";
+
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,9 +9,10 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, SendHorizonal } from "lucide-react";
 import {
   useRequestConferenceApprovalMutation,
   useGetAllConferenceStatusesQuery,
@@ -20,6 +22,7 @@ import { useGetTechnicalConferenceDetailInternalQuery } from "@/redux/services/c
 interface RequestConferenceApprovalProps {
   conferenceId: string;
   onSuccess?: () => void;
+  asDropdownItem?: boolean;
 }
 
 interface ValidationError {
@@ -30,18 +33,18 @@ interface ValidationError {
 export const RequestConferenceApproval: React.FC<RequestConferenceApprovalProps> = ({
   conferenceId,
   onSuccess,
+  asDropdownItem = false,
 }) => {
   const [open, setOpen] = useState(false);
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
 
   const { data: statusData } = useGetAllConferenceStatusesQuery();
   const [requestApproval, { isLoading }] = useRequestConferenceApprovalMutation();
-  
-  const { data: conferenceDetail, isLoading: isLoadingDetail } = 
+
+  const { data: conferenceDetail, isLoading: isLoadingDetail } =
     useGetTechnicalConferenceDetailInternalQuery(conferenceId, {
       skip: !conferenceId,
     });
-
 
   const shouldShowButton = useMemo(() => {
     if (!conferenceDetail?.data?.conferenceStatusId || !statusData?.data) {
@@ -55,7 +58,6 @@ export const RequestConferenceApproval: React.FC<RequestConferenceApprovalProps>
     return currentStatus?.conferenceStatusName?.toLowerCase() === "draft";
   }, [conferenceDetail?.data?.conferenceStatusId, statusData?.data]);
 
-
   const currentStatusName = useMemo(() => {
     if (!conferenceDetail?.data?.conferenceStatusId || !statusData?.data) return "N/A";
     const status = statusData.data.find(
@@ -64,9 +66,7 @@ export const RequestConferenceApproval: React.FC<RequestConferenceApprovalProps>
     return status?.conferenceStatusName || "N/A";
   }, [conferenceDetail?.data?.conferenceStatusId, statusData?.data]);
 
-  // ========================================
   // VALIDATION LOGIC
-  // ========================================
   useEffect(() => {
     if (!conferenceDetail?.data || !open) {
       setValidationErrors([]);
@@ -79,44 +79,42 @@ export const RequestConferenceApproval: React.FC<RequestConferenceApprovalProps>
     if (!data.conferencePrices || data.conferencePrices.length === 0) {
       errors.push({
         field: "conferencePrices",
-        message: "Chưa thiết lập giá vé cho hội thảo"
+        message: "Chưa thiết lập giá vé cho hội thảo",
       });
     }
 
     if (!data.sessions || data.sessions.length === 0) {
       errors.push({
         field: "sessions",
-        message: "Chưa có session nào cho hội thảo"
+        message: "Chưa có session nào cho hội thảo",
       });
     }
 
     if (!data.policies || data.policies.length === 0) {
       errors.push({
         field: "policies",
-        message: "Chưa thiết lập chính sách cho hội thảo"
+        message: "Chưa thiết lập chính sách cho hội thảo",
       });
     }
 
     if (!data.conferenceMedia || data.conferenceMedia.length === 0) {
       errors.push({
         field: "conferenceMedia",
-        message: "Chưa có media nào cho hội thảo"
+        message: "Chưa có media nào cho hội thảo",
       });
     }
 
     if (!data.sponsors || data.sponsors.length === 0) {
       errors.push({
         field: "sponsors",
-        message: "Chưa có nhà tài trợ nào"
+        message: "Chưa có nhà tài trợ nào",
       });
     }
 
     setValidationErrors(errors);
   }, [conferenceDetail, open]);
 
-  // ========================================
   // SUBMIT HANDLER
-  // ========================================
   const handleRequest = async () => {
     if (!conferenceId) {
       toast.error("Không tìm thấy ID hội thảo.");
@@ -125,7 +123,7 @@ export const RequestConferenceApproval: React.FC<RequestConferenceApprovalProps>
 
     if (validationErrors.length > 0) {
       toast.error("Phải hoàn thành tất cả các bước mới có thể duyệt", {
-        description: validationErrors.map(e => e.message).join(", ")
+        description: validationErrors.map((e) => e.message).join(", "),
       });
       return;
     }
@@ -143,27 +141,35 @@ export const RequestConferenceApproval: React.FC<RequestConferenceApprovalProps>
 
   const canSubmit = validationErrors.length === 0 && !isLoadingDetail;
 
-  // ========================================
-  // EARLY RETURN SAU KHI TẤT CẢ HOOKS ĐÃ ĐƯỢC GỌI
-  // ========================================
   if (!shouldShowButton) {
     return null;
   }
 
-  // ========================================
-  // RENDER
-  // ========================================
+  // Render trigger button
+  const TriggerButton = asDropdownItem ? (
+    <DropdownMenuItem
+      onClick={(e) => {
+        e.preventDefault();
+        // Delay để dropdown đóng trước khi mở dialog
+        setTimeout(() => {
+          setOpen(true);
+        }, 0);
+      }}
+      className="cursor-pointer flex items-center gap-2 text-emerald-600 focus:text-emerald-700 focus:bg-emerald-50"
+    >
+      <SendHorizonal className="w-4 h-4" />
+      Gửi yêu cầu duyệt
+    </DropdownMenuItem>
+  ) : (
+    <Button onClick={() => setOpen(true)} className="bg-blue-600 hover:bg-blue-700">
+      Gửi yêu cầu duyệt
+    </Button>
+  );
+
   return (
     <>
-      {/* BUTTON TRIGGER */}
-      <Button 
-        onClick={() => setOpen(true)}
-        className="bg-blue-600 hover:bg-blue-700"
-      >
-        Gửi yêu cầu duyệt
-      </Button>
+      {TriggerButton}
 
-      {/* DIALOG */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-md p-6">
           <DialogHeader>
@@ -194,13 +200,13 @@ export const RequestConferenceApproval: React.FC<RequestConferenceApprovalProps>
             </div>
 
             <div className="text-black-800 text-sm p-4 rounded-xl leading-relaxed">
-              <p>
-                Hội thảo hiện đang ở trạng thái{" "}
-                <span className="font-semibold text-yellow-700">&quot;Draft&quot;</span>. Bạn đang gửi yêu
-                cầu để <span className="font-semibold">ConfRadar</span> duyệt hội thảo này. Sau khi
-                được duyệt, hội thảo sẽ chuyển sang trạng thái{" "}
-                <span className="font-semibold text-blue-900">&quot;Pending&quot;</span>.
-              </p>
+            <p>
+              Hội thảo hiện đang ở trạng thái{" "}
+              <span className="font-semibold text-yellow-700">&quot;Draft&quot;</span>. Bạn đang gửi yêu
+              cầu để <span className="font-semibold">ConfRadar</span> duyệt hội thảo này. Sau khi
+              được duyệt, hội thảo sẽ chuyển sang trạng thái{" "}
+              <span className="font-semibold text-blue-900">&quot;Pending&quot;</span>.
+            </p>
             </div>
 
             {isLoadingDetail && (
@@ -234,8 +240,13 @@ export const RequestConferenceApproval: React.FC<RequestConferenceApprovalProps>
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <div className="flex items-center gap-2">
                   <div className="h-5 w-5 rounded-full bg-green-600 flex items-center justify-center">
-                    <svg className="w-3 h-3 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-                      <path d="M5 13l4 4L19 7"></path>
+                    <svg
+                      className="w-3 h-3 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
                   <p className="text-sm font-semibold text-green-800">
