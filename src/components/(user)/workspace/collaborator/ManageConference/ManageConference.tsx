@@ -178,14 +178,14 @@ const [showRoomCalendar, setShowRoomCalendar] = useState(false);
 
               <div className="flex items-center gap-3">
 
-                {/* <Button
+                <Button
                   variant="outline"
                   className="flex items-center gap-2 whitespace-nowrap border-purple-300 text-purple-700 hover:bg-purple-50"
                   onClick={() => setShowRoomCalendar(true)}
                 >
                   <Calendar className="w-5 h-5" />
                   Xem danh sách phòng
-                </Button> */}
+                </Button>
 
                 <Link href="/workspace/collaborator/manage-conference/create-tech-conference">
                   <Button className="flex items-center gap-2 whitespace-nowrap">

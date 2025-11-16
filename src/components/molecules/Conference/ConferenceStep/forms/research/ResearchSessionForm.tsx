@@ -280,7 +280,6 @@ useEffect(() => {
 
           <FormInput
             label="Thời lượng (giờ)"
-            sublabel="Tối đa đến 23h59 cùng ngày"
             type="number"
             min="0.5"
             step="0.5"
