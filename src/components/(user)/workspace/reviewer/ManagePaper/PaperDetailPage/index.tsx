@@ -18,7 +18,7 @@ import { ApiError, ApiResponse } from "@/types/api.type";
 import FullPaperPhase from "./FullPaperPhase";
 import RevisionPaperPhase from "./RevisionPaperPhase";
 import CameraReadyPhase from "./CameraReadyPhase";
-import { PaperDetailForReviewer } from "@/types/paper.type";
+import { PaperDetailForReviewer, PaperDetailWrapperForReviewer } from "@/types/paper.type";
 import { steps } from "@/helper/paper";
 import PaperStepIndicator from "@/components/molecules/PaperStepIndicator";
 
@@ -32,6 +32,9 @@ export default function ReviewPaperPage() {
   const [paperDetail, setPaperDetail] = useState<PaperDetailForReviewer | null>(
     null,
   );
+  const [paperDetailWrapper, setPaperDetailWrapper] = useState<PaperDetailWrapperForReviewer | null>(
+    null,
+  );
   const currentPhase = paperDetail?.currentResearchConferencePhase;
 
   const [currentStage, setCurrentStage] = useState<number>(0);
@@ -41,7 +44,7 @@ export default function ReviewPaperPage() {
   const reviewerStages = steps.filter(s => s.label.toLowerCase() !== "abstract");
 
   const fetchPaperDetail = useCallback(
-    async (paperId: string): Promise<ApiResponse<PaperDetailForReviewer>> => {
+    async (paperId: string): Promise<ApiResponse<PaperDetailWrapperForReviewer>> => {
       try {
         const result = await getPaperDetailForReviewer(paperId).unwrap();
         return result;
@@ -61,7 +64,7 @@ export default function ReviewPaperPage() {
 
       try {
         const response = await fetchPaperDetail(paperId);
-        setPaperDetail(response.data);
+        setPaperDetail(response.data.paperDetail);
       } catch (error: unknown) {
 
       }

@@ -43,7 +43,12 @@ export default function EmblaCarousel({ children }: { children: React.ReactNode 
 
             {/* Main Embla */}
             <div ref={emblaRef} className="overflow-hidden">
-                <div className="flex gap-4">{children}</div>
+                <div className="flex">
+                    {React.Children.map(children, (child) => (
+                        <div className="flex-[0_0_100%]">{child}</div>
+                    ))}
+                </div>
+                {/* <div className="flex gap-4">{children}</div> */}
             </div>
 
             {/* Pagination dots */}

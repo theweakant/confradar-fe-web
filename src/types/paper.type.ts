@@ -182,6 +182,21 @@ export interface FullPaperForReviewer {
   fullPaperReviews: FullPaperReview[];
 }
 
+export interface PaperDetailWrapperForReviewer {
+  paperId: string;
+  conferenceId: string;
+  conferenceName: string;
+  conferenceBannerImageUrl: string;
+  paperPhaseId: string;
+  paperPhaseName: string;
+  researchConferencePhaseId: string;
+  createdAt: string;
+  paperTitle: string;
+  paperDescription: string;
+
+  paperDetail: PaperDetailForReviewer;
+}
+
 export interface PaperDetailForReviewer {
   isHeadReviewer: boolean;
   fullPaper: FullPaperForReviewer | null;

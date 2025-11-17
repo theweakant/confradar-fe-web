@@ -16,6 +16,8 @@ import { Fragment } from "react";
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 import "@cyntler/react-doc-viewer/dist/index.css";
 import { Button } from "@/components/ui/button";
+import EmblaCarousel from '@/components/molecules/EmblaCarousel';
+import { SwiperSlide } from 'swiper/react';
 import { formatDate } from "@/helper/format";
 import {
     useSubmitPaperRevisionFeedbackMutation,
@@ -69,6 +71,10 @@ export default function RevisionPaperPhase({
 
     const [revisionFeedbacks, setRevisionFeedbacks] = useState<{
         [key: string]: Array<{ feedback: string; sortOrder: number }>;
+    }>({});
+
+    const [showViewFeedbackDialogs, setShowViewFeedbackDialogs] = useState<{
+        [key: string]: boolean;
     }>({});
 
 
@@ -467,7 +473,99 @@ export default function RevisionPaperPhase({
                 </div> */}
 
                 {/* Revision Submissions */}
-                <div className="space-y-6">
+                <EmblaCarousel>
+                    {paperDetail.revisionPaper.revisionPaperSubmissions.map(
+                        (submission: RevisionPaperSubmissionForReviewer) => (
+                            // <SwiperSlide key={submission.revisionPaperSubmissionId}>
+                            <div className="border border-gray-600 rounded-lg p-4">
+                                {/* Header với các nút */}
+                                <div className="flex justify-between items-center mb-4">
+                                    <div>
+                                        <h4 className="font-semibold text-lg text-black">
+                                            Round {currentPhase?.revisionRoundsDetail?.find(
+                                                r => r.revisionRoundDeadlineId === submission.revisionDeadlineRoundId
+                                            )?.roundNumber}
+                                        </h4>
+                                        <p className="text-xs text-black-400 mt-1">
+                                            ID: {submission.revisionPaperSubmissionId}
+                                        </p>
+                                    </div>
+
+                                    {/* Nhóm các nút bên phải */}
+                                    <div className="flex items-center gap-2">
+                                        {/* Nút xem feedbacks đã gửi */}
+                                        {submission.revisionSubmissionFeedbacks.length > 0 && (
+                                            <button
+                                                onClick={() => setShowViewFeedbackDialogs(prev => ({
+                                                    ...prev,
+                                                    [submission.revisionPaperSubmissionId]: true
+                                                }))}
+                                                className="flex items-center gap-1 px-2.5 py-1 bg-green-600/80 hover:bg-green-700 text-white text-xs rounded-md transition"
+                                            >
+                                                <CheckCircle className="w-3.5 h-3.5" />
+                                                <span>{submission.revisionSubmissionFeedbacks.length} Feedback đã gửi</span>
+                                            </button>
+                                        )}
+
+                                        {/* Nút nhập feedback mới */}
+                                        <Button
+                                            onClick={() =>
+                                                setShowFeedbackDialogs((prev) => ({
+                                                    ...prev,
+                                                    [submission.revisionPaperSubmissionId]: true,
+                                                }))
+                                            }
+                                            className="bg-blue-600 hover:bg-blue-700"
+                                            size="sm"
+                                            disabled={!canSubmitRevisionFeedback(submission.revisionPaperSubmissionId)}
+                                        >
+                                            <MessageSquare className="w-4 h-4 mr-2" />
+                                            {canSubmitRevisionFeedback(submission.revisionPaperSubmissionId)
+                                                ? "Nhập feedback"
+                                                : `Chưa đến hạn feedback cho round ${currentPhase?.revisionRoundsDetail?.find(
+                                                    r => r.revisionRoundDeadlineId === submission.revisionDeadlineRoundId
+                                                )?.roundNumber}`}
+                                        </Button>
+                                        {/* <button
+                                            onClick={() => setShowFeedbackDialogs(prev => ({
+                                                ...prev,
+                                                [submission.revisionPaperSubmissionId]: true
+                                            }))}
+                                            className="flex items-center gap-1 px-2.5 py-1 bg-blue-600/80 hover:bg-blue-700 text-white text-xs rounded-md transition"
+                                            disabled={!canSubmitRevisionFeedback(submission.revisionPaperSubmissionId)}
+                                        >
+                                            <MessageSquare className="w-3.5 h-3.5" />
+                                            <span>Nhập feedback</span>
+                                        </button> */}
+                                    </div>
+                                </div>
+
+                                {/* Paper Card */}
+                                <ReviewerPaperCard
+                                    paperInfo={{
+                                        id: submission.revisionPaperSubmissionId,
+                                        title: submission.title,
+                                        description: submission.description,
+                                        reviewStartDate: currentPhase?.revisionRoundsDetail?.find(
+                                            r => r.revisionRoundDeadlineId === submission.revisionDeadlineRoundId
+                                        )?.startSubmissionDate,
+                                        reviewEndDate: currentPhase?.revisionRoundsDetail?.find(
+                                            r => r.revisionRoundDeadlineId === submission.revisionDeadlineRoundId
+                                        )?.endSubmissionDate,
+                                        fileUrl: submission.revisionPaperUrl
+                                    }}
+                                    paperType={`Submission Round ${currentPhase?.revisionRoundsDetail?.find(
+                                        r => r.revisionRoundDeadlineId === submission.revisionDeadlineRoundId
+                                    )?.roundNumber}`}
+                                    getStatusIcon={getStatusIcon}
+                                    getStatusColor={getStatusColor}
+                                />
+                            </div>
+                            // </SwiperSlide>
+                        )
+                    )}
+                </EmblaCarousel>
+                {/* <div className="space-y-6">
                     {(!paperDetail?.revisionPaper?.revisionPaperSubmissions ||
                         paperDetail.revisionPaper.revisionPaperSubmissions.length === 0) && (
                             <div className="flex flex-col items-center justify-center py-10 text-gray-500">
@@ -527,7 +625,7 @@ export default function RevisionPaperPhase({
                                         getStatusColor={getStatusColor}
                                     />
 
-                                    {/* Submission Header */}
+
                                     <div className="flex flex-col items-start justify-between mb-4 pb-4 border-b border-orange-200">
                                         <div className="flex w-full items-start justify-between mb-4 pb-4 border-b border-orange-200">
 
@@ -535,16 +633,9 @@ export default function RevisionPaperPhase({
 
                                         </div>
 
-                                        {/* <div className="pt-4 border-t max-h-[600px] overflow-auto">
-                                            <ReusableDocViewer
-                                                fileUrl={submission.revisionPaperUrl}
-                                                minHeight={400}
-                                                checkUrlBeforeRender={true}
-                                            />
-                                        </div> */}
                                     </div>
 
-                                    {/* Previous Feedbacks */}
+                            
                                     {submission.revisionSubmissionFeedbacks.length > 0 && (
                                         <div className="mb-6">
                                             <h5 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
@@ -594,10 +685,182 @@ export default function RevisionPaperPhase({
                             );
                         },
                     )}
-                </div>
+                </div> */}
             </div>
 
-            {/* Feedback Section - Separated Like YouTube Comments */}
+            {/* Dialog XEM feedbacks đã gửi*/}
+            {paperDetail.revisionPaper.revisionPaperSubmissions.map(
+                (submission: RevisionPaperSubmissionForReviewer) => (
+                    <Transition
+                        key={`view-${submission.revisionPaperSubmissionId}`}
+                        appear
+                        show={showViewFeedbackDialogs[submission.revisionPaperSubmissionId] || false}
+                        as={Fragment}
+                    >
+                        <Dialog
+                            as="div"
+                            className="relative z-50"
+                            onClose={() =>
+                                setShowViewFeedbackDialogs((prev) => ({
+                                    ...prev,
+                                    [submission.revisionPaperSubmissionId]: false,
+                                }))
+                            }
+                        >
+                            <Transition.Child
+                                as={Fragment}
+                                enter="ease-out duration-300"
+                                enterFrom="opacity-0"
+                                enterTo="opacity-100"
+                                leave="ease-in duration-200"
+                                leaveFrom="opacity-100"
+                                leaveTo="opacity-0"
+                            >
+                                <div className="fixed inset-0 bg-black bg-opacity-50" />
+                            </Transition.Child>
+
+                            <div className="fixed inset-0 overflow-y-auto">
+                                <div className="flex min-h-full items-center justify-center p-4">
+                                    <Transition.Child
+                                        as={Fragment}
+                                        enter="ease-out duration-300"
+                                        enterFrom="opacity-0 scale-95"
+                                        enterTo="opacity-100 scale-100"
+                                        leave="ease-in duration-200"
+                                        leaveFrom="opacity-100 scale-100"
+                                        leaveTo="opacity-0 scale-95"
+                                    >
+                                        <Dialog.Panel className="w-full max-w-3xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all max-h-[80vh] overflow-y-auto">
+                                            <Dialog.Title
+                                                as="h3"
+                                                className="text-lg font-medium leading-6 text-gray-900 mb-4 flex items-center gap-2"
+                                            >
+                                                <CheckCircle className="w-5 h-5 text-green-600" />
+                                                Feedbacks đã gửi cho Round {currentPhase?.revisionRoundsDetail?.find(
+                                                    r => r.revisionRoundDeadlineId === submission.revisionDeadlineRoundId
+                                                )?.roundNumber}
+                                            </Dialog.Title>
+
+                                            <div className="space-y-4">
+                                                {submission.revisionSubmissionFeedbacks.length === 0 ? (
+                                                    <div className="text-center py-8 text-gray-500">
+                                                        <MessageSquare className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                                                        <p>Chưa có feedback nào</p>
+                                                    </div>
+                                                ) : (
+                                                    submission.revisionSubmissionFeedbacks.length > 0 && (
+                                                        <div className="mb-6">
+                                                            <h5 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                                                <CheckCircle className="w-4 h-4 text-green-600" />
+                                                                Feedbacks đã gửi
+                                                            </h5>
+                                                            <div className="space-y-2">
+                                                                {submission.revisionSubmissionFeedbacks.map(
+                                                                    (feedback: RevisionSubmissionFeedbackForReviewer) => (
+                                                                        <div
+                                                                            key={feedback.revisionSubmissionFeedbackId}
+                                                                            className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm"
+                                                                        >
+                                                                            <div className="flex items-start gap-3">
+                                                                                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-bold flex items-center justify-center">
+                                                                                    {feedback.sortOrder}
+                                                                                </span>
+                                                                                <div className="flex-1">
+                                                                                    <p className="text-sm text-gray-900 leading-relaxed">
+                                                                                        {feedback.feedback || "N/A"}
+                                                                                    </p>
+                                                                                    {feedback.response && (
+                                                                                        <div className="mt-3 pl-4 border-l-2 border-blue-300 bg-blue-50 p-3 rounded">
+                                                                                            <p className="text-xs text-gray-600">
+                                                                                                <span className="font-semibold text-blue-700">
+                                                                                                    Response:
+                                                                                                </span>{" "}
+                                                                                                {feedback.response}
+                                                                                            </p>
+                                                                                        </div>
+                                                                                    )}
+                                                                                    {feedback.createdAt && (
+                                                                                        <p className="text-xs text-gray-400 mt-2">
+                                                                                            {formatDate(feedback.createdAt)}
+                                                                                        </p>
+                                                                                    )}
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    ),
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        // submission.revisionSubmissionFeedbacks.map(
+                                                        //     (feedback: RevisionSubmissionFeedbackForReviewer) => (
+                                                        //         <div
+                                                        //             key={feedback.revisionSubmissionFeedbackId}
+                                                        //             className="flex gap-4 p-4 hover:bg-gray-50 rounded-lg transition-colors"
+                                                        //         >
+                                                        //             <div className="flex-shrink-0">
+                                                        //                 <div className="w-10 h-10 rounded-full bg-green-100 text-green-700 font-bold flex items-center justify-center">
+                                                        //                     {feedback.sortOrder}
+                                                        //                 </div>
+                                                        //             </div>
+
+                                                        //             <div className="flex-1 min-w-0">
+                                                        //                 <div className="flex items-center gap-2 mb-2">
+                                                        //                     <span className="font-semibold text-gray-900">
+                                                        //                         Feedback #{feedback.sortOrder}
+                                                        //                     </span>
+                                                        //                     {feedback.createdAt && (
+                                                        //                         <span className="text-xs text-gray-500">
+                                                        //                             {formatDate(feedback.createdAt)}
+                                                        //                         </span>
+                                                        //                     )}
+                                                        //                 </div>
+
+                                                        //                 <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
+                                                        //                     {feedback.feedback || "N/A"}
+                                                        //                 </p>
+
+                                                        //                 {feedback.response && (
+                                                        //                     <div className="mt-3 pl-4 border-l-3 border-blue-400 bg-blue-50 p-3 rounded-lg">
+                                                        //                         <div className="flex items-center gap-2 mb-1">
+                                                        //                             <span className="text-xs font-semibold text-blue-700">
+                                                        //                                 Phản hồi từ tác giả:
+                                                        //                             </span>
+                                                        //                         </div>
+                                                        //                         <p className="text-sm text-gray-700">
+                                                        //                             {feedback.response}
+                                                        //                         </p>
+                                                        //                     </div>
+                                                        //                 )}
+                                                        //             </div>
+                                                        //         </div>
+                                                        //     )
+                                                    )
+                                                )}
+                                            </div>
+
+                                            <div className="mt-6 flex justify-end">
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={() =>
+                                                        setShowViewFeedbackDialogs((prev) => ({
+                                                            ...prev,
+                                                            [submission.revisionPaperSubmissionId]: false,
+                                                        }))
+                                                    }
+                                                >
+                                                    Đóng
+                                                </Button>
+                                            </div>
+                                        </Dialog.Panel>
+                                    </Transition.Child>
+                                </div>
+                            </div>
+                        </Dialog>
+                    </Transition>
+                )
+            )}
+
             <div>
                 {/* Feedback for each submission */}
                 {(paperDetail.revisionPaper?.revisionPaperSubmissions || []).map(
@@ -657,7 +920,6 @@ export default function RevisionPaperPhase({
                                         }))
                                     }
                                 >
-                                    {/* Overlay nền tối */}
                                     <Transition.Child
                                         as={Fragment}
                                         enter="ease-out duration-300"
@@ -670,7 +932,6 @@ export default function RevisionPaperPhase({
                                         <div className="fixed inset-0 bg-black bg-opacity-50" />
                                     </Transition.Child>
 
-                                    {/* Container chính */}
                                     <div className="fixed inset-0 overflow-y-auto">
                                         <div className="flex min-h-full items-center justify-center p-4 text-center">
                                             <Transition.Child
