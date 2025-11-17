@@ -68,9 +68,9 @@ export const endpoint = {
 
     //CUSTOMER
     GET_TECH_BY_ID: (conferenceId: string) =>
-      `/Conference/technical-detail/${conferenceId}`,
+      `/Conference/technical-detail-for-anon/${conferenceId}`,
     GET_RESEARCH_BY_ID: (conferenceId: string) =>
-      `/Conference/research-detail/${conferenceId}`,
+      `/Conference/research-detail-for-anon/${conferenceId}`,
 
     // check status
     STEP_COMPLETION_STATUS: "/Conference/step-completion-status",
@@ -91,8 +91,8 @@ export const endpoint = {
     REQUEST_CONFERENCE_APPROVE: "/Conference/request-a-conference-to-be-approved",
 
     DETAIL: "/Conference",
-    TECHNICAL_DETAIL: "/Conference/technical-detail",
-    RESEARCH_DETAIL: "/Conference/research-detail",
+    TECHNICAL_DETAIL: "/Conference/technical-detail-for-anon",
+    RESEARCH_DETAIL: "/Conference/research-detail-for-anon",
     CREATE: "/Conference",
     UPDATE: "/Conference",
     DELETE: "/Conference",

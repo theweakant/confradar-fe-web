@@ -28,7 +28,7 @@ import { useListAssignedPapersQuery } from "@/redux/services/paper.service";
 import CameraReadyList from "@/components/(user)/workspace/reviewer/CameraReadyList/index";
 import { useConference } from "@/redux/hooks/useConference";
 import { ConferenceResponse } from "@/types/conference.type";
-import { stages4Step } from "@/helper/paper";
+import { steps } from "@/helper/paper";
 
 type ViewMode = "all" | "by-conference";
 type SortOption = "date-asc" | "date-desc" | "name-asc" | "name-desc" | "conference-asc";
@@ -91,23 +91,39 @@ export default function ReviewerManagePaperPage() {
   }, [assignedPaperGroups]);
 
   const phaseStats = useMemo(() => {
-    return stages4Step.map((stage) => {
-      const totalPapers = allPapers.length;
-      const totalConferences = assignedPaperGroups.length;
+    return steps.map((stage, index) => {
       const count = allPapers.filter(p => {
         // Tìm phase hiện tại của paper
-        const currentStageIndex = stages4Step
-          .map(s => (p[s.key as keyof AssignedPaper] ? s.id : null))
+        const currentStageIndex = steps
+          .map((s, idx) => (p[s.key as keyof AssignedPaper] ? idx : null))
           .filter(id => id !== null)
           .pop();
 
-        return currentStageIndex === stage.id;
+        return currentStageIndex === index;
       }).length;
 
       return { ...stage, count };
-      // const count = allPapers.filter(p => p[stage.key as keyof AssignedPaper]).length;
     });
   }, [allPapers]);
+
+  // const phaseStats = useMemo(() => {
+  //   return steps.map((stage) => {
+  //     const totalPapers = allPapers.length;
+  //     const totalConferences = assignedPaperGroups.length;
+  //     const count = allPapers.filter(p => {
+  //       // Tìm phase hiện tại của paper
+  //       const currentStageIndex = steps
+  //         .map(s => (p[s.key as keyof AssignedPaper] ? s.id : null))
+  //         .filter(id => id !== null)
+  //         .pop();
+
+  //       return currentStageIndex === stage.id;
+  //     }).length;
+
+  //     return { ...stage, count };
+  //     // const count = allPapers.filter(p => p[stage.key as keyof AssignedPaper]).length;
+  //   });
+  // }, [allPapers]);
 
   // Get unique statuses for filter
   const uniqueStatuses = useMemo(() => {
@@ -162,29 +178,57 @@ export default function ReviewerManagePaperPage() {
     if (selectedPhase) {
       if (viewMode === "all") {
         result = (result as typeof allPapers).filter(paper => {
-          const currentStageIndex = stages4Step
-            .map(s => (paper[s.key as keyof AssignedPaper] ? s.id : null))
+          const currentStageIndex = steps
+            .map((s, idx) => (paper[s.key as keyof AssignedPaper] ? idx : null))
             .filter(id => id !== null)
             .pop();
 
-          const selectedStage = stages4Step.find(s => s.label === selectedPhase);
-          return currentStageIndex === selectedStage?.id;
+          const selectedStageIndex = steps.findIndex(s => s.label === selectedPhase);
+          return currentStageIndex === selectedStageIndex;
         });
       } else {
         result = (result as AssignedPaperGroup[]).map(group => ({
           ...group,
           assignedPapers: group.assignedPapers.filter(paper => {
-            const currentStageIndex = stages4Step
-              .map(s => (paper[s.key as keyof AssignedPaper] ? s.id : null))
+            const currentStageIndex = steps
+              .map((s, idx) => (paper[s.key as keyof AssignedPaper] ? idx : null))
               .filter(id => id !== null)
               .pop();
 
-            const selectedStage = stages4Step.find(s => s.label === selectedPhase);
-            return currentStageIndex === selectedStage?.id;
+            const selectedStageIndex = steps.findIndex(s => s.label === selectedPhase);
+            return currentStageIndex === selectedStageIndex;
           })
         })).filter(group => group.assignedPapers.length > 0);
       }
     }
+    // if (selectedPhase) {
+    //   if (viewMode === "all") {
+    //     result = (result as typeof allPapers).filter(paper => {
+    //       const currentStageIndex = steps
+    //         .map(s => (paper[s.key as keyof AssignedPaper] ? s.id : null))
+    //         .filter(id => id !== null)
+    //         .pop();
+
+    //       const selectedStage = steps.find(s => s.label === selectedPhase);
+    //       return currentStageIndex === selectedStage?.id;
+    //     });
+    //   } else {
+    //     result = (result as AssignedPaperGroup[]).map(group => ({
+    //       ...group,
+    //       assignedPapers: group.assignedPapers.filter(paper => {
+    //         const currentStageIndex = steps
+    //           .map(s => (paper[s.key as keyof AssignedPaper] ? s.id : null))
+    //           .filter(id => id !== null)
+    //           .pop();
+
+    //         const selectedStage = steps.find(s => s.label === selectedPhase);
+    //         return currentStageIndex === selectedStage?.id;
+    //       })
+    //     })).filter(group => group.assignedPapers.length > 0);
+    //   }
+    // }
+
+
     // if (filters.status.length > 0) {
     //   if (viewMode === "all") {
     //     result = (result as typeof allPapers).filter(paper =>
@@ -440,7 +484,44 @@ export default function ReviewerManagePaperPage() {
             className={`mt-4 grid gap-4 transition-all ${expandedStats ? "grid-cols-1 md:grid-cols-4" : "grid-cols-1 md:grid-cols-2"
               }`}
           >
+
             {expandedStats
+              ? phaseStats.map((stage, index) => (
+                <div
+                  key={index}
+                  className={`rounded-lg border-l-4 p-4 ${index === 0
+                    ? "border-gray-400"
+                    : index === 1
+                      ? "border-yellow-500"
+                      : index === 2
+                        ? "border-orange-500"
+                        : "border-green-600"
+                    } bg-gradient-to-br from-gray-50 to-white`}
+                >
+                  <p className="text-sm text-gray-600">{stage.label}</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">{stage.count}</p>
+                </div>
+              ))
+              : (() => {
+                const currentStage = phaseStats.findLast(s => s.count > 0) || phaseStats[0];
+                const currentIndex = phaseStats.indexOf(currentStage);
+                return (
+                  <div
+                    className={`rounded-lg border-l-4 p-4 ${currentIndex === 0
+                      ? "border-gray-400"
+                      : currentIndex === 1
+                        ? "border-yellow-500"
+                        : currentIndex === 2
+                          ? "border-orange-500"
+                          : "border-green-600"
+                      } bg-gradient-to-br from-gray-50 to-white`}
+                  >
+                    <p className="text-sm text-gray-600">{currentStage.label} (hiện tại)</p>
+                    <p className="text-2xl font-bold text-gray-900 mt-1">{currentStage.count}</p>
+                  </div>
+                );
+              })()}
+            {/* {expandedStats
               ? phaseStats.map((stage) => (
                 <div
                   key={stage.id}
@@ -474,7 +555,7 @@ export default function ReviewerManagePaperPage() {
                     <p className="text-2xl font-bold text-gray-900 mt-1">{currentStage.count}</p>
                   </div>
                 );
-              })()}
+              })()} */}
           </div>
         </div>
         {/* Statistics Cards */}
@@ -536,12 +617,24 @@ export default function ReviewerManagePaperPage() {
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
               >
                 <option value="">Tất cả các phase</option>
-                {stages4Step.map(stage => (
-                  <option key={stage.id} value={stage.label}>
+                {steps.map((stage, index) => (
+                  <option key={index} value={stage.label}>
                     {stage.label}
                   </option>
                 ))}
               </select>
+              {/* <select
+                value={selectedPhase}
+                onChange={(e) => setSelectedPhase(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              >
+                <option value="">Tất cả các phase</option>
+                {steps.map(stage => (
+                  <option key={stage.id} value={stage.label}>
+                    {stage.label}
+                  </option>
+                ))}
+              </select> */}
               {selectedPhase && (
                 <button
                   onClick={() => setSelectedPhase("")}
@@ -635,8 +728,8 @@ export default function ReviewerManagePaperPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Tất cả các phase</option>
-                  {stages4Step.map(stage => (
-                    <option key={stage.id} value={stage.label}>
+                  {steps.map((stage, index) => (
+                    <option key={index} value={stage.label}>
                       {stage.label}
                     </option>
                   ))}

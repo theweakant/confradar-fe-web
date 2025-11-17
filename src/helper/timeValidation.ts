@@ -26,7 +26,7 @@ export const validatePhaseTime = (
   endDate?: string
 ): PhaseValidationResult => {
   const now = new Date();
-  
+
   if (!startDate || !endDate) {
     return {
       isAvailable: false,
@@ -39,7 +39,7 @@ export const validatePhaseTime = (
   const start = new Date(startDate);
   const end = new Date(endDate);
   const formattedPeriod = `${formatDate(start)} - ${formatDate(end)}`;
-  
+
   // Check if current time is before start time
   if (now < start) {
     const daysUntilStart = Math.ceil((start.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
@@ -51,10 +51,10 @@ export const validatePhaseTime = (
       startDate,
       endDate,
       formattedPeriod,
-      message: `Chưa đến thời gian nộp. Còn ${daysUntilStart} ngày để bắt đầu giai đoạn này.`
+      message: `Chưa đến thời gian. Còn ${daysUntilStart} ngày để bắt đầu giai đoạn này.`
     };
   }
-  
+
   // Check if current time is after end time
   if (now > end) {
     return {
@@ -64,10 +64,10 @@ export const validatePhaseTime = (
       startDate,
       endDate,
       formattedPeriod,
-      message: "Bạn đã hết hạn nộp cho giai đoạn bài báo này."
+      message: "Bạn đã hết hạn thao tác cho giai đoạn bài báo này."
     };
   }
-  
+
   // Current time is within the valid period
   const daysRemaining = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
   return {
@@ -78,6 +78,6 @@ export const validatePhaseTime = (
     startDate,
     endDate,
     formattedPeriod,
-    message: `Bạn còn ${daysRemaining} ngày để nộp.`
+    message: `Bạn còn ${daysRemaining} ngày để thao tác.`
   };
 };

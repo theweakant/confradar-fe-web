@@ -4,6 +4,7 @@ import { usePaperCustomer } from "@/redux/hooks/usePaper";
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 import "@cyntler/react-doc-viewer/dist/index.css";
 import { validatePhaseTime } from "@/helper/timeValidation";
+import SubmittedPaperCard from "./SubmittedPaperCard";
 
 interface FullPaperPhaseProps {
   paperId?: string;
@@ -109,52 +110,64 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper, res
 
       {/* Show current full paper if exists */}
       {fullPaper && (
-        <div className="bg-green-900/20 border border-green-700 rounded-xl p-5">
-          <h4 className="font-semibold text-green-400 mb-2">Full Paper đã nộp</h4>
-          <div className="space-y-2">
-            <p className="text-green-300 text-sm">
-              Full Paper ID: {fullPaper.fullPaperId}
-            </p>
-            {fullPaper.title && (
-              <p className="text-green-300 text-sm">
-                <span className="font-medium">Tiêu đề:</span> {fullPaper.title}
-              </p>
-            )}
-            {fullPaper.description && (
-              <p className="text-green-300 text-sm">
-                <span className="font-medium">Mô tả:</span> {fullPaper.description}
-              </p>
-            )}
-            {fullPaper.reviewStatusId && (
-              <p className="text-green-300 text-sm">
-                <span className="font-medium">Trạng thái đánh giá:</span> {fullPaper.reviewStatusId}
-              </p>
-            )}
-            {fullPaper.created && (
-              <p className="text-green-300 text-sm">
-                <span className="font-medium">Ngày tạo:</span> {new Date(fullPaper.created).toLocaleDateString('vi-VN')}
-              </p>
-            )}
-            {fullPaper.reviewedAt && (
-              <p className="text-green-300 text-sm">
-                <span className="font-medium">Ngày đánh giá:</span> {new Date(fullPaper.reviewedAt).toLocaleDateString('vi-VN')}
-              </p>
-            )}
-            {fullPaper.fileUrl && (
-              <div className="max-h-[80vh] overflow-auto">
-                <DocViewer
-                  documents={[{ uri: fullPaper.fileUrl }]}
-                  pluginRenderers={DocViewerRenderers}
-                  config={{
-                    header: { disableHeader: true },
-                    pdfVerticalScrollByDefault: true,
-                  }}
-                  style={{ minHeight: "100%", borderRadius: 8 }}
-                />
-              </div>
-            )}
-          </div>
-        </div>
+        <SubmittedPaperCard
+          paperInfo={{
+            id: fullPaper.fullPaperId,
+            title: fullPaper.title,
+            description: fullPaper.description,
+            reviewStatus: fullPaper.reviewStatus,
+            created: fullPaper.created,
+            updated: fullPaper.updated,
+            fileUrl: fullPaper.fileUrl
+          }}
+          paperType="Full Paper"
+        />
+        // <div className="bg-green-900/20 border border-green-700 rounded-xl p-5">
+        //   <h4 className="font-semibold text-green-400 mb-2">Full Paper đã nộp</h4>
+        //   <div className="space-y-2">
+        //     <p className="text-green-300 text-sm">
+        //       Full Paper ID: {fullPaper.fullPaperId}
+        //     </p>
+        //     {fullPaper.title && (
+        //       <p className="text-green-300 text-sm">
+        //         <span className="font-medium">Tiêu đề:</span> {fullPaper.title}
+        //       </p>
+        //     )}
+        //     {fullPaper.description && (
+        //       <p className="text-green-300 text-sm">
+        //         <span className="font-medium">Mô tả:</span> {fullPaper.description}
+        //       </p>
+        //     )}
+        //     {fullPaper.reviewStatus && (
+        //       <p className="text-green-300 text-sm">
+        //         <span className="font-medium">Trạng thái đánh giá:</span> {fullPaper.reviewStatus}
+        //       </p>
+        //     )}
+        //     {fullPaper.created && (
+        //       <p className="text-green-300 text-sm">
+        //         <span className="font-medium">Ngày tạo:</span> {new Date(fullPaper.created).toLocaleDateString('vi-VN')}
+        //       </p>
+        //     )}
+        //     {fullPaper.updated && (
+        //       <p className="text-green-300 text-sm">
+        //         <span className="font-medium">Ngày đánh giá:</span> {new Date(fullPaper.updated).toLocaleDateString('vi-VN')}
+        //       </p>
+        //     )}
+        //     {fullPaper.fileUrl && (
+        //       <div className="max-h-[80vh] overflow-auto">
+        //         <DocViewer
+        //           documents={[{ uri: fullPaper.fileUrl }]}
+        //           pluginRenderers={DocViewerRenderers}
+        //           config={{
+        //             header: { disableHeader: true },
+        //             pdfVerticalScrollByDefault: true,
+        //           }}
+        //           style={{ minHeight: "100%", borderRadius: 8 }}
+        //         />
+        //       </div>
+        //     )}
+        //   </div>
+        // </div>
       )}
 
       {/* {isSubmitted && (
@@ -163,7 +176,67 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper, res
         </p>
       )} */}
 
-      <div className="bg-gray-800 border border-gray-700 rounded-xl p-5 space-y-4">
+      {!fullPaper && (
+        <>
+          <div className="bg-gray-800 border border-gray-700 rounded-xl p-5 space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Tiêu đề</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                disabled={!phaseValidation.isAvailable}
+                placeholder="Nhập tiêu đề bài báo"
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Mô tả</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                disabled={!phaseValidation.isAvailable}
+                placeholder="Nhập mô tả bài báo"
+                rows={3}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed resize-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Tải lên tệp full paper (.pdf)</label>
+              <input
+                type="file"
+                accept="application/pdf"
+                onChange={handleFileChange}
+                disabled={!phaseValidation.isAvailable}
+                className="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 
+                          file:rounded-lg file:border-0 file:text-sm file:font-semibold
+                          file:bg-blue-600 file:text-white hover:file:bg-blue-700
+                          disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+              {selectedFile && (
+                <p className="text-green-400 text-sm mt-2">
+                  Đã chọn: {selectedFile.name}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="flex justify-end">
+            <button
+              onClick={handleSubmitFullPaperForm}
+              disabled={!phaseValidation.isAvailable || !selectedFile || !paperId || !title.trim() || !description.trim() || submitLoading}
+              className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition"
+            >
+              {submitLoading ? "Đang nộp..." : "Nộp Full Paper"}
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* <div className="bg-gray-800 border border-gray-700 rounded-xl p-5 space-y-4">
         <div>
           <label className="block text-sm font-medium mb-2">Tiêu đề</label>
           <input
@@ -208,7 +281,6 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper, res
         </div>
       </div>
 
-      {/* Submit Button */}
       <div className="flex justify-end">
         <button
           onClick={handleSubmitFullPaperForm}
@@ -219,14 +291,13 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper, res
         </button>
       </div>
 
-      {/* Error Messages */}
       {submitFullPaperError && (
         <div className="bg-red-900/20 border border-red-700 rounded-xl p-4">
           <p className="text-red-400 text-sm">
             Lỗi: {typeof submitFullPaperError === 'string' ? submitFullPaperError : 'Có lỗi xảy ra khi nộp full paper'}
           </p>
         </div>
-      )}
+      )} */}
     </div>
   );
 };
