@@ -72,7 +72,7 @@ interface InformationTabProps {
   getStatusName: (statusId: string) => string;
   getCityName: (cityId: string) => string;
   currentStatusName: string;
-}
+} 
 
 export default function ConferenceDetailPage() {
   const router = useRouter();

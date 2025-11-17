@@ -81,11 +81,11 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
         label: "Hội nghị",
         href: "/workspace/organizer/manage-conference",
         icon: Calendar,
-        subMenu: [
-          { label: "Tất cả", href: "/workspace/organizer/manage-conference" },
-          { label: "Của tôi", href: "/workspace/organizer/manage-conference/my-conference" },
+        // subMenu: [
+        //   { label: "Tất cả", href: "/workspace/organizer/manage-conference" },
+        //   { label: "Của tôi", href: "/workspace/organizer/manage-conference/my-conference" },
 
-        ],
+        // ],
       },
       {
         label: "Bài báo",

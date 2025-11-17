@@ -3,14 +3,15 @@
 
 import {
   ArrowLeft,
-  Info,
-  Loader2,
+  MoreVertical,
 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { UpdateConferenceStatus } from "@/components/molecules/Status/UpdateStatus";
-import type { CommonConference } from "./index1"; 
+import { DeleteConferenceStatus } from "@/components/molecules/Status/DeleteStatus";
+import { RequestConferenceApproval } from "@/components/molecules/Status/RequestStatus";
+import type { CommonConference } from "@/types/conference.type";
 
 interface BannerSectionProps {
   conference: CommonConference;
@@ -19,9 +20,13 @@ interface BannerSectionProps {
   getStatusName: (id: string) => string;
   getCityName: (id: string) => string;
   isEditingAllowed: boolean;
-  updateRoute: string;
+  updateRoute: string | null;
   statusDialogOpen: boolean;
   setStatusDialogOpen: (open: boolean) => void;
+  deleteDialogOpen: boolean;
+  setDeleteDialogOpen: (open: boolean) => void;
+  dropdownActions?: React.ReactNode; 
+  onRefetch?: () => void;
 }
 
 export function BannerSection({
@@ -34,6 +39,10 @@ export function BannerSection({
   updateRoute,
   statusDialogOpen,
   setStatusDialogOpen,
+  deleteDialogOpen,
+  setDeleteDialogOpen,
+  dropdownActions,
+  onRefetch,
 }: BannerSectionProps) {
   const router = useRouter();
 
@@ -49,34 +58,55 @@ export function BannerSection({
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 
+          {/* Action Buttons */}
           <div className="absolute top-4 right-4 flex gap-2">
-            {isEditingAllowed && (
-              <Button
-                onClick={() => router.push(updateRoute)}
-                className="bg-white/90 hover:bg-white text-gray-900 backdrop-blur-sm shadow-lg border border-white/50"
-              >
-                Chỉnh sửa
-              </Button>
+            {/* Nếu không có dropdownActions, dùng nút cũ */}
+            {dropdownActions ? (
+              dropdownActions
+            ) : (
+              <>
+                {isEditingAllowed && updateRoute && (
+                  <Button
+                    onClick={() => router.push(updateRoute)}
+                    className="bg-white/90 hover:bg-white text-gray-900 backdrop-blur-sm shadow-lg border border-white/50"
+                  >
+                    Chỉnh sửa
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  onClick={() => setStatusDialogOpen(true)}
+                  className="bg-white/90 hover:bg-white text-gray-900 backdrop-blur-sm shadow-lg border border-white/50"
+                >
+                  Cập nhật trạng thái
+                </Button>
+              </>
             )}
-
-            <Button
-              variant="outline"
-              onClick={() => setStatusDialogOpen(true)}
-              className="bg-white/90 hover:bg-white text-gray-900 backdrop-blur-sm shadow-lg border border-white/50"
-            >
-              Cập nhật trạng thái
-            </Button>
-
-            <UpdateConferenceStatus
-              open={statusDialogOpen}
-              onClose={() => setStatusDialogOpen(false)}
-              conference={{
-                ...conference,
-                conferenceStatusId: conference.conferenceStatusId,
-              }}
-            />
           </div>
 
+          {/* Dialogs */}
+          <UpdateConferenceStatus
+            open={statusDialogOpen}
+            onClose={() => setStatusDialogOpen(false)}
+            conference={{
+              conferenceId: conference.conferenceId!,
+              conferenceName: conference.conferenceName!,
+              conferenceStatusId: conference.conferenceStatusId!,
+            }}
+            onSuccess={onRefetch}
+          />
+          <DeleteConferenceStatus
+            open={deleteDialogOpen}
+            onClose={() => setDeleteDialogOpen(false)}
+            conference={{
+              conferenceId: conference.conferenceId!,
+              conferenceName: conference.conferenceName!,
+              conferenceStatusId: conference.conferenceStatusId!,
+            }}
+            onSuccess={onRefetch}
+          />
+
+          {/* Title Overlay */}
           <div className="absolute bottom-0 left-0 right-0 p-6">
             <div className="max-w-7xl mx-auto">
               <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">

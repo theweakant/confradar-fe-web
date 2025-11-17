@@ -16,7 +16,6 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 
-// === INTERFACE NỘI BỘ (hoặc bạn có thể import từ '@/types/conference.type') ===
 interface ResearchConferencePhase {
   researchConferencePhaseId: string;
   conferenceId: string;

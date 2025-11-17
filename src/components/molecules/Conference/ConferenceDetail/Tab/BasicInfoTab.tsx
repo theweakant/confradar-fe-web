@@ -1,7 +1,7 @@
 // components/pages/ConferenceDetailPage/BasicInfoTab.tsx
 import { Info } from "lucide-react";
 import { formatDate } from "@/helper/format";
-import type { CommonConference } from "../index1"; // hoặc import từ "@/types/conference.type"
+import type { CommonConference } from "@/types/conference.type"; 
 
 interface BasicInfoTabProps {
   conference: CommonConference;

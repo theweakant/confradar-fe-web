@@ -6,21 +6,30 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { EventClickArg } from "@fullcalendar/core";
 import { DoorOpen } from "lucide-react";
 import { useGetAvailableRoomsBetweenDatesQuery } from "@/redux/services/room.service";
+import { useListAcceptedPapersQuery } from "@/redux/services/paper.service"; 
 import type { AvailableRoom } from "@/types/room.type";
 import type { Session } from "@/types/conference.type";
+import type { AcceptedPaper } from "@/types/paper.type";
 import RoomCard from "./RoomCard";
 import RoomDetailDialog from "./RoomDetailDialog";
+import PaperCard from "./Paper/PaperCard"; 
 
 interface RoomCalendarProps {
   conferenceId?: string;
   onSessionCreated?: (session: Session) => void;
   startDate?: string;
+  onShowPaper?: boolean; 
+  onPaperSelected?: (paperId: string) => void; 
+  acceptedPapers?: AcceptedPaper[]; 
 }
 
 const RoomCalendar: React.FC<RoomCalendarProps> = ({ 
   conferenceId, 
-  onSessionCreated ,
-  startDate
+  onSessionCreated,
+  startDate,
+  onShowPaper,
+  onPaperSelected,
+  acceptedPapers: externalAcceptedPapers,
 }) => {
   useEffect(() => {
     console.log('🔍 RoomCalendar received conferenceId:', conferenceId);
@@ -36,7 +45,7 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
   });
 
   const calendarRef = useRef<FullCalendar | null>(null);
-  const roomListRef = useRef<HTMLDivElement>(null);
+  const roomListRef = useRef<HTMLDivElement | null>(null);
   
   useEffect(() => {
     if (calendarRef.current && startDate) {
@@ -45,17 +54,32 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
     }
   }, [startDate]);
 
+  // 🔹 Fetch rooms
   const {
     data: roomsData,
-    isLoading,
-    error,
-    refetch
+    isLoading: isLoadingRooms,
+    error: roomsError,
+    refetch: refetchRooms
   } = useGetAvailableRoomsBetweenDatesQuery({
     startdate: dateRange.start,
     endate: dateRange.end
   });
 
+  // 🔹 Fetch accepted papers (chỉ nếu onShowPaper === true và có conferenceId)
+  const {
+    data: acceptedPapersData,
+    isLoading: isLoadingPapers,
+    error: papersError
+  } = useListAcceptedPapersQuery(
+    { confId: conferenceId! },
+    { skip: !onShowPaper || !conferenceId }
+  );
+
   const rooms = roomsData?.data || [];
+  const internalAcceptedPapers = acceptedPapersData?.data || [];
+  const papersToDisplay = externalAcceptedPapers !== undefined 
+    ? externalAcceptedPapers 
+    : internalAcceptedPapers;
 
   const roomsByDate = rooms.reduce((acc, room) => {
     if (!acc[room.date]) {
@@ -75,11 +99,8 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
       : { bg: "#f59e0b", border: "#d97706" }; 
   };
 
-  // Create calendar events from room data
   const calendarEvents = rooms.map((room) => {
     const colors = getRoomColor(room.isAvailableWholeday);
-    
-    // For whole day availability
     if (room.isAvailableWholeday) {
       return {
         id: `${room.roomId}-${room.date}`,
@@ -95,8 +116,6 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
         }
       };
     }
-
-    // For partial availability - create events for each time span
     return room.availableTimeSpans.map((span, index) => ({
       id: `${room.roomId}-${room.date}-${index}`,
       title: room.roomDisplayName || `Room ${room.roomNumber}`,
@@ -134,8 +153,6 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
 
   const handleDatesSet = (dateInfo: any) => {
     const start = dateInfo.start.toISOString().split('T')[0];
-    const requestedEnd = dateInfo.end.toISOString().split('T')[0];
-    
     const maxEndDate = new Date(dateInfo.start);
     maxEndDate.setDate(maxEndDate.getDate() + 7);
     const end = maxEndDate.toISOString().split('T')[0];
@@ -145,12 +162,15 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
     }
   };
 
+  const isLoading = isLoadingRooms || (onShowPaper && isLoadingPapers);
+  const error = roomsError || (onShowPaper ? papersError : null);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-900 text-gray-100 p-6 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">Đang tải lịch phòng...</p>
+          <p className="text-gray-400">Đang tải lịch phòng{onShowPaper ? " và bài báo" : ""}...</p>
         </div>
       </div>
     );
@@ -162,7 +182,12 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
         <div className="text-center">
           <p className="text-red-400 mb-4">Có lỗi xảy ra khi tải dữ liệu</p>
           <button
-            onClick={() => refetch()}
+            onClick={() => {
+              refetchRooms();
+              if (onShowPaper && conferenceId) {
+                // RTK Query tự refetch nếu invalidated, hoặc bạn có thể dùng trigger
+              }
+            }}
             className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
           >
             Thử lại
@@ -182,7 +207,6 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
           <p className="text-gray-400">
             Theo dõi và quản lý tình trạng phòng (Hiển thị tối đa 7 ngày)
           </p>
-          {/* ✅ Debug info - Remove in production */}
           {conferenceId && (
             <p className="text-xs text-green-400 mt-1">
               Conference ID: {conferenceId}
@@ -202,19 +226,27 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Calendar Section */}
-          <div className="lg:col-span-2 bg-gray-800 rounded-lg p-6 shadow-xl">
+        {/* 🔹 Layout: 3 hoặc 4 cột */}
+        <div className={`grid gap-6 ${onShowPaper ? 'lg:grid-cols-4' : 'lg:grid-cols-3'}`}>
+          {/* Calendar */}
+          <div className={`lg:col-span-${onShowPaper ? 2 : 2} bg-gray-800 rounded-lg p-6 shadow-xl`}>
             <div className="calendar-container">
               <FullCalendar
                 ref={calendarRef}
                 plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                initialView="timeGridWeek"
+                initialView="dayGridWeek"
                 headerToolbar={{
                   left: "prev,next today",
                   center: "title",
-                  right: "timeGridWeek,timeGridDay",
+                  right: "weekNoTime,timeGridDay",
                 }}
+                views={{
+  weekNoTime: {
+    type: "timeGridWeek",
+    slotMinTime: "24:00:00",
+    slotMaxTime: "24:00:00",
+  }
+}}
                 events={calendarEvents}
                 eventClick={handleEventClick}
                 datesSet={handleDatesSet}
@@ -262,7 +294,7 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
             </div>
           </div>
 
-          {/* Room List Section */}
+          {/* Room List */}
           <div className="bg-gray-800 rounded-lg p-6 shadow-xl">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <DoorOpen className="w-5 h-5 text-green-400" />
@@ -287,6 +319,30 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
               ))}
             </div>
           </div>
+
+          {/* ✅ Paper List - chỉ hiển thị khi onShowPaper === true */}
+          {onShowPaper && (
+            <div className="bg-gray-800 rounded-lg p-6 shadow-xl">
+              <h2 className="text-xl font-semibold mb-4 text-white">
+                Bài báo đã chấp nhận ({papersToDisplay.length})
+              </h2>
+              <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+                {papersToDisplay.length === 0 ? (
+                  <div className="text-gray-500 text-sm py-4 text-center">
+                    Không có bài báo nào
+                  </div>
+                ) : (
+                  papersToDisplay.map((paper) => (
+                    <PaperCard
+                      key={paper.paperId}
+                      paper={paper}
+                      onClick={() => onPaperSelected?.(paper.paperId)}
+                    />
+                  ))
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -307,78 +363,14 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
       />
 
       <style jsx global>{`
-        .calendar-container .fc {
-          background: transparent;
-          color: rgb(243 244 246);
+        /* Ẩn cột giờ bên trái /
+        .fc-timegrid-axis {
+          display: none !important;
         }
-        .calendar-container .fc .fc-button {
-          background-color: rgb(55 65 81);
-          border-color: rgb(75 85 99);
-          color: rgb(243 244 246);
-          text-transform: capitalize;
-        }
-        .calendar-container .fc .fc-button:hover {
-          background-color: rgb(75 85 99);
-          border-color: rgb(107 114 128);
-        }
-        .calendar-container .fc .fc-button:disabled {
-          background-color: rgb(31 41 55);
-          border-color: rgb(55 65 81);
-          opacity: 0.6;
-        }
-        .calendar-container .fc .fc-button-primary:not(:disabled).fc-button-active {
-          background-color: rgb(16 185 129);
-          border-color: rgb(5 150 105);
-        }
-        .calendar-container .fc-theme-standard .fc-scrollgrid {
-          border-color: rgb(55 65 81);
-        }
-        .calendar-container .fc-theme-standard td,
-        .calendar-container .fc-theme-standard th {
-          border-color: rgb(55 65 81);
-        }
-        .calendar-container .fc .fc-col-header-cell {
-          background-color: rgb(31 41 55);
-          color: rgb(156 163 175);
-          font-weight: 600;
-        }
-        .calendar-container .fc .fc-daygrid-day {
-          background-color: rgb(17 24 39);
-        }
-        .calendar-container .fc .fc-daygrid-day:hover {
-          background-color: rgb(31 41 55);
-        }
-        .calendar-container .fc .fc-daygrid-day-number {
-          color: rgb(209 213 219);
-        }
-        .calendar-container .fc .fc-day-today {
-          background-color: rgb(6 78 59) !important;
-        }
-        .calendar-container .fc .fc-event {
-          border-radius: 4px;
-          padding: 2px 4px;
-          margin-bottom: 2px;
-        }
-        .calendar-container .fc .fc-event-title {
-          font-size: 0.75rem;
-          font-weight: 500;
-        }
-        .calendar-container .fc .fc-timegrid-slot {
-          height: 3rem;
-        }
-        .calendar-container .fc .fc-timegrid-slot-label {
-          color: rgb(156 163 175);
-        }
-        .calendar-container .fc-direction-ltr .fc-daygrid-event {
-          margin-left: 2px;
-          margin-right: 2px;
-        }
-        .calendar-container .fc .fc-toolbar-title {
-          color: rgb(243 244 246);
-          font-size: 1.5rem;
-        }
-        .calendar-container .fc .fc-daygrid-day-top {
-          justify-content: center;
+
+        / Ẩn header của cột giờ */
+        .fc-timegrid-slot-label {
+          display: none !important;
         }
       `}</style>
     </div>

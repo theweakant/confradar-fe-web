@@ -23,6 +23,10 @@ import {
   PaperDetailResponse,
   PaperPhase,
   AssignedPaperGroup,
+
+  AcceptedPaper,
+  AssignPresenterRequest
+
 } from "@/types/paper.type";
 
 import type { ApiResponse } from "@/types/api.type";
@@ -404,6 +408,24 @@ export const paperApi = createApi({
         invalidatesTags: ["Paper"],
       },
     ),
+
+    listAcceptedPapers: builder.query<ApiResponse<AcceptedPaper[]>, { confId: string }>({
+      query: ({ confId }) => ({
+        url: endpoint.PRESENTER_SESSSION.LIST_ACCEPTED_PAPER,
+        method: "GET",
+        params: { confId },
+      }),
+      providesTags: ["Paper"],
+    }),
+
+    assignPresenterToSession: builder.mutation<ApiResponse<unknown>, AssignPresenterRequest>({
+      query: (body) => ({
+        url: endpoint.PRESENTER_SESSSION.ASSIGN_PRESENTER,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Paper"], 
+    }),
   }),
 });
 
@@ -431,6 +453,10 @@ export const {
   useListRevisionPaperReviewsQuery,
   useDecideRevisionStatusMutation,
   useSubmitPaperRevisionFeedbackMutation,
+
+  //ASSIGN PAPER
+  useListAcceptedPapersQuery,
+  useAssignPresenterToSessionMutation,
 
   //SON
   useListSubmittedPapersForCustomerQuery,

@@ -1,6 +1,10 @@
 // // src/types/conference.type.ts
 
 //NAM
+export type CommonConference =
+  | TechnicalConferenceDetailResponse
+  | ResearchConferenceDetailResponse;
+
 export interface Conference {
   conferenceId: string;
   conferenceName?: string;
@@ -31,6 +35,8 @@ export interface Conference {
   sessions?: Session[];
 
   createdby?: string;
+  createdBy?:string|null;
+
   targetAudienceTechnicalConference?: string;
 
   researchDetail?: ResearchDetail;

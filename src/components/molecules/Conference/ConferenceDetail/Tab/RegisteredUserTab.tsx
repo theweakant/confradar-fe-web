@@ -1,10 +1,9 @@
-// components/pages/ConferenceDetailPage/Tab/RegisteredUserTab.tsx
 "use client";
 
 import { Info, Loader2, Mail, Calendar, User, Ticket } from "lucide-react";
 import { useViewRegisteredUsersForConferenceQuery } from "@/redux/services/conference.service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatDate } from "@/helper/format"; // giả sử bạn có hàm này
+import { formatDate } from "@/helper/format"; 
 import Image from "next/image";
 
 interface RegisteredUserTabProps {

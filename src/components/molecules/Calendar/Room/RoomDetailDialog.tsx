@@ -36,23 +36,19 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
   onClose,
   onSessionCreated,
 }) => {
-  // Toggle state: "view" | "form"
   const [mode, setMode] = useState<"view" | "form">("view");
   
-  // Selected time slot for form
   const [selectedSlot, setSelectedSlot] = useState<{
     startTime: string;
     endTime: string;
   } | null>(null);
 const [isCreatingSession, setIsCreatingSession] = useState(false);
 
-  // Fetch available times (khung giờ trống)
   const { data: timesData, isLoading: loadingTimes } = useGetAvailableTimesInRoomQuery(
     { roomId: roomId!, date: date! },
     { skip: !roomId || !date || !open }
   );
 
-  // Fetch occupied sessions (session đang chiếm phòng)
   const { data: sessionsData, isLoading: loadingSessions } = useGetSessionsInRoomOnDateQuery(
     { roomId: roomId!, date: date! },
     { skip: !roomId || !date || !open }
@@ -182,6 +178,11 @@ const handleSessionSave = async (session: Session) => {
                           <DialogTitle className="text-xl font-bold text-white">
                             Tạo phiên họp
                           </DialogTitle>
+                          {roomId && (
+                            <div className="mt-1 text-sm text-blue-200 font-mono">
+                              Phòng ID: {roomId}
+                            </div>
+                          )}
                         </>
                       ) : (
                         <>

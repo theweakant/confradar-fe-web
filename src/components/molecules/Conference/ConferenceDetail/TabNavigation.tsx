@@ -1,30 +1,48 @@
 // components/pages/ConferenceDetailPage/TabNavigation.tsx
-import { Info, Users, Calendar, FileText, MessageCircle, Clock, RefreshCw } from "lucide-react";
+
+import {
+  Info,
+  DollarSign,
+  ShieldCheck,
+  Calendar,
+  ImageIcon,
+  FileText,
+  BookOpen,
+  Users,
+  MessageCircle,
+  Clock,
+  RefreshCw,
+  ClipboardList 
+} from "lucide-react";
 
 interface TabNavigationProps {
   activeTab: string;
   onTabChange: (tabId: string) => void;
-  isResearch: boolean; 
+  isResearch: boolean;
 }
 
 export function TabNavigation({ activeTab, onTabChange, isResearch }: TabNavigationProps) {
-  
-  const technicalTabs = [
+  const baseTabs = [
     { id: "information", label: "Thông tin cơ bản", icon: Info },
+    { id: "price", label: "Giá vé", icon: DollarSign },
+    { id: "refund-policy", label: "Hoàn trả & Chính sách", icon: ShieldCheck },
+    { id: "session", label: "Session", icon: Calendar },
+    { id: "sponsors-media", label: "Sponsors & Media", icon: ImageIcon },
     { id: "refund-requests", label: "Yêu cầu hoàn vé", icon: RefreshCw },
-    { id: "ticket-holders", label: "Khách đã mua vé", icon: Calendar },
+    { id: "ticket-holders", label: "Khách đã mua vé", icon: Users },
   ];
 
-  const researchTabs = [
-    { id: "information", label: "Thông tin cơ bản", icon: Info },
+  const researchOnlyTabs = [
+    { id: "research-materials", label: "Tài liệu nghiên cứu", icon: FileText },
+    { id: "research-info", label: "Research Info", icon: BookOpen },
     { id: "paper-phase", label: "Bài báo", icon: FileText },
     { id: "research-timeline", label: "Research Timeline", icon: Clock },
-    { id: "refund-requests", label: "Yêu cầu hoàn vé", icon: RefreshCw },
+    { id: "paper-assignment", label: "Xếp bài báo", icon: ClipboardList  },
+
     { id: "other-requests", label: "Yêu cầu khác", icon: MessageCircle },
-    { id: "ticket-holders", label: "Người tham dự", icon: Calendar },
   ];
 
-  const tabs = isResearch ? researchTabs : technicalTabs;
+  const tabs = isResearch ? [...baseTabs, ...researchOnlyTabs] : baseTabs;
 
   return (
     <div className="bg-white rounded-xl shadow-sm mb-6 overflow-hidden">

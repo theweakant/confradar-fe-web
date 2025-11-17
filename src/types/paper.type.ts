@@ -4,6 +4,18 @@ export interface Paper {
   paperId: string;
 }
 
+
+export interface AcceptedPaper {
+  paperId: string;
+  title: string;
+  authorName: string;
+}
+
+export interface AssignPresenterRequest {
+  paperId: string;
+  sessionId: string;
+}
+
 export interface ListPaper {
   paperId: string;
   currentPhase: {
