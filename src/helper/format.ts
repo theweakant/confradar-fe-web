@@ -90,3 +90,27 @@ export const formatDateToAPI = (date: Date | null): string => {
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 };
+// Thời gian cục bộ (local) – không convert timezone
+export const formatLocalTime = (datetimeString?: string): string => {
+  if (!datetimeString) return "-";
+
+  const timePart = datetimeString.split("T")[1];
+  if (!timePart) return "-";
+
+  const [hours, minutes] = timePart.split(":");
+  if (!hours || !minutes) return "-";
+
+  return `${parseInt(hours, 10)}h${minutes}`;
+};
+
+export const formatLocalTimeRange = (
+  startTime?: string,
+  endTime?: string
+): string => {
+  if (!startTime || !endTime) return "-";
+
+  const startFormatted = formatLocalTime(startTime);
+  const endFormatted = formatLocalTime(endTime);
+
+  return `${startFormatted} – ${endFormatted}`;
+};

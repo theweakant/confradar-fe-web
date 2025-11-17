@@ -21,7 +21,7 @@ import { toast } from "sonner";
 import { StatCard } from "@/components/molecules/StatCard";
 import { SearchFilter } from "@/components/molecules/SearchFilter";
 
-import { ConferenceTable } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceTable";
+import { ConferenceTable } from "@/components/molecules/Conference/ConferenceTable";
 import { Conference } from "@/types/conference.type";
 
 // Import your RTK Query hooks
@@ -71,12 +71,12 @@ export default function DraftConferenceListPage() {
         ...(filterCategory !== "all" && {
           conferenceCategoryId: filterCategory,
         }),
-        ...(pendingStatusId && { conferenceStatusId: pendingStatusId }), // Auto filter by Pending
+        ...(pendingStatusId && { conferenceStatusId: pendingStatusId }),
         ...(searchQuery && { searchKeyword: searchQuery }),
         ...(filterCity !== "all" && { cityId: filterCity }),
       },
       {
-        skip: !pendingStatusId, // Wait until we have the status ID
+        skip: !pendingStatusId, 
       },
     );
 
@@ -122,7 +122,7 @@ export default function DraftConferenceListPage() {
   const handleView = (conference: Conference) => {
     // Navigate to update page instead of view detail
     router.push(
-      `/workspace/collaborator/manage-conference/update-tech-conference/${conference.conferenceId}`,
+      `/workspace/collaborator/manage-conference/view-detail/${conference.conferenceId}`,
     );
   };
 

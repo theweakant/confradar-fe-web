@@ -33,3 +33,7 @@ export interface ApiError<T = unknown> {
 export type ApiQueryError<T = unknown> = FetchBaseQueryError & {
   data?: ApiError<T>;
 };
+
+export interface ApiSuccessResponse {
+  success: boolean;
+}

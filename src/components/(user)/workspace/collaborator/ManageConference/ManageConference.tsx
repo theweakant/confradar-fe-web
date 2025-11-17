@@ -22,7 +22,7 @@ import { toast } from "sonner";
 import { StatCard } from "@/components/molecules/StatCard";
 import { SearchFilter } from "@/components/molecules/SearchFilter";
 
-import { ConferenceTable } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceTable";
+import { ConferenceTable } from "@/components/molecules/Conference/ConferenceTable";
 import { Conference } from "@/types/conference.type";
 
 import { useGetTechConferencesForCollaboratorAndOrganizerQuery } from "@/redux/services/conference.service";
@@ -253,10 +253,6 @@ const [showRoomCalendar, setShowRoomCalendar] = useState(false);
               <ConferenceTable
                 conferences={conferences}
                 onView={handleView}
-                onEdit={(conference) => {
-                  console.log("Edit conference:", conference);
-                }}
-                onDelete={handleDelete}
                 statuses={statuses}
               />
 
@@ -384,30 +380,6 @@ const [showRoomCalendar, setShowRoomCalendar] = useState(false);
     </div>
   </div>
 )}
-      {/* Alert Dialog */}
-      <AlertDialog
-        open={!!deleteConferenceId}
-        onOpenChange={() => setDeleteConferenceId(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
-            <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa hội thảo này? Hành động này không thể
-              hoàn tác và sẽ xóa tất cả các đăng ký liên quan.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDelete}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Xóa
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }

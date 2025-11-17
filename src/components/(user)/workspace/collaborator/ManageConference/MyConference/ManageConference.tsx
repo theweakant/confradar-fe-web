@@ -22,7 +22,7 @@ import { toast } from "sonner";
 import { StatCard } from "@/components/molecules/StatCard";
 import { SearchFilter } from "@/components/molecules/SearchFilter";
 
-import { ConferenceTable } from "@/components/(user)/workspace/collaborator/ManageConference/ConferenceTable";
+import { ConferenceTable } from "@/components/molecules/Conference/ConferenceTable";
 import { Conference } from "@/types/conference.type";
 
 import { useGetTechConferencesForCollaboratorAndOrganizerQuery } from "@/redux/services/conference.service";

@@ -20,12 +20,11 @@ export function PaperDetail({ paperId, onClose }: PaperDetailProps) {
   const [selectedReviewer, setSelectedReviewer] = useState<string>("");
   const [isHeadReviewer, setIsHeadReviewer] = useState(false);
 
-  // Gọi API lấy danh sách reviewer
+  
   const { data: reviewersData, isLoading: isLoadingReviewers } =
     useGetReviewersListQuery();
   const reviewers = reviewersData?.data ?? [];
 
-  // Mutation gọi API giao reviewer
   const [assignPaper, { isLoading }] = useAssignPaperToReviewerMutation();
 
   const handleAssign = async () => {

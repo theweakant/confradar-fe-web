@@ -6,7 +6,7 @@ import {
   getRolesFromToken,
   getCustomerRole,
 } from "../utils/token";
-import { UserProfileResponse, AuthUser } from "@/types/user.type";
+import {  AuthUser } from "@/types/user.type";
 
 export interface AuthState {
   user: AuthUser | null;

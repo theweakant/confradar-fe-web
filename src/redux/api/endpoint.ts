@@ -103,10 +103,12 @@ export const endpoint = {
   },
 
   CONFERENCE_STEP: {
-    //TECH
+    //CREATE
     CREATE_BASIC: "/conferencestep/basic",
     CREATE_PRICE: (conferenceId: string) =>
       `/conferencestep/${conferenceId}/prices`,
+    CREATE_PHASE_FOR_PRICE: (conferencePriceId: string) =>
+      `/conferencestep/prices/${conferencePriceId}/phases`,
     CREATE_SESSION: (conferenceId: string) =>
       `/conferencestep/${conferenceId}/sessions`,
     CREATE_POLICY: (conferenceId: string) =>
@@ -118,6 +120,23 @@ export const endpoint = {
     CREATE_SPONSOR: (conferenceId: string) =>
       `/conferencestep/${conferenceId}/sponsors`,
 
+    CREATE_RESEARCH_BASIC: "/conferencestep/research/basic",
+    CREATE_RESEARCH_DETAIL: (conferenceId: string) =>
+      `/conferencestep/${conferenceId}/research/detail`,
+    CREATE_RESEARCH_PHASE: (conferenceId: string) =>
+      `/conferencestep/${conferenceId}/research/phases`,
+    CREATE_RESEARCH_SESSION: (conferenceId: string) =>
+      `/conferencestep/${conferenceId}/research/sessions`,
+    CREATE_RESEARCH_RANKING_FILE: (conferenceId: string) =>
+      `/conferencestep/${conferenceId}/research/ranking-file-urls`,
+    CREATE_RESEARCH_RANKING_REFERENCE: (conferenceId: string) =>
+      `/conferencestep/${conferenceId}/research/ranking-reference-urls`,
+    CREATE_RESEARCH_MATERIAL: (conferenceId: string) =>
+      `/conferencestep/${conferenceId}/research/materials`,
+    CREATE_REVISION_ROUND_DEADLINE: (researchConferencePhaseId: string) =>
+      `/conferencestep/research/phases/${researchConferencePhaseId}/revision-round-deadlines`,
+
+    //UPDATE
     UPDATE_BASIC: (conferenceId: string) =>
       `/conferencestep/${conferenceId}/basic`,
     UPDATE_PRICE: (priceId: string) => `/conferencestep/prices/${priceId}`,
@@ -134,8 +153,26 @@ export const endpoint = {
     UPDATE_SPONSOR: (sponsorId: string) =>
       `/conferencestep/sponsors/${sponsorId}`,
 
+    UPDATE_DRAFT_RESEARCH_BASIC: (conferenceId: string) =>
+      `/conferencestep/${conferenceId}/research/basic`,
+    UPDATE_RESEARCH_DETAIL: (conferenceId: string) =>
+      `/conferencestep/${conferenceId}/research/detail`,
+    UPDATE_RESEARCH_PHASE: (researchPhaseId: string) =>
+      `/conferencestep/research/phases/${researchPhaseId}`,
+    UPDATE_RESEARCH_MATERIAL: (materialId: string) =>
+      `/conferencestep/research/materials/${materialId}`,
+    UPDATE_RESEARCH_RANKING_FILE: (rankingFileId: string) =>
+      `/conferencestep/research/ranking-file-urls/${rankingFileId}`,
+    UPDATE_RESEARCH_SESSION: (sessionId: string) =>
+      `/conferencestep/research/sessions/${sessionId}`,
+    UPDATE_RESEARCH_RANKING_REFERENCE: (referenceId: string) =>
+      `/conferencestep/research/ranking-reference-urls/${referenceId}`,
+    UPDATE_REVISION_ROUND_DEADLINE: (deadlineId: string) =>
+      `/conferencestep/revision-round-deadlines/${deadlineId}`,
+
     //DELETE
     DELETE_PRICE: (priceId: string) => `/conferencestep/prices/${priceId}`,
+    DELETE_PRICE_PHASE: (pricePhaseId: string) => `/conferencestep/phases/${pricePhaseId}`,
     DELETE_SESSION: (sessionId: string) => `/conferencestep/sessions/${sessionId}`,
     DELETE_REFUND_POLICY: (refundPolicyId: string) =>
       `/conferencestep/refund-policies/${refundPolicyId}`,
@@ -158,38 +195,9 @@ export const endpoint = {
     GET_BASIC: (conferenceId: string) =>
       `/conferencestep/${conferenceId}/basic`,
 
-    //RESEARCH
-    CREATE_RESEARCH_BASIC: "/conferencestep/research/basic",
-    CREATE_RESEARCH_DETAIL: (conferenceId: string) =>
-      `/conferencestep/${conferenceId}/research/detail`,
-    CREATE_RESEARCH_PHASE: (conferenceId: string) =>
-      `/conferencestep/${conferenceId}/research/phases`,
-    CREATE_RESEARCH_SESSION: (conferenceId: string) =>
-      `/conferencestep/${conferenceId}/research/sessions`,
-    CREATE_RESEARCH_RANKING_FILE: (conferenceId: string) =>
-      `/conferencestep/${conferenceId}/research/ranking-file-urls`,
-    CREATE_RESEARCH_RANKING_REFERENCE: (conferenceId: string) =>
-      `/conferencestep/${conferenceId}/research/ranking-reference-urls`,
-    CREATE_RESEARCH_MATERIAL: (conferenceId: string) =>
-      `/conferencestep/${conferenceId}/research/materials`,
 
-    //UPDATE
-    UPDATE_DRAFT_RESEARCH_BASIC: (conferenceId: string) =>
-      `/conferencestep/${conferenceId}/research/basic`,
-    UPDATE_RESEARCH_DETAIL: (conferenceId: string) =>
-      `/conferencestep/${conferenceId}/research/detail`,
-    UPDATE_RESEARCH_PHASE: (researchPhaseId: string) =>
-      `/conferencestep/research/phases/${researchPhaseId}`,
-    UPDATE_RESEARCH_MATERIAL: (materialId: string) =>
-      `/conferencestep/research/materials/${materialId}`,
-    UPDATE_RESEARCH_RANKING_FILE: (rankingFileId: string) =>
-      `/conferencestep/research/ranking-file-urls/${rankingFileId}`,
-    UPDATE_RESEARCH_SESSION: (sessionId: string) =>
-      `/conferencestep/research/sessions/${sessionId}`,
-    UPDATE_RESEARCH_RANKING_REFERENCE: (referenceId: string) =>
-      `/conferencestep/research/ranking-reference-urls/${referenceId}`,
-    UPDATE_REVISION_ROUND_DEADLINE: (deadlineId: string) =>
-      `/conferencestep/revision-round-deadlines/${deadlineId}`,
+
+
   },
 
   CITY: {

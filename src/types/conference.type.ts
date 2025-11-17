@@ -88,6 +88,7 @@ export interface ConferenceBasicForm {
 
   contractURL?: File | string | null;
   commission?: number;
+  conferenceStatusId?:string
 }
 
 export interface ConferenceBasicResponse {
@@ -113,6 +114,7 @@ export interface ConferenceBasicResponse {
 
 //PRICE STEP
 export interface RefundInPhase {
+  refundPolicyId?:string
   percentRefund: number;
   refundDeadline: string;
 }
@@ -125,6 +127,7 @@ export interface Phase {
   endDate: string;
   totalslot: number;
   refundInPhase: RefundInPhase[] | RefundPolicyResponse[];
+  forWaitlist?:boolean
 }
 
 export interface Ticket {
@@ -301,6 +304,7 @@ export interface ConferenceResearchDetailData {
 
 //RESEARCH PHASE STEP
 export interface RevisionRoundDeadline {
+  researchPhaseId?: string;
   revisionRoundDeadlineId?: string;
   startSubmissionDate: string;
   endSubmissionDate: string;
@@ -577,6 +581,7 @@ export interface ConferencePricePhaseResponse {
   totalSlot?: number;
   availableSlot?: number;
   refundPolicies?: RefundPolicyResponse[];
+  forWaitlist?:boolean;
 }
 
 export interface TechnicalConferenceSessionResponse {

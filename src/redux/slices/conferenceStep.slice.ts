@@ -8,6 +8,8 @@ interface ConferenceStepState {
   conferenceId: string | null;
   conferenceBasicData: Partial<ConferenceBasicResponse> | null;
   completedSteps: number[];
+  stepsWithData: number[]; // Steps có data (đã load hoặc đã lưu)
+  dirtySteps: number[]; // Steps có thay đổi chưa lưu
   loading: boolean;
   error: string | null;
   mode: "create" | "edit";
@@ -20,6 +22,8 @@ const initialState: ConferenceStepState = {
   conferenceId: null,
   conferenceBasicData: null,
   completedSteps: [],
+  stepsWithData: [],
+  dirtySteps: [],
   loading: false,
   error: null,
   mode: "create",
@@ -48,18 +52,47 @@ const conferenceStepSlice = createSlice({
       state.maxStep = action.payload;
     },
 
+    // Đánh dấu step có data (sau khi load hoặc lưu thành công)
+    markStepHasData: (state, action: PayloadAction<number>) => {
+      const step = action.payload;
+      if (!state.stepsWithData.includes(step)) {
+        state.stepsWithData.push(step);
+      }
+    },
+
+    // Đánh dấu step là dirty (có thay đổi chưa lưu)
+    markStepDirty: (state, action: PayloadAction<number>) => {
+      const step = action.payload;
+      if (!state.dirtySteps.includes(step)) {
+        state.dirtySteps.push(step);
+      }
+    },
+
+    // Clear dirty status sau khi lưu thành công
+    clearStepDirty: (state, action: PayloadAction<number>) => {
+      const step = action.payload;
+      state.dirtySteps = state.dirtySteps.filter((s) => s !== step);
+    },
+
+    // Clear tất cả dirty steps
+    clearAllDirtySteps: (state) => {
+      state.dirtySteps = [];
+    },
+
     loadExistingConference: (
       state,
       action: PayloadAction<{
         id: string;
         maxStep?: number;
         basicData?: Partial<ConferenceBasicResponse>;
+        stepsWithData?: number[];
       }>,
     ) => {
       state.conferenceId = action.payload.id;
       state.mode = "edit";
       state.currentStep = 1;
       state.completedSteps = [];
+      state.dirtySteps = [];
 
       if (action.payload.maxStep) {
         state.maxStep = action.payload.maxStep;
@@ -67,6 +100,11 @@ const conferenceStepSlice = createSlice({
 
       if (action.payload.basicData) {
         state.conferenceBasicData = action.payload.basicData;
+      }
+
+      // Load steps có data
+      if (action.payload.stepsWithData) {
+        state.stepsWithData = action.payload.stepsWithData;
       }
     },
 
@@ -78,6 +116,8 @@ const conferenceStepSlice = createSlice({
         state.conferenceId = null;
         state.conferenceBasicData = null;
         state.completedSteps = [];
+        state.stepsWithData = [];
+        state.dirtySteps = [];
         state.error = null;
       }
 
@@ -86,6 +126,12 @@ const conferenceStepSlice = createSlice({
 
     nextStep: (state) => {
       if (state.currentStep < state.maxStep) {
+        if (state.mode === "edit") {
+          state.activeStep = state.currentStep;
+          state.currentStep += 1;
+          return;
+        }
+
         if (!state.completedSteps.includes(state.currentStep)) {
           state.completedSteps.push(state.currentStep);
         }
@@ -94,7 +140,6 @@ const conferenceStepSlice = createSlice({
       }
     },
 
-    // Quay lại step trước
     prevStep: (state) => {
       if (state.currentStep > 1) {
         state.activeStep = state.currentStep;
@@ -104,22 +149,33 @@ const conferenceStepSlice = createSlice({
 
     goToStep: (state, action: PayloadAction<number>) => {
       const targetStep = action.payload;
-      if (
-        state.mode === "edit" &&
-        targetStep >= 1 &&
-        targetStep <= state.maxStep
-      ) {
+
+      if (targetStep < 1 || targetStep > state.maxStep) {
+        return;
+      }
+
+      if (state.mode === "edit") {
+        state.activeStep = state.currentStep;
+        state.currentStep = targetStep;
+        return;
+      }
+
+      if (targetStep <= state.currentStep || state.completedSteps.includes(targetStep)) {
         state.activeStep = state.currentStep;
         state.currentStep = targetStep;
       }
     },
 
-    // Đánh dấu step đã hoàn thành
     markStepCompleted: (state, action: PayloadAction<number>) => {
       const step = action.payload;
       if (!state.completedSteps.includes(step)) {
         state.completedSteps.push(step);
       }
+      // Khi complete, cũng đánh dấu là có data và clear dirty
+      if (!state.stepsWithData.includes(step)) {
+        state.stepsWithData.push(step);
+      }
+      state.dirtySteps = state.dirtySteps.filter((s) => s !== step);
     },
 
     unmarkStepCompleted: (state, action: PayloadAction<number>) => {
@@ -127,12 +183,10 @@ const conferenceStepSlice = createSlice({
       state.completedSteps = state.completedSteps.filter((s) => s !== step);
     },
 
-    // Reset toàn bộ wizard về trạng thái ban đầu
     resetWizard: (state) => {
       Object.assign(state, initialState);
     },
 
-    // Set loading
     startLoading: (state) => {
       state.loading = true;
       state.error = null;
@@ -141,7 +195,6 @@ const conferenceStepSlice = createSlice({
       state.loading = false;
     },
 
-    // Set error
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
       state.loading = false;
@@ -153,6 +206,10 @@ export const {
   setConferenceId,
   setConferenceBasicData,
   setMaxStep,
+  markStepHasData,
+  markStepDirty,
+  clearStepDirty,
+  clearAllDirtySteps,
   loadExistingConference,
   setMode,
   nextStep,

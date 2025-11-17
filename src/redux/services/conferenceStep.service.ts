@@ -119,7 +119,7 @@ export const conferenceStepApi = createApi({
       invalidatesTags: ["ConferenceStep"],
     }),
 
-    //CREATE PRICE (TECH)
+    //CREATE PRICE (SHARED)
     createConferencePrice: builder.mutation<
       ApiResponse<CreatePriceApiResponse>,
       { conferenceId: string; data: ConferencePriceData }
@@ -132,7 +132,19 @@ export const conferenceStepApi = createApi({
       invalidatesTags: ["ConferenceStep"],
     }),
 
-    //UPDATE PRICE TICKET (TECH)
+    createPhaseForPrice: builder.mutation<
+      ApiResponse<unknown>,
+      { conferencePriceId: string; data: { pricePhases: Phase[] } }
+    >({
+      query: ({ conferencePriceId, data }) => ({
+        url: endpoint.CONFERENCE_STEP.CREATE_PHASE_FOR_PRICE(conferencePriceId),
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["ConferenceStep"],
+    }),
+
+    //UPDATE PRICE TICKET (SHARED)
     updateConferencePrice: builder.mutation<
       ApiResponse<{ priceId: string }>,
       {
@@ -164,6 +176,7 @@ export const conferenceStepApi = createApi({
           startDate?: string;
           endDate?: string;
           totalSlot?: number;
+          forWaitlist?:boolean;
         };
       }
     >({
@@ -651,6 +664,24 @@ export const conferenceStepApi = createApi({
       invalidatesTags: ["ConferenceStep"],
     }),
 
+    createRevisionRoundDeadline: builder.mutation<
+      ApiResponse<{ success: boolean }>,
+      {
+        researchConferencePhaseId: string;
+        data: {
+          startSubmissionDate: string;
+          endSubmissionDate: string;
+        };
+      }
+    >({
+      query: ({ researchConferencePhaseId, data }) => ({
+        url: endpoint.CONFERENCE_STEP.CREATE_REVISION_ROUND_DEADLINE(researchConferencePhaseId),
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["ConferenceStep"],
+    }),
+
     // DELETE PRICE
     deleteConferencePrice: builder.mutation<
       ApiResponse<null>,
@@ -874,6 +905,17 @@ export const conferenceStepApi = createApi({
     }),
 
     //DELETE
+    deleteConferencePricePhase: builder.mutation<
+      ApiResponse<null>,
+      string // pricePhaseId
+    >({
+      query: (pricePhaseId) => ({
+        url: endpoint.CONFERENCE_STEP.DELETE_PRICE_PHASE(pricePhaseId),
+        method: "DELETE",
+      }),
+      invalidatesTags: ["ConferenceStep"],
+    }),
+
     deleteRefundPolicy: builder.mutation<
       ApiResponse<null>,
       string // refundPolicyId
@@ -944,6 +986,9 @@ export const {
   useUpdateConferenceSponsorMutation,
   useGetBasicStepByIdQuery,
 
+//CREATE
+useCreatePhaseForPriceMutation,
+
   //UPDATE TECH
   useUpdateSessionSpeakerMutation,
   useUpdateConferencePricePhaseMutation,
@@ -956,6 +1001,7 @@ export const {
   useCreateResearchRankingFileMutation,
   useCreateResearchRankingReferenceMutation,
   useCreateResearchMaterialMutation,
+  useCreateRevisionRoundDeadlineMutation,
 
   //UPDATE RESEARCH
   useUpdateResearchBasicMutation,
@@ -970,6 +1016,7 @@ export const {
 
   //DELETE
   useDeleteConferencePriceMutation,
+  useDeleteConferencePricePhaseMutation,
   useDeleteConferenceSessionMutation,
   useDeleteRefundPolicyMutation,
   useDeleteConferencePolicyMutation,

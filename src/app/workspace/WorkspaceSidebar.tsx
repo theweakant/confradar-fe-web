@@ -39,10 +39,10 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
     .filter(r => typeof r === "string")
     .map(r => r.toLowerCase().replace(/\s+/g, ""));
 
-  // State để quản lý sub-menu  mở/đóng
+  
   const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({});
 
-  // 👇 Sử dụng constants từ roles.ts
+
   const roleMenus: Record<
     string,
     { label: string; href: string; icon: ElementType; subMenu?: { label: string; href: string }[] }[]

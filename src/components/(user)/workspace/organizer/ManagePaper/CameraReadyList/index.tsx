@@ -9,7 +9,6 @@ import {
 } from "@/redux/services/paper.service";
 
 export default function CameraReadyList() {
-  // Gọi API lấy danh sách camera ready đang chờ duyệt
   const {
     data: response,
     isLoading,
