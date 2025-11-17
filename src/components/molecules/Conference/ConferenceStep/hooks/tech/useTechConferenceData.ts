@@ -39,7 +39,6 @@ export function useTechConferenceData({
   const stableOnLoad = useCallback(onLoad || (() => { }), []);
   const stableOnError = useCallback(onError || (() => { }), []);
   
-  // Track lần load đầu tiên để không trigger multiple times
   const hasInitializedRef = useRef(false);
 
   useEffect(() => {

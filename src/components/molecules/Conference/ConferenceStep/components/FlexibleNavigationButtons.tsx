@@ -41,24 +41,10 @@ export function FlexibleNavigationButtons({
   onUpdate,
   onUpdateAll,
 }: FlexibleNavigationButtonsProps) {
-  // ✅ Check if current step is already completed
   const currentStepCompleted = isStepCompleted?.(currentStep) ?? false;
 
   const showPrevious = currentStep > 1 && onPrevious;
   const showNext = currentStep < maxStep && onNext;
-
-  // 🔍 DEBUG LOG
-  console.log('FlexibleNavigationButtons Debug:', {
-    currentStep,
-    maxStep,
-    mode,
-    currentStepCompleted,
-    showPrevious,
-    showNext,
-    hasOnNext: !!onNext,
-    hasOnUpdate: !!onUpdate,
-    isLastStep,
-  });
 
   // ========================================
   // CREATE MODE

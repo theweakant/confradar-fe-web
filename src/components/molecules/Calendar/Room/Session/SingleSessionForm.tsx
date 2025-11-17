@@ -8,9 +8,9 @@ interface SingleSessionFormProps {
   roomId: string;
   roomDisplayName: string;
   roomNumber?: string;
-  date: string; // YYYY-MM-DD
-  startTime: string; // ISO format: YYYY-MM-DDTHH:mm:ss
-  endTime: string; // ISO format: YYYY-MM-DDTHH:mm:ss (max end time của slot)
+  date: string; 
+  startTime: string; 
+  endTime: string; 
   onSave: (session: Session) => void;
   onCancel: () => void;
 }

@@ -11,22 +11,24 @@ import type { Session } from "@/types/conference.type";
 import RoomCard from "./RoomCard";
 import RoomDetailDialog from "./RoomDetailDialog";
 
-// ✅ Props interface
 interface RoomCalendarProps {
   conferenceId?: string;
   onSessionCreated?: (session: Session) => void;
+  startDate?: string;
 }
 
 const RoomCalendar: React.FC<RoomCalendarProps> = ({ 
-  conferenceId: propConferenceId, // Rename để có thể override
-  onSessionCreated 
+  conferenceId, 
+  onSessionCreated ,
+  startDate
 }) => {
+  useEffect(() => {
+    console.log('🔍 RoomCalendar received conferenceId:', conferenceId);
+  }, [conferenceId]);
+
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [roomDetailOpen, setRoomDetailOpen] = useState(false);
-  
-  // ✅ HARDCODE conferenceId for testing (remove in production)
-  const conferenceId = propConferenceId || "848570ae-be82-450a-aa51-2fc050905e3c";
   
   const [dateRange, setDateRange] = useState({
     start: new Date().toISOString().split('T')[0],
@@ -35,6 +37,13 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
 
   const calendarRef = useRef<FullCalendar | null>(null);
   const roomListRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    if (calendarRef.current && startDate) {
+      const calendarApi = calendarRef.current.getApi();
+      calendarApi.gotoDate(startDate);
+    }
+  }, [startDate]);
 
   const {
     data: roomsData,
@@ -48,7 +57,6 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
 
   const rooms = roomsData?.data || [];
 
-  // Group rooms by date for easier access
   const roomsByDate = rooms.reduce((acc, room) => {
     if (!acc[room.date]) {
       acc[room.date] = [];
@@ -57,7 +65,6 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
     return acc;
   }, {} as Record<string, AvailableRoom[]>);
 
-  // Get unique rooms (deduplicate by roomId)
   const uniqueRooms = Array.from(
     new Map(rooms.map(room => [room.roomId, room])).values()
   );
@@ -121,7 +128,6 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
     setRoomDetailOpen(true);
   };
 
-  // ✅ Get selected room data để pass vào dialog
   const selectedRoomData = selectedRoom 
     ? rooms.find(r => r.roomId === selectedRoom && r.date === selectedDate)
     : null;

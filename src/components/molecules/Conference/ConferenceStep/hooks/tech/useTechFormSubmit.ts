@@ -407,114 +407,129 @@ const submitPrice = async (tickets: Ticket[]) => {
 };
 
   // === STEP 3: SESSIONS ===
-  const submitSessions = async (
-    sessions: Session[],
-    eventStartDate: string,
-    eventEndDate: string
-  ) => {
-    if (!conferenceId) {
-      toast.error("Không tìm thấy conference ID!");
-      return { success: false };
-    }
+const submitSessions = async (
+  sessions: Session[],
+  eventStartDate: string,
+  eventEndDate: string
+) => {
+  if (!conferenceId) {
+    toast.error("Không tìm thấy conference ID!");
+    return { success: false };
+  }
 
-    if (sessions.length === 0) {
-      dispatch(markStepCompleted(3));
-      toast.info("Đã lưu trạng thái không có phiên họp");
-      return { success: true, skipped: true };
-    }
+  if (sessions.length === 0) {
+    dispatch(markStepCompleted(3));
+    toast.info("Đã lưu trạng thái không có phiên họp");
+    return { success: true, skipped: true };
+  }
 
+  // CHỈ VALIDATE NẾU SUBMIT TẤT CẢ SESSIONS (không validate khi tạo từng session riêng lẻ)
+  const isSubmittingAll = sessions.length > 1;
+  
+  if (isSubmittingAll) {
     const hasSessionOnStartDay = sessions.some((s) => s.date === eventStartDate);
     const hasSessionOnEndDay = sessions.some((s) => s.date === eventEndDate);
+    
     if (!hasSessionOnStartDay || !hasSessionOnEndDay) {
       toast.error("Phải có ít nhất 1 phiên họp vào ngày bắt đầu và 1 phiên họp vào ngày kết thúc hội thảo!");
       return { success: false };
     }
+  }
 
-    try {
-      setIsSubmitting(true);
+  try {
+    setIsSubmitting(true);
 
-      const formatTime = (datetime: string) => {
-        const date = new Date(datetime);
-        return date.toTimeString().slice(0, 8);
+    const formatTime = (datetime: string) => {
+      const date = new Date(datetime);
+      return date.toTimeString().slice(0, 8);
+    };
+
+    const formatSession = (s: Session) => {
+      const startDateTime = new Date(s.startTime);
+      const endDateTime = new Date(s.endTime);
+      const startTime = startDateTime.toTimeString().slice(0, 8);
+      const endTime = endDateTime.toTimeString().slice(0, 8);
+
+      return {
+        title: s.title,
+        description: s.description,
+        date: s.date,
+        startTime,
+        endTime,
+        roomId: s.roomId,
+        speaker: s.speaker.map((sp) => ({
+          name: sp.name,
+          description: sp.description,
+          image: sp.image instanceof File ? sp.image : undefined,
+          imageUrl: typeof sp.image === "string" ? sp.image : undefined,
+        })),
+        sessionMedias: (s.sessionMedias || []).map((media) => ({
+          mediaFile: media.mediaFile instanceof File ? media.mediaFile : undefined,
+          mediaUrl: typeof media.mediaFile === "string" ? media.mediaFile : undefined,
+        })),
       };
+    };
 
-      const formatSession = (s: Session) => {
-        const startDateTime = new Date(s.startTime);
-        const endDateTime = new Date(s.endTime);
-        const startTime = startDateTime.toTimeString().slice(0, 8);
-        const endTime = endDateTime.toTimeString().slice(0, 8);
-
-        return {
-          title: s.title,
-          description: s.description,
-          date: s.date,
-          startTime,
-          endTime,
-          roomId: s.roomId,
-          speaker: s.speaker.map((sp) => ({
-            name: sp.name,
-            description: sp.description,
-            image: sp.image instanceof File ? sp.image : undefined,
-            imageUrl: typeof sp.image === "string" ? sp.image : undefined,
-          })),
-          sessionMedias: (s.sessionMedias || []).map((media) => ({
-            mediaFile: media.mediaFile instanceof File ? media.mediaFile : undefined,
-            mediaUrl: typeof media.mediaFile === "string" ? media.mediaFile : undefined,
-          })),
-        };
-      };
-
-      if (mode === "edit") {
-        if (deletedSessionIds.length > 0) {
-          await Promise.all(deletedSessionIds.map((id) => deleteSession(id).unwrap()));
-        }
-
-        const existingSessions = sessions.filter((s) => s.sessionId);
-        if (existingSessions.length > 0) {
-          await Promise.all(
-            existingSessions.map((session) =>
-              updateSession({
-                sessionId: session.sessionId!,
-                data: {
-                  title: session.title,
-                  description: session.description,
-                  startTime: formatTime(session.startTime),
-                  endTime: formatTime(session.endTime),
-                  date: session.date,
-                  roomId: session.roomId,
-                },
-              }).unwrap()
-            )
-          );
-        }
-
-        const newSessions = sessions.filter((s) => !s.sessionId);
-        if (newSessions.length > 0) {
-          const formattedNewSessions = newSessions.map(formatSession);
-          await createSessions({
-            conferenceId,
-            data: { sessions: formattedNewSessions },
-          }).unwrap();
-        }
-
-        await triggerRefetch();
-      } else {
-        const formattedSessions = sessions.map(formatSession);
-        await createSessions({ conferenceId, data: { sessions: formattedSessions } }).unwrap();
+    if (mode === "edit") {
+      if (deletedSessionIds.length > 0) {
+        await Promise.all(deletedSessionIds.map((id) => deleteSession(id).unwrap()));
       }
 
-      dispatch(markStepCompleted(3));
-      toast.success("Lưu phiên họp thành công!");
-      return { success: true };
-    } catch (error) {
-      const apiError = error as { data?: ApiError };
-      console.error("Sessions submit failed:", error);
-      toast.error(apiError?.data?.message || "Lưu phiên họp thất bại!");
-      return { success: false, error };
-    } finally {
-      setIsSubmitting(false);
+      const existingSessions = sessions.filter((s) => s.sessionId);
+      if (existingSessions.length > 0) {
+        await Promise.all(
+          existingSessions.map((session) =>
+            updateSession({
+              sessionId: session.sessionId!,
+              data: {
+                title: session.title,
+                description: session.description,
+                startTime: formatTime(session.startTime),
+                endTime: formatTime(session.endTime),
+                date: session.date,
+                roomId: session.roomId,
+              },
+            }).unwrap()
+          )
+        );
+      }
+
+      const newSessions = sessions.filter((s) => !s.sessionId);
+      if (newSessions.length > 0) {
+        const formattedNewSessions = newSessions.map(formatSession);
+        await createSessions({
+          conferenceId,
+          data: { sessions: formattedNewSessions },
+        }).unwrap();
+      }
+
+      await triggerRefetch();
+    } else {
+      // MODE CREATE
+      const formattedSessions = sessions.map(formatSession);
+      await createSessions({ conferenceId, data: { sessions: formattedSessions } }).unwrap();
     }
-  };
+
+    // ✅ CHỈ MARK COMPLETED KHI SUBMIT TẤT CẢ
+    if (isSubmittingAll) {
+      dispatch(markStepCompleted(3));
+    }
+    
+    // ✅ TOAST SUCCESS CHỈ KHI SUBMIT NHIỀU SESSIONS
+    if (isSubmittingAll) {
+      toast.success("Lưu phiên họp thành công!");
+    }
+    
+    return { success: true };
+  } catch (error) {
+    const apiError = error as { data?: ApiError };
+    console.error("Sessions submit failed:", error);
+    toast.error(apiError?.data?.message || "Lưu phiên họp thất bại!");
+    return { success: false, error };
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   
   

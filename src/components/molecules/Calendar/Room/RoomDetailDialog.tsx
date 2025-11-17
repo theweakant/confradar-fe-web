@@ -21,9 +21,9 @@ interface RoomDetailDialogProps {
   roomNumber?: string | null;
   roomDisplayName?: string | null;
   date: string | null;
-  conferenceId?: string; // Optional: nếu có thì cho phép tạo session
+  conferenceId?: string; 
   onClose: () => void;
-  onSessionCreated?: (session: Session) => void; // Callback khi tạo session thành công
+  onSessionCreated?: (session: Session) => void; 
 }
 
 const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
@@ -44,6 +44,7 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
     startTime: string;
     endTime: string;
   } | null>(null);
+const [isCreatingSession, setIsCreatingSession] = useState(false);
 
   // Fetch available times (khung giờ trống)
   const { data: timesData, isLoading: loadingTimes } = useGetAvailableTimesInRoomQuery(
@@ -113,14 +114,21 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
   };
 
   // Handle session save
-  const handleSessionSave = (session: Session) => {
-    if (onSessionCreated) {
-      onSessionCreated(session);
+const handleSessionSave = async (session: Session) => {
+  if (onSessionCreated) {
+    setIsCreatingSession(true);
+    try {
+      await onSessionCreated(session);
+      setMode("view");
+      setSelectedSlot(null);
+    } catch (error) {
+      console.error("Failed to create session:", error);
+      // Keep form open on error
+    } finally {
+      setIsCreatingSession(false);
     }
-    // Return to view mode
-    setMode("view");
-    setSelectedSlot(null);
-  };
+  }
+};
 
   // Reset state when dialog closes
   const handleClose = () => {
@@ -166,6 +174,7 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
                         <>
                           <button
                             onClick={handleBackToView}
+                            disabled={isCreatingSession}  
                             className="p-1 hover:bg-blue-500/50 rounded transition-colors"
                           >
                             <ArrowLeft className="w-5 h-5 text-white" />
@@ -178,13 +187,14 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
                         <>
                           <DoorOpen className="w-6 h-6 text-white" />
                           <DialogTitle className="text-xl font-bold text-white">
-                            Chi tiết phòng
+                            {isCreatingSession ? "Đang tạo session..." : "Tạo phiên họp"}
                           </DialogTitle>
                         </>
                       )}
                     </div>
                     <button
                       onClick={handleClose}
+                      disabled={isCreatingSession} 
                       className="p-2 hover:bg-blue-500/50 rounded-lg transition-colors"
                     >
                       <X className="w-5 h-5 text-white" />
@@ -199,22 +209,27 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                     </div>
                   ) : mode === "form" && selectedSlot && conferenceId ? (
-                    // ✅ FORM MODE
-                    <SingleSessionForm
-                      conferenceId={conferenceId}
-                      roomId={roomId!}
-                      roomDisplayName={roomDisplayName || "N/A"}
-                      roomNumber={roomNumber || undefined}
-                      date={date!}
-                      startTime={selectedSlot.startTime}
-                      endTime={selectedSlot.endTime}
-                      onSave={handleSessionSave}
-                      onCancel={handleBackToView}
-                    />
+                    <div className={isCreatingSession ? "pointer-events-none opacity-60" : ""}>
+                      <SingleSessionForm
+                        conferenceId={conferenceId}
+                        roomId={roomId!}
+                        roomDisplayName={roomDisplayName || "N/A"}
+                        roomNumber={roomNumber || undefined}
+                        date={date!}
+                        startTime={selectedSlot.startTime}
+                        endTime={selectedSlot.endTime}
+                        onSave={handleSessionSave}
+                        onCancel={handleBackToView}
+                      />
+                      {isCreatingSession && (
+                        <div className="mt-4 flex items-center justify-center gap-2 text-blue-600">
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                          <span className="text-sm font-medium">Đang lưu session vào hệ thống...</span>
+                        </div>
+                      )}
+                    </div>
                   ) : (
-                    // ✅ VIEW MODE
                     <div className="space-y-6">
-                      {/* Date Info */}
                       {date && (
                         <div className="bg-gray-50 rounded-lg p-4">
                           <div className="flex items-center gap-2 text-gray-700">
