@@ -477,8 +477,7 @@ export default function RevisionPaperPhase({
                     {paperDetail.revisionPaper.revisionPaperSubmissions.map(
                         (submission: RevisionPaperSubmissionForReviewer) => (
                             // <SwiperSlide key={submission.revisionPaperSubmissionId}>
-                            <div className="border border-gray-600 rounded-lg p-4">
-                                {/* Header với các nút */}
+                            <div key={submission.revisionPaperSubmissionId} className="border border-gray-600 rounded-lg p-4">
                                 <div className="flex justify-between items-center mb-4">
                                     <div>
                                         <h4 className="font-semibold text-lg text-black">
@@ -491,9 +490,7 @@ export default function RevisionPaperPhase({
                                         </p>
                                     </div>
 
-                                    {/* Nhóm các nút bên phải */}
                                     <div className="flex items-center gap-2">
-                                        {/* Nút xem feedbacks đã gửi */}
                                         {submission.revisionSubmissionFeedbacks.length > 0 && (
                                             <button
                                                 onClick={() => setShowViewFeedbackDialogs(prev => ({
@@ -507,7 +504,6 @@ export default function RevisionPaperPhase({
                                             </button>
                                         )}
 
-                                        {/* Nút nhập feedback mới */}
                                         <Button
                                             onClick={() =>
                                                 setShowFeedbackDialogs((prev) => ({
