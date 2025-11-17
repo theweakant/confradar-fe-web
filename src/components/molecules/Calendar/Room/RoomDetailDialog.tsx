@@ -1,5 +1,5 @@
-import React, { Fragment } from "react";
-import { Clock, DoorOpen, Calendar, X, CheckCircle, AlertCircle } from "lucide-react";
+import React, { Fragment, useState } from "react";
+import { Clock, DoorOpen, Calendar, X, CheckCircle, AlertCircle, ArrowLeft } from "lucide-react";
 import {
   Dialog,
   DialogPanel,
@@ -7,27 +7,59 @@ import {
   Transition,
   TransitionChild,
 } from "@headlessui/react";
-import { useGetAvailableTimesInRoomQuery } from "@/redux/services/room.service";
+import { 
+  useGetAvailableTimesInRoomQuery,
+  useGetSessionsInRoomOnDateQuery 
+} from "@/redux/services/room.service";
+import { SessionList } from "./Session/SessionList";
+import { SingleSessionForm } from "./Session/SingleSessionForm";
+import type { Session } from "@/types/conference.type";
 
 interface RoomDetailDialogProps {
   open: boolean;
   roomId: string | null;
+  roomNumber?: string | null;
+  roomDisplayName?: string | null;
   date: string | null;
+  conferenceId?: string; // Optional: nếu có thì cho phép tạo session
   onClose: () => void;
+  onSessionCreated?: (session: Session) => void; // Callback khi tạo session thành công
 }
 
 const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
   open,
   roomId,
+  roomNumber,
+  roomDisplayName,
   date,
+  conferenceId,
   onClose,
+  onSessionCreated,
 }) => {
-  const { data: timesData, isLoading } = useGetAvailableTimesInRoomQuery(
+  // Toggle state: "view" | "form"
+  const [mode, setMode] = useState<"view" | "form">("view");
+  
+  // Selected time slot for form
+  const [selectedSlot, setSelectedSlot] = useState<{
+    startTime: string;
+    endTime: string;
+  } | null>(null);
+
+  // Fetch available times (khung giờ trống)
+  const { data: timesData, isLoading: loadingTimes } = useGetAvailableTimesInRoomQuery(
+    { roomId: roomId!, date: date! },
+    { skip: !roomId || !date || !open }
+  );
+
+  // Fetch occupied sessions (session đang chiếm phòng)
+  const { data: sessionsData, isLoading: loadingSessions } = useGetSessionsInRoomOnDateQuery(
     { roomId: roomId!, date: date! },
     { skip: !roomId || !date || !open }
   );
 
   const timeSpans = timesData?.data || [];
+  const sessions = sessionsData?.data || [];
+  
   const isWholeDay = timeSpans.length === 1 && 
     timeSpans[0].startTime === "00:00:00" && 
     timeSpans[0].endTime === "23:59:59";
@@ -55,9 +87,53 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
     return `${hours}h${minutes > 0 ? ` ${minutes}p` : ''}`;
   };
 
+  // Handle time slot click → switch to form mode
+  const handleTimeSlotSelect = (span: { startTime: string; endTime: string }) => {
+    if (!conferenceId) {
+      // Nếu không có conferenceId, không cho phép tạo session
+      return;
+    }
+
+    // Convert HH:mm:ss to ISO format
+    const dateStr = date!;
+    const startISO = `${dateStr}T${span.startTime}`;
+    const endISO = `${dateStr}T${span.endTime}`;
+
+    setSelectedSlot({
+      startTime: startISO,
+      endTime: endISO,
+    });
+    setMode("form");
+  };
+
+  // Handle back from form to view
+  const handleBackToView = () => {
+    setMode("view");
+    setSelectedSlot(null);
+  };
+
+  // Handle session save
+  const handleSessionSave = (session: Session) => {
+    if (onSessionCreated) {
+      onSessionCreated(session);
+    }
+    // Return to view mode
+    setMode("view");
+    setSelectedSlot(null);
+  };
+
+  // Reset state when dialog closes
+  const handleClose = () => {
+    setMode("view");
+    setSelectedSlot(null);
+    onClose();
+  };
+
+  const isLoading = loadingTimes || loadingSessions;
+
   return (
     <Transition appear show={open} as={Fragment} unmount={true}>
-      <Dialog as="div" className="relative z-50" onClose={onClose}>
+      <Dialog as="div" className="relative z-50" onClose={handleClose}>
         <TransitionChild
           as={Fragment}
           enter="ease-out duration-300"
@@ -81,19 +157,35 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <DialogPanel className="w-full max-w-2xl transform overflow-hidden rounded-lg bg-gray-800 border border-gray-700 shadow-xl transition-all">
+              <DialogPanel className="w-full max-w-3xl transform overflow-hidden rounded-lg bg-white border border-gray-200 shadow-xl transition-all">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
+                <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3 flex-1">
-                      <DoorOpen className="w-6 h-6 text-white" />
-                      <DialogTitle className="text-xl font-bold text-white">
-                        Chi tiết phòng trống
-                      </DialogTitle>
+                      {mode === "form" ? (
+                        <>
+                          <button
+                            onClick={handleBackToView}
+                            className="p-1 hover:bg-blue-500/50 rounded transition-colors"
+                          >
+                            <ArrowLeft className="w-5 h-5 text-white" />
+                          </button>
+                          <DialogTitle className="text-xl font-bold text-white">
+                            Tạo phiên họp
+                          </DialogTitle>
+                        </>
+                      ) : (
+                        <>
+                          <DoorOpen className="w-6 h-6 text-white" />
+                          <DialogTitle className="text-xl font-bold text-white">
+                            Chi tiết phòng
+                          </DialogTitle>
+                        </>
+                      )}
                     </div>
                     <button
-                      onClick={onClose}
-                      className="p-2 hover:bg-green-500/50 rounded-lg transition-colors"
+                      onClick={handleClose}
+                      className="p-2 hover:bg-blue-500/50 rounded-lg transition-colors"
                     >
                       <X className="w-5 h-5 text-white" />
                     </button>
@@ -101,95 +193,135 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
                 </div>
 
                 {/* Content */}
-                <div className="p-6">
+                <div className="p-6 max-h-[70vh] overflow-y-auto">
                   {isLoading ? (
                     <div className="flex items-center justify-center h-48">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                     </div>
+                  ) : mode === "form" && selectedSlot && conferenceId ? (
+                    // ✅ FORM MODE
+                    <SingleSessionForm
+                      conferenceId={conferenceId}
+                      roomId={roomId!}
+                      roomDisplayName={roomDisplayName || "N/A"}
+                      roomNumber={roomNumber || undefined}
+                      date={date!}
+                      startTime={selectedSlot.startTime}
+                      endTime={selectedSlot.endTime}
+                      onSave={handleSessionSave}
+                      onCancel={handleBackToView}
+                    />
                   ) : (
-                    <div className="space-y-4">
+                    // ✅ VIEW MODE
+                    <div className="space-y-6">
                       {/* Date Info */}
                       {date && (
-                        <div className="bg-gray-700 rounded-lg p-4">
-                          <div className="flex items-center gap-2 text-gray-200">
-                            <Calendar className="w-5 h-5 text-blue-400" />
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          <div className="flex items-center gap-2 text-gray-700">
+                            <Calendar className="w-5 h-5 text-blue-500" />
                             <span className="font-medium">{formatDate(date)}</span>
                           </div>
                         </div>
                       )}
 
-                      {/* Availability Status */}
-                      <div className="bg-gray-700 rounded-lg p-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          {isWholeDay ? (
-                            <>
-                              <CheckCircle className="w-5 h-5 text-green-400" />
-                              <span className="text-green-400 font-semibold">
-                                Phòng trống cả ngày
-                              </span>
-                            </>
-                          ) : (
-                            <>
-                              <AlertCircle className="w-5 h-5 text-orange-400" />
-                              <span className="text-orange-400 font-semibold">
-                                Phòng trống một phần ({timeSpans.length} khung giờ)
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Time Spans */}
+                      {/* PHẦN 1: KHUNG GIỜ TRỐNG */}
                       <div>
-                        <label className="text-sm font-semibold text-gray-400 mb-3 block">
-                          Khung giờ trống
-                        </label>
-                        <div className="space-y-3">
-                          {timeSpans.map((span, index) => (
-                            <div
-                              key={index}
-                              className="bg-gray-700 rounded-lg p-4 hover:bg-gray-600 transition-colors"
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                  <Clock className="w-5 h-5 text-blue-400" />
-                                  <div>
-                                    <div className="text-white font-medium">
-                                      {formatTime(span.startTime)} - {formatTime(span.endTime)}
+                        <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            {isWholeDay ? (
+                              <>
+                                <CheckCircle className="w-5 h-5 text-green-500" />
+                                <span className="text-green-700 font-semibold">
+                                  Phòng trống cả ngày
+                                </span>
+                              </>
+                            ) : timeSpans.length > 0 ? (
+                              <>
+                                <AlertCircle className="w-5 h-5 text-orange-500" />
+                                <span className="text-orange-700 font-semibold">
+                                  Phòng trống một phần ({timeSpans.length} khung giờ)
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <AlertCircle className="w-5 h-5 text-red-500" />
+                                <span className="text-red-700 font-semibold">
+                                  Phòng không có khung giờ trống
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        {timeSpans.length > 0 && (
+                          <>
+                            <label className="text-sm font-semibold text-gray-700 mb-3 block">
+                              Khung giờ trống {conferenceId && "(Click để đặt lịch)"}
+                            </label>
+                            <div className="space-y-3 mb-6">
+                              {timeSpans.map((span, index) => (
+                                <div
+                                  key={index}
+                                  onClick={() => handleTimeSlotSelect(span)}
+                                  className={`bg-gray-50 rounded-lg p-4 border-l-4 border-green-500 transition-colors ${
+                                    conferenceId
+                                      ? "hover:bg-green-50 cursor-pointer"
+                                      : "cursor-default"
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                      <Clock className="w-5 h-5 text-green-500" />
+                                      <div>
+                                        <div className="text-gray-900 font-medium">
+                                          {formatTime(span.startTime)} - {formatTime(span.endTime)}
+                                        </div>
+                                        <div className="text-xs text-gray-600 mt-1">
+                                          Thời lượng: {calculateDuration(span.startTime, span.endTime)}
+                                        </div>
+                                      </div>
                                     </div>
-                                    <div className="text-xs text-gray-400 mt-1">
-                                      Thời lượng: {calculateDuration(span.startTime, span.endTime)}
+                                    <div className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                                      {conferenceId ? "Click để đặt" : "Có thể đặt"}
                                     </div>
                                   </div>
                                 </div>
-                                <div className="px-3 py-1 bg-green-600/20 text-green-400 rounded-full text-xs font-medium">
-                                  Có thể đặt
-                                </div>
-                              </div>
+                              ))}
                             </div>
-                          ))}
-                        </div>
+                          </>
+                        )}
                       </div>
 
-                      {timeSpans.length === 0 && (
-                        <div className="text-center py-8 text-gray-400">
-                          <AlertCircle className="w-12 h-12 mx-auto mb-3 text-gray-500" />
-                          <p>Không có khung giờ trống</p>
-                        </div>
+                      {/* Divider */}
+                      {timeSpans.length > 0 && sessions.length > 0 && (
+                        <div className="border-t border-gray-200 my-6"></div>
                       )}
+
+                      {/* PHẦN 2: SESSION ĐANG CHIẾM PHÒNG */}
+                      <SessionList sessions={sessions} isLoading={loadingSessions} />
                     </div>
                   )}
 
-                  <div className="mt-6 flex justify-end">
+                  {!isLoading && mode === "view" && timeSpans.length === 0 && sessions.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      <AlertCircle className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                      <p>Không có thông tin về phòng này</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer - Only show in view mode */}
+                {mode === "view" && (
+                  <div className="px-6 py-4 border-t border-gray-200 flex justify-end bg-gray-50">
                     <button
                       type="button"
-                      className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-                      onClick={onClose}
+                      className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
+                      onClick={handleClose}
                     >
                       Đóng
                     </button>
                   </div>
-                </div>
+                )}
               </DialogPanel>
             </TransitionChild>
           </div>

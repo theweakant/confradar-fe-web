@@ -20,7 +20,6 @@ import { useGetAllConferenceStatusesQuery } from "@/redux/services/status.servic
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 
-// ✅ THAY ĐỔI: Import RoomCalendar với FullCalendar (dark theme version)
 import RoomCalendar from "@/components/molecules/Calendar/Room/RoomCalendar";
 
 
@@ -71,13 +70,6 @@ export default function ManageConference() {
   const statuses = statusesData?.data || [];
   const categories = categoriesData?.data || [];
 
-  const handleOpenCalendar = (type: "conference" | "session" | "paper") => {
-    console.log("Opening calendar:", type);
-    setCalendarType(type);
-    setShowCalendarDialog(true);
-    console.log("showCalendarDialog:", true);
-  };
-
   const conferencesWithCategory = conferences.map((conf) => ({
     ...conf,
     sessions: conf.sessions ?? [],
@@ -124,9 +116,6 @@ export default function ManageConference() {
     );
   };
 
-  const handleDelete = (id: string) => {
-    setDeleteConferenceId(id);
-  };
 
   const confirmDelete = async () => {
     if (deleteConferenceId) {
@@ -331,6 +320,7 @@ export default function ManageConference() {
         </div>
       )}
 
+      {/* ✅ Room Calendar Modal - FullCalendar Version (Dark Theme) */}
       {showRoomCalendar && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex min-h-screen items-center justify-center p-4">

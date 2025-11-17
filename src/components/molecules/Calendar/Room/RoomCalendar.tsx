@@ -7,18 +7,30 @@ import { EventClickArg } from "@fullcalendar/core";
 import { DoorOpen } from "lucide-react";
 import { useGetAvailableRoomsBetweenDatesQuery } from "@/redux/services/room.service";
 import type { AvailableRoom } from "@/types/room.type";
+import type { Session } from "@/types/conference.type";
 import RoomCard from "./RoomCard";
 import RoomDetailDialog from "./RoomDetailDialog";
 
-const RoomCalendar: React.FC = () => {
+// ✅ Props interface
+interface RoomCalendarProps {
+  conferenceId?: string;
+  onSessionCreated?: (session: Session) => void;
+}
+
+const RoomCalendar: React.FC<RoomCalendarProps> = ({ 
+  conferenceId: propConferenceId, // Rename để có thể override
+  onSessionCreated 
+}) => {
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [roomDetailOpen, setRoomDetailOpen] = useState(false);
   
-  // ✅ FIX: Thay đổi từ 30 ngày → 7 ngày (theo giới hạn API)
+  // ✅ HARDCODE conferenceId for testing (remove in production)
+  const conferenceId = propConferenceId || "848570ae-be82-450a-aa51-2fc050905e3c";
+  
   const [dateRange, setDateRange] = useState({
     start: new Date().toISOString().split('T')[0],
-    end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 7 days instead of 30
+    end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   });
 
   const calendarRef = useRef<FullCalendar | null>(null);
@@ -109,17 +121,19 @@ const RoomCalendar: React.FC = () => {
     setRoomDetailOpen(true);
   };
 
-  // ✅ FIX: Giới hạn date range tối đa 7 ngày khi user navigate calendar
+  // ✅ Get selected room data để pass vào dialog
+  const selectedRoomData = selectedRoom 
+    ? rooms.find(r => r.roomId === selectedRoom && r.date === selectedDate)
+    : null;
+
   const handleDatesSet = (dateInfo: any) => {
     const start = dateInfo.start.toISOString().split('T')[0];
     const requestedEnd = dateInfo.end.toISOString().split('T')[0];
     
-    // Calculate max end date (7 days from start)
     const maxEndDate = new Date(dateInfo.start);
     maxEndDate.setDate(maxEndDate.getDate() + 7);
     const end = maxEndDate.toISOString().split('T')[0];
     
-    // Only update if different and within 7-day limit
     if (start !== dateRange.start || end !== dateRange.end) {
       setDateRange({ start, end });
     }
@@ -162,6 +176,12 @@ const RoomCalendar: React.FC = () => {
           <p className="text-gray-400">
             Theo dõi và quản lý tình trạng phòng (Hiển thị tối đa 7 ngày)
           </p>
+          {/* ✅ Debug info - Remove in production */}
+          {conferenceId && (
+            <p className="text-xs text-green-400 mt-1">
+              Conference ID: {conferenceId}
+            </p>
+          )}
         </div>
 
         {/* Legend */}
@@ -183,11 +203,11 @@ const RoomCalendar: React.FC = () => {
               <FullCalendar
                 ref={calendarRef}
                 plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                initialView="timeGridWeek" // ✅ Thay đổi: mặc định hiển thị tuần thay vì tháng
+                initialView="timeGridWeek"
                 headerToolbar={{
                   left: "prev,next today",
                   center: "title",
-                  right: "timeGridWeek,timeGridDay", // ✅ Bỏ dayGridMonth vì không phù hợp với 7 ngày
+                  right: "timeGridWeek,timeGridDay",
                 }}
                 events={calendarEvents}
                 eventClick={handleEventClick}
@@ -268,12 +288,16 @@ const RoomCalendar: React.FC = () => {
       <RoomDetailDialog
         open={roomDetailOpen}
         roomId={selectedRoom}
+        roomNumber={selectedRoomData?.roomNumber}
+        roomDisplayName={selectedRoomData?.roomDisplayName}
         date={selectedDate}
+        conferenceId={conferenceId}
         onClose={() => {
           setRoomDetailOpen(false);
           setSelectedRoom(null);
           setSelectedDate(null);
         }}
+        onSessionCreated={onSessionCreated}
       />
 
       <style jsx global>{`

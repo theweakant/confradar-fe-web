@@ -5,7 +5,7 @@ import { FormSelect } from "@/components/molecules/FormSelect";
 import { FormTextArea } from "@/components/molecules/FormTextArea";
 import { DatePickerInput } from "@/components/atoms/DatePickerInput";
 import { ImageUpload } from "@/components/atoms/ImageUpload";
-import { formatDate, formatLocalTimeRange } from "@/helper/format"; // ✅ Đã thay formatTimeDate → formatLocalTimeRange
+import { formatDate, formatLocalTimeRange } from "@/helper/format"; 
 import { toast } from "sonner";
 import type { Session, Speaker, RoomInfoResponse } from "@/types/conference.type";
 import { useStepNavigation } from "../hooks";

@@ -169,6 +169,7 @@ export interface ConferencePrice {
 
 //SESSION STEP
 export interface Session {
+  conferenceId?:string;
   sessionId?: string;
   title: string;
   description: string;
