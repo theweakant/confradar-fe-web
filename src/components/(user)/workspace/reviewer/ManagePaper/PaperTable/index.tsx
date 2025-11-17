@@ -11,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { stages4Step } from "@/helper/paper";
+import { steps } from "@/helper/paper";
 
 interface PaperTableProps {
   papers: AssignedPaper[];
@@ -58,12 +58,12 @@ export function PaperTable({ papers, onView }: PaperTableProps) {
         const isExpanded = expandedRow === paper.paperId;
         const currentStageIndex = getCurrentStageIndex(paper);
         const currentLabel =
-          stages4Step.find((s) => s.id === currentStageIndex)?.label ||
-          "Chưa diễn ra";
+          currentStageIndex !== null
+            ? steps[currentStageIndex]?.label
+            : "Chưa diễn ra";
 
         return (
           <div className="text-sm">
-            {/* Nút toggle */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -82,11 +82,10 @@ export function PaperTable({ papers, onView }: PaperTableProps) {
               )}
             </button>
 
-            {/* Hiển thị tất cả phase khi expand */}
             {isExpanded && (
               <div className="mt-2 flex flex-col gap-1 pl-5 border-l border-gray-200">
-                {stages4Step.map((stage) => {
-                  const phaseState = getPhaseState(paper, stage.id);
+                {steps.map((stage, index) => {
+                  const phaseState = getPhaseState(paper, index);
                   const color =
                     phaseState === "done"
                       ? "text-green-600"
@@ -95,7 +94,7 @@ export function PaperTable({ papers, onView }: PaperTableProps) {
                         : "text-gray-400";
                   return (
                     <div
-                      key={stage.id}
+                      key={index}
                       className={`flex items-center gap-2 ${color}`}
                     >
                       <span className="text-xs font-semibold w-24">
@@ -115,7 +114,69 @@ export function PaperTable({ papers, onView }: PaperTableProps) {
             )}
           </div>
         );
-      },
+      }
+      // render: (paper) => {
+      //   const isExpanded = expandedRow === paper.paperId;
+      //   const currentStageIndex = getCurrentStageIndex(paper);
+      //   const currentLabel =
+      //     steps.find((s) => s.id === currentStageIndex)?.label ||
+      //     "Chưa diễn ra";
+
+      //   return (
+      //     <div className="text-sm">
+      //       {/* Nút toggle */}
+      //       <button
+      //         onClick={(e) => {
+      //           e.stopPropagation();
+      //           toggleExpand(paper.paperId);
+      //         }}
+      //         className="flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium"
+      //       >
+      //         {isExpanded ? (
+      //           <>
+      //             <ChevronUp className="w-4 h-4" /> Ẩn 4 Giai Đoạn
+      //           </>
+      //         ) : (
+      //           <>
+      //             <ChevronDown className="w-4 h-4" /> {currentLabel}
+      //           </>
+      //         )}
+      //       </button>
+
+      //       {/* Hiển thị tất cả phase khi expand */}
+      //       {isExpanded && (
+      //         <div className="mt-2 flex flex-col gap-1 pl-5 border-l border-gray-200">
+      //           {steps.map((stage) => {
+      //             const phaseState = getPhaseState(paper, stage.id);
+      //             const color =
+      //               phaseState === "done"
+      //                 ? "text-green-600"
+      //                 : phaseState === "current"
+      //                   ? "text-blue-600"
+      //                   : "text-gray-400";
+      //             return (
+      //               <div
+      //                 key={stage.id}
+      //                 className={`flex items-center gap-2 ${color}`}
+      //               >
+      //                 <span className="text-xs font-semibold w-24">
+      //                   {stage.label}
+      //                 </span>
+      //                 <span className="text-xs italic">
+      //                   {phaseState === "done"
+      //                     ? "Đã hoàn thành"
+      //                     : phaseState === "current"
+      //                       ? "Đang diễn ra"
+      //                       : "Chưa diễn ra"}
+      //                 </span>
+      //               </div>
+      //             );
+      //           })}
+      //         </div>
+      //       )}
+      //     </div>
+      //   );
+      // },
     },
     // {
     //   key: "actions",
@@ -156,60 +217,111 @@ export function PaperTable({ papers, onView }: PaperTableProps) {
 }
 
 function getCurrentStageIndex(paper: AssignedPaper) {
-  const filledIds = stages4Step
-    .map((stage) => (paper[stage.key as keyof AssignedPaper] ? stage.id : null))
-    .filter((id) => id !== null);
-  return filledIds.pop() || null;
+  const filledIndexes = steps
+    .map((stage, index) => (paper[stage.key as keyof AssignedPaper] ? index : null))
+    .filter((idx) => idx !== null);
+  return filledIndexes.pop() ?? null;
 }
+
+// function getCurrentStageIndex(paper: AssignedPaper) {
+//   const filledIds = steps
+//     .map((stage) => (paper[stage.key as keyof AssignedPaper] ? stage.id : null))
+//     .filter((id) => id !== null);
+//   return filledIds.pop() || null;
+// }
 
 function getPhaseState(
   paper: AssignedPaper,
-  stageId: number
+  stageIndex: number
 ): "not_started" | "current" | "done" {
   const currentStageIndex = getCurrentStageIndex(paper);
 
-  if (!currentStageIndex) {
-    return stageId === 1 ? "current" : "not_started";
+  if (currentStageIndex === null) {
+    return stageIndex === 0 ? "current" : "not_started";
   }
 
-  if (stageId < currentStageIndex) return "done";
-  if (stageId === currentStageIndex) return "current";
+  if (stageIndex < currentStageIndex) return "done";
+  if (stageIndex === currentStageIndex) return "current";
   return "not_started";
 }
 
+// function getPhaseState(
+//   paper: AssignedPaper,
+//   stageId: number
+// ): "not_started" | "current" | "done" {
+//   const currentStageIndex = getCurrentStageIndex(paper);
+
+//   if (!currentStageIndex) {
+//     return stageId === 1 ? "current" : "not_started";
+//   }
+
+//   if (stageId < currentStageIndex) return "done";
+//   if (stageId === currentStageIndex) return "current";
+//   return "not_started";
+// }
 
 function getPaperPhaseStatus(paper: AssignedPaper) {
-  // Tìm phase hiện tại (phase cuối có Id != null)
-  const currentStageIndex = stages4Step
-    .map((stage) => (paper[stage.key as keyof AssignedPaper] ? stage.id : null))
-    .filter((id) => id !== null)
+  const currentStageIndex = steps
+    .map((stage, index) => (paper[stage.key as keyof AssignedPaper] ? index : null))
+    .filter((idx) => idx !== null)
     .pop();
 
-  // Nếu chưa có phase nào bắt đầu
-  if (!currentStageIndex) {
+  if (currentStageIndex === null || currentStageIndex === undefined) {
     return { label: "Chưa diễn ra", color: "text-gray-500" };
   }
 
-  // Nếu phase hiện tại là stage cuối
-  if (currentStageIndex === stages4Step[stages4Step.length - 1].id) {
+  if (currentStageIndex === steps.length - 1) {
     return { label: "Đang diễn ra (CameraReady)", color: "text-green-600" };
   }
 
-  // Nếu phase hiện tại < stage cuối và tiếp theo chưa có id
-  const nextStage = stages4Step.find((s) => s.id === currentStageIndex + 1);
+  const nextStage = steps[currentStageIndex + 1];
   const nextHasStarted = nextStage && paper[nextStage.key as keyof AssignedPaper];
   if (!nextHasStarted) {
-    const currentLabel =
-      stages4Step.find((s) => s.id === currentStageIndex)?.label || "";
+    const currentLabel = steps[currentStageIndex]?.label || "";
     return { label: `Đang diễn ra (${currentLabel})`, color: "text-blue-600" };
   }
 
-  // Nếu tất cả phase đều có Id
-  const allStarted = stages4Step.every((s) => paper[s.key as keyof AssignedPaper]);
+  const allStarted = steps.every((s) => paper[s.key as keyof AssignedPaper]);
   if (allStarted) {
     return { label: "Đã kết thúc", color: "text-green-700" };
   }
 
-  // Mặc định
   return { label: "Đang diễn ra", color: "text-blue-600" };
 }
+
+
+// function getPaperPhaseStatus(paper: AssignedPaper) {
+//   // Tìm phase hiện tại (phase cuối có Id != null)
+//   const currentStageIndex = steps
+//     .map((stage) => (paper[stage.key as keyof AssignedPaper] ? stage.id : null))
+//     .filter((id) => id !== null)
+//     .pop();
+
+//   // Nếu chưa có phase nào bắt đầu
+//   if (!currentStageIndex) {
+//     return { label: "Chưa diễn ra", color: "text-gray-500" };
+//   }
+
+//   // Nếu phase hiện tại là stage cuối
+//   if (currentStageIndex === steps[steps.length - 1].id) {
+//     return { label: "Đang diễn ra (CameraReady)", color: "text-green-600" };
+//   }
+
+//   // Nếu phase hiện tại < stage cuối và tiếp theo chưa có id
+//   const nextStage = steps.find((s) => s.id === currentStageIndex + 1);
+//   const nextHasStarted = nextStage && paper[nextStage.key as keyof AssignedPaper];
+//   if (!nextHasStarted) {
+//     const currentLabel =
+//       steps.find((s) => s.id === currentStageIndex)?.label || "";
+//     return { label: `Đang diễn ra (${currentLabel})`, color: "text-blue-600" };
+//   }
+
+//   // Nếu tất cả phase đều có Id
+//   const allStarted = steps.every((s) => paper[s.key as keyof AssignedPaper]);
+//   if (allStarted) {
+//     return { label: "Đã kết thúc", color: "text-green-700" };
+//   }
+
+//   // Mặc định
+//   return { label: "Đang diễn ra", color: "text-blue-600" };
+// }

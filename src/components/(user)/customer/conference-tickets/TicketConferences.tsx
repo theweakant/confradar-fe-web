@@ -102,6 +102,11 @@ export default function TicketConferences() {
         return now < new Date(policy.refundDeadline);
       });
 
+      const registeredDate = ticket.registeredDate ? new Date(ticket.registeredDate) : null;
+      if (!applicablePolicy || !registeredDate || now < registeredDate) {
+        return { canRefund: false };
+      }
+
       if (applicablePolicy && applicablePolicy.percentRefund) {
         const refundAmount = (ticket.actualPrice || 0) * (applicablePolicy.percentRefund / 100);
         return {
@@ -201,7 +206,7 @@ export default function TicketConferences() {
     }
     return (
       <Badge className="bg-green-800 text-green-200 border-green-600">
-        Đã xác nhận
+        Vé khả dụng
       </Badge>
     );
   };
@@ -363,9 +368,9 @@ export default function TicketConferences() {
                           </div>
 
                           {/* Title */}
-                          <h2 className="text-xl sm:text-2xl font-bold text-white leading-tight">
-                            Vé hội nghị {ticket.ticketId}
-                          </h2>
+                          {/* <h2 className="text-xl sm:text-2xl font-bold text-white leading-tight">
+                            Mã vé của bạn: {ticket.ticketId}
+                          </h2> */}
                         </div>
 
                         {/* Right: Refund Button */}
@@ -957,7 +962,7 @@ export default function TicketConferences() {
                               Thời gian điểm danh
                             </div>
                             <div className="text-white">
-                              {formatDateTime(selectedCheckIn.checkInTime)}
+                              {selectedCheckIn.checkInTime ? formatDateTime(selectedCheckIn.checkInTime) : 'Chưa điểm danh'}
                             </div>
                           </div>
                           <div>

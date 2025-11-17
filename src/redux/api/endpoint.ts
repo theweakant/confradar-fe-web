@@ -68,9 +68,9 @@ export const endpoint = {
 
     //CUSTOMER
     GET_TECH_BY_ID: (conferenceId: string) =>
-      `/Conference/technical-detail/${conferenceId}`,
+      `/Conference/technical-detail-for-anon/${conferenceId}`,
     GET_RESEARCH_BY_ID: (conferenceId: string) =>
-      `/Conference/research-detail/${conferenceId}`,
+      `/Conference/research-detail-for-anon/${conferenceId}`,
 
     // check status
     STEP_COMPLETION_STATUS: "/Conference/step-completion-status",
@@ -88,11 +88,11 @@ export const endpoint = {
     //STATUS
     LIST_ALL_CONF_STATUS: "/ConferenceStatus/get-all-conference-statuses",
     UPDATE_OWN_STATUS: "/Conference/Update-own-conference-Status",
-    REQUEST_CONFERENCE_APPROVE:"/Conference/request-a-conference-to-be-approved",
+    REQUEST_CONFERENCE_APPROVE: "/Conference/request-a-conference-to-be-approved",
 
     DETAIL: "/Conference",
-    TECHNICAL_DETAIL: "/Conference/technical-detail",
-    RESEARCH_DETAIL: "/Conference/research-detail",
+    TECHNICAL_DETAIL: "/Conference/technical-detail-for-anon",
+    RESEARCH_DETAIL: "/Conference/research-detail-for-anon",
     CREATE: "/Conference",
     UPDATE: "/Conference",
     DELETE: "/Conference",
@@ -108,7 +108,7 @@ export const endpoint = {
     CREATE_PRICE: (conferenceId: string) =>
       `/conferencestep/${conferenceId}/prices`,
     CREATE_PHASE_FOR_PRICE: (conferencePriceId: string) =>
-      `/conferencestep/prices/${conferencePriceId}/phases`,    
+      `/conferencestep/prices/${conferencePriceId}/phases`,
     CREATE_SESSION: (conferenceId: string) =>
       `/conferencestep/${conferenceId}/sessions`,
     CREATE_POLICY: (conferenceId: string) =>
@@ -154,11 +154,11 @@ export const endpoint = {
       `/conferencestep/sponsors/${sponsorId}`,
 
     UPDATE_DRAFT_RESEARCH_BASIC: (conferenceId: string) =>
-  `/conferencestep/${conferenceId}/research/basic`,
+      `/conferencestep/${conferenceId}/research/basic`,
     UPDATE_RESEARCH_DETAIL: (conferenceId: string) =>
-  `/conferencestep/${conferenceId}/research/detail`,
+      `/conferencestep/${conferenceId}/research/detail`,
     UPDATE_RESEARCH_PHASE: (researchPhaseId: string) =>
-  `/conferencestep/research/phases/${researchPhaseId}`,
+      `/conferencestep/research/phases/${researchPhaseId}`,
     UPDATE_RESEARCH_MATERIAL: (materialId: string) =>
       `/conferencestep/research/materials/${materialId}`,
     UPDATE_RESEARCH_RANKING_FILE: (rankingFileId: string) =>
@@ -166,19 +166,19 @@ export const endpoint = {
     UPDATE_RESEARCH_SESSION: (sessionId: string) =>
       `/conferencestep/research/sessions/${sessionId}`,
     UPDATE_RESEARCH_RANKING_REFERENCE: (referenceId: string) =>
-  `/conferencestep/research/ranking-reference-urls/${referenceId}`,
+      `/conferencestep/research/ranking-reference-urls/${referenceId}`,
     UPDATE_REVISION_ROUND_DEADLINE: (deadlineId: string) =>
-  `/conferencestep/revision-round-deadlines/${deadlineId}`,
+      `/conferencestep/revision-round-deadlines/${deadlineId}`,
 
     //DELETE
-    DELETE_PRICE: (priceId : string) =>`/conferencestep/prices/${priceId}`,  
+    DELETE_PRICE: (priceId: string) => `/conferencestep/prices/${priceId}`,
     DELETE_PRICE_PHASE: (pricePhaseId: string) => `/conferencestep/phases/${pricePhaseId}`,
-    DELETE_SESSION: (sessionId: string) =>`/conferencestep/sessions/${sessionId}`,
+    DELETE_SESSION: (sessionId: string) => `/conferencestep/sessions/${sessionId}`,
     DELETE_REFUND_POLICY: (refundPolicyId: string) =>
-  `/conferencestep/refund-policies/${refundPolicyId}`, 
-    DELETE_POLICY: (policyId: string) =>`/conferencestep/policies/${policyId}`,  
-    DELETE_MEDIA: (mediaId: string) =>`/conferencestep/media/${mediaId}`,  
-    DELETE_SPONSOR: (sponsorId: string) =>`/conferencestep/sponsors/${sponsorId}`,
+      `/conferencestep/refund-policies/${refundPolicyId}`,
+    DELETE_POLICY: (policyId: string) => `/conferencestep/policies/${policyId}`,
+    DELETE_MEDIA: (mediaId: string) => `/conferencestep/media/${mediaId}`,
+    DELETE_SPONSOR: (sponsorId: string) => `/conferencestep/sponsors/${sponsorId}`,
     DELETE_RESEARCH_MATERIAL: (materialId: string) =>
       `/conferencestep/research/materials/${materialId}`,
     DELETE_RESEARCH_RANKING_FILE: (fileId: string) =>
@@ -188,7 +188,7 @@ export const endpoint = {
     DELETE_RESEARCH_RANKING_REFERENCE: (referenceId: string) =>
       `/conferencestep/research/ranking-reference-urls/${referenceId}`,
     DELETE_REVISION_ROUND_DEADLINE: (id: string) =>
-      `/conferencestep/revision-round-deadlines/${id}`,      
+      `/conferencestep/revision-round-deadlines/${id}`,
 
 
     //GET
@@ -296,4 +296,9 @@ export const endpoint = {
     CREATE_REVIEWER_CONTRACT: "/contract/create-review-contract",
     USER_FOR_REVIEWER_CONTRACT: "/contract/users-for-reviewer-contract",
   },
+
+  ASSIGNINGPRESENTERSESSION: {
+    REQUEST_CHANGE_PRESENTER: "/assigningpresentersession/request-change-presenter",
+    REQUEST_CHANGE_SESSION: "/assigningpresentersession/request-change-session",
+  }
 };

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ApiError } from "@/types/api.type";
 import { isWithinDateRange } from "@/helper/paper";
+import ReviewerPaperCard from "./ReviewerPaperCard";
 
 interface CameraReadyPhaseProps {
     paperDetail: PaperDetailForReviewer;
@@ -122,7 +123,24 @@ export default function CameraReadyPhase({
                     )}
                 </div>
 
-                <div className="space-y-3 mb-6">
+                <ReviewerPaperCard
+                    paperInfo={{
+                        id: paperDetail.cameraReady.cameraReadyId,
+                        title: paperDetail.cameraReady.title,
+                        description: paperDetail.cameraReady.description,
+                        globalStatusName: paperDetail.cameraReady.globalStatusName,
+                        reviewStartDate: currentPhase?.cameraReadyStartDate,
+                        reviewEndDate: currentPhase?.cameraReadyEndDate,
+                        createdAt: paperDetail.cameraReady.createdAt,
+                        updatedAt: paperDetail.cameraReady.reviewAt ?? undefined,
+                        fileUrl: paperDetail.cameraReady.cameraReadyUrl
+                    }}
+                    paperType="Camera Ready"
+                    getStatusIcon={getStatusIcon}
+                    getStatusColor={getStatusColor}
+                />
+
+                {/* <div className="space-y-3 mb-6">
                     <div>
                         <span className="text-sm text-gray-600">Tiêu đề:</span>
                         <p className="font-medium text-gray-900 mt-1">
@@ -187,19 +205,7 @@ export default function CameraReadyPhase({
                             />
                         )}
                     </div>
-
-                    {/* <div className="pt-3 border-t">
-                        <a
-                            href={paperDetail.cameraReady.cameraReadyUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                        >
-                            <Download className="w-4 h-4" />
-                            Tải xuống Camera Ready
-                        </a>
-                    </div> */}
-                </div>
+                </div> */}
             </div>
 
             {showCameraReadyDecisionPopup && (
