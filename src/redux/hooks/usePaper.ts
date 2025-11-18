@@ -14,6 +14,10 @@ import {
   useLeaveWaitListMutation,
   useLazyListCustomerWaitListQuery,
   useLazyListSubmittedPapersForCustomerQuery,
+  useUpdateAbstractMutation,
+  useUpdateFullPaperMutation,
+  useUpdateRevisionSubmissionMutation,
+  useUpdateCameraReadyMutation,
 } from "@/redux/services/paper.service";
 import { parseApiError } from "@/helper/api";
 import type { ApiResponse } from "@/types/api.type";
@@ -126,6 +130,26 @@ export const usePaperCustomer = () => {
     { isLoading: leavingWaitListLoading, error: leaveWaitListRawError },
   ] = useLeaveWaitListMutation();
 
+  const [
+    updateAbstract,
+    { isLoading: updateAbstractLoading, error: updateAbstractRawError },
+  ] = useUpdateAbstractMutation();
+
+  const [
+    updateFullPaper,
+    { isLoading: updateFullPaperLoading, error: updateFullPaperRawError },
+  ] = useUpdateFullPaperMutation();
+
+  const [
+    updateRevisionSubmission,
+    { isLoading: updateRevisionLoading, error: updateRevisionRawError },
+  ] = useUpdateRevisionSubmissionMutation();
+
+  const [
+    updateCameraReady,
+    { isLoading: updateCameraReadyLoading, error: updateCameraReadyRawError },
+  ] = useUpdateCameraReadyMutation();
+
   // errors
   const submittedPapersError = parseApiError<string>(submittedPapersRawError);
   const paperDetailError = parseApiError<string>(paperDetailRawError);
@@ -148,6 +172,11 @@ export const usePaperCustomer = () => {
   const waitListError = parseApiError<string>(waitListRawError);
   const addToWaitListError = parseApiError<string>(addToWaitListRawError);
   const leaveWaitListError = parseApiError<string>(leaveWaitListRawError);
+
+  const updateAbstractError = parseApiError<string>(updateAbstractRawError);
+  const updateFullPaperError = parseApiError<string>(updateFullPaperRawError);
+  const updateRevisionError = parseApiError<string>(updateRevisionRawError);
+  const updateCameraReadyError = parseApiError<string>(updateCameraReadyRawError);
 
   const fetchSubmittedPapers = useCallback(async (): Promise<
     ApiResponse<PaperCustomer[]>
@@ -293,6 +322,71 @@ export const usePaperCustomer = () => {
     [leaveWaitList],
   );
 
+  const handleUpdateAbstract = useCallback(
+    async (
+      paperId: string,
+      data: { title?: string; description?: string; abstractFile?: File | null; coAuthorId?: string[] }
+    ): Promise<ApiResponse<unknown>> => {
+      try {
+        const result = await updateAbstract({ paperId, ...data }).unwrap();
+        return result;
+      } catch (error) {
+        throw error;
+      }
+    },
+    [updateAbstract]
+  );
+
+  const handleUpdateFullPaper = useCallback(
+    async (
+      paperId: string,
+      data: { title?: string; description?: string; fullPaperFile?: File | null }
+    ): Promise<ApiResponse<unknown>> => {
+      try {
+        const result = await updateFullPaper({ paperId, ...data }).unwrap();
+        return result;
+      } catch (error) {
+        throw error;
+      }
+    },
+    [updateFullPaper]
+  );
+
+  const handleUpdateRevisionSubmission = useCallback(
+    async (
+      paperId: string,
+      revisionPaperSubmissionId: string,
+      data: { title?: string; description?: string; revisionPaperFile?: File | null }
+    ): Promise<ApiResponse<unknown>> => {
+      try {
+        const result = await updateRevisionSubmission({
+          paperId,
+          revisionPaperSubmissionId,
+          ...data,
+        }).unwrap();
+        return result;
+      } catch (error) {
+        throw error;
+      }
+    },
+    [updateRevisionSubmission]
+  );
+
+  const handleUpdateCameraReady = useCallback(
+    async (
+      cameraReadyId: string,
+      data: { title?: string; description?: string; cameraReadyFile?: File | null }
+    ): Promise<ApiResponse<unknown>> => {
+      try {
+        const result = await updateCameraReady({ cameraReadyId, ...data }).unwrap();
+        return result;
+      } catch (error) {
+        throw error;
+      }
+    },
+    [updateCameraReady]
+  );
+
   const loading =
     submittedPapersLoading ||
     paperDetailLoading ||
@@ -306,7 +400,12 @@ export const usePaperCustomer = () => {
     submitCameraReadyLoading ||
     waitListLoading ||
     addingToWaitListLoading ||
-    leavingWaitListLoading;
+    leavingWaitListLoading ||
+    updateAbstractLoading ||
+    updateFullPaperLoading ||
+    updateRevisionLoading ||
+    updateCameraReadyLoading;
+
   return {
     //Data
     submittedPapers: submittedPapersData?.data || [],
@@ -327,6 +426,10 @@ export const usePaperCustomer = () => {
     fetchWaitList,
     handleAddToWaitList,
     handleLeaveWaitList,
+    handleUpdateAbstract,
+    handleUpdateFullPaper,
+    handleUpdateRevisionSubmission,
+    handleUpdateCameraReady,
 
     //Loading
     loading,
@@ -348,5 +451,9 @@ export const usePaperCustomer = () => {
     waitListError,
     addToWaitListError,
     leaveWaitListError,
+    updateAbstractError,
+    updateFullPaperError,
+    updateRevisionError,
+    updateCameraReadyError,
   };
 };

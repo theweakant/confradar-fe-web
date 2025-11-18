@@ -405,6 +405,116 @@ export const paperApi = createApi({
         invalidatesTags: ["Paper"],
       },
     ),
+
+    updateAbstract: builder.mutation<
+      ApiResponse<unknown>,
+      {
+        paperId: string;
+        title?: string;
+        description?: string;
+        abstractFile?: File | null;
+        coAuthorId?: string[];
+      }
+    >({
+      query: (body) => {
+        const formData = new FormData();
+        formData.append("paperId", body.paperId);
+        if (body.title) formData.append("title", body.title);
+        if (body.description) formData.append("description", body.description);
+        if (body.abstractFile) formData.append("abstractFile", body.abstractFile);
+        if (body.coAuthorId) {
+          body.coAuthorId.forEach((id) =>
+            formData.append("coAuthorId", id)
+          );
+        }
+
+        return {
+          url: endpoint.PAPER.UPDATE_ABSTRACT,
+          method: "PUT",
+          body: formData,
+        };
+      },
+      invalidatesTags: ["Paper"],
+    }),
+
+    updateFullPaper: builder.mutation<
+      ApiResponse<unknown>,
+      {
+        paperId: string;
+        title?: string;
+        description?: string;
+        fullPaperFile?: File | null;
+      }
+    >({
+      query: (body) => {
+        const formData = new FormData();
+        formData.append("paperId", body.paperId);
+        if (body.title) formData.append("title", body.title);
+        if (body.description) formData.append("description", body.description);
+        if (body.fullPaperFile) formData.append("fullPaperFile", body.fullPaperFile);
+
+        return {
+          url: endpoint.PAPER.UPDATE_FULLPAPER,
+          method: "PUT",
+          body: formData,
+        };
+      },
+      invalidatesTags: ["Paper"],
+    }),
+
+    updateRevisionSubmission: builder.mutation<
+      ApiResponse<unknown>,
+      {
+        paperId: string;
+        revisionPaperSubmissionId: string;
+        title?: string;
+        description?: string;
+        revisionPaperFile?: File | null;
+      }
+    >({
+      query: (body) => {
+        const formData = new FormData();
+        formData.append("paperId", body.paperId);
+        formData.append("revisionPaperSubmissionId", body.revisionPaperSubmissionId);
+        if (body.title) formData.append("title", body.title);
+        if (body.description) formData.append("description", body.description);
+        if (body.revisionPaperFile)
+          formData.append("revisionPaperFile", body.revisionPaperFile);
+
+        return {
+          url: endpoint.PAPER.UPDATE_REVISION_SUBMISSION,
+          method: "PUT",
+          body: formData,
+        };
+      },
+      invalidatesTags: ["Paper"],
+    }),
+
+    updateCameraReady: builder.mutation<
+      ApiResponse<unknown>,
+      {
+        cameraReadyId: string;
+        title?: string;
+        description?: string;
+        cameraReadyFile?: File | null;
+      }
+    >({
+      query: (body) => {
+        const formData = new FormData();
+        formData.append("cameraReadyId", body.cameraReadyId);
+        if (body.title) formData.append("title", body.title);
+        if (body.description) formData.append("description", body.description);
+        if (body.cameraReadyFile)
+          formData.append("cameraReadyFile", body.cameraReadyFile);
+
+        return {
+          url: endpoint.PAPER.UPDATE_CAMERA_READY,
+          method: "PUT",
+          body: formData,
+        };
+      },
+      invalidatesTags: ["Paper"],
+    }),
   }),
 });
 
@@ -450,4 +560,9 @@ export const {
   useLazyListCustomerWaitListQuery,
   useAddToWaitListMutation,
   useLeaveWaitListMutation,
+
+  useUpdateAbstractMutation,
+  useUpdateFullPaperMutation,
+  useUpdateRevisionSubmissionMutation,
+  useUpdateCameraReadyMutation,
 } = paperApi;
