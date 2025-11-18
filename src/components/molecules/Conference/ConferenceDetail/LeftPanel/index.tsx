@@ -1,0 +1,83 @@
+// components/LeftPanel/index.tsx
+import { getFilteredTabs, type TabId } from "../constants/tabConfig";
+import type { CommonConference } from "@/types/conference.type";
+import { TabContent } from "./TabContent";
+import { MetaInfoSection } from "./MetaInfoSection";
+
+interface LeftPanelProps {
+  primaryTab: "detail" | "action";
+  activeSubtab: TabId;
+  onSubtabChange: (subtab: TabId) => void;
+  conference: CommonConference;
+  conferenceType: "technical" | "research" | null;
+  getCategoryName: (id: string) => string;
+  getStatusName: (id: string) => string;
+  getCityName: (id: string) => string;
+}
+
+export function LeftPanel({
+  primaryTab,
+  activeSubtab,
+  onSubtabChange,
+  conference,
+  conferenceType,
+  getCategoryName,
+  getStatusName,
+  getCityName,
+}: LeftPanelProps) {
+  const tabs = getFilteredTabs(primaryTab, conferenceType);
+
+  return (
+    <div className="space-y-6">
+      {/* Main Content Card */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+        {/* Meta Info Section - Above Tab Content */}
+        <div className="px-6 pt-6">
+          <MetaInfoSection
+            conference={conference}
+            getCategoryName={getCategoryName}
+            getStatusName={getStatusName}
+            getCityName={getCityName}
+          />
+        </div>
+
+        {/* Horizontal Subtabs - Right below description */}
+        <div className="border-b border-gray-200">
+          <div className="px-6">
+            <div className="flex gap-8">
+              {tabs.map((tab) => {
+                const isActive = activeSubtab === tab.id;
+
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => onSubtabChange(tab.id)}
+                    className={`pb-3 border-b-2 transition-all whitespace-nowrap ${
+                      isActive
+                        ? "border-blue-600 text-gray-900 font-semibold"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    }`}
+                  >
+                    <span className="text-sm">
+                      {tab.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+
+        {/* Tab Content */}
+        <div className="p-6">
+          <TabContent
+            activeSubtab={activeSubtab}
+            conference={conference}
+            conferenceType={conferenceType}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
