@@ -35,7 +35,7 @@ export interface Conference {
   sessions?: Session[];
 
   createdby?: string;
-  createdBy?:string|null;
+  createdBy?:string|null|undefined;
 
   targetAudienceTechnicalConference?: string;
 
@@ -466,7 +466,7 @@ export interface ConferenceResponse {
   // sponsors?: SponsorResponse[];
   conferencePrices?: ConferencePriceResponse[];
   // sessions?: ConferenceSessionResponse[];
-  createdBy?: string;
+  createdBy?: string|null|undefined;
 }
 
 export interface TechnicalConferenceDetailResponse {
@@ -503,7 +503,7 @@ export interface TechnicalConferenceDetailResponse {
 }
 
 export interface ResearchConferenceDetailResponse {
-  conferenceId: string;
+  conferenceId?: string;
   conferenceName?: string;
   description?: string;
   startDate?: string;

@@ -10,6 +10,7 @@ import { useListAcceptedPapersQuery } from "@/redux/services/paper.service";
 import type { AvailableRoom } from "@/types/room.type";
 import type { Session } from "@/types/conference.type";
 import type { AcceptedPaper } from "@/types/paper.type";
+import { DatesSetArg } from '@fullcalendar/core';
 import RoomCard from "./RoomCard";
 import RoomDetailDialog from "./RoomDetailDialog";
 import PaperCard from "./Paper/PaperCard"; 
@@ -151,7 +152,7 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
     ? rooms.find(r => r.roomId === selectedRoom && r.date === selectedDate)
     : null;
 
-  const handleDatesSet = (dateInfo: any) => {
+  const handleDatesSet = (dateInfo: DatesSetArg) => {
     const start = dateInfo.start.toISOString().split('T')[0];
     const maxEndDate = new Date(dateInfo.start);
     maxEndDate.setDate(maxEndDate.getDate() + 7);

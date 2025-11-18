@@ -26,11 +26,12 @@ export type TabId =
   | "other-requests"
   | "session"
   | "paper-assignment";
+type LucideIcon = React.ComponentType<React.SVGProps<SVGSVGElement>>;
 
 export interface TabConfig {
   id: TabId;
   label: string;
-  icon: any;
+  icon: LucideIcon;
   conferenceType?: "technical" | "research" | "all";
   roles?: string[];
 }
@@ -38,7 +39,7 @@ export interface TabConfig {
 export interface TabGroup {
   id: "detail" | "action";
   label: string;
-  icon: any;
+  icon: LucideIcon;
   tabs: TabConfig[];
 }
 

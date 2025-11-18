@@ -48,7 +48,7 @@ export function TabContent({
       
       case "research-info":
         return conferenceType === "research" ? (
-          <ResearchInfoTab conference={conference as any} />
+          <ResearchInfoTab conference={conference} />
         ) : null;
       
       case "research-timeline":

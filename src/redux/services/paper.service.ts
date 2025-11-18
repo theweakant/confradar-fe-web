@@ -25,7 +25,7 @@ import {
   AssignedPaperGroup,
 
   AcceptedPaper,
-  AssignPresenterRequest
+  AssignPresenterRequest,
 
   PaperDetailWrapperForReviewer,
 } from "@/types/paper.type";

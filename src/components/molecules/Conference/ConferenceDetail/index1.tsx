@@ -308,7 +308,7 @@ export default function ConferenceDetailPage1() {
             <ResearchMaterialsTab conference={conference} />
           )}
           {conferenceType === "research" && activeTab === "research-info" && (
-            <ResearchInfoTab conference={conference as any} />
+            <ResearchInfoTab conference={conference} />
           )}
 
           {/* === Tab cũ — GIỮ NGUYÊN === */}

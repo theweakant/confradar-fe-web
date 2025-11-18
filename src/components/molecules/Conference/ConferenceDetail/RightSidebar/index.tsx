@@ -14,10 +14,7 @@ interface RightSidebarProps {
 
 export function RightSidebar({
   conference,
-  conferenceType,
-  getCategoryName,
   getStatusName,
-  getCityName,
 }: RightSidebarProps) {
   return (
     <div className="w-80 flex-shrink-0 space-y-4 sticky top-6 self-start">
