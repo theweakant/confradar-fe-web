@@ -202,11 +202,11 @@ const SessionDetailDialog: React.FC<SessionDetailDialogProps> = ({
             } else {
                 toast.error(response.message || "Có lỗi xảy ra khi gửi yêu cầu");
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Error requesting change session:", error);
             toast.error(
-                error?.data?.message ||
-                changeSessionError ||
+                // error?.data?.message ||
+                // changeSessionError ||
                 "Có lỗi xảy ra khi gửi yêu cầu"
             );
         } finally {
@@ -255,11 +255,11 @@ const SessionDetailDialog: React.FC<SessionDetailDialogProps> = ({
             } else {
                 toast.error(response.message || "Có lỗi xảy ra khi gửi yêu cầu");
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Error requesting change presenter:", error);
             toast.error(
-                error?.data?.message ||
-                changePresenterError ||
+                // error?.data?.message ||
+                // changePresenterError ||
                 "Có lỗi xảy ra khi gửi yêu cầu"
             );
         } finally {
