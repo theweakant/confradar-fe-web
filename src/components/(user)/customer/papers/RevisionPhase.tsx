@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useState, Fragment } from 'react';
 import { usePaperCustomer } from '@/redux/hooks/usePaper';
-import { ResearchPhaseDtoDetail, RevisionPaper, RevisionSubmissionFeedback, RevisionDeadlineDetail } from '@/types/paper.type';
+import { ResearchPhaseDtoDetail, RevisionPaper, RevisionSubmissionFeedback, RevisionDeadlineDetail, RevisionSubmission } from '@/types/paper.type';
 import "@cyntler/react-doc-viewer/dist/index.css";
 import FeedbackDialog from './FeedbackDialog';
 import { MessageSquare } from 'lucide-react';
@@ -270,7 +270,8 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
     [feedbackResponses, paperId, revisionPaper?.submissions, handleSubmitPaperRevisionResponse, revisionValidation]
   );
 
-  const handleStartEdit = useCallback((submission: any) => {
+  const handleStartEdit = useCallback((submission: RevisionSubmission | null) => {
+    if (!submission) return;
     setEditingSubmissionId(submission.submissionId);
     setEditTitle(submission.title || "");
     setEditDescription(submission.description || "");
