@@ -13,7 +13,7 @@ interface FeedbackDialogProps {
     onSubmitResponses: () => void;
     loading: boolean;
     canRespondToFeedback: (feedback: RevisionSubmissionFeedback) => boolean;
-    revisionValidation: PhaseValidationResult;
+    responseValidation: PhaseValidationResult;
 }
 
 const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
@@ -25,7 +25,7 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
     onSubmitResponses,
     loading,
     canRespondToFeedback,
-    revisionValidation
+    responseValidation
 }) => {
     return (
         <Transition appear show={isOpen} as={Fragment}>
@@ -102,10 +102,10 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
                                                         placeholder="Nhập phản hồi cho feedback này..."
                                                         className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                         rows={3}
-                                                        disabled={!!(feedback.response && !feedbackResponses[feedback.feedbackId]) || !revisionValidation.isAvailable}
+                                                        disabled={!!(feedback.response && !feedbackResponses[feedback.feedbackId]) || !responseValidation.isAvailable}
                                                     />
-                                                    {!revisionValidation.isAvailable && (
-                                                        <p className="text-xs text-yellow-400 mt-1">{revisionValidation.message}</p>
+                                                    {!responseValidation.isAvailable && (
+                                                        <p className="text-xs text-yellow-400 mt-1">{responseValidation.message}</p>
                                                     )}
 
                                                     {feedback.response && !feedbackResponses[feedback.feedbackId] && (
@@ -127,7 +127,7 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
                                         </button>
                                         <button
                                             onClick={onSubmitResponses}
-                                            disabled={loading || !revisionValidation.isAvailable}
+                                            disabled={loading || !responseValidation.isAvailable}
                                             className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white rounded-lg font-medium transition-colors"
                                         >
                                             {loading ? 'Đang gửi...' : 'Gửi Phản Hồi'}

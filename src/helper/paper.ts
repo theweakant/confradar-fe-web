@@ -42,15 +42,9 @@ export const isWithinDateRange = (startDate: string, endDate: string): boolean =
     return now >= start && now <= end;
 };
 
-export const stages4Step = [
-    { id: 1, key: "abstractId", label: "Abstract" },
-    { id: 2, key: "fullPaperId", label: "FullPaper" },
-    { id: 3, key: "revisionPaperId", label: "Revise" },
-    { id: 4, key: "cameraReadyId", label: "CameraReady" },
-];
-
-export const stages3step = [
-    { id: 1, label: "FullPaper" },
-    { id: 2, label: "Revise" },
-    { id: 3, label: "CameraReady" },
+export const steps = [
+    { key: "abstractId", label: "Abstract" },
+    { key: "fullPaperId", label: "FullPaper" },
+    { key: "revisionPaperId", label: "Revise" },
+    { key: "cameraReadyId", label: "CameraReady" },
 ];

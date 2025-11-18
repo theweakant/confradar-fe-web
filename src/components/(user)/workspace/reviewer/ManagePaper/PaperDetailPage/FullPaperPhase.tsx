@@ -19,6 +19,8 @@ import { toast } from "sonner";
 import { ApiError } from "@/types/api.type";
 import { CurrentResearchConferencePhaseForReviewer, FullPaperReview, PaperDetailForReviewer } from "@/types/paper.type";
 import { isValidUrl, isWithinDateRange } from "@/helper/paper";
+import ReusableDocViewer from "@/components/molecules/ReusableDocViewer ";
+import ReviewerPaperCard from "./ReviewerPaperCard";
 
 interface FullPaperPhaseProps {
     paperDetail: PaperDetailForReviewer;
@@ -101,6 +103,9 @@ export default function FullPaperPhase({
         );
     };
 
+    const isNotAllSubmitted = !paperDetail.fullPaper?.isAllSubmittedFullPaperReview;
+    const isOutOfDecisionTime = !canDecideFullPaperStatus();
+
     const handleSubmitReview = async () => {
         if (!paperDetail?.fullPaper) return;
         if (!canSubmitFullPaperReview()) {
@@ -174,218 +179,44 @@ export default function FullPaperPhase({
                             onClick={() => setShowDecisionPopup(true)}
                             className="bg-purple-600 hover:bg-purple-700"
                             size="lg"
-                            disabled={!paperDetail.fullPaper.isAllSubmittedFullPaperReview}
+                            disabled={isNotAllSubmitted || isOutOfDecisionTime}
                         >
                             <Gavel className="w-4 h-4 mr-2" />
-                            {paperDetail.fullPaper.isAllSubmittedFullPaperReview
-                                ? "Quyết định cuối cùng"
-                                : "Chưa thể quyết định, còn reviewer chưa nộp"}
+                            {isNotAllSubmitted && !isOutOfDecisionTime && "Chưa thể quyết định, còn reviewer chưa nộp"}
+                            {!isNotAllSubmitted && isOutOfDecisionTime && "Chưa thể quyết định, ngoài khoảng thời gian"}
+                            {isNotAllSubmitted && isOutOfDecisionTime && "Chưa thể quyết định, reviewer chưa nộp & ngoài thời gian"}
+                            {!isNotAllSubmitted && !isOutOfDecisionTime && "Quyết định cuối cùng"}
                         </Button>
+                        // <Button
+                        //     onClick={() => setShowDecisionPopup(true)}
+                        //     className="bg-purple-600 hover:bg-purple-700"
+                        //     size="lg"
+                        //     disabled={!paperDetail.fullPaper.isAllSubmittedFullPaperReview}
+                        // >
+                        //     <Gavel className="w-4 h-4 mr-2" />
+                        //     {paperDetail.fullPaper.isAllSubmittedFullPaperReview
+                        //         ? "Quyết định cuối cùng"
+                        //         : "Chưa thể quyết định, còn reviewer chưa nộp"}
+                        // </Button>
                     )}
                 </div>
 
                 {/* ========== THÔNG TIN CƠ BẢN ========== */}
-                <div className="space-y-3 mb-6">
-                    {[
-                        ["Tiêu đề:", paperDetail.fullPaper.title],
-                        ["Mô tả:", paperDetail.fullPaper.description],
-                        [
-                            "Trạng thái Review:",
-                            <span
-                                key="reviewStatus"
-                                className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
-                                    paperDetail.fullPaper.reviewStatusName
-                                )}`}
-                            >
-                                {getStatusIcon(paperDetail.fullPaper.reviewStatusName)}
-                                {paperDetail.fullPaper.reviewStatusName}
-                            </span>,
-                        ],
-                        [
-                            "Thời gian gửi đánh giá:",
-                            `${formatDate(currentPhase?.reviewStartDate)} → ${formatDate(
-                                currentPhase?.reviseEndDate
-                            )}`,
-                        ],
-                        [
-                            "Tình trạng hoàn thành đánh giá:",
-                            <span
-                                key="reviewDone"
-                                className={`px-3 py-1 rounded-full text-sm font-medium ${paperDetail.fullPaper.isAllSubmittedFullPaperReview
-                                    ? "bg-green-50 text-green-700 border border-green-200"
-                                    : "bg-yellow-50 text-yellow-700 border border-yellow-200"
-                                    }`}
-                            >
-                                {paperDetail.fullPaper.isAllSubmittedFullPaperReview
-                                    ? "Tất cả Reviewer đã nộp"
-                                    : "Đang chờ các reviewer còn lại gửi đánh giá"}
-                            </span>,
-                        ],
-                    ].map(([label, value], idx) => (
-                        <div key={idx} className="flex items-start">
-                            <span className="w-60 text-sm text-gray-600 shrink-0">{label}</span>
-                            <span className="text-sm text-gray-900 leading-relaxed">{value}</span>
-                        </div>
-                    ))}
-
-                    <div className="flex justify-end mt-4">
-                        <Button
-                            onClick={() => setShowReviewDialog(true)}
-                            className="bg-black hover:bg-gray-800 w-auto px-6"
-                            size={"lg"}
-                            disabled={!canSubmitFullPaperReview()}
-                        >
-                            <Send className="w-4 h-4 mr-2" />
-                            {canSubmitFullPaperReview() ? "Gửi đánh giá" : "Chưa đến hạn nộp đánh giá"}
-                        </Button>
-                    </div>
-
-                    <div className="pt-4 border-t max-h-[600px] overflow-auto">
-                        {docAvailable === null && (
-                            <div className="text-gray-500 text-sm">Đang kiểm tra file...</div>
-                        )}
-
-                        {docAvailable === false && (
-                            <div className="p-4 border border-red-300 rounded bg-red-50 text-red-700 text-sm">
-                                File không tồn tại hoặc URL không hợp lệ
-                            </div>
-                        )}
-
-                        {docAvailable && !docViewerError && (
-                            <DocViewer
-                                documents={[{ uri: paperDetail.fullPaper.fullPaperUrl, fileType: "pdf" }]}
-                                pluginRenderers={DocViewerRenderers}
-                                config={{
-                                    header: { disableHeader: true },
-                                    pdfVerticalScrollByDefault: true,
-                                }}
-                                style={{ width: "100%", minHeight: 400, borderRadius: 8 }}
-                            />
-                        )}
-                    </div>
-
-                    {/* <div className="pt-4 border-t max-h-[600px] overflow-auto">
-                        {docAvailable === null && (
-                            <div className="text-gray-500 text-sm">Đang kiểm tra file...</div>
-                        )}
-                        {docAvailable === false && (
-                            <div className="text-red-500 text-sm">
-                                Không thể mở file. Vui lòng tải xuống.
-                                <a
-                                    href={paperDetail.fullPaper.fullPaperUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="ml-2 text-blue-600 underline"
-                                >
-                                    Tải file
-                                </a>
-                            </div>
-                        )}
-                        {docAvailable && (
-                            <DocViewer
-                                documents={[{ uri: paperDetail.fullPaper.fullPaperUrl }]}
-                                pluginRenderers={DocViewerRenderers}
-                                config={{
-                                    header: { disableHeader: true },
-                                    pdfVerticalScrollByDefault: true,
-                                    noRenderer: {
-                                        overrideComponent: ({ document }) => (
-                                            <div className="p-4 border border-gray-300 rounded bg-gray-50">
-                                                <p className="text-gray-700 mb-2">
-                                                    Không thể preview file này: {document?.fileName || document?.uri}
-                                                </p>
-                                                <a
-                                                    href={document?.uri}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-blue-600 underline"
-                                                >
-                                                    Tải xuống
-                                                </a>
-                                            </div>
-                                        ),
-                                    },
-                                }}
-                                style={{ width: "100%", minHeight: 400, borderRadius: 8 }}
-                            />
-                        )}
-                    </div> */}
-
-                    {/* <div className="pt-4 border-t">
-                        <a
-                            href={paperDetail.fullPaper.fullPaperUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                        >
-                            <Download className="w-4 h-4" />
-                            Tải xuống Full Paper
-                        </a>
-                    </div> */}
-                </div>
-                {/* <div className="space-y-3 mb-6">
-                    <div className="flex items-start">
-                        <span className="text-sm text-gray-600">Tiêu đề:</span>
-                        <span className="text-sm font-medium text-gray-900">
-                            {paperDetail.fullPaper.title}
-                        </span>
-                    </div>
-
-                    <div className="flex items-start">
-                        <span className="text-sm text-gray-600">Mô tả:</span>
-                        <span className="text-sm text-gray-700">
-                            {paperDetail.fullPaper.description}
-                        </span>
-                    </div>
-
-                    <div className="flex items-start">
-                        <span className="text-sm text-gray-600">Trạng thái Review:</span>
-                        <span
-                            className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
-                                paperDetail.fullPaper.reviewStatusName,
-                            )}`}
-                        >
-                            {getStatusIcon(paperDetail.fullPaper.reviewStatusName)}
-                            {paperDetail.fullPaper.reviewStatusName}
-                        </span>
-                    </div>
-
-                    <div className="flex items-start ">
-                        <span className="text-sm text-gray-600">Thời gian nộp bài:</span>
-                        <span className="text-sm text-gray-700">
-                            {formatDate(paperDetail.fullPaper.fullPaperStartDate)} →{" "}
-                            {formatDate(paperDetail.fullPaper.fullPaperEndDate)}
-                        </span>
-                    </div>
-
-                    <div className="flex items-start">
-                        <span className="text-sm text-gray-600">
-                            Tình trạng hoàn thành đánh giá:
-                        </span>
-                        <span
-                            className={`px-3 py-1 rounded-full text-sm font-medium ${paperDetail.fullPaper.isAllSubmittedFullPaperReview
-                                ? "bg-green-50 text-green-700 border border-green-200"
-                                : "bg-yellow-50 text-yellow-700 border border-yellow-200"
-                                }`}
-                        >
-                            {paperDetail.fullPaper.isAllSubmittedFullPaperReview
-                                ? "Tất cả Reviewer đã nộp"
-                                : "Đang chờ Reviewer"}
-                        </span>
-                    </div>
-
-                    <div className="pt-3 border-t">
-                        <a
-                            href={paperDetail.fullPaper.fullPaperUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                        >
-                            <Download className="w-4 h-4" />
-                            Tải xuống Full Paper
-                        </a>
-                    </div>
-                </div> */}
+                <ReviewerPaperCard
+                    paperInfo={{
+                        id: paperDetail.fullPaper.fullPaperId,
+                        title: paperDetail.fullPaper.title,
+                        description: paperDetail.fullPaper.description,
+                        reviewStatusName: paperDetail.fullPaper.reviewStatusName,
+                        isAllSubmittedReview: paperDetail.fullPaper.isAllSubmittedFullPaperReview,
+                        reviewStartDate: currentPhase?.reviewStartDate,
+                        reviewEndDate: currentPhase?.reviewEndDate,
+                        fileUrl: paperDetail.fullPaper.fullPaperUrl
+                    }}
+                    paperType="Full Paper"
+                    getStatusIcon={getStatusIcon}
+                    getStatusColor={getStatusColor}
+                />
 
                 {/* ========== FORM REVIEW ========== */}
                 {/* Dialog cho review */}

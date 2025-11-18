@@ -7,6 +7,7 @@ import { usePaperCustomer } from "@/redux/hooks/usePaper";
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 import "@cyntler/react-doc-viewer/dist/index.css";
 import { validatePhaseTime } from "@/helper/timeValidation";
+import SubmittedPaperCard from "./SubmittedPaperCard";
 
 interface AbstractPhaseProps {
   paperId?: string;
@@ -160,74 +161,188 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract, resear
 
       {/* Show current abstract if exists */}
       {abstract && (
-        <div className="bg-green-900/20 border border-green-700 rounded-xl p-5">
-          <h4 className="font-semibold text-green-400 mb-2">Abstract đã nộp</h4>
-          <div className="space-y-2">
-            <p className="text-green-300 text-sm">
-              Abstract ID: {abstract.abstractId}
-            </p>
-            {abstract.title && (
-              <p className="text-green-300 text-sm">
-                <span className="font-medium">Tiêu đề:</span> {abstract.title}
-              </p>
-            )}
-            {abstract.description && (
-              <p className="text-green-300 text-sm">
-                <span className="font-medium">Mô tả:</span> {abstract.description}
-              </p>
-            )}
-            {abstract.globalStatusId && (
-              <p className="text-green-300 text-sm">
-                <span className="font-medium">Trạng thái:</span> {abstract.globalStatusId}
-              </p>
-            )}
-            {abstract.created && (
-              <p className="text-green-300 text-sm">
-                <span className="font-medium">Ngày tạo:</span> {new Date(abstract.created).toLocaleDateString('vi-VN')}
-              </p>
-            )}
-            {abstract.reviewedAt && (
-              <p className="text-green-300 text-sm">
-                <span className="font-medium">Ngày đánh giá:</span> {new Date(abstract.reviewedAt).toLocaleDateString('vi-VN')}
-              </p>
-            )}
-            {abstract.fileUrl && (
-              <div className="max-h-[80vh]  overflow-auto">
-                <DocViewer
-                  documents={[{ uri: abstract.fileUrl }]}
-                  pluginRenderers={DocViewerRenderers}
-                  config={{
-                    header: { disableHeader: true },
-                    pdfVerticalScrollByDefault: true,
-                  }}
-                  // style={{ height: "100%", borderRadius: 8 }}
-                  style={{ minHeight: "100%", borderRadius: 8 }}
-                />
-              </div>
-              // <iframe
-              //     // src={abstract.fileUrl}
-              //     src={`https://docs.google.com/viewer?url=${encodeURIComponent(
-              //         abstract.fileUrl
-              //     )}&embedded=true`}
-              //     width="100%"
-              //     height="600px"
-              //     style={{ border: 'none' }}
-              // />
-              // <a
-              //     href={abstract.fileUrl}
-              //     target="_blank"
-              //     rel="noopener noreferrer"
-              //     className="text-blue-400 hover:text-blue-300 text-sm underline mt-2 inline-block"
-              // >
-              //     Xem file abstract →
-              // </a>
-            )}
-          </div>
-        </div>
+        <SubmittedPaperCard
+          paperInfo={{
+            id: abstract.abstractId,
+            title: abstract.title,
+            description: abstract.description,
+            status: abstract.status,
+            created: abstract.created,
+            updated: abstract.updated,
+            fileUrl: abstract.fileUrl
+          }}
+          paperType="Abstract"
+        />
+        // <div className="bg-green-900/20 border border-green-700 rounded-xl p-5">
+        //   <h4 className="font-semibold text-green-400 mb-2">Abstract đã nộp</h4>
+        //   <div className="space-y-2">
+        //     <p className="text-green-300 text-sm">
+        //       Abstract ID: {abstract.abstractId}
+        //     </p>
+        //     {abstract.title && (
+        //       <p className="text-green-300 text-sm">
+        //         <span className="font-medium">Tiêu đề:</span> {abstract.title}
+        //       </p>
+        //     )}
+        //     {abstract.description && (
+        //       <p className="text-green-300 text-sm">
+        //         <span className="font-medium">Mô tả:</span> {abstract.description}
+        //       </p>
+        //     )}
+        //     {abstract.status && (
+        //       <p className="text-green-300 text-sm">
+        //         <span className="font-medium">Trạng thái:</span> {abstract.status}
+        //       </p>
+        //     )}
+        //     {abstract.created && (
+        //       <p className="text-green-300 text-sm">
+        //         <span className="font-medium">Ngày tạo:</span> {new Date(abstract.created).toLocaleDateString('vi-VN')}
+        //       </p>
+        //     )}
+        //     {abstract.updated && (
+        //       <p className="text-green-300 text-sm">
+        //         <span className="font-medium">Ngày đánh giá:</span> {new Date(abstract.updated).toLocaleDateString('vi-VN')}
+        //       </p>
+        //     )}
+        //     {abstract.fileUrl && (
+        //       <div className="max-h-[80vh]  overflow-auto">
+        //         <DocViewer
+        //           documents={[{ uri: abstract.fileUrl }]}
+        //           pluginRenderers={DocViewerRenderers}
+        //           config={{
+        //             header: { disableHeader: true },
+        //             pdfVerticalScrollByDefault: true,
+        //           }}
+        //           // style={{ height: "100%", borderRadius: 8 }}
+        //           style={{ minHeight: "100%", borderRadius: 8 }}
+        //         />
+        //       </div>
+        //       // <iframe
+        //       //     // src={abstract.fileUrl}
+        //       //     src={`https://docs.google.com/viewer?url=${encodeURIComponent(
+        //       //         abstract.fileUrl
+        //       //     )}&embedded=true`}
+        //       //     width="100%"
+        //       //     height="600px"
+        //       //     style={{ border: 'none' }}
+        //       // />
+        //       // <a
+        //       //     href={abstract.fileUrl}
+        //       //     target="_blank"
+        //       //     rel="noopener noreferrer"
+        //       //     className="text-blue-400 hover:text-blue-300 text-sm underline mt-2 inline-block"
+        //       // >
+        //       //     Xem file abstract →
+        //       // </a>
+        //     )}
+        //   </div>
+        // </div>
         // )}
       )}
+      {/* Ẩn form khi đã có abstract */}
+      {!abstract && (
+        <>
+          <div className="bg-gray-800 border border-gray-700 rounded-xl p-5 space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Tiêu đề</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                disabled={!phaseValidation.isAvailable}
+                placeholder="Nhập tiêu đề bài báo"
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Mô tả</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                disabled={!phaseValidation.isAvailable}
+                placeholder="Nhập mô tả bài báo"
+                rows={3}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed resize-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Tải lên tệp abstract (.pdf)</label>
+              <input
+                type="file"
+                accept="application/pdf"
+                onChange={handleFileChange}
+                disabled={!phaseValidation.isAvailable}
+                className="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 
+    file:rounded-lg file:border-0 file:text-sm file:font-semibold
+    file:bg-blue-600 file:text-white hover:file:bg-blue-700
+    disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+              {selectedFile && (
+                <p className="text-green-400 text-sm mt-2">
+                  Đã chọn: {selectedFile.name}
+                </p>
+              )}
+            </div>
+          </div>
 
-      {isSubmitted && (
+          <div className="bg-gray-800 border border-gray-700 rounded-xl p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="font-semibold">Đồng tác giả ({selectedCoauthors.length})</h4>
+              <button
+                onClick={handleOpenDialog}
+                disabled={!phaseValidation.isAvailable || isLoadingCustomers || customersError !== null}
+                className="px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition"
+              >
+                {isLoadingCustomers ? "Đang tải..." : "+ Thêm đồng tác giả"}
+              </button>
+            </div>
+            {selectedCoauthors.length > 0 ? (
+              <ul className="space-y-2">
+                {selectedCoauthors.map((c) => (
+                  <li key={c.userId} className="flex items-center justify-between bg-gray-700 p-3 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <Image
+                        src={c.avatarUrl || "/default-avatar.png"}
+                        alt={c.fullName || "User"}
+                        width={32}
+                        height={32}
+                        className="rounded-full"
+                      />
+                      <div>
+                        <p className="font-medium">{c.fullName}</p>
+                        <p className="text-xs text-gray-400">{c.email}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() =>
+                        setSelectedCoauthors((prev) => prev.filter((x) => x.userId !== c.userId))
+                      }
+                      className="text-red-400 hover:text-red-500 text-sm"
+                    >
+                      Xóa
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-400 text-sm">Chưa có đồng tác giả nào được thêm.</p>
+            )}
+          </div>
+
+          {/* Submit Button */}
+          <div className="flex justify-end">
+            <button
+              onClick={handleSubmitAbstractForm}
+              disabled={!selectedFile || !paperId || !title.trim() || !description.trim() || submitLoading}
+              className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition"
+            >
+              {submitLoading ? "Đang nộp..." : "Nộp Abstract"}
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* {isSubmitted && (
         <p className="text-sm text-yellow-400 mt-2">
           Bạn đã nộp abstract, không thể nộp lại.
         </p>
@@ -287,13 +402,6 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract, resear
           >
             {isLoadingCustomers ? "Đang tải..." : "+ Thêm đồng tác giả"}
           </button>
-          {/* <button
-                        onClick={handleOpenDialog}
-                        disabled={isLoadingCustomers || customersError !== null}
-                        className="px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition"
-                    >
-                        {isLoadingCustomers ? "Đang tải..." : "+ Thêm đồng tác giả"}
-                    </button> */}
         </div>
 
         {selectedCoauthors.length > 0 ? (
@@ -329,7 +437,6 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract, resear
         )}
       </div>
 
-      {/* Submit Button */}
       <div className="flex justify-end">
         <button
           onClick={handleSubmitAbstractForm}
@@ -338,16 +445,8 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract, resear
         >
           {isSubmitted ? "Đã nộp Abstract" : submitLoading ? "Đang nộp..." : "Nộp Abstract"}
         </button>
-        {/* <button
-                    onClick={handleSubmitAbstractForm}
-                    disabled={!selectedFile || !paperId || submitLoading}
-                    className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition"
-                >
-                    {submitLoading ? "Đang nộp..." : "Nộp Abstract"}
-                </button> */}
       </div>
-
-      {/* Error Messages */}
+      
       {submitAbstractError && (
         <div className="bg-red-900/20 border border-red-700 rounded-xl p-4">
           <p className="text-red-400 text-sm">
@@ -362,7 +461,7 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract, resear
             Lỗi tải danh sách: {customersError}
           </p>
         </div>
-      )}
+      )} */}
 
       <Dialog open={isDialogOpen} as="div" className="relative z-50" onClose={setIsDialogOpen}>
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" aria-hidden="true" />

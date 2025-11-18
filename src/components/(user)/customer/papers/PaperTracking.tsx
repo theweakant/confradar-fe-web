@@ -10,7 +10,8 @@ import RevisionPhase from "./RevisionPhase";
 import CameraReadyPhase from "./CameraReadyPhase";
 import { usePaperCustomer } from "@/redux/hooks/usePaper";
 import type { PaperPhase, PaperDetailResponse } from "@/types/paper.type";
-import { stages4Step } from "@/helper/paper";
+import { steps } from "@/helper/paper";
+import PaperStepIndicator from "@/components/molecules/PaperStepIndicator";
 
 const PaperTracking = () => {
   const [currentStage, setCurrentStage] = useState<number>(1);
@@ -68,18 +69,65 @@ const PaperTracking = () => {
       //   (phase: PaperPhase) => phase.paperPhaseId === paperDetail.currentPhase.paperPhaseId
       // );
 
-      const currentPhaseIndex = stages4Step.findIndex(
+      const currentPhaseIndex = steps.findIndex(
         (obj) =>
           obj.label.toLowerCase() ===
           paperDetail.currentPhase!.phaseName?.toLowerCase(),
       );
 
       if (currentPhaseIndex !== -1) {
-        setCurrentStage(currentPhaseIndex + 1);
-        setMaxReachedStage(currentPhaseIndex + 1);
+        setCurrentStage(currentPhaseIndex);
+        setMaxReachedStage(currentPhaseIndex);
       }
     }
   }, [paperPhases, paperDetail]);
+
+  const hiddenStepIndexes = React.useMemo(() => {
+    const hidden: number[] = [];
+
+    if (paperDetail?.fullPaper?.reviewStatus?.toLowerCase() === 'accepted') {
+      hidden.push(2);
+    }
+
+    return hidden;
+  }, [paperDetail?.fullPaper?.reviewStatus]);
+
+  const { completedStepIndexes, failedStepIndexes } = React.useMemo(() => {
+    const completed: number[] = [];
+    const failed: number[] = [];
+
+    if (!paperDetail) return { completedStepIndexes: completed, failedStepIndexes: failed };
+
+    if (paperDetail.abstract?.status?.toLowerCase() === 'accepted') {
+      completed.push(0);
+    } else if (paperDetail.abstract?.status?.toLowerCase() === 'rejected') {
+      failed.push(0);
+    }
+
+    const fullPaperStatus = paperDetail.fullPaper?.reviewStatus?.toLowerCase();
+
+    if (fullPaperStatus === "accepted" || fullPaperStatus === "revise") {
+      completed.push(1);
+    } else if (fullPaperStatus === 'rejected') {
+      failed.push(1);
+    }
+
+    if (paperDetail.revisionPaper?.overallStatus?.toLowerCase() === 'accepted') {
+      completed.push(2);
+    } else if (paperDetail.revisionPaper?.overallStatus?.toLowerCase() === 'rejected') {
+      failed.push(2);
+    }
+
+    if (paperDetail.cameraReady?.status?.toLowerCase() === 'accepted') {
+      completed.push(3);
+    } else if (paperDetail.cameraReady?.status?.toLowerCase() === 'rejected') {
+      failed.push(3);
+    }
+
+    return { completedStepIndexes: completed, failedStepIndexes: failed };
+  }, [paperDetail]);
+
+  const maxStageAllowed = failedStepIndexes.length > 0 ? failedStepIndexes[0] + 1 : 4;
 
   // const stages = [
   //   { id: 1, label: "Abstract" },
@@ -120,61 +168,7 @@ const PaperTracking = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      {/* <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold">Theo dõi bài báo</h1>
-            <p className="text-gray-400 text-sm mt-1">Quản lý tiến độ và trạng thái bài báo của bạn</p>
-          </div>
-          <button className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-            Tiếp tục theo dõi →
-          </button>
-        </div>
-      </header> */}
-
       <div className="flex">
-        {/* Sidebar */}
-        {/* <aside className="w-64 bg-gray-800 border-r border-gray-700 min-h-screen">
-          <nav className="p-4">
-            <div className="space-y-2">
-              <a href="#" className="flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg">
-                <span className="mr-3">📊</span>
-                Dashboard
-              </a>
-              <a href="#" className="flex items-center px-3 py-2 text-gray-300 hover:bg-gray-700 rounded-lg">
-                <span className="mr-3">📝</span>
-                Bài báo của tôi
-              </a>
-              <a href="#" className="flex items-center px-3 py-2 text-gray-300 hover:bg-gray-700 rounded-lg">
-                <span className="mr-3">👥</span>
-                Reviewers
-              </a>
-              <a href="#" className="flex items-center px-3 py-2 text-gray-300 hover:bg-gray-700 rounded-lg">
-                <span className="mr-3">📅</span>
-                Lịch trình
-              </a>
-              <a href="#" className="flex items-center px-3 py-2 text-gray-300 hover:bg-gray-700 rounded-lg">
-                <span className="mr-3">💬</span>
-                Phản hồi
-              </a>
-            </div>
-
-            <div className="mt-8">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Báo cáo</h3>
-              <div className="space-y-2">
-                <a href="#" className="flex items-center px-3 py-2 text-gray-300 hover:bg-gray-700 rounded-lg">
-                  <span className="mr-3">📈</span>
-                  Tiến độ submission
-                </a>
-                <a href="#" className="flex items-center px-3 py-2 text-gray-300 hover:bg-gray-700 rounded-lg">
-                  <span className="mr-3">📋</span>
-                  Kế hoạch hành động
-                </a>
-              </div>
-            </div>
-          </nav>
-        </aside> */}
-
         <main className="flex-1 p-6">
           <div className="max-w-7xl mx-auto">
             <div className="mb-8">
@@ -240,6 +234,108 @@ const PaperTracking = () => {
               </div>
             )}
 
+            {/* Paper Overview */}
+            {!paperPhasesLoading &&
+              !isLoadingPaperDetail &&
+              !paperPhasesError &&
+              !paperDetailError &&
+              paperDetail && (
+                <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-xl p-6 my-8 shadow-lg">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                      <span className="text-blue-400">📄</span>
+                      Thông tin bài báo
+                    </h2>
+                    {paperDetail.currentPhase && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-400 font-medium">Giai đoạn hiện tại:</span>
+                        <span className="px-3 py-1 bg-blue-600/20 border border-blue-500/30 rounded-full text-blue-400 text-sm font-medium">
+                          {paperDetail.currentPhase.phaseName || "Chưa xác định"}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Left Column */}
+                    <div className="space-y-4">
+                      <div className="bg-gray-700/50 rounded-lg p-4">
+                        <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Paper ID</p>
+                        <p className="text-white font-mono text-lg">{paperDetail.paperId}</p>
+                      </div>
+
+                      {paperDetail.title && (
+                        <div className="bg-gray-700/50 rounded-lg p-4">
+                          <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Tiêu đề</p>
+                          <p className="text-white font-medium">{paperDetail.title}</p>
+                        </div>
+                      )}
+
+                      {paperDetail.created && (
+                        <div className="bg-gray-700/50 rounded-lg p-4">
+                          <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Ngày tạo</p>
+                          <p className="text-white">
+                            {new Date(paperDetail.created).toLocaleDateString("vi-VN", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Right Column */}
+                    <div className="space-y-4">
+                      {paperDetail.rootAuthor && (
+                        <div className="bg-gray-700/50 rounded-lg p-4">
+                          <p className="text-gray-400 text-xs uppercase tracking-wider mb-2">Tác giả chính</p>
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">
+                              {paperDetail.rootAuthor.fullName?.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="text-white font-medium">{paperDetail.rootAuthor.fullName}</p>
+                              {paperDetail.rootAuthor.userId && (
+                                <p className="text-gray-400 text-sm">Mã tài khoản: {paperDetail.rootAuthor.userId}</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {paperDetail.coAuthors && paperDetail.coAuthors.length > 0 && (
+                        <div className="bg-gray-700/50 rounded-lg p-4">
+                          <p className="text-gray-400 text-xs uppercase tracking-wider mb-2">
+                            Đồng tác giả ({paperDetail.coAuthors.length})
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {paperDetail.coAuthors.map((author) => (
+                              <div
+                                key={author.userId}
+                                className="px-3 py-1 bg-gray-600/50 rounded-full text-sm text-gray-200 flex items-center gap-2"
+                              >
+                                <span className="w-6 h-6 rounded-full bg-gray-500 flex items-center justify-center text-xs font-semibold">
+                                  {author.fullName?.charAt(0).toUpperCase()}
+                                </span>
+                                {author.fullName}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {paperDetail.description && (
+                    <div className="mt-6 bg-gray-700/30 rounded-lg p-4 border-l-4 border-blue-500">
+                      <p className="text-gray-400 text-xs uppercase tracking-wider mb-2">Mô tả</p>
+                      <p className="text-gray-200 leading-relaxed">{paperDetail.description}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
             {!paperPhasesLoading &&
               !isLoadingPaperDetail &&
               paperPhases.length > 0 && (
@@ -249,59 +345,22 @@ const PaperTracking = () => {
                   </h3>
 
                   <div className="px-6">
-                    <Slider
-                      min={1}
-                      max={stages4Step.length}
-                      step={1}
-                      marks={stages4Step.reduce(
-                        (acc, stage) => {
-                          acc[stage.id] = (
-                            <span className="text-xs text-gray-300">
-                              {stage.label}
-                            </span>
-                          );
-                          return acc;
-                        },
-                        {} as Record<number, React.ReactNode>,
-                      )}
-                      value={currentStage}
-                      onBeforeChange={(value) => {
-                        if (typeof value !== "number") return;
 
-                        if (value > maxReachedStage) {
-                          alert("Bạn không thể bỏ qua giai đoạn hiện tại.");
-                          return;
-                        }
-
-                        setCurrentStage(value);
-                      }}
-                      // onChange={(value) => {
-                      //   if (typeof value === 'number') {
-                      //     // 🔹 Chỉ cho phép chọn giai đoạn hiện tại hoặc trước đó
-                      //     if (value <= currentStage) {
-                      //       setCurrentStage(value);
-                      //     }
-                      //   }
-                      // }}
-                      // onChange={(value) => {
-                      //   if (typeof value === 'number') setCurrentStage(value);
-                      // }}
-                      trackStyle={[{ backgroundColor: "#2563eb", height: 8 }]}
-                      handleStyle={{
-                        borderColor: "#3b82f6",
-                        height: 20,
-                        width: 20,
-                        marginTop: -9,
-                        backgroundColor: "#60a5fa",
-                      }}
-                      railStyle={{ backgroundColor: "#374151", height: 8 }}
+                    <PaperStepIndicator
+                      steps={steps}
+                      currentStep={currentStage}
+                      maxReachedStep={maxReachedStage}
+                      onStepChange={(stepIndex) => setCurrentStage(stepIndex)}
+                      hiddenStepIndexes={hiddenStepIndexes}
+                      completedStepIndexes={completedStepIndexes}
+                      failedStepIndexes={failedStepIndexes}
                     />
                   </div>
 
                   <div className="mt-4 text-sm text-gray-400 text-center">
                     Giai đoạn hiện tại:{" "}
                     <span className="text-blue-400 font-semibold">
-                      {stages4Step.find((s) => s.id === currentStage)?.label}
+                      {steps[currentStage]?.label}
                     </span>
                     {paperDetail?.currentPhase && (
                       <span className="text-gray-500 ml-2">
@@ -312,79 +371,89 @@ const PaperTracking = () => {
                 </div>
               )}
 
-            {/* Paper Overview */}
+            {/* Paper Phases */}
             {!paperPhasesLoading &&
               !isLoadingPaperDetail &&
               !paperPhasesError &&
               !paperDetailError &&
-              paperDetail && (
-                <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 mt-8">
-                  <h2 className="text-xl font-bold mb-4 text-white">
-                    Thông tin tổng quan bài báo
-                  </h2>
-                  <div className="space-y-3">
-                    <p className="text-gray-300">
-                      <span className="font-medium text-white">Paper ID:</span>{" "}
-                      {paperDetail.paperId}
-                    </p>
-                    {paperDetail.title && (
-                      <p className="text-gray-300">
-                        <span className="font-medium text-white">Tiêu đề:</span>{" "}
-                        {paperDetail.title}
+              paperPhases.length > 0 && (
+                <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 mt-8">
+
+                  {failedStepIndexes.length > 0 && (
+                    <div className="bg-red-900/20 border border-red-700 rounded-xl p-4 mb-6 text-center">
+                      <p className="text-red-400 font-semibold">
+                        Bài báo của bạn đã bị từ chối ở giai đoạn:{" "}
+                        {steps[failedStepIndexes[0]]?.label || "Không xác định"}.
                       </p>
-                    )}
-                    {paperDetail.description && (
-                      <p className="text-gray-300">
-                        <span className="font-medium text-white">Mô tả:</span>{" "}
-                        {paperDetail.description}
+                      <p className="text-red-300 text-sm">
+                        Bạn không thể tiếp tục nộp các giai đoạn sau.
                       </p>
-                    )}
-                    {paperDetail.currentPhase && (
-                      <p className="text-gray-300">
-                        <span className="font-medium text-white">
-                          Giai đoạn hiện tại:
-                        </span>{" "}
-                        {paperDetail.currentPhase.phaseName || "Chưa xác định"}
-                      </p>
-                    )}
-                    {paperDetail.rootAuthor && (
-                      <p className="text-gray-300">
-                        <span className="font-medium text-white">
-                          Tác giả chính:
-                        </span>{" "}
-                        {paperDetail.rootAuthor.fullName}
-                      </p>
-                    )}
-                    {paperDetail.coAuthors &&
-                      paperDetail.coAuthors.length > 0 && (
-                        <div className="text-gray-300">
-                          <span className="font-medium text-white">
-                            Đồng tác giả:
-                          </span>
-                          <ul className="ml-4 mt-1">
-                            {paperDetail.coAuthors.map((author, index) => (
-                              <li key={author.userId} className="text-sm">
-                                • {author.fullName}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    {paperDetail.created && (
-                      <p className="text-gray-300">
-                        <span className="font-medium text-white">
-                          Ngày tạo:
-                        </span>{" "}
-                        {new Date(paperDetail.created).toLocaleDateString(
-                          "vi-VN",
-                        )}
-                      </p>
-                    )}
-                  </div>
+                    </div>
+                  )}
+
+                  {/* Render phase nếu currentStage <= maxStageAllowed */}
+                  {currentStage === 0 && currentStage <= maxStageAllowed && (
+                    <AbstractPhase
+                      paperId={paperId}
+                      abstract={paperDetail?.abstract || null}
+                      researchPhase={paperDetail?.researchPhase}
+                    />
+                  )}
+                  {currentStage === 1 && currentStage <= maxStageAllowed && (
+                    <FullPaperPhase
+                      paperId={paperId}
+                      fullPaper={paperDetail?.fullPaper || null}
+                      researchPhase={paperDetail?.researchPhase}
+                    />
+                  )}
+                  {currentStage === 2 && currentStage <= maxStageAllowed && (
+                    <RevisionPhase
+                      paperId={paperId}
+                      revisionPaper={paperDetail?.revisionPaper || null}
+                      researchPhase={paperDetail?.researchPhase}
+                      revisionDeadline={paperDetail?.revisionDeadline}
+                    />
+                  )}
+                  {currentStage === 3 && currentStage <= maxStageAllowed && (
+                    <CameraReadyPhase
+                      paperId={paperId}
+                      cameraReady={paperDetail?.cameraReady || null}
+                      researchPhase={paperDetail?.researchPhase}
+                    />
+                  )}
+                  {/* {currentStage === 1 && currentStage <= maxStageAllowed && (
+                    <AbstractPhase
+                      paperId={paperId}
+                      abstract={paperDetail?.abstract || null}
+                      researchPhase={paperDetail?.researchPhase}
+                    />
+                  )}
+                  {currentStage === 2 && currentStage <= maxStageAllowed && (
+                    <FullPaperPhase
+                      paperId={paperId}
+                      fullPaper={paperDetail?.fullPaper || null}
+                      researchPhase={paperDetail?.researchPhase}
+                    />
+                  )}
+                  {currentStage === 3 && currentStage <= maxStageAllowed && (
+                    <RevisionPhase
+                      paperId={paperId}
+                      revisionPaper={paperDetail?.revisionPaper || null}
+                      researchPhase={paperDetail?.researchPhase}
+                      revisionDeadline={paperDetail?.revisionDeadline}
+                    />
+                  )}
+                  {currentStage === 4 && currentStage <= maxStageAllowed && (
+                    <CameraReadyPhase
+                      paperId={paperId}
+                      cameraReady={paperDetail?.cameraReady || null}
+                      researchPhase={paperDetail?.researchPhase}
+                    />
+                  )} */}
                 </div>
               )}
 
-            {!paperPhasesLoading &&
+            {/* {!paperPhasesLoading &&
               !isLoadingPaperDetail &&
               !paperPhasesError &&
               !paperDetailError &&
@@ -442,7 +511,7 @@ const PaperTracking = () => {
                     </div>
                   )}
                 </div>
-              )}
+              )} */}
           </div>
         </main>
       </div>

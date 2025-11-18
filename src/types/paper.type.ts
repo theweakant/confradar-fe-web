@@ -194,6 +194,21 @@ export interface FullPaperForReviewer {
   fullPaperReviews: FullPaperReview[];
 }
 
+export interface PaperDetailWrapperForReviewer {
+  paperId: string;
+  conferenceId: string;
+  conferenceName: string;
+  conferenceBannerImageUrl: string;
+  paperPhaseId: string;
+  paperPhaseName: string;
+  researchConferencePhaseId: string;
+  createdAt: string;
+  paperTitle: string;
+  paperDescription: string;
+
+  paperDetail: PaperDetailForReviewer;
+}
+
 export interface PaperDetailForReviewer {
   isHeadReviewer: boolean;
   fullPaper: FullPaperForReviewer | null;
@@ -384,31 +399,32 @@ export interface Abstract {
   abstractId: string;
   title?: string;
   description?: string;
-  globalStatusId?: string | null;
+  // globalStatusId?: string | null;
+  status?: string | null;
   fileUrl?: string | null;
   created?: string;
-  reviewedAt?: string;
+  updated?: string;
 }
 
 export interface FullPaper {
   fullPaperId: string;
   title?: string;
   description?: string;
-  reviewStatusId?: string | null;
+  reviewStatus?: string | null;
   fileUrl?: string | null;
   created?: string;
-  reviewedAt?: string;
+  updated?: string;
 }
 
 export interface RevisionPaper {
   revisionPaperId: string;
-  title?: string;
-  description?: string;
+  // title?: string;
+  // description?: string;
   revisionRound?: number | null;
   overallStatus?: string | null;
   submissions: RevisionSubmission[];
   created?: string;
-  reviewedAt?: string;
+  updated?: string;
   // reviews: RevisionReview[];
   // revisionPaperId: string;
   // revisionRound?: number | null;
@@ -420,6 +436,7 @@ export interface RevisionSubmission {
   title?: string;
   description?: string;
   fileUrl: string;
+  revisionRoundId?: string;
   // revisionDeadline: {
   //   roundNumher: number;
   //   deadline: string;
@@ -455,10 +472,10 @@ export interface CameraReady {
   cameraReadyId: string;
   title?: string;
   description?: string;
-  globalStatusId?: string;
+  status?: string;
   fileUrl?: string;
   created?: string;
-  reviewedAt?: string;
+  updated?: string;
 }
 
 export interface CreateAbstractRequest {

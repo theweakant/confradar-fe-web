@@ -27,6 +27,7 @@ import {
   AcceptedPaper,
   AssignPresenterRequest
 
+  PaperDetailWrapperForReviewer,
 } from "@/types/paper.type";
 
 import type { ApiResponse } from "@/types/api.type";
@@ -127,7 +128,7 @@ export const paperApi = createApi({
     }),
 
     getPaperDetailForReviewer: builder.query<
-      ApiResponse<PaperDetailForReviewer>,
+      ApiResponse<PaperDetailWrapperForReviewer>,
       string
     >({
       query: (paperId) => ({
