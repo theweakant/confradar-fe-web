@@ -34,31 +34,33 @@ const PaperTracking = () => {
     loading: paperPhasesLoading,
   } = usePaperCustomer();
 
+  const loadPaperDetail = async () => {
+    if (!paperId) return;
+
+    setIsLoadingPaperDetail(true);
+    setPaperDetailError(null);
+
+    try {
+      const response = await fetchPaperDetail(paperId);
+      setPaperDetail(response.data);
+    } catch (error: unknown) {
+      // Handle API error
+      // if (error?.data?.Message) {
+      //   setPaperDetailError(error.data.Message);
+      // } else if (error?.data?.Errors) {
+      //   const errors = Object.values(error.data.Errors);
+      //   setPaperDetailError(errors.length > 0 ? errors[0] as string : "Có lỗi xảy ra khi tải chi tiết bài báo");
+      // } else {
+      //   setPaperDetailError("Có lỗi xảy ra khi tải chi tiết bài báo");
+      // }
+      setPaperDetailError("Có lỗi xảy ra khi tải chi tiết bài báo");
+    } finally {
+      setIsLoadingPaperDetail(false);
+    }
+  };
+
   useEffect(() => {
-    const loadPaperDetail = async () => {
-      if (!paperId) return;
 
-      setIsLoadingPaperDetail(true);
-      setPaperDetailError(null);
-
-      try {
-        const response = await fetchPaperDetail(paperId);
-        setPaperDetail(response.data);
-      } catch (error: unknown) {
-        // Handle API error
-        // if (error?.data?.Message) {
-        //   setPaperDetailError(error.data.Message);
-        // } else if (error?.data?.Errors) {
-        //   const errors = Object.values(error.data.Errors);
-        //   setPaperDetailError(errors.length > 0 ? errors[0] as string : "Có lỗi xảy ra khi tải chi tiết bài báo");
-        // } else {
-        //   setPaperDetailError("Có lỗi xảy ra khi tải chi tiết bài báo");
-        // }
-        setPaperDetailError("Có lỗi xảy ra khi tải chi tiết bài báo");
-      } finally {
-        setIsLoadingPaperDetail(false);
-      }
-    };
 
     loadPaperDetail();
   }, [paperId, fetchPaperDetail]);
@@ -397,6 +399,7 @@ const PaperTracking = () => {
                       paperId={paperId}
                       abstract={paperDetail?.abstract || null}
                       researchPhase={paperDetail?.researchPhase}
+                      onSubmittedAbstract={loadPaperDetail}
                     />
                   )}
                   {currentStage === 1 && currentStage <= maxStageAllowed && (
@@ -404,6 +407,7 @@ const PaperTracking = () => {
                       paperId={paperId}
                       fullPaper={paperDetail?.fullPaper || null}
                       researchPhase={paperDetail?.researchPhase}
+                      onSubmittedFullPaper={loadPaperDetail}
                     />
                   )}
                   {currentStage === 2 && currentStage <= maxStageAllowed && (
@@ -412,6 +416,7 @@ const PaperTracking = () => {
                       revisionPaper={paperDetail?.revisionPaper || null}
                       researchPhase={paperDetail?.researchPhase}
                       revisionDeadline={paperDetail?.revisionDeadline}
+                      onSubmittedRevision={loadPaperDetail}
                     />
                   )}
                   {currentStage === 3 && currentStage <= maxStageAllowed && (
@@ -419,6 +424,7 @@ const PaperTracking = () => {
                       paperId={paperId}
                       cameraReady={paperDetail?.cameraReady || null}
                       researchPhase={paperDetail?.researchPhase}
+                      onSubmittedCameraReady={loadPaperDetail}
                     />
                   )}
                   {/* {currentStage === 1 && currentStage <= maxStageAllowed && (
