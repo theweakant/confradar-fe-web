@@ -13,7 +13,7 @@ import type { AcceptedPaper } from "@/types/paper.type";
 import { DatesSetArg } from '@fullcalendar/core';
 import RoomCard from "./RoomCard";
 import RoomDetailDialog from "./RoomDetailDialog";
-import PaperCard from "./Paper/PaperCard"; 
+import PaperCard from "../SessionCalendar/Paper/PaperCard"; 
 
 interface RoomCalendarProps {
   conferenceId?: string;

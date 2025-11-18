@@ -46,7 +46,6 @@ export function SponsorsMediaTab({ conference }: SponsorsMediaTabProps) {
                   <h4 className="font-bold text-gray-900 text-center mb-2">
                     {sponsor.name}
                   </h4>
-                  <InfoField label="Sponsor ID" value={sponsor.sponsorId} />
                 </div>
               )
             )}
@@ -81,7 +80,6 @@ export function SponsorsMediaTab({ conference }: SponsorsMediaTabProps) {
                       className="object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                   </div>
-                  <InfoField label="Media ID" value={media.mediaId} />
                 </div>
               )
             )}
@@ -94,19 +92,3 @@ export function SponsorsMediaTab({ conference }: SponsorsMediaTabProps) {
   );
 }
 
-// --- Reusable Helper ---
-interface InfoFieldProps {
-  label: string;
-  value: string | number | boolean | null | undefined;
-}
-
-function InfoField({ label, value }: InfoFieldProps) {
-  return (
-    <div>
-      <p className="text-xs font-medium text-gray-500 mb-1">{label}</p>
-      <p className="text-sm text-gray-900 font-semibold break-words">
-        {value != null && value !== "" ? String(value) : "N/A"}
-      </p>
-    </div>
-  );
-}

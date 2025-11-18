@@ -51,7 +51,7 @@ export const TAB_GROUPS: TabGroup[] = [
     tabs: [
       { 
         id: "research-info",
-        label: "Research Info",
+        label: "Thông tin",
         icon: BookOpen,
         conferenceType: "research",
       },
@@ -63,7 +63,7 @@ export const TAB_GROUPS: TabGroup[] = [
       },
       {
         id: "refund-policy",
-        label: "Hoàn trả & Chính sách",
+        label: "Chính sách",
         icon: ShieldCheck,
         conferenceType: "all",
       },
@@ -75,7 +75,7 @@ export const TAB_GROUPS: TabGroup[] = [
       },
       {
         id: "research-materials",
-        label: "Tài liệu nghiên cứu",
+        label: "Tài liệu",
         icon: FileText,
         conferenceType: "research",
       },
@@ -94,7 +94,7 @@ export const TAB_GROUPS: TabGroup[] = [
     tabs: [
       {
         id: "refund-requests",
-        label: "Yêu cầu hoàn vé",
+        label: "Hoàn vé",
         icon: RefreshCw,
         conferenceType: "all",
       },
@@ -113,7 +113,7 @@ export const TAB_GROUPS: TabGroup[] = [
       },
       {
         id: "research-timeline",
-        label: "Research Timeline",
+        label: "Timeline",
         icon: Clock,
         conferenceType: "research",
       },
@@ -127,7 +127,6 @@ export const TAB_GROUPS: TabGroup[] = [
   },
 ];
 
-// Helper function to get tabs based on conference type
 export function getFilteredTabs(
   groupId: "detail" | "action",
   conferenceType: "technical" | "research" | null

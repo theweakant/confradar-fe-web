@@ -27,7 +27,7 @@ import { SponsorForm } from "@/components/molecules/Conference/ConferenceStep/fo
 import { BasicInfoForm } from "@/components/molecules/Conference/ConferenceStep/forms/BasicInfoForm";
 import { PriceForm } from "@/components/molecules/Conference/ConferenceStep/forms/PriceForm";
 import { SessionForm } from "@/components/molecules/Conference/ConferenceStep/forms/SessionForm";
-import  RoomCalendar  from "@/components/molecules/Calendar/Room/RoomCalendar";
+import  RoomCalendar  from "@/components/molecules/Calendar/RoomCalendar/RoomCalendar";
 
 // Hooks
 import {

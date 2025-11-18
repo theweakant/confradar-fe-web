@@ -20,7 +20,7 @@ import { useGetAllConferenceStatusesQuery } from "@/redux/services/status.servic
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 
-import RoomCalendar from "@/components/molecules/Calendar/Room/RoomCalendar";
+import RoomCalendar from "@/components/molecules/Calendar/RoomCalendar/RoomCalendar";
 
 
 export default function ManageConference() {
