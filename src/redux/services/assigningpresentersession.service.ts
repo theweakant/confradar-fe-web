@@ -27,9 +27,6 @@ export const presenterApi = createApi({
                 url: endpoint.ASSIGNINGPRESENTERSESSION.REQUEST_CHANGE_SESSION,
                 method: 'POST',
                 body,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
             }),
         }),
     }),

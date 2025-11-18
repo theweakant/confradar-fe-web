@@ -1,5 +1,6 @@
 import {
   useGetOwnPaidTicketsQuery,
+  useLazyGetOwnPaidTicketsByConferenceQuery,
   useLazyGetOwnPaidTicketsQuery,
   useRefundTicketMutation,
 } from "@/redux/services/ticket.service";
@@ -36,9 +37,15 @@ export const useTicket = (filters?: {
     },
   ] = useRefundTicketMutation();
 
+  const [
+    getTicketsByConference,
+    { isLoading: lazyTicketsByConfLoading, error: lazyTicketsByConfError },
+  ] = useLazyGetOwnPaidTicketsByConferenceQuery();
+
   const ticketsError = parseApiError<string>(ticketsRawError);
   const lazyTicketsError = parseApiError<string>(lazyTicketsRawError);
   const refundParsedError = parseApiError<string>(refundError);
+  const lazyTicketsByConfParsedError = parseApiError<string>(lazyTicketsByConfError);
 
   const fetchTickets = async (params?: typeof filters) => {
     try {
@@ -58,6 +65,15 @@ export const useTicket = (filters?: {
     }
   };
 
+  const fetchTicketsByConference = async (conferenceId: string | number, params?: typeof filters) => {
+    try {
+      const result = await getTicketsByConference({ conferenceId, ...params }).unwrap();
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  };
+
   return {
     // Data
     tickets: ticketsResponse?.data?.items ?? [],
@@ -66,15 +82,18 @@ export const useTicket = (filters?: {
 
     // Methods
     fetchTickets,
+    fetchTicketsByConference,
     refetchTickets,
     handleRefundTicket,
 
     // Loading states
     loading: ticketsLoading || lazyTicketsLoading,
     refunding,
+    loadingByConference: lazyTicketsByConfLoading,
 
     // Errors
     ticketsError: ticketsError || lazyTicketsError,
     refundError: refundParsedError,
+    ticketsByConferenceError: lazyTicketsByConfParsedError,
   };
 };

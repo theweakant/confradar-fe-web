@@ -88,7 +88,7 @@ export interface ConferenceBasicForm {
 
   contractURL?: File | string | null;
   commission?: number;
-  conferenceStatusId?:string
+  conferenceStatusId?: string
 }
 
 export interface ConferenceBasicResponse {
@@ -114,7 +114,7 @@ export interface ConferenceBasicResponse {
 
 //PRICE STEP
 export interface RefundInPhase {
-  refundPolicyId?:string
+  refundPolicyId?: string
   percentRefund: number;
   refundDeadline: string;
 }
@@ -127,7 +127,7 @@ export interface Phase {
   endDate: string;
   totalslot: number;
   refundInPhase: RefundInPhase[] | RefundPolicyResponse[];
-  forWaitlist?:boolean
+  forWaitlist?: boolean
 }
 
 export interface Ticket {
@@ -581,7 +581,7 @@ export interface ConferencePricePhaseResponse {
   totalSlot?: number;
   availableSlot?: number;
   refundPolicies?: RefundPolicyResponse[];
-  forWaitlist?:boolean;
+  forWaitlist?: boolean;
 }
 
 export interface TechnicalConferenceSessionResponse {
@@ -778,4 +778,29 @@ export interface SessionDetailForScheduleResponse {
   destinationStreet?: string;
   cityId?: string;
   cityName?: string;
+
+  presenterAuthor?: PresenterAuthor[];
+}
+
+export interface PresenterAuthor {
+  conferenceSessionId: string;
+  paperId: string;
+  assignedAt?: string;
+  conferenceId?: string;
+  paperPhaseId?: string;
+  paperPhaseName?: string;
+  researchConferencePhaseId?: string;
+  createdAt?: string;
+  paperTitle?: string;
+  paperDescription?: string;
+  paperAuthor?: PaperAuthor[];
+}
+
+export interface PaperAuthor {
+  userId: string;
+  fullName: string;
+  avatarUrl?: string | null;
+  paperId: string;
+  isPresenter?: boolean;
+  isRootAuthor?: boolean;
 }

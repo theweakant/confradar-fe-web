@@ -161,6 +161,7 @@ const ConferenceCard: React.FC<ConferenceCardProps> = ({
             <SessionDetailDialog
                 open={sessionDetailOpen}
                 session={internalSession}
+                sessionForChange={conf?.sessions || []}
                 onClose={handleCloseAll}
                 onBack={handleBackToList}
             />

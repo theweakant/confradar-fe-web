@@ -11,6 +11,9 @@ import {
     ConferenceDetailForScheduleResponse,
     SessionDetailForScheduleResponse,
 } from "@/types/conference.type";
+import { useAppSelector } from "@/redux/hooks/hooks";
+import { RootState } from "@/redux/store";
+import { checkUserRole } from "@/helper/conference";
 
 interface SessionsListDialogProps {
     open: boolean;
@@ -25,6 +28,8 @@ const SessionsListDialog: React.FC<SessionsListDialogProps> = ({
     onClose,
     onSessionSelect,
 }) => {
+    const user = useAppSelector((state: RootState) => state.auth.user);
+
     const groupSessionsByDate = (
         sessions: SessionDetailForScheduleResponse[]
     ) => {
@@ -94,7 +99,11 @@ const SessionsListDialog: React.FC<SessionsListDialogProps> = ({
                                 </div>
 
                                 {/* Content */}
-                                <div className="max-h-[70vh] overflow-y-auto">
+                                <div className="max-h-[70vh] overflow-y-auto"
+                                    style={{
+                                        scrollbarWidth: "thin",
+                                        scrollbarColor: "rgba(96,165,250,0.7) transparent",
+                                    }}>
                                     {conference?.sessions && conference.sessions.length > 0 ? (
                                         Object.entries(groupSessionsByDate(conference.sessions)).map(
                                             ([date, sessions]) => (
@@ -104,7 +113,81 @@ const SessionsListDialog: React.FC<SessionsListDialogProps> = ({
                                                         {date}
                                                     </h4>
                                                     <div className="space-y-3">
-                                                        {sessions.map((session) => (
+                                                        {sessions.map((session) => {
+                                                            const userRole = checkUserRole(session, user);
+
+                                                            return (
+                                                                <div
+                                                                    key={session.conferenceSessionId}
+                                                                    onClick={() => onSessionSelect(session)}
+                                                                    className="bg-gray-700/50 hover:bg-gray-600/50 border border-gray-600 hover:border-blue-500 rounded-lg p-4 cursor-pointer transition-all duration-200 group"
+                                                                >
+                                                                    <div className="flex items-start justify-between gap-3">
+                                                                        <div className="flex-1 min-w-0">
+                                                                            <div className="flex items-center gap-2 mb-2">
+                                                                                <h5 className="font-medium text-white group-hover:text-blue-300 transition-colors">
+                                                                                    {session.title || "Untitled Session"}
+                                                                                </h5>
+                                                                                {/* Chỉ hiển thị label role khi có role */}
+                                                                                {(userRole.isRootAuthor || userRole.isPresenter) && (
+                                                                                    <span className="text-gray-300 text-xs italic">| Vai trò của bạn:</span>
+                                                                                )}
+
+                                                                                {userRole.isRootAuthor && (
+                                                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-600 text-white text-xs font-semibold rounded">
+                                                                                        👑 Tác giả gốc
+                                                                                    </span>
+                                                                                )}
+
+                                                                                {userRole.isPresenter && (
+                                                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-600 text-white text-xs font-semibold rounded">
+                                                                                        🎤 Diễn giả
+                                                                                    </span>
+                                                                                )}
+                                                                                {/* {userRole.isRootAuthor && (
+                                                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-600 text-white text-xs font-semibold rounded">
+                                                                                        👑Bạn là Tác giả gốc
+                                                                                    </span>
+                                                                                )}
+                                                                                {userRole.isPresenter && (
+                                                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-600 text-white text-xs font-semibold rounded">
+                                                                                        🎤 Diễn giả
+                                                                                    </span>
+                                                                                )} */}
+                                                                            </div>
+                                                                            {session.description && (
+                                                                                <p className="text-sm text-gray-400 mb-3 line-clamp-2">
+                                                                                    {session.description}
+                                                                                </p>
+                                                                            )}
+                                                                            <div className="flex flex-wrap gap-3 text-xs">
+                                                                                {session.startTime && session.endTime && (
+                                                                                    <div className="flex items-center gap-1 text-gray-300">
+                                                                                        <Clock className="w-3 h-3 text-blue-400" />
+                                                                                        {new Date(session.startTime).toLocaleTimeString("vi-VN", {
+                                                                                            hour: "2-digit",
+                                                                                            minute: "2-digit",
+                                                                                        })}{" "}
+                                                                                        -{" "}
+                                                                                        {new Date(session.endTime).toLocaleTimeString("vi-VN", {
+                                                                                            hour: "2-digit",
+                                                                                            minute: "2-digit",
+                                                                                        })}
+                                                                                    </div>
+                                                                                )}
+                                                                                {session.roomDisplayName && (
+                                                                                    <div className="flex items-center gap-1 text-gray-300">
+                                                                                        <MapPin className="w-3 h-3 text-green-400" />
+                                                                                        {session.roomDisplayName}
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                        {/* {sessions.map((session) => (
                                                             <div
                                                                 key={session.conferenceSessionId}
                                                                 onClick={() => onSessionSelect(session)}
@@ -149,7 +232,7 @@ const SessionsListDialog: React.FC<SessionsListDialogProps> = ({
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                        ))}
+                                                        ))} */}
                                                     </div>
                                                 </div>
                                             )
@@ -166,7 +249,7 @@ const SessionsListDialog: React.FC<SessionsListDialogProps> = ({
                     </div>
                 </div>
             </Dialog>
-        </Transition>
+        </Transition >
     );
 };
 

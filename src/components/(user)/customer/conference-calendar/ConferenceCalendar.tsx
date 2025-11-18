@@ -12,9 +12,16 @@ import type {
 } from "@/types/conference.type";
 import ConferenceCard from "./ConferenceCard";
 import SessionDetailDialog from "./SessionDetailDialog";
+import { useAppSelector } from "@/redux/hooks/hooks";
+import { RootState } from "@/redux/store";
+import { checkUserRole } from "@/helper/conference";
 
 const ConferenceCalendar: React.FC = () => {
-  const [selectedConference, setSelectedConference] = useState<string | null>(
+  const user = useAppSelector(
+    (state: RootState) => state.auth.user,
+  );
+
+  const [selectedConference, setSelectedConference] = useState<ConferenceDetailForScheduleResponse | null>(
     null
   );
   const [sessionDetailOpen, setSessionDetailOpen] = useState(false);
@@ -34,6 +41,38 @@ const ConferenceCalendar: React.FC = () => {
   useEffect(() => {
     fetchOwnConferencesForSchedule();
   }, [fetchOwnConferencesForSchedule]);
+
+  const getSessionColor = (
+    category?: string,
+    userRole?: { isRootAuthor: boolean; isPresenter: boolean }
+  ): { backgroundColor: string; borderColor: string } => {
+    // Nếu user là root author - màu vàng/gold
+    if (userRole?.isRootAuthor) {
+      return {
+        backgroundColor: "#f59e0b", // amber-500
+        borderColor: "#d97706", // amber-600
+      };
+    }
+
+    // Nếu user là presenter - màu xanh lá
+    if (userRole?.isPresenter) {
+      return {
+        backgroundColor: "#10b981", // emerald-500
+        borderColor: "#059669", // emerald-600
+      };
+    }
+
+    // Màu mặc định theo category
+    const colors: Record<string, { backgroundColor: string; borderColor: string }> = {
+      Technology: { backgroundColor: "#3b82f6", borderColor: "#2563eb" },
+      Blockchain: { backgroundColor: "#8b5cf6", borderColor: "#7c3aed" },
+      DevOps: { backgroundColor: "#06b6d4", borderColor: "#0891b2" },
+      Design: { backgroundColor: "#ec4899", borderColor: "#db2777" },
+    };
+
+    return colors[category || ""] || { backgroundColor: "#64748b", borderColor: "#475569" };
+  };
+
 
   const getCategoryColor = (
     category?: string,
@@ -60,23 +99,56 @@ const ConferenceCalendar: React.FC = () => {
         conference: conf,
       },
     },
-    ...conf.sessions.map((session) => ({
-      id: session.conferenceSessionId,
-      title: session.title || "Untitled Session",
-      start: session.startTime,
-      end: session.endTime,
-      backgroundColor: getCategoryColor(conf.conferenceCategoryName, true),
-      borderColor: getCategoryColor(conf.conferenceCategoryName),
-      display: "block",
-      extendedProps: {
-        session: session,
-        conference: conf,
-      },
-    })),
+    ...conf.sessions.map((session) => {
+      const userRole = checkUserRole(session, user);
+      const colors = getSessionColor(conf.conferenceCategoryName, userRole);
+
+      return {
+        id: session.conferenceSessionId,
+        title: session.title || "Untitled Session",
+        start: session.startTime,
+        end: session.endTime,
+        backgroundColor: colors.backgroundColor,
+        borderColor: colors.borderColor,
+        display: "block",
+        extendedProps: {
+          session: session,
+          conference: conf,
+          userRole: userRole,
+        },
+      };
+    }),
   ]);
 
+  // const calendarEvents = (conferences || []).flatMap((conf) => [
+  //   {
+  //     id: conf.conferenceId,
+  //     title: conf.conferenceName || "Untitled Conference",
+  //     start: conf.startDate,
+  //     end: conf.endDate,
+  //     backgroundColor: getCategoryColor(conf.conferenceCategoryName),
+  //     borderColor: getCategoryColor(conf.conferenceCategoryName),
+  //     extendedProps: {
+  //       conference: conf,
+  //     },
+  //   },
+  //   ...conf.sessions.map((session) => ({
+  //     id: session.conferenceSessionId,
+  //     title: session.title || "Untitled Session",
+  //     start: session.startTime,
+  //     end: session.endTime,
+  //     backgroundColor: getCategoryColor(conf.conferenceCategoryName, true),
+  //     borderColor: getCategoryColor(conf.conferenceCategoryName),
+  //     display: "block",
+  //     extendedProps: {
+  //       session: session,
+  //       conference: conf,
+  //     },
+  //   })),
+  // ]);
+
   const handleConferenceClick = (conf: ConferenceDetailForScheduleResponse) => {
-    setSelectedConference(conf.conferenceId);
+    setSelectedConference(conf);
     const calendarApi = calendarRef.current?.getApi();
     if (calendarApi && conf.startDate) {
       calendarApi.gotoDate(conf.startDate);
@@ -163,7 +235,7 @@ const ConferenceCalendar: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-6">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto flex-1 flex flex-col">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-white mb-2">
             Lịch Hội nghị & Hội thảo
@@ -173,10 +245,10 @@ const ConferenceCalendar: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
           {/* Calendar Section */}
-          <div className="lg:col-span-2 bg-gray-800 rounded-lg p-6 shadow-xl">
-            <div className="calendar-container">
+          <div className="lg:col-span-2 bg-gray-800 rounded-lg p-6 shadow-xl flex flex-col h-full">
+            <div className="calendar-container flex-1 h-full">
               <FullCalendar
                 ref={calendarRef}
                 plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
@@ -206,7 +278,7 @@ const ConferenceCalendar: React.FC = () => {
                     }
                   }
                 }}
-                height="auto"
+                height="100%"
                 eventDisplay="block"
                 displayEventTime={true}
                 eventTimeFormat={{
@@ -216,6 +288,7 @@ const ConferenceCalendar: React.FC = () => {
                 }}
                 eventContent={(arg) => {
                   const session = arg.event.extendedProps.session;
+                  const userRole = arg.event.extendedProps.userRole;
                   const startTime = session?.startTime
                     ? new Date(session.startTime).toLocaleTimeString("vi-VN", {
                       hour: "2-digit",
@@ -224,17 +297,24 @@ const ConferenceCalendar: React.FC = () => {
                     })
                     : "";
 
-                  const endTime = session.endTime
+                  const endTime = session?.endTime
                     ? new Date(session.endTime).toLocaleTimeString("vi-VN", {
                       hour: "2-digit",
                       minute: "2-digit",
                       hour12: false,
                     })
                     : "";
+
                   return (
                     <div className="flex flex-col overflow-hidden text-ellipsis">
                       <span className="text-xs font-semibold text-white leading-snug">
                         {arg.event.title}
+                        {userRole?.isRootAuthor && (
+                          <span className="ml-1 text-[10px] bg-amber-700 px-1 rounded">👑</span>
+                        )}
+                        {userRole?.isPresenter && !userRole?.isRootAuthor && (
+                          <span className="ml-1 text-[10px] bg-emerald-700 px-1 rounded">🎤</span>
+                        )}
                       </span>
                       {(startTime && endTime) && (
                         <span className="text-[10px] text-gray-300">
@@ -244,6 +324,36 @@ const ConferenceCalendar: React.FC = () => {
                     </div>
                   );
                 }}
+                // eventContent={(arg) => {
+                //   const session = arg.event.extendedProps.session;
+                //   const startTime = session?.startTime
+                //     ? new Date(session.startTime).toLocaleTimeString("vi-VN", {
+                //       hour: "2-digit",
+                //       minute: "2-digit",
+                //       hour12: false,
+                //     })
+                //     : "";
+
+                //   const endTime = session?.endTime
+                //     ? new Date(session.endTime).toLocaleTimeString("vi-VN", {
+                //       hour: "2-digit",
+                //       minute: "2-digit",
+                //       hour12: false,
+                //     })
+                //     : "";
+                //   return (
+                //     <div className="flex flex-col overflow-hidden text-ellipsis">
+                //       <span className="text-xs font-semibold text-white leading-snug">
+                //         {arg.event.title}
+                //       </span>
+                //       {(startTime && endTime) && (
+                //         <span className="text-[10px] text-gray-300">
+                //           {startTime} - {endTime}
+                //         </span>
+                //       )}
+                //     </div>
+                //   );
+                // }}
                 eventClassNames={() => [
                   "transition-all",
                   "duration-200",
@@ -281,7 +391,7 @@ const ConferenceCalendar: React.FC = () => {
                 <ConferenceCard
                   key={conf.conferenceId}
                   conf={conf}
-                  selectedConference={selectedConference}
+                  selectedConference={selectedConference?.conferenceId}
                   onConferenceClick={handleConferenceClick}
                   onSessionNavigate={navigateToSession}
                 />
@@ -295,6 +405,7 @@ const ConferenceCalendar: React.FC = () => {
       <SessionDetailDialog
         open={sessionDetailOpen}
         session={selectedSession}
+        sessionForChange={selectedConference?.sessions ?? []}
         onClose={() => {
           setSessionDetailOpen(false);
           setSelectedSession(null);
