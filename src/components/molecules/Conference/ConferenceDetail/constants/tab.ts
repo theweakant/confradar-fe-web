@@ -46,9 +46,15 @@ export interface TabGroup {
 export const TAB_GROUPS: TabGroup[] = [
   {
     id: "detail",
-    label: "Detail",
+    label: "Tổng quan",
     icon: Info,
     tabs: [
+      { 
+        id: "research-info",
+        label: "Research Info",
+        icon: BookOpen,
+        conferenceType: "research",
+      },
       {
         id: "price",
         label: "Giá vé",
@@ -74,28 +80,16 @@ export const TAB_GROUPS: TabGroup[] = [
         conferenceType: "research",
       },
       {
-        id: "research-info",
-        label: "Research Info",
-        icon: BookOpen,
-        conferenceType: "research",
-      },
-      {
-        id: "research-timeline",
-        label: "Research Timeline",
-        icon: Clock,
+        id: "session",
+        label: "Session",
+        icon: Calendar,
         conferenceType: "all",
-      },
-      {
-        id: "paper-phase",
-        label: "Bài báo",
-        icon: FileText,
-        conferenceType: "research",
       },
     ],
   },
   {
     id: "action",
-    label: "Action",
+    label: "Quản lí",
     icon: Activity,
     tabs: [
       {
@@ -110,16 +104,23 @@ export const TAB_GROUPS: TabGroup[] = [
         icon: MessageCircle,
         conferenceType: "research",
       },
-      {
-        id: "session",
-        label: "Session",
-        icon: Calendar,
-        conferenceType: "all",
-      },
+
       {
         id: "paper-assignment",
         label: "Xếp bài báo",
         icon: ClipboardList,
+        conferenceType: "research",
+      },
+      {
+        id: "research-timeline",
+        label: "Research Timeline",
+        icon: Clock,
+        conferenceType: "research",
+      },
+      {
+        id: "paper-phase",
+        label: "Bài báo",
+        icon: FileText,
         conferenceType: "research",
       },
     ],

@@ -1,8 +1,8 @@
 // components/LeftPanel/index.tsx
-import { getFilteredTabs, type TabId } from "../constants/tabConfig";
+import { getFilteredTabs, type TabId } from "../constants/tab";
 import type { CommonConference } from "@/types/conference.type";
 import { TabContent } from "./TabContent";
-import { MetaInfoSection } from "./MetaInfoSection";
+import { MetaInfoSection } from "./InfoSection";
 
 interface LeftPanelProps {
   primaryTab: "detail" | "action";
@@ -31,8 +31,7 @@ export function LeftPanel({
     <div className="space-y-6">
       {/* Main Content Card */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-        {/* Meta Info Section - Above Tab Content */}
-        <div className="px-6 pt-6">
+        <div className="px-6 pt-6 mb-12">
           <MetaInfoSection
             conference={conference}
             getCategoryName={getCategoryName}
@@ -41,7 +40,6 @@ export function LeftPanel({
           />
         </div>
 
-        {/* Horizontal Subtabs - Right below description */}
         <div className="border-b border-gray-200">
           <div className="px-6">
             <div className="flex gap-8">

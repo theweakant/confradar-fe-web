@@ -1,7 +1,7 @@
 // components/RightSidebar/index.tsx
-import { ProgressTimelineSection } from "./ProgressTimelineSection";
+import { ProgressTimelineSection } from "./ProgressSection";
 import { StatisticsSection } from "./StatisticsSection";
-import { RecentActivitiesSection } from "./RecentActivitiesSection";
+import { RegisteredUserSection } from "./RegisteredUserSection";
 import type { CommonConference } from "@/types/conference.type";
 
 interface RightSidebarProps {
@@ -30,7 +30,7 @@ export function RightSidebar({
       />
 
       {/* Recent Activities */}
-      <RecentActivitiesSection
+      <RegisteredUserSection
         conferenceId={conference.conferenceId!}
         limit={10}
       />

@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  Calendar,
-  BookOpen,
-  FileText,
-  ArrowLeft,
-} from "lucide-react";
-import Image from "next/image";
+import { Calendar, BookOpen } from "lucide-react";
 import { formatDate } from "@/helper/format";
 import type { ResearchConferenceDetailResponse, RevisionRoundDeadlineResponse } from "@/types/conference.type";
 
@@ -17,41 +11,37 @@ interface ResearchInfoTabProps {
 export function ResearchInfoTab({ conference }: ResearchInfoTabProps) {
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">
-        Research Conference Information
-      </h2>
-
       {/* Basic Research Info */}
-      <div className="bg-gradient-to-br from-indigo-50 to-white border-2 border-indigo-200 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Basic Research Details
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-5">
+          Thông tin nghiên cứu
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <InfoField label="Name" value={conference.name} />
-          <InfoField label="Paper Format" value={conference.paperFormat} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <InfoField label="Tên hội nghị" value={conference.name} />
+          <InfoField label="Định dạng bài báo" value={conference.paperFormat} />
           <InfoField
-            label="Number of Papers to Accept"
+            label="Số bài chấp nhận"
             value={conference.numberPaperAccept}
           />
           <InfoField
-            label="Revision Attempts Allowed"
+            label="Số lần chỉnh sửa"
             value={conference.revisionAttemptAllowed}
           />
           <InfoField
-            label="Review Fee (VND)"
+            label="Phí phản biện"
             value={`${(conference.reviewFee || 0).toLocaleString("vi-VN")}₫`}
           />
-          <InfoField label="Rank Value" value={conference.rankValue} />
-          <InfoField label="Rank Year" value={conference.rankYear} />
+          <InfoField label="Xếp hạng" value={`${conference.rankValue} (${conference.rankYear})`} />
           <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-gray-500">Cho phép thính giả:</span>
             <span
-              className={`px-3 py-1 rounded-full text-sm font-medium ${
+              className={`px-2.5 py-1 rounded-md text-xs font-medium ${
                 conference.allowListener
-                  ? "bg-green-100 text-green-700"
-                  : "bg-red-100 text-red-700"
+                  ? "bg-green-50 text-green-700"
+                  : "bg-gray-100 text-gray-600"
               }`}
             >
-              {conference.allowListener ? "✓" : "✗"} Allow Listener
+              {conference.allowListener ? "Có" : "Không"}
             </span>
           </div>
         </div>
@@ -59,12 +49,12 @@ export function ResearchInfoTab({ conference }: ResearchInfoTabProps) {
 
       {/* Ranking Description */}
       {conference.rankingDescription && (
-        <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
           <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-blue-600" />
-            Ranking Description
+            Mô tả xếp hạng
           </h3>
-          <p className="text-gray-700 leading-relaxed whitespace-pre-line bg-gray-50 p-4 rounded-lg">
+          <p className="text-sm text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-lg whitespace-pre-line">
             {conference.rankingDescription}
           </p>
         </div>
@@ -72,54 +62,54 @@ export function ResearchInfoTab({ conference }: ResearchInfoTabProps) {
 
       {/* Research Phase Timeline */}
       {conference.researchPhase ? (
-        <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
-          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-teal-600" />
-            Research Phase Timeline
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <h3 className="font-semibold text-gray-900 mb-5 flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-blue-600" />
+            Lộ trình nghiên cứu
           </h3>
           <div className="space-y-4">
             {/* Registration Phase */}
             <PhaseCard
-              title="Registration Phase"
+              title="Giai đoạn đăng ký"
               number={1}
               color="blue"
-              startDate={conference.researchPhase.registrationStartDate??null}
-              endDate={conference.researchPhase.registrationEndDate??null}
+              startDate={conference.researchPhase.registrationStartDate ?? null}
+              endDate={conference.researchPhase.registrationEndDate ?? null}
             />
 
             {/* Full Paper Submission Phase */}
             <PhaseCard
-              title="Full Paper Submission Phase"
+              title="Giai đoạn nộp bài"
               number={2}
               color="purple"
-              startDate={conference.researchPhase.fullPaperStartDate??null}
-              endDate={conference.researchPhase.fullPaperEndDate??null}
+              startDate={conference.researchPhase.fullPaperStartDate ?? null}
+              endDate={conference.researchPhase.fullPaperEndDate ?? null}
             />
 
             {/* Review Phase */}
             <PhaseCard
-              title="Review Phase"
+              title="Giai đoạn phản biện"
               number={3}
               color="orange"
-              startDate={conference.researchPhase.reviewStartDate??null}
-              endDate={conference.researchPhase.reviewEndDate??null}
+              startDate={conference.researchPhase.reviewStartDate ?? null}
+              endDate={conference.researchPhase.reviewEndDate ?? null}
             />
 
             {/* Revision Phase */}
-            <div className="bg-gradient-to-br from-yellow-50 to-white border-2 border-yellow-200 rounded-lg p-4">
-              <h4 className="font-semibold text-yellow-900 mb-3 flex items-center gap-2">
-                <span className="px-2 py-1 bg-yellow-600 text-white rounded text-xs font-bold">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <span className="flex items-center justify-center w-6 h-6 bg-yellow-500 text-white rounded text-xs font-bold">
                   4
                 </span>
-                Revision Phase
+                Giai đoạn chỉnh sửa
               </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <InfoField
-                  label="Start Date"
+                  label="Bắt đầu"
                   value={formatDate(conference.researchPhase.reviseStartDate)}
                 />
                 <InfoField
-                  label="End Date"
+                  label="Kết thúc"
                   value={formatDate(conference.researchPhase.reviseEndDate)}
                 />
               </div>
@@ -127,25 +117,25 @@ export function ResearchInfoTab({ conference }: ResearchInfoTabProps) {
               {/* Revision Round Deadlines */}
               {conference.researchPhase.revisionRoundDeadlines &&
                 conference.researchPhase.revisionRoundDeadlines.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-yellow-300">
-                    <p className="text-xs font-semibold text-yellow-900 mb-2">
-                      Revision Rounds:
+                  <div className="pt-4 border-t border-yellow-200">
+                    <p className="text-sm font-semibold text-gray-900 mb-3">
+                      Các vòng chỉnh sửa:
                     </p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {conference.researchPhase.revisionRoundDeadlines.map(
                         (deadline: RevisionRoundDeadlineResponse) => (
                           <div
                             key={deadline.revisionRoundDeadlineId}
-                            className="bg-white border border-yellow-200 rounded p-2"
+                            className="bg-white border border-yellow-200 rounded-lg p-3"
                           >
                             <div className="flex items-center justify-between">
-                              <span className="text-xs font-semibold text-yellow-900">
-                                Round {deadline.roundNumber}
+                              <span className="text-sm font-medium text-gray-900">
+                                Vòng {deadline.roundNumber}
                               </span>
                               <span className="text-xs text-gray-600">
                                 {deadline.endDate
                                   ? formatDate(deadline.endDate)
-                                  : "Not set"}
+                                  : "Chưa có"}
                               </span>
                             </div>
                           </div>
@@ -158,55 +148,53 @@ export function ResearchInfoTab({ conference }: ResearchInfoTabProps) {
 
             {/* Camera Ready Phase */}
             <PhaseCard
-              title="Camera Ready Phase"
+              title="Giai đoạn hoàn thiện"
               number={5}
               color="green"
-              startDate={conference.researchPhase.cameraReadyStartDate??null}
-              endDate={conference.researchPhase.cameraReadyEndDate??null}
+              startDate={conference.researchPhase.cameraReadyStartDate ?? null}
+              endDate={conference.researchPhase.cameraReadyEndDate ?? null}
             />
 
             {/* Phase Status */}
-            <div className="bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 rounded-lg p-4">
-              <h4 className="font-semibold text-gray-900 mb-3">Phase Status</h4>
-              <div className="flex gap-3">
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <h4 className="font-semibold text-gray-900 mb-3">Trạng thái</h4>
+              <div className="flex flex-wrap gap-2">
                 <span
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium ${
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium ${
                     conference.researchPhase.isWaitlist
-                      ? "bg-yellow-100 text-yellow-700 border border-yellow-300"
-                      : "bg-gray-100 text-gray-600 border border-gray-300"
+                      ? "bg-yellow-100 text-yellow-700"
+                      : "bg-gray-100 text-gray-600"
                   }`}
                 >
-                  {conference.researchPhase.isWaitlist ? "✓" : "✗"} Waitlist Mode
+                  {conference.researchPhase.isWaitlist ? "✓" : "✗"} Chờ danh sách
                 </span>
                 <span
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium ${
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium ${
                     conference.researchPhase.isActive
-                      ? "bg-green-100 text-green-700 border border-green-300"
-                      : "bg-red-100 text-red-700 border border-red-300"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
                   }`}
                 >
-                  {conference.researchPhase.isActive ? "✓" : "✗"} Active
+                  {conference.researchPhase.isActive ? "✓" : "✗"} Đang hoạt động
                 </span>
               </div>
             </div>
           </div>
         </div>
       ) : (
-        <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
           <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-teal-600" />
-            Research Phase Timeline
+            <Calendar className="w-5 h-5 text-blue-600" />
+            Lộ trình nghiên cứu
           </h3>
-          <p className="text-gray-500 text-center py-4 bg-gray-50 rounded-lg">
-            No research phase data available
+          <p className="text-sm text-gray-500 text-center py-8 bg-gray-50 rounded-lg">
+            Chưa có thông tin lộ trình nghiên cứu
           </p>
         </div>
       )}
     </div>
   );
 }
-
-// --- Reusable Helper Components ---
 
 interface InfoFieldProps {
   label: string;
@@ -216,9 +204,9 @@ interface InfoFieldProps {
 function InfoField({ label, value }: InfoFieldProps) {
   return (
     <div>
-      <p className="text-xs font-medium text-gray-500 mb-1">{label}</p>
-      <p className="text-sm text-gray-900 font-semibold break-words">
-        {value != null && value !== "" ? String(value) : "N/A"}
+      <p className="text-xs font-medium text-gray-500 mb-1.5">{label}</p>
+      <p className="text-sm text-gray-900 font-medium break-words">
+        {value != null && value !== "" ? String(value) : "Chưa có"}
       </p>
     </div>
   );
@@ -234,25 +222,41 @@ interface PhaseCardProps {
 
 function PhaseCard({ title, number, color, startDate, endDate }: PhaseCardProps) {
   const colorMap = {
-    blue: { bg: "bg-blue-600", text: "text-blue-900", border: "border-blue-200", gradient: "from-blue-50 to-white" },
-    purple: { bg: "bg-purple-600", text: "text-purple-900", border: "border-purple-200", gradient: "from-purple-50 to-white" },
-    orange: { bg: "bg-orange-600", text: "text-orange-900", border: "border-orange-200", gradient: "from-orange-50 to-white" },
-    green: { bg: "bg-green-600", text: "text-green-900", border: "border-green-200", gradient: "from-green-50 to-white" },
+    blue: { 
+      bg: "bg-blue-500", 
+      border: "border-blue-200", 
+      bgLight: "bg-blue-50" 
+    },
+    purple: { 
+      bg: "bg-purple-500", 
+      border: "border-purple-200", 
+      bgLight: "bg-purple-50" 
+    },
+    orange: { 
+      bg: "bg-orange-500", 
+      border: "border-orange-200", 
+      bgLight: "bg-orange-50" 
+    },
+    green: { 
+      bg: "bg-green-500", 
+      border: "border-green-200", 
+      bgLight: "bg-green-50" 
+    },
   };
 
   const style = colorMap[color];
 
   return (
-    <div className={`bg-gradient-to-br ${style.gradient} border-2 ${style.border} rounded-lg p-4`}>
-      <h4 className={`font-semibold ${style.text} mb-3 flex items-center gap-2`}>
-        <span className={`px-2 py-1 ${style.bg} text-white rounded text-xs font-bold`}>
+    <div className={`${style.bgLight} border ${style.border} rounded-lg p-4`}>
+      <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <span className={`flex items-center justify-center w-6 h-6 ${style.bg} text-white rounded text-xs font-bold`}>
           {number}
         </span>
         {title}
       </h4>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <InfoField label="Start Date" value={formatDate(startDate)} />
-        <InfoField label="End Date" value={formatDate(endDate)} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <InfoField label="Bắt đầu" value={formatDate(startDate)} />
+        <InfoField label="Kết thúc" value={formatDate(endDate)} />
       </div>
     </div>
   );

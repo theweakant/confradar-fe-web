@@ -1,6 +1,6 @@
 // components/LeftPanel/SecondaryTabNavigation.tsx
 import { Check, ChevronRight } from "lucide-react";
-import { getFilteredTabs, type TabId } from "../constants/tabConfig";
+import { getFilteredTabs, type TabId } from "../constants/tab";
 
 interface SecondaryTabNavigationProps {
   primaryTab: "detail" | "action";
@@ -16,7 +16,7 @@ export function SecondaryTabNavigation({
   conferenceType,
 }: SecondaryTabNavigationProps) {
   const tabs = getFilteredTabs(primaryTab, conferenceType);
-  const completedTabs = 0; // TODO: Track completed tabs in state
+  const completedTabs = 0; 
 
   return (
     <div className="bg-white border-b border-gray-200 px-6 py-4">
@@ -35,7 +35,7 @@ export function SecondaryTabNavigation({
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeSubtab === tab.id;
-          const isCompleted = false; // TODO: Track completion state
+          const isCompleted = false; 
 
           return (
             <button

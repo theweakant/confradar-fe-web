@@ -1,5 +1,5 @@
 // components/LeftPanel/PrimaryTabNavigation.tsx
-import { TAB_GROUPS } from "../constants/tabConfig";
+import { TAB_GROUPS } from "../constants/tab";
 
 interface PrimaryTabNavigationProps {
   activeTab: "detail" | "action";

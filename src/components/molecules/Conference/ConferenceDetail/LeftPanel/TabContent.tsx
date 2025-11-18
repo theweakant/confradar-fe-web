@@ -1,6 +1,6 @@
 // components/LeftPanel/TabContent.tsx
 import type { CommonConference } from "@/types/conference.type";
-import type { TabId } from "../constants/tabConfig";
+import type { TabId } from "../constants/tab";
 
 // Import all tab components
 import { PriceTab } from "../Tab/PriceTab";

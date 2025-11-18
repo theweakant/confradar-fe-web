@@ -15,7 +15,7 @@ export function ProgressTimelineSection({
   const [reminderActive, setReminderActive] = useState(false);
   const statusName = getStatusName(conference.conferenceStatusId ?? "");
 
-  // Define status progression
+  // Keep internal status names in English (for logic & display)
   const statusProgression = [
     { name: "Draft", color: "bg-gray-400" },
     { name: "Pending", color: "bg-yellow-400" },
@@ -24,7 +24,6 @@ export function ProgressTimelineSection({
     { name: "Completed", color: "bg-green-500" },
   ];
 
-  // Calculate current status index
   const getCurrentStatusIndex = () => {
     const index = statusProgression.findIndex(s => s.name === statusName);
     return index >= 0 ? index : 0;
@@ -33,30 +32,46 @@ export function ProgressTimelineSection({
   const currentIndex = getCurrentStatusIndex();
   const progressPercentage = ((currentIndex + 1) / statusProgression.length) * 100;
 
-  // Calculate days remaining
-  const calculateDaysRemaining = () => {
+  // Calculate days until conference starts
+  const calculateDaysUntilStart = () => {
+    if (!conference.startDate) return null;
     const now = new Date();
-    const start = new Date(conference.startDate || "");
+    const start = new Date(conference.startDate);
     const diffTime = start.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays > 0 ? diffDays : 0;
+    return diffDays;
   };
 
-  const daysRemaining = calculateDaysRemaining();
+  const daysUntilStart = calculateDaysUntilStart();
+
+  // Get display label for time
+  const getTimeLabel = () => {
+    if (daysUntilStart === null) return "Chưa xác định";
+    if (daysUntilStart > 0) return `${daysUntilStart} ngày`;
+    // Check if already ended
+    if (conference.endDate) {
+      const now = new Date();
+      const end = new Date(conference.endDate);
+      if (now > end) return "Đã kết thúc";
+    }
+    return "Đang diễn ra";
+  };
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-5">
       {/* Header */}
-      <h3 className="text-sm font-semibold text-gray-900 mb-5">Project Stats</h3>
+      <h3 className="text-sm font-semibold text-gray-900 mb-5">Tiến độ</h3>
       
       <div className="space-y-5">
-        {/* Time Remaining */}
+        {/* Time Until Start */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-gray-600">
             <Clock className="w-4 h-4" />
-            <span className="text-sm">Time Remaining</span>
+            <span className="text-sm">Đến ngày khai mạc</span>
           </div>
-          <span className="text-sm font-semibold text-gray-900">{daysRemaining}d</span>
+          <span className="text-sm font-semibold text-gray-900">
+            {getTimeLabel()}
+          </span>
         </div>  
 
         {/* Progress Section */}
@@ -66,7 +81,7 @@ export function ProgressTimelineSection({
               <div className="w-5 h-5 rounded-full border-2 border-blue-600 flex items-center justify-center">
                 <div className="w-2 h-2 rounded-full bg-blue-600"></div>
               </div>
-              <span className="text-sm font-medium text-gray-900">Progress</span>
+              <span className="text-sm font-medium text-gray-900">Tiến độ</span>
             </div>
             <span className="text-sm font-semibold text-gray-900">{Math.round(progressPercentage)}%</span>
           </div>
@@ -74,16 +89,13 @@ export function ProgressTimelineSection({
           {/* Progress Bar with Status Milestones */}
           <div className="relative pt-2">
             <div className="relative">
-              {/* Background track */}
               <div className="h-2 bg-gray-200 rounded-full relative overflow-hidden">
-                {/* Progress fill */}
                 <div
                   className="absolute top-0 left-0 h-full bg-blue-600 rounded-full transition-all duration-500"
                   style={{ width: `${progressPercentage}%` }}
                 />
               </div>
 
-              {/* Status milestone dots */}
               <div className="absolute inset-0 flex items-center justify-between">
                 {statusProgression.map((status, index) => {
                   const isCompleted = index <= currentIndex;
@@ -98,7 +110,6 @@ export function ProgressTimelineSection({
                         transform: 'translateX(-50%)'
                       }}
                     >
-                      {/* Dot */}
                       <div
                         className={`w-2 h-2 rounded-full z-10 transition-all ${
                           isCompleted ? status.color : 'bg-gray-300'
@@ -109,7 +120,6 @@ export function ProgressTimelineSection({
                 })}
               </div>
 
-              {/* Current position indicator */}
               {currentIndex >= 0 && (
                 <div 
                   className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-blue-600 border-2 border-white shadow-md z-20 transition-all duration-500"
@@ -118,7 +128,7 @@ export function ProgressTimelineSection({
               )}
             </div>
 
-            {/* Status labels */}
+            {/* Status labels (in English as requested) */}
             <div className="relative mt-3 flex justify-between text-xs">
               {statusProgression.map((status, index) => {
                 const isCompleted = index <= currentIndex;
@@ -144,10 +154,10 @@ export function ProgressTimelineSection({
           </div>
         </div>
 
-        {/* Current Status Info */}
+        {/* Current Status Info — keep in English */}
         <div className="pt-4 border-t border-gray-100">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-500">Current Status</span>
+            <span className="text-xs text-gray-500">Trạng thái hiện tại</span>
             <span className={`px-2.5 py-1 rounded-md text-xs font-medium ${
               statusName === "Draft" ? "bg-gray-100 text-gray-700" :
               statusName === "Pending" ? "bg-yellow-100 text-yellow-700" :

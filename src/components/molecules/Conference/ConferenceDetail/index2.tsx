@@ -41,7 +41,7 @@ import type {
   TechnicalConferenceDetailResponse,
   ResearchConferenceDetailResponse,
 } from "@/types/conference.type";
-import type { TabId } from "./constants/tabConfig";
+import type { TabId } from "./constants/tab";
 
 export type CommonConference =
   | TechnicalConferenceDetailResponse
