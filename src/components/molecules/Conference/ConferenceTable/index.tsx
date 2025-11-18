@@ -1,3 +1,4 @@
+// components/organisms/conference/ConferenceTable.tsx
 import React from "react";
 import {
   Pencil,
@@ -8,9 +9,9 @@ import {
   MoreVertical,
 } from "lucide-react";
 import NextImage from "next/image";
-
+import { useAuth } from "@/redux/hooks/useAuth";
 import { DataTable, Column } from "@/components/molecules/DataTable";
-import { Conference } from "@/types/conference.type";
+import type { Conference } from "@/types/conference.type";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,6 +34,9 @@ export function ConferenceTable({
   onDelete,
   statuses,
 }: ConferenceTableProps) {
+  const { user } = useAuth();
+  const currentUserId = user?.userId || null;
+
   const getStatusClass = (statusName: string): string => {
     switch (statusName) {
       case "Pending":
@@ -50,7 +54,7 @@ export function ConferenceTable({
       case "Cancelled":
         return "bg-gray-200 text-gray-700";
       case "Deleted":
-        return "bg-red-600 text-white font-semibold";  
+        return "bg-red-600 text-white font-semibold";
       default:
         return "text-gray-700";
     }
@@ -131,7 +135,6 @@ export function ConferenceTable({
           (s) => s.conferenceStatusId === conference.conferenceStatusId,
         );
         const statusName = status?.conferenceStatusName || "Không xác định";
-
         const statusClass = getStatusClass(statusName);
 
         return (
@@ -147,26 +150,40 @@ export function ConferenceTable({
       key: "actions",
       header: "Thao tác",
       className: "text-right",
-      render: (conference) => (
-        <div className="flex items-center justify-end">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                <MoreVertical className="w-5 h-5 text-gray-600" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem
-                onClick={() => onView(conference)}
-                className="cursor-pointer"
-              >
-                <Eye className="w-4 h-4 mr-2 text-green-600" />
-                <span>Tổng quan</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      ),
+      render: (conference) => {
+        const isOwner = currentUserId && conference.createdby === currentUserId;
+
+        return (
+          <div className="flex items-center justify-end">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <MoreVertical className="w-5 h-5 text-gray-600" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem
+                  onClick={() => onView(conference)}
+                  className="cursor-pointer"
+                >
+                  <Eye className="w-4 h-4 mr-2 text-green-600" />
+                  <span>Xem chi tiết</span>
+                </DropdownMenuItem>
+
+                {isOwner && onEdit && (
+                  <DropdownMenuItem
+                    onClick={() => onEdit(conference)}
+                    className="cursor-pointer"
+                  >
+                    <Pencil className="w-4 h-4 mr-2 text-blue-600" />
+                    <span>Quản lý</span>
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        );
+      },
     },
   ];
 

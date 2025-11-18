@@ -1,9 +1,15 @@
 "use client";
 
-import Link from "next/link"; 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useMemo, useEffect } from "react";
-import { Plus, Calendar, Microscope, Cpu } from "lucide-react";
+import {
+  Plus,
+  Calendar,
+  Microscope,
+  Cpu,
+  User,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -11,7 +17,7 @@ import { Modal } from "@/components/molecules/Modal";
 import { StatCard } from "@/components/molecules/StatCard";
 import { SearchFilter } from "@/components/molecules/SearchFilter";
 
-import { ConferenceTable } from "@/components/molecules/Conference/ConferenceTable/index";
+import { ConferenceTable } from "@/components/molecules/Conference/ConferenceTable";
 import { ConferenceResponse } from "@/types/conference.type";
 
 import {
@@ -21,12 +27,17 @@ import {
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllConferenceStatusesQuery } from "@/redux/services/status.service";
+import { useAuth } from "@/redux/hooks/useAuth";
 
 type ConferenceType = boolean | null;
-type TabType = "tech" | "research";
+type TabType = "tech" | "research" | "my";
 
 export default function ManageConference() {
   const router = useRouter();
+  const { user } = useAuth();
+  console.log("Current User ID:", user?.userId);
+  const currentUserId = user?.userId || null;
+
   const [page, setPage] = useState(1);
   const [pageSize] = useState(12);
   const [activeTab, setActiveTab] = useState<TabType>("tech");
@@ -38,7 +49,6 @@ export default function ManageConference() {
   const [filterCity, setFilterCity] = useState("all");
   const [isSelectTypeModalOpen, setIsSelectTypeModalOpen] = useState(false);
 
-  // RTK Query cho Tech Conferences
   const {
     data: techConferencesData,
     isLoading: techLoading,
@@ -53,7 +63,7 @@ export default function ManageConference() {
       ...(searchQuery && { searchKeyword: searchQuery }),
     },
     {
-      skip: activeTab !== "tech",
+      skip: activeTab !== "tech" && activeTab !== "my",
     },
   );
 
@@ -82,70 +92,84 @@ export default function ManageConference() {
   const { data: statusesData, isLoading: statusesLoading } =
     useGetAllConferenceStatusesQuery();
 
-  // Reset page về 1 khi filter hoặc tab thay đổi
   useEffect(() => {
     const timer = setTimeout(() => {
       setPage(1);
     }, 500);
-
     return () => clearTimeout(timer);
   }, [searchQuery, filterCategory, filterStatus, filterCity, activeTab]);
 
-  // Get data dựa trên active tab
-  const currentData =
-    activeTab === "tech" ? techConferencesData : researchConferencesData;
-  const conferences = currentData?.data?.items || [];
+  let currentData;
+  let isLoading;
+  let isError;
+  let refetch: (() => void) | undefined = undefined;
+
+  if (activeTab === "tech") {
+    currentData = techConferencesData;
+    isLoading = techLoading;
+    isError = techError;
+    refetch = refetchTech;
+  } else if (activeTab === "research") {
+    currentData = researchConferencesData;
+    isLoading = researchLoading;
+    isError = researchError;
+    refetch = refetchResearch;
+  } else if (activeTab === "my") {
+    currentData = techConferencesData;
+    isLoading = techLoading;
+    isError = techError;
+    refetch = refetchTech;
+  }
+
+  const rawConferences = currentData?.data?.items || [];
   const totalPages = currentData?.data?.totalPages || 1;
   const totalItems = currentData?.data?.totalCount || 0;
 
-  const isLoading = activeTab === "tech" ? techLoading : researchLoading;
-  const isError = activeTab === "tech" ? techError : researchError;
+  const conferences = useMemo(() => {
+    if (activeTab === "my" && currentUserId) {
+      return rawConferences.filter((conf) => conf.createdBy === currentUserId);
+    }
+    return rawConferences;
+  }, [rawConferences, activeTab, currentUserId]);
 
   const cities = citiesData?.data || [];
   const statuses = statusesData?.data || [];
   const categories = categoriesData?.data || [];
 
-  // Client-side filter by category
-  const filteredConferences = useMemo(() => {
-    if (filterCategory === "all") {
-      return conferences;
-    }
-    return conferences.filter(
-      (conf) => conf.conferenceCategoryId === filterCategory,
-    );
-  }, [conferences, filterCategory]);
+  const displayConferences = useMemo(() => {
+    let result = [...conferences];
 
-  // Tạo filter options
+    if (activeTab !== "my" && filterCategory !== "all") {
+      result = result.filter(conf => conf.conferenceCategoryId === filterCategory);
+    }
+
+    return result;
+  }, [conferences, activeTab, filterCategory]);
+
   const categoryOptions = useMemo(() => {
     const allOption = { value: "all", label: "Tất cả danh mục" };
-
     const apiCategories = categories.map((category) => ({
       value: category.conferenceCategoryId,
       label: category.conferenceCategoryName || "N/A",
     }));
-
     return [allOption, ...apiCategories];
   }, [categories]);
 
   const statusOptions = useMemo(() => {
     const allOption = { value: "all", label: "Tất cả trạng thái" };
-
     const apiStatuses = statuses.map((status) => ({
       value: status.conferenceStatusId,
       label: status.conferenceStatusName || "N/A",
     }));
-
     return [allOption, ...apiStatuses];
   }, [statuses]);
 
   const cityOptions = useMemo(() => {
     const allOption = { value: "all", label: "Tất cả thành phố" };
-
     const apiCities = cities.map((city) => ({
       value: city.cityId,
       label: city.cityName || "N/A",
     }));
-
     return [allOption, ...apiCities];
   }, [cities]);
 
@@ -158,6 +182,17 @@ export default function ManageConference() {
       router.push(
         `/workspace/organizer/manage-conference/view-detail/${conference.conferenceId}`,
       );
+    } else {
+      toast.error("Không tìm thấy ID hội thảo");
+    }
+  };
+
+  const handleEdit = (conference: ConferenceResponse) => {
+    if (conference.conferenceId) {
+      const route = conference.isResearchConference
+        ? `/workspace/organizer/manage-conference/update-research-conference/${conference.conferenceId}`
+        : `/workspace/organizer/manage-conference/update-tech-conference/${conference.conferenceId}`;
+      router.push(route);
     } else {
       toast.error("Không tìm thấy ID hội thảo");
     }
@@ -204,11 +239,7 @@ export default function ManageConference() {
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4">Không thể tải dữ liệu hội thảo</p>
-          <Button
-            onClick={() =>
-              activeTab === "tech" ? refetchTech() : refetchResearch()
-            }
-          >
+          <Button onClick={() => refetch && refetch()}>
             Thử lại
           </Button>
         </div>
@@ -241,6 +272,23 @@ export default function ManageConference() {
         <div className="mb-6 border-b border-gray-200">
           <div className="flex gap-4">
             <button
+              onClick={() => handleTabChange("my")}
+              className={`pb-4 px-2 font-medium text-sm transition-colors relative ${
+                activeTab === "my"
+                  ? "text-purple-600"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <User className="w-4 h-4" />
+                <span>Của tôi</span>
+              </div>
+              {activeTab === "my" && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-600" />
+              )}
+            </button>
+
+            <button
               onClick={() => handleTabChange("tech")}
               className={`pb-4 px-2 font-medium text-sm transition-colors relative ${
                 activeTab === "tech"
@@ -256,6 +304,7 @@ export default function ManageConference() {
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
               )}
             </button>
+
             <button
               onClick={() => handleTabChange("research")}
               className={`pb-4 px-2 font-medium text-sm transition-colors relative ${
@@ -300,16 +349,22 @@ export default function ManageConference() {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <StatCard
-            title={`Tổng ${activeTab === "tech" ? "Tech" : "Research"} Conference`}
-            value={isLoading ? "..." : filteredConferences.length}
+            title={
+              activeTab === "my"
+                ? "Hội nghị của tôi"
+                : `Tổng ${activeTab === "tech" ? "Tech" : "Research"} Conference`
+            }
+            value={isLoading ? "..." : displayConferences.length}
             icon={
-              activeTab === "tech" ? (
+              activeTab === "my" ? (
+                <User className="w-10 h-10" />
+              ) : activeTab === "tech" ? (
                 <Cpu className="w-10 h-10" />
               ) : (
                 <Microscope className="w-10 h-10" />
               )
             }
-            color={activeTab === "tech" ? "blue" : "green"}
+            color={activeTab === "my" ? "purple" : activeTab === "tech" ? "blue" : "green"}
           />
         </div>
 
@@ -327,8 +382,9 @@ export default function ManageConference() {
         )}
 
         <ConferenceTable
-          conferences={filteredConferences}
+          conferences={displayConferences}
           onView={handleView}
+          onEdit={handleEdit}
           statuses={statuses}
         />
 

@@ -1,7 +1,17 @@
 // components/pages/ConferenceDetailPage/Tab/ResearchTimelineTab.tsx
 "use client";
 
-import { Info, Clock, Calendar, Play } from "lucide-react";
+import {
+  Info,
+  Clock,
+  User,
+  UserCheck,
+  FileText,
+  MessageCircle,
+  Edit3,
+  PackageCheck,
+  Workflow
+} from "lucide-react";
 import { useGetResearchConferenceDetailInternalQuery } from "@/redux/services/conference.service";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,11 +26,10 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 
-// === INTERFACE NỘI BỘ (hoặc bạn có thể import từ '@/types/conference.type') ===
 interface ResearchConferencePhase {
   researchConferencePhaseId: string;
   conferenceId: string;
-  registrationStartDate: string; // ISO date
+  registrationStartDate: string; 
   registrationEndDate: string;
   fullPaperStartDate: string;
   fullPaperEndDate: string;
@@ -32,7 +41,6 @@ interface ResearchConferencePhase {
   cameraReadyEndDate: string;
   isWaitlist: boolean;
   isActive: boolean;
-  // Không cần định nghĩa revisionRoundDeadlines vì không dùng
 }
 
 interface ResearchTimelineTabProps {
@@ -41,9 +49,7 @@ interface ResearchTimelineTabProps {
 
 export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) {
   const { data, isLoading, error } = useGetResearchConferenceDetailInternalQuery(conferenceId);
-
-  // Ép kiểu để TypeScript hiểu rõ cấu trúc (nếu bạn chưa có type trong redux)
-  const researchPhase = data?.data?.researchPhase as ResearchConferencePhase | undefined;
+  const researchPhases = data?.data?.researchPhase as ResearchConferencePhase[] || [];
 
   const [isActivateModalOpen, setIsActivateModalOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<"active" | "inactive">("active");
@@ -61,33 +67,7 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
     return `${formatDate(start)} – ${formatDate(end)}`;
   };
 
-  const phases = researchPhase
-    ? [
-        {
-          title: "Đăng ký tham dự",
-          period: formatRange(researchPhase.registrationStartDate, researchPhase.registrationEndDate),
-        },
-        {
-          title: "Gửi full paper",
-          period: formatRange(researchPhase.fullPaperStartDate, researchPhase.fullPaperEndDate),
-        },
-        {
-          title: "Phản biện bài báo",
-          period: formatRange(researchPhase.reviewStartDate, researchPhase.reviewEndDate),
-        },
-        {
-          title: "Chỉnh sửa & gửi lại",
-          period: formatRange(researchPhase.reviseStartDate, researchPhase.reviseEndDate),
-        },
-        {
-          title: "Gửi bản camera-ready",
-          period: formatRange(researchPhase.cameraReadyStartDate, researchPhase.cameraReadyEndDate),
-        },
-      ]
-    : [];
-
   const handleActivate = () => {
-    // TODO: Gọi API cập nhật trạng thái khi có
     console.log("Cập nhật trạng thái:", selectedStatus);
     toast.success(
       selectedStatus === "active"
@@ -106,7 +86,7 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
     );
   }
 
-  if (error || !researchPhase) {
+  if (error || researchPhases.length === 0) {
     return (
       <div className="text-center py-12">
         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -124,9 +104,48 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
     );
   }
 
+  // Định nghĩa các mốc với icon riêng
+  const getTimelineSteps = (phase: ResearchConferencePhase) => [
+    {
+      title: "Đăng ký tham dự",
+      start: phase.registrationStartDate,
+      end: phase.registrationEndDate,
+      icon: UserCheck,
+      color: "text-blue-600",
+    },
+    {
+      title: "Gửi full paper",
+      start: phase.fullPaperStartDate,
+      end: phase.fullPaperEndDate,
+      icon: FileText,
+      color: "text-amber-600",
+    },
+    {
+      title: "Phản biện bài báo",
+      start: phase.reviewStartDate,
+      end: phase.reviewEndDate,
+      icon: MessageCircle,
+      color: "text-emerald-600",
+    },
+    {
+      title: "Chỉnh sửa & gửi lại",
+      start: phase.reviseStartDate,
+      end: phase.reviseEndDate,
+      icon: Edit3,
+      color: "text-violet-600",
+    },
+    {
+      title: "Gửi bản camera-ready",
+      start: phase.cameraReadyStartDate,
+      end: phase.cameraReadyEndDate,
+      icon: PackageCheck,
+      color: "text-green-600",
+    },
+  ];
+
   return (
-    <div className="space-y-5">
-      {/* Nút Kích hoạt Phase */}
+    <div className="space-y-6">
+      {/* Header */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2 text-gray-700">
           <Clock className="w-5 h-5" />
@@ -142,52 +161,74 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
         </Button>
       </div>
 
-      <div className="space-y-4">
-        {phases.map((phase, index) => (
-          <div
-            key={index}
-            className="flex items-start gap-4 p-4 border rounded-lg bg-white hover:bg-gray-50 transition-colors"
-          >
-            <div className="mt-1 p-2 bg-blue-100 rounded-full">
-              <Calendar className="w-4 h-4 text-blue-600" />
+      {/* Render each Phase */}
+      {researchPhases.map((phase, index) => (
+        <div
+          key={phase.researchConferencePhaseId}
+          className="bg-white border border-gray-200 rounded-lg p-5 space-y-4"
+        >
+          {/* Phase Header */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+            <div className="w-8 h-8  rounded-full flex items-center justify-center">
+              <Workflow className="w-4 h-4 text-blue-600" />
             </div>
-            <div className="flex-1">
-              <h4 className="font-medium text-gray-900">{phase.title}</h4>
-              <p className="text-sm text-gray-600 mt-1">{phase.period}</p>
+              <h4 className="font-medium text-gray-900">
+                Giai đoạn {index + 1}
+              </h4>
+            </div>
+
+            {/* Status Badges — màu mới */}
+            <div className="flex items-center gap-2">
+              <span
+                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  phase.isActive
+                    ? "bg-emerald-100 text-emerald-800"
+                    : "bg-amber-100 text-amber-800"
+                }`}
+              >
+                {phase.isActive ? "Đang hoạt động" : "Dừng hoạt động"}
+              </span>
+              <span
+                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  phase.isWaitlist
+                    ? "bg-violet-100 text-violet-800"
+                    : "bg-sky-100 text-sky-800"
+                }`}
+              >
+                {phase.isWaitlist ? "Waitlist" : "Main"}
+              </span>
             </div>
           </div>
-        ))}
-      </div>
 
-      {/* Trạng thái hội nghị — LUÔN HIỂN THỊ CẢ HAI */}
-      <div className="mt-6 p-4 bg-gray-50 rounded-lg border">
-        <h4 className="font-medium text-gray-900 mb-3">Trạng thái hội nghị</h4>
-        <div className="flex flex-wrap gap-3">
-          {/* Trạng thái hoạt động */}
-          <span
-            className={`px-3 py-1.5 rounded-full text-sm font-medium ${
-              researchPhase.isActive
-                ? "bg-green-100 text-green-800"
-                : "bg-gray-200 text-gray-700"
-            }`}
-          >
-            {researchPhase.isActive ? "Đang hoạt động" : "Đã kết thúc"}
-          </span>
-
-          {/* Trạng thái danh sách chờ — LUÔN HIỂN THỊ */}
-          <span
-            className={`px-3 py-1.5 rounded-full text-sm font-medium ${
-              researchPhase.isWaitlist
-                ? "bg-purple-100 text-purple-800"
-                : "bg-gray-200 text-gray-700"
-            }`}
-          >
-            {researchPhase.isWaitlist ? "Có danh sách chờ" : "Không có danh sách chờ"}
-          </span>
+          {/* Timeline Events with Icons */}
+          <div className="space-y-3 pt-3 border-t border-gray-100">
+            {getTimelineSteps(phase).map((item, i) => {
+              const Icon = item.icon;
+              return (
+                <div
+                  key={i}
+                  className="flex items-start gap-3 p-2 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  <div className={`mt-0.5 p-1 rounded-full ${item.color.replace('text', 'bg').replace('-600', '-100')}`}>
+                    <Icon className={`w-3.5 h-3.5 ${item.color}`} />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-gray-900">{item.title}</span>
+                      <span className="text-xs text-gray-500">
+                        {formatRange(item.start, item.end)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      ))}
 
-      {/* Modal Kích hoạt Phase (Mock) */}
+      {/* Modal Kích hoạt Phase */}
       <Dialog open={isActivateModalOpen} onOpenChange={setIsActivateModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

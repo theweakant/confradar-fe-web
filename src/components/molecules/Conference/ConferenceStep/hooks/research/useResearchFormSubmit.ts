@@ -391,7 +391,6 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
     setIsSubmitting(true);
 
     if (mode === "edit") {
-      // Xóa revision deadlines bị đánh dấu
       if (deletedRevisionDeadlineIds?.length) {
         await Promise.all(
           deletedRevisionDeadlineIds.map((id) => deleteRevisionDeadline(id).unwrap())

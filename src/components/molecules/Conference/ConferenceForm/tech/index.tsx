@@ -27,6 +27,7 @@ import { SponsorForm } from "@/components/molecules/Conference/ConferenceStep/fo
 import { BasicInfoForm } from "@/components/molecules/Conference/ConferenceStep/forms/BasicInfoForm";
 import { PriceForm } from "@/components/molecules/Conference/ConferenceStep/forms/PriceForm";
 import { SessionForm } from "@/components/molecules/Conference/ConferenceStep/forms/SessionForm";
+import  RoomCalendar  from "@/components/molecules/Calendar/Room/RoomCalendar";
 
 // Hooks
 import {
@@ -54,6 +55,7 @@ import {
   TECH_MAX_STEP,
 } from "@/components/molecules/Conference/ConferenceStep/constants";
 import { RequestConferenceApproval } from "@/components/molecules/Status/RequestStatus";
+import { Session } from "@/types/conference.type";
 
 const useMockDeleteTracking = () => {
   return useMemo(
@@ -84,6 +86,16 @@ export default function TechConferenceStepForm({
   const userRole = useAppSelector((state) => state.auth.user?.role);
   const isCollaborator = Boolean(userRole?.includes("Collaborator"));
   const isInternalHosted = Boolean(userRole?.includes("Conference Organizer"));
+  const reduxConferenceId = useAppSelector((state) => state.conferenceStep.conferenceId);
+  const actualConferenceId = mode === "create" ? reduxConferenceId : conferenceId;
+
+  useEffect(() => {
+    console.log('🔍 TechConferenceStepForm Debug:');
+    console.log('  - Mode:', mode);
+    console.log('  - Props conferenceId:', conferenceId);
+    console.log('  - Redux conferenceId:', reduxConferenceId);
+    console.log('  - Actual conferenceId:', actualConferenceId);
+  }, [mode, conferenceId, reduxConferenceId, actualConferenceId]);
 
   // === DELETE TRACKING ===
   const realDeleteTracking = useDeleteTracking();
@@ -461,6 +473,12 @@ export default function TechConferenceStepForm({
     }
   };
 
+const handleSessionCreatedFromCalendar = (session: Session) => {
+  setSessions(prev => [...prev, session]);
+  handleMarkHasData(3);
+  toast.success(`Đã thêm session "${session.title}" thành công!`);
+};
+
   // UPDATE MODE: UPDATE CURRENT STEP
   const handleUpdateCurrentStep = useCallback(async () => {
     let result;
@@ -623,7 +641,7 @@ if (result?.success) {
 
   // === RENDER ===
   return (
-    <div className="max-w-5xl mx-auto p-6">
+    <div className="max-w-8xl mx-auto p-6">
       <div className="flex items-center justify-between mb-6">
         <PageHeader
           title={
@@ -735,16 +753,80 @@ if (result?.success) {
           title="Phiên họp (Tùy chọn)"
           isCompleted={isStepCompleted(3)}
         >
-          <SessionForm
-            sessions={sessions}
-            onSessionsChange={setSessions}
-            onRemoveSession={deleteTracking.trackDeletedSession}
-            eventStartDate={basicForm.startDate}
-            eventEndDate={basicForm.endDate}
-            roomOptions={roomOptions}
-            roomsData={roomsData}
-            isRoomsLoading={isRoomsLoading}
-          />
+          {/* Validation Warnings */}
+          {(!basicForm.startDate || !basicForm.endDate) && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+              <div className="flex items-start gap-3">
+                <svg className="w-5 h-5 text-red-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <h4 className="text-sm font-semibold text-red-900 mb-1">Thiếu thông tin ngày tổ chức</h4>
+                  <p className="text-sm text-red-800">Vui lòng quay lại <strong>Bước 1</strong> để điền ngày bắt đầu và kết thúc hội thảo.</p>
+                  <button onClick={() => handleGoToStep(1)} className="mt-2 text-sm text-red-700 underline hover:text-red-900">
+                    Quay về Bước 1 →
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Info Notes */}
+          {(basicForm.startDate || basicForm.endDate) && (
+            <div className="text-xs text-gray-500 space-y-1 mb-4">
+              <p>
+                <strong>Khoảng thời gian:</strong>{" "}
+                {basicForm.startDate && <span className="font-mono">{new Date(basicForm.startDate).toLocaleDateString("vi-VN")}</span>}
+                {basicForm.startDate && basicForm.endDate && " → "}
+                {basicForm.endDate && <span className="font-mono">{new Date(basicForm.endDate).toLocaleDateString("vi-VN")}</span>}
+              </p>
+              <p>• Click vào <strong>khung giờ trống màu xanh</strong> trên calendar để tạo session</p>
+              <p>• Phải có ít nhất 1 session vào ngày bắt đầu và 1 session vào ngày kết thúc</p>
+            </div>
+          )}
+
+          {!actualConferenceId && mode === "create" && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+              <div className="flex items-start gap-3">
+                <svg className="w-5 h-5 text-yellow-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <div>
+                  <h4 className="text-sm font-semibold text-yellow-900 mb-1">Chưa có Conference ID</h4>
+                  <p className="text-sm text-yellow-800">Vui lòng hoàn thành <strong>Bước 1</strong> và <strong>Bước 2</strong> để có Conference ID.</p>
+                  <button onClick={() => handleGoToStep(1)} className="mt-2 px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 transition-colors">
+                    Quay về Bước 1
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Sessions Count Badge */}
+          {sessions.length > 0 && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-sm font-semibold text-green-900">Đã tạo {sessions.length} phiên họp</span>
+              </div>
+              <button onClick={() => toast.info(`Bạn đã tạo ${sessions.length} session(s)`)} className="text-sm text-green-700 hover:text-green-900 underline">
+                Xem chi tiết
+              </button>
+            </div>
+          )}
+
+          {/* Calendar */}
+          <div className="border rounded-lg overflow-hidden bg-white shadow-sm mb-4">
+            <RoomCalendar 
+              conferenceId={actualConferenceId || undefined}
+              onSessionCreated={handleSessionCreatedFromCalendar}
+              startDate={basicForm.startDate}
+            />
+          </div>
+
+          {/* Navigation Buttons */}
           <FlexibleNavigationButtons
             currentStep={3}
             maxStep={TECH_MAX_STEP}

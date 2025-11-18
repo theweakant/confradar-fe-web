@@ -642,7 +642,7 @@ export function ResearchPriceForm({
         return;
       }
       if (totalListenerSlots > 0) {
-        toast.error("Không cho phép tạo vé người nghe khi 'Cho phép người nghe' bị tắt!");
+        toast.error("Không cho phép tạo vé người nghe!");
         return;
       }
     } else {
@@ -836,6 +836,10 @@ export function ResearchPriceForm({
               <strong>Thời gian đăng ký tác giả:</strong>{" "}
               {formatDate(mainPhase.registrationStartDate)} – {formatDate(mainPhase.registrationEndDate)}
             </div>
+            {/* <div className="text-sm text-amber-800">
+              <strong>Thời gian vé bán:</strong>{" "}
+              {formatDate(ticketSaleStart)} – {formatDate(ticketSaleStart)}
+            </div> */}
           </div>
         )}
 
@@ -885,7 +889,7 @@ export function ResearchPriceForm({
           <FormInput
             label={
               newTicket.isAuthor
-                ? `Số lượng vé tác giả (Tối đa: ${numberPaperAccept})`
+                ? `Số lượng vé tác giả (Còn lại: ${numberPaperAccept})`
                 : `Số lượng vé người nghe (Còn lại: ${maxTotalSlot - numberPaperAccept})`
             }         
             type="number"
