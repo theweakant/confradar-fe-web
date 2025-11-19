@@ -58,6 +58,9 @@ import {
   RESEARCH_MAX_STEP,
 } from "@/components/molecules/Conference/ConferenceStep/constants";
 
+import RoomCalendar from "@/components/molecules/Calendar/RoomCalendar/RoomCalendar";
+import { SessionDetailModal } from "@/components/molecules/Calendar/RoomCalendar/Session/SessionDetailModal";
+import { Session } from "@/types/conference.type";
 // DELETE TRACKING FOR CREATE MODE
 const useMockDeleteTracking = () => {
   return useMemo(
@@ -170,7 +173,8 @@ interface InitialFormData {
 
 // Trong component
 const initialDataRef = useRef<InitialFormData | null>(null);
-  const [hasLoadedData, setHasLoadedData] = useState(false);
+const [hasLoadedData, setHasLoadedData] = useState(false);
+const [isSessionDetailModalOpen, setIsSessionDetailModalOpen] = useState(false);
 
   // === LOAD EXISTING DATA ===
   const {
@@ -324,7 +328,7 @@ const initialDataRef = useRef<InitialFormData | null>(null);
     onRefetchNeeded: async () => {
       if (mode === "edit" && refetch) {
         await refetch();
-        setHasLoadedData(false); // Reset to reload initial data
+        setHasLoadedData(false); 
       }
     },
     deletedTicketIds: realDeleteTracking.deletedTicketIds,
@@ -462,9 +466,7 @@ const initialDataRef = useRef<InitialFormData | null>(null);
   const handlePreviousStep = () => handlePrevious();
   const handleNextStep = () => handleNext();
 
-  // ========================================
   // CREATE MODE: SUBMIT & NEXT HANDLERS
-  // ========================================
   const handleBasicSubmit = async () => {
     const basicValidation = validateBasicForm(basicForm);
     if (!basicValidation.isValid) {
@@ -578,6 +580,31 @@ const initialDataRef = useRef<InitialFormData | null>(null);
     if (result.success) {
       if (sessions.length > 0) handleMarkHasData(5);
       handleNext();
+    }
+  };
+  const handleSessionCreatedFromCalendar = (session: Session) => {
+    setSessions(prev => [...prev, session]);
+    handleMarkHasData(5);
+    handleMarkDirty(5);
+    toast.success(`Đã thêm session "${session.title}" thành công!`);
+  };
+
+  // Handler để xóa session
+  const handleDeleteSession = (index: number) => {
+    const deletedSession = sessions[index];
+    
+    if (mode === "edit" && deletedSession.sessionId) {
+      deleteTracking.trackDeletedSession(deletedSession.sessionId);
+    }
+    
+    const newSessions = sessions.filter((_, i) => i !== index);
+    setSessions(newSessions);
+    handleMarkDirty(5);
+    
+    toast.success(`Đã xóa session "${deletedSession.title}"!`);
+    
+    if (newSessions.length === 0) {
+      setIsSessionDetailModalOpen(false);
     }
   };
 
@@ -1040,7 +1067,7 @@ if (result?.success) {
       )}
 
       {/* STEP 5: Sessions */}
-      {currentStep === 5 && (
+      {/* {currentStep === 5 && (
         <StepContainer
           stepNumber={5}
           title="Phiên họp (Tùy chọn)"
@@ -1068,6 +1095,109 @@ if (result?.success) {
             onNext={handleNextStep}
             onSubmit={handleSessionsSubmit}
             onUpdate={handleUpdateCurrentStep}
+          />
+        </StepContainer>
+      )} */}
+
+      {currentStep === 5 && (
+        <StepContainer
+          stepNumber={5}
+          title="Phiên họp (Tùy chọn)"
+          isCompleted={isStepCompleted(5)}
+        >
+          {/* Warning nếu thiếu ngày */}
+          {(!basicForm.startDate || !basicForm.endDate) && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+              <div className="flex items-start gap-3">
+                <svg className="w-5 h-5 text-red-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <h4 className="text-sm font-semibold text-red-900 mb-1">Thiếu thông tin ngày tổ chức</h4>
+                  <p className="text-sm text-red-800">Vui lòng quay lại <strong>Bước 1</strong> để điền ngày bắt đầu và kết thúc hội thảo.</p>
+                  <button onClick={() => handleGoToStep(1)} className="mt-2 text-sm text-red-700 underline hover:text-red-900">
+                    Quay về Bước 1 →
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Hướng dẫn sử dụng */}
+          {(basicForm.startDate && basicForm.endDate) && (
+            <div className="text-xs text-gray-500 space-y-1 mb-4">
+              <p>
+                <strong>Khoảng thời gian:</strong>{" "}
+                {basicForm.startDate && <span className="font-mono">{new Date(basicForm.startDate).toLocaleDateString("vi-VN")}</span>}
+                {basicForm.startDate && basicForm.endDate && " → "}
+                {basicForm.endDate && <span className="font-mono">{new Date(basicForm.endDate).toLocaleDateString("vi-VN")}</span>}
+              </p>
+              <p>• Click vào <strong>khung giờ trống màu xanh</strong> trên calendar để tạo session</p>
+              <p>• Phiên họp nghiên cứu không yêu cầu thông tin diễn giả</p>
+            </div>
+          )}
+
+          {/* Summary banner nếu đã có sessions */}
+          {sessions.length > 0 && (
+            <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4 flex items-center justify-between shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-base font-semibold text-gray-900">
+                    Đã tạo {sessions.length} phiên họp
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Nhấn xem danh sách để quản lý
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsSessionDetailModalOpen(true)}
+                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-all flex items-center gap-2 shadow-sm hover:shadow-md"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                Xem danh sách
+              </button>
+            </div>
+          )}
+
+          <div className="border rounded-lg overflow-hidden bg-white shadow-sm mb-4">
+            <RoomCalendar 
+              conferenceId={conferenceId || undefined}
+              conferenceType="Research"
+              onSessionCreated={handleSessionCreatedFromCalendar}
+              startDate={basicForm.startDate}
+              endDate={basicForm.endDate}
+              existingSessions={sessions}
+            />
+          </div>
+
+          <FlexibleNavigationButtons
+            currentStep={5}
+            maxStep={RESEARCH_MAX_STEP}
+            isSubmitting={isSubmitting || isFetching}
+            mode={mode}
+            isStepCompleted={isStepCompleted}
+            isOptionalStep={true}
+            isSkippable={sessions.length === 0}
+            onPrevious={handlePreviousStep}
+            onNext={handleNextStep}
+            onSubmit={handleSessionsSubmit}
+            onUpdate={handleUpdateCurrentStep}
+          />
+
+          {/* Session Detail Modal */}
+          <SessionDetailModal
+            isOpen={isSessionDetailModalOpen}
+            onClose={() => setIsSessionDetailModalOpen(false)}
+            sessions={sessions}
+            onDeleteSession={handleDeleteSession}
           />
         </StepContainer>
       )}

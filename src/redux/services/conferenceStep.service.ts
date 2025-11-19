@@ -978,6 +978,17 @@ export const conferenceStepApi = createApi({
       }),
       invalidatesTags: ["ConferenceStep"],
     }),
+    //GET
+    getResearchSessions: builder.query<
+      ApiResponse<Session[]>,
+      string // conferenceId
+    >({
+      query: (conferenceId) => ({
+        url: endpoint.CONFERENCE_STEP.GET_RESEARCH_SESSIONS(conferenceId),
+        method: "GET",
+      }),
+      providesTags: ["ConferenceStep"],
+    }),
   }),
 });
 
@@ -997,6 +1008,9 @@ export const {
   useCreateConferenceSponsorsMutation,
   useUpdateConferenceSponsorMutation,
   useGetBasicStepByIdQuery,
+
+  //GET
+  useGetResearchSessionsQuery,
 
   //CREATE
   useCreatePhaseForPriceMutation,

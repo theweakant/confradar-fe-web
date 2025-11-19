@@ -196,7 +196,8 @@ export const endpoint = {
     //GET
     GET_BASIC: (conferenceId: string) =>
       `/conferencestep/${conferenceId}/basic`,
-
+    GET_RESEARCH_SESSIONS: (conferenceId: string) =>
+      `/conferencestep/${conferenceId}/research/sessions`,
 
 
     ADD_PRICE_PHASE_WAITLIST: '/conferencestep/add-pricephase-for-waitlist',

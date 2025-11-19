@@ -26,8 +26,9 @@ import { MediaForm } from "@/components/molecules/Conference/ConferenceStep/form
 import { SponsorForm } from "@/components/molecules/Conference/ConferenceStep/forms/SponsorForm";
 import { BasicInfoForm } from "@/components/molecules/Conference/ConferenceStep/forms/BasicInfoForm";
 import { PriceForm } from "@/components/molecules/Conference/ConferenceStep/forms/PriceForm";
-import { SessionForm } from "@/components/molecules/Conference/ConferenceStep/forms/SessionForm";
-import  RoomCalendar  from "@/components/molecules/Calendar/Room/RoomCalendar";
+import  RoomCalendar  from "@/components/molecules/Calendar/RoomCalendar/RoomCalendar";
+import { SessionDetailModal } from "@/components/molecules/Calendar/RoomCalendar/Session/SessionDetailModal";
+import { SingleSessionForm } from "@/components/molecules/Calendar/RoomCalendar/Form/SingleSessionForm";
 
 // Hooks
 import {
@@ -89,14 +90,6 @@ export default function TechConferenceStepForm({
   const reduxConferenceId = useAppSelector((state) => state.conferenceStep.conferenceId);
   const actualConferenceId = mode === "create" ? reduxConferenceId : conferenceId;
 
-  useEffect(() => {
-    console.log('🔍 TechConferenceStepForm Debug:');
-    console.log('  - Mode:', mode);
-    console.log('  - Props conferenceId:', conferenceId);
-    console.log('  - Redux conferenceId:', reduxConferenceId);
-    console.log('  - Actual conferenceId:', actualConferenceId);
-  }, [mode, conferenceId, reduxConferenceId, actualConferenceId]);
-
   // === DELETE TRACKING ===
   const realDeleteTracking = useDeleteTracking();
   const mockDeleteTracking = useMockDeleteTracking();
@@ -156,9 +149,13 @@ export default function TechConferenceStepForm({
     sponsors: typeof sponsors;
   }
 
-    // Trong component
   const initialDataRef = useRef<InitialFormData | null>(null);
   const [hasLoadedData, setHasLoadedData] = useState(false);
+
+  const [isSessionDetailModalOpen, setIsSessionDetailModalOpen] = useState(false);
+  const [isEditSessionFormOpen, setIsEditSessionFormOpen] = useState(false);
+  const [editingSession, setEditingSession] = useState<Session | null>(null);
+  const [editingSessionIndex, setEditingSessionIndex] = useState<number>(-1);
 
   const {
     isLoading: isConferenceLoading,
@@ -185,7 +182,6 @@ export default function TechConferenceStepForm({
             setMediaList(loadedMediaList);
             setSponsors(loadedSponsors);
 
-            // Store initial data for comparison
             initialDataRef.current = {
               basicForm: loadedBasicForm,
               tickets: loadedTickets,
@@ -196,7 +192,6 @@ export default function TechConferenceStepForm({
               sponsors: loadedSponsors,
             };
 
-            // Mark steps that have data
             if (loadedBasicForm && Object.keys(loadedBasicForm).length > 0) {
               handleMarkHasData(1);
             }
@@ -228,7 +223,6 @@ export default function TechConferenceStepForm({
         : () => {},
   });
 
-  // Watch for form changes and mark step as dirty
   useEffect(() => {
     if (!hasLoadedData || mode !== "edit" || !initialDataRef.current) return;
 
@@ -272,7 +266,7 @@ export default function TechConferenceStepForm({
     onRefetchNeeded: async () => {
       if (mode === "edit" && refetch) {
         await refetch();
-        setHasLoadedData(false); // Reset to reload initial data
+        setHasLoadedData(false);
       }
     },
     deletedTicketIds: realDeleteTracking.deletedTicketIds,
@@ -284,7 +278,6 @@ export default function TechConferenceStepForm({
 
   const { validationErrors, validate, clearError } = useValidation();
 
-  // === EFFECTS ===
   useEffect(() => {
     if (mode === "create") {
       setBasicForm((prev) => ({ ...prev, isInternalHosted }));
@@ -318,7 +311,6 @@ export default function TechConferenceStepForm({
     }
   }, [mode, isConferenceLoading, handleGoToStep]);
 
-  // === OPTIONS ===
   const categoryOptions = useMemo(
     () =>
       categoriesData?.data?.map((category) => ({
@@ -326,15 +318,6 @@ export default function TechConferenceStepForm({
         label: category.conferenceCategoryName,
       })) || [],
     [categoriesData]
-  );
-
-  const roomOptions = useMemo(
-    () =>
-      roomsData?.data?.map((room) => ({
-        value: room.roomId,
-        label: `${room.number} - ${room.displayName}`,
-      })) || [],
-    [roomsData]
   );
 
   const cityOptions = useMemo(
@@ -346,7 +329,6 @@ export default function TechConferenceStepForm({
     [citiesData]
   );
 
-  // === VALIDATION ON BLUR ===
   const handleFieldBlur = useCallback(
     (field: string) => {
       switch (field) {
@@ -395,11 +377,9 @@ export default function TechConferenceStepForm({
     [basicForm, validate, clearError]
   );
 
-  // NAVIGATION
   const handlePreviousStep = () => handlePrevious();
   const handleNextStep = () => handleNext();
 
-  // CREATE MODE: SUBMIT & NEXT
   const handleBasicSubmit = async () => {
     const basicValidation = validateBasicForm(basicForm);
     if (!basicValidation.isValid) {
@@ -473,13 +453,59 @@ export default function TechConferenceStepForm({
     }
   };
 
-const handleSessionCreatedFromCalendar = (session: Session) => {
-  setSessions(prev => [...prev, session]);
-  handleMarkHasData(3);
-  toast.success(`Đã thêm session "${session.title}" thành công!`);
-};
+  const handleSessionCreatedFromCalendar = (session: Session) => {
+    setSessions(prev => [...prev, session]);
+    handleMarkHasData(3);
+    handleMarkDirty(3);
+    toast.success(`Đã thêm session "${session.title}" thành công!`);
+  };
 
-  // UPDATE MODE: UPDATE CURRENT STEP
+  const handleEditSession = (session: Session, index: number) => {
+    setEditingSession(session);
+    setEditingSessionIndex(index);
+    setIsSessionDetailModalOpen(false); 
+    setIsEditSessionFormOpen(true); 
+  };
+
+  const handleSaveEditedSession = (updatedSession: Session) => {
+    if (editingSessionIndex >= 0) {
+      const newSessions = [...sessions];
+      newSessions[editingSessionIndex] = updatedSession;
+      setSessions(newSessions);
+      handleMarkDirty(3); 
+      setIsEditSessionFormOpen(false);
+      setEditingSession(null);
+      setEditingSessionIndex(-1);
+      toast.success(`Đã cập nhật session "${updatedSession.title}" thành công!`);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditSessionFormOpen(false);
+    setEditingSession(null);
+    setEditingSessionIndex(-1);
+    setIsSessionDetailModalOpen(true); 
+  };
+
+  const handleDeleteSession = (index: number) => {
+    const deletedSession = sessions[index];
+    
+    if (mode === "edit" && deletedSession.sessionId) {
+      deleteTracking.trackDeletedSession(deletedSession.sessionId);
+    }
+    
+    const newSessions = sessions.filter((_, i) => i !== index);
+    setSessions(newSessions);
+    handleMarkDirty(3); 
+    
+    toast.success(`Đã xóa session "${deletedSession.title}"!`);
+    
+    // Đóng modal nếu không còn session nào
+    if (newSessions.length === 0) {
+      setIsSessionDetailModalOpen(false);
+    }
+  };
+
   const handleUpdateCurrentStep = useCallback(async () => {
     let result;
     switch (currentStep) {
@@ -536,33 +562,32 @@ const handleSessionCreatedFromCalendar = (session: Session) => {
         return { success: false };
     }
 
-    // Clear dirty flag after successful update
-if (result?.success) {
-  handleClearDirty(currentStep);
+    if (result?.success) {
+      handleClearDirty(currentStep);
 
-  if (initialDataRef.current) {
-    switch (currentStep) {
-      case 1:
-        initialDataRef.current.basicForm = { ...basicForm };
-        break;
-      case 2:
-        initialDataRef.current.tickets = [...tickets];
-        break;
-      case 3:
-        initialDataRef.current.sessions = [...sessions];
-        break;
-      case 4:
-        initialDataRef.current.policies = [...policies];
-        break;
-      case 5:
-        initialDataRef.current.mediaList = [...mediaList];
-        break;
-      case 6:
-        initialDataRef.current.sponsors = [...sponsors];
-        break;
+      if (initialDataRef.current) {
+        switch (currentStep) {
+          case 1:
+            initialDataRef.current.basicForm = { ...basicForm };
+            break;
+          case 2:
+            initialDataRef.current.tickets = [...tickets];
+            break;
+          case 3:
+            initialDataRef.current.sessions = [...sessions];
+            break;
+          case 4:
+            initialDataRef.current.policies = [...policies];
+            break;
+          case 5:
+            initialDataRef.current.mediaList = [...mediaList];
+            break;
+          case 6:
+            initialDataRef.current.sponsors = [...sponsors];
+            break;
+        }
+      }
     }
-  }
-}
 
     return result || { success: false };
   }, [
@@ -582,7 +607,6 @@ if (result?.success) {
     handleClearDirty,
   ]);
 
-  // UPDATE ALL (edit mode only, step 6)
   const handleUpdateAll = async () => {
     if (mode !== "edit") return { success: false };
 
@@ -599,7 +623,6 @@ if (result?.success) {
       toast.success("Cập nhật toàn bộ hội thảo thành công!");
       realDeleteTracking.resetDeleteTracking();
 
-      // Clear all dirty flags and update initial data
       for (let i = 1; i <= TECH_MAX_STEP; i++) {
         handleClearDirty(i);
       }
@@ -627,7 +650,6 @@ if (result?.success) {
     toast.success("Đã gửi yêu cầu duyệt thành công!");
   }, [refetch]);
 
-  // === LOADING ===
   const isLoading =
     mode === "edit" &&
     (isConferenceLoading ||
@@ -639,7 +661,6 @@ if (result?.success) {
     return <LoadingOverlay message="Đang tải dữ liệu hội thảo..." />;
   }
 
-  // === RENDER ===
   return (
     <div className="max-w-8xl mx-auto p-6">
       <div className="flex items-center justify-between mb-6">
@@ -716,7 +737,6 @@ if (result?.success) {
         </StepContainer>
       )}
 
-      {/* STEP 2: Price */}
       {currentStep === 2 && (
         <StepContainer
           stepNumber={2}
@@ -746,14 +766,12 @@ if (result?.success) {
         </StepContainer>
       )}
 
-      {/* STEP 3: Sessions */}
       {currentStep === 3 && (
         <StepContainer
           stepNumber={3}
           title="Phiên họp (Tùy chọn)"
           isCompleted={isStepCompleted(3)}
         >
-          {/* Validation Warnings */}
           {(!basicForm.startDate || !basicForm.endDate) && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
               <div className="flex items-start gap-3">
@@ -771,8 +789,7 @@ if (result?.success) {
             </div>
           )}
 
-          {/* Info Notes */}
-          {(basicForm.startDate || basicForm.endDate) && (
+          {(basicForm.startDate || basicForm.endDate) && !isEditSessionFormOpen && (
             <div className="text-xs text-gray-500 space-y-1 mb-4">
               <p>
                 <strong>Khoảng thời gian:</strong>{" "}
@@ -785,7 +802,7 @@ if (result?.success) {
             </div>
           )}
 
-          {!actualConferenceId && mode === "create" && (
+          {!actualConferenceId && mode === "create" && !isEditSessionFormOpen && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
               <div className="flex items-start gap-3">
                 <svg className="w-5 h-5 text-yellow-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -802,48 +819,84 @@ if (result?.success) {
             </div>
           )}
 
-          {/* Sessions Count Badge */}
-          {sessions.length > 0 && (
+          {sessions.length > 0 && !isEditSessionFormOpen && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="text-sm font-semibold text-green-900">Đã tạo {sessions.length} phiên họp</span>
+                <span className="text-sm font-semibold text-green-900">
+                  Đã tạo {sessions.length} phiên họp
+                </span>
               </div>
-              <button onClick={() => toast.info(`Bạn đã tạo ${sessions.length} session(s)`)} className="text-sm text-green-700 hover:text-green-900 underline">
-                Xem chi tiết
+              <button 
+                onClick={() => setIsSessionDetailModalOpen(true)}
+                className="px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                Xem danh sách
               </button>
             </div>
           )}
 
-          {/* Calendar */}
-          <div className="border rounded-lg overflow-hidden bg-white shadow-sm mb-4">
-            <RoomCalendar 
-              conferenceId={actualConferenceId || undefined}
-              onSessionCreated={handleSessionCreatedFromCalendar}
-              startDate={basicForm.startDate}
-            />
-          </div>
+          {isEditSessionFormOpen && editingSession ? (
+            <div className="border rounded-lg overflow-hidden bg-white shadow-sm mb-4 p-6">
+              <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 text-blue-800">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  <span className="font-semibold">Đang chỉnh sửa session</span>
+                </div>
+              </div>
+              <SingleSessionForm
+                conferenceId={actualConferenceId!}
+                roomId={editingSession.roomId}
+                roomDisplayName={editingSession.roomDisplayName || "Phòng đang sửa"}
+                roomNumber={editingSession.roomNumber}
+                date={editingSession.date}
+                startTime={editingSession.startTime}
+                endTime={editingSession.endTime}
+                existingSessions={sessions.filter((_, idx) => idx !== editingSessionIndex)}
+                initialSession={editingSession}
+                onSave={handleSaveEditedSession}
+                onCancel={handleCancelEdit}
+              />
+            </div>
+          ) : (
+            <div className="border rounded-lg overflow-hidden bg-white shadow-sm mb-4">
+              <RoomCalendar 
+                conferenceId={actualConferenceId || undefined}
+                conferenceType="Tech"
+                onSessionCreated={handleSessionCreatedFromCalendar}
+                startDate={basicForm.startDate}
+                endDate={basicForm.endDate}
+                existingSessions={sessions}
+              />
+            </div>
+          )}
 
-          {/* Navigation Buttons */}
-          <FlexibleNavigationButtons
-            currentStep={3}
-            maxStep={TECH_MAX_STEP}
-            isSubmitting={isSubmitting || isFetching}
-            mode={mode}
-            isStepCompleted={isStepCompleted}
-            isOptionalStep={true}
-            isSkippable={sessions.length === 0}
-            onPrevious={handlePreviousStep}
-            onNext={handleNextStep}
-            onSubmit={handleSessionsSubmit}
-            onUpdate={handleUpdateCurrentStep}
-          />
+          {!isEditSessionFormOpen && (
+            <FlexibleNavigationButtons
+              currentStep={3}
+              maxStep={TECH_MAX_STEP}
+              isSubmitting={isSubmitting || isFetching}
+              mode={mode}
+              isStepCompleted={isStepCompleted}
+              isOptionalStep={true}
+              isSkippable={sessions.length === 0}
+              onPrevious={handlePreviousStep}
+              onNext={handleNextStep}
+              onSubmit={handleSessionsSubmit}
+              onUpdate={handleUpdateCurrentStep}
+            />
+          )}
         </StepContainer>
       )}
 
-      {/* STEP 4: Policies */}
       {currentStep === 4 && (
         <StepContainer
           stepNumber={4}
@@ -874,7 +927,6 @@ if (result?.success) {
         </StepContainer>
       )}
 
-      {/* STEP 5: Media */}
       {currentStep === 5 && (
         <StepContainer
           stepNumber={5}
@@ -902,7 +954,6 @@ if (result?.success) {
         </StepContainer>
       )}
 
-      {/* STEP 6: Sponsors */}
       {currentStep === 6 && (
         <StepContainer
           stepNumber={6}
@@ -930,6 +981,15 @@ if (result?.success) {
           />
         </StepContainer>
       )}
+
+      {/* Session Detail Modal */}
+      <SessionDetailModal
+        isOpen={isSessionDetailModalOpen}
+        onClose={() => setIsSessionDetailModalOpen(false)}
+        sessions={sessions}
+        onEditSession={handleEditSession}
+        onDeleteSession={handleDeleteSession}
+      />
     </div>
   );
 }

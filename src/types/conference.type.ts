@@ -183,9 +183,12 @@ export interface Session {
   endTime: string;
   date: string;
   timeRange?: number;
-  roomId: string;
   speaker: Speaker[];
   sessionMedias?: SessionMedia[];
+
+  roomId: string;
+  roomDisplayName?:string
+  roomNumber?:string
 }
 
 export type ResearchSession = Omit<Session, 'speaker'>;
