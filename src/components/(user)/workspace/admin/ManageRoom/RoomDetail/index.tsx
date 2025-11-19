@@ -10,6 +10,10 @@ import {
   Clock,
   Search,
 } from "lucide-react";
+import FullCalendar from '@fullcalendar/react';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import interactionPlugin from '@fullcalendar/interaction';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/atoms/StatusBadge";
@@ -22,6 +26,9 @@ export function RoomDetail({ room, onClose }: RoomDetailProps) {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [hasSearched, setHasSearched] = useState(false);
+
+  const [selectedSession, setSelectedSession] = useState<RoomOccupationSlot | null>(null);
+  const [isSessionDialogOpen, setIsSessionDialogOpen] = useState(false);
 
   // Only call API when we have both dates and user has searched
   const shouldFetch =
@@ -65,6 +72,26 @@ export function RoomDetail({ room, onClose }: RoomDetailProps) {
     }
   };
 
+  const calendarEvents = occupationSlots.map(slot => ({
+    id: slot.sessionId,
+    title: slot.sessionTitle,
+    start: slot.startTime,
+    end: slot.endTime,
+    extendedProps: {
+      conferenceId: slot.conferenceId,
+      conferenceName: slot.conferenceName,
+    },
+  }));
+
+  // Handle event click
+  const handleEventClick = (info: any) => {
+    const slot = occupationSlots.find(s => s.sessionId === info.event.id);
+    if (slot) {
+      setSelectedSession(slot);
+      setIsSessionDialogOpen(true);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -81,11 +108,10 @@ export function RoomDetail({ room, onClose }: RoomDetailProps) {
         <nav className="-mb-px flex space-x-8">
           <button
             onClick={() => setActiveTab("info")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === "info"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-            }`}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "info"
+              ? "border-blue-500 text-blue-600"
+              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
           >
             <div className="flex items-center gap-2">
               <Home className="w-4 h-4" />
@@ -94,11 +120,10 @@ export function RoomDetail({ room, onClose }: RoomDetailProps) {
           </button>
           <button
             onClick={() => setActiveTab("sessions")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === "sessions"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-            }`}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "sessions"
+              ? "border-blue-500 text-blue-600"
+              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
           >
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
@@ -214,6 +239,267 @@ export function RoomDetail({ room, onClose }: RoomDetailProps) {
           {hasSearched && (
             <div className="space-y-4">
               <h4 className="text-lg font-medium text-gray-900">
+                Kết quả tìm kiếm ({occupationSlots.length} sessions)
+              </h4>
+
+              {slotsLoading ? (
+                <div className="flex justify-center items-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+              ) : slotsError ? (
+                <div className="text-center py-8 text-red-500">
+                  Có lỗi xảy ra khi tải dữ liệu
+                </div>
+              ) : occupationSlots.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  Không có session nào trong khoảng thời gian đã chọn
+                </div>
+              ) : (
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <style jsx global>{`
+                    .fc {
+                      font-family: inherit;
+                    }
+                    
+                    .fc .fc-toolbar-title {
+                      font-size: 1.25rem;
+                      font-weight: 600;
+                      color: #111827;
+                    }
+                    
+                    .fc .fc-button {
+                      background-color: #3b82f6;
+                      border-color: #3b82f6;
+                      color: white;
+                      padding: 0.375rem 0.75rem;
+                      font-size: 0.875rem;
+                      border-radius: 0.375rem;
+                      text-transform: capitalize;
+                    }
+                    
+                    .fc .fc-button:hover {
+                      background-color: #2563eb;
+                      border-color: #2563eb;
+                    }
+                    
+                    .fc .fc-button:disabled {
+                      background-color: #9ca3af;
+                      border-color: #9ca3af;
+                      opacity: 0.6;
+                    }
+                    
+                    .fc .fc-button-active {
+                      background-color: #1d4ed8 !important;
+                      border-color: #1d4ed8 !important;
+                    }
+                    
+                    .fc-theme-standard td, 
+                    .fc-theme-standard th {
+                      border-color: #e5e7eb;
+                    }
+                    
+                    .fc-theme-standard .fc-scrollgrid {
+                      border-color: #e5e7eb;
+                    }
+                    
+                    .fc .fc-daygrid-day-number,
+                    .fc .fc-col-header-cell-cushion {
+                      color: #374151;
+                      text-decoration: none;
+                      padding: 0.5rem;
+                    }
+                    
+                    .fc .fc-col-header-cell {
+                      background-color: #f9fafb;
+                      font-weight: 600;
+                      font-size: 0.875rem;
+                      text-transform: uppercase;
+                      color: #6b7280;
+                    }
+                    
+                    .fc .fc-daygrid-day.fc-day-today {
+                      background-color: #eff6ff;
+                    }
+                    
+                    .fc-event {
+                      border: none;
+                      border-radius: 0.25rem;
+                      padding: 2px 4px;
+                      font-size: 0.875rem;
+                      cursor: pointer;
+                      background-color: #3b82f6;
+                      transition: all 0.2s;
+                    }
+                    
+                    .fc-event:hover {
+                      background-color: #2563eb;
+                      transform: translateY(-1px);
+                      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                    }
+                    
+                    .fc-event-title {
+                      font-weight: 500;
+                    }
+                    
+                    .fc-event-time {
+                      font-weight: 600;
+                      font-size: 0.75rem;
+                    }
+                    
+                    .fc .fc-timegrid-slot {
+                      height: 3rem;
+                    }
+                    
+                    .fc .fc-timegrid-slot-label {
+                      font-size: 0.75rem;
+                      color: #6b7280;
+                    }
+                    
+                    .fc-h-event .fc-event-main {
+                      padding: 0.25rem 0.5rem;
+                    }
+                    
+                    .fc-direction-ltr .fc-timegrid-slot-label-frame {
+                      text-align: right;
+                      padding-right: 0.5rem;
+                    }
+                    
+                    /* Custom scrollbar */
+                    .fc-scroller::-webkit-scrollbar {
+                      width: 8px;
+                      height: 8px;
+                    }
+                    
+                    .fc-scroller::-webkit-scrollbar-track {
+                      background: #f1f5f9;
+                      border-radius: 4px;
+                    }
+                    
+                    .fc-scroller::-webkit-scrollbar-thumb {
+                      background: #cbd5e1;
+                      border-radius: 4px;
+                    }
+                    
+                    .fc-scroller::-webkit-scrollbar-thumb:hover {
+                      background: #94a3b8;
+                    }
+                  `}</style>
+                  <FullCalendar
+                    plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+                    initialView="timeGridWeek"
+                    headerToolbar={{
+                      left: 'prev,next today',
+                      center: 'title',
+                      right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    }}
+                    buttonText={{
+                      today: 'Hôm nay',
+                      month: 'Tháng',
+                      week: 'Tuần',
+                      day: 'Ngày'
+                    }}
+                    events={calendarEvents}
+                    eventClick={handleEventClick}
+                    height="auto"
+                    locale="vi"
+                    slotMinTime="06:00:00"
+                    slotMaxTime="22:00:00"
+                    allDaySlot={false}
+                    eventTimeFormat={{
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: false
+                    }}
+                    slotLabelFormat={{
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: false
+                    }}
+                    dayHeaderFormat={{
+                      weekday: 'short',
+                      day: 'numeric',
+                      month: 'numeric'
+                    }}
+                    nowIndicator={true}
+                    editable={false}
+                    selectable={false}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Session Detail Dialog */}
+          {isSessionDialogOpen && selectedSession && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                <div className="space-y-4">
+                  <h3 className="text-xl font-bold text-gray-900">
+                    Chi tiết Session
+                  </h3>
+
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <Tag className="w-5 h-5 text-blue-600 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-700">Tiêu đề</p>
+                        <p className="text-gray-900">{selectedSession.sessionTitle}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <Building className="w-5 h-5 text-blue-600 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-700">Conference</p>
+                        <p className="text-gray-900">{selectedSession.conferenceName}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <Clock className="w-5 h-5 text-blue-600 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-700">Thời gian</p>
+                        <p className="text-gray-900">
+                          {formatDateTime(selectedSession.startTime)} - {formatDateTime(selectedSession.endTime)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <Tag className="w-5 h-5 text-blue-600 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-700">Session ID</p>
+                        <p className="text-gray-900 font-mono text-sm">{selectedSession.sessionId}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <Tag className="w-5 h-5 text-blue-600 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-700">Conference ID</p>
+                        <p className="text-gray-900 font-mono text-sm">{selectedSession.conferenceId}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end pt-4 border-t">
+                    <Button
+                      onClick={() => {
+                        setIsSessionDialogOpen(false);
+                        setSelectedSession(null);
+                      }}
+                      className="px-6 py-2"
+                    >
+                      Đóng
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          {/* {hasSearched && (
+            <div className="space-y-4">
+              <h4 className="text-lg font-medium text-gray-900">
                 Kết quả tìm kiếm ({occupationSlots.length} session)
               </h4>
 
@@ -263,7 +549,7 @@ export function RoomDetail({ room, onClose }: RoomDetailProps) {
                 </div>
               )}
             </div>
-          )}
+          )} */}
         </div>
       )}
 
