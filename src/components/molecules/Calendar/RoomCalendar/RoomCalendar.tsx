@@ -6,31 +6,24 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { EventClickArg } from "@fullcalendar/core";
 import { DoorOpen } from "lucide-react";
 import { useGetAvailableRoomsBetweenDatesQuery } from "@/redux/services/room.service";
-import { useListAcceptedPapersQuery } from "@/redux/services/paper.service"; 
 import type { AvailableRoom } from "@/types/room.type";
 import type { Session } from "@/types/conference.type";
-import type { AcceptedPaper } from "@/types/paper.type";
 import { DatesSetArg } from '@fullcalendar/core';
 import RoomCard from "./RoomCard";
 import RoomDetailDialog from "./RoomDetailDialog";
-import PaperCard from "../SessionCalendar/Paper/PaperCard"; 
 
 interface RoomCalendarProps {
   conferenceId?: string;
   onSessionCreated?: (session: Session) => void;
   startDate?: string;
-  onShowPaper?: boolean; 
-  onPaperSelected?: (paperId: string) => void; 
-  acceptedPapers?: AcceptedPaper[]; 
+  existingSessions?: Session[];
 }
 
 const RoomCalendar: React.FC<RoomCalendarProps> = ({ 
   conferenceId, 
   onSessionCreated,
   startDate,
-  onShowPaper,
-  onPaperSelected,
-  acceptedPapers: externalAcceptedPapers,
+  existingSessions
 }) => {
   useEffect(() => {
     console.log('🔍 RoomCalendar received conferenceId:', conferenceId);
@@ -55,7 +48,7 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
     }
   }, [startDate]);
 
-  // 🔹 Fetch rooms
+  // Fetch rooms
   const {
     data: roomsData,
     isLoading: isLoadingRooms,
@@ -66,21 +59,7 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
     endate: dateRange.end
   });
 
-  // 🔹 Fetch accepted papers (chỉ nếu onShowPaper === true và có conferenceId)
-  const {
-    data: acceptedPapersData,
-    isLoading: isLoadingPapers,
-    error: papersError
-  } = useListAcceptedPapersQuery(
-    { confId: conferenceId! },
-    { skip: !onShowPaper || !conferenceId }
-  );
-
   const rooms = roomsData?.data || [];
-  const internalAcceptedPapers = acceptedPapersData?.data || [];
-  const papersToDisplay = externalAcceptedPapers !== undefined 
-    ? externalAcceptedPapers 
-    : internalAcceptedPapers;
 
   const roomsByDate = rooms.reduce((acc, room) => {
     if (!acc[room.date]) {
@@ -163,32 +142,24 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
     }
   };
 
-  const isLoading = isLoadingRooms || (onShowPaper && isLoadingPapers);
-  const error = roomsError || (onShowPaper ? papersError : null);
-
-  if (isLoading) {
+  if (isLoadingRooms) {
     return (
       <div className="min-h-screen bg-gray-900 text-gray-100 p-6 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">Đang tải lịch phòng{onShowPaper ? " và bài báo" : ""}...</p>
+          <p className="text-gray-400">Đang tải lịch phòng...</p>
         </div>
       </div>
     );
   }
 
-  if (error) {
+  if (roomsError) {
     return (
       <div className="min-h-screen bg-gray-900 text-gray-100 p-6 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-400 mb-4">Có lỗi xảy ra khi tải dữ liệu</p>
           <button
-            onClick={() => {
-              refetchRooms();
-              if (onShowPaper && conferenceId) {
-                // RTK Query tự refetch nếu invalidated, hoặc bạn có thể dùng trigger
-              }
-            }}
+            onClick={() => refetchRooms()}
             className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
           >
             Thử lại
@@ -199,38 +170,38 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-white mb-2">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">
             Lịch Phòng Trống
           </h1>
-          <p className="text-gray-400">
+          <p className="text-gray-600">
             Theo dõi và quản lý tình trạng phòng (Hiển thị tối đa 7 ngày)
           </p>
           {conferenceId && (
-            <p className="text-xs text-green-400 mt-1">
+            <p className="text-xs text-green-600 mt-1 font-medium">
               Conference ID: {conferenceId}
             </p>
           )}
         </div>
 
         {/* Legend */}
-        <div className="mb-4 flex gap-4 items-center text-sm">
+        <div className="mb-4 flex gap-6 items-center text-sm bg-white p-4 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-green-600"></div>
-            <span className="text-gray-300">Trống cả ngày</span>
+            <div className="w-5 h-5 rounded bg-gradient-to-br from-green-500 to-green-600 shadow-sm"></div>
+            <span className="text-gray-700 font-medium">Trống cả ngày</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-orange-600"></div>
-            <span className="text-gray-300">Trống một phần</span>
+            <div className="w-5 h-5 rounded bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm"></div>
+            <span className="text-gray-700 font-medium">Trống một phần</span>
           </div>
         </div>
 
-        {/* 🔹 Layout: 3 hoặc 4 cột */}
-        <div className={`grid gap-6 ${onShowPaper ? 'lg:grid-cols-4' : 'lg:grid-cols-3'}`}>
+        {/* Layout: 2 columns - Calendar and Room List */}
+        <div className="grid gap-6 lg:grid-cols-3">
           {/* Calendar */}
-          <div className={`lg:col-span-${onShowPaper ? 2 : 2} bg-gray-800 rounded-lg p-6 shadow-xl`}>
+          <div className="lg:col-span-2 bg-white rounded-xl p-6 shadow-lg border border-gray-200">
             <div className="calendar-container">
               <FullCalendar
                 ref={calendarRef}
@@ -242,12 +213,12 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
                   right: "weekNoTime,timeGridDay",
                 }}
                 views={{
-  weekNoTime: {
-    type: "timeGridWeek",
-    slotMinTime: "24:00:00",
-    slotMaxTime: "24:00:00",
-  }
-}}
+                  weekNoTime: {
+                    type: "timeGridWeek",
+                    slotMinTime: "24:00:00",
+                    slotMaxTime: "24:00:00",
+                  }
+                }}
                 events={calendarEvents}
                 eventClick={handleEventClick}
                 datesSet={handleDatesSet}
@@ -320,30 +291,6 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
               ))}
             </div>
           </div>
-
-          {/* ✅ Paper List - chỉ hiển thị khi onShowPaper === true */}
-          {onShowPaper && (
-            <div className="bg-gray-800 rounded-lg p-6 shadow-xl">
-              <h2 className="text-xl font-semibold mb-4 text-white">
-                Bài báo đã chấp nhận ({papersToDisplay.length})
-              </h2>
-              <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
-                {papersToDisplay.length === 0 ? (
-                  <div className="text-gray-500 text-sm py-4 text-center">
-                    Không có bài báo nào
-                  </div>
-                ) : (
-                  papersToDisplay.map((paper) => (
-                    <PaperCard
-                      key={paper.paperId}
-                      paper={paper}
-                      onClick={() => onPaperSelected?.(paper.paperId)}
-                    />
-                  ))
-                )}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -355,6 +302,7 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
         roomDisplayName={selectedRoomData?.roomDisplayName}
         date={selectedDate}
         conferenceId={conferenceId}
+        existingSessions={existingSessions}
         onClose={() => {
           setRoomDetailOpen(false);
           setSelectedRoom(null);
@@ -364,12 +312,12 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
       />
 
       <style jsx global>{`
-        /* Ẩn cột giờ bên trái /
+        /* Ẩn cột giờ bên trái */
         .fc-timegrid-axis {
           display: none !important;
         }
 
-        / Ẩn header của cột giờ */
+        /* Ẩn header của cột giờ */
         .fc-timegrid-slot-label {
           display: none !important;
         }

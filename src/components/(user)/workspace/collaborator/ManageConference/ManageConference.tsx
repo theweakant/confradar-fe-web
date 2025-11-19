@@ -20,7 +20,6 @@ import { useGetAllConferenceStatusesQuery } from "@/redux/services/status.servic
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 
-import RoomCalendar from "@/components/molecules/Calendar/RoomCalendar/RoomCalendar";
 
 
 export default function ManageConference() {
@@ -39,7 +38,6 @@ export default function ManageConference() {
   const [calendarType, setCalendarType] = useState<
     "conference" | "session" | "paper"
   >("conference");
-  const [showRoomCalendar, setShowRoomCalendar] = useState(false);
 
   // RTK Query hooks
   const { data, isLoading, isFetching, error, refetch } =
@@ -156,15 +154,6 @@ export default function ManageConference() {
               </h1>
 
               <div className="flex items-center gap-3">
-                <Button
-                  variant="outline"
-                  className="flex items-center gap-2 whitespace-nowrap border-purple-300 text-purple-700 hover:bg-purple-50"
-                  onClick={() => setShowRoomCalendar(true)}
-                >
-                  <Calendar className="w-5 h-5" />
-                  Xem danh sách phòng
-                </Button>
-
                 <Link href="/workspace/collaborator/manage-conference/create-tech-conference">
                   <Button className="flex items-center gap-2 whitespace-nowrap">
                     <Plus className="w-5 h-5" />
@@ -320,46 +309,6 @@ export default function ManageConference() {
         </div>
       )}
 
-      {/* ✅ Room Calendar Modal - FullCalendar Version (Dark Theme) */}
-      {showRoomCalendar && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex min-h-screen items-center justify-center p-4">
-            {/* Backdrop */}
-            <div 
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-              onClick={() => setShowRoomCalendar(false)}
-            />
-            
-            {/* Modal Container - Removed outer wrapper to let RoomCalendar handle its own styling */}
-            <div className="relative w-full max-w-[95vw] max-h-[95vh] overflow-hidden rounded-lg shadow-2xl">
-              {/* Close Button Overlay */}
-              <button
-                onClick={() => setShowRoomCalendar(false)}
-                className="absolute top-4 right-4 z-50 p-2 bg-gray-800/80 hover:bg-gray-700 rounded-lg transition-colors backdrop-blur-sm"
-              >
-                <svg 
-                  className="w-6 h-6 text-white" 
-                  fill="none" 
-                  viewBox="0 0 24 24" 
-                  stroke="currentColor"
-                >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2} 
-                    d="M6 18L18 6M6 6l12 12" 
-                  />
-                </svg>
-              </button>
-
-              {/* RoomCalendar Component (handles its own dark theme) */}
-              <div className="overflow-y-auto max-h-[95vh]">
-                <RoomCalendar />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

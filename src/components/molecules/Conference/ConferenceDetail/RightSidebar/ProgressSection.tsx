@@ -12,10 +12,8 @@ export function ProgressTimelineSection({
   conference,
   getStatusName,
 }: ProgressTimelineSectionProps) {
-  const [reminderActive, setReminderActive] = useState(false);
   const statusName = getStatusName(conference.conferenceStatusId ?? "");
 
-  // Keep internal status names in English (for logic & display)
   const statusProgression = [
     { name: "Draft", color: "bg-gray-400" },
     { name: "Pending", color: "bg-yellow-400" },

@@ -12,7 +12,7 @@ import {
   useGetSessionsInRoomOnDateQuery 
 } from "@/redux/services/room.service";
 import { SessionList } from "./Session/SessionList";
-import { SingleSessionForm } from "./Session/SingleSessionForm";
+import { SingleSessionForm } from "./Form/SingleSessionForm";
 import type { Session } from "@/types/conference.type";
 
 interface RoomDetailDialogProps {
@@ -22,6 +22,7 @@ interface RoomDetailDialogProps {
   roomDisplayName?: string | null;
   date: string | null;
   conferenceId?: string; 
+  existingSessions?: Session[]; // Sessions từ form state
   onClose: () => void;
   onSessionCreated?: (session: Session) => void; 
 }
@@ -33,6 +34,7 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
   roomDisplayName,
   date,
   conferenceId,
+  existingSessions = [],
   onClose,
   onSessionCreated,
 }) => {
@@ -42,7 +44,7 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
     startTime: string;
     endTime: string;
   } | null>(null);
-const [isCreatingSession, setIsCreatingSession] = useState(false);
+  const [isCreatingSession, setIsCreatingSession] = useState(false);
 
   const { data: timesData, isLoading: loadingTimes } = useGetAvailableTimesInRoomQuery(
     { roomId: roomId!, date: date! },
@@ -87,11 +89,9 @@ const [isCreatingSession, setIsCreatingSession] = useState(false);
   // Handle time slot click → switch to form mode
   const handleTimeSlotSelect = (span: { startTime: string; endTime: string }) => {
     if (!conferenceId) {
-      // Nếu không có conferenceId, không cho phép tạo session
       return;
     }
 
-    // Convert HH:mm:ss to ISO format
     const dateStr = date!;
     const startISO = `${dateStr}T${span.startTime}`;
     const endISO = `${dateStr}T${span.endTime}`;
@@ -103,30 +103,26 @@ const [isCreatingSession, setIsCreatingSession] = useState(false);
     setMode("form");
   };
 
-  // Handle back from form to view
   const handleBackToView = () => {
     setMode("view");
     setSelectedSlot(null);
   };
 
-  // Handle session save
-const handleSessionSave = async (session: Session) => {
-  if (onSessionCreated) {
-    setIsCreatingSession(true);
-    try {
-      await onSessionCreated(session);
-      setMode("view");
-      setSelectedSlot(null);
-    } catch (error) {
-      console.error("Failed to create session:", error);
-      // Keep form open on error
-    } finally {
-      setIsCreatingSession(false);
+  const handleSessionSave = async (session: Session) => {
+    if (onSessionCreated) {
+      setIsCreatingSession(true);
+      try {
+        await onSessionCreated(session);
+        setMode("view");
+        setSelectedSlot(null);
+      } catch (error) {
+        console.error("Failed to create session:", error);
+      } finally {
+        setIsCreatingSession(false);
+      }
     }
-  }
-};
+  };
 
-  // Reset state when dialog closes
   const handleClose = () => {
     setMode("view");
     setSelectedSlot(null);
@@ -219,6 +215,7 @@ const handleSessionSave = async (session: Session) => {
                         date={date!}
                         startTime={selectedSlot.startTime}
                         endTime={selectedSlot.endTime}
+                        existingSessions={existingSessions}
                         onSave={handleSessionSave}
                         onCancel={handleBackToView}
                       />
