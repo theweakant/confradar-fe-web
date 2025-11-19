@@ -52,13 +52,104 @@ export function SessionTab({ conference, conferenceType }: SessionTabProps) {
   return (
     <div className="space-y-4 p-4">
       {/* Research Phase Timeline (only for research) */}
-      {conferenceType === "research" && researchPhase && (
+      {conferenceType === "research" && researchPhase && researchPhase.length > 0 && (
         <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
           <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
             <Calendar className="w-5 h-5 text-blue-600" />
             Giai Đoạn Hội Nghị
           </h3>
-          {/* Main Phase Timeline */}
+
+          {researchPhase.map((phase, idx) => (
+            <div key={phase.researchConferencePhaseId || idx} className="mb-4">
+              {/* Timeline grid */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-2">
+                <InfoField
+                  label="Đăng ký"
+                  value={formatDate(phase.registrationStartDate)}
+                />
+                <InfoField
+                  label="Nộp bài"
+                  value={formatDate(phase.fullPaperStartDate)}
+                />
+                <InfoField
+                  label="Đánh giá"
+                  value={formatDate(phase.reviewStartDate)}
+                />
+                <InfoField
+                  label="Chỉnh sửa"
+                  value={formatDate(phase.reviseStartDate)}
+                />
+                <InfoField
+                  label="Camera Ready"
+                  value={formatDate(phase.cameraReadyStartDate)}
+                />
+                <div className="flex gap-2 items-center">
+                  <span
+                    className={`px-2 py-1 rounded text-xs font-medium ${phase.isActive
+                        ? "bg-green-100 text-green-700"
+                        : "bg-gray-100 text-gray-600"
+                      }`}
+                  >
+                    {phase.isActive
+                      ? "✓ Đang diễn ra"
+                      : "✗ Không hoạt động"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Revision Rounds */}
+              {phase.revisionRoundDeadlines?.length ? (
+                <Accordion type="single" collapsible className="w-full">
+                  <AccordionItem
+                    value={`revision-rounds-${idx}`}
+                    className="border border-blue-200"
+                  >
+                    <AccordionTrigger className="text-sm font-semibold text-gray-900 py-2 px-3 hover:bg-blue-100">
+                      Các Vòng Chỉnh Sửa ({phase.revisionRoundDeadlines.length})
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-3">
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        {phase.revisionRoundDeadlines.map((deadline) => (
+                          <div
+                            key={deadline.revisionRoundDeadlineId}
+                            className="bg-white border border-blue-100 rounded p-2"
+                          >
+                            <div className="text-xs font-bold text-blue-700 mb-1">
+                              Vòng {deadline.roundNumber ?? "?"}
+                            </div>
+                            <div className="text-xs text-gray-700">
+                              <div>
+                                Bắt đầu:{" "}
+                                {deadline.startSubmissionDate
+                                  ? formatDate(deadline.startSubmissionDate)
+                                  : "Chưa xác định"}
+                              </div>
+                              <div>
+                                Kết thúc:{" "}
+                                {deadline.endSubmissionDate
+                                  ? formatDate(deadline.endSubmissionDate)
+                                  : "Chưa xác định"}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* {conferenceType === "research" && researchPhase && (
+        <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
+          <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-blue-600" />
+            Giai Đoạn Hội Nghị
+          </h3>
+         
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
             <InfoField
               label="Đăng ký"
@@ -131,7 +222,7 @@ export function SessionTab({ conference, conferenceType }: SessionTabProps) {
               </Accordion>
             )}
         </div>
-      )}
+      )} */}
 
       {/* Session List */}
       <div className="space-y-2">
@@ -163,9 +254,8 @@ export function SessionTab({ conference, conferenceType }: SessionTabProps) {
                     </div>
                   </div>
                   <ChevronDown
-                    className={`w-5 h-5 text-gray-400 transition-transform ${
-                      isExpanded ? "rotate-180" : ""
-                    }`}
+                    className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? "rotate-180" : ""
+                      }`}
                   />
                 </button>
 

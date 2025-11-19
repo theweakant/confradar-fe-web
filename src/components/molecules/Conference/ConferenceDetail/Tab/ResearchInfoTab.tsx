@@ -35,11 +35,10 @@ export function ResearchInfoTab({ conference }: ResearchInfoTabProps) {
           <div className="flex items-center gap-2">
             <span className="text-xs font-medium text-gray-500">Cho phép thính giả:</span>
             <span
-              className={`px-2.5 py-1 rounded-md text-xs font-medium ${
-                conference.allowListener
-                  ? "bg-green-50 text-green-700"
-                  : "bg-gray-100 text-gray-600"
-              }`}
+              className={`px-2.5 py-1 rounded-md text-xs font-medium ${conference.allowListener
+                ? "bg-green-50 text-green-700"
+                : "bg-gray-100 text-gray-600"
+                }`}
             >
               {conference.allowListener ? "Có" : "Không"}
             </span>
@@ -61,14 +60,132 @@ export function ResearchInfoTab({ conference }: ResearchInfoTabProps) {
       )}
 
       {/* Research Phase Timeline */}
-      {conference.researchPhase ? (
+      {Array.isArray(conference.researchPhase) && conference.researchPhase.length > 0 ? (
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <h3 className="font-semibold text-gray-900 mb-5 flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-blue-600" />
+            Lộ trình nghiên cứu
+          </h3>
+
+          {/* Lặp từng phase */}
+          {conference.researchPhase.map((phase, idx) => (
+            <div key={phase.researchConferencePhaseId ?? idx} className="mb-6">
+              <h4 className="text-md font-semibold text-gray-700 mb-3">
+                Giai đoạn {idx + 1} {phase.isWaitlist ? "(Waitlist)" : ""}
+              </h4>
+
+              <div className="space-y-4">
+                <PhaseCard
+                  title="Đăng ký"
+                  number={1}
+                  color="blue"
+                  startDate={phase.registrationStartDate ?? null}
+                  endDate={phase.registrationEndDate ?? null}
+                />
+                <PhaseCard
+                  title="Nộp bài"
+                  number={2}
+                  color="purple"
+                  startDate={phase.fullPaperStartDate ?? null}
+                  endDate={phase.fullPaperEndDate ?? null}
+                />
+                <PhaseCard
+                  title="Phản biện"
+                  number={3}
+                  color="orange"
+                  startDate={phase.reviewStartDate ?? null}
+                  endDate={phase.reviewEndDate ?? null}
+                />
+
+                {/* Revision */}
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <span className="flex items-center justify-center w-6 h-6 bg-yellow-500 text-white rounded text-xs font-bold">
+                      4
+                    </span>
+                    Giai đoạn chỉnh sửa
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <InfoField label="Bắt đầu" value={formatDate(phase.reviseStartDate)} />
+                    <InfoField label="Kết thúc" value={formatDate(phase.reviseEndDate)} />
+                  </div>
+
+                  {phase.revisionRoundDeadlines?.length ? (
+                    <div className="pt-4 border-t border-yellow-200">
+                      <p className="text-sm font-semibold text-gray-900 mb-3">
+                        Các vòng chỉnh sửa:
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {phase.revisionRoundDeadlines?.map((deadline: RevisionRoundDeadlineResponse) => (
+                          <div
+                            key={deadline.revisionRoundDeadlineId}
+                            className="bg-white border border-yellow-200 rounded-lg p-3"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-medium text-gray-900">
+                                Vòng {deadline.roundNumber}
+                              </span>
+                              <span>
+                                Bắt đầu: {deadline.startSubmissionDate ? formatDate(deadline.startSubmissionDate) : "Chưa có"}
+                              </span>
+                              <span>
+                                Kết thúc: {deadline.endSubmissionDate ? formatDate(deadline.endSubmissionDate) : "Chưa có"}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+
+                {/* Camera Ready */}
+                <PhaseCard
+                  title="Hoàn thiện"
+                  number={5}
+                  color="green"
+                  startDate={phase.cameraReadyStartDate ?? null}
+                  endDate={phase.cameraReadyEndDate ?? null}
+                />
+
+                {/* Status */}
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 mb-3">Trạng thái</h4>
+                  <div className="flex flex-wrap gap-2">
+                    <span className={`px-3 py-1.5 rounded-md text-sm font-medium ${phase.isWaitlist ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-600"
+                      }`}>
+                      {phase.isWaitlist ? "✓" : "✗"} Chờ danh sách
+                    </span>
+                    <span className={`px-3 py-1.5 rounded-md text-sm font-medium ${phase.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                      }`}>
+                      {phase.isActive ? "✓" : "✗"} Đang hoạt động
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-blue-600" />
+            Lộ trình nghiên cứu
+          </h3>
+          <p className="text-sm text-gray-500 text-center py-8 bg-gray-50 rounded-lg">
+            Chưa có thông tin lộ trình nghiên cứu
+          </p>
+        </div>
+      )}
+
+      {/* {conference.researchPhase ? (
         <div className="bg-white border border-gray-200 rounded-lg p-6">
           <h3 className="font-semibold text-gray-900 mb-5 flex items-center gap-2">
             <Calendar className="w-5 h-5 text-blue-600" />
             Lộ trình nghiên cứu
           </h3>
           <div className="space-y-4">
-            {/* Registration Phase */}
+          
             <PhaseCard
               title="Giai đoạn đăng ký"
               number={1}
@@ -77,7 +194,7 @@ export function ResearchInfoTab({ conference }: ResearchInfoTabProps) {
               endDate={conference.researchPhase.registrationEndDate ?? null}
             />
 
-            {/* Full Paper Submission Phase */}
+      
             <PhaseCard
               title="Giai đoạn nộp bài"
               number={2}
@@ -86,7 +203,7 @@ export function ResearchInfoTab({ conference }: ResearchInfoTabProps) {
               endDate={conference.researchPhase.fullPaperEndDate ?? null}
             />
 
-            {/* Review Phase */}
+      
             <PhaseCard
               title="Giai đoạn phản biện"
               number={3}
@@ -95,7 +212,6 @@ export function ResearchInfoTab({ conference }: ResearchInfoTabProps) {
               endDate={conference.researchPhase.reviewEndDate ?? null}
             />
 
-            {/* Revision Phase */}
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <span className="flex items-center justify-center w-6 h-6 bg-yellow-500 text-white rounded text-xs font-bold">
@@ -114,7 +230,7 @@ export function ResearchInfoTab({ conference }: ResearchInfoTabProps) {
                 />
               </div>
 
-              {/* Revision Round Deadlines */}
+
               {conference.researchPhase.revisionRoundDeadlines &&
                 conference.researchPhase.revisionRoundDeadlines.length > 0 && (
                   <div className="pt-4 border-t border-yellow-200">
@@ -146,7 +262,7 @@ export function ResearchInfoTab({ conference }: ResearchInfoTabProps) {
                 )}
             </div>
 
-            {/* Camera Ready Phase */}
+        
             <PhaseCard
               title="Giai đoạn hoàn thiện"
               number={5}
@@ -155,7 +271,7 @@ export function ResearchInfoTab({ conference }: ResearchInfoTabProps) {
               endDate={conference.researchPhase.cameraReadyEndDate ?? null}
             />
 
-            {/* Phase Status */}
+
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
               <h4 className="font-semibold text-gray-900 mb-3">Trạng thái</h4>
               <div className="flex flex-wrap gap-2">
@@ -191,7 +307,7 @@ export function ResearchInfoTab({ conference }: ResearchInfoTabProps) {
             Chưa có thông tin lộ trình nghiên cứu
           </p>
         </div>
-      )}
+      )} */}
     </div>
   );
 }
@@ -222,25 +338,25 @@ interface PhaseCardProps {
 
 function PhaseCard({ title, number, color, startDate, endDate }: PhaseCardProps) {
   const colorMap = {
-    blue: { 
-      bg: "bg-blue-500", 
-      border: "border-blue-200", 
-      bgLight: "bg-blue-50" 
+    blue: {
+      bg: "bg-blue-500",
+      border: "border-blue-200",
+      bgLight: "bg-blue-50"
     },
-    purple: { 
-      bg: "bg-purple-500", 
-      border: "border-purple-200", 
-      bgLight: "bg-purple-50" 
+    purple: {
+      bg: "bg-purple-500",
+      border: "border-purple-200",
+      bgLight: "bg-purple-50"
     },
-    orange: { 
-      bg: "bg-orange-500", 
-      border: "border-orange-200", 
-      bgLight: "bg-orange-50" 
+    orange: {
+      bg: "bg-orange-500",
+      border: "border-orange-200",
+      bgLight: "bg-orange-50"
     },
-    green: { 
-      bg: "bg-green-500", 
-      border: "border-green-200", 
-      bgLight: "bg-green-50" 
+    green: {
+      bg: "bg-green-500",
+      border: "border-green-200",
+      bgLight: "bg-green-50"
     },
   };
 

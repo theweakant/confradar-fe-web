@@ -307,5 +307,11 @@ export const endpoint = {
   ASSIGNINGPRESENTERSESSION: {
     REQUEST_CHANGE_PRESENTER: "/assigningpresentersession/request-change-presenter",
     REQUEST_CHANGE_SESSION: "/assigningpresentersession/request-change-session",
-  }
+  },
+  REPORT: {
+    CREATE: "/report",
+    GET_UNRESOLVED: "/report/unresolved",
+    RESPONSE: (reportId: string) => `/report/${reportId}/response`,
+    GET_RESPONSE: (reportId: string) => `/report/${reportId}/get-response`,
+  },
 };

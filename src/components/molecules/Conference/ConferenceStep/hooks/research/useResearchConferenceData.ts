@@ -44,18 +44,18 @@ export function useResearchConferenceData({
   onError,
 }: UseResearchConferenceDataProps) {
   const dispatch = useAppDispatch();
-  const hasDispatchedRef = useRef(false); 
+  const hasDispatchedRef = useRef(false);
 
-  const { 
-    data: conferenceDetailResponse, 
-    isLoading, 
-    isError, 
+  const {
+    data: conferenceDetailResponse,
+    isLoading,
+    isError,
     error,
     isFetching,
-    refetch 
+    refetch
   } = useGetResearchConferenceDetailInternalQuery(conferenceId, {
     skip: !conferenceId,
-    refetchOnMountOrArgChange: true, 
+    refetchOnMountOrArgChange: true,
   });
 
   const stableOnLoad = useCallback(onLoad || (() => { }), [onLoad]);
@@ -107,54 +107,107 @@ export function useResearchConferenceData({
       };
 
       // === Map Research Phases ===
-      const researchPhases: ResearchPhase[] = [];
-      if (data.researchPhase) {
-        researchPhases.push({
-          researchPhaseId: data.researchPhase.researchConferencePhaseId ?? "main",
-          registrationStartDate: data.researchPhase.registrationStartDate ?? "",
-          registrationEndDate: data.researchPhase.registrationEndDate ?? "",
-          fullPaperStartDate: data.researchPhase.fullPaperStartDate ?? "",
-          fullPaperEndDate: data.researchPhase.fullPaperEndDate ?? "",
-          reviewStartDate: data.researchPhase.reviewStartDate ?? "",
-          reviewEndDate: data.researchPhase.reviewEndDate ?? "",
-          reviseStartDate: data.researchPhase.reviseStartDate ?? "",
-          reviseEndDate: data.researchPhase.reviseEndDate ?? "",
-          cameraReadyStartDate: data.researchPhase.cameraReadyStartDate ?? "",
-          cameraReadyEndDate: data.researchPhase.cameraReadyEndDate ?? "",
-          isWaitlist: false,
-          isActive: true,
-          revisionRoundDeadlines: (data.researchPhase.revisionRoundDeadlines || []).map((rd) => ({
-            revisionRoundDeadlineId: rd.revisionRoundDeadlineId ?? "",
-            startSubmissionDate: rd.startDate ?? "",
-            endSubmissionDate: rd.endDate ?? "",
-            roundNumber: rd.roundNumber ?? 1,
-          })),
-        });
-
-        if (data.researchPhase.waitlistPhase) {
-          researchPhases.push({
-            researchPhaseId: data.researchPhase.waitlistPhase.researchConferencePhaseId ?? "waitlist",
-            registrationStartDate: data.researchPhase.waitlistPhase.registrationStartDate ?? "",
-            registrationEndDate: data.researchPhase.waitlistPhase.registrationEndDate ?? "",
-            fullPaperStartDate: data.researchPhase.waitlistPhase.fullPaperStartDate ?? "",
-            fullPaperEndDate: data.researchPhase.waitlistPhase.fullPaperEndDate ?? "",
-            reviewStartDate: data.researchPhase.waitlistPhase.reviewStartDate ?? "",
-            reviewEndDate: data.researchPhase.waitlistPhase.reviewEndDate ?? "",
-            reviseStartDate: data.researchPhase.waitlistPhase.reviseStartDate ?? "",
-            reviseEndDate: data.researchPhase.waitlistPhase.reviseEndDate ?? "",
-            cameraReadyStartDate: data.researchPhase.waitlistPhase.cameraReadyStartDate ?? "",
-            cameraReadyEndDate: data.researchPhase.waitlistPhase.cameraReadyEndDate ?? "",
+      const researchPhases: ResearchPhase[] =
+        data.researchPhase?.flatMap((phase) => {
+          const mainPhase: ResearchPhase = {
+            researchPhaseId: phase.researchConferencePhaseId ?? "main",
+            registrationStartDate: phase.registrationStartDate ?? "",
+            registrationEndDate: phase.registrationEndDate ?? "",
+            fullPaperStartDate: phase.fullPaperStartDate ?? "",
+            fullPaperEndDate: phase.fullPaperEndDate ?? "",
+            reviewStartDate: phase.reviewStartDate ?? "",
+            reviewEndDate: phase.reviewEndDate ?? "",
+            reviseStartDate: phase.reviseStartDate ?? "",
+            reviseEndDate: phase.reviseEndDate ?? "",
+            cameraReadyStartDate: phase.cameraReadyStartDate ?? "",
+            cameraReadyEndDate: phase.cameraReadyEndDate ?? "",
             isWaitlist: false,
-            isActive: data.researchPhase.waitlistPhase.isActive ?? false,
-            revisionRoundDeadlines: (data.researchPhase.waitlistPhase.revisionRoundDeadlines || []).map((rd) => ({
+            isActive: phase.isActive ?? true,
+            revisionRoundDeadlines: (phase.revisionRoundDeadlines ?? []).map((rd) => ({
               revisionRoundDeadlineId: rd.revisionRoundDeadlineId ?? "",
-              startSubmissionDate: rd.startDate ?? "",
-              endSubmissionDate: rd.endDate ?? "",
+              startSubmissionDate: rd.startSubmissionDate ?? "",
+              endSubmissionDate: rd.endSubmissionDate ?? "",
               roundNumber: rd.roundNumber ?? 1,
+              researchConferencePhaseId: rd.researchConferencePhaseId ?? "",
             })),
-          });
-        }
-      }
+          };
+
+          const waitlistPhase = phase.waitlistPhase
+            ? {
+              researchPhaseId: phase.waitlistPhase.researchConferencePhaseId ?? "waitlist",
+              registrationStartDate: phase.waitlistPhase.registrationStartDate ?? "",
+              registrationEndDate: phase.waitlistPhase.registrationEndDate ?? "",
+              fullPaperStartDate: phase.waitlistPhase.fullPaperStartDate ?? "",
+              fullPaperEndDate: phase.waitlistPhase.fullPaperEndDate ?? "",
+              reviewStartDate: phase.waitlistPhase.reviewStartDate ?? "",
+              reviewEndDate: phase.waitlistPhase.reviewEndDate ?? "",
+              reviseStartDate: phase.waitlistPhase.reviseStartDate ?? "",
+              reviseEndDate: phase.waitlistPhase.reviseEndDate ?? "",
+              cameraReadyStartDate: phase.waitlistPhase.cameraReadyStartDate ?? "",
+              cameraReadyEndDate: phase.waitlistPhase.cameraReadyEndDate ?? "",
+              isWaitlist: true, // ← phải là true
+              isActive: phase.waitlistPhase.isActive ?? false,
+              revisionRoundDeadlines:
+                (phase.waitlistPhase.revisionRoundDeadlines ?? []).map((rd) => ({
+                  revisionRoundDeadlineId: rd.revisionRoundDeadlineId ?? "",
+                  startSubmissionDate: rd.startSubmissionDate ?? "",
+                  endSubmissionDate: rd.endSubmissionDate ?? "",
+                  roundNumber: rd.roundNumber ?? 1,
+                  researchConferencePhaseId: rd.researchConferencePhaseId ?? "",
+                })),
+            }
+            : null;
+
+          return waitlistPhase ? [mainPhase, waitlistPhase] : [mainPhase];
+        }) ?? [];
+      // const researchPhases: ResearchPhase[] = [];
+      // if (data.researchPhase) {
+      //   researchPhases.push({
+      //     researchPhaseId: data.researchPhase.researchConferencePhaseId ?? "main",
+      //     registrationStartDate: data.researchPhase.registrationStartDate ?? "",
+      //     registrationEndDate: data.researchPhase.registrationEndDate ?? "",
+      //     fullPaperStartDate: data.researchPhase.fullPaperStartDate ?? "",
+      //     fullPaperEndDate: data.researchPhase.fullPaperEndDate ?? "",
+      //     reviewStartDate: data.researchPhase.reviewStartDate ?? "",
+      //     reviewEndDate: data.researchPhase.reviewEndDate ?? "",
+      //     reviseStartDate: data.researchPhase.reviseStartDate ?? "",
+      //     reviseEndDate: data.researchPhase.reviseEndDate ?? "",
+      //     cameraReadyStartDate: data.researchPhase.cameraReadyStartDate ?? "",
+      //     cameraReadyEndDate: data.researchPhase.cameraReadyEndDate ?? "",
+      //     isWaitlist: false,
+      //     isActive: true,
+      //     revisionRoundDeadlines: (data.researchPhase.revisionRoundDeadlines || []).map((rd) => ({
+      //       revisionRoundDeadlineId: rd.revisionRoundDeadlineId ?? "",
+      //       startSubmissionDate: rd.startDate ?? "",
+      //       endSubmissionDate: rd.endDate ?? "",
+      //       roundNumber: rd.roundNumber ?? 1,
+      //     })),
+      //   });
+
+      //   if (data.researchPhase.waitlistPhase) {
+      //     researchPhases.push({
+      //       researchPhaseId: data.researchPhase.waitlistPhase.researchConferencePhaseId ?? "waitlist",
+      //       registrationStartDate: data.researchPhase.waitlistPhase.registrationStartDate ?? "",
+      //       registrationEndDate: data.researchPhase.waitlistPhase.registrationEndDate ?? "",
+      //       fullPaperStartDate: data.researchPhase.waitlistPhase.fullPaperStartDate ?? "",
+      //       fullPaperEndDate: data.researchPhase.waitlistPhase.fullPaperEndDate ?? "",
+      //       reviewStartDate: data.researchPhase.waitlistPhase.reviewStartDate ?? "",
+      //       reviewEndDate: data.researchPhase.waitlistPhase.reviewEndDate ?? "",
+      //       reviseStartDate: data.researchPhase.waitlistPhase.reviseStartDate ?? "",
+      //       reviseEndDate: data.researchPhase.waitlistPhase.reviseEndDate ?? "",
+      //       cameraReadyStartDate: data.researchPhase.waitlistPhase.cameraReadyStartDate ?? "",
+      //       cameraReadyEndDate: data.researchPhase.waitlistPhase.cameraReadyEndDate ?? "",
+      //       isWaitlist: false,
+      //       isActive: data.researchPhase.waitlistPhase.isActive ?? false,
+      //       revisionRoundDeadlines: (data.researchPhase.waitlistPhase.revisionRoundDeadlines || []).map((rd) => ({
+      //         revisionRoundDeadlineId: rd.revisionRoundDeadlineId ?? "",
+      //         startSubmissionDate: rd.startDate ?? "",
+      //         endSubmissionDate: rd.endDate ?? "",
+      //         roundNumber: rd.roundNumber ?? 1,
+      //       })),
+      //     });
+      //   }
+      // }
 
       // === Map Tickets ===
       const tickets: Ticket[] = (data.conferencePrices || []).map((p) => ({
@@ -178,7 +231,7 @@ export function useResearchConferenceData({
             percentRefund: rp.percentRefund ?? 0,
             refundDeadline: rp.refundDeadline ?? "",
           })),
-         
+
         })),
       }));
 
@@ -247,7 +300,7 @@ export function useResearchConferenceData({
         imageUrl: s.imageUrl ?? "",
       }));
 
-      
+
       dispatch(
         loadExistingConference({
           id: conferenceId,
