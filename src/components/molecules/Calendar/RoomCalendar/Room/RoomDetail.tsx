@@ -11,8 +11,10 @@ import {
   useGetAvailableTimesInRoomQuery,
   useGetSessionsInRoomOnDateQuery 
 } from "@/redux/services/room.service";
-import { SessionList } from "./Session/SessionList";
-import { SingleSessionForm } from "./Form/SingleSessionForm";
+import { SessionList } from "../Session/SessionList";
+import { SingleSessionForm } from "../Form/SingleSessionForm";
+import { ResearchSingleSessionForm } from "../Form/ResearchSingleSessionForm";
+
 import type { Session } from "@/types/conference.type";
 
 interface RoomDetailDialogProps {
@@ -22,7 +24,8 @@ interface RoomDetailDialogProps {
   roomDisplayName?: string | null;
   date: string | null;
   conferenceId?: string; 
-  existingSessions?: Session[]; // Sessions từ form state
+  conferenceType?: "Tech" | "Research";
+  existingSessions?: Session[];
   onClose: () => void;
   onSessionCreated?: (session: Session) => void; 
 }
@@ -34,6 +37,7 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
   roomDisplayName,
   date,
   conferenceId,
+  conferenceType = "Tech",
   existingSessions = [],
   onClose,
   onSessionCreated,
@@ -55,6 +59,10 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
     { roomId: roomId!, date: date! },
     { skip: !roomId || !date || !open }
   );
+
+  const SessionFormComponent = conferenceType === "Research" 
+    ? ResearchSingleSessionForm 
+    : SingleSessionForm;
 
   const timeSpans = timesData?.data || [];
   const sessions = sessionsData?.data || [];
@@ -86,7 +94,6 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
     return `${hours}h${minutes > 0 ? ` ${minutes}p` : ''}`;
   };
 
-  // Handle time slot click → switch to form mode
   const handleTimeSlotSelect = (span: { startTime: string; endTime: string }) => {
     if (!conferenceId) {
       return;
@@ -143,7 +150,7 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
         </TransitionChild>
 
         <div className="fixed inset-0 overflow-y-auto">
@@ -157,9 +164,9 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <DialogPanel className="w-full max-w-3xl transform overflow-hidden rounded-lg bg-white border border-gray-200 shadow-xl transition-all">
+              <DialogPanel className="w-full max-w-3xl transform overflow-hidden rounded-lg bg-white shadow-xl transition-all">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+                <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3 flex-1">
                       {mode === "form" ? (
@@ -167,32 +174,37 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
                           <button
                             onClick={handleBackToView}
                             disabled={isCreatingSession}  
-                            className="p-1 hover:bg-blue-500/50 rounded transition-colors"
+                            className="p-1.5 hover:bg-green-500/50 rounded-md transition-colors disabled:opacity-50"
                           >
                             <ArrowLeft className="w-5 h-5 text-white" />
                           </button>
-                          <DialogTitle className="text-xl font-bold text-white">
-                            Tạo phiên họp
-                          </DialogTitle>
-                          {roomId && (
-                            <div className="mt-1 text-sm text-blue-200 font-mono">
-                              Phòng ID: {roomId}
+                          <div>
+                            <DialogTitle className="text-lg font-semibold text-white">
+                              Tạo phiên họp
+                            </DialogTitle>
+                            <div className="text-xs text-green-100 mt-0.5">
+                              {roomDisplayName || `Phòng ${roomNumber}`}
                             </div>
-                          )}
+                          </div>
                         </>
                       ) : (
                         <>
-                          <DoorOpen className="w-6 h-6 text-white" />
-                          <DialogTitle className="text-xl font-bold text-white">
-                            {isCreatingSession ? "Đang tạo session..." : "Tạo phiên họp"}
-                          </DialogTitle>
+                          <DoorOpen className="w-5 h-5 text-white" />
+                          <div>
+                            <DialogTitle className="text-lg font-semibold text-white">
+                              {roomDisplayName || `Phòng ${roomNumber}`}
+                            </DialogTitle>
+                            <div className="text-xs text-green-100 mt-0.5">
+                              Chi tiết phòng họp
+                            </div>
+                          </div>
                         </>
                       )}
                     </div>
                     <button
                       onClick={handleClose}
                       disabled={isCreatingSession} 
-                      className="p-2 hover:bg-blue-500/50 rounded-lg transition-colors"
+                      className="p-1.5 hover:bg-green-500/50 rounded-md transition-colors disabled:opacity-50"
                     >
                       <X className="w-5 h-5 text-white" />
                     </button>
@@ -200,14 +212,14 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
                 </div>
 
                 {/* Content */}
-                <div className="p-6 max-h-[70vh] overflow-y-auto">
+                <div className="p-5 max-h-[70vh] overflow-y-auto">
                   {isLoading ? (
                     <div className="flex items-center justify-center h-48">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
                     </div>
                   ) : mode === "form" && selectedSlot && conferenceId ? (
                     <div className={isCreatingSession ? "pointer-events-none opacity-60" : ""}>
-                      <SingleSessionForm
+                      <SessionFormComponent
                         conferenceId={conferenceId}
                         roomId={roomId!}
                         roomDisplayName={roomDisplayName || "N/A"}
@@ -220,45 +232,45 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
                         onCancel={handleBackToView}
                       />
                       {isCreatingSession && (
-                        <div className="mt-4 flex items-center justify-center gap-2 text-blue-600">
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
-                          <span className="text-sm font-medium">Đang lưu session vào hệ thống...</span>
+                        <div className="mt-4 flex items-center justify-center gap-2 text-green-700 bg-green-50 rounded-lg p-3">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-700"></div>
+                          <span className="text-sm font-medium">Đang lưu phiên họp...</span>
                         </div>
                       )}
                     </div>
                   ) : (
-                    <div className="space-y-6">
+                    <div className="space-y-5">
                       {date && (
-                        <div className="bg-gray-50 rounded-lg p-4">
+                        <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-3 border border-gray-200">
                           <div className="flex items-center gap-2 text-gray-700">
-                            <Calendar className="w-5 h-5 text-blue-500" />
-                            <span className="font-medium">{formatDate(date)}</span>
+                            <Calendar className="w-4 h-4 text-blue-600" />
+                            <span className="text-sm font-medium">{formatDate(date)}</span>
                           </div>
                         </div>
                       )}
 
                       {/* PHẦN 1: KHUNG GIỜ TRỐNG */}
                       <div>
-                        <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                          <div className="flex items-center gap-2 mb-2">
+                        <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-3 mb-3 border border-gray-200">
+                          <div className="flex items-center gap-2">
                             {isWholeDay ? (
                               <>
-                                <CheckCircle className="w-5 h-5 text-green-500" />
-                                <span className="text-green-700 font-semibold">
+                                <CheckCircle className="w-4 h-4 text-green-600" />
+                                <span className="text-green-700 font-medium text-sm">
                                   Phòng trống cả ngày
                                 </span>
                               </>
                             ) : timeSpans.length > 0 ? (
                               <>
-                                <AlertCircle className="w-5 h-5 text-orange-500" />
-                                <span className="text-orange-700 font-semibold">
+                                <AlertCircle className="w-4 h-4 text-blue-600" />
+                                <span className="text-blue-700 font-medium text-sm">
                                   Phòng trống một phần ({timeSpans.length} khung giờ)
                                 </span>
                               </>
                             ) : (
                               <>
-                                <AlertCircle className="w-5 h-5 text-red-500" />
-                                <span className="text-red-700 font-semibold">
+                                <AlertCircle className="w-4 h-4 text-red-600" />
+                                <span className="text-red-700 font-medium text-sm">
                                   Phòng không có khung giờ trống
                                 </span>
                               </>
@@ -268,34 +280,34 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
 
                         {timeSpans.length > 0 && (
                           <>
-                            <label className="text-sm font-semibold text-gray-700 mb-3 block">
-                              Khung giờ trống {conferenceId && "(Click để đặt lịch)"}
+                            <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                              Khung giờ trống {conferenceId && "(Click để tạo phiên)"}
                             </label>
-                            <div className="space-y-3 mb-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                               {timeSpans.map((span, index) => (
                                 <div
                                   key={index}
                                   onClick={() => handleTimeSlotSelect(span)}
-                                  className={`bg-gray-50 rounded-lg p-4 border-l-4 border-green-500 transition-colors ${
+                                  className={`bg-white rounded-lg p-3 border-l-4 transition-all ${
                                     conferenceId
-                                      ? "hover:bg-green-50 cursor-pointer"
-                                      : "cursor-default"
+                                      ? "border-green-500 hover:bg-green-50 hover:shadow-sm cursor-pointer"
+                                      : "border-gray-300 cursor-default"
                                   }`}
                                 >
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                      <Clock className="w-5 h-5 text-green-500" />
+                                      <Clock className="w-4 h-4 text-green-600 flex-shrink-0" />
                                       <div>
-                                        <div className="text-gray-900 font-medium">
+                                        <div className="text-gray-900 font-medium text-sm">
                                           {formatTime(span.startTime)} - {formatTime(span.endTime)}
                                         </div>
-                                        <div className="text-xs text-gray-600 mt-1">
+                                        <div className="text-xs text-gray-500 mt-0.5">
                                           Thời lượng: {calculateDuration(span.startTime, span.endTime)}
                                         </div>
                                       </div>
                                     </div>
-                                    <div className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                                      {conferenceId ? "Click để đặt" : "Có thể đặt"}
+                                    <div className="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium whitespace-nowrap">
+                                      {conferenceId ? "Click để tạo" : "Đặt"}
                                     </div>
                                   </div>
                                 </div>
@@ -307,7 +319,7 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
 
                       {/* Divider */}
                       {timeSpans.length > 0 && sessions.length > 0 && (
-                        <div className="border-t border-gray-200 my-6"></div>
+                        <div className="border-t border-gray-200"></div>
                       )}
 
                       {/* PHẦN 2: SESSION ĐANG CHIẾM PHÒNG */}
@@ -316,19 +328,19 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
                   )}
 
                   {!isLoading && mode === "view" && timeSpans.length === 0 && sessions.length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-12 text-gray-500">
                       <AlertCircle className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                      <p>Không có thông tin về phòng này</p>
+                      <p className="text-sm">Không có thông tin về phòng này</p>
                     </div>
                   )}
                 </div>
 
                 {/* Footer - Only show in view mode */}
                 {mode === "view" && (
-                  <div className="px-6 py-4 border-t border-gray-200 flex justify-end bg-gray-50">
+                  <div className="px-5 py-3 border-t border-gray-200 flex justify-end bg-gray-50">
                     <button
                       type="button"
-                      className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
+                      className="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md transition-colors text-sm font-medium"
                       onClick={handleClose}
                     >
                       Đóng

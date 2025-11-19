@@ -1,5 +1,5 @@
 import React, { Fragment, useState } from "react";
-import { Clock, Users, AlertCircle, X, Edit2, Trash2 } from "lucide-react";
+import { Clock, Users, X, Edit2, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogPanel,
@@ -70,7 +70,7 @@ export function SessionDetailModal({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" />
         </TransitionChild>
 
         <div className="fixed inset-0 overflow-y-auto">
@@ -84,49 +84,43 @@ export function SessionDetailModal({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <DialogPanel className="w-full max-w-6xl transform overflow-hidden rounded-lg bg-white border border-gray-200 shadow-xl transition-all">
+              <DialogPanel className="w-full max-w-4xl transform overflow-hidden rounded-2xl bg-white shadow-xl transition-all">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-green-600 to-emerald-700 px-6 py-4">
+                <div className="px-6 py-4 border-b border-gray-200">
                   <div className="flex justify-between items-center">
-                    <div>
-                      <DialogTitle className="text-xl font-bold text-white">
-                        Chi tiết phiên họp
-                      </DialogTitle>
-                      <p className="text-sm text-green-100 mt-1">
-                        Tổng cộng: {sessions.length} phiên họp
-                      </p>
-                    </div>
+                    <DialogTitle className="text-xl font-semibold text-gray-900">
+                      Danh sách session ({sessions.length})
+                    </DialogTitle>
                     <button
                       onClick={onClose}
-                      className="p-2 hover:bg-green-500/50 rounded-lg transition-colors"
+                      className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
                     >
-                      <X className="w-5 h-5 text-white" />
+                      <X className="w-5 h-5 text-gray-500" />
                     </button>
                   </div>
                 </div>
 
                 {/* Content */}
-                <div className="p-6 max-h-[75vh] overflow-y-auto">
+                <div className="p-6 max-h-[70vh] overflow-y-auto">
                   {sessions.length === 0 ? (
                     <div className="text-center py-12 text-gray-500">
-                      <AlertCircle className="w-16 h-16 mx-auto mb-3 text-gray-400" />
-                      <p className="text-lg font-medium">Chưa có phiên họp nào</p>
-                      <p className="text-sm mt-2">Hãy tạo phiên họp đầu tiên của bạn!</p>
+                      <p className="font-medium">Chưa có phiên họp nào</p>
+                      <p className="text-sm mt-1">Hãy tạo phiên họp đầu tiên của bạn!</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {sessions.map((session, index) => (
                         <div
                           key={index}
-                          className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow relative group"
+                          className="relative bg-blue-50 border border-blue-100 rounded-xl p-4 hover:shadow-md transition-all group"
                         >
                           {/* Action Buttons */}
-                          <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="absolute top-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                             {onEditSession && (
                               <button
                                 onClick={() => handleEdit(session, index)}
-                                className="p-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors shadow-sm"
-                                title="Sửa session"
+                                className="p-1.5 bg-white hover:bg-blue-50 text-blue-600 rounded-lg transition-colors shadow-sm border border-blue-200"
+                                title="Sửa"
                               >
                                 <Edit2 className="w-3.5 h-3.5" />
                               </button>
@@ -134,8 +128,8 @@ export function SessionDetailModal({
                             {onDeleteSession && (
                               <button
                                 onClick={() => setDeleteConfirmIndex(index)}
-                                className="p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors shadow-sm"
-                                title="Xóa session"
+                                className="p-1.5 bg-white hover:bg-red-50 text-red-600 rounded-lg transition-colors shadow-sm border border-red-200"
+                                title="Xóa"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
@@ -144,24 +138,23 @@ export function SessionDetailModal({
 
                           {/* Delete Confirmation Overlay */}
                           {deleteConfirmIndex === index && (
-                            <div className="absolute inset-0 bg-white/95 backdrop-blur-sm rounded-lg flex flex-col items-center justify-center p-4 z-10">
-                              <AlertCircle className="w-10 h-10 text-red-500 mb-2" />
+                            <div className="absolute inset-0 bg-white/98 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center p-4 z-10">
                               <p className="text-sm font-semibold text-gray-900 mb-1 text-center">
                                 Xác nhận xóa?
                               </p>
-                              <p className="text-xs text-gray-600 mb-3 text-center">
-                                Session này sẽ bị xóa vĩnh viễn
+                              <p className="text-xs text-gray-600 mb-4 text-center">
+                                Session sẽ bị xóa vĩnh viễn
                               </p>
                               <div className="flex gap-2">
                                 <button
                                   onClick={() => setDeleteConfirmIndex(null)}
-                                  className="px-3 py-1.5 text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 rounded transition-colors"
+                                  className="px-4 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors font-medium"
                                 >
                                   Hủy
                                 </button>
                                 <button
                                   onClick={() => handleDeleteConfirm(index)}
-                                  className="px-3 py-1.5 text-xs bg-red-600 hover:bg-red-700 text-white rounded transition-colors"
+                                  className="px-4 py-1.5 text-xs bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium"
                                 >
                                   Xóa
                                 </button>
@@ -170,56 +163,50 @@ export function SessionDetailModal({
                           )}
 
                           {/* Title */}
-                          <h4 className="font-bold text-gray-900 mb-2 text-base line-clamp-2 min-h-[3rem] pr-16">
+                          <h4 className="font-semibold text-gray-900 mb-3 text-base pr-16">
                             {session.title}
                           </h4>
 
                           {/* Time Info */}
-                          <div className="space-y-2 mb-3">
-                            <div className="flex items-center gap-2 text-sm text-gray-700">
-                              <Clock className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                              <span className="font-medium">
-                                {formatTime(session.startTime)} - {formatTime(session.endTime)}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2 text-xs text-gray-600">
-                              <div className="w-4 h-4" /> {/* Spacer */}
-                              <span>Thời lượng: {calculateDuration(session.startTime, session.endTime)}</span>
-                            </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-700 mb-3">
+                            <Clock className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                            <span>
+                              {formatTime(session.startTime)} - {formatTime(session.endTime)}
+                            </span>
+                            <span className="text-gray-500">
+                              {calculateDuration(session.startTime, session.endTime)}
+                            </span>
                           </div>
-
-                          {/* Description */}
-                          {session.description && (
-                            <div className="mb-3">
-                              <p className="text-sm text-gray-600 line-clamp-3">
-                                {session.description}
-                              </p>
-                            </div>
-                          )}
 
                           {/* Speakers */}
                           {session.speaker && session.speaker.length > 0 && (
-                            <div className="border-t border-blue-200 pt-3 mt-3">
+                            <div className="border-t border-blue-200 pt-3">
                               <div className="flex items-center gap-2 mb-2">
                                 <Users className="w-4 h-4 text-blue-600" />
-                                <span className="text-xs font-semibold text-gray-700 uppercase">
-                                  Diễn giả ({session.speaker.length})
+                                <span className="text-sm font-medium text-gray-700">
+                                  DIỄN GIẢ ({session.speaker.length})
                                 </span>
                               </div>
-                              <div className="flex flex-wrap gap-2">
+                              <div className="space-y-2">
                                 {session.speaker.map((speaker, idx) => (
                                   <div
                                     key={idx}
-                                    className="flex items-center gap-2 bg-white rounded-full px-3 py-1.5 shadow-sm border border-blue-100"
+                                    className="flex items-center gap-2"
                                   >
-                                    {speaker.image && (
+                                    {speaker.image ? (
                                       <img
                                         src={speaker.image instanceof File ? URL.createObjectURL(speaker.image) : speaker.image}
                                         alt={speaker.name}
-                                        className="w-6 h-6 rounded-full object-cover border border-blue-200"
+                                        className="w-7 h-7 rounded-full object-cover border-2 border-white shadow-sm"
                                       />
+                                    ) : (
+                                      <div className="w-7 h-7 rounded-full bg-blue-200 flex items-center justify-center border-2 border-white shadow-sm">
+                                        <span className="text-xs font-semibold text-blue-700">
+                                          {speaker.name.charAt(0).toUpperCase()}
+                                        </span>
+                                      </div>
                                     )}
-                                    <span className="text-xs font-medium text-gray-800">
+                                    <span className="text-sm text-gray-800">
                                       {speaker.name}
                                     </span>
                                   </div>
@@ -231,16 +218,6 @@ export function SessionDetailModal({
                       ))}
                     </div>
                   )}
-                </div>
-
-                {/* Footer */}
-                <div className="px-6 py-4 border-t border-gray-200 flex justify-end bg-gray-50">
-                  <button
-                    onClick={onClose}
-                    className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
-                  >
-                    Đóng
-                  </button>
                 </div>
               </DialogPanel>
             </TransitionChild>

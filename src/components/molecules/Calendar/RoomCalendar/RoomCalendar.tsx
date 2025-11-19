@@ -9,42 +9,58 @@ import { useGetAvailableRoomsBetweenDatesQuery } from "@/redux/services/room.ser
 import type { AvailableRoom } from "@/types/room.type";
 import type { Session } from "@/types/conference.type";
 import { DatesSetArg } from '@fullcalendar/core';
-import RoomCard from "./RoomCard";
-import RoomDetailDialog from "./RoomDetailDialog";
+import RoomCard from "./Room/RoomCard";
+import RoomDetailDialog from "./Room/RoomDetail";
 
 interface RoomCalendarProps {
   conferenceId?: string;
+  conferenceType?: "Tech" | "Research";
   onSessionCreated?: (session: Session) => void;
   startDate?: string;
+  endDate?: string;
   existingSessions?: Session[];
 }
 
 const RoomCalendar: React.FC<RoomCalendarProps> = ({ 
   conferenceId, 
+  conferenceType,
   onSessionCreated,
   startDate,
+  endDate,
   existingSessions
 }) => {
-  useEffect(() => {
-    console.log('🔍 RoomCalendar received conferenceId:', conferenceId);
-  }, [conferenceId]);
-
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [roomDetailOpen, setRoomDetailOpen] = useState(false);
   
-  const [dateRange, setDateRange] = useState({
-    start: new Date().toISOString().split('T')[0],
-    end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  // Khởi tạo dateRange ưu tiên startDate nếu có
+  const [dateRange, setDateRange] = useState(() => {
+    const defaultStart = startDate || new Date().toISOString().split('T')[0];
+    const defaultEnd = new Date(new Date(defaultStart).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    
+    return {
+      start: defaultStart,
+      end: defaultEnd
+    };
   });
 
   const calendarRef = useRef<FullCalendar | null>(null);
   const roomListRef = useRef<HTMLDivElement | null>(null);
   
+  // Chuyển calendar đến startDate khi có
   useEffect(() => {
     if (calendarRef.current && startDate) {
       const calendarApi = calendarRef.current.getApi();
       calendarApi.gotoDate(startDate);
+    }
+  }, [startDate]);
+
+  // Update dateRange khi startDate thay đổi
+  useEffect(() => {
+    if (startDate) {
+      const start = startDate;
+      const end = new Date(new Date(start).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      setDateRange({ start, end });
     }
   }, [startDate]);
 
@@ -76,7 +92,7 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
   const getRoomColor = (isAvailableWholeday: boolean): { bg: string; border: string } => {
     return isAvailableWholeday
       ? { bg: "#10b981", border: "#059669" } 
-      : { bg: "#f59e0b", border: "#d97706" }; 
+      : { bg: "#3b82f6", border: "#2563eb" }; 
   };
 
   const calendarEvents = rooms.map((room) => {
@@ -144,10 +160,10 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
 
   if (isLoadingRooms) {
     return (
-      <div className="min-h-screen bg-gray-900 text-gray-100 p-6 flex items-center justify-center">
+      <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">Đang tải lịch phòng...</p>
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-600 mx-auto mb-3"></div>
+          <p className="text-sm text-gray-600">Đang tải lịch phòng...</p>
         </div>
       </div>
     );
@@ -155,12 +171,12 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
 
   if (roomsError) {
     return (
-      <div className="min-h-screen bg-gray-900 text-gray-100 p-6 flex items-center justify-center">
+      <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <p className="text-red-400 mb-4">Có lỗi xảy ra khi tải dữ liệu</p>
+          <p className="text-sm text-red-600 mb-3">Có lỗi xảy ra khi tải dữ liệu</p>
           <button
             onClick={() => refetchRooms()}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            className="px-4 py-2 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
           >
             Thử lại
           </button>
@@ -170,126 +186,155 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Lịch Phòng Trống
-          </h1>
-          <p className="text-gray-600">
-            Theo dõi và quản lý tình trạng phòng (Hiển thị tối đa 7 ngày)
-          </p>
-          {conferenceId && (
-            <p className="text-xs text-green-600 mt-1 font-medium">
-              Conference ID: {conferenceId}
-            </p>
-          )}
+    <div className="w-full">
+      {/* Legend */}
+      <div className="mx-4 my-6 flex gap-4 items-center text-sm px-1">
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded bg-green-600"></div>
+          <span className="text-gray-600">Cả ngày</span>
         </div>
-
-        {/* Legend */}
-        <div className="mb-4 flex gap-6 items-center text-sm bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded bg-gradient-to-br from-green-500 to-green-600 shadow-sm"></div>
-            <span className="text-gray-700 font-medium">Trống cả ngày</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm"></div>
-            <span className="text-gray-700 font-medium">Trống một phần</span>
-          </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded bg-blue-600"></div>
+          <span className="text-gray-600">Một phần</span>
         </div>
+      </div>
 
-        {/* Layout: 2 columns - Calendar and Room List */}
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Calendar */}
-          <div className="lg:col-span-2 bg-white rounded-xl p-6 shadow-lg border border-gray-200">
-            <div className="calendar-container">
-              <FullCalendar
-                ref={calendarRef}
-                plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                initialView="dayGridWeek"
-                headerToolbar={{
-                  left: "prev,next today",
-                  center: "title",
-                  right: "weekNoTime,timeGridDay",
-                }}
-                views={{
-                  weekNoTime: {
-                    type: "timeGridWeek",
-                    slotMinTime: "24:00:00",
-                    slotMaxTime: "24:00:00",
-                  }
-                }}
-                events={calendarEvents}
-                eventClick={handleEventClick}
-                datesSet={handleDatesSet}
-                height="auto"
-                eventDisplay="block"
-                displayEventTime={true}
-                eventTimeFormat={{
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hour12: false,
-                }}
-                eventContent={(arg) => {
-                  const isWholeDay = arg.event.extendedProps.isWholeDay;
-                  const timeSpan = arg.event.extendedProps.timeSpan;
-                  
-                  return (
-                    <div className="flex flex-col overflow-hidden text-ellipsis p-1">
-                      <span className="text-xs font-semibold text-white leading-snug truncate">
-                        {arg.event.title}
+      {/* Layout: 2 columns - Calendar and Room List */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        {/* Calendar */}
+        <div className="lg:col-span-2 bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+          <style>{`
+            .fc {
+              --fc-border-color: #e5e7eb;
+              --fc-button-bg-color: #3b82f6;
+              --fc-button-border-color: #3b82f6;
+              --fc-button-hover-bg-color: #2563eb;
+              --fc-button-hover-border-color: #2563eb;
+              --fc-button-active-bg-color: #1d4ed8;
+              --fc-button-active-border-color: #1d4ed8;
+              --fc-today-bg-color: #eff6ff;
+            }
+            .fc .fc-button {
+              font-size: 0.875rem;
+              padding: 0.375rem 0.75rem;
+              text-transform: capitalize;
+            }
+            .fc .fc-toolbar-title {
+              font-size: 1.125rem;
+              font-weight: 600;
+              color: #111827;
+            }
+            .fc .fc-col-header-cell {
+              background-color: #f9fafb;
+              font-weight: 500;
+              color: #374151;
+              font-size: 0.75rem;
+              text-transform: uppercase;
+              padding: 0.5rem 0;
+            }
+            .fc .fc-daygrid-day-number {
+              color: #374151;
+              font-size: 0.875rem;
+              padding: 0.25rem;
+            }
+            .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+              background-color: #3b82f6;
+              color: white;
+              border-radius: 50%;
+              width: 1.75rem;
+              height: 1.75rem;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+            .fc-timegrid-axis {
+              display: none !important;
+            }
+            .fc-timegrid-slot-label {
+              display: none !important;
+            }
+          `}</style>
+          <div className="calendar-container">
+            <FullCalendar
+              ref={calendarRef}
+              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+              initialView="dayGridWeek"
+              firstDay={1}
+              validRange={{
+                start: startDate || undefined,
+                end: endDate ? new Date(new Date(endDate).getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0] : undefined,
+              }}
+              headerToolbar={{
+                left: "prev,next today",
+                center: "title",
+                right: "dayGridWeek,timeGridDay",
+              }}
+              events={calendarEvents}
+              eventClick={handleEventClick}
+              datesSet={handleDatesSet}
+              height="auto"
+              eventDisplay="block"
+              displayEventTime={true}
+              eventTimeFormat={{
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+              }}
+              eventContent={(arg) => {
+                const isWholeDay = arg.event.extendedProps.isWholeDay;
+                const timeSpan = arg.event.extendedProps.timeSpan;
+                
+                return (
+                  <div className="flex flex-col overflow-hidden text-ellipsis p-1">
+                    <span className="text-xs font-semibold text-white leading-snug truncate">
+                      {arg.event.title}
+                    </span>
+                    {!isWholeDay && timeSpan && (
+                      <span className="text-[10px] text-white/90">
+                        {timeSpan.startTime.slice(0, 5)} - {timeSpan.endTime.slice(0, 5)}
                       </span>
-                      {!isWholeDay && timeSpan && (
-                        <span className="text-[10px] text-gray-200">
-                          {timeSpan.startTime.slice(0, 5)} - {timeSpan.endTime.slice(0, 5)}
-                        </span>
-                      )}
-                      {isWholeDay && (
-                        <span className="text-[10px] text-gray-200">
-                          Cả ngày
-                        </span>
-                      )}
-                    </div>
-                  );
-                }}
-                eventClassNames={() => [
-                  "transition-all",
-                  "duration-200",
-                  "ease-in-out",
-                  "hover:scale-105",
-                  "hover:shadow-lg",
-                  "hover:z-10",
-                  "cursor-pointer",
-                  "rounded-md",
-                ]}
-              />
-            </div>
+                    )}
+                    {isWholeDay && (
+                      <span className="text-[10px] text-white/90">
+                        Cả ngày
+                      </span>
+                    )}
+                  </div>
+                );
+              }}
+              eventClassNames={() => [
+                "transition-all",
+                "duration-200",
+                "ease-in-out",
+                "hover:scale-105",
+                "hover:shadow-md",
+                "hover:z-10",
+                "cursor-pointer",
+                "rounded-md",
+              ]}
+            />
           </div>
+        </div>
 
-          {/* Room List */}
-          <div className="bg-gray-800 rounded-lg p-6 shadow-xl">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <DoorOpen className="w-5 h-5 text-green-400" />
-              Danh sách Phòng ({uniqueRooms.length})
-            </h2>
-            <div
-              ref={roomListRef}
-              className="space-y-4 overflow-y-auto max-h-[600px] pr-2 scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600"
-              style={{
-                scrollbarWidth: "thin",
-                scrollbarColor: "#4b5563 #1f2937",
-              } as React.CSSProperties}
-            >
-              {uniqueRooms.map((room) => (
-                <RoomCard
-                  key={room.roomId}
-                  room={room}
-                  selectedRoom={selectedRoom}
-                  onRoomClick={handleRoomClick}
-                  allRoomDates={rooms.filter(r => r.roomId === room.roomId)}
-                />
-              ))}
-            </div>
+        {/* Room List */}
+        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+          <h2 className="text-base font-semibold mb-3 flex items-center gap-2 text-gray-900">
+            <DoorOpen className="w-4 h-4 text-green-600" />
+            Danh sách Phòng ({uniqueRooms.length})
+          </h2>
+          <div
+            ref={roomListRef}
+            className="space-y-2 overflow-y-auto max-h-[500px] pr-1"
+          >
+            {uniqueRooms.map((room) => (
+              <RoomCard
+                key={room.roomId}
+                room={room}
+                selectedRoom={selectedRoom}
+                onRoomClick={handleRoomClick}
+                allRoomDates={rooms.filter(r => r.roomId === room.roomId)}
+              />
+            ))}
           </div>
         </div>
       </div>
@@ -302,6 +347,7 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
         roomDisplayName={selectedRoomData?.roomDisplayName}
         date={selectedDate}
         conferenceId={conferenceId}
+        conferenceType={conferenceType}
         existingSessions={existingSessions}
         onClose={() => {
           setRoomDetailOpen(false);
@@ -310,18 +356,6 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
         }}
         onSessionCreated={onSessionCreated}
       />
-
-      <style jsx global>{`
-        /* Ẩn cột giờ bên trái */
-        .fc-timegrid-axis {
-          display: none !important;
-        }
-
-        /* Ẩn header của cột giờ */
-        .fc-timegrid-slot-label {
-          display: none !important;
-        }
-      `}</style>
     </div>
   );
 };

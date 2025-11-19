@@ -18,15 +18,15 @@ export const SessionList: React.FC<SessionListProps> = ({ sessions, isLoading })
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-4">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-500"></div>
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   if (sessions.length === 0) {
     return (
-      <div className="text-center py-6 text-gray-400">
-        <AlertCircle className="w-10 h-10 mx-auto mb-2 text-gray-500" />
+      <div className="text-center py-8 text-gray-500">
+        <AlertCircle className="w-10 h-10 mx-auto mb-2 text-gray-400" />
         <p className="text-sm">Không có session nào đang sử dụng phòng</p>
       </div>
     );
@@ -35,12 +35,12 @@ export const SessionList: React.FC<SessionListProps> = ({ sessions, isLoading })
   return (
     <div>
       <div className="flex items-center gap-2 mb-3">
-        <Users className="w-5 h-5 text-red-400" />
-        <span className="text-sm font-semibold text-gray-300">
+        <Users className="w-4 h-4 text-orange-600" />
+        <span className="text-sm font-semibold text-gray-700">
           Phòng đang được sử dụng ({sessions.length})
         </span>
       </div>
-      <div className="space-y-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {sessions.map((session) => (
           <SessionCard key={session.sessionId} session={session} />
         ))}

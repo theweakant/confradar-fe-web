@@ -1,5 +1,5 @@
 import React from "react";
-import { Clock, Users, Calendar } from "lucide-react";
+import { Clock, Users } from "lucide-react";
 
 interface SessionCardProps {
   session: {
@@ -32,28 +32,30 @@ export const SessionCard: React.FC<SessionCardProps> = ({ session }) => {
   };
 
   return (
-    <div className="bg-gray-700 rounded-lg p-4 border-l-4 border-red-500 hover:bg-gray-600 transition-colors">
+    <div className="bg-white rounded-lg p-3 border-l-4 border-orange-500 hover:shadow-sm transition-all">
       <div className="flex items-start justify-between mb-2">
-        <div className="flex-1">
-          <h4 className="text-white font-semibold text-sm mb-1">{session.sessionTitle}</h4>
-          <p className="text-xs text-gray-400 flex items-center gap-1">
-            <Users className="w-3 h-3" />
+        <div className="flex-1 min-w-0">
+          <h4 className="text-gray-900 font-semibold text-sm mb-1 line-clamp-2">
+            {session.sessionTitle}
+          </h4>
+          <p className="text-xs text-gray-600 flex items-center gap-1 truncate">
+            <Users className="w-3 h-3 flex-shrink-0" />
             {session.conferenceName}
           </p>
         </div>
-        <div className="px-2 py-1 bg-red-600/20 text-red-400 rounded text-xs font-medium">
-          Đang sử dụng
+        <div className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-xs font-medium ml-2 flex-shrink-0">
+          Đang dùng
         </div>
       </div>
 
-      <div className="flex items-center gap-3 text-sm">
-        <div className="flex items-center gap-2 text-gray-300">
-          <Clock className="w-4 h-4 text-red-400" />
-          <span className="font-mono">
+      <div className="flex items-center gap-2 text-xs">
+        <div className="flex items-center gap-1.5 text-gray-700">
+          <Clock className="w-3.5 h-3.5 text-orange-600 flex-shrink-0" />
+          <span className="font-medium">
             {formatTime(session.startTime)} - {formatTime(session.endTime)}
           </span>
         </div>
-        <div className="text-xs text-gray-400">
+        <div className="text-gray-500">
           • {calculateDuration(session.startTime, session.endTime)}
         </div>
       </div>
