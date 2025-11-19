@@ -31,7 +31,7 @@ export const PaperAssignmentTab: React.FC<PaperAssignmentTabProps> = ({ conferen
               <h3 className="font-semibold text-gray-900 mb-2">Xác nhận gán bài báo</h3>
               <p className="text-sm text-gray-600">
                 Bạn có chắc muốn gán bài báo này vào phiên{" "}
-                <span className="font-semibold text-gray-900">"{session.title}"</span>?
+                <span className="font-semibold text-gray-900">&quot;{session.title}&quot;</span>?
               </p>
             </div>
             <div className="flex justify-end gap-2">
