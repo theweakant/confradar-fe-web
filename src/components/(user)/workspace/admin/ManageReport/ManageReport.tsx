@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   CheckCircle,
   XCircle,
@@ -34,6 +34,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { SearchFilter } from "@/components/molecules/SearchFilter";
+import { useReport } from "@/redux/hooks/useReport";
+import { UnresolvedReportResponse, ReportResponseRequest } from "@/types/report.type";
 
 // Report status badge component
 const ReportStatusBadge = ({ status }: { status: string }) => {
@@ -78,84 +80,41 @@ const ReportTypeBadge = ({ type }: { type: string }) => {
   );
 };
 
-// Mock data
-interface Report {
-  id: string;
-  type: string;
-  status: string;
-  reportedBy: string;
-  reportedUser: string;
-  conference: string;
-  reason: string;
-  description: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-const mockReports: Report[] = [
-  {
-    id: "RPT001",
-    type: "spam",
-    status: "pending",
-    reportedBy: "user123@email.com",
-    reportedUser: "spammer@email.com",
-    conference: "ICSE 2025 - International Conference on Software Engineering",
-    reason: "Spam nhiều lần",
-    description:
-      "User này đăng cùng một nội dung quảng cáo nhiều lần trong các conference khác nhau",
-    createdAt: "2025-09-28T10:30:00",
-    updatedAt: "2025-09-28T10:30:00",
-  },
-  {
-    id: "RPT002",
-    type: "inappropriate",
-    status: "pending",
-    reportedBy: "admin@confradar.com",
-    reportedUser: "baduser@email.com",
-    conference: "ACM CHI 2025 - Conference on Human Factors",
-    reason: "Nội dung không phù hợp",
-    description: "Comment có nội dung xúc phạm và không phù hợp với cộng đồng",
-    createdAt: "2025-09-27T15:20:00",
-    updatedAt: "2025-09-27T15:20:00",
-  },
-  {
-    id: "RPT003",
-    type: "fake",
-    status: "resolved",
-    reportedBy: "user456@email.com",
-    reportedUser: "faker@email.com",
-    conference: "NeurIPS 2025 - Neural Information Processing Systems",
-    reason: "Thông tin conference giả mạo",
-    description: "Đăng thông tin conference giả mạo để lừa đảo phí đăng ký",
-    createdAt: "2025-09-26T09:15:00",
-    updatedAt: "2025-09-28T14:30:00",
-  },
-  {
-    id: "RPT004",
-    type: "spam",
-    status: "rejected",
-    reportedBy: "user789@email.com",
-    reportedUser: "normal@email.com",
-    conference: "CVPR 2025 - Computer Vision and Pattern Recognition",
-    reason: "Báo cáo sai",
-    description: "Báo cáo không có căn cứ",
-    createdAt: "2025-09-25T11:00:00",
-    updatedAt: "2025-09-27T16:45:00",
-  },
-];
-
 export default function ManageReport() {
-  const [reports, setReports] = useState<Report[]>(mockReports);
+  const { getUnresolvedReportsLazy, sendReportResponse, loading } = useReport();
+  const [reports, setReports] = useState<UnresolvedReportResponse[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterType, setFilterType] = useState("all");
 
-  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const [selectedReport, setSelectedReport] = useState<UnresolvedReportResponse | null>(null);
   const [showResolveDialog, setShowResolveDialog] = useState(false);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [showSuspendDialog, setShowSuspendDialog] = useState(false);
   const [expandedReport, setExpandedReport] = useState<string | null>(null);
   const [actionNote, setActionNote] = useState("");
+
+  const [showProcessDialog, setShowProcessDialog] = useState(false);
+  const [processSubject, setProcessSubject] = useState("");
+  const [processReason, setProcessReason] = useState("");
+
+  const loadReports = async () => {
+    try {
+      const response = await getUnresolvedReportsLazy();
+      if (response && response.data) {
+        setReports(response.data);
+      }
+    } catch (error) {
+      console.error("Error loading reports:", error);
+    }
+  };
+
+  // Load reports on component mount
+  useEffect(() => {
+
+
+    loadReports();
+  }, [getUnresolvedReportsLazy]);
 
   const statusOptions = [
     { value: "all", label: "Tất cả trạng thái" },
@@ -172,55 +131,73 @@ export default function ManageReport() {
     { value: "other", label: "Khác" },
   ];
 
-  // Stats calculation
+  // Stats calculation - all unresolved reports are pending
   const stats = {
     total: reports.length,
-    pending: reports.filter((r) => r.status === "pending").length,
-    resolved: reports.filter((r) => r.status === "resolved").length,
-    rejected: reports.filter((r) => r.status === "rejected").length,
+    pending: reports.length, // All unresolved reports are pending
+    resolved: 0,
+    rejected: 0,
   };
 
   // Filter reports
   const filteredReports = reports.filter((report) => {
     const matchesSearch =
-      report.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      report.reportedUser.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      report.conference.toLowerCase().includes(searchQuery.toLowerCase());
+      report.reportId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      report.user?.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      report.user?.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      report.reportSubject?.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesStatus =
-      filterStatus === "all" || report.status === filterStatus;
-    const matchesType = filterType === "all" || report.type === filterType;
+    const matchesStatus = filterStatus === "all" || filterStatus === "pending"; // Only pending reports available
+    const matchesType = filterType === "all" || report.reason === filterType;
 
     return matchesSearch && matchesStatus && matchesType;
   });
 
-  const handleResolveReport = () => {
-    if (selectedReport) {
-      setReports(
-        reports.map((r) =>
-          r.id === selectedReport.id
-            ? { ...r, status: "resolved", updatedAt: new Date().toISOString() }
-            : r,
-        ),
-      );
-      setShowResolveDialog(false);
-      setSelectedReport(null);
-      setActionNote("");
+  const handleResolveReport = async () => {
+    if (!processSubject.trim() || !processReason.trim()) {
+      alert("Vui lòng nhập đầy đủ chủ đề và lý do xử lý");
+      return;
+    }
+
+    if (selectedReport && selectedReport.reportId) {
+      try {
+        const responseData: ReportResponseRequest = {
+          reportSubject: processSubject,
+          reason: processReason,
+        };
+
+        await sendReportResponse(selectedReport.reportId, responseData);
+
+        setReports(reports.filter((r) => r.reportId !== selectedReport.reportId));
+        setShowResolveDialog(false);
+        setSelectedReport(null);
+        setActionNote("");
+
+        loadReports();
+      } catch (error) {
+        console.error("Error resolving report:", error);
+      }
     }
   };
 
-  const handleRejectReport = () => {
-    if (selectedReport) {
-      setReports(
-        reports.map((r) =>
-          r.id === selectedReport.id
-            ? { ...r, status: "rejected", updatedAt: new Date().toISOString() }
-            : r,
-        ),
-      );
-      setShowRejectDialog(false);
-      setSelectedReport(null);
-      setActionNote("");
+  const handleRejectReport = async () => {
+    if (selectedReport && selectedReport.reportId) {
+      try {
+        const responseData: ReportResponseRequest = {
+          reportSubject: selectedReport.reportSubject || "",
+          reason: actionNote || "Báo cáo bị từ chối",
+        };
+
+        await sendReportResponse(selectedReport.reportId, responseData);
+
+        // Remove rejected report from the list
+        setReports(reports.filter((r) => r.reportId !== selectedReport.reportId));
+        setShowRejectDialog(false);
+        setSelectedReport(null);
+        setActionNote("");
+      } catch (error) {
+        console.error("Error rejecting report:", error);
+      }
     }
   };
 
@@ -335,7 +312,7 @@ export default function ManageReport() {
           ) : (
             filteredReports.map((report) => (
               <div
-                key={report.id}
+                key={report.reportId}
                 className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
               >
                 <div className="space-y-4">
@@ -344,90 +321,120 @@ export default function ManageReport() {
                     <div className="flex-1 space-y-2">
                       <div className="flex items-center gap-3">
                         <span className="font-mono text-sm font-semibold text-blue-600">
-                          {report.id}
+                          {report.reportId}
                         </span>
-                        <ReportStatusBadge status={report.status} />
-                        <ReportTypeBadge type={report.type} />
+                        <ReportStatusBadge status="pending" />
+                        <ReportTypeBadge type={report.reason || "other"} />
                       </div>
 
                       <div className="text-sm text-gray-600">
                         <p>
-                          <strong>Người báo cáo:</strong> {report.reportedBy}
+                          <strong>Người báo cáo:</strong> {report.user?.email || "N/A"}
                         </p>
                         <p>
-                          <strong>Người bị báo cáo:</strong>{" "}
-                          {report.reportedUser}
+                          <strong>Tên người báo cáo:</strong> {report.user?.fullName || "N/A"}
                         </p>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {report.status === "pending" && (
-                        <>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-red-600 border-red-300 hover:bg-red-50"
-                            onClick={() => {
-                              setSelectedReport(report);
-                              setShowSuspendDialog(true);
-                            }}
-                          >
-                            <UserX className="w-4 h-4 mr-1" />
-                            Suspend User
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-gray-600 hover:bg-gray-50"
-                            onClick={() => {
-                              setSelectedReport(report);
-                              setShowRejectDialog(true);
-                            }}
-                          >
-                            <XCircle className="w-4 h-4 mr-1" />
-                            Từ chối
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="bg-green-600 hover:bg-green-700"
-                            onClick={() => {
-                              setSelectedReport(report);
-                              setShowResolveDialog(true);
-                            }}
-                          >
-                            <CheckCircle className="w-4 h-4 mr-1" />
-                            Xác nhận xử lý
-                          </Button>
-                        </>
-                      )}
+                      <Button
+                        size="sm"
+                        className="bg-blue-600 hover:bg-blue-700"
+                        onClick={() => {
+                          setSelectedReport(report);
+                          setProcessSubject(report.reportSubject || "");
+                          setProcessReason("");
+                          setShowProcessDialog(true);
+                        }}
+                        disabled={loading}
+                      >
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        Xử lý báo cáo
+                      </Button>
                       <Button
                         size="sm"
                         variant="ghost"
                         onClick={() =>
                           setExpandedReport(
-                            expandedReport === report.id ? null : report.id,
+                            expandedReport === report.reportId ? null : report.reportId,
                           )
                         }
                       >
-                        {expandedReport === report.id ? (
+                        {expandedReport === report.reportId ? (
                           <ChevronUp className="w-4 h-4" />
                         ) : (
                           <ChevronDown className="w-4 h-4" />
                         )}
                       </Button>
                     </div>
+
+                    {/* <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-red-600 border-red-300 hover:bg-red-50"
+                        onClick={() => {
+                          setSelectedReport(report);
+                          setShowSuspendDialog(true);
+                        }}
+                        disabled={loading}
+                      >
+                        <UserX className="w-4 h-4 mr-1" />
+                        Suspend User
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-gray-600 hover:bg-gray-50"
+                        onClick={() => {
+                          setSelectedReport(report);
+                          setShowRejectDialog(true);
+                        }}
+                        disabled={loading}
+                      >
+                        <XCircle className="w-4 h-4 mr-1" />
+                        Từ chối
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="bg-green-600 hover:bg-green-700"
+                        onClick={() => {
+                          setSelectedReport(report);
+                          setShowResolveDialog(true);
+                        }}
+                        disabled={loading}
+                      >
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        Xác nhận xử lý
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() =>
+                          setExpandedReport(
+                            expandedReport === report.reportId ? null : report.reportId,
+                          )
+                        }
+                      >
+                        {expandedReport === report.reportId ? (
+                          <ChevronUp className="w-4 h-4" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4" />
+                        )}
+                      </Button>
+                    </div> */}
                   </div>
 
                   {/* Expanded Details */}
-                  {expandedReport === report.id && (
+                  {expandedReport === report.reportId && (
                     <div className="pt-4 border-t space-y-3">
                       <div>
                         <Label className="text-sm font-semibold">
-                          Conference liên quan:
+                          Chủ đề báo cáo:
                         </Label>
                         <p className="text-sm text-gray-700 mt-1">
-                          {report.conference}
+                          {report.reportSubject || "N/A"}
                         </p>
                       </div>
 
@@ -436,7 +443,7 @@ export default function ManageReport() {
                           Lý do báo cáo:
                         </Label>
                         <p className="text-sm text-gray-700 mt-1">
-                          {report.reason}
+                          {report.reason || "N/A"}
                         </p>
                       </div>
 
@@ -445,18 +452,22 @@ export default function ManageReport() {
                           Mô tả chi tiết:
                         </Label>
                         <p className="text-sm text-gray-700 mt-1">
-                          {report.description}
+                          {report.description || "N/A"}
                         </p>
                       </div>
 
+                      <div>
+                        <strong>Ngày tạo:</strong>{" "}
+                        {report.createdAt ? formatDate(report.createdAt) : "N/A"}
+                      </div>
+
                       <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+
                         <div>
-                          <strong>Ngày tạo:</strong>{" "}
-                          {formatDate(report.createdAt)}
+                          <strong>Mã tài khoản:</strong> {report.userId || "N/A"}
                         </div>
                         <div>
-                          <strong>Cập nhật:</strong>{" "}
-                          {formatDate(report.updatedAt)}
+                          <strong>Tên tài khoản:</strong> {report.user?.fullName || "N/A"}
                         </div>
                       </div>
                     </div>
@@ -468,14 +479,75 @@ export default function ManageReport() {
         </div>
       </div>
 
+      <AlertDialog open={showProcessDialog} onOpenChange={setShowProcessDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xử lý báo cáo</AlertDialogTitle>
+            <AlertDialogDescription>
+              Vui lòng nhập thông tin xử lý cho báo cáo{" "}
+              <strong>{selectedReport?.reportId}</strong>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="py-4 space-y-4">
+            <div>
+              <Label htmlFor="process-subject">
+                Chủ đề xử lý <span className="text-red-500">*</span>
+              </Label>
+              <input
+                id="process-subject"
+                type="text"
+                className="w-full mt-2 p-2 border rounded-md"
+                placeholder="Nhập chủ đề xử lý..."
+                value={processSubject}
+                onChange={(e) => setProcessSubject(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="process-reason">
+                Lý do xử lý <span className="text-red-500">*</span>
+              </Label>
+              <textarea
+                id="process-reason"
+                className="w-full mt-2 p-2 border rounded-md"
+                rows={4}
+                placeholder="Nhập lý do xử lý báo cáo..."
+                value={processReason}
+                onChange={(e) => setProcessReason(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                setProcessSubject("");
+                setProcessReason("");
+                setSelectedReport(null);
+              }}
+            >
+              Hủy
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleResolveReport}
+              className="bg-blue-600 hover:bg-blue-700"
+              disabled={loading || !processSubject.trim() || !processReason.trim()}
+            >
+              {loading ? "Đang xử lý..." : "Xác nhận xử lý"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Resolve Dialog */}
-      <AlertDialog open={showResolveDialog} onOpenChange={setShowResolveDialog}>
+      {/* <AlertDialog open={showResolveDialog} onOpenChange={setShowResolveDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận xử lý báo cáo</AlertDialogTitle>
             <AlertDialogDescription>
               Bạn có chắc chắn muốn đánh dấu báo cáo{" "}
-              <strong>{selectedReport?.id}</strong> là đã xử lý? Hành động này
+              <strong>{selectedReport?.reportId}</strong> là đã xử lý? Hành động này
               sẽ xác nhận rằng vấn đề đã được giải quyết.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -504,21 +576,22 @@ export default function ManageReport() {
             <AlertDialogAction
               onClick={handleResolveReport}
               className="bg-green-600 hover:bg-green-700"
+              disabled={loading}
             >
-              Xác nhận
+              {loading ? "Đang xử lý..." : "Xác nhận"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
-      </AlertDialog>
+      </AlertDialog> */}
 
       {/* Reject Dialog */}
-      <AlertDialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
+      {/* <AlertDialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Từ chối báo cáo</AlertDialogTitle>
             <AlertDialogDescription>
               Bạn có chắc chắn muốn từ chối báo cáo{" "}
-              <strong>{selectedReport?.id}</strong>? Hành động này sẽ đánh dấu
+              <strong>{selectedReport?.reportId}</strong>? Hành động này sẽ đánh dấu
               báo cáo là không hợp lệ.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -547,15 +620,16 @@ export default function ManageReport() {
             <AlertDialogAction
               onClick={handleRejectReport}
               className="bg-red-600 hover:bg-red-700"
+              disabled={loading}
             >
-              Từ chối
+              {loading ? "Đang xử lý..." : "Từ chối"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
-      </AlertDialog>
+      </AlertDialog> */}
 
       {/* Suspend User Dialog */}
-      <AlertDialog open={showSuspendDialog} onOpenChange={setShowSuspendDialog}>
+      {/* <AlertDialog open={showSuspendDialog} onOpenChange={setShowSuspendDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="text-red-600">
@@ -563,7 +637,7 @@ export default function ManageReport() {
             </AlertDialogTitle>
             <AlertDialogDescription>
               Bạn có chắc chắn muốn suspend tài khoản{" "}
-              <strong>{selectedReport?.reportedUser}</strong>? Đây là hành động
+              <strong>{selectedReport?.user?.email}</strong>? Đây là hành động
               nghiêm trọng và người dùng sẽ không thể truy cập hệ thống.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -614,7 +688,7 @@ export default function ManageReport() {
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
-      </AlertDialog>
+      </AlertDialog> */}
     </div>
   );
 }

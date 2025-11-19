@@ -17,8 +17,10 @@ import type {
     UnresolvedReportResponse,
     ReportFeedbackResponse,
 } from "@/types/report.type";
+import { useCallback } from "react";
+import { skipToken } from "@reduxjs/toolkit/query";
 
-export const useReport = () => {
+export const useReport = (reportId?: string) => {
     const [
         submitReport,
         {
@@ -56,7 +58,7 @@ export const useReport = () => {
         data: responseData,
         isLoading: responseLoading,
         error: responseRawError,
-    } = useGetReportResponsesQuery("");
+    } = useGetReportResponsesQuery(reportId ?? skipToken);
 
     const [
         fetchReportResponses,
@@ -87,16 +89,19 @@ export const useReport = () => {
         }
     };
 
-    const getUnresolvedReportsLazy = async (): Promise<
-        ApiResponse<UnresolvedReportResponse[]>
-    > => {
-        try {
-            const result = await fetchUnresolvedReports().unwrap();
-            return result;
-        } catch (err) {
-            throw err;
-        }
-    };
+
+    const getUnresolvedReportsLazy = useCallback(
+        async (): Promise<ApiResponse<UnresolvedReportResponse[]>> => {
+            try {
+                const result = await fetchUnresolvedReports().unwrap();
+                return result;
+            } catch (err) {
+                throw err;
+            }
+        },
+        [fetchUnresolvedReports]
+    );
+
 
 
     const sendReportResponse = async (
@@ -111,16 +116,17 @@ export const useReport = () => {
         }
     };
 
-    const getSingleReportResponses = async (
-        reportId: string,
-    ): Promise<ApiResponse<ReportFeedbackResponse>> => {
-        try {
-            const result = await fetchReportResponses(reportId).unwrap();
-            return result;
-        } catch (err) {
-            throw err;
-        }
-    };
+    const getSingleReportResponses = useCallback(
+        async (reportId: string): Promise<ApiResponse<ReportFeedbackResponse>> => {
+            try {
+                const result = await fetchReportResponses(reportId).unwrap();
+                return result;
+            } catch (err) {
+                throw err;
+            }
+        },
+        [fetchReportResponses]
+    );
 
     // -------------------- RETURN -------------------- //
     return {
