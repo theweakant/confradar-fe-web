@@ -205,7 +205,7 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
   };
 
   // Update tempPhase
-  const handleUpdateTempPhase = (field: keyof Phase, value: any) => {
+  const handleUpdateTempPhase = (field: keyof Phase, value: string | Date | number) => {
     if (!tempPhase) return;
     setTempPhase({ ...tempPhase, [field]: value });
   };
@@ -249,44 +249,44 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
     setTempPhase({ ...tempPhase, refundInPhase: updatedRefunds });
   };
 
-  // Handler thêm refund policy
-  const handleAddRefundPolicy = (priceId: string, phaseIndex: number) => {
-    const phase = selectedPrices[priceId][phaseIndex];
-    const minDeadline = calculateMinRefundDate(phase.startDate);
+  // // Handler thêm refund policy
+  // const handleAddRefundPolicy = (priceId: string, phaseIndex: number) => {
+  //   const phase = selectedPrices[priceId][phaseIndex];
+  //   const minDeadline = calculateMinRefundDate(phase.startDate);
 
-    const newRefund: RefundInPhase = {
-      percentRefund: 100,
-      refundDeadline: minDeadline
-    };
+  //   const newRefund: RefundInPhase = {
+  //     percentRefund: 100,
+  //     refundDeadline: minDeadline
+  //   };
 
-    const currentRefunds = phase.refundInPhase || [];
+  //   const currentRefunds = phase.refundInPhase || [];
 
-    handleUpdatePhase(priceId, phaseIndex, 'refundInPhase', [...currentRefunds, newRefund]);
-  };
+  //   handleUpdatePhase(priceId, phaseIndex, 'refundInPhase', [...currentRefunds, newRefund]);
+  // };
 
-  // Handler xóa refund policy
-  const handleRemoveRefundPolicy = (priceId: string, phaseIndex: number, refundIndex: number) => {
-    const phase = selectedPrices[priceId][phaseIndex];
-    const updatedRefunds = (phase.refundInPhase || []).filter((_, i) => i !== refundIndex);
+  // // Handler xóa refund policy
+  // const handleRemoveRefundPolicy = (priceId: string, phaseIndex: number, refundIndex: number) => {
+  //   const phase = selectedPrices[priceId][phaseIndex];
+  //   const updatedRefunds = (phase.refundInPhase || []).filter((_, i) => i !== refundIndex);
 
-    handleUpdatePhase(priceId, phaseIndex, 'refundInPhase', updatedRefunds);
-  };
+  //   handleUpdatePhase(priceId, phaseIndex, 'refundInPhase', updatedRefunds);
+  // };
 
-  // Handler cập nhật refund policy
-  const handleUpdateRefundPolicy = (
-    priceId: string,
-    phaseIndex: number,
-    refundIndex: number,
-    field: keyof RefundInPhase,
-    value: string | number
-  ) => {
-    const phase = selectedPrices[priceId][phaseIndex];
-    const updatedRefunds = [...(phase.refundInPhase || [])];
-    // @ts-expect-error — field type is constrained by usage
-    updatedRefunds[refundIndex][field] = value;
+  // // Handler cập nhật refund policy
+  // const handleUpdateRefundPolicy = (
+  //   priceId: string,
+  //   phaseIndex: number,
+  //   refundIndex: number,
+  //   field: keyof RefundInPhase,
+  //   value: string | number
+  // ) => {
+  //   const phase = selectedPrices[priceId][phaseIndex];
+  //   const updatedRefunds = [...(phase.refundInPhase || [])];
+  //   // @ts-expect-error — field type is constrained by usage
+  //   updatedRefunds[refundIndex][field] = value;
 
-    handleUpdatePhase(priceId, phaseIndex, 'refundInPhase', updatedRefunds);
-  };
+  //   handleUpdatePhase(priceId, phaseIndex, 'refundInPhase', updatedRefunds);
+  // };
 
   // Helper function tính min refund date
   const calculateMinRefundDate = (startDate: string): string => {
@@ -399,7 +399,7 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
   };
 
   // Handle cập nhật phase
-  const handleUpdatePhase = (priceId: string, phaseIndex: number, field: keyof Phase, value: any) => {
+  const handleUpdatePhase = (priceId: string, phaseIndex: number, field: keyof Phase, value: Phase) => {
     const currentPhases = selectedPrices[priceId] || [];
     const updatedPhases = currentPhases.map((phase, idx) =>
       idx === phaseIndex ? { ...phase, [field]: value } : phase
