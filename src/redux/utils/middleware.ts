@@ -14,6 +14,7 @@ import { statusApi } from "../services/status.service";
 import { requestApi } from "../services/request.service";
 import { contractApi } from "../services/contract.service";
 import { presenterApi } from "../services/assigningpresentersession.service";
+import { statisticsApi } from "../services/statistics.service";
 
 export const apiMiddlewares: Middleware[] = [
   authApi.middleware,
@@ -31,4 +32,5 @@ export const apiMiddlewares: Middleware[] = [
   requestApi.middleware,
   contractApi.middleware,
   presenterApi.middleware,
+  statisticsApi.middleware,
 ];

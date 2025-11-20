@@ -6,6 +6,8 @@ import type { CommonConference } from "@/types/conference.type";
 
 interface RightSidebarProps {
   conference: CommonConference;
+  conferenceId: string;
+  isCollaborator: boolean;
   conferenceType: "technical" | "research" | null;
   getCategoryName: (id: string) => string;
   getStatusName: (id: string) => string;
@@ -14,6 +16,8 @@ interface RightSidebarProps {
 
 export function RightSidebar({
   conference,
+  conferenceId,
+  isCollaborator,
   getStatusName,
 }: RightSidebarProps) {
   return (
@@ -26,7 +30,8 @@ export function RightSidebar({
 
       {/* Statistics */}
       <StatisticsSection
-        conference={conference}
+        conferenceId={conferenceId}
+        isCollaborator={isCollaborator}
       />
 
       {/* Recent Activities */}

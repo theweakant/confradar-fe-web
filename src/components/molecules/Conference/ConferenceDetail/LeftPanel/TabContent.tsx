@@ -12,8 +12,9 @@ import { ResearchInfoTab } from "../Tab/ResearchInfoTab";
 import { RefundRequestTab } from "../Tab/RefundRequestTab";
 import { OtherRequestTab } from "../Tab/OtherRequest";
 import { ResearchTimelineTab } from "../Tab/ResearchTimelineTab";
-import { PaperPhaseTab } from "../Tab/PaperPhaseTab";
+import { PaperTab } from "../Tab/PaperTab";
 import { PaperAssignmentTab } from "../Tab/PaperAssignmentTab";
+import { CustomerTab } from "../Tab/CustomerTab";
 
 interface TabContentProps {
   activeSubtab: TabId;
@@ -36,8 +37,11 @@ export function TabContent({
         return <RefundPolicyTab conference={conference} />;
       
       case "session":
-        return <SessionTab conference={conference} conferenceType={conferenceType} />;
+        return <SessionTab conference={conference} conferenceId={conference.conferenceId!} conferenceType={conferenceType}  />;
       
+      case "customers":
+        return <CustomerTab conferenceId={conference.conferenceId!} />;
+
       case "sponsors-media":
         return <SponsorsMediaTab conference={conference} />;
       
@@ -55,7 +59,7 @@ export function TabContent({
         return <ResearchTimelineTab conferenceId={conference.conferenceId!} />;
       
       case "paper-phase":
-        return conferenceType === "research" ? <PaperPhaseTab /> : null;
+        return conferenceType === "research" ? <PaperTab conferenceId={conference.conferenceId!} /> : null;
       
       case "refund-requests":
         return (

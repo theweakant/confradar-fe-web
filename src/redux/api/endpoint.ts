@@ -306,5 +306,14 @@ export const endpoint = {
     GET_PENDING_SESSION_CHANGE_REQUESTS: '/assigningpresentersession/get-pending-session-change-requests',
     APPROVE_CHANGE_SESSION: '/assigningpresentersession/approve-change-session',
     APPROVE_CHANGE_PRESENTER: '/assigningpresentersession/approve-change-presenter',
+  },
+
+  STATISTICS:{
+    SOLD_TICKET: '/statistics/sold-ticket',
+    TICKET_HOLDERS: '/statistics/ticket-holders',
+    EXPORT_SOLD_TICKET: '/statistics/export/sold-ticket',
+    SUBMITTED_PAPERS: '/statistics/submitted-papers',
+    ASSIGN_REVIEWERS: '/statistics/assign-reviewers',
+    PRESENT_SESSION: '/statistics/present-session',
   }
 };
