@@ -189,6 +189,8 @@ export interface Session {
   roomId: string;
   roomDisplayName?:string
   roomNumber?:string
+
+  conferenceName?: string;
 }
 
 export type ResearchSession = Omit<Session, 'speaker'>;

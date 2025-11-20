@@ -18,6 +18,7 @@ import type {
   ResearchRankingReference,
   RefundPolicyResponse,
 } from "@/types/conference.type";
+import { RevisionDeadlineDetail,  } from "@/types/paper.type";
 
 interface UseResearchConferenceDataProps {
   conferenceId: string;
@@ -60,6 +61,7 @@ export function useResearchConferenceData({
 
   const stableOnLoad = useCallback(onLoad || (() => { }), [onLoad]);
   const stableOnError = useCallback(onError || (() => { }), [onError]);
+  
   useEffect(() => {
     hasDispatchedRef.current = false;
   }, [conferenceId]);
@@ -107,108 +109,112 @@ export function useResearchConferenceData({
       };
 
       // === Map Research Phases ===
-      const researchPhases: ResearchPhase[] =
-        data.researchPhase?.flatMap((phase) => {
-          const mainPhase: ResearchPhase = {
-            researchPhaseId: phase.researchConferencePhaseId ?? "main",
-            registrationStartDate: phase.registrationStartDate ?? "",
-            registrationEndDate: phase.registrationEndDate ?? "",
-            fullPaperStartDate: phase.fullPaperStartDate ?? "",
-            fullPaperEndDate: phase.fullPaperEndDate ?? "",
-            reviewStartDate: phase.reviewStartDate ?? "",
-            reviewEndDate: phase.reviewEndDate ?? "",
-            reviseStartDate: phase.reviseStartDate ?? "",
-            reviseEndDate: phase.reviseEndDate ?? "",
-            cameraReadyStartDate: phase.cameraReadyStartDate ?? "",
-            cameraReadyEndDate: phase.cameraReadyEndDate ?? "",
+      const researchPhases: ResearchPhase[] = [];
+      
+      // Helper function to calculate duration
+      const calcDuration = (start: string, end: string): number => {
+        if (!start || !end) return 1;
+        const diffTime = new Date(end).getTime() - new Date(start).getTime();
+        return Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1);
+      };
+      
+      if (data.researchPhase && Array.isArray(data.researchPhase)) {
+        // Tách main phase và waitlist phase từ array
+        const mainPhaseData = data.researchPhase.find((p) => p.isWaitlist === false);
+        const waitlistPhaseData = data.researchPhase.find((p) => p.isWaitlist === true);
+
+        // Map Main Phase (phải có)
+        if (mainPhaseData) {
+          researchPhases.push({
+            researchPhaseId: mainPhaseData.researchConferencePhaseId ?? "main",
+            registrationStartDate: mainPhaseData.registrationStartDate ?? "",
+            registrationEndDate: mainPhaseData.registrationEndDate ?? "",
+            registrationDuration: calcDuration(
+              mainPhaseData.registrationStartDate ?? "",
+              mainPhaseData.registrationEndDate ?? ""
+            ),
+            fullPaperStartDate: mainPhaseData.fullPaperStartDate ?? "",
+            fullPaperEndDate: mainPhaseData.fullPaperEndDate ?? "",
+            fullPaperDuration: calcDuration(
+              mainPhaseData.fullPaperStartDate ?? "",
+              mainPhaseData.fullPaperEndDate ?? ""
+            ),
+            reviewStartDate: mainPhaseData.reviewStartDate ?? "",
+            reviewEndDate: mainPhaseData.reviewEndDate ?? "",
+            reviewDuration: calcDuration(
+              mainPhaseData.reviewStartDate ?? "",
+              mainPhaseData.reviewEndDate ?? ""
+            ),
+            reviseStartDate: mainPhaseData.reviseStartDate ?? "",
+            reviseEndDate: mainPhaseData.reviseEndDate ?? "",
+            reviseDuration: calcDuration(
+              mainPhaseData.reviseStartDate ?? "",
+              mainPhaseData.reviseEndDate ?? ""
+            ),
+            cameraReadyStartDate: mainPhaseData.cameraReadyStartDate ?? "",
+            cameraReadyEndDate: mainPhaseData.cameraReadyEndDate ?? "",
+            cameraReadyDuration: calcDuration(
+              mainPhaseData.cameraReadyStartDate ?? "",
+              mainPhaseData.cameraReadyEndDate ?? ""
+            ),
             isWaitlist: false,
-            isActive: phase.isActive ?? true,
-            revisionRoundDeadlines: (phase.revisionRoundDeadlines ?? []).map((rd) => ({
+            isActive: mainPhaseData.isActive ?? true,
+            revisionRoundDeadlines: (mainPhaseData.revisionRoundDeadlines || []).map((rd) => ({
+              revisionRoundDeadlineId: rd.revisionRoundDeadlineId ?? "",
+              startSubmissionDate: rd.startSubmissionDate ?? "",
+              endSubmissionDate: rd.endSubmissionDate ?? "",
+              roundNumber: rd.roundNumber ?? 1,
+            })),
+          });
+        }
+
+        // Map Waitlist Phase (optional)
+        if (waitlistPhaseData) {
+          researchPhases.push({
+            researchPhaseId: waitlistPhaseData.researchConferencePhaseId ?? "waitlist",
+            registrationStartDate: waitlistPhaseData.registrationStartDate ?? "",
+            registrationEndDate: waitlistPhaseData.registrationEndDate ?? "",
+            registrationDuration: calcDuration(
+              waitlistPhaseData.registrationStartDate ?? "",
+              waitlistPhaseData.registrationEndDate ?? ""
+            ),
+            fullPaperStartDate: waitlistPhaseData.fullPaperStartDate ?? "",
+            fullPaperEndDate: waitlistPhaseData.fullPaperEndDate ?? "",
+            fullPaperDuration: calcDuration(
+              waitlistPhaseData.fullPaperStartDate ?? "",
+              waitlistPhaseData.fullPaperEndDate ?? ""
+            ),
+            reviewStartDate: waitlistPhaseData.reviewStartDate ?? "",
+            reviewEndDate: waitlistPhaseData.reviewEndDate ?? "",
+            reviewDuration: calcDuration(
+              waitlistPhaseData.reviewStartDate ?? "",
+              waitlistPhaseData.reviewEndDate ?? ""
+            ),
+            reviseStartDate: waitlistPhaseData.reviseStartDate ?? "",
+            reviseEndDate: waitlistPhaseData.reviseEndDate ?? "",
+            reviseDuration: calcDuration(
+              waitlistPhaseData.reviseStartDate ?? "",
+              waitlistPhaseData.reviseEndDate ?? ""
+            ),
+            cameraReadyStartDate: waitlistPhaseData.cameraReadyStartDate ?? "",
+            cameraReadyEndDate: waitlistPhaseData.cameraReadyEndDate ?? "",
+            cameraReadyDuration: calcDuration(
+              waitlistPhaseData.cameraReadyStartDate ?? "",
+              waitlistPhaseData.cameraReadyEndDate ?? ""
+            ),
+            isWaitlist: true,
+            isActive: waitlistPhaseData.isActive ?? false,
+            revisionRoundDeadlines: (waitlistPhaseData.revisionRoundDeadlines || []).map((rd) => ({
               revisionRoundDeadlineId: rd.revisionRoundDeadlineId ?? "",
               startSubmissionDate: rd.startSubmissionDate ?? "",
               endSubmissionDate: rd.endSubmissionDate ?? "",
               roundNumber: rd.roundNumber ?? 1,
               researchConferencePhaseId: rd.researchConferencePhaseId ?? "",
             })),
-          };
-
-          const waitlistPhase = phase.waitlistPhase
-            ? {
-              researchPhaseId: phase.waitlistPhase.researchConferencePhaseId ?? "waitlist",
-              registrationStartDate: phase.waitlistPhase.registrationStartDate ?? "",
-              registrationEndDate: phase.waitlistPhase.registrationEndDate ?? "",
-              fullPaperStartDate: phase.waitlistPhase.fullPaperStartDate ?? "",
-              fullPaperEndDate: phase.waitlistPhase.fullPaperEndDate ?? "",
-              reviewStartDate: phase.waitlistPhase.reviewStartDate ?? "",
-              reviewEndDate: phase.waitlistPhase.reviewEndDate ?? "",
-              reviseStartDate: phase.waitlistPhase.reviseStartDate ?? "",
-              reviseEndDate: phase.waitlistPhase.reviseEndDate ?? "",
-              cameraReadyStartDate: phase.waitlistPhase.cameraReadyStartDate ?? "",
-              cameraReadyEndDate: phase.waitlistPhase.cameraReadyEndDate ?? "",
-              isWaitlist: true, // ← phải là true
-              isActive: phase.waitlistPhase.isActive ?? false,
-              revisionRoundDeadlines:
-                (phase.waitlistPhase.revisionRoundDeadlines ?? []).map((rd) => ({
-                  revisionRoundDeadlineId: rd.revisionRoundDeadlineId ?? "",
-                  startSubmissionDate: rd.startSubmissionDate ?? "",
-                  endSubmissionDate: rd.endSubmissionDate ?? "",
-                  roundNumber: rd.roundNumber ?? 1,
-                  researchConferencePhaseId: rd.researchConferencePhaseId ?? "",
-                })),
-            }
-            : null;
-
-          return waitlistPhase ? [mainPhase, waitlistPhase] : [mainPhase];
-        }) ?? [];
-      // const researchPhases: ResearchPhase[] = [];
-      // if (data.researchPhase) {
-      //   researchPhases.push({
-      //     researchPhaseId: data.researchPhase.researchConferencePhaseId ?? "main",
-      //     registrationStartDate: data.researchPhase.registrationStartDate ?? "",
-      //     registrationEndDate: data.researchPhase.registrationEndDate ?? "",
-      //     fullPaperStartDate: data.researchPhase.fullPaperStartDate ?? "",
-      //     fullPaperEndDate: data.researchPhase.fullPaperEndDate ?? "",
-      //     reviewStartDate: data.researchPhase.reviewStartDate ?? "",
-      //     reviewEndDate: data.researchPhase.reviewEndDate ?? "",
-      //     reviseStartDate: data.researchPhase.reviseStartDate ?? "",
-      //     reviseEndDate: data.researchPhase.reviseEndDate ?? "",
-      //     cameraReadyStartDate: data.researchPhase.cameraReadyStartDate ?? "",
-      //     cameraReadyEndDate: data.researchPhase.cameraReadyEndDate ?? "",
-      //     isWaitlist: false,
-      //     isActive: true,
-      //     revisionRoundDeadlines: (data.researchPhase.revisionRoundDeadlines || []).map((rd) => ({
-      //       revisionRoundDeadlineId: rd.revisionRoundDeadlineId ?? "",
-      //       startSubmissionDate: rd.startDate ?? "",
-      //       endSubmissionDate: rd.endDate ?? "",
-      //       roundNumber: rd.roundNumber ?? 1,
-      //     })),
-      //   });
-
-      //   if (data.researchPhase.waitlistPhase) {
-      //     researchPhases.push({
-      //       researchPhaseId: data.researchPhase.waitlistPhase.researchConferencePhaseId ?? "waitlist",
-      //       registrationStartDate: data.researchPhase.waitlistPhase.registrationStartDate ?? "",
-      //       registrationEndDate: data.researchPhase.waitlistPhase.registrationEndDate ?? "",
-      //       fullPaperStartDate: data.researchPhase.waitlistPhase.fullPaperStartDate ?? "",
-      //       fullPaperEndDate: data.researchPhase.waitlistPhase.fullPaperEndDate ?? "",
-      //       reviewStartDate: data.researchPhase.waitlistPhase.reviewStartDate ?? "",
-      //       reviewEndDate: data.researchPhase.waitlistPhase.reviewEndDate ?? "",
-      //       reviseStartDate: data.researchPhase.waitlistPhase.reviseStartDate ?? "",
-      //       reviseEndDate: data.researchPhase.waitlistPhase.reviseEndDate ?? "",
-      //       cameraReadyStartDate: data.researchPhase.waitlistPhase.cameraReadyStartDate ?? "",
-      //       cameraReadyEndDate: data.researchPhase.waitlistPhase.cameraReadyEndDate ?? "",
-      //       isWaitlist: false,
-      //       isActive: data.researchPhase.waitlistPhase.isActive ?? false,
-      //       revisionRoundDeadlines: (data.researchPhase.waitlistPhase.revisionRoundDeadlines || []).map((rd) => ({
-      //         revisionRoundDeadlineId: rd.revisionRoundDeadlineId ?? "",
-      //         startSubmissionDate: rd.startDate ?? "",
-      //         endSubmissionDate: rd.endDate ?? "",
-      //         roundNumber: rd.roundNumber ?? 1,
-      //       })),
-      //     });
-      //   }
-      // }
-
+          });
+        }
+      }
+     
       // === Map Tickets ===
       const tickets: Ticket[] = (data.conferencePrices || []).map((p) => ({
         priceId: p.conferencePriceId,
@@ -231,7 +237,6 @@ export function useResearchConferenceData({
             percentRefund: rp.percentRefund ?? 0,
             refundDeadline: rp.refundDeadline ?? "",
           })),
-
         })),
       }));
 
@@ -300,7 +305,6 @@ export function useResearchConferenceData({
         imageUrl: s.imageUrl ?? "",
       }));
 
-
       dispatch(
         loadExistingConference({
           id: conferenceId,
@@ -332,6 +336,7 @@ export function useResearchConferenceData({
     error,
     stableOnLoad,
     stableOnError,
+    dispatch,
   ]);
 
   return { isLoading, isError, isFetching, refetch };

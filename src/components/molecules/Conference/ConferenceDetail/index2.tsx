@@ -19,24 +19,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/redux/hooks/useAuth";
 
-// Queries
 import { useGetTechnicalConferenceDetailInternalQuery } from "@/redux/services/conference.service";
 import { useGetResearchConferenceDetailInternalQuery } from "@/redux/services/conference.service";
 import { useGetAllConferenceStatusesQuery } from "@/redux/services/status.service";
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 
-// Status Modals
 import { UpdateConferenceStatus } from "@/components/molecules/Status/UpdateStatus";
 import { DeleteConferenceStatus } from "@/components/molecules/Status/DeleteStatus";
 import { RequestConferenceApproval } from "@/components/molecules/Status/RequestStatus";
 
-// New Components
+
 import { HeaderSection } from "./HeaderSection";
 import { RightSidebar } from "./RightSidebar";
 import { LeftPanel } from "./LeftPanel";
 
-// Types
 import type {
   TechnicalConferenceDetailResponse,
   ResearchConferenceDetailResponse,
@@ -56,14 +53,12 @@ export default function ConferenceDetailPage() {
   const isOrganizer = userRoles.includes("Conference Organizer");
   const isCollaborator = userRoles.includes("Collaborator");
 
-  // State management
   const [primaryTab, setPrimaryTab] = useState<"detail" | "action">("detail");
   const [activeSubtab, setActiveSubtab] = useState<TabId>("price");
   const [conferenceType, setConferenceType] = useState<"technical" | "research" | null>(null);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  // Queries
   const {
     data: techData,
     isLoading: techLoading,
@@ -82,7 +77,6 @@ export default function ConferenceDetailPage() {
   const { data: statusesData } = useGetAllConferenceStatusesQuery();
   const { data: citiesData } = useGetAllCitiesQuery();
 
-  // Determine conference type
   useEffect(() => {
     if (researchData?.data && !researchError && researchData.data.isResearchConference) {
       setConferenceType("research");
@@ -98,7 +92,6 @@ export default function ConferenceDetailPage() {
     }
   }, [techData, researchData, techError, researchError]);
 
-  // Auto-switch subtab when primary tab changes
   useEffect(() => {
     if (primaryTab === "detail") {
       setActiveSubtab("price");
@@ -154,7 +147,6 @@ export default function ConferenceDetailPage() {
     );
   }
 
-  // Role-based update route
   let updateRoute: string | null = null;
   if (conference.isResearchConference) {
     if (isOrganizer) {
@@ -175,7 +167,6 @@ export default function ConferenceDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header with Primary Tabs */}
       <HeaderSection
         conference={conference}
         onBack={() => router.back()}
@@ -192,7 +183,7 @@ export default function ConferenceDetailPage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               {conference.conferenceStatusId &&
-                ["Draft", "Preparing", "Pending"].includes(getStatusName(conference.conferenceStatusId)) &&
+                ["OnHold", "Draft", "Preparing", "Pending"].includes(getStatusName(conference.conferenceStatusId)) &&
                 updateRoute && (
                   <DropdownMenuItem
                     onClick={() => router.push(updateRoute)}
@@ -239,7 +230,6 @@ export default function ConferenceDetailPage() {
         }
       />
 
-      {/* Dialogs */}
       <UpdateConferenceStatus
         open={statusDialogOpen}
         onClose={() => setStatusDialogOpen(false)}
@@ -261,10 +251,8 @@ export default function ConferenceDetailPage() {
         onSuccess={handleRefetch}
       />
 
-      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="flex gap-6">
-          {/* LEFT PANEL */}
           <div className="flex-1 min-w-0">
             <LeftPanel
               primaryTab={primaryTab}
@@ -278,9 +266,10 @@ export default function ConferenceDetailPage() {
             />
           </div>
 
-          {/* RIGHT SIDEBAR */}
           <RightSidebar
             conference={conference}
+            conferenceId={conference.conferenceId!}
+            isCollaborator={isCollaborator}
             conferenceType={conferenceType}
             getCategoryName={getCategoryName}
             getStatusName={getStatusName}

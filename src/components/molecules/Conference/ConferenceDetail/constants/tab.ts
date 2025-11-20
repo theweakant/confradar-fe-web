@@ -16,6 +16,7 @@ import {
 
 export type TabId = 
   | "price"
+  | "customers"
   | "refund-policy"
   | "sponsors-media"
   | "research-materials"
@@ -82,6 +83,12 @@ export const TAB_GROUPS: TabGroup[] = [
       {
         id: "session",
         label: "Session",
+        icon: Calendar,
+        conferenceType: "all",
+      },
+      {
+        id: "customers",
+        label: "Người mua",
         icon: Calendar,
         conferenceType: "all",
       },

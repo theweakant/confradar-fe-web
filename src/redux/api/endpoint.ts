@@ -308,11 +308,27 @@ export const endpoint = {
   ASSIGNINGPRESENTERSESSION: {
     REQUEST_CHANGE_PRESENTER: "/assigningpresentersession/request-change-presenter",
     REQUEST_CHANGE_SESSION: "/assigningpresentersession/request-change-session",
+
+    GET_PENDING_PRESENTER_CHANGE_REQUESTS: '/assigningpresentersession/get-pending-presenter-change-requests',
+    GET_PENDING_SESSION_CHANGE_REQUESTS: '/assigningpresentersession/get-pending-session-change-requests',
+    APPROVE_CHANGE_SESSION: '/assigningpresentersession/approve-change-session',
+    APPROVE_CHANGE_PRESENTER: '/assigningpresentersession/approve-change-presenter',
   },
+
+  STATISTICS:{
+    SOLD_TICKET: '/statistics/sold-ticket',
+    TICKET_HOLDERS: '/statistics/ticket-holders',
+    EXPORT_SOLD_TICKET: '/statistics/export/sold-ticket',
+    SUBMITTED_PAPERS: '/statistics/submitted-papers',
+    ASSIGN_REVIEWERS: '/statistics/assign-reviewers',
+    PRESENT_SESSION: '/statistics/present-session',
+  },
+
   REPORT: {
     CREATE: "/report",
     GET_UNRESOLVED: "/report/unresolved",
     RESPONSE: (reportId: string) => `/report/${reportId}/response`,
     GET_RESPONSE: (reportId: string) => `/report/${reportId}/get-response`,
   },
-};
+}
+

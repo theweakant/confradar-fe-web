@@ -33,7 +33,6 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [roomDetailOpen, setRoomDetailOpen] = useState(false);
   
-  // Khởi tạo dateRange ưu tiên startDate nếu có
   const [dateRange, setDateRange] = useState(() => {
     const defaultStart = startDate || new Date().toISOString().split('T')[0];
     const defaultEnd = new Date(new Date(defaultStart).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];

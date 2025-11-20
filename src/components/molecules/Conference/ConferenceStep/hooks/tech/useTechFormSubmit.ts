@@ -410,8 +410,11 @@ const submitPrice = async (tickets: Ticket[]) => {
 const submitSessions = async (
   sessions: Session[],
   eventStartDate: string,
-  eventEndDate: string
+  eventEndDate: string,
+  options?: { deletedSessionIds?: string[] }
 ) => {
+  const currentDeletedIds = options?.deletedSessionIds || deletedSessionIds;
+  
   if (!conferenceId) {
     toast.error("Không tìm thấy conference ID!");
     return { success: false };
@@ -423,7 +426,6 @@ const submitSessions = async (
     return { success: true, skipped: true };
   }
 
-  // CHỈ VALIDATE NẾU SUBMIT TẤT CẢ SESSIONS (không validate khi tạo từng session riêng lẻ)
   const isSubmittingAll = sessions.length > 1;
   
   if (isSubmittingAll) {
@@ -471,8 +473,8 @@ const submitSessions = async (
     };
 
     if (mode === "edit") {
-      if (deletedSessionIds.length > 0) {
-        await Promise.all(deletedSessionIds.map((id) => deleteSession(id).unwrap()));
+      if (currentDeletedIds.length > 0) {
+        await Promise.all(currentDeletedIds.map((id) => deleteSession(id).unwrap()));
       }
 
       const existingSessions = sessions.filter((s) => s.sessionId);
@@ -505,17 +507,14 @@ const submitSessions = async (
 
       await triggerRefetch();
     } else {
-      // MODE CREATE
       const formattedSessions = sessions.map(formatSession);
       await createSessions({ conferenceId, data: { sessions: formattedSessions } }).unwrap();
     }
 
-    // ✅ CHỈ MARK COMPLETED KHI SUBMIT TẤT CẢ
     if (isSubmittingAll) {
       dispatch(markStepCompleted(3));
     }
     
-    // ✅ TOAST SUCCESS CHỈ KHI SUBMIT NHIỀU SESSIONS
     if (isSubmittingAll) {
       toast.success("Lưu phiên họp thành công!");
     }
@@ -802,7 +801,8 @@ const submitSessions = async (
         const sessionResult = await submitSessions(
           stepsData.sessions,
           stepsData.basicForm.startDate!,
-          stepsData.basicForm.endDate!
+          stepsData.basicForm.endDate!,
+          { deletedSessionIds: deletedSessionIds }
         );
         if (!sessionResult.success) return { success: false };
         results.push(sessionResult);
