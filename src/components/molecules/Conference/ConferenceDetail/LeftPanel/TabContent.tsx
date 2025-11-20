@@ -10,7 +10,7 @@ import { SponsorsMediaTab } from "../Tab/SponsorsMediaTab";
 import { ResearchMaterialsTab } from "../Tab/ResearchMaterialsTab";
 import { ResearchInfoTab } from "../Tab/ResearchInfoTab";
 import { RefundRequestTab } from "../Tab/RefundRequestTab";
-import { OtherRequestTab } from "../Tab/OtherRequestTab";
+import { OtherRequestTab } from "../Tab/OtherRequest";
 import { ResearchTimelineTab } from "../Tab/ResearchTimelineTab";
 import { PaperPhaseTab } from "../Tab/PaperPhaseTab";
 import { PaperAssignmentTab } from "../Tab/PaperAssignmentTab";

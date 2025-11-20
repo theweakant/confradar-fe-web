@@ -192,7 +192,7 @@ export default function ConferenceDetailPage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               {conference.conferenceStatusId &&
-                ["Draft", "Preparing", "Pending"].includes(getStatusName(conference.conferenceStatusId)) &&
+                ["OnHold", "Draft", "Preparing", "Pending"].includes(getStatusName(conference.conferenceStatusId)) &&
                 updateRoute && (
                   <DropdownMenuItem
                     onClick={() => router.push(updateRoute)}

@@ -18,6 +18,7 @@ import type {
   ResearchRankingReference,
   RefundPolicyResponse,
 } from "@/types/conference.type";
+import { RevisionDeadlineDetail } from "@/types/paper.type";
 
 interface UseResearchConferenceDataProps {
   conferenceId: string;
@@ -108,48 +109,110 @@ export function useResearchConferenceData({
 
       // === Map Research Phases ===
       const researchPhases: ResearchPhase[] = [];
-      if (data.researchPhase) {
-        researchPhases.push({
-          researchPhaseId: data.researchPhase.researchConferencePhaseId ?? "main",
-          registrationStartDate: data.researchPhase.registrationStartDate ?? "",
-          registrationEndDate: data.researchPhase.registrationEndDate ?? "",
-          fullPaperStartDate: data.researchPhase.fullPaperStartDate ?? "",
-          fullPaperEndDate: data.researchPhase.fullPaperEndDate ?? "",
-          reviewStartDate: data.researchPhase.reviewStartDate ?? "",
-          reviewEndDate: data.researchPhase.reviewEndDate ?? "",
-          reviseStartDate: data.researchPhase.reviseStartDate ?? "",
-          reviseEndDate: data.researchPhase.reviseEndDate ?? "",
-          cameraReadyStartDate: data.researchPhase.cameraReadyStartDate ?? "",
-          cameraReadyEndDate: data.researchPhase.cameraReadyEndDate ?? "",
-          isWaitlist: false,
-          isActive: true,
-          revisionRoundDeadlines: (data.researchPhase.revisionRoundDeadlines || []).map((rd) => ({
-            revisionRoundDeadlineId: rd.revisionRoundDeadlineId ?? "",
-            startSubmissionDate: rd.startDate ?? "",
-            endSubmissionDate: rd.endDate ?? "",
-            roundNumber: rd.roundNumber ?? 1,
-          })),
-        });
+      
+      if (data.researchPhase && Array.isArray(data.researchPhase)) {
+        // Tách main phase và waitlist phase từ array
+        const mainPhaseData = data.researchPhase.find((p) => p.isWaitlist === false);
+        const waitlistPhaseData = data.researchPhase.find((p) => p.isWaitlist === true);
 
-        if (data.researchPhase.waitlistPhase) {
+        // Map Main Phase (phải có)
+        if (mainPhaseData) {
+          // Tính duration từ dates
+          const calcDuration = (start: string, end: string): number => {
+            if (!start || !end) return 1;
+            const diffTime = new Date(end).getTime() - new Date(start).getTime();
+            return Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1);
+          };
+
           researchPhases.push({
-            researchPhaseId: data.researchPhase.waitlistPhase.researchConferencePhaseId ?? "waitlist",
-            registrationStartDate: data.researchPhase.waitlistPhase.registrationStartDate ?? "",
-            registrationEndDate: data.researchPhase.waitlistPhase.registrationEndDate ?? "",
-            fullPaperStartDate: data.researchPhase.waitlistPhase.fullPaperStartDate ?? "",
-            fullPaperEndDate: data.researchPhase.waitlistPhase.fullPaperEndDate ?? "",
-            reviewStartDate: data.researchPhase.waitlistPhase.reviewStartDate ?? "",
-            reviewEndDate: data.researchPhase.waitlistPhase.reviewEndDate ?? "",
-            reviseStartDate: data.researchPhase.waitlistPhase.reviseStartDate ?? "",
-            reviseEndDate: data.researchPhase.waitlistPhase.reviseEndDate ?? "",
-            cameraReadyStartDate: data.researchPhase.waitlistPhase.cameraReadyStartDate ?? "",
-            cameraReadyEndDate: data.researchPhase.waitlistPhase.cameraReadyEndDate ?? "",
+            researchPhaseId: mainPhaseData.researchConferencePhaseId ?? "main",
+            registrationStartDate: mainPhaseData.registrationStartDate ?? "",
+            registrationEndDate: mainPhaseData.registrationEndDate ?? "",
+            registrationDuration: calcDuration(
+              mainPhaseData.registrationStartDate ?? "",
+              mainPhaseData.registrationEndDate ?? ""
+            ),
+            fullPaperStartDate: mainPhaseData.fullPaperStartDate ?? "",
+            fullPaperEndDate: mainPhaseData.fullPaperEndDate ?? "",
+            fullPaperDuration: calcDuration(
+              mainPhaseData.fullPaperStartDate ?? "",
+              mainPhaseData.fullPaperEndDate ?? ""
+            ),
+            reviewStartDate: mainPhaseData.reviewStartDate ?? "",
+            reviewEndDate: mainPhaseData.reviewEndDate ?? "",
+            reviewDuration: calcDuration(
+              mainPhaseData.reviewStartDate ?? "",
+              mainPhaseData.reviewEndDate ?? ""
+            ),
+            reviseStartDate: mainPhaseData.reviseStartDate ?? "",
+            reviseEndDate: mainPhaseData.reviseEndDate ?? "",
+            reviseDuration: calcDuration(
+              mainPhaseData.reviseStartDate ?? "",
+              mainPhaseData.reviseEndDate ?? ""
+            ),
+            cameraReadyStartDate: mainPhaseData.cameraReadyStartDate ?? "",
+            cameraReadyEndDate: mainPhaseData.cameraReadyEndDate ?? "",
+            cameraReadyDuration: calcDuration(
+              mainPhaseData.cameraReadyStartDate ?? "",
+              mainPhaseData.cameraReadyEndDate ?? ""
+            ),
             isWaitlist: false,
-            isActive: data.researchPhase.waitlistPhase.isActive ?? false,
-            revisionRoundDeadlines: (data.researchPhase.waitlistPhase.revisionRoundDeadlines || []).map((rd) => ({
+            isActive: mainPhaseData.isActive ?? true,
+            revisionRoundDeadlines: (mainPhaseData.revisionRoundDeadlines || []).map((rd:RevisionDeadlineDetail) => ({
               revisionRoundDeadlineId: rd.revisionRoundDeadlineId ?? "",
-              startSubmissionDate: rd.startDate ?? "",
-              endSubmissionDate: rd.endDate ?? "",
+              startSubmissionDate: rd.startSubmissionDate ?? "",
+              endSubmissionDate: rd.endSubmissionDate ?? "",
+              roundNumber: rd.roundNumber ?? 1,
+            })),
+          });
+        }
+
+        // Map Waitlist Phase (optional)
+        if (waitlistPhaseData) {
+          const calcDuration = (start: string, end: string): number => {
+            if (!start || !end) return 1;
+            const diffTime = new Date(end).getTime() - new Date(start).getTime();
+            return Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1);
+          };
+
+          researchPhases.push({
+            researchPhaseId: waitlistPhaseData.researchConferencePhaseId ?? "waitlist",
+            registrationStartDate: waitlistPhaseData.registrationStartDate ?? "",
+            registrationEndDate: waitlistPhaseData.registrationEndDate ?? "",
+            registrationDuration: calcDuration(
+              waitlistPhaseData.registrationStartDate ?? "",
+              waitlistPhaseData.registrationEndDate ?? ""
+            ),
+            fullPaperStartDate: waitlistPhaseData.fullPaperStartDate ?? "",
+            fullPaperEndDate: waitlistPhaseData.fullPaperEndDate ?? "",
+            fullPaperDuration: calcDuration(
+              waitlistPhaseData.fullPaperStartDate ?? "",
+              waitlistPhaseData.fullPaperEndDate ?? ""
+            ),
+            reviewStartDate: waitlistPhaseData.reviewStartDate ?? "",
+            reviewEndDate: waitlistPhaseData.reviewEndDate ?? "",
+            reviewDuration: calcDuration(
+              waitlistPhaseData.reviewStartDate ?? "",
+              waitlistPhaseData.reviewEndDate ?? ""
+            ),
+            reviseStartDate: waitlistPhaseData.reviseStartDate ?? "",
+            reviseEndDate: waitlistPhaseData.reviseEndDate ?? "",
+            reviseDuration: calcDuration(
+              waitlistPhaseData.reviseStartDate ?? "",
+              waitlistPhaseData.reviseEndDate ?? ""
+            ),
+            cameraReadyStartDate: waitlistPhaseData.cameraReadyStartDate ?? "",
+            cameraReadyEndDate: waitlistPhaseData.cameraReadyEndDate ?? "",
+            cameraReadyDuration: calcDuration(
+              waitlistPhaseData.cameraReadyStartDate ?? "",
+              waitlistPhaseData.cameraReadyEndDate ?? ""
+            ),
+            isWaitlist: true,
+            isActive: waitlistPhaseData.isActive ?? false,
+            revisionRoundDeadlines: (waitlistPhaseData.revisionRoundDeadlines || []).map((rd: RevisionDeadlineDetail) => ({
+              revisionRoundDeadlineId: rd.revisionRoundDeadlineId ?? "",
+              startSubmissionDate: rd.startSubmissionDate ?? "",
+              endSubmissionDate: rd.endSubmissionDate ?? "",
               roundNumber: rd.roundNumber ?? 1,
             })),
           });

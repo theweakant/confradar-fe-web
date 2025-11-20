@@ -301,5 +301,10 @@ export const endpoint = {
   ASSIGNINGPRESENTERSESSION: {
     REQUEST_CHANGE_PRESENTER: "/assigningpresentersession/request-change-presenter",
     REQUEST_CHANGE_SESSION: "/assigningpresentersession/request-change-session",
+
+    GET_PENDING_PRESENTER_CHANGE_REQUESTS: '/assigningpresentersession/get-pending-presenter-change-requests',
+    GET_PENDING_SESSION_CHANGE_REQUESTS: '/assigningpresentersession/get-pending-session-change-requests',
+    APPROVE_CHANGE_SESSION: '/assigningpresentersession/approve-change-session',
+    APPROVE_CHANGE_PRESENTER: '/assigningpresentersession/approve-change-presenter',
   }
 };
