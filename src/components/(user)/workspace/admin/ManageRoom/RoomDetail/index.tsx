@@ -14,6 +14,7 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import { EventClickArg } from '@fullcalendar/core';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/atoms/StatusBadge";
@@ -84,7 +85,7 @@ export function RoomDetail({ room, onClose }: RoomDetailProps) {
   }));
 
   // Handle event click
-  const handleEventClick = (info: any) => {
+  const handleEventClick = (info: EventClickArg) => {
     const slot = occupationSlots.find(s => s.sessionId === info.event.id);
     if (slot) {
       setSelectedSession(slot);
