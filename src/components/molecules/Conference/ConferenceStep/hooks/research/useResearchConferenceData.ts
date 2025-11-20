@@ -18,7 +18,7 @@ import type {
   ResearchRankingReference,
   RefundPolicyResponse,
 } from "@/types/conference.type";
-import { RevisionDeadlineDetail } from "@/types/paper.type";
+import { RevisionDeadlineDetail,  } from "@/types/paper.type";
 
 interface UseResearchConferenceDataProps {
   conferenceId: string;
@@ -45,22 +45,23 @@ export function useResearchConferenceData({
   onError,
 }: UseResearchConferenceDataProps) {
   const dispatch = useAppDispatch();
-  const hasDispatchedRef = useRef(false); 
+  const hasDispatchedRef = useRef(false);
 
-  const { 
-    data: conferenceDetailResponse, 
-    isLoading, 
-    isError, 
+  const {
+    data: conferenceDetailResponse,
+    isLoading,
+    isError,
     error,
     isFetching,
-    refetch 
+    refetch
   } = useGetResearchConferenceDetailInternalQuery(conferenceId, {
     skip: !conferenceId,
-    refetchOnMountOrArgChange: true, 
+    refetchOnMountOrArgChange: true,
   });
 
   const stableOnLoad = useCallback(onLoad || (() => { }), [onLoad]);
   const stableOnError = useCallback(onError || (() => { }), [onError]);
+  
   useEffect(() => {
     hasDispatchedRef.current = false;
   }, [conferenceId]);
@@ -110,6 +111,13 @@ export function useResearchConferenceData({
       // === Map Research Phases ===
       const researchPhases: ResearchPhase[] = [];
       
+      // Helper function to calculate duration
+      const calcDuration = (start: string, end: string): number => {
+        if (!start || !end) return 1;
+        const diffTime = new Date(end).getTime() - new Date(start).getTime();
+        return Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1);
+      };
+      
       if (data.researchPhase && Array.isArray(data.researchPhase)) {
         // Tách main phase và waitlist phase từ array
         const mainPhaseData = data.researchPhase.find((p) => p.isWaitlist === false);
@@ -117,13 +125,6 @@ export function useResearchConferenceData({
 
         // Map Main Phase (phải có)
         if (mainPhaseData) {
-          // Tính duration từ dates
-          const calcDuration = (start: string, end: string): number => {
-            if (!start || !end) return 1;
-            const diffTime = new Date(end).getTime() - new Date(start).getTime();
-            return Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1);
-          };
-
           researchPhases.push({
             researchPhaseId: mainPhaseData.researchConferencePhaseId ?? "main",
             registrationStartDate: mainPhaseData.registrationStartDate ?? "",
@@ -158,7 +159,7 @@ export function useResearchConferenceData({
             ),
             isWaitlist: false,
             isActive: mainPhaseData.isActive ?? true,
-            revisionRoundDeadlines: (mainPhaseData.revisionRoundDeadlines || []).map((rd:RevisionDeadlineDetail) => ({
+            revisionRoundDeadlines: (mainPhaseData.revisionRoundDeadlines || []).map((rd) => ({
               revisionRoundDeadlineId: rd.revisionRoundDeadlineId ?? "",
               startSubmissionDate: rd.startSubmissionDate ?? "",
               endSubmissionDate: rd.endSubmissionDate ?? "",
@@ -169,12 +170,6 @@ export function useResearchConferenceData({
 
         // Map Waitlist Phase (optional)
         if (waitlistPhaseData) {
-          const calcDuration = (start: string, end: string): number => {
-            if (!start || !end) return 1;
-            const diffTime = new Date(end).getTime() - new Date(start).getTime();
-            return Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1);
-          };
-
           researchPhases.push({
             researchPhaseId: waitlistPhaseData.researchConferencePhaseId ?? "waitlist",
             registrationStartDate: waitlistPhaseData.registrationStartDate ?? "",
@@ -209,16 +204,17 @@ export function useResearchConferenceData({
             ),
             isWaitlist: true,
             isActive: waitlistPhaseData.isActive ?? false,
-            revisionRoundDeadlines: (waitlistPhaseData.revisionRoundDeadlines || []).map((rd: RevisionDeadlineDetail) => ({
+            revisionRoundDeadlines: (waitlistPhaseData.revisionRoundDeadlines || []).map((rd) => ({
               revisionRoundDeadlineId: rd.revisionRoundDeadlineId ?? "",
               startSubmissionDate: rd.startSubmissionDate ?? "",
               endSubmissionDate: rd.endSubmissionDate ?? "",
               roundNumber: rd.roundNumber ?? 1,
+              researchConferencePhaseId: rd.researchConferencePhaseId ?? "",
             })),
           });
         }
       }
-
+     
       // === Map Tickets ===
       const tickets: Ticket[] = (data.conferencePrices || []).map((p) => ({
         priceId: p.conferencePriceId,
@@ -241,7 +237,6 @@ export function useResearchConferenceData({
             percentRefund: rp.percentRefund ?? 0,
             refundDeadline: rp.refundDeadline ?? "",
           })),
-         
         })),
       }));
 
@@ -310,7 +305,6 @@ export function useResearchConferenceData({
         imageUrl: s.imageUrl ?? "",
       }));
 
-      
       dispatch(
         loadExistingConference({
           id: conferenceId,
@@ -342,6 +336,7 @@ export function useResearchConferenceData({
     error,
     stableOnLoad,
     stableOnError,
+    dispatch,
   ]);
 
   return { isLoading, isError, isFetching, refetch };

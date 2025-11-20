@@ -389,6 +389,17 @@ export const conferenceApi = createApi({
       }),
       providesTags: ["Conference"],
     }),
+
+    activateWaitlist: builder.mutation<
+      ApiResponse<string>,
+      string
+    >({
+      query: (confId) => ({
+        url: `${endpoint.CONFERENCE.ACTIVATE_WAITLIST}?confId=${confId}`,
+        method: "PUT",
+      }),
+      invalidatesTags: ["Conference"],
+    }),
   }),
 });
 
@@ -427,4 +438,6 @@ export const {
 
   useGetConferencesHasAssignedPaperForLocalReviewerQuery,
   useLazyGetConferencesHasAssignedPaperForLocalReviewerQuery,
+
+  useActivateWaitlistMutation,
 } = conferenceApi;

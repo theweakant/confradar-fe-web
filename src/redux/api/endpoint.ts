@@ -100,6 +100,8 @@ export const endpoint = {
     GET_OWN_CONFERENCES_FOR_SCHEDULE:
       "/Conference/own-conferences-for-schedule",
     GET_CONFERENCES_HAS_ASSIGNED_PAPERS: "/Conference/get-conferences-assigned-papers-belong-to",
+
+    ACTIVATE_WAITLIST: "/conference/activate-waitlist",
   },
 
   CONFERENCE_STEP: {
@@ -198,7 +200,7 @@ export const endpoint = {
       `/conferencestep/${conferenceId}/research/sessions`,
 
 
-
+    ADD_PRICE_PHASE_WAITLIST: '/conferencestep/add-pricephase-for-waitlist',
   },
 
   CITY: {
@@ -268,6 +270,11 @@ export const endpoint = {
     ADD_TO_WAITLIST: "/Paper/add-waitlist",
     LIST_CUSTOMER_WAITLIST: "/Paper/list-customer-waitlist",
     LEAVE_WAITLIST: "/Paper/leave-waitlist",
+
+    UPDATE_ABSTRACT: "/Paper/update-abstract",
+    UPDATE_FULLPAPER: "/Paper/update-fullpaper",
+    UPDATE_REVISION_SUBMISSION: "/Paper/update-revision-submission",
+    UPDATE_CAMERA_READY: "/Paper/update-camera-ready",
   },
 
   FAVOURITE_CONFERENCE: {
@@ -315,5 +322,13 @@ export const endpoint = {
     SUBMITTED_PAPERS: '/statistics/submitted-papers',
     ASSIGN_REVIEWERS: '/statistics/assign-reviewers',
     PRESENT_SESSION: '/statistics/present-session',
-  }
-};
+  },
+
+  REPORT: {
+    CREATE: "/report",
+    GET_UNRESOLVED: "/report/unresolved",
+    RESPONSE: (reportId: string) => `/report/${reportId}/response`,
+    GET_RESPONSE: (reportId: string) => `/report/${reportId}/get-response`,
+  },
+}
+
