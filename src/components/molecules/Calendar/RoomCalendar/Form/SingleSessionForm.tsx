@@ -449,7 +449,7 @@ export function SingleSessionForm({
       roomDisplayName,
       roomNumber,
       speaker: formData.speakers,
-      sessionMedias: formData.sessionMedias, // ✅ Gửi media lên
+      sessionMedias: formData.sessionMedias, 
     };
 
     onSave(session);
@@ -609,7 +609,6 @@ export function SingleSessionForm({
             )}
           </div>
 
-          {/* Chỉ dùng ImageUpload, không wrapper border */}
           <ImageUpload
             label=""
             subtext="Chọn một hoặc nhiều file ảnh (dưới 4MB mỗi file)"

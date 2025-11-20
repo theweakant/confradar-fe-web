@@ -358,38 +358,13 @@ export function ResearchSingleSessionForm({
               </span>
             )}
           </div>
-          
-          <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-blue-400 transition-colors">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <ImageIcon className="w-5 h-5 text-gray-400" />
-              <span className="text-sm text-gray-600">Tải lên ảnh cho phiên họp</span>
-            </div>
             <ImageUpload
               label=""
               subtext="Chọn một hoặc nhiều file ảnh (dưới 4MB mỗi file)"
               maxSizeMB={4}
               isList={true}
               onChange={handleMediaChange}
-            />
-          </div>
-          
-          {/* Preview uploaded images */}
-          {formData.sessionMedias.length > 0 && (
-            <div className="mt-3 grid grid-cols-4 gap-2">
-              {formData.sessionMedias.map((media, idx) => (
-                <div key={idx} className="relative group">
-                  <img
-                    src={media.mediaFile instanceof File ? URL.createObjectURL(media.mediaFile) : media.mediaUrl}
-                    alt={`Media ${idx + 1}`}
-                    className="w-full h-20 object-cover rounded-lg border border-gray-200"
-                  />
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                    <span className="text-white text-xs">Ảnh {idx + 1}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+            />          
         </div>
       </div>
 

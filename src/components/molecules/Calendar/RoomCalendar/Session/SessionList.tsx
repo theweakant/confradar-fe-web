@@ -1,5 +1,5 @@
 import React from "react";
-import { Users, AlertCircle } from "lucide-react";
+import {AlertCircle } from "lucide-react";
 import { SessionCard } from "./SessionCard";
 
 interface SessionListProps {
@@ -34,12 +34,7 @@ export const SessionList: React.FC<SessionListProps> = ({ sessions, isLoading })
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-3">
-        <Users className="w-4 h-4 text-orange-600" />
-        <span className="text-sm font-semibold text-gray-700">
-          Phòng đang được sử dụng ({sessions.length})
-        </span>
-      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {sessions.map((session) => (
           <SessionCard key={session.sessionId} session={session} />

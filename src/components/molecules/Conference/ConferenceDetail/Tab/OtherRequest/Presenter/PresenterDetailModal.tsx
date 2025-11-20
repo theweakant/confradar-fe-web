@@ -43,12 +43,6 @@ export function PresenterDetailModal({ request, open, onClose, onSuccess }: Pres
             <DialogTitle className="text-xl font-semibold text-gray-900">
               Chi tiết yêu cầu đổi người trình bày
             </DialogTitle>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
           </div>
           <p className="text-sm text-gray-500 mt-1">
             Gửi lúc: {request.requestAt ? formatDate(request.requestAt) : "N/A"}

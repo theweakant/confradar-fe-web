@@ -14,7 +14,7 @@ import { OtherRequestTab } from "../Tab/OtherRequest";
 import { ResearchTimelineTab } from "../Tab/ResearchTimelineTab";
 import { PaperTab } from "../Tab/PaperTab";
 import { PaperAssignmentTab } from "../Tab/PaperAssignmentTab";
-import { CustomerTab } from "../Tab/CustomerTab";
+import { CustomerTab } from "../Tab/Customer/CustomerTab";
 
 interface TabContentProps {
   activeSubtab: TabId;
@@ -40,7 +40,7 @@ export function TabContent({
         return <SessionTab conference={conference} conferenceId={conference.conferenceId!} conferenceType={conferenceType}  />;
       
       case "customers":
-        return <CustomerTab conferenceId={conference.conferenceId!} />;
+        return <CustomerTab conferenceId={conference.conferenceId!} conferenceType={conferenceType} />;
 
       case "sponsors-media":
         return <SponsorsMediaTab conference={conference} />;

@@ -8,6 +8,10 @@ interface LocalSessionListProps {
   sessions: Session[];
   title?: string; 
   editable?: boolean;
+  onEdit?: (session: Session, index: number) => void;
+  onDelete?: (session: Session, index: number) => void;
+  onChangeDate?: (session: Session, index: number) => void;
+  onChangeRoom?: (session: Session, index: number) => void;
   renderActions?: (session: Session, index: number) => React.ReactNode;
 }
 
@@ -15,6 +19,10 @@ export const LocalSessionList: React.FC<LocalSessionListProps> = ({
   sessions,
   title = "Phiên họp của bạn",
   editable = false,
+  onEdit,
+  onDelete,
+  onChangeDate,  
+  onChangeRoom,  
   renderActions,
 }) => {
   if (sessions.length === 0) return null;
@@ -33,6 +41,10 @@ export const LocalSessionList: React.FC<LocalSessionListProps> = ({
             key={session.sessionId || index} 
             session={session}
             isEditable={editable}
+            onEdit={onEdit ? () => onEdit(session, index) : undefined}
+            onDelete={onDelete ? () => onDelete(session, index) : undefined}
+            onChangeDate={onChangeDate ? () => onChangeDate(session, index) : undefined} 
+            onChangeRoom={onChangeRoom ? () => onChangeRoom(session, index) : undefined}  
             editableActions={renderActions ? renderActions(session, index) : null}
           />
         ))}

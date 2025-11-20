@@ -35,7 +35,6 @@ type TabType = "tech" | "research" | "my";
 export default function ManageConference() {
   const router = useRouter();
   const { user } = useAuth();
-  console.log("Current User ID:", user?.userId);
   const currentUserId = user?.userId || null;
 
   const [page, setPage] = useState(1);

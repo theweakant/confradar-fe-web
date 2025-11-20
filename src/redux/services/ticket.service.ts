@@ -2,7 +2,7 @@ import { ApiResponse, ApiResponsePagination } from "@/types/api.type";
 // import { CreateTechPaymentRequest } from "@/types/transaction.type";
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { apiClient } from "../api/apiClient";
-import { CustomerPaidTicketResponse, RefundTicketRequest } from "@/types/ticket.type";
+import { CustomerPaidTicketResponse, RefundTicketRequest, CancelTicketRequest } from "@/types/ticket.type";
 
 export const ticketApi = createApi({
   reducerPath: "ticketApi",
@@ -92,6 +92,31 @@ export const ticketApi = createApi({
           ]
           : [{ type: "Ticket", id: "LIST" }],
     }),
+
+
+  cancelResearchTicket: builder.mutation<ApiResponse<void>, CancelTicketRequest>({
+      query: (body) => ({
+        url: "/ticket/cancel-research",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (result, error, { ticketIds }) =>
+        ticketIds
+          .map((id) => ({ type: "Ticket" as const, id }))
+          .concat({ type: "Ticket", id: "LIST" }),
+    }),
+
+    cancelTechnicalTicket: builder.mutation<ApiResponse<void>, CancelTicketRequest>({
+      query: (body) => ({
+        url: "/ticket/cancel-technical",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (result, error, { ticketIds }) =>
+        ticketIds
+          .map((id) => ({ type: "Ticket" as const, id }))
+          .concat({ type: "Ticket", id: "LIST" }),
+    }),
   }),
 });
 
@@ -103,4 +128,6 @@ export const {
   useLazyGetOwnPaidTicketsByConferenceQuery,
   // useGetTicketByIdQuery,
   // useLazyGetTicketByIdQuery,
+  useCancelResearchTicketMutation,
+  useCancelTechnicalTicketMutation,
 } = ticketApi;

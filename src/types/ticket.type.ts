@@ -102,3 +102,7 @@ export interface RefundTicketRequest {
   ticketId: string;
   transactionId: string;
 }
+
+export interface CancelTicketRequest {
+  ticketIds: string[];
+}
