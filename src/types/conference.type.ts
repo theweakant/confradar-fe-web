@@ -35,7 +35,7 @@ export interface Conference {
   sessions?: Session[];
 
   createdby?: string;
-  createdBy?:string|null|undefined;
+  createdBy?: string | null | undefined;
 
   targetAudienceTechnicalConference?: string;
 
@@ -175,7 +175,7 @@ export interface ConferencePrice {
 
 //SESSION STEP
 export interface Session {
-  conferenceId?:string;
+  conferenceId?: string;
   sessionId?: string;
   title: string;
   description: string;
@@ -469,7 +469,7 @@ export interface ConferenceResponse {
   // sponsors?: SponsorResponse[];
   conferencePrices?: ConferencePriceResponse[];
   // sessions?: ConferenceSessionResponse[];
-  createdBy?: string|null|undefined;
+  createdBy?: string | null | undefined;
 }
 
 export interface TechnicalConferenceDetailResponse {
@@ -541,7 +541,7 @@ export interface ResearchConferenceDetailResponse {
   rankingFileUrls?: RankingFileUrlResponse[];
   materialDownloads?: MaterialDownloadResponse[];
   rankingReferenceUrls?: RankingReferenceUrlResponse[];
-  researchPhase?: ResearchConferencePhaseResponse;
+  researchPhase?: ResearchConferencePhaseResponse[];
   researchSessions?: ResearchConferenceSessionResponse[];
 
   // Shared data (same as technical conference)
@@ -668,8 +668,8 @@ export interface ResearchConferencePhaseResponse {
 
 export interface RevisionRoundDeadlineResponse {
   revisionRoundDeadlineId?: string;
-  startDate?: string;
-  endDate?: string;
+  startSubmissionDate?: string;
+  endSubmissionDate?: string;
   roundNumber?: number;
   researchConferencePhaseId?: string;
 }

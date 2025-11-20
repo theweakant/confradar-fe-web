@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useState, Fragment } from 'react';
 import { usePaperCustomer } from '@/redux/hooks/usePaper';
-import { ResearchPhaseDtoDetail, RevisionPaper, RevisionSubmissionFeedback, RevisionDeadlineDetail } from '@/types/paper.type';
+import { ResearchPhaseDtoDetail, RevisionPaper, RevisionSubmissionFeedback, RevisionDeadlineDetail, RevisionSubmission } from '@/types/paper.type';
 import "@cyntler/react-doc-viewer/dist/index.css";
 import FeedbackDialog from './FeedbackDialog';
 import { MessageSquare } from 'lucide-react';
@@ -22,15 +22,28 @@ interface RevisionPhaseProps {
   revisionPaper: RevisionPaper | null;
   researchPhase?: ResearchPhaseDtoDetail;
   revisionDeadline?: RevisionDeadlineDetail[];
+
+  onSubmittedRevision?: () => void;
 }
 
-const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, researchPhase, revisionDeadline }) => {
-  const { handleSubmitPaperRevision, handleSubmitPaperRevisionResponse, loading, submitRevisionError } = usePaperCustomer();
+const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, researchPhase, revisionDeadline, onSubmittedRevision }) => {
+  const {
+    handleSubmitPaperRevision,
+    handleSubmitPaperRevisionResponse,
+    handleUpdateRevisionSubmission,
+    loading,
+    submitRevisionError,
+    updateRevisionError
+  } = usePaperCustomer();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [feedbackResponses, setFeedbackResponses] = useState<{ [key: string]: string }>({});
   const [activeSubmissionId, setActiveSubmissionId] = useState<string | null>(null);
+  const [editingSubmissionId, setEditingSubmissionId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editFile, setEditFile] = useState<File | null>(null);
 
   const [swiperInstance, setSwiperInstance] = useState<unknown>(null);
 
@@ -176,6 +189,12 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
     }
   }, []);
 
+  const handleEditFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setEditFile(event.target.files[0]);
+    }
+  }, []);
+
   const handleResponseChange = useCallback(
     (feedbackId: string, response: string) => {
       setFeedbackResponses(prev => ({
@@ -205,7 +224,8 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
       setSelectedFile(null);
       setTitle("");
       setDescription("");
-      window.location.reload();
+      onSubmittedRevision?.();
+      // window.location.reload();
     } catch (error: unknown) {
       // const errorMessage = "Có lỗi xảy ra khi nộp revision paper";
       // alert(errorMessage);
@@ -249,6 +269,43 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
     },
     [feedbackResponses, paperId, revisionPaper?.submissions, handleSubmitPaperRevisionResponse, revisionValidation]
   );
+
+  const handleStartEdit = useCallback((submission: RevisionSubmission | null) => {
+    if (!submission) return;
+    setEditingSubmissionId(submission.submissionId);
+    setEditTitle(submission.title || "");
+    setEditDescription(submission.description || "");
+    setEditFile(null);
+  }, []);
+
+  const handleCancelEdit = useCallback(() => {
+    setEditingSubmissionId(null);
+    setEditTitle("");
+    setEditDescription("");
+    setEditFile(null);
+  }, []);
+
+  const handleUpdateSubmission = useCallback(async (submissionId: string) => {
+    if (!editTitle.trim() || !editDescription.trim()) {
+      alert("Vui lòng nhập tiêu đề và mô tả");
+      return;
+    }
+
+    try {
+      await handleUpdateRevisionSubmission(paperId, submissionId, {
+        title: editTitle.trim(),
+        description: editDescription.trim(),
+        revisionPaperFile: editFile, // có thể null nếu không đổi file
+      });
+
+      toast.success("Cập nhật submission thành công!");
+      handleCancelEdit();
+      onSubmittedRevision?.();
+      // window.location.reload();
+    } catch (error: unknown) {
+      toast.error("Có lỗi xảy ra khi cập nhật submission");
+    }
+  }, [editTitle, editDescription, editFile, paperId, handleUpdateRevisionSubmission, handleCancelEdit]);
 
   const canRespondToFeedback = useCallback((feedback: RevisionSubmissionFeedback): boolean => {
     return !!feedback.feedBack && feedback.feedBack.trim().length > 0;
@@ -432,20 +489,90 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
                         {/* If has submission - show submission info */}
                         {round.hasSubmission && round.submission ? (
                           <div>
-                            <div className="mb-4">
-                              <SubmittedPaperCard
-                                paperInfo={{
-                                  id: round.submission.submissionId,
-                                  title: round.submission.title,
-                                  description: round.submission.description,
-                                  // created: round.submission.created,
-                                  // updated: round.submission.updated,
-                                  fileUrl: round.submission.fileUrl,
-                                }}
-                                paperType={`Submission Round ${round.roundNumber}`}
-                              // showFileViewer={true}
-                              />
-                            </div>
+                            {editingSubmissionId === round.submission.submissionId ? (
+                              // Edit mode for this submission
+                              <div className="space-y-4 mb-4 p-4 bg-gray-700 rounded-lg">
+                                <h5 className="font-medium text-white">Chỉnh sửa Submission</h5>
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                                    Tiêu đề
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={editTitle}
+                                    onChange={(e) => setEditTitle(e.target.value)}
+                                    placeholder="Nhập tiêu đề bài báo"
+                                    className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                                    Mô tả
+                                  </label>
+                                  <textarea
+                                    value={editDescription}
+                                    onChange={(e) => setEditDescription(e.target.value)}
+                                    placeholder="Nhập mô tả bài báo"
+                                    rows={3}
+                                    className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                                    Chọn file mới (tùy chọn)
+                                  </label>
+                                  <input
+                                    type="file"
+                                    accept=".pdf,.doc,.docx"
+                                    onChange={handleEditFileSelect}
+                                    className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  />
+                                  {editFile && (
+                                    <p className="text-sm text-green-400 mt-1">
+                                      File mới đã chọn: {editFile.name}
+                                    </p>
+                                  )}
+                                </div>
+                                <div className="flex gap-3">
+                                  <button
+                                    onClick={() => handleUpdateSubmission(round.submission!.submissionId)}
+                                    disabled={!editTitle.trim() || !editDescription.trim() || loading}
+                                    className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
+                                  >
+                                    {loading ? 'Đang cập nhật...' : 'Cập nhật'}
+                                  </button>
+                                  <button
+                                    onClick={handleCancelEdit}
+                                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
+                                  >
+                                    Hủy
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              // View mode for this submission
+                              <div className="mb-4">
+                                <SubmittedPaperCard
+                                  paperInfo={{
+                                    id: round.submission.submissionId,
+                                    title: round.submission.title,
+                                    description: round.submission.description,
+                                    fileUrl: round.submission.fileUrl,
+                                  }}
+                                  paperType={`Submission Round ${round.roundNumber}`}
+                                />
+                                {round.validation.isAvailable && (
+                                  <div className="flex justify-end mt-3">
+                                    <button
+                                      onClick={() => handleStartEdit(round.submission)}
+                                      className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg font-medium transition-colors"
+                                    >
+                                      Chỉnh sửa Submission
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                             {/* <div className="mb-4 space-y-2">
                               {round.submission.title && (
                                 <p className="text-sm text-gray-400">

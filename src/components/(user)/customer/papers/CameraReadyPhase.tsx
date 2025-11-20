@@ -1,18 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { CameraReady, ResearchPhaseDtoDetail } from "@/types/paper.type";
 import { usePaperCustomer } from "@/redux/hooks/usePaper";
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 import "@cyntler/react-doc-viewer/dist/index.css";
 import { validatePhaseTime } from "@/helper/timeValidation";
 import SubmittedPaperCard from "./SubmittedPaperCard";
+import { toast } from "sonner";
 
 interface CameraReadyPhaseProps {
   paperId?: string;
   cameraReady?: CameraReady | null;
   researchPhase?: ResearchPhaseDtoDetail;
+
+  onSubmittedCameraReady?: () => void;
 }
 
-const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({ paperId, cameraReady, researchPhase }) => {
+const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({ paperId, cameraReady, researchPhase, onSubmittedCameraReady }) => {
   const isSubmitted = !!cameraReady;
 
   // Validate phase timing
@@ -24,12 +27,22 @@ const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({ paperId, cameraRead
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
 
   const {
     handleSubmitCameraReady,
+    handleUpdateCameraReady,
     submitCameraReadyError,
+    updateCameraReadyError,
     loading: submitLoading
   } = usePaperCustomer();
+
+  useEffect(() => {
+    if (isEditing && cameraReady) {
+      setTitle(cameraReady.title || "");
+      setDescription(cameraReady.description || "");
+    }
+  }, [isEditing, cameraReady]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -39,36 +52,55 @@ const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({ paperId, cameraRead
   };
 
   const handleSubmitCameraReadyForm = async () => {
-    if (!selectedFile || !paperId || !title.trim() || !description.trim()) {
-      alert("Vui lòng chọn file camera-ready, nhập title, description và đảm bảo có Paper ID");
+    if (!title.trim() || !description.trim()) {
+      alert("Vui lòng nhập title và description");
+      return;
+    }
+
+    if (!isEditing && (!selectedFile || !paperId)) {
+      alert("Vui lòng chọn file camera-ready và đảm bảo có Paper ID");
       return;
     }
 
     try {
-      await handleSubmitCameraReady({
-        cameraReadyFile: selectedFile,
-        paperId,
-        title: title.trim(),
-        description: description.trim()
-      });
+      if (isEditing) {
+        // Update mode
+        if (!cameraReady?.cameraReadyId) {
+          alert("Không tìm thấy Camera Ready ID để cập nhật");
+          return;
+        }
 
-      alert("Nộp camera-ready thành công!");
+        await handleUpdateCameraReady(cameraReady.cameraReadyId, {
+          title: title.trim(),
+          description: description.trim(),
+          cameraReadyFile: selectedFile, // có thể null nếu không đổi file
+        });
+
+        toast.success("Cập nhật camera-ready thành công!");
+        setIsEditing(false);
+      } else {
+        // Create mode
+        await handleSubmitCameraReady({
+          cameraReadyFile: selectedFile!,
+          paperId: paperId!,
+          title: title.trim(),
+          description: description.trim()
+        });
+        toast.success("Nộp camera-ready thành công!");
+      }
+
+      // Reset form
       setSelectedFile(null);
       setTitle("");
       setDescription("");
+
+      onSubmittedCameraReady?.();
+
       // Reload page to refresh data
-      window.location.reload();
+      // window.location.reload();
     } catch (error: unknown) {
-      const errorMessage = "Có lỗi xảy ra khi nộp camera-ready";
-
-      // if (error?.data?.Message) {
-      //     errorMessage = error.data.Message;
-      // } else if (error?.data?.Errors) {
-      //     const errors = Object.values(error.data.Errors);
-      //     errorMessage = errors.length > 0 ? errors[0] as string : errorMessage;
-      // }
-
-      alert(errorMessage);
+      const errorMessage = isEditing ? "Có lỗi xảy ra khi cập nhật camera-ready" : "Có lỗi xảy ra khi nộp camera-ready";
+      toast.error(errorMessage);
     }
   };
 
@@ -122,56 +154,20 @@ const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({ paperId, cameraRead
           }}
           paperType="Camera Ready"
         />
-        // <div className="bg-green-900/20 border border-green-700 rounded-xl p-5">
-        //   <h4 className="font-semibold text-green-400 mb-2">Camera-ready đã nộp</h4>
-        //   <div className="space-y-2">
-        //     <p className="text-green-300 text-sm">
-        //       Camera-ready ID: {cameraReady.cameraReadyId}
-        //     </p>
-        //     {cameraReady.title && (
-        //       <p className="text-green-300 text-sm">
-        //         <span className="font-medium">Tiêu đề:</span> {cameraReady.title}
-        //       </p>
-        //     )}
-        //     {cameraReady.description && (
-        //       <p className="text-green-300 text-sm">
-        //         <span className="font-medium">Mô tả:</span> {cameraReady.description}
-        //       </p>
-        //     )}
-        //     {cameraReady.status && (
-        //       <p className="text-green-300 text-sm">
-        //         <span className="font-medium">Trạng thái:</span> {cameraReady.status}
-        //       </p>
-        //     )}
-        //     {cameraReady.created && (
-        //       <p className="text-green-300 text-sm">
-        //         <span className="font-medium">Ngày tạo:</span> {new Date(cameraReady.created).toLocaleDateString('vi-VN')}
-        //       </p>
-        //     )}
-        //     {cameraReady.updated && (
-        //       <p className="text-green-300 text-sm">
-        //         <span className="font-medium">Ngày đánh giá:</span> {new Date(cameraReady.updated).toLocaleDateString('vi-VN')}
-        //       </p>
-        //     )}
-        //     {cameraReady.fileUrl && (
-        //       <div className="max-h-[80vh] overflow-auto">
-        //         <DocViewer
-        //           documents={[{ uri: cameraReady.fileUrl }]}
-        //           pluginRenderers={DocViewerRenderers}
-        //           config={{
-        //             header: { disableHeader: true },
-        //             pdfVerticalScrollByDefault: true,
-        //           }}
-        //           style={{ minHeight: "100%", borderRadius: 8 }}
-        //         />
-        //       </div>
-        //     )}
-        //   </div>
-        // </div>
       )}
-      {/* )} */}
 
-      {!cameraReady && (
+      {cameraReady && phaseValidation.isAvailable && !isEditing && (
+        <div className="flex justify-end">
+          <button
+            onClick={() => setIsEditing(true)}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition"
+          >
+            Chỉnh sửa Camera Ready
+          </button>
+        </div>
+      )}
+
+      {(!cameraReady || isEditing) && (
         <>
           <div className="bg-gray-800 border border-gray-700 rounded-xl p-5 space-y-4">
             <div>
@@ -219,13 +215,29 @@ const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({ paperId, cameraRead
           </div>
 
           {/* Submit Button */}
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-3">
+            {isEditing && (
+              <button
+                onClick={() => {
+                  setIsEditing(false);
+                  setSelectedFile(null);
+                }}
+                className="px-6 py-3 bg-gray-600 hover:bg-gray-700 rounded-lg font-medium transition"
+              >
+                Hủy
+              </button>
+            )}
             <button
               onClick={handleSubmitCameraReadyForm}
-              disabled={!phaseValidation.isAvailable || !selectedFile || !paperId || !title.trim() || !description.trim() || submitLoading}
+              disabled={!title.trim() || !description.trim() || submitLoading}
               className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition"
             >
-              {submitLoading ? "Đang nộp..." : "Nộp Camera-ready"}
+              {submitLoading
+                ? "Đang xử lý..."
+                : isEditing
+                  ? "Cập nhật Camera Ready"
+                  : "Nộp Camera Ready"
+              }
             </button>
           </div>
         </>

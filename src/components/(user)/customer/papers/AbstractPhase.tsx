@@ -8,14 +8,17 @@ import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 import "@cyntler/react-doc-viewer/dist/index.css";
 import { validatePhaseTime } from "@/helper/timeValidation";
 import SubmittedPaperCard from "./SubmittedPaperCard";
+import { toast } from "sonner";
 
 interface AbstractPhaseProps {
   paperId?: string;
   abstract?: Abstract | null;
   researchPhase?: ResearchPhaseDtoDetail;
+
+  onSubmittedAbstract?: () => void;
 }
 
-const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract, researchPhase }) => {
+const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract, researchPhase, onSubmittedAbstract }) => {
   const isSubmitted = !!abstract;
 
   // Validate phase timing
@@ -34,12 +37,25 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract, resear
   const [isLoadingCustomers, setIsLoadingCustomers] = useState(false);
   const [customersError, setCustomersError] = useState<string | null>(null);
 
+  const [isEditing, setIsEditing] = useState(false);
+
   const {
     fetchAvailableCustomers,
     handleSubmitAbstract,
+    handleUpdateAbstract,
     submitAbstractError,
+    updateAbstractError,
     loading: submitLoading
   } = usePaperCustomer();
+
+  useEffect(() => {
+    if (isEditing && abstract) {
+      setTitle(abstract.title || "");
+      setDescription(abstract.description || "");
+      // Load co-authors nếu có trong abstract data
+      // setSelectedCoauthors(abstract.coAuthors || []);
+    }
+  }, [isEditing, abstract]);
 
   const loadAvailableCustomers = async () => {
     if (isLoadingCustomers || availableCustomers.length > 0) return;
@@ -86,22 +102,48 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract, resear
 
     try {
       const coAuthorIds = selectedCoauthors.map(c => c.userId);
-      await handleSubmitAbstract({
-        abstractFile: selectedFile,
-        paperId,
-        title: title.trim(),
-        description: description.trim(),
-        coAuthorId: coAuthorIds
-      });
+      // await handleSubmitAbstract({
+      //   abstractFile: selectedFile,
+      //   paperId,
+      //   title: title.trim(),
+      //   description: description.trim(),
+      //   coAuthorId: coAuthorIds
+      // });
 
-      alert("Nộp abstract thành công!");
+      if (isEditing) {
+        // Update mode
+        await handleUpdateAbstract(paperId, {
+          title: title.trim(),
+          description: description.trim(),
+          abstractFile: selectedFile, // có thể null nếu không đổi file
+          coAuthorId: coAuthorIds
+        });
+
+        toast.success("Cập nhật abstract thành công!");
+        setIsEditing(false);
+      } else {
+        // Create mode
+        await handleSubmitAbstract({
+          abstractFile: selectedFile!,
+          paperId,
+          title: title.trim(),
+          description: description.trim(),
+          coAuthorId: coAuthorIds
+        });
+        toast.success("Nộp abstract thành công!");
+      }
+
+      toast.success("Nộp abstract thành công!");
       // Reset form
       setSelectedFile(null);
       setTitle("");
       setDescription("");
       setSelectedCoauthors([]);
+
+      onSubmittedAbstract?.();
     } catch (error: unknown) {
       const errorMessage = "Có lỗi xảy ra khi nộp abstract";
+
 
       // if (error?.data?.Message) {
       //     errorMessage = error.data.Message;
@@ -110,7 +152,7 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract, resear
       //     errorMessage = errors.length > 0 ? errors[0] as string : errorMessage;
       // }
 
-      alert(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
@@ -239,8 +281,18 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract, resear
         // </div>
         // )}
       )}
-      {/* Ẩn form khi đã có abstract */}
-      {!abstract && (
+
+      {abstract && phaseValidation.isAvailable && !isEditing && (
+        <div className="flex justify-end">
+          <button
+            onClick={() => setIsEditing(true)}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition"
+          >
+            Chỉnh sửa Abstract
+          </button>
+        </div>
+      )}
+      {(!abstract || isEditing) && (
         <>
           <div className="bg-gray-800 border border-gray-700 rounded-xl p-5 space-y-4">
             <div>
@@ -330,7 +382,32 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract, resear
           </div>
 
           {/* Submit Button */}
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-3">
+            {isEditing && (
+              <button
+                onClick={() => {
+                  setIsEditing(false);
+                  setSelectedFile(null);
+                }}
+                className="px-6 py-3 bg-gray-600 hover:bg-gray-700 rounded-lg font-medium transition"
+              >
+                Hủy
+              </button>
+            )}
+            <button
+              onClick={handleSubmitAbstractForm}
+              disabled={!title.trim() || !description.trim() || submitLoading}
+              className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition"
+            >
+              {submitLoading
+                ? "Đang xử lý..."
+                : isEditing
+                  ? "Cập nhật Abstract"
+                  : "Nộp Abstract"
+              }
+            </button>
+          </div>
+          {/* <div className="flex justify-end">
             <button
               onClick={handleSubmitAbstractForm}
               disabled={!selectedFile || !paperId || !title.trim() || !description.trim() || submitLoading}
@@ -338,7 +415,7 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract, resear
             >
               {submitLoading ? "Đang nộp..." : "Nộp Abstract"}
             </button>
-          </div>
+          </div> */}
         </>
       )}
 

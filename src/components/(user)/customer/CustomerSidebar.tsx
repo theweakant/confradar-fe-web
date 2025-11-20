@@ -12,11 +12,17 @@ import {
   LogOut,
   FileText,
   Heart,
+  Flag,
+  X,
 } from "lucide-react";
+import { Dialog, Transition } from '@headlessui/react';
+import { Fragment } from 'react';
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/redux/hooks/useAuth";
 import { getRouteByRole } from "@/constants/roles";
+import { useReport } from "@/redux/hooks/useReport";
+import { toast } from "sonner";
 
 interface SidebarProps {
   className?: string;
@@ -29,7 +35,29 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
   const { user, signout } = useAuth();
 
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
+  const [reportForm, setReportForm] = useState({
+    reportSubject: '',
+    reason: '',
+    description: ''
+  });
+  const { createReport, loading } = useReport();
   // const [activeItem, setActiveItem] = useState('home');
+
+  const handleSubmitReport = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      await createReport(reportForm);
+      toast.success('Gửi báo cáo thành công!');
+      setIsReportDialogOpen(false);
+      setReportForm({ reportSubject: '', reason: '', description: '' });
+    } catch (error) {
+      toast.error('Có lỗi xảy ra khi gửi báo cáo');
+    }
+  };
+
 
   const menuItems = [
     // { id: '/', label: 'Trang chủ', icon: Home, href: '/customer' },
@@ -93,11 +121,18 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
       href: "/customer/customer-waitlist",
     },
     // { id: 'history', label: 'Lịch sử', icon: Clock, href: '/customer/history' },
+    // {
+    //   id: "settings",
+    //   label: "Cài đặt",
+    //   icon: Settings,
+    //   href: "/customer/settings",
+    // },
+
     {
-      id: "settings",
-      label: "Cài đặt",
-      icon: Settings,
-      href: "/customer/settings",
+      id: "report",
+      label: "Báo cáo vấn đề",
+      icon: Flag,
+      onClick: () => setIsReportDialogOpen(true),
     },
   ];
 
@@ -207,6 +242,46 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
             <ul className="space-y-1">
               {moreItems.map((item) => {
                 const IconComponent = item.icon;
+                const isActive = item.href ? pathname.startsWith(item.href) : false;
+
+                const content = (
+                  <>
+                    <IconComponent
+                      size={24}
+                      className={`${isActive ? "text-white" : "text-gray-400"} hover:text-white transition-colors`}
+                    />
+                    {!isCollapsed && (
+                      <span
+                        className={`text-sm font-medium ${isActive ? "text-white" : "text-gray-400"} hover:text-white transition-colors`}
+                      >
+                        {item.label}
+                      </span>
+                    )}
+                  </>
+                );
+
+                return (
+                  <li key={item.id}>
+                    {item.href ? (
+                      <Link
+                        href={item.href}
+                        className={`w-full flex items-center space-x-3 px-4 py-3 hover:bg-gray-900 transition-colors duration-200 ${isActive ? "bg-gray-900 border-r-2 border-white" : ""} ${isCollapsed ? "justify-center" : "justify-start"}`}
+                      >
+                        {content}
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={item.onClick}
+                        className={`w-full flex items-center space-x-3 px-4 py-3 hover:bg-gray-900 transition-colors duration-200 ${isCollapsed ? "justify-center" : "justify-start"}`}
+                      >
+                        {content}
+                      </button>
+                    )}
+                  </li>
+                );
+              })}
+              {/* {moreItems.map((item) => {
+                const IconComponent = item.icon;
                 // const isActive = activeItem === item.id;
                 const isActive = pathname.startsWith(item.href);
 
@@ -221,15 +296,6 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
                       ${isCollapsed ? "justify-center" : "justify-start"}
                     `}
                     >
-                      {/* <button
-                      // onClick={() => setActiveItem(item.id)}
-                      className={`
-                      w-full flex items-center space-x-3 px-4 py-3 
-                      hover:bg-gray-900 transition-colors duration-200
-                      ${isActive ? 'bg-gray-900 border-r-2 border-white' : ''}
-                      ${isCollapsed ? 'justify-center' : 'justify-start'}
-                    `}
-                    > */}
                       <IconComponent
                         size={24}
                         className={`${isActive ? "text-white" : "text-gray-400"} hover:text-white transition-colors`}
@@ -241,11 +307,10 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
                           {item.label}
                         </span>
                       )}
-                      {/* </button> */}
                     </Link>
                   </li>
                 );
-              })}
+              })} */}
             </ul>
           </div>
 
@@ -270,6 +335,111 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
               )}
             </button>
           </div>
+
+          <Transition appear show={isReportDialogOpen} as={Fragment}>
+            <Dialog as="div" className="relative z-50" onClose={() => setIsReportDialogOpen(false)}>
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+              >
+                <div className="fixed inset-0 bg-black bg-opacity-75" />
+              </Transition.Child>
+
+              <div className="fixed inset-0 overflow-y-auto">
+                <div className="flex min-h-full items-center justify-center p-4">
+                  <Transition.Child
+                    as={Fragment}
+                    enter="ease-out duration-300"
+                    enterFrom="opacity-0 scale-95"
+                    enterTo="opacity-100 scale-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100 scale-100"
+                    leaveTo="opacity-0 scale-95"
+                  >
+                    <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-gray-900 p-6 text-left align-middle shadow-xl transition-all border border-gray-700">
+                      <div className="flex justify-between items-center mb-4">
+                        <Dialog.Title as="h3" className="text-lg font-medium text-white">
+                          Báo cáo vấn đề
+                        </Dialog.Title>
+                        <button
+                          onClick={() => setIsReportDialogOpen(false)}
+                          className="text-gray-400 hover:text-white transition-colors"
+                        >
+                          <X size={20} />
+                        </button>
+                      </div>
+
+                      <form onSubmit={handleSubmitReport} className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300 mb-2">
+                            Tiêu đề <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={reportForm.reportSubject}
+                            onChange={(e) => setReportForm({ ...reportForm, reportSubject: e.target.value })}
+                            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                            placeholder="Nhập tiêu đề báo cáo"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300 mb-2">
+                            Lý do <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={reportForm.reason}
+                            onChange={(e) => setReportForm({ ...reportForm, reason: e.target.value })}
+                            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                            placeholder="Nhập lý do báo cáo"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300 mb-2">
+                            Mô tả chi tiết <span className="text-red-500">*</span>
+                          </label>
+                          <textarea
+                            required
+                            rows={4}
+                            value={reportForm.description}
+                            onChange={(e) => setReportForm({ ...reportForm, description: e.target.value })}
+                            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500 resize-none"
+                            placeholder="Mô tả chi tiết vấn đề của bạn"
+                          />
+                        </div>
+
+                        <div className="flex gap-3 pt-2">
+                          <button
+                            type="button"
+                            onClick={() => setIsReportDialogOpen(false)}
+                            className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                          >
+                            Hủy
+                          </button>
+                          <button
+                            type="submit"
+                            disabled={loading}
+                            className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {loading ? 'Đang gửi...' : 'Gửi báo cáo'}
+                          </button>
+                        </div>
+                      </form>
+                    </Dialog.Panel>
+                  </Transition.Child>
+                </div>
+              </div>
+            </Dialog>
+          </Transition>
         </nav>
       </div>
 

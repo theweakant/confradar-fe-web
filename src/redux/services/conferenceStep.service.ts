@@ -176,7 +176,7 @@ export const conferenceStepApi = createApi({
           startDate?: string;
           endDate?: string;
           totalSlot?: number;
-          forWaitlist?:boolean;
+          forWaitlist?: boolean;
         };
       }
     >({
@@ -967,6 +967,17 @@ export const conferenceStepApi = createApi({
       invalidatesTags: ["ConferenceStep"],
     }),
 
+    addPricePhaseForWaitlist: builder.mutation<
+      ApiResponse<unknown>,
+      { conferencePriceId: string; data: { pricePhases: Phase[] } }
+    >({
+      query: ({ conferencePriceId, data }) => ({
+        url: `${endpoint.CONFERENCE_STEP.ADD_PRICE_PHASE_WAITLIST}?conferencePriceId=${conferencePriceId}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["ConferenceStep"],
+    }),
     //GET
     getResearchSessions: builder.query<
       ApiResponse<Session[]>,
@@ -1043,4 +1054,6 @@ export const {
   useDeleteResearchSessionMutation,
   useDeleteResearchRankingReferenceMutation,
   useDeleteRevisionRoundDeadlineMutation,
+
+  useAddPricePhaseForWaitlistMutation,
 } = conferenceStepApi;
