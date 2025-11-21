@@ -34,7 +34,7 @@ export function DestinationDetail({
               <p className="text-sm font-medium text-gray-700">
                 Tỉnh/Thành phố
               </p>
-              <p className="text-gray-900">{destination.city}</p>
+              <p className="text-gray-900">{destination.cityName}</p>
             </div>
           </div>
 
@@ -64,7 +64,7 @@ export function DestinationDetail({
                 Địa chỉ đầy đủ
               </p>
               <p className="text-gray-900">
-                {destination.street}, {destination.district}, {destination.city}
+                {destination.street}, {destination.district}, {destination.cityName}
               </p>
             </div>
           </div>

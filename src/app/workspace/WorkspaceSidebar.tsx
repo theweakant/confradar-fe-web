@@ -39,7 +39,7 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
     .filter(r => typeof r === "string")
     .map(r => r.toLowerCase().replace(/\s+/g, ""));
 
-  
+
   const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({});
 
 
@@ -174,20 +174,15 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
         icon: FileText,
       },
       {
-        label: "Đã hoàn thành",
-        href: "/workspace/external-reviewer/completed",
-        icon: FileText,
-      },
-      {
-        label: "Bài đánh giá ngoài",
-        href: "/workspace/reviewer-outsource",
+        label: "Hợp đồng của bạn",
+        href: "/workspace/external-reviewer/contract",
         icon: GraduationCap,
       },
-      {
-        label: "Lịch trình",
-        href: "/workspace/reviewer-outsource/schedule",
-        icon: Calendar,
-      },
+      // {
+      //   label: "Lịch trình",
+      //   href: "/workspace/reviewer-outsource/schedule",
+      //   icon: Calendar,
+      // },
     ],
   };
 
@@ -212,7 +207,7 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
       icon: GraduationCap,
     },
     [ROLES.EXTERNAL_REVIEWER]: {
-      name: "Đánh giá ngoài",
+      name: "Đánh giá bên ngoài",
       color: "bg-orange-500",
       icon: GraduationCap,
     },

@@ -32,6 +32,7 @@ export interface CustomerTransactionDetailResponse {
 
 export interface CustomerCheckInDetailResponse {
   userCheckinId: string;
+  qrUrl?: string;
   isPresenter?: boolean;
   checkinStatusId?: string;
   checkinStatusName?: string;

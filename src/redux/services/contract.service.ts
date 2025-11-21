@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { endpoint } from "../api/endpoint";
-import { CreateReviewerContractRequest, GetUsersForReviewerContractRequest, GetUsersForReviewerContractResponse } from "@/types/contract.type";
+import { ContractDetailResponseForOrganizer, CreateNewReviewerContractRequest, CreateReviewerContractRequest, GetUsersForReviewerContractRequest, GetUsersForReviewerContractResponse, OwnContractDetailResponse } from "@/types/contract.type";
 import { apiClient } from "../api/apiClient";
 import { ApiResponse } from "@/types/api.type";
 
@@ -11,20 +11,18 @@ export const contractApi = createApi({
     endpoints: (builder) => ({
         createReviewContract: builder.mutation<ApiResponse<number>, CreateReviewerContractRequest>({
             query: ({ reviewerId, wage, conferenceId, signDay, contractFile }) => {
-                const formData = new FormData();
-                formData.append("contractFile", contractFile);
+                const formData = new FormData()
+                formData.append("contractFile", contractFile)
+                formData.append("reviewerId", reviewerId.toString())
+                formData.append("wage", wage.toString())
+                formData.append("conferenceId", conferenceId.toString())
+                formData.append("signDay", signDay)
 
                 return {
                     url: endpoint.CONTRACT.CREATE_REVIEWER_CONTRACT,
                     method: "POST",
-                    params: {
-                        reviewerId,
-                        wage,
-                        conferenceId,
-                        signDay,
-                    },
                     body: formData,
-                };
+                }
             },
             invalidatesTags: ["Contract"],
         }),
@@ -58,6 +56,56 @@ export const contractApi = createApi({
         //   }),
         //   providesTags: ["Contract"],
         // }),
+
+        createReviewContractForNewUser: builder.mutation<
+            ApiResponse<number>,
+            CreateNewReviewerContractRequest
+        >({
+            query: (data) => {
+                const formData = new FormData();
+
+                formData.append("email", data.email);
+                formData.append("fullName", data.fullName);
+                formData.append("password", data.password);
+                formData.append("confirmPassword", data.confirmPassword);
+                formData.append("wage", data.wage.toString());
+                formData.append("conferenceId", data.conferenceId);
+                formData.append("signDay", data.signDay);
+
+                if (data.contractFile) {
+                    formData.append("contractFile", data.contractFile);
+                }
+
+                return {
+                    url: endpoint.CONTRACT.CREATE_REVIEW_CONTRACT_FOR_NEW_USER,
+                    method: "POST",
+                    body: formData,
+                };
+            },
+            invalidatesTags: ["Contract"],
+        }),
+
+        getContractsByReviewer: builder.query<
+            ApiResponse<ContractDetailResponseForOrganizer[]>,
+            { reviewerId: string | number }
+        >({
+            query: ({ reviewerId }) => ({
+                url: endpoint.CONTRACT.LIST_BY_REVIEWER,
+                params: { reviewerId },
+            }),
+            providesTags: ["Contract"],
+        }),
+
+        getOwnReviewContracts: builder.query<
+            ApiResponse<OwnContractDetailResponse[]>,
+            void
+        >({
+            query: () => ({
+                url: endpoint.CONTRACT.LIST_OWN_REVIEW_CONTRACT,
+                method: "GET",
+            }),
+            providesTags: ["Contract"],
+        }),
     }),
 });
 
@@ -67,4 +115,7 @@ export const {
     useLazyGetUsersForReviewerContractQuery,
     //   useGetConferencesForOutsourcedReviewerQuery,
     //   useGetPapersBelongToConferenceQuery,
+    useCreateReviewContractForNewUserMutation,
+    useGetContractsByReviewerQuery,
+    useGetOwnReviewContractsQuery,
 } = contractApi;
