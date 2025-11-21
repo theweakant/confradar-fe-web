@@ -1,4 +1,3 @@
-// components/RightSidebar/RegisteredUserSection.tsx
 "use client";
 
 import { Loader2, User, Clock, Mail, Ticket } from "lucide-react";
@@ -17,8 +16,10 @@ export function RegisteredUserSection({
 }: RegisteredUserSectionProps) {
   const { data, isLoading, error } = useViewRegisteredUsersForConferenceQuery(conferenceId);
 
-  const registeredUsers = data?.data || [];
-  const recentUsers = registeredUsers
+  const registeredUsers = Array.isArray(data?.data) ? data.data : [];
+  
+  // Tạo bản sao để tránh lỗi "Cannot assign to read only property"
+  const recentUsers = [...registeredUsers]
     .sort((a, b) => new Date(b.registeredDate).getTime() - new Date(a.registeredDate).getTime())
     .slice(0, limit);
 
@@ -102,7 +103,7 @@ export function RegisteredUserSection({
               {/* Registered Date */}
               <div className="flex items-center gap-1.5 mt-1 text-xs text-gray-400">
                 <Clock className="w-3 h-3 flex-shrink-0" />
-                <span>{formatDate(user.registeredDate) || "—"} </span>
+                <span>{formatDate(user.registeredDate) || "—"}</span>
               </div>
 
               {/* Status Badge */}
