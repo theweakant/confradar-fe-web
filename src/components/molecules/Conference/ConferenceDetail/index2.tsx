@@ -24,11 +24,13 @@ import { useGetResearchConferenceDetailInternalQuery } from "@/redux/services/co
 import { useGetAllConferenceStatusesQuery } from "@/redux/services/status.service";
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
+import { useViewRegisteredUsersForConferenceQuery } from "@/redux/services/conference.service"; // 👈 Thêm import
 
 import { UpdateConferenceStatus } from "@/components/molecules/Status/UpdateStatus";
 import { DeleteConferenceStatus } from "@/components/molecules/Status/DeleteStatus";
 import { RequestConferenceApproval } from "@/components/molecules/Status/RequestStatus";
-
+import { HistoryTimelineStatus } from "@/components/molecules/Status/HistoryTimelineStatus";
+import { RegisteredUsersModal } from "@/components/molecules/Conference/ConferenceDetail/RightSidebar/RegisterUserSection/RegisteredUsersModal"; // 👈 Import đúng đường dẫn
 
 import { HeaderSection } from "./HeaderSection";
 import { RightSidebar } from "./RightSidebar";
@@ -58,6 +60,8 @@ export default function ConferenceDetailPage() {
   const [conferenceType, setConferenceType] = useState<"technical" | "research" | null>(null);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [isAttendeesModalOpen, setIsAttendeesModalOpen] = useState(false);
 
   const {
     data: techData,
@@ -72,6 +76,9 @@ export default function ConferenceDetailPage() {
     error: researchError,
     refetch: researchRefetch,
   } = useGetResearchConferenceDetailInternalQuery(conferenceId);
+
+  // 👇 Gọi query riêng cho danh sách người tham dự
+  const { data: attendeesData } = useViewRegisteredUsersForConferenceQuery(conferenceId);
 
   const { data: categoriesData } = useGetAllCategoriesQuery();
   const { data: statusesData } = useGetAllConferenceStatusesQuery();
@@ -103,6 +110,12 @@ export default function ConferenceDetailPage() {
   const conference = conferenceType === "technical" ? techData?.data : researchData?.data;
   const isLoading = conferenceType === null || (conferenceType === "technical" ? techLoading : researchLoading);
   const error = conferenceType === "technical" ? techError : researchError;
+
+  // ✅ Lấy timelines từ conference (đã có trong response)
+  const conferenceTimelines = conference?.conferenceTimelines || [];
+
+  // ✅ Lấy danh sách người tham dự từ query riêng (vì không có trong conference detail)
+  const registeredUsersFull = Array.isArray(attendeesData?.data) ? attendeesData.data : [];
 
   const categories = categoriesData?.data || [];
   const statuses = statusesData?.data || [];
@@ -251,6 +264,21 @@ export default function ConferenceDetailPage() {
         onSuccess={handleRefetch}
       />
 
+      {/* Modal lịch sử trạng thái */}
+      <HistoryTimelineStatus
+        open={isHistoryModalOpen}
+        onClose={() => setIsHistoryModalOpen(false)}
+        timelines={conferenceTimelines}
+      />
+
+      {/* Modal danh sách người tham dự */}
+      <RegisteredUsersModal
+        open={isAttendeesModalOpen}
+        onClose={() => setIsAttendeesModalOpen(false)}
+        users={registeredUsersFull}
+        conferenceName={conference.conferenceName!}
+      />
+
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="flex gap-6">
           <div className="flex-1 min-w-0">
@@ -274,6 +302,8 @@ export default function ConferenceDetailPage() {
             getCategoryName={getCategoryName}
             getStatusName={getStatusName}
             getCityName={getCityName}
+            onOpenTimeline={() => setIsHistoryModalOpen(true)}
+            onOpenFullAttendees={() => setIsAttendeesModalOpen(true)}
           />
         </div>
       </div>

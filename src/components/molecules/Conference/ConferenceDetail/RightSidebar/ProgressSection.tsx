@@ -6,11 +6,13 @@ import { useState } from "react";
 interface ProgressTimelineSectionProps {
   conference: CommonConference;
   getStatusName: (id: string) => string;
+  onOpenTimeline?: () => void; // Optional callback to open history modal
 }
 
 export function ProgressTimelineSection({
   conference,
   getStatusName,
+  onOpenTimeline,
 }: ProgressTimelineSectionProps) {
   const statusName = getStatusName(conference.conferenceStatusId ?? "");
 
@@ -57,9 +59,19 @@ export function ProgressTimelineSection({
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-5">
-      {/* Header */}
-      <h3 className="text-sm font-semibold text-gray-900 mb-5">Tiến độ</h3>
-      
+      {/* Header: "Tiến độ" + nút "Xem" nằm cùng hàng, bên phải */}
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-sm font-semibold text-gray-900">Tiến độ</h3>
+        {onOpenTimeline && (
+          <button
+            onClick={onOpenTimeline}
+            className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors px-2 py-1 rounded-md hover:bg-blue-50"
+          >
+            Xem
+          </button>
+        )}
+      </div>
+
       <div className="space-y-5">
         {/* Time Until Start */}
         <div className="flex items-center justify-between">
@@ -70,7 +82,7 @@ export function ProgressTimelineSection({
           <span className="text-sm font-semibold text-gray-900">
             {getTimeLabel()}
           </span>
-        </div>  
+        </div>
 
         {/* Progress Section */}
         <div className="space-y-3">
