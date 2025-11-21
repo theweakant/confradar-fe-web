@@ -28,7 +28,8 @@ import type {
   ResearchPhase,
   ConferenceRefundPolicyData,
   UpdateResearchPhaseRequest,
-  ConferencePriceResponse
+  ConferencePriceResponse,
+  ResearchSession
 } from "@/types/conference.type";
 
 export const conferenceStepApi = createApi({
@@ -274,7 +275,7 @@ export const conferenceStepApi = createApi({
       query: ({ sessionId, data }) => ({
         url: endpoint.CONFERENCE_STEP.UPDATE_SESSION(sessionId),
         method: "PUT",
-        body: { request: data },
+        body:  data ,
       }),
       invalidatesTags: ["ConferenceStep"],
     }),
@@ -859,7 +860,7 @@ export const conferenceStepApi = createApi({
 
     updateResearchSession: builder.mutation<
       ApiResponse<Session>,
-      { sessionId: string; data: Session }
+      { sessionId: string; data: ResearchSession }
     >({
       query: ({ sessionId, data }) => {
         const { title, description, startTime, endTime, date, roomId } = data;

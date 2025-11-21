@@ -7,7 +7,7 @@ import { EventClickArg } from "@fullcalendar/core";
 import { DoorOpen } from "lucide-react";
 import { useGetAvailableRoomsBetweenDatesQuery } from "@/redux/services/room.service";
 import type { AvailableRoom } from "@/types/room.type";
-import type { Session } from "@/types/conference.type";
+import type { Session, ResearchSession } from "@/types/conference.type";
 import { DatesSetArg } from '@fullcalendar/core';
 import RoomCard from "./Room/RoomCard";
 import RoomDetailDialog from "./Room/RoomDetail";
@@ -15,16 +15,20 @@ import RoomDetailDialog from "./Room/RoomDetail";
 interface RoomCalendarProps {
   conferenceId?: string;
   conferenceType?: "Tech" | "Research";
-  onSessionCreated?: (session: Session) => void;
+  onSessionCreated?: (session: Session | ResearchSession) => void;
+  onSessionUpdated?: (session: Session | ResearchSession, index: number) => void; 
+  onSessionDeleted?: (index: number) => void; 
   startDate?: string;
   endDate?: string;
-  existingSessions?: Session[];
+  existingSessions?: (Session | ResearchSession)[];
 }
 
 const RoomCalendar: React.FC<RoomCalendarProps> = ({ 
   conferenceId, 
   conferenceType,
   onSessionCreated,
+  onSessionUpdated, 
+  onSessionDeleted, 
   startDate,
   endDate,
   existingSessions
@@ -46,7 +50,6 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
   const calendarRef = useRef<FullCalendar | null>(null);
   const roomListRef = useRef<HTMLDivElement | null>(null);
   
-  // Chuyển calendar đến startDate khi có
   useEffect(() => {
     if (calendarRef.current && startDate) {
       const calendarApi = calendarRef.current.getApi();
@@ -54,7 +57,6 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
     }
   }, [startDate]);
 
-  // Update dateRange khi startDate thay đổi
   useEffect(() => {
     if (startDate) {
       const start = startDate;
@@ -63,7 +65,6 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
     }
   }, [startDate]);
 
-  // Fetch rooms
   const {
     data: roomsData,
     isLoading: isLoadingRooms,
@@ -142,6 +143,16 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
     setRoomDetailOpen(true);
   };
 
+  const handleChangeDate = (session: Session | ResearchSession, index: number) => {
+    console.log('Đổi ngày cho session:', session, 'tại index:', index);
+    // TODO: Implement logic đổi ngày
+  };
+
+  const handleChangeRoom = (session: Session | ResearchSession, index: number) => {
+    console.log('Đổi phòng cho session:', session, 'tại index:', index);
+    // TODO: Implement logic đổi phòng
+  };
+  
   const selectedRoomData = selectedRoom 
     ? rooms.find(r => r.roomId === selectedRoom && r.date === selectedDate)
     : null;
@@ -186,7 +197,6 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
 
   return (
     <div className="w-full">
-      {/* Legend */}
       <div className="mx-4 my-6 flex gap-4 items-center text-sm px-1">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-green-600"></div>
@@ -198,9 +208,7 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
         </div>
       </div>
 
-      {/* Layout: 2 columns - Calendar and Room List */}
       <div className="grid gap-4 lg:grid-cols-3">
-        {/* Calendar */}
         <div className="lg:col-span-2 bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
           <style>{`
             .fc {
@@ -315,7 +323,6 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
           </div>
         </div>
 
-        {/* Room List */}
         <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
           <h2 className="text-base font-semibold mb-3 flex items-center gap-2 text-gray-900">
             <DoorOpen className="w-4 h-4 text-green-600" />
@@ -338,7 +345,7 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
         </div>
       </div>
 
-      {/* Room Detail Dialog */}
+      {/* ✅ Truyền callbacks xuống RoomDetailDialog */}
       <RoomDetailDialog
         open={roomDetailOpen}
         roomId={selectedRoom}
@@ -354,6 +361,10 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
           setSelectedDate(null);
         }}
         onSessionCreated={onSessionCreated}
+        onSessionUpdated={onSessionUpdated} 
+        onSessionDeleted={onSessionDeleted} 
+        onChangeDate={handleChangeDate}  
+        onChangeRoom={handleChangeRoom}  
       />
     </div>
   );

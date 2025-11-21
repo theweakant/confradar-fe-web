@@ -15,7 +15,7 @@ import {
   useCreateResearchDetailMutation,
   useCreateResearchPhaseMutation,
   useCreateConferencePriceMutation,
-  useCreatePhaseForPriceMutation, // ← Thêm
+  useCreatePhaseForPriceMutation,
   useCreateResearchSessionsMutation,
   useCreateConferencePoliciesMutation,
   useCreateRefundPoliciesMutation,
@@ -31,8 +31,8 @@ import {
   useUpdateResearchPhaseMutation,
   useUpdateRevisionRoundDeadlineMutation,
   useUpdateConferencePriceMutation,
-  useUpdateConferencePricePhaseMutation, // ← Thêm
-  useUpdateConferenceSessionMutation,
+  useUpdateConferencePricePhaseMutation, 
+  useUpdateResearchSessionMutation,
   useUpdateConferencePolicyMutation,
   useUpdateConferenceRefundPolicyMutation,
   useUpdateResearchMaterialMutation,
@@ -42,7 +42,7 @@ import {
   useUpdateConferenceSponsorMutation,
   // DELETE
   useDeleteConferencePriceMutation,
-  useDeleteConferencePricePhaseMutation, // ← Thêm
+  useDeleteConferencePricePhaseMutation,
   useDeleteConferenceSessionMutation,
   useDeleteConferencePolicyMutation,
   useDeleteRefundPolicyMutation,
@@ -59,7 +59,7 @@ import type {
   ResearchDetail,
   ResearchPhase,
   Ticket,
-  Session,
+  ResearchSession,
   Policy,
   RefundPolicy,
   ResearchMaterial,
@@ -117,7 +117,7 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
   const [updateRevisionDeadline] = useUpdateRevisionRoundDeadlineMutation();
   const [updatePrice] = useUpdateConferencePriceMutation();
   const [updatePricePhase] = useUpdateConferencePricePhaseMutation();
-  const [updateSession] = useUpdateConferenceSessionMutation();
+  const [updateSession] = useUpdateResearchSessionMutation();
   const [updatePolicy] = useUpdateConferencePolicyMutation();
   const [updateRefundPolicy] = useUpdateConferenceRefundPolicyMutation();
   const [updateMaterial] = useUpdateResearchMaterialMutation();
@@ -617,66 +617,100 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
   }
 };
 
-const submitSessions = async (
-  sessions: Session[],
-  options?: { deletedSessionIds?: string[] }
-) => {
-  const currentDeletedIds = options?.deletedSessionIds || deletedSessionIds;
+  const submitSessions = async (
+    sessions: ResearchSession[],
+    options?: { deletedSessionIds?: string[] }
+  ) => {
+    const currentDeletedIds = options?.deletedSessionIds || deletedSessionIds;
 
-  if (!conferenceId) {
-    toast.error("Không tìm thấy conference ID!");
-    return { success: false };
-  }
-
-  try {
-    setIsSubmitting(true);
-    if (mode === "edit") {
-      if (currentDeletedIds.length > 0) {
-        await Promise.all(currentDeletedIds.map((id) => deleteSession(id).unwrap()));
-      }
-      const existing = sessions.filter((s) => s.sessionId);
-      if (existing.length > 0) {
-        await Promise.all(
-          existing.map((session) =>
-            updateSession({
-              sessionId: session.sessionId!,
-              data: {
-                title: session.title,
-                description: session.description,
-                date: session.date,
-                startTime: session.startTime,
-                endTime: session.endTime,
-                roomId: session.roomId,
-              },
-            }).unwrap()
-          )
-        );
-      }
-      const newSessions = sessions.filter((s) => !s.sessionId);
-      if (newSessions.length > 0) {
-        await createSessions({ conferenceId, data: { sessions: newSessions } }).unwrap();
-      }
-      await triggerRefetch();
-    } else {
-      if (sessions.length === 0) {
-        dispatch(markStepCompleted(5));
-        toast.info("Đã bỏ qua phần phiên họp");
-        return { success: true, skipped: true };
-      }
-      await createSessions({ conferenceId, data: { sessions } }).unwrap();
+    if (!conferenceId) {
+      toast.error("Không tìm thấy conference ID!");
+      return { success: false };
     }
-    dispatch(markStepCompleted(5));
-    toast.success("Lưu phiên họp thành công!");
-    return { success: true };
-  } catch (error) {
-    const apiError = error as { data?: ApiError };
-    console.error("Sessions submit failed:", error);
-    toast.error(apiError?.data?.message || "Lưu phiên họp thất bại!");
-    return { success: false, error };
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+
+    try {
+      setIsSubmitting(true);
+      
+      if (mode === "edit") {
+        // ✅ BƯỚC 1: XÓA sessions đã đánh dấu
+        if (currentDeletedIds.length > 0) {
+          console.log("🗑️ Deleting sessions:", currentDeletedIds);
+          await Promise.all(
+            currentDeletedIds.map((id) => deleteSession(id).unwrap())
+          );
+        }
+
+        // ✅ BƯỚC 2: UPDATE sessions có sessionId
+        const existingSessions = sessions.filter((s) => s.sessionId);
+        if (existingSessions.length > 0) {
+          console.log("📝 Updating sessions:", existingSessions.map(s => s.sessionId));
+          
+          await Promise.all(
+            existingSessions.map((session) => {
+              if (!session.sessionId) {
+                throw new Error(`Session "${session.title}" không có ID`);
+              }
+
+              // ✅ Research session payload - KHÔNG có speaker
+              // ✅ Type đã là ResearchSession nên không có speaker field
+              return updateSession({
+                sessionId: session.sessionId,
+                data: {
+                  title: session.title,
+                  description: session.description,
+                  date: session.date,
+                  startTime: session.startTime,
+                  endTime: session.endTime,
+                  roomId: session.roomId,
+                },
+              }).unwrap();
+            })
+          );
+        }
+
+        // ✅ BƯỚC 3: TẠO sessions mới (không có sessionId)
+        const newSessions = sessions.filter((s) => !s.sessionId);
+        if (newSessions.length > 0) {
+          console.log("➕ Creating new sessions:", newSessions.length);
+          
+          // ✅ ResearchSession type không có speaker - GỬI TRỰC TIẾP
+          await createSessions({ 
+            conferenceId, 
+            data: { sessions: newSessions } 
+          }).unwrap();
+        }
+
+        await triggerRefetch();
+        toast.success("Cập nhật phiên họp thành công!");
+        
+      } else {
+        // ✅ CREATE MODE
+        if (sessions.length === 0) {
+          dispatch(markStepCompleted(5));
+          toast.info("Đã bỏ qua phần phiên họp");
+          return { success: true, skipped: true };
+        }
+
+        // ✅ ResearchSession type không có speaker - GỬI TRỰC TIẾP
+        await createSessions({ 
+          conferenceId, 
+          data: { sessions } 
+        }).unwrap();
+        toast.success("Tạo phiên họp thành công!");
+      }
+
+      dispatch(markStepCompleted(5));
+      return { success: true };
+      
+    } catch (error) {
+      const apiError = error as { data?: ApiError };
+      console.error("Sessions submit failed:", error);
+      toast.error(apiError?.data?.message || "Lưu phiên họp thất bại!");
+      return { success: false, error };
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const submitPolicies = async (policies: Policy[], refundPolicies: RefundPolicy[]) => {
     if (!conferenceId) {
@@ -1002,7 +1036,7 @@ const submitSessions = async (
     researchDetail: ResearchDetail;
     researchPhases: ResearchPhase[];
     tickets: Ticket[];
-    sessions: Session[];
+    sessions: ResearchSession[];
     policies: Policy[];
     refundPolicies: RefundPolicy[];
     researchMaterials: ResearchMaterial[];
@@ -1066,7 +1100,7 @@ const submitSessions = async (
     researchDetail: ResearchDetail;
     researchPhases: ResearchPhase[];
     tickets: Ticket[];
-    sessions: Session[];
+    sessions: ResearchSession[];
     policies: Policy[];
     refundPolicies: RefundPolicy[];
     researchMaterials: ResearchMaterial[];

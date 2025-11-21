@@ -1,10 +1,10 @@
 // components/Session/LocalSessionCard.tsx
-import React from "react";
-import { Clock, Users } from "lucide-react";
-import type { Session } from "@/types/conference.type";
+import React, { useState, useRef, useEffect } from "react";
+import { Clock, Users, MoreVertical, CalendarDays, MapPin, Edit2, Trash2 } from "lucide-react";
+import type { Session, ResearchSession } from "@/types/conference.type";
 
 interface LocalSessionCardProps {
-  session: Session;
+  session: Session | ResearchSession;
   isEditable?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
@@ -16,33 +16,119 @@ interface LocalSessionCardProps {
 export const LocalSessionCard: React.FC<LocalSessionCardProps> = ({
   session,
   isEditable = false,
+  onEdit,
+  onDelete,
+  onChangeDate,
+  onChangeRoom,
   editableActions,
 }) => {
-  const formatTime = (isoString: string) => {
-    return new Date(isoString).toLocaleTimeString("vi-VN", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * Format thời gian an toàn — hỗ trợ cả ISO string và "HH:mm:ss"
+   */
+  const formatTime = (timeString: string): string => {
+    if (!timeString || typeof timeString !== 'string') {
+      return "--:--";
+    }
+
+    // Trường hợp 1: ISO Date hợp lệ → parse trực tiếp
+    const dateFromISO = new Date(timeString);
+    if (!isNaN(dateFromISO.getTime())) {
+      return dateFromISO.toLocaleTimeString("vi-VN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+    }
+
+    // Trường hợp 2: Chỉ có giờ "HH:mm:ss" → ghép với ngày hôm nay để hiển thị
+    if (timeString.match(/^\d{2}:\d{2}:\d{2}$/)) {
+      const now = new Date();
+      const [hours, minutes, seconds] = timeString.split(':').map(Number);
+      const tempDate = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        hours,
+        minutes,
+        seconds
+      );
+      return tempDate.toLocaleTimeString("vi-VN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+    }
+
+    // Trường hợp 3: Không hợp lệ → fallback
+    console.warn('Invalid time string in LocalSessionCard:', timeString);
+    return "--:--";
   };
 
+  /**
+   * Tính thời lượng an toàn — hỗ trợ cả ISO và "HH:mm:ss"
+   */
   const calculateDuration = (start: string, end: string) => {
-    const startDate = new Date(start);
-    const endDate = new Date(end);
+    const parseTime = (str: string): Date | null => {
+      if (!str || typeof str !== 'string') return null;
+
+      const isoDate = new Date(str);
+      if (!isNaN(isoDate.getTime())) {
+        return isoDate;
+      }
+
+      if (str.match(/^\d{2}:\d{2}:\d{2}$/)) {
+        const now = new Date();
+        const [h, m, s] = str.split(':').map(Number);
+        return new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, s);
+      }
+
+      return null;
+    };
+
+    const startDate = parseTime(start);
+    const endDate = parseTime(end);
+
+    if (!startDate || !endDate) {
+      return "—";
+    }
+
     const diffMinutes = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60));
+    if (diffMinutes < 0) return "—";
+
     const hours = Math.floor(diffMinutes / 60);
     const minutes = diffMinutes % 60;
     return `${hours}h${minutes > 0 ? ` ${minutes}p` : ""}`;
   };
 
-const conferenceName = session.conferenceName || "Hội thảo của bạn";
+  const conferenceName = session.conferenceName || "Hội thảo của bạn";
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    if (showDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showDropdown]);
+
+  const handleOptionClick = (action: () => void) => {
+    setShowDropdown(false);
+    action();
+  };
 
   return (
     <div className="bg-white rounded-lg p-3 border-l-4 border-orange-500 hover:shadow-sm transition-all relative">
-      {isEditable && editableActions && (
-        <div className="absolute top-2 right-2 z-10">{editableActions}</div>
-      )}
-
       <div className="flex items-start justify-between mb-2">
         <div className="flex-1 min-w-0">
           <h4 className="text-gray-900 font-semibold text-sm mb-1 line-clamp-2">
@@ -53,8 +139,64 @@ const conferenceName = session.conferenceName || "Hội thảo của bạn";
             {conferenceName}
           </p>
         </div>
-        <div className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-xs font-medium ml-2 flex-shrink-0 whitespace-nowrap">
-          {isEditable ? "Dự kiến" : "Đang dùng"}
+        <div className="flex items-center gap-2">
+          <div className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-xs font-medium whitespace-nowrap">
+            {isEditable ? "Dự kiến" : "Đang dùng"}
+          </div>
+          
+          {/* Dropdown menu */}
+          {isEditable && (onEdit || onDelete || onChangeDate || onChangeRoom) && (
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setShowDropdown(!showDropdown)}
+                className="p-1 hover:bg-gray-100 rounded transition-colors"
+                title="Tùy chọn"
+              >
+                <MoreVertical className="w-4 h-4 text-gray-600" />
+              </button>
+
+              {showDropdown && (
+                <div className="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
+                  {onEdit && (
+                    <button
+                      onClick={() => handleOptionClick(onEdit)}
+                      className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                    >
+                      <Edit2 className="w-4 h-4 text-gray-600" />
+                      <span>Chỉnh sửa</span>
+                    </button>
+                  )}
+                  {onChangeDate && (
+                    <button
+                      onClick={() => handleOptionClick(onChangeDate)}
+                      className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-purple-50 flex items-center gap-2 transition-colors"
+                    >
+                      <CalendarDays className="w-4 h-4 text-purple-600" />
+                      <span>Đổi ngày</span>
+                    </button>
+                  )}
+                  {onChangeRoom && (
+                    <button
+                      onClick={() => handleOptionClick(onChangeRoom)}
+                      className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-orange-50 flex items-center gap-2 transition-colors"
+                    >
+                      <MapPin className="w-4 h-4 text-orange-600" />
+                      <span>Đổi phòng</span>
+                    </button>
+                  )}
+                  {onDelete && (
+                    <button
+                      onClick={() => handleOptionClick(onDelete)}
+                      className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4 text-red-600" />
+                      <span>Xóa</span>
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -70,11 +212,13 @@ const conferenceName = session.conferenceName || "Hội thảo của bạn";
         </div>
       </div>
 
-      {session.speaker && session.speaker.length > 0 && (
+      {/* Hiển thị diễn giả chỉ khi session có speaker */}
+      {'speaker' in session && session.speaker && session.speaker.length > 0 && (
         <div className="mt-2 pt-2 border-t border-gray-100">
-          <div className="text-[10px] font-medium text-gray-600 mb-1">
+          <div className="text-[10px] font-medium text-gray-600">
             Diễn giả ({session.speaker.length})
           </div>
+          
           <div className="flex flex-wrap gap-1">
             {session.speaker.map((speaker, idx) => (
               <span
@@ -95,6 +239,14 @@ const conferenceName = session.conferenceName || "Hội thảo của bạn";
                 {speaker.name}
               </span>
             ))}
+          </div>
+        </div>
+      )}
+
+      {!('speaker' in session) && (
+        <div className="mt-2 pt-2 border-t border-gray-100">
+          <div className="text-[10px] italic text-gray-500">
+            Phiên nghiên cứu
           </div>
         </div>
       )}

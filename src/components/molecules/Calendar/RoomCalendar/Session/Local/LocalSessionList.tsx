@@ -2,19 +2,27 @@
 import React from "react";
 import { Users } from "lucide-react";
 import { LocalSessionCard } from "./LocalSessionCard";
-import type { Session } from "@/types/conference.type";
+import type { Session , ResearchSession} from "@/types/conference.type";
 
 interface LocalSessionListProps {
-  sessions: Session[];
+  sessions: (Session | ResearchSession)[];
   title?: string; 
   editable?: boolean;
-  renderActions?: (session: Session, index: number) => React.ReactNode;
+  onEdit?: (session: Session | ResearchSession, index: number) => void;
+  onDelete?: (session: Session | ResearchSession, index: number) => void;
+  onChangeDate?: (session: Session | ResearchSession, index: number) => void;
+  onChangeRoom?: (session: Session | ResearchSession, index: number) => void;
+  renderActions?: (session: Session | ResearchSession, index: number) => React.ReactNode;
 }
 
 export const LocalSessionList: React.FC<LocalSessionListProps> = ({
   sessions,
   title = "Phiên họp của bạn",
   editable = false,
+  onEdit,
+  onDelete,
+  onChangeDate,  
+  onChangeRoom,  
   renderActions,
 }) => {
   if (sessions.length === 0) return null;
@@ -30,9 +38,13 @@ export const LocalSessionList: React.FC<LocalSessionListProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {sessions.map((session, index) => (
           <LocalSessionCard
-            key={session.sessionId || index} 
+            key={`${session.sessionId}-${index}`} 
             session={session}
             isEditable={editable}
+            onEdit={onEdit ? () => onEdit(session, index) : undefined}
+            onDelete={onDelete ? () => onDelete(session, index) : undefined}
+            onChangeDate={onChangeDate ? () => onChangeDate(session, index) : undefined} 
+            onChangeRoom={onChangeRoom ? () => onChangeRoom(session, index) : undefined}  
             editableActions={renderActions ? renderActions(session, index) : null}
           />
         ))}

@@ -53,7 +53,7 @@ import {
   TECH_MAX_STEP,
 } from "@/components/molecules/Conference/ConferenceStep/constants";
 import { RequestConferenceApproval } from "@/components/molecules/Status/RequestStatus";
-import { Session } from "@/types/conference.type";
+import { Session, ResearchSession } from "@/types/conference.type";
 
 const useMockDeleteTracking = () => {
   return useMemo(
@@ -448,16 +448,51 @@ export default function TechConferenceStepForm({
     }
   };
 
-  // 🔸 GIỮ LẠI: nếu bạn vẫn cho phép TẠO session từ calendar
-  const handleSessionCreatedFromCalendar = (session: Session) => {
-    setSessions((prev) => [...prev, session]);
-    handleMarkHasData(3);
-    handleMarkDirty(3);
-    toast.success(`Đã thêm session "${session.title}" thành công!`);
-  };
+const handleSessionCreatedFromCalendar = (session: Session | ResearchSession) => {
+  if (!('speaker' in session)) {
+    console.error("Unexpected ResearchSession in Tech mode", session);
+    toast.error("Phiên họp không hợp lệ cho hội thảo công nghệ.");
+    return;
+  }
 
-  // 🔻 ĐÃ XÓA: handleEditSession, handleSaveEditedSession, handleCancelEdit, handleDeleteSession
+  setSessions((prev) => [...prev, session as Session]);
+  handleMarkHasData(3);
+  handleMarkDirty(3);
+  toast.success(`Đã thêm session "${session.title}" thành công!`);
+};
 
+const handleSessionUpdatedFromCalendar = (updatedSession: Session | ResearchSession, index: number) => {
+  if (!('speaker' in updatedSession)) {
+    console.error("Unexpected ResearchSession in Tech update", updatedSession);
+    toast.error("Phiên họp không hợp lệ để cập nhật.");
+    return;
+  }
+
+  console.log('📝 Updating session at index:', index, updatedSession);
+  
+  setSessions((prev) => {
+    const newSessions = [...prev];
+    newSessions[index] = updatedSession as Session;
+    return newSessions;
+  });
+  
+  handleMarkDirty(3);
+  toast.success(`Đã cập nhật session "${updatedSession.title}" thành công!`);
+};
+
+const handleSessionDeletedFromCalendar = (index: number) => {
+  console.log('🗑️ Deleting session at index:', index);
+  
+  const deletedSession = sessions[index];
+  
+  if (deletedSession?.sessionId && mode === "edit") {
+    realDeleteTracking.trackDeletedSession(deletedSession.sessionId);
+  }
+  
+  setSessions((prev) => prev.filter((_, i) => i !== index));
+  handleMarkDirty(3);
+  toast.success("Đã xóa session thành công!");
+};
   const handleUpdateCurrentStep = useCallback(async () => {
     let result;
     switch (currentStep) {
@@ -742,7 +777,6 @@ export default function TechConferenceStepForm({
             </div>
           )}
 
-          {/* 🔸 Hiển thị số lượng session — KHÔNG CÓ NÚT "Xem danh sách" */}
           {(basicForm.startDate || basicForm.endDate) && (
             <div className="text-xs text-gray-500 space-y-1 mb-4">
               <p>
@@ -779,7 +813,9 @@ export default function TechConferenceStepForm({
             <RoomCalendar 
               conferenceId={actualConferenceId || undefined}
               conferenceType="Tech"
-              onSessionCreated={handleSessionCreatedFromCalendar} // giữ nếu cần tạo
+              onSessionCreated={handleSessionCreatedFromCalendar}
+              onSessionUpdated={handleSessionUpdatedFromCalendar}
+              onSessionDeleted={handleSessionDeletedFromCalendar}
               startDate={basicForm.startDate}
               endDate={basicForm.endDate}
               existingSessions={sessions}
