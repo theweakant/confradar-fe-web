@@ -36,3 +36,20 @@ export interface GeneralPaymentResultResponse {
   // isAddedWaitList?: boolean;
   // conferenceId?: string;
 }
+
+export interface WalletTransaction {
+  walletTransactionId: string;
+  walletId: string;
+  amount: number;
+  transactionType: string;
+  description: string;
+  createdAt: string;
+}
+
+export interface WalletResponse {
+  walletId: string;
+  balance: number;
+  createdAt: string;
+  updatedAt: string;
+  walletTransactions: WalletTransaction[];
+}

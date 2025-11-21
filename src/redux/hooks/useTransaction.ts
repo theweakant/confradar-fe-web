@@ -3,8 +3,10 @@ import {
   useCreatePaymentForResearchPaperMutation,
   useCreatePaymentForTechMutation,
   useGetAllPaymentMethodsQuery,
+  useGetOwnWalletQuery,
   useLazyGetAllPaymentMethodsQuery,
   useLazyGetOwnTransactionQuery,
+  useLazyGetOwnWalletQuery,
 } from "@/redux/services/transaction.service";
 import { parseApiError } from "@/helper/api";
 import { ApiResponse } from "@/types/api.type";
@@ -58,11 +60,20 @@ export const useTransaction = () => {
     { isLoading: lazyLoading, data: lazyData, error: lazyError },
   ] = useLazyGetAllPaymentMethodsQuery();
 
+  const { data: walletData, isLoading: walletLoading, error: walletRawError } =
+    useGetOwnWalletQuery();
+
+  const [
+    fetchWallet,
+    { data: lazyWalletData, isLoading: lazyWalletLoading, error: lazyWalletRawError },
+  ] = useLazyGetOwnWalletQuery();
+
   const techPaymentError = parseApiError<string>(techPaymentRawError);
   const researchPaymentError = parseApiError<string>(researchPaymentRawError);
   const attendeeResearchPaymentError = parseApiError<string>(attendeeResearchPaymentRawError);
   const transactionsError = parseApiError<string>(transactionsRawError);
   const paymentMethodsError = parseApiError<string>(error || lazyError);
+  const walletError = parseApiError<string>(walletRawError || lazyWalletRawError);
 
   const purchaseTechTicket = async (
     request: CreateTechPaymentRequest,
@@ -115,6 +126,15 @@ export const useTransaction = () => {
     }
   };
 
+  const fetchOwnWallet = async () => {
+    try {
+      const result = await fetchWallet().unwrap();
+      return result;
+    } catch (err) {
+      throw err;
+    }
+  };
+
   return {
     // Actions
     purchaseTechTicket,
@@ -122,6 +142,7 @@ export const useTransaction = () => {
     purchaseAttendeeResearch,
     fetchTransactions,
     fetchAllPaymentMethods,
+    fetchOwnWallet,
 
     // loading
     loading:
@@ -130,7 +151,9 @@ export const useTransaction = () => {
       attendeeResearchPaymentLoading ||
       transactionsLoading ||
       isLoading ||
-      lazyLoading,
+      lazyLoading ||
+      walletLoading ||
+      lazyWalletLoading,
 
     //Error
     techPaymentError,
@@ -138,6 +161,7 @@ export const useTransaction = () => {
     attendeeResearchPaymentError,
     transactionsError,
     paymentMethodsError,
+    walletError,
 
     //Data responses
     techPaymentResponse: techPaymentData,
@@ -145,6 +169,8 @@ export const useTransaction = () => {
     attendeeResearchPaymentResponse: attendeeResearchPaymentData,
     transactions: transactionsData?.data || [],
     paymentMethods: data?.data || lazyData?.data || [],
+
+    wallet: walletData?.data || lazyWalletData?.data || null,
 
     // purchaseTicket,
     // fetchTransactions,
