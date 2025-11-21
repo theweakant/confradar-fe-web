@@ -539,10 +539,15 @@ export function ResearchPriceForm({
     setIsPhaseModalOpen(true);
   };
 
-  const usedPhaseSlots = newTicket.phases.reduce(
-    (sum, p, i) => sum + (i === editingPhaseIndex ? 0 : p.totalslot),
-    0
-  );
+  const getUsedSlotsForPhaseModal = () => {
+    if (editingPhaseIndex === null) {
+      return newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0);
+    }
+    // Loại trừ slot của phase đang sửa
+    const editingPhaseSlot = newTicket.phases[editingPhaseIndex]?.totalslot || 0;
+    const totalUsed = newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0);
+    return totalUsed - editingPhaseSlot;
+  };
 
   const handleAddTicket = () => {
     if (!newTicket.ticketName.trim()) {
@@ -904,7 +909,7 @@ export function ResearchPriceForm({
         <div className="border-t pt-3 mt-3">
           <div className="flex justify-between items-center mb-3">
             <h5 className="font-medium text-sm">
-              Giai đoạn giá ({newTicket.phases.length}) - Đã dùng: {usedPhaseSlots}/{newTicket.totalSlot}
+              Giai đoạn giá ({newTicket.phases.length}) - Đã dùng: {newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0)}/{newTicket.totalSlot}
             </h5>
             <Button
               size="sm"
@@ -979,7 +984,7 @@ export function ResearchPriceForm({
         timelineEnd={currentTimelineEnd}
         ticketPrice={newTicket.ticketPrice}
         maxSlot={newTicket.totalSlot}
-        usedSlots={usedPhaseSlots}
+        usedSlots={getUsedSlotsForPhaseModal()}
         editingPhase={editingPhaseIndex !== null ? newTicket.phases[editingPhaseIndex] : null}
         isAuthorTicket={newTicket.isAuthor}
         onRemoveRefundPolicy={onRemoveRefundPolicy}

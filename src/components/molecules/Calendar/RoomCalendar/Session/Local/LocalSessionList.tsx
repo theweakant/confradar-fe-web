@@ -2,17 +2,17 @@
 import React from "react";
 import { Users } from "lucide-react";
 import { LocalSessionCard } from "./LocalSessionCard";
-import type { Session } from "@/types/conference.type";
+import type { Session , ResearchSession} from "@/types/conference.type";
 
 interface LocalSessionListProps {
-  sessions: Session[];
+  sessions: (Session | ResearchSession)[];
   title?: string; 
   editable?: boolean;
-  onEdit?: (session: Session, index: number) => void;
-  onDelete?: (session: Session, index: number) => void;
-  onChangeDate?: (session: Session, index: number) => void;
-  onChangeRoom?: (session: Session, index: number) => void;
-  renderActions?: (session: Session, index: number) => React.ReactNode;
+  onEdit?: (session: Session | ResearchSession, index: number) => void;
+  onDelete?: (session: Session | ResearchSession, index: number) => void;
+  onChangeDate?: (session: Session | ResearchSession, index: number) => void;
+  onChangeRoom?: (session: Session | ResearchSession, index: number) => void;
+  renderActions?: (session: Session | ResearchSession, index: number) => React.ReactNode;
 }
 
 export const LocalSessionList: React.FC<LocalSessionListProps> = ({

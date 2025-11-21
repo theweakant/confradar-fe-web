@@ -7,7 +7,7 @@ import { EventClickArg } from "@fullcalendar/core";
 import { DoorOpen } from "lucide-react";
 import { useGetAvailableRoomsBetweenDatesQuery } from "@/redux/services/room.service";
 import type { AvailableRoom } from "@/types/room.type";
-import type { Session } from "@/types/conference.type";
+import type { Session, ResearchSession } from "@/types/conference.type";
 import { DatesSetArg } from '@fullcalendar/core';
 import RoomCard from "./Room/RoomCard";
 import RoomDetailDialog from "./Room/RoomDetail";
@@ -15,20 +15,20 @@ import RoomDetailDialog from "./Room/RoomDetail";
 interface RoomCalendarProps {
   conferenceId?: string;
   conferenceType?: "Tech" | "Research";
-  onSessionCreated?: (session: Session) => void;
-  onSessionUpdated?: (session: Session, index: number) => void; // ✅ THÊM
-  onSessionDeleted?: (index: number) => void; // ✅ THÊM
+  onSessionCreated?: (session: Session | ResearchSession) => void;
+  onSessionUpdated?: (session: Session | ResearchSession, index: number) => void; 
+  onSessionDeleted?: (index: number) => void; 
   startDate?: string;
   endDate?: string;
-  existingSessions?: Session[];
+  existingSessions?: (Session | ResearchSession)[];
 }
 
 const RoomCalendar: React.FC<RoomCalendarProps> = ({ 
   conferenceId, 
   conferenceType,
   onSessionCreated,
-  onSessionUpdated, // ✅ THÊM
-  onSessionDeleted, // ✅ THÊM
+  onSessionUpdated, 
+  onSessionDeleted, 
   startDate,
   endDate,
   existingSessions
@@ -143,16 +143,16 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
     setRoomDetailOpen(true);
   };
 
-  const handleChangeDate = (session: Session, index: number) => {
+  const handleChangeDate = (session: Session | ResearchSession, index: number) => {
     console.log('Đổi ngày cho session:', session, 'tại index:', index);
     // TODO: Implement logic đổi ngày
   };
 
-  const handleChangeRoom = (session: Session, index: number) => {
+  const handleChangeRoom = (session: Session | ResearchSession, index: number) => {
     console.log('Đổi phòng cho session:', session, 'tại index:', index);
     // TODO: Implement logic đổi phòng
   };
-
+  
   const selectedRoomData = selectedRoom 
     ? rooms.find(r => r.roomId === selectedRoom && r.date === selectedDate)
     : null;

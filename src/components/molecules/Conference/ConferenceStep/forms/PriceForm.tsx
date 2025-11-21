@@ -629,18 +629,25 @@ export function PriceForm({
       ticketDescription: ticket.ticketDescription || "",
       isAuthor: ticket.isAuthor ?? false,
       totalSlot: ticket.totalSlot,
-      // ✅ Deep copy phases với tất cả IDs
       phases: (ticket.phases || []).map(phase => ({
         ...phase,
-        pricePhaseId: phase.pricePhaseId, // ✅ Preserve phase ID
+        pricePhaseId: phase.pricePhaseId, 
         refundInPhase: (phase.refundInPhase || []).map(refund => ({
           ...refund,
-          refundPolicyId: refund.refundPolicyId, // ✅ Preserve refund policy ID
+          refundPolicyId: refund.refundPolicyId, 
         })),
       })),
     });
     setEditingTicketIndex(index);
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const getUsedSlotsForPhaseModal = () => {
+    if (isEditingPhaseIndex === null) {
+      return usedPhaseSlots;
+    }
+    const editingPhaseSlot = newTicket.phases[isEditingPhaseIndex]?.totalslot || 0;
+    return usedPhaseSlots - editingPhaseSlot;
   };
 
   const handleRemoveTicket = (index: number) => {
@@ -887,7 +894,7 @@ export function PriceForm({
         ticketSaleEnd={ticketSaleEnd}
         ticketPrice={newTicket.ticketPrice}
         maxSlot={newTicket.totalSlot}
-        usedSlots={usedPhaseSlots}
+        usedSlots={getUsedSlotsForPhaseModal()}
         editingPhase={isEditingPhaseIndex !== null ? newTicket.phases[isEditingPhaseIndex] : null}
         minStartDateForNewPhase={minStartDateForNewPhase}
         onRemoveRefundPolicy={onRemoveRefundPolicy}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Clock, MapPin, Calendar as CalendarIcon, AlertCircle, Image as ImageIcon } from "lucide-react";
+import { Clock, MapPin, Calendar as CalendarIcon, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import type { Session, SessionMedia } from "@/types/conference.type";
+import type { ResearchSession, SessionMedia } from "@/types/conference.type";
 import { ImageUpload } from "@/components/atoms/ImageUpload";
 
 interface ResearchSingleSessionFormProps {
@@ -12,9 +12,9 @@ interface ResearchSingleSessionFormProps {
   date: string; 
   startTime: string; 
   endTime: string; 
-  existingSessions?: Session[];
-  initialSession?: Session;
-  onSave: (session: Session) => void;
+  existingSessions?: ResearchSession[];
+  initialSession?: ResearchSession;
+  onSave: (session: ResearchSession) => void;
   onCancel: () => void;
 }
 
@@ -31,26 +31,7 @@ export function ResearchSingleSessionForm({
   onSave,
   onCancel,
 }: ResearchSingleSessionFormProps) {
-  const calculateTimeRangeFromSession = (session?: Session): number => {
-    if (!session) return 1;
-    const start = new Date(session.startTime);
-    const end = new Date(session.endTime);
-    const diffMs = end.getTime() - start.getTime();
-    return diffMs / (1000 * 60 * 60);
-  };
-
-  const [formData, setFormData] = useState({
-    title: initialSession?.title || "",
-    description: initialSession?.description || "",
-    selectedStartTime: initialSession?.startTime || slotStartTime,
-    timeRange: initialSession ? calculateTimeRangeFromSession(initialSession) : 1,
-    sessionMedias: initialSession?.sessionMedias || ([] as SessionMedia[]),
-  });
-
-  const [calculatedEndTime, setCalculatedEndTime] = useState(initialSession?.endTime || slotEndTime);
-
-  const isEditMode = !!initialSession;
-
+  
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
     return d.toLocaleDateString("vi-VN", {
@@ -70,6 +51,70 @@ export function ResearchSingleSessionForm({
     });
   };
 
+  const calculateTimeRangeFromSession = (session?: ResearchSession): number => {
+    if (!session?.startTime || !session?.endTime) {
+      return 1;
+    }
+
+    const startStr = session.startTime.includes('T') 
+      ? session.startTime 
+      : `${session.date}T${session.startTime}`;
+    
+    const endStr = session.endTime.includes('T') 
+      ? session.endTime 
+      : `${session.date}T${session.endTime}`;
+
+    const start = new Date(startStr);
+    const end = new Date(endStr);
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return 1;
+    }
+
+    const diffMs = end.getTime() - start.getTime();
+    if (diffMs <= 0) {
+      return 1;
+    }
+
+    return diffMs / (1000 * 60 * 60);
+  };
+
+  // ✅ Tính và định dạng thời lượng: "1h 30p", "2h", v.v.
+  const calculateDuration = (start: string, end: string) => {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      return "0h";
+    }
+
+    const diffMinutes = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60));
+    const hours = Math.floor(diffMinutes / 60);
+    const minutes = diffMinutes % 60;
+    return `${hours}h${minutes > 0 ? ` ${minutes}p` : ""}`;
+  };
+
+  // ✅ Khởi tạo state an toàn
+  const getSafeTime = (time: string | undefined, fallback: string): string => {
+    if (!time) return fallback;
+    const d = new Date(time);
+    return isNaN(d.getTime()) ? fallback : time;
+  };
+
+  const [formData, setFormData] = useState({
+    title: initialSession?.title || "",
+    description: initialSession?.description || "",
+    selectedStartTime: getSafeTime(initialSession?.startTime, slotStartTime),
+    timeRange: 1,
+    sessionMedias: initialSession?.sessionMedias || ([] as SessionMedia[]),
+  });
+
+  const [calculatedEndTime, setCalculatedEndTime] = useState(
+    getSafeTime(initialSession?.endTime, slotEndTime)
+  );
+  const isEditMode = !!initialSession;
+
+  // ✅ Tạo danh sách giờ bắt đầu (theo múi giờ trống)
   const startTimeOptions = useMemo(() => {
     const options: Array<{ value: string; label: string }> = [];
     const slotStart = new Date(slotStartTime);
@@ -103,61 +148,67 @@ export function ResearchSingleSessionForm({
     return options;
   }, [slotStartTime, slotEndTime]);
 
-
-
-  const calculateDuration = (start: string, end: string) => {
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-    const diffMinutes = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60));
-    const hours = Math.floor(diffMinutes / 60);
-    const minutes = diffMinutes % 60;
-    return `${hours}h${minutes > 0 ? ` ${minutes}p` : ""}`;
-  };
-
   const maxTimeRange = useMemo(() => {
     const start = new Date(formData.selectedStartTime);
     const max = new Date(slotEndTime);
+    if (isNaN(start.getTime()) || isNaN(max.getTime())) return 0.5;
     const diffMs = max.getTime() - start.getTime();
     const hours = diffMs / (1000 * 60 * 60);
     return Math.max(0.5, Math.floor(hours * 2) / 2);
   }, [formData.selectedStartTime, slotEndTime]);
 
+  // ✅ Tự động tính lại giờ kết thúc
   useEffect(() => {
     const start = new Date(formData.selectedStartTime);
+    if (isNaN(start.getTime())) return;
+
     const proposedEnd = new Date(start.getTime() + formData.timeRange * 60 * 60 * 1000);
     const maxEnd = new Date(slotEndTime);
+    if (isNaN(maxEnd.getTime())) return;
 
     if (proposedEnd > maxEnd) {
       setCalculatedEndTime(slotEndTime);
       const maxHours = (maxEnd.getTime() - start.getTime()) / (1000 * 60 * 60);
-      setFormData(prev => ({ ...prev, timeRange: Math.floor(maxHours * 2) / 2 }));
+      setFormData(prev => ({ ...prev, timeRange: Math.max(0.5, Math.floor(maxHours * 2) / 2) }));
     } else {
       setCalculatedEndTime(proposedEnd.toISOString());
     }
   }, [formData.timeRange, formData.selectedStartTime, slotEndTime]);
 
+  // ✅ Đặt lại thời lượng khi đổi giờ bắt đầu (chế độ tạo mới)
   useEffect(() => {
     if (!isEditMode) {
       setFormData(prev => ({ ...prev, timeRange: 1 }));
     }
   }, [formData.selectedStartTime, isEditMode]);
 
-  const handleMediaChange = (fileOrFiles: File | File[] | null) => {
-    let files: File[] | null = null;
+  // ✅ Khởi tạo form an toàn từ initialSession
+  useEffect(() => {
+    if (initialSession) {
+      const safeStartTime = getSafeTime(initialSession.startTime, slotStartTime);
+      const timeRange = calculateTimeRangeFromSession(initialSession);
+      
+      setFormData({
+        title: initialSession.title || "",
+        description: initialSession.description || "",
+        selectedStartTime: safeStartTime,
+        timeRange: timeRange,
+        sessionMedias: initialSession.sessionMedias || [],
+      });
 
-    if (fileOrFiles === null) {
-      files = null;
-    } else if (Array.isArray(fileOrFiles)) {
-      files = fileOrFiles;
-    } else {
-      files = [fileOrFiles];
+      const safeEndTime = getSafeTime(initialSession.endTime, slotEndTime);
+      setCalculatedEndTime(safeEndTime);
     }
+  }, [initialSession, slotStartTime, slotEndTime]);
 
-    if (!files || files.length === 0) {
+  // ✅ Xử lý upload media
+  const handleMediaChange = (fileOrFiles: File | File[] | null) => {
+    if (!fileOrFiles || (Array.isArray(fileOrFiles) && fileOrFiles.length === 0)) {
       setFormData(prev => ({ ...prev, sessionMedias: [] }));
       return;
     }
 
+    const files = Array.isArray(fileOrFiles) ? fileOrFiles : [fileOrFiles];
     const sessionMedias: SessionMedia[] = files.map((file) => ({
       mediaFile: file,
       mediaUrl: "",
@@ -166,6 +217,15 @@ export function ResearchSingleSessionForm({
     setFormData(prev => ({ ...prev, sessionMedias }));
   };
 
+const convertToTimeOnly = (isoString: string): string => {
+  const date = new Date(isoString);
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
+  return `${hours}:${minutes}:${seconds}`;
+};
+
+  // ✅ Submit form
   const handleSubmit = () => {
     if (!formData.title.trim()) {
       toast.error("Vui lòng nhập tiêu đề session!");
@@ -177,10 +237,9 @@ export function ResearchSingleSessionForm({
       return;
     }
 
-    if (formData.timeRange > maxTimeRange) {
-      toast.error(
-        `Thời lượng tối đa là ${maxTimeRange} giờ (theo giờ bắt đầu đã chọn)!`
-      );
+    const maxTime = maxTimeRange || 24;
+    if (formData.timeRange > maxTime) {
+      toast.error(`Thời lượng tối đa là ${maxTime} giờ!`);
       return;
     }
 
@@ -195,26 +254,23 @@ export function ResearchSingleSessionForm({
       return;
     }
 
-    const session: Session = {
-      //Chỉ giữ sessionId nếu đang edit
+    const session: ResearchSession = {
       sessionId: initialSession?.sessionId,
-      
       conferenceId,
       title: formData.title,
       description: formData.description,
       date,
-      startTime: formData.selectedStartTime,
-      endTime: calculatedEndTime,
+      startTime: convertToTimeOnly(formData.selectedStartTime),
+      endTime: convertToTimeOnly(calculatedEndTime),
       timeRange: formData.timeRange,
       roomId,
       roomDisplayName,
       roomNumber,
-      speaker: [],
       sessionMedias: formData.sessionMedias,
     };
 
     onSave(session);
-    toast.success(isEditMode ? "Đã cập nhật session thành công!" : "Đã tạo session thành công!");
+    toast.success(isEditMode ? "Đã cập nhật phiên họp thành công!" : "Đã tạo phiên họp thành công!");
   };
 
   return (
@@ -321,7 +377,12 @@ export function ResearchSingleSessionForm({
               min="0.5"
               max={maxTimeRange}
               value={formData.timeRange}
-              onChange={(e) => setFormData({ ...formData, timeRange: Number(e.target.value) })}
+              onChange={(e) => {
+                const val = parseFloat(e.target.value);
+                if (!isNaN(val)) {
+                  setFormData({ ...formData, timeRange: val });
+                }
+              }}
               className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -362,13 +423,14 @@ export function ResearchSingleSessionForm({
               </span>
             )}
           </div>
-            <ImageUpload
-              label=""
-              subtext="Chọn một hoặc nhiều file ảnh (dưới 4MB mỗi file)"
-              maxSizeMB={4}
-              isList={true}
-              onChange={handleMediaChange}
-            />          
+
+          <ImageUpload
+            label=""
+            subtext="Chọn một hoặc nhiều file ảnh (dưới 4MB mỗi file)"
+            maxSizeMB={4}
+            isList={true}
+            onChange={handleMediaChange}
+          />
         </div>
       </div>
 

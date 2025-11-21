@@ -377,7 +377,6 @@ export function SingleSessionForm({
     toast.success("Đã xóa diễn giả!");
   };
 
-  // ✅ Handler để xử lý media upload
   const handleMediaChange = (fileOrFiles: File | File[] | null) => {
     let files: File[] | null = null;
 
@@ -441,7 +440,6 @@ const handleSubmit = () => {
     // Giữ lại sessionId từ initialSession nếu đang edit
     sessionId: initialSession?.sessionId,
     
-    // Data MỚI từ form - LUÔN ƯU TIÊN
     conferenceId,
     title: formData.title,
     description: formData.description,
@@ -456,16 +454,6 @@ const handleSubmit = () => {
     sessionMedias: formData.sessionMedias,
   };
 
-  // ✅ DEBUG LOG
-  console.log('🚀 SingleSessionForm - Session payload:', {
-    isEditMode,
-    sessionId: session.sessionId,
-    title: session.title,
-    description: session.description,
-    startTime: session.startTime,
-    endTime: session.endTime,
-    fullSession: session
-  });
 
   onSave(session);
   toast.success(isEditMode ? "Đã cập nhật session thành công!" : "Đã tạo session thành công!");

@@ -53,7 +53,7 @@ import {
   TECH_MAX_STEP,
 } from "@/components/molecules/Conference/ConferenceStep/constants";
 import { RequestConferenceApproval } from "@/components/molecules/Status/RequestStatus";
-import { Session } from "@/types/conference.type";
+import { Session, ResearchSession } from "@/types/conference.type";
 
 const useMockDeleteTracking = () => {
   return useMemo(
@@ -448,20 +448,31 @@ export default function TechConferenceStepForm({
     }
   };
 
-  const handleSessionCreatedFromCalendar = (session: Session) => {
-    setSessions((prev) => [...prev, session]);
-    handleMarkHasData(3);
-    handleMarkDirty(3);
-    toast.success(`Đã thêm session "${session.title}" thành công!`);
-  };
+const handleSessionCreatedFromCalendar = (session: Session | ResearchSession) => {
+  if (!('speaker' in session)) {
+    console.error("Unexpected ResearchSession in Tech mode", session);
+    toast.error("Phiên họp không hợp lệ cho hội thảo công nghệ.");
+    return;
+  }
 
-// ✅ Handler khi session được update
-const handleSessionUpdatedFromCalendar = (updatedSession: Session, index: number) => {
+  setSessions((prev) => [...prev, session as Session]);
+  handleMarkHasData(3);
+  handleMarkDirty(3);
+  toast.success(`Đã thêm session "${session.title}" thành công!`);
+};
+
+const handleSessionUpdatedFromCalendar = (updatedSession: Session | ResearchSession, index: number) => {
+  if (!('speaker' in updatedSession)) {
+    console.error("Unexpected ResearchSession in Tech update", updatedSession);
+    toast.error("Phiên họp không hợp lệ để cập nhật.");
+    return;
+  }
+
   console.log('📝 Updating session at index:', index, updatedSession);
   
   setSessions((prev) => {
     const newSessions = [...prev];
-    newSessions[index] = updatedSession;
+    newSessions[index] = updatedSession as Session;
     return newSessions;
   });
   
@@ -803,8 +814,8 @@ const handleSessionDeletedFromCalendar = (index: number) => {
               conferenceId={actualConferenceId || undefined}
               conferenceType="Tech"
               onSessionCreated={handleSessionCreatedFromCalendar}
-              onSessionUpdated={handleSessionUpdatedFromCalendar} // ✅ THÊM
-              onSessionDeleted={handleSessionDeletedFromCalendar} // ✅ THÊM
+              onSessionUpdated={handleSessionUpdatedFromCalendar}
+              onSessionDeleted={handleSessionDeletedFromCalendar}
               startDate={basicForm.startDate}
               endDate={basicForm.endDate}
               existingSessions={sessions}

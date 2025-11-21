@@ -25,6 +25,7 @@ import {
   useUpdateConferencePriceMutation,
   useUpdateConferencePricePhaseMutation,
   useUpdateConferenceSessionMutation,
+  useUpdateSessionSpeakerMutation,
   useUpdateConferencePolicyMutation,
   useUpdateConferenceMediaMutation,
   useUpdateConferenceSponsorMutation,

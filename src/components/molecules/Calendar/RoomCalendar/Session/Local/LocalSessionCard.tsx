@@ -1,10 +1,10 @@
 // components/Session/LocalSessionCard.tsx
 import React, { useState, useRef, useEffect } from "react";
 import { Clock, Users, MoreVertical, CalendarDays, MapPin, Edit2, Trash2 } from "lucide-react";
-import type { Session } from "@/types/conference.type";
+import type { Session, ResearchSession } from "@/types/conference.type";
 
 interface LocalSessionCardProps {
-  session: Session;
+  session: Session | ResearchSession;
   isEditable?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
@@ -25,18 +25,79 @@ export const LocalSessionCard: React.FC<LocalSessionCardProps> = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const formatTime = (isoString: string) => {
-    return new Date(isoString).toLocaleTimeString("vi-VN", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
+  /**
+   * Format thời gian an toàn — hỗ trợ cả ISO string và "HH:mm:ss"
+   */
+  const formatTime = (timeString: string): string => {
+    if (!timeString || typeof timeString !== 'string') {
+      return "--:--";
+    }
+
+    // Trường hợp 1: ISO Date hợp lệ → parse trực tiếp
+    const dateFromISO = new Date(timeString);
+    if (!isNaN(dateFromISO.getTime())) {
+      return dateFromISO.toLocaleTimeString("vi-VN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+    }
+
+    // Trường hợp 2: Chỉ có giờ "HH:mm:ss" → ghép với ngày hôm nay để hiển thị
+    if (timeString.match(/^\d{2}:\d{2}:\d{2}$/)) {
+      const now = new Date();
+      const [hours, minutes, seconds] = timeString.split(':').map(Number);
+      const tempDate = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        hours,
+        minutes,
+        seconds
+      );
+      return tempDate.toLocaleTimeString("vi-VN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+    }
+
+    // Trường hợp 3: Không hợp lệ → fallback
+    console.warn('Invalid time string in LocalSessionCard:', timeString);
+    return "--:--";
   };
 
+  /**
+   * Tính thời lượng an toàn — hỗ trợ cả ISO và "HH:mm:ss"
+   */
   const calculateDuration = (start: string, end: string) => {
-    const startDate = new Date(start);
-    const endDate = new Date(end);
+    const parseTime = (str: string): Date | null => {
+      if (!str || typeof str !== 'string') return null;
+
+      const isoDate = new Date(str);
+      if (!isNaN(isoDate.getTime())) {
+        return isoDate;
+      }
+
+      if (str.match(/^\d{2}:\d{2}:\d{2}$/)) {
+        const now = new Date();
+        const [h, m, s] = str.split(':').map(Number);
+        return new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, s);
+      }
+
+      return null;
+    };
+
+    const startDate = parseTime(start);
+    const endDate = parseTime(end);
+
+    if (!startDate || !endDate) {
+      return "—";
+    }
+
     const diffMinutes = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60));
+    if (diffMinutes < 0) return "—";
+
     const hours = Math.floor(diffMinutes / 60);
     const minutes = diffMinutes % 60;
     return `${hours}h${minutes > 0 ? ` ${minutes}p` : ""}`;
@@ -83,7 +144,7 @@ export const LocalSessionCard: React.FC<LocalSessionCardProps> = ({
             {isEditable ? "Dự kiến" : "Đang dùng"}
           </div>
           
-          {/* Dropdown menu - hiển thị ngay trên header */}
+          {/* Dropdown menu */}
           {isEditable && (onEdit || onDelete || onChangeDate || onChangeRoom) && (
             <div className="relative" ref={dropdownRef}>
               <button
@@ -151,12 +212,11 @@ export const LocalSessionCard: React.FC<LocalSessionCardProps> = ({
         </div>
       </div>
 
-      {session.speaker && session.speaker.length > 0 && (
+      {/* Hiển thị diễn giả chỉ khi session có speaker */}
+      {'speaker' in session && session.speaker && session.speaker.length > 0 && (
         <div className="mt-2 pt-2 border-t border-gray-100">
-          <div className="flex items-center justify-between mb-1">
-            <div className="text-[10px] font-medium text-gray-600">
-              Diễn giả ({session.speaker.length})
-            </div>
+          <div className="text-[10px] font-medium text-gray-600">
+            Diễn giả ({session.speaker.length})
           </div>
           
           <div className="flex flex-wrap gap-1">
@@ -179,6 +239,14 @@ export const LocalSessionCard: React.FC<LocalSessionCardProps> = ({
                 {speaker.name}
               </span>
             ))}
+          </div>
+        </div>
+      )}
+
+      {!('speaker' in session) && (
+        <div className="mt-2 pt-2 border-t border-gray-100">
+          <div className="text-[10px] italic text-gray-500">
+            Phiên nghiên cứu
           </div>
         </div>
       )}

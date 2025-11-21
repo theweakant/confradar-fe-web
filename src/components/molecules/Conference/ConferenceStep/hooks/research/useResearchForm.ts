@@ -12,6 +12,7 @@ import type {
   ResearchRankingReference,
   Media,
   Sponsor,
+  ResearchSession,
 } from "@/types/conference.type";
 
 const INITIAL_BASIC_FORM: ConferenceBasicForm = {
@@ -107,7 +108,7 @@ export function useResearchForm() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
 
   // Step 5: Sessions
-  const [sessions, setSessions] = useState<Session[]>([]);
+  const [sessions, setSessions] = useState<ResearchSession[]>([]);
 
   // Step 6: Policies
   const [policies, setPolicies] = useState<Policy[]>([]);

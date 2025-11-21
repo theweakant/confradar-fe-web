@@ -57,7 +57,7 @@ import {
 } from "@/components/molecules/Conference/ConferenceStep/constants";
 
 import RoomCalendar from "@/components/molecules/Calendar/RoomCalendar/RoomCalendar";
-import { Session } from "@/types/conference.type";
+import { ResearchSession, Session } from "@/types/conference.type";
 
 // DELETE TRACKING FOR CREATE MODE
 const useMockDeleteTracking = () => {
@@ -555,20 +555,27 @@ export default function ResearchConferenceStepForm({
     }
   };
 
-  const handleSessionCreatedFromCalendar = (session: Session) => {
+  const handleSessionCreatedFromCalendar = (session: ResearchSession) => {
     setSessions((prev) => [...prev, session]);
     handleMarkHasData(5);
     handleMarkDirty(5);
     toast.success(`Đã thêm session "${session.title}" thành công!`);
   };
 
-  const handleSessionUpdatedFromCalendar = (updatedSession: Session, index: number) => {
-        setSessions((prev) => {
+  const handleSessionUpdatedFromCalendar = (updatedSession: ResearchSession, index: number) => {
+    if (!updatedSession.sessionId) {
+      toast.error("Session không có ID để cập nhật!");
+      return;
+    }
+
+    console.log("📝 Updating session at index:", index, "with data:", updatedSession);
+
+    setSessions((prev) => {
       const newSessions = [...prev];
       newSessions[index] = updatedSession;
       return newSessions;
     });
-    
+
     handleMarkDirty(5);
     toast.success(`Đã cập nhật session "${updatedSession.title}" thành công!`);
   };

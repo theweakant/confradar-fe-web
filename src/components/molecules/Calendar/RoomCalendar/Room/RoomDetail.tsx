@@ -25,7 +25,7 @@ import { SessionList } from "../Session/SessionList";
 import { LocalSessionList } from "../Session/Local/LocalSessionList";
 import { SingleSessionForm } from "../Form/SingleSessionForm";
 import { ResearchSingleSessionForm } from "../Form/ResearchSingleSessionForm";
-import type { Session } from "@/types/conference.type";
+import type { Session, ResearchSession } from "@/types/conference.type";
 
 interface RoomDetailDialogProps {
   open: boolean;
@@ -35,13 +35,13 @@ interface RoomDetailDialogProps {
   date: string | null;
   conferenceId?: string;
   conferenceType?: "Tech" | "Research";
-  existingSessions?: Session[];
+  existingSessions?: (Session | ResearchSession)[];
   onClose: () => void;
-  onSessionCreated?: (session: Session) => void;
-  onSessionUpdated?: (session: Session, index: number) => void;
+  onSessionCreated?: (session: Session | ResearchSession) => void;
+  onSessionUpdated?: (session: Session | ResearchSession, index: number) => void;
   onSessionDeleted?: (index: number) => void;
-  onChangeDate?: (session: Session, index: number) => void;
-  onChangeRoom?: (session: Session, index: number) => void;
+  onChangeDate?: (session: Session | ResearchSession, index: number) => void;
+  onChangeRoom?: (session: Session | ResearchSession, index: number) => void;
 }
 
 const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
@@ -65,12 +65,13 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
     startTime: string;
     endTime: string;
   } | null>(null);
+
   const [isCreatingSession, setIsCreatingSession] = useState(false);
-  const [editingSession, setEditingSession] = useState<Session | null>(null);
-  const [deleteConfirmSession, setDeleteConfirmSession] = useState<Session | null>(null);
   const [showApiSessions, setShowApiSessions] = useState(false);
 
-  const [localSessions, setLocalSessions] = useState<Session[]>(existingSessions);
+  const [editingSession, setEditingSession] = useState<Session | ResearchSession | null>(null);
+  const [deleteConfirmSession, setDeleteConfirmSession] = useState<Session | ResearchSession | null>(null);
+  const [localSessions, setLocalSessions] = useState<(Session | ResearchSession)[]>(existingSessions);
 
   const { data: timesData, isLoading: loadingTimes } = useGetAvailableTimesInRoomQuery(
     { roomId: roomId!, date: date! },
@@ -82,10 +83,6 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
       { roomId: roomId!, date: date! },
       { skip: !roomId || !date || !open }
     );
-
-  const SessionFormComponent = conferenceType === "Research"
-    ? ResearchSingleSessionForm
-    : SingleSessionForm;
 
   const timeSpans = timesData?.data || [];
   const apiSessions = sessionsData?.data || [];
@@ -120,7 +117,7 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
     return `${hours}h${minutes > 0 ? ` ${minutes}p` : ""}`;
   };
 
-  const findActualIndex = (session: Session): number => {
+  const findActualIndex = (session: Session | ResearchSession): number => {
     if (session.sessionId) {
       return localSessions.findIndex((s) => s.sessionId === session.sessionId);
     }
@@ -152,39 +149,52 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
     setEditingSession(null);
   };
 
-  const handleSessionSave = async (session: Session) => {
+  const handleSessionSave = async (session: Session | ResearchSession) => {
     setIsCreatingSession(true);
 
     try {
       if (editingSession) {
+        if (!editingSession.sessionId) {
+          toast.error("Không thể cập nhật session không có ID!");
+          setIsCreatingSession(false);
+          return;
+        }
+
+        const updatedSession: Session | ResearchSession = {
+          ...session,
+          sessionId: editingSession.sessionId,
+        };
+
         const actualIndex = findActualIndex(editingSession);
 
         if (actualIndex !== -1) {
           const updatedSessions = [...localSessions];
-          updatedSessions[actualIndex] = session;
+          updatedSessions[actualIndex] = updatedSession;
           setLocalSessions(updatedSessions);
 
           if (onSessionUpdated) {
-            Promise.resolve(onSessionUpdated(session, actualIndex))
+            await Promise.resolve(onSessionUpdated(updatedSession, actualIndex))
               .catch((error) => {
-                console.error("Parent update failed:", error);
                 setLocalSessions(localSessions);
-                toast.error("Cập nhật thất bại, đã khôi phục dữ liệu cũ");
+                toast.error("Cập nhật thất bại!");
+                throw error;
               });
           }
 
           setMode("view");
           setSelectedSlot(null);
           setEditingSession(null);
-          toast.success(`Đã cập nhật session "${session.title}"!`);
+          toast.success(`Đã cập nhật session "${updatedSession.title}"!`);
         } else {
           toast.error("Không tìm thấy session để cập nhật");
         }
       } else {
         setLocalSessions((prev) => [...prev, session]);
+        
         if (onSessionCreated) {
           onSessionCreated(session);
         }
+        
         setMode("view");
         setSelectedSlot(null);
         setEditingSession(null);
@@ -197,16 +207,29 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
     }
   };
 
-  const handleEditSession = (session: Session, _filteredIndex: number) => {
-    setEditingSession(session);
+  const handleEditSession = (session: Session | ResearchSession, _filteredIndex: number) => {
+    const normalizeTime = (timeStr: string, dateStr: string): string => {
+      if (timeStr.includes('T')) {
+        return timeStr; 
+      }
+      return `${dateStr}T${timeStr}`;
+    };
+
+    const normalizedSession = {
+      ...session,
+      startTime: normalizeTime(session.startTime, session.date),
+      endTime: normalizeTime(session.endTime, session.date),
+    };
+
+    setEditingSession(normalizedSession);
     setSelectedSlot({
-      startTime: session.startTime,
-      endTime: session.endTime,
+      startTime: normalizedSession.startTime,
+      endTime: normalizedSession.endTime,
     });
     setMode("form");
   };
 
-  const handleDeleteConfirm = (session: Session, _filteredIndex: number) => {
+  const handleDeleteConfirm = (session: Session | ResearchSession, _filteredIndex: number) => {
     setDeleteConfirmSession(session);
   };
 
@@ -317,19 +340,35 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
                     </div>
                   ) : mode === "form" && selectedSlot && conferenceId ? (
                     <div className={isCreatingSession ? "pointer-events-none opacity-60" : ""}>
-                      <SessionFormComponent
-                        conferenceId={conferenceId}
-                        roomId={roomId!}
-                        roomDisplayName={roomDisplayName || "N/A"}
-                        roomNumber={roomNumber || undefined}
-                        date={date!}
-                        startTime={selectedSlot.startTime}
-                        endTime={selectedSlot.endTime}
-                        existingSessions={localSessions}
-                        initialSession={editingSession || undefined}
-                        onSave={handleSessionSave}
-                        onCancel={handleBackToView}
-                      />
+                      {conferenceType === "Research" ? (
+                        <ResearchSingleSessionForm
+                          conferenceId={conferenceId}
+                          roomId={roomId!}
+                          roomDisplayName={roomDisplayName || "N/A"}
+                          roomNumber={roomNumber || undefined}
+                          date={date!}
+                          startTime={selectedSlot.startTime}
+                          endTime={selectedSlot.endTime}
+                          existingSessions={localSessions as ResearchSession[]}
+                          initialSession={editingSession as ResearchSession | undefined}
+                          onSave={handleSessionSave}
+                          onCancel={handleBackToView}
+                        />
+                      ) : (
+                        <SingleSessionForm
+                          conferenceId={conferenceId}
+                          roomId={roomId!}
+                          roomDisplayName={roomDisplayName || "N/A"}
+                          roomNumber={roomNumber || undefined}
+                          date={date!}
+                          startTime={selectedSlot.startTime}
+                          endTime={selectedSlot.endTime}
+                          existingSessions={localSessions as Session[]}
+                          initialSession={editingSession as Session | undefined}
+                          onSave={handleSessionSave}
+                          onCancel={handleBackToView}
+                        />
+                      )}
                       {isCreatingSession && (
                         <div className="mt-4 flex items-center justify-center gap-2 text-green-700 bg-green-50 rounded-lg p-3">
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-700"></div>
