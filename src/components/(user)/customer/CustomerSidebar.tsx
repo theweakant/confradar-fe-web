@@ -185,9 +185,10 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
                       const redirectUrl = getRouteByRole(externalRole);
                       router.push(redirectUrl);
                     }}
-                    className="w-full flex items-center space-x-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                    className="w-full flex items-center justify-center space-x-2 px-4 py-3 my-5 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium rounded-lg shadow-md transition-all duration-200"
                   >
-                    {/* Button content */}
+                    <UserCircle size={20} />
+                    <span>Chuyển sang vai trò Reviewer</span>
                   </button>
                 </div>
               )}
