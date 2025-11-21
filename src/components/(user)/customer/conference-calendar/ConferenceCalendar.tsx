@@ -4,7 +4,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { EventClickArg } from "@fullcalendar/core";
-import { Calendar } from "lucide-react";
+import { Calendar, Search } from "lucide-react";
 import { useConference } from "@/redux/hooks/useConference";
 import type {
   ConferenceDetailForScheduleResponse,
@@ -28,6 +28,9 @@ const ConferenceCalendar: React.FC = () => {
   const [selectedSession, setSelectedSession] =
     useState<SessionDetailForScheduleResponse | null>(null);
 
+  const [activeTab, setActiveTab] = useState<'technical' | 'research'>('technical');
+  const [searchQuery, setSearchQuery] = useState('');
+
   const calendarRef = useRef<FullCalendar | null>(null);
   const conferenceListRef = useRef<HTMLDivElement>(null);
 
@@ -41,6 +44,20 @@ const ConferenceCalendar: React.FC = () => {
   useEffect(() => {
     fetchOwnConferencesForSchedule();
   }, [fetchOwnConferencesForSchedule]);
+
+  const filteredConferences = (conferences || []).filter((conf) => {
+    // Filter by tab
+    const matchesTab = activeTab === 'technical'
+      ? !conf.isResearchConference
+      : conf.isResearchConference;
+
+    // Filter by search query
+    const matchesSearch = conf.conferenceName
+      ?.toLowerCase()
+      .includes(searchQuery.toLowerCase());
+
+    return matchesTab && matchesSearch;
+  });
 
   const getSessionColor = (
     category?: string,
@@ -377,6 +394,74 @@ const ConferenceCalendar: React.FC = () => {
               <Calendar className="w-5 h-5 text-blue-400" />
               Danh sách Hội nghị
             </h2>
+
+            {/* Tabs */}
+            <div className="flex gap-2 mb-4">
+              <button
+                onClick={() => setActiveTab('technical')}
+                className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === 'technical'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  }`}
+              >
+                Technical
+              </button>
+              <button
+                onClick={() => setActiveTab('research')}
+                className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === 'research'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  }`}
+              >
+                Research
+              </button>
+            </div>
+
+            {/* Search Bar */}
+            <div className="relative mb-4">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Tìm kiếm hội nghị..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Conference List */}
+            <div
+              ref={conferenceListRef}
+              className="space-y-4 overflow-y-auto max-h-[600px] pr-2 scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600"
+              style={
+                {
+                  scrollbarWidth: "thin",
+                  scrollbarColor: "#4b5563 #1f2937",
+                } as React.CSSProperties
+              }
+            >
+              {filteredConferences.length > 0 ? (
+                filteredConferences.map((conf) => (
+                  <ConferenceCard
+                    key={conf.conferenceId}
+                    conf={conf}
+                    selectedConference={selectedConference?.conferenceId}
+                    onConferenceClick={handleConferenceClick}
+                    onSessionNavigate={navigateToSession}
+                  />
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-400">
+                  <p>Không tìm thấy hội nghị nào</p>
+                </div>
+              )}
+            </div>
+          </div>
+          {/* <div className="bg-gray-800 rounded-lg p-6 shadow-xl">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-blue-400" />
+              Danh sách Hội nghị
+            </h2>
             <div
               ref={conferenceListRef}
               className="space-y-4 overflow-y-auto max-h-[600px] pr-2 scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600"
@@ -397,7 +482,7 @@ const ConferenceCalendar: React.FC = () => {
                 />
               ))}
             </div>
-          </div>
+          </div>*/}
         </div>
       </div>
 

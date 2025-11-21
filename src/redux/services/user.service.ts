@@ -97,6 +97,20 @@ export const userApi = createApi({
         method: "PUT",
       }),
     }),
+
+    suspendExternalReviewer: builder.mutation<ApiResponse<unknown>, string>({
+      query: (userId) => ({
+        url: endpoint.AUTH.SUSPEND_EXTERNAL_REVIEWER(userId),
+        method: "PUT",
+      }),
+    }),
+
+    activateExternalReviewer: builder.mutation<ApiResponse<unknown>, string>({
+      query: (userId) => ({
+        url: endpoint.AUTH.ACTIVATE_EXTERNAL_REVIEWER(userId),
+        method: "PUT",
+      }),
+    }),
   }),
 });
 
@@ -110,4 +124,7 @@ export const {
 
   useSuspendAccountMutation,
   useActivateAccountMutation,
+
+  useSuspendExternalReviewerMutation,
+  useActivateExternalReviewerMutation,
 } = userApi;

@@ -16,6 +16,8 @@ export const setTokens = (access: string, refresh: string) => {
 export const clearTokens = () => {
   localStorage.removeItem(ACCESS_TOKEN_KEY);
   localStorage.removeItem(REFRESH_TOKEN_KEY);
+
+  localStorage.removeItem('persist:root');
 };
 
 interface DecodedToken {
@@ -25,8 +27,8 @@ interface DecodedToken {
   iss: string;
   aud: string;
   "http://schemas.microsoft.com/ws/2008/06/identity/claims/role":
-    | string
-    | string[];
+  | string
+  | string[];
 }
 
 export const decodeToken = (token: string): DecodedToken | null => {

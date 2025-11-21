@@ -34,7 +34,8 @@ export function DestinationForm({
 
   const [formData, setFormData] = useState<DestinationFormData>({
     name: destination?.name || "",
-    city: destination?.city || "",
+    cityId: destination?.cityId || "",
+    cityName: "",
     district: destination?.district || "",
     street: destination?.street || "",
   });
@@ -114,8 +115,8 @@ export function DestinationForm({
             Thành phố <span className="text-red-500">*</span>
           </label>
           <Select
-            value={formData.city}
-            onValueChange={(value) => handleChange("city", value)}
+            value={formData.cityId}
+            onValueChange={(value) => handleChange("cityId", value)}
             disabled={citiesLoading}
           >
             <SelectTrigger className="w-full">
@@ -123,14 +124,14 @@ export function DestinationForm({
             </SelectTrigger>
             <SelectContent>
               {cities.map((city) => (
-                <SelectItem key={city.cityId} value={city.cityName || ""}>
+                <SelectItem key={city.cityId} value={city.cityId || ""}>
                   {city.cityName}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          {touched.has("city") && errors.city && (
-            <p className="text-red-500 text-sm mt-1">{errors.city}</p>
+          {touched.has("cityId") && errors.cityId && (
+            <p className="text-red-500 text-sm mt-1">{errors.cityId}</p>
           )}
         </div>
 

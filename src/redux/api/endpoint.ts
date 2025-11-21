@@ -19,6 +19,12 @@ export const endpoint = {
 
     SUSPEND: (userId: string) => `/Auth/suspend-account?userId=${userId}`,
     ACTIVATE: (userId: string) => `/Auth/activate-account?userId=${userId}`,
+
+    SUSPEND_EXTERNAL_REVIEWER: (userId: string) =>
+      `/auth/suspend-external-reviewer/${userId}`,
+
+    ACTIVATE_EXTERNAL_REVIEWER: (userId: string) =>
+      `/auth/activate-external-reviewer/${userId}`,
   },
   DESTINATION: {
     LIST: "/Destination",
@@ -303,6 +309,9 @@ export const endpoint = {
   CONTRACT: {
     CREATE_REVIEWER_CONTRACT: "/contract/create-review-contract",
     USER_FOR_REVIEWER_CONTRACT: "/contract/users-for-reviewer-contract",
+    CREATE_REVIEW_CONTRACT_FOR_NEW_USER: "/contract/create-review-contract-for-new-user",
+    LIST_BY_REVIEWER: "/contract/list-review-contract-by-reviewer",
+    LIST_OWN_REVIEW_CONTRACT: "/contract/list-own-review-contract",
   },
 
   ASSIGNINGPRESENTERSESSION: {
@@ -315,7 +324,7 @@ export const endpoint = {
     APPROVE_CHANGE_PRESENTER: '/assigningpresentersession/approve-change-presenter',
   },
 
-  STATISTICS:{
+  STATISTICS: {
     SOLD_TICKET: '/statistics/sold-ticket',
     TICKET_HOLDERS: '/statistics/ticket-holders',
     EXPORT_SOLD_TICKET: '/statistics/export/sold-ticket',

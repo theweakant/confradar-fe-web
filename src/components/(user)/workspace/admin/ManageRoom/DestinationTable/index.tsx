@@ -59,7 +59,7 @@ const DestinationTable: React.FC<DestinationTableProps> = ({
                 {destination.name}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {destination.city}
+                {destination.cityName}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 {destination.district}
