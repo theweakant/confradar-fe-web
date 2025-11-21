@@ -203,7 +203,7 @@ export default function ManageExternalReviewer() {
     //     });
     // };
 
-    const handleFilterChange = (key: string, value: string | number) => {
+    const handleFilterChange = (key: string, value: string | number | Date) => {
         setConferenceFilters(prev => ({
             ...prev,
             [key]: value,

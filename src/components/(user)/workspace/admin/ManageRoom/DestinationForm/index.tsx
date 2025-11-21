@@ -35,6 +35,7 @@ export function DestinationForm({
   const [formData, setFormData] = useState<DestinationFormData>({
     name: destination?.name || "",
     cityId: destination?.cityId || "",
+    cityName: "",
     district: destination?.district || "",
     street: destination?.street || "",
   });

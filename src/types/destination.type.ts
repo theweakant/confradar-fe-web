@@ -2,6 +2,7 @@ export interface Destination {
   destinationId: string;
   name: string;
   cityId: string;
+  cityName: string;
   district: string;
   street: string;
 }

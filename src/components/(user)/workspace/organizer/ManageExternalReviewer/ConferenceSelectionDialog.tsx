@@ -21,7 +21,7 @@ interface ConferenceSelectionDialogProps {
         startDate: string;
         endDate: string;
     };
-    onFilterChange: (key: string, value: any) => void;
+    onFilterChange: (key: string, value: string | number | Date) => void;
     onPageChange: (newPage: number) => void;
     onClearFilters: () => void;
 }
