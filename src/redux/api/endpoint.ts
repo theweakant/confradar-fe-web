@@ -220,6 +220,10 @@ export const endpoint = {
     GET_OWN_TRANSACTION: "/payment/get-own-transaction",
   },
 
+  WALLET: {
+    VIEW_OWN_WALLET: "/wallet/view-own-wallet",
+  },
+
   PAYMENT_METHOD: {
     GET_ALL: "/PaymentMethod/list-all-payment-methods",
   },

@@ -14,6 +14,7 @@ import {
   Heart,
   Flag,
   X,
+  Wallet,
 } from "lucide-react";
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
@@ -23,6 +24,7 @@ import { useAuth } from "@/redux/hooks/useAuth";
 import { getRouteByRole } from "@/constants/roles";
 import { useReport } from "@/redux/hooks/useReport";
 import { toast } from "sonner";
+import { useTransaction } from "@/redux/hooks/useTransaction";
 
 interface SidebarProps {
   className?: string;
@@ -42,8 +44,41 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
     reason: '',
     description: ''
   });
+  const [isWalletDialogOpen, setIsWalletDialogOpen] = useState(false);
+
+  const { wallet, fetchOwnWallet, loading: walletLoading } = useTransaction();
+
+
   const { createReport, loading } = useReport();
   // const [activeItem, setActiveItem] = useState('home');
+
+  const handleOpenWallet = async () => {
+    setIsWalletDialogOpen(true);
+    try {
+      await fetchOwnWallet();
+    } catch (error) {
+      toast.error('Không thể tải thông tin ví');
+    }
+  };
+
+  // Format tiền VND
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(amount);
+  };
+
+  // Format ngày giờ
+  const formatDateTime = (dateString: string) => {
+    return new Date(dateString).toLocaleString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   const handleSubmitReport = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,6 +162,12 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
     //   icon: Settings,
     //   href: "/customer/settings",
     // },
+    {
+      id: "wallet",
+      label: "Ví của tôi",
+      icon: Wallet,
+      onClick: handleOpenWallet,
+    },
 
     {
       id: "report",
@@ -435,6 +476,119 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
                           </button>
                         </div>
                       </form>
+                    </Dialog.Panel>
+                  </Transition.Child>
+                </div>
+              </div>
+            </Dialog>
+          </Transition>
+
+          <Transition appear show={isWalletDialogOpen} as={Fragment}>
+            <Dialog as="div" className="relative z-50" onClose={() => setIsWalletDialogOpen(false)}>
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+              >
+                <div className="fixed inset-0 bg-black bg-opacity-75" />
+              </Transition.Child>
+
+              <div className="fixed inset-0 overflow-y-auto">
+                <div className="flex min-h-full items-center justify-center p-4">
+                  <Transition.Child
+                    as={Fragment}
+                    enter="ease-out duration-300"
+                    enterFrom="opacity-0 scale-95"
+                    enterTo="opacity-100 scale-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100 scale-100"
+                    leaveTo="opacity-0 scale-95"
+                  >
+                    <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-gray-900 p-6 text-left align-middle shadow-xl transition-all border border-gray-700">
+                      <div className="flex justify-between items-center mb-6">
+                        <Dialog.Title as="h3" className="text-xl font-medium text-white">
+                          Ví của tôi
+                        </Dialog.Title>
+                        <button
+                          onClick={() => setIsWalletDialogOpen(false)}
+                          className="text-gray-400 hover:text-white transition-colors"
+                        >
+                          <X size={20} />
+                        </button>
+                      </div>
+
+                      {walletLoading ? (
+                        <div className="flex justify-center py-8">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+                        </div>
+                      ) : wallet ? (
+                        <div className="space-y-6">
+                          {/* Số dư */}
+                          <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-6">
+                            <div className="text-white text-sm opacity-90 mb-1">Số dư khả dụng</div>
+                            <div className="text-white text-3xl font-bold">
+                              {formatCurrency(wallet.balance)}
+                            </div>
+                          </div>
+
+                          {/* Lịch sử giao dịch */}
+                          <div>
+                            <h4 className="text-white font-medium mb-3">
+                              Lịch sử giao dịch ({wallet.walletTransactions?.length || 0})
+                            </h4>
+
+                            {wallet.walletTransactions && wallet.walletTransactions.length > 0 ? (
+                              <div className="space-y-2 max-h-96 overflow-y-auto">
+                                {wallet.walletTransactions.map((transaction) => (
+                                  <div
+                                    key={transaction.walletTransactionId}
+                                    className="bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition-colors"
+                                  >
+                                    <div className="flex justify-between items-start mb-2">
+                                      <div className="flex-1">
+                                        <div className="text-white font-medium mb-1">
+                                          {transaction.description}
+                                        </div>
+                                        <div className="text-gray-400 text-xs">
+                                          {formatDateTime(transaction.createdAt)}
+                                        </div>
+                                      </div>
+                                      <div className={`text-lg font-semibold ${transaction.transactionType.toLowerCase().includes('deposit') ||
+                                          transaction.transactionType.toLowerCase().includes('refund')
+                                          ? 'text-green-400'
+                                          : 'text-red-400'
+                                        }`}>
+                                        {transaction.transactionType.toLowerCase().includes('deposit') ||
+                                          transaction.transactionType.toLowerCase().includes('refund')
+                                          ? '+'
+                                          : '-'}
+                                        {formatCurrency(Math.abs(transaction.amount))}
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs px-2 py-1 rounded-full bg-gray-700 text-gray-300">
+                                        {transaction.transactionType}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="text-center py-8 text-gray-400">
+                                Chưa có giao dịch nào
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-gray-400">
+                          Không thể tải thông tin ví
+                        </div>
+                      )}
                     </Dialog.Panel>
                   </Transition.Child>
                 </div>
