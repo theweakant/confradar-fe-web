@@ -11,26 +11,30 @@ import {
   resetWizard,
 } from "@/redux/slices/conferenceStep.slice";
 import {
+  // Create
   useCreateBasicConferenceMutation,
   useCreateConferencePriceMutation,
   useCreatePhaseForPriceMutation,
+  useCreateConferenceSessionsMutation,
+  useCreateConferencePoliciesMutation,
+  useCreateConferenceMediaMutation,
+  useCreateConferenceSponsorsMutation,
 
+  // Update
   useUpdateBasicConferenceMutation,
   useUpdateConferencePriceMutation,
+  useUpdateConferencePricePhaseMutation,
+  useUpdateConferenceSessionMutation,
+  useUpdateConferencePolicyMutation,
+  useUpdateConferenceMediaMutation,
+  useUpdateConferenceSponsorMutation,
+
+  // Delete
   useDeleteConferencePriceMutation,
   useDeleteConferencePricePhaseMutation,
-  useUpdateConferencePricePhaseMutation,
-  useCreateConferenceSessionsMutation,
-  useUpdateConferenceSessionMutation,
   useDeleteConferenceSessionMutation,
-  useCreateConferencePoliciesMutation,
-  useUpdateConferencePolicyMutation,
   useDeleteConferencePolicyMutation,
-  useCreateConferenceMediaMutation,
-  useUpdateConferenceMediaMutation,
   useDeleteConferenceMediaMutation,
-  useCreateConferenceSponsorsMutation,
-  useUpdateConferenceSponsorMutation,
   useDeleteConferenceSponsorMutation,
 
   //DELETE

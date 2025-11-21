@@ -402,59 +402,74 @@ export function SingleSessionForm({
     setFormData(prev => ({ ...prev, sessionMedias }));
   };
 
-  const handleSubmit = () => {
-    if (!formData.title.trim()) {
-      toast.error("Vui lòng nhập tiêu đề session!");
-      return;
-    }
 
-    if (formData.speakers.length === 0) {
-      toast.error("Vui lòng thêm ít nhất 1 diễn giả!");
-      return;
-    }
+const handleSubmit = () => {
+  if (!formData.title.trim()) {
+    toast.error("Vui lòng nhập tiêu đề session!");
+    return;
+  }
 
-    if (formData.timeRange < 0.5) {
-      toast.error("Thời lượng tối thiểu là 0.5 giờ (30 phút)!");
-      return;
-    }
+  if (formData.speakers.length === 0) {
+    toast.error("Vui lòng thêm ít nhất 1 diễn giả!");
+    return;
+  }
 
-    if (formData.timeRange > maxTimeRange) {
-      toast.error(
-        `Thời lượng tối đa là ${maxTimeRange} giờ (theo giờ bắt đầu đã chọn)!`
-      );
-      return;
-    }
+  if (formData.timeRange < 0.5) {
+    toast.error("Thời lượng tối thiểu là 0.5 giờ (30 phút)!");
+    return;
+  }
 
-    const proposedEnd = new Date(formData.selectedStartTime);
-    proposedEnd.setTime(proposedEnd.getTime() + formData.timeRange * 60 * 60 * 1000);
-    const maxEnd = new Date(slotEndTime);
+  if (formData.timeRange > maxTimeRange) {
+    toast.error(
+      `Thời lượng tối đa là ${maxTimeRange} giờ (theo giờ bắt đầu đã chọn)!`
+    );
+    return;
+  }
 
-    if (proposedEnd > maxEnd) {
-      toast.error(
-        `Thời gian kết thúc (${formatTime(proposedEnd.toISOString())}) vượt quá khung giờ trống (${formatTime(slotEndTime)})!`
-      );
-      return;
-    }
+  const proposedEnd = new Date(formData.selectedStartTime);
+  proposedEnd.setTime(proposedEnd.getTime() + formData.timeRange * 60 * 60 * 1000);
+  const maxEnd = new Date(slotEndTime);
 
-    const session: Session = {
-      ...(initialSession || {}),
-      conferenceId,
-      title: formData.title,
-      description: formData.description,
-      date,
-      startTime: formData.selectedStartTime,
-      endTime: calculatedEndTime,
-      timeRange: formData.timeRange,
-      roomId,
-      roomDisplayName,
-      roomNumber,
-      speaker: formData.speakers,
-      sessionMedias: formData.sessionMedias, 
-    };
+  if (proposedEnd > maxEnd) {
+    toast.error(
+      `Thời gian kết thúc (${formatTime(proposedEnd.toISOString())}) vượt quá khung giờ trống (${formatTime(slotEndTime)})!`
+    );
+    return;
+  }
 
-    onSave(session);
-    toast.success(isEditMode ? "Đã cập nhật session thành công!" : "Đã tạo session thành công!");
+  const session: Session = {
+    // Giữ lại sessionId từ initialSession nếu đang edit
+    sessionId: initialSession?.sessionId,
+    
+    // Data MỚI từ form - LUÔN ƯU TIÊN
+    conferenceId,
+    title: formData.title,
+    description: formData.description,
+    date,
+    startTime: formData.selectedStartTime,
+    endTime: calculatedEndTime,
+    timeRange: formData.timeRange,
+    roomId,
+    roomDisplayName,
+    roomNumber,
+    speaker: formData.speakers,
+    sessionMedias: formData.sessionMedias,
   };
+
+  // ✅ DEBUG LOG
+  console.log('🚀 SingleSessionForm - Session payload:', {
+    isEditMode,
+    sessionId: session.sessionId,
+    title: session.title,
+    description: session.description,
+    startTime: session.startTime,
+    endTime: session.endTime,
+    fullSession: session
+  });
+
+  onSave(session);
+  toast.success(isEditMode ? "Đã cập nhật session thành công!" : "Đã tạo session thành công!");
+};
 
   return (
     <div className="space-y-4">

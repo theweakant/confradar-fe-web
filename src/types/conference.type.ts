@@ -183,7 +183,7 @@ export interface Session {
   endTime: string;
   date: string;
   timeRange?: number;
-  speaker: Speaker[];
+  speaker?: Speaker[];
   sessionMedias?: SessionMedia[];
 
   roomId: string;

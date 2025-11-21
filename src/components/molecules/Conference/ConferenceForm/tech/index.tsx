@@ -448,7 +448,6 @@ export default function TechConferenceStepForm({
     }
   };
 
-  // 🔸 GIỮ LẠI: nếu bạn vẫn cho phép TẠO session từ calendar
   const handleSessionCreatedFromCalendar = (session: Session) => {
     setSessions((prev) => [...prev, session]);
     handleMarkHasData(3);
@@ -456,8 +455,33 @@ export default function TechConferenceStepForm({
     toast.success(`Đã thêm session "${session.title}" thành công!`);
   };
 
-  // 🔻 ĐÃ XÓA: handleEditSession, handleSaveEditedSession, handleCancelEdit, handleDeleteSession
+// ✅ Handler khi session được update
+const handleSessionUpdatedFromCalendar = (updatedSession: Session, index: number) => {
+  console.log('📝 Updating session at index:', index, updatedSession);
+  
+  setSessions((prev) => {
+    const newSessions = [...prev];
+    newSessions[index] = updatedSession;
+    return newSessions;
+  });
+  
+  handleMarkDirty(3);
+  toast.success(`Đã cập nhật session "${updatedSession.title}" thành công!`);
+};
 
+const handleSessionDeletedFromCalendar = (index: number) => {
+  console.log('🗑️ Deleting session at index:', index);
+  
+  const deletedSession = sessions[index];
+  
+  if (deletedSession?.sessionId && mode === "edit") {
+    realDeleteTracking.trackDeletedSession(deletedSession.sessionId);
+  }
+  
+  setSessions((prev) => prev.filter((_, i) => i !== index));
+  handleMarkDirty(3);
+  toast.success("Đã xóa session thành công!");
+};
   const handleUpdateCurrentStep = useCallback(async () => {
     let result;
     switch (currentStep) {
@@ -742,7 +766,6 @@ export default function TechConferenceStepForm({
             </div>
           )}
 
-          {/* 🔸 Hiển thị số lượng session — KHÔNG CÓ NÚT "Xem danh sách" */}
           {(basicForm.startDate || basicForm.endDate) && (
             <div className="text-xs text-gray-500 space-y-1 mb-4">
               <p>
@@ -779,7 +802,9 @@ export default function TechConferenceStepForm({
             <RoomCalendar 
               conferenceId={actualConferenceId || undefined}
               conferenceType="Tech"
-              onSessionCreated={handleSessionCreatedFromCalendar} // giữ nếu cần tạo
+              onSessionCreated={handleSessionCreatedFromCalendar}
+              onSessionUpdated={handleSessionUpdatedFromCalendar} // ✅ THÊM
+              onSessionDeleted={handleSessionDeletedFromCalendar} // ✅ THÊM
               startDate={basicForm.startDate}
               endDate={basicForm.endDate}
               existingSessions={sessions}

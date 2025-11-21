@@ -7,11 +7,7 @@ import {
   CheckCircle,
   AlertCircle,
   ArrowLeft,
-  Edit2,
-  Trash2,
-  CalendarDays,
-  MapPin,
-  Users
+  Users,
 } from "lucide-react";
 import {
   Dialog,
@@ -20,6 +16,7 @@ import {
   Transition,
   TransitionChild,
 } from "@headlessui/react";
+import { toast } from "sonner";
 import {
   useGetAvailableTimesInRoomQuery,
   useGetSessionsInRoomOnDateQuery,
@@ -38,10 +35,8 @@ interface RoomDetailDialogProps {
   date: string | null;
   conferenceId?: string;
   conferenceType?: "Tech" | "Research";
-  existingSessions?: Session[]; // optional: nếu bạn vẫn muốn sync với cha
+  existingSessions?: Session[];
   onClose: () => void;
-
-  // Optional callbacks — có thể bỏ nếu quản lý hoàn toàn nội bộ
   onSessionCreated?: (session: Session) => void;
   onSessionUpdated?: (session: Session, index: number) => void;
   onSessionDeleted?: (index: number) => void;
@@ -66,21 +61,15 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
   onChangeRoom,
 }) => {
   const [mode, setMode] = useState<"view" | "form">("view");
-
   const [selectedSlot, setSelectedSlot] = useState<{
     startTime: string;
     endTime: string;
   } | null>(null);
-
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [editingSession, setEditingSession] = useState<Session | null>(null);
-  const [editingSessionIndex, setEditingSessionIndex] = useState<number>(-1);
-  const [deleteConfirmIndex, setDeleteConfirmIndex] = useState<number | null>(null);
-
+  const [deleteConfirmSession, setDeleteConfirmSession] = useState<Session | null>(null);
   const [showApiSessions, setShowApiSessions] = useState(false);
 
-
-  // Quản lý session local trong dialog
   const [localSessions, setLocalSessions] = useState<Session[]>(existingSessions);
 
   const { data: timesData, isLoading: loadingTimes } = useGetAvailableTimesInRoomQuery(
@@ -94,14 +83,13 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
       { skip: !roomId || !date || !open }
     );
 
-  const SessionFormComponent = conferenceType === "Research" 
-    ? ResearchSingleSessionForm 
+  const SessionFormComponent = conferenceType === "Research"
+    ? ResearchSingleSessionForm
     : SingleSessionForm;
 
   const timeSpans = timesData?.data || [];
   const apiSessions = sessionsData?.data || [];
 
-  // Lọc session local theo phòng & ngày
   const sessionsInThisRoom = useMemo(() => {
     return localSessions.filter((s) => s.roomId === roomId && s.date === date);
   }, [localSessions, roomId, date]);
@@ -132,6 +120,20 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
     return `${hours}h${minutes > 0 ? ` ${minutes}p` : ""}`;
   };
 
+  const findActualIndex = (session: Session): number => {
+    if (session.sessionId) {
+      return localSessions.findIndex((s) => s.sessionId === session.sessionId);
+    }
+    return localSessions.findIndex(
+      (s) =>
+        s.title === session.title &&
+        s.startTime === session.startTime &&
+        s.endTime === session.endTime &&
+        s.roomId === session.roomId &&
+        s.date === session.date
+    );
+  };
+
   const handleTimeSlotSelect = (span: { startTime: string; endTime: string }) => {
     if (!conferenceId) return;
 
@@ -141,7 +143,6 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
 
     setSelectedSlot({ startTime: startISO, endTime: endISO });
     setEditingSession(null);
-    setEditingSessionIndex(-1);
     setMode("form");
   };
 
@@ -149,42 +150,55 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
     setMode("view");
     setSelectedSlot(null);
     setEditingSession(null);
-    setEditingSessionIndex(-1);
   };
 
   const handleSessionSave = async (session: Session) => {
     setIsCreatingSession(true);
-    try {
-      if (editingSession && editingSessionIndex >= 0) {
-        // Cập nhật
-        const updatedSessions = [...localSessions];
-        updatedSessions[editingSessionIndex] = session;
-        setLocalSessions(updatedSessions);
 
-        if (onSessionUpdated) {
-          onSessionUpdated(session, editingSessionIndex);
+    try {
+      if (editingSession) {
+        const actualIndex = findActualIndex(editingSession);
+
+        if (actualIndex !== -1) {
+          const updatedSessions = [...localSessions];
+          updatedSessions[actualIndex] = session;
+          setLocalSessions(updatedSessions);
+
+          if (onSessionUpdated) {
+            Promise.resolve(onSessionUpdated(session, actualIndex))
+              .catch((error) => {
+                console.error("Parent update failed:", error);
+                setLocalSessions(localSessions);
+                toast.error("Cập nhật thất bại, đã khôi phục dữ liệu cũ");
+              });
+          }
+
+          setMode("view");
+          setSelectedSlot(null);
+          setEditingSession(null);
+          toast.success(`Đã cập nhật session "${session.title}"!`);
+        } else {
+          toast.error("Không tìm thấy session để cập nhật");
         }
       } else {
-        // Tạo mới
         setLocalSessions((prev) => [...prev, session]);
         if (onSessionCreated) {
           onSessionCreated(session);
         }
+        setMode("view");
+        setSelectedSlot(null);
+        setEditingSession(null);
+        toast.success(`Đã tạo session "${session.title}"!`);
       }
-      setMode("view");
-      setSelectedSlot(null);
-      setEditingSession(null);
-      setEditingSessionIndex(-1);
     } catch (error) {
-      console.error("Failed to save session:", error);
+      toast.error("Có lỗi xảy ra khi lưu session");
     } finally {
       setIsCreatingSession(false);
     }
   };
 
-  const handleEditSession = (session: Session, index: number) => {
+  const handleEditSession = (session: Session, _filteredIndex: number) => {
     setEditingSession(session);
-    setEditingSessionIndex(index);
     setSelectedSlot({
       startTime: session.startTime,
       endTime: session.endTime,
@@ -192,33 +206,37 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
     setMode("form");
   };
 
-  const handleDeleteSession = (index: number) => {
-    const deletedSession = localSessions[index];
-    setLocalSessions((prev) => prev.filter((_, i) => i !== index));
+  const handleDeleteConfirm = (session: Session, _filteredIndex: number) => {
+    setDeleteConfirmSession(session);
+  };
 
-    if (onSessionDeleted) {
-      onSessionDeleted(index);
+  const handleDeleteSession = () => {
+    if (!deleteConfirmSession) return;
+
+    const actualIndex = findActualIndex(deleteConfirmSession);
+
+    if (actualIndex !== -1) {
+      const updatedSessions = localSessions.filter((_, i) => i !== actualIndex);
+      setLocalSessions(updatedSessions);
+
+      if (onSessionDeleted) {
+        onSessionDeleted(actualIndex);
+      }
     }
-    setDeleteConfirmIndex(null);
+
+    setDeleteConfirmSession(null);
   };
 
   const handleClose = () => {
     setMode("view");
     setSelectedSlot(null);
     setEditingSession(null);
-    setEditingSessionIndex(-1);
-    setDeleteConfirmIndex(null);
+    setDeleteConfirmSession(null);
     setShowApiSessions(false);
     onClose();
   };
 
   const isLoading = loadingTimes || loadingSessions;
-
-  const findActualIndex = (session: Session) => {
-    return localSessions.findIndex(
-      (s) => s.roomId === roomId && s.date === date && s === session
-    );
-  };
 
   return (
     <Transition appear show={open} as={Fragment} unmount={true}>
@@ -247,7 +265,6 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
               leaveTo="opacity-0 scale-95"
             >
               <DialogPanel className="w-full max-w-3xl transform overflow-hidden rounded-lg bg-white shadow-xl transition-all">
-                {/* Header */}
                 <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3 flex-1">
@@ -293,7 +310,6 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
                   </div>
                 </div>
 
-                {/* Content */}
                 <div className="p-5 max-h-[70vh] overflow-y-auto">
                   {isLoading ? (
                     <div className="flex items-center justify-center h-48">
@@ -332,7 +348,6 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
                         </div>
                       )}
 
-                      {/* KHUNG GIỜ TRỐNG */}
                       <div>
                         <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-3 mb-3 border border-gray-200">
                           <div className="flex items-center gap-2">
@@ -400,45 +415,43 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
                         )}
                       </div>
 
-                      {/* Divider */}
                       {(timeSpans.length > 0 || apiSessions.length > 0 || sessionsInThisRoom.length > 0) &&
                         (apiSessions.length > 0 || sessionsInThisRoom.length > 0) && (
                         <div className="border-t border-gray-200"></div>
                       )}
 
-                      {/* SESSION LOCAL  */}
                       {sessionsInThisRoom.length > 0 && (
                         <LocalSessionList
                           sessions={sessionsInThisRoom}
                           title="Phiên họp trong hội thảo"
                           editable={true}
                           onEdit={handleEditSession}
-                          onDelete={(session, index) => {
-                            const actualIndex = findActualIndex(session);
-                            setDeleteConfirmIndex(actualIndex);
-                          }}
+                          onDelete={handleDeleteConfirm}
                           onChangeDate={onChangeDate}
                           onChangeRoom={onChangeRoom}
                         />
                       )}
 
-                      {deleteConfirmIndex !== null && (
+                      {deleteConfirmSession && (
                         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                           <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
                             <h3 className="text-lg font-semibold mb-2">Xác nhận xóa</h3>
-                            <p className="text-gray-600 mb-4">
+                            <p className="text-gray-600 mb-1">
                               Bạn có chắc chắn muốn xóa phiên họp này?
+                            </p>
+                            <p className="text-sm font-medium text-gray-800 mb-4">
+                              &quot;{deleteConfirmSession.title}&quot;
                             </p>
                             <div className="flex gap-2 justify-end">
                               <button
-                                onClick={() => setDeleteConfirmIndex(null)}
-                                className="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+                                onClick={() => setDeleteConfirmSession(null)}
+                                className="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
                               >
                                 Hủy
                               </button>
                               <button
-                                onClick={() => handleDeleteSession(deleteConfirmIndex)}
-                                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                                onClick={handleDeleteSession}
+                                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
                               >
                                 Xóa
                               </button>
@@ -447,16 +460,15 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
                         </div>
                       )}
 
-                      {/* SESSION API */}
                       {apiSessions.length > 0 && (
                         <div>
                           <div className="flex items-center justify-between mb-3">
-                                  <div className="flex items-center gap-2 mb-3">
-                                    <Users className="w-4 h-4 text-orange-600" />
-                                    <span className="text-sm font-semibold text-gray-700">
-                                      Phòng đang được sử dụng ({apiSessions.length})
-                                    </span>
-                                  </div>
+                            <div className="flex items-center gap-2">
+                              <Users className="w-4 h-4 text-orange-600" />
+                              <span className="text-sm font-semibold text-gray-700">
+                                Phòng đang được sử dụng ({apiSessions.length})
+                              </span>
+                            </div>
                             <button
                               onClick={() => setShowApiSessions(!showApiSessions)}
                               className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md transition-colors text-xs font-medium"
@@ -470,7 +482,6 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
                         </div>
                       )}
 
-                      {/* Empty state */}
                       {!isLoading &&
                         mode === "view" &&
                         timeSpans.length === 0 &&
@@ -485,7 +496,6 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
                   )}
                 </div>
 
-                {/* Footer */}
                 {mode === "view" && (
                   <div className="px-5 py-3 border-t border-gray-200 flex justify-end bg-gray-50">
                     <button

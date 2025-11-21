@@ -31,8 +31,8 @@ import {
   useUpdateResearchPhaseMutation,
   useUpdateRevisionRoundDeadlineMutation,
   useUpdateConferencePriceMutation,
-  useUpdateConferencePricePhaseMutation, // ← Thêm
-  useUpdateConferenceSessionMutation,
+  useUpdateConferencePricePhaseMutation, 
+  useUpdateResearchSessionMutation,
   useUpdateConferencePolicyMutation,
   useUpdateConferenceRefundPolicyMutation,
   useUpdateResearchMaterialMutation,
@@ -42,7 +42,7 @@ import {
   useUpdateConferenceSponsorMutation,
   // DELETE
   useDeleteConferencePriceMutation,
-  useDeleteConferencePricePhaseMutation, // ← Thêm
+  useDeleteConferencePricePhaseMutation,
   useDeleteConferenceSessionMutation,
   useDeleteConferencePolicyMutation,
   useDeleteRefundPolicyMutation,
@@ -117,7 +117,7 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
   const [updateRevisionDeadline] = useUpdateRevisionRoundDeadlineMutation();
   const [updatePrice] = useUpdateConferencePriceMutation();
   const [updatePricePhase] = useUpdateConferencePricePhaseMutation();
-  const [updateSession] = useUpdateConferenceSessionMutation();
+  const [updateSession] = useUpdateResearchSessionMutation();
   const [updatePolicy] = useUpdateConferencePolicyMutation();
   const [updateRefundPolicy] = useUpdateConferenceRefundPolicyMutation();
   const [updateMaterial] = useUpdateResearchMaterialMutation();

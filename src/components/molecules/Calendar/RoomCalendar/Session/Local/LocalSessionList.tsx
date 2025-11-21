@@ -38,7 +38,7 @@ export const LocalSessionList: React.FC<LocalSessionListProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {sessions.map((session, index) => (
           <LocalSessionCard
-            key={session.sessionId || index} 
+            key={`${session.sessionId}-${index}`} 
             session={session}
             isEditable={editable}
             onEdit={onEdit ? () => onEdit(session, index) : undefined}
