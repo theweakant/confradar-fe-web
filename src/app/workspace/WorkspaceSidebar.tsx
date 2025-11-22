@@ -87,11 +87,11 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
 
         // ],
       },
-      {
-        label: "Bài báo",
-        href: "/workspace/organizer/manage-paper",
-        icon: FileText,
-      },
+      // {
+      //   label: "Bài báo",
+      //   href: "/workspace/organizer/manage-paper",
+      //   icon: FileText,
+      // },
       {
         label: "Địa điểm",
         href: "/workspace/organizer/manage-accommodation",
@@ -106,6 +106,11 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
           { label: "Đối tác", href: "/workspace/organizer/manage-user/manage-collaborator" },
           { label: "Khách hàng", href: "/workspace/organizer/manage-user/manage-customer" },
         ],
+      },
+      {
+        label: "Lịch trình",
+        href: "/workspace/organizer/conference-calendar",
+        icon: FileText,
       },
       // {
       //   label: "Đối tác",
@@ -135,8 +140,8 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
         icon: Calendar
       },
       {
-        label: "Phân tích",
-        href: "/workspace/collaborator/analytics",
+        label: "Lịch trình",
+        href: "/workspace/collaborator/conference-calendar",
         icon: FileText,
       },
       {

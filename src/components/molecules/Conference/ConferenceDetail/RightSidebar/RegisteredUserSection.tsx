@@ -57,7 +57,14 @@ export function RegisteredUserSection({
     <div className="bg-white rounded-lg border border-gray-200 p-5">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold text-gray-900">Người tham dự</h3>
-        <Clock className="w-4 h-4 text-gray-400" />
+        {onOpenFullList && registeredUsers.length > limit && (
+          <button
+            onClick={onOpenFullList}
+            className="text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors py-1 px-2 rounded-md hover:bg-blue-50"
+          >
+            Xem ({registeredUsers.length})
+          </button>
+        )}
       </div>
 
       <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
@@ -120,17 +127,7 @@ export function RegisteredUserSection({
         ))}
       </div>
 
-      {/* Nút "Xem tất cả" — chỉ hiển thị nếu có callback */}
-      {onOpenFullList && registeredUsers.length > limit && (
-        <div className="mt-4 pt-3 border-t border-gray-100">
-          <button
-            onClick={onOpenFullList}
-            className="w-full text-center text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors py-1.5 rounded-md hover:bg-blue-50"
-          >
-            Xem tất cả ({registeredUsers.length})
-          </button>
-        </div>
-      )}
+
     </div>
   );
 }
