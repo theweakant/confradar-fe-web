@@ -44,6 +44,9 @@ export interface CollaboratorRequest {
   fullName: string;
 }
 
+
+
+
 //+++++
 
 export interface UserDetailForAdminAndOrganizerResponse {

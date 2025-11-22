@@ -27,7 +27,7 @@ export default function WorkspaceHeader({ unreadCount }: WorkspaceHeaderProps) {
     .slice(0, 2);
 
   const handleBellClick = () => {
-    router.push("/notifications"); // 👈 Chuyển đến trang thông báo
+    router.push("/notifications"); 
   };
 
   return (
@@ -47,7 +47,6 @@ export default function WorkspaceHeader({ unreadCount }: WorkspaceHeaderProps) {
       </div>
 
       <div className="flex items-center gap-4">
-        {/* 🔔 Icon chuông — điều hướng khi click */}
         <button
           className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
           onClick={handleBellClick}
@@ -60,7 +59,6 @@ export default function WorkspaceHeader({ unreadCount }: WorkspaceHeaderProps) {
           )}
         </button>
 
-        {/* 👤 Profile */}
         <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
           <div className="text-right">
             <p className="text-sm font-medium text-gray-800">

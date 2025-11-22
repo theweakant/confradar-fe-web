@@ -25,6 +25,8 @@ export const endpoint = {
 
     ACTIVATE_EXTERNAL_REVIEWER: (userId: string) =>
       `/auth/activate-external-reviewer/${userId}`,
+
+    GET_NOTIFICATION:"/notification/own-notification"
   },
   DESTINATION: {
     LIST: "/Destination",

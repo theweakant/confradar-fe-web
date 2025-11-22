@@ -1,127 +1,141 @@
-// src/components/NotificationSystem/index.tsx
 import React, { useState } from 'react';
-import NotificationList from './NotificationList';
+import { useGetOwnNotificationsQuery } from '@/redux/services/user.service';
 import { Notification } from '@/types/notification.type';
+import { Bell, User } from 'lucide-react';
 
-// 👇 Mock data — nên thay bằng API/Redux sau này
-const mockNotifications: Notification[] = [
-  {
-    notificationId: 'noti_001',
-    userId: 'user_123',
-    title: 'Hội nghị mới phù hợp với bạn',
-    message: 'International Conference on Artificial Intelligence 2025 đang mở đăng ký. Deadline: 15/12/2025.',
-    type: 'SYSTEM',
-    createdAt: '2025-11-21T10:15:30.000Z',
-    readStatus: false,
-  },
-  {
-    notificationId: 'noti_002',
-    userId: 'user_123',
-    title: 'Nhắc nhở: Deadline sắp hết hạn',
-    message: 'Hạn nộp bài cho ICSE 2026 còn 3 ngày. Đừng bỏ lỡ cơ hội này!',
-    type: 'SYSTEM',
-    createdAt: '2025-11-20T14:30:00.000Z',
-    readStatus: false,
-  },
-  {
-    notificationId: 'noti_003',
-    userId: 'user_123',
-    title: 'Hội nghị bạn theo dõi có cập nhật',
-    message: 'CVPR 2026 đã công bố chủ đề mới: Computer Vision for Healthcare. Xem chi tiết.',
-    type: 'SYSTEM',
-    createdAt: '2025-11-19T09:00:00.000Z',
-    readStatus: false,
-  },
-  {
-    notificationId: 'noti_004',
-    userId: 'user_123',
-    title: 'Kết quả tìm kiếm của bạn',
-    message: 'Tìm thấy 15 hội nghị về Machine Learning trong tháng 12/2025. Xem danh sách.',
-    type: 'SYSTEM',
-    createdAt: '2025-11-18T16:45:00.000Z',
-    readStatus: true,
-  },
-  {
-    notificationId: 'noti_005',
-    userId: 'user_123',
-    title: 'Lời mời tham gia hội nghị',
-    message: 'Bạn được mời làm reviewer cho ACM SIGMOD 2026. Vui lòng xác nhận trước 30/11/2025.',
-    type: 'SYSTEM',
-    createdAt: '2025-11-17T11:20:00.000Z',
-    readStatus: true,
-  },
-  {
-    notificationId: 'noti_006',
-    userId: 'user_123',
-    title: 'Hội nghị được xác nhận',
-    message: 'Đăng ký tham dự NeurIPS 2025 của bạn đã được xác nhận. Mã đăng ký: #NRS2025-4567.',
-    type: 'SYSTEM',
-    createdAt: '2025-11-16T08:30:00.000Z',
-    readStatus: true,
-  },
-  {
-    notificationId: 'noti_007',
-    userId: 'user_123',
-    title: 'Bài báo của bạn được chấp nhận',
-    message: 'Chúc mừng! Bài báo "Deep Learning for Medical Imaging" đã được chấp nhận tại MICCAI 2026.',
-    type: 'SYSTEM',
-    createdAt: '2025-11-15T15:45:00.000Z',
-    readStatus: true,
-  },
-];
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const minutes = Math.floor(diff / (1000 * 60));
+
+  if (minutes < 1) return 'Vừa xong';
+  if (minutes < 60) return `${minutes} phút trước`;
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  if (hours < 24) return `${hours} giờ trước`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} ngày trước`;
+  return date.toLocaleDateString('vi-VN');
+};
 
 const NotificationSystem: React.FC = () => {
-  const [mode, setMode] = useState<'dark' | 'light'>('light');
-  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
+  const { data, isLoading, isError } = useGetOwnNotificationsQuery();
+  const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
-  const handleMarkAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(n => (n.notificationId === id ? { ...n, readStatus: true } : n))
+  if (isLoading) {
+    return (
+      <div className="p-6">
+        <div className="text-gray-600">Đang tải thông báo...</div>
+      </div>
     );
-  };
+  }
 
-  const handleDelete = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.notificationId !== id));
-  };
+  if (isError || !data?.data) {
+    return (
+      <div className="p-6">
+        <div className="text-red-500">Không thể tải thông báo.</div>
+      </div>
+    );
+  }
 
-  const handleMarkAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, readStatus: true })));
-  };
-
-  const toggleMode = () => {
-    setMode(prev => (prev === 'dark' ? 'light' : 'dark'));
-  };
-
-  // Tính số thông báo chưa đọc — để dùng ở layout nếu cần
-  const unreadCount = notifications.filter(n => !n.readStatus).length;
+  const allNotifications: Notification[] = data.data;
+  
+  // Lọc notifications theo filter
+  const notifications = filter === 'unread' 
+    ? allNotifications.filter(n => !n.readStatus)
+    : allNotifications;
+  
+  const unreadCount = allNotifications.filter(n => !n.readStatus).length;
 
   return (
-    <div className={`min-h-screen p-6 transition-colors ${mode === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
-      <div className="w-full mx-auto">
-        <div className="mb-6 flex justify-between items-center">
-          <h1 className={`text-2xl font-bold ${mode === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-            Hệ thống thông báo
-          </h1>
-          <button
-            onClick={toggleMode}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              mode === 'dark'
-                ? 'bg-gray-700 text-white hover:bg-gray-600'
-                : 'bg-white text-gray-900 hover:bg-gray-50 border border-gray-300'
-            }`}
-          >
-            {mode === 'dark' ? '🌙 Dark' : '☀️ Light'}
-          </button>
+    <div className="bg-white min-h-screen">
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold text-gray-900">Thông Báo</h1>
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setFilter('all')}
+                className={`text-sm font-medium ${filter === 'all' ? 'text-gray-900' : 'text-gray-400'}`}
+              >
+                Tất cả
+              </button>
+              <button 
+                onClick={() => setFilter('unread')}
+                className={`text-sm font-medium ${filter === 'unread' ? 'text-gray-900' : 'text-gray-400'}`}
+              >
+                Chưa đọc
+              </button>
+            </div>
+            
+            {/* Nút Đọc tất cả */}
+            {unreadCount > 0 && (
+              <button 
+                onClick={() => {
+                  console.log('Mark all as read');
+                }}
+                className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Đọc tất cả ({unreadCount})
+              </button>
+            )}
+          </div>
         </div>
-
-        <NotificationList
-          notifications={notifications}
-          mode={mode}
-          onMarkAsRead={handleMarkAsRead}
-          onDelete={handleDelete}
-          onMarkAllAsRead={handleMarkAllAsRead}
-        />
       </div>
+
+      {notifications.length === 0 ? (
+        <div className="text-center py-12 text-gray-500">
+          <Bell className="w-12 h-12 mx-auto mb-3 opacity-50" />
+          <p>Không có thông báo nào</p>
+        </div>
+      ) : (
+        <div className="divide-y divide-gray-100">
+          {notifications.map((notif) => (
+            <div
+              key={notif.notificationId}
+              className={`px-4 py-4 hover:bg-gray-50 transition-colors cursor-pointer ${
+                !notif.readStatus ? 'bg-gray-50' : 'bg-white'
+              }`}
+            >
+              <div className="flex gap-3">
+                <div className="relative flex-shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                    <User className="w-6 h-6 text-gray-400" />
+                  </div>
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-gray-900">
+                        {notif.title}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        {formatDate(notif.createdAt)}
+                      </span>
+                    </div>
+                    
+                    {!notif.readStatus && (
+                      <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0 mt-1"></div>
+                    )}
+                  </div>
+
+                  <div className="my-2">
+                    <span className="inline-block px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-500">
+                      {notif.type || 'Type N/A'}
+                    </span>
+                  </div>
+
+                  <p className="text-sm text-gray-800 line-clamp-2">
+                    {notif.message}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
