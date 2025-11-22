@@ -23,12 +23,9 @@ export function HeaderSection({
 
   return (
     <div className="bg-white border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-6 py-4"> {/* giảm padding để nhỏ gọn */}
-        {/* Top row: Back button and Actions */}
+      <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
-          {/* Left: Back button and Primary Tabs */}
-          <div className="flex items-center gap-3"> {/* giảm gap */}
-            {/* Back Button */}
+          <div className="flex items-center gap-3"> 
             <Button
               variant="ghost"
               size="icon"
@@ -38,10 +35,8 @@ export function HeaderSection({
               <ArrowLeft className="w-4 h-4 text-gray-500" />
             </Button>
 
-            {/* Divider */}
             <div className="w-px h-6 bg-gray-200"></div>
 
-            {/* Tab Label */}
             <div className="flex items-center gap-2 ml-3">
               {TAB_GROUPS.map((group) => {
                 const Icon = group.icon;

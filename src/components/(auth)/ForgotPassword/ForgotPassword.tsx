@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Mail, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { useForgetPasswordMutation } from "@/redux/services/auth.service";
-import { toast } from "sonner"; // ✅ Import toast
+import { toast } from "sonner"; 
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");

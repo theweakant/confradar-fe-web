@@ -10,12 +10,15 @@ import {
   ProfileUpdateRequest,
   ChangePasswordRequest,
   ListUserDetailForAdminAndOrganizerResponse,
+  
 } from "@/types/user.type";
+import { Notification } from "@/types/notification.type";
 import { ApiResponse } from "@/types/api.type";
 
 export const userApi = createApi({
   reducerPath: "userApi",
   baseQuery: apiClient,
+  tagTypes: ["Notifications", "User"],
   endpoints: (builder) => ({
     getProfileById: builder.query<ApiResponse<UserProfileResponse>, string>({
       query: (userId) => ({
@@ -111,6 +114,14 @@ export const userApi = createApi({
         method: "PUT",
       }),
     }),
+
+    getOwnNotifications: builder.query<ApiResponse<Notification[]>, void>({
+      query: () => ({
+        url: endpoint.AUTH.GET_NOTIFICATION,
+        method: "GET",
+      }),
+      providesTags: ["Notifications"], 
+    }),
   }),
 });
 
@@ -127,4 +138,5 @@ export const {
 
   useSuspendExternalReviewerMutation,
   useActivateExternalReviewerMutation,
+  useGetOwnNotificationsQuery
 } = userApi;

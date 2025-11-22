@@ -6,6 +6,10 @@ export interface GroupedTicketPhase {
   actualPrice: number;
   revenue: number;
   commission: number | null;
+
+  commissionPercent:number |null;
+  amountToConfRadar:number|null
+
 }
 
 export interface GroupedTicket {
@@ -13,6 +17,7 @@ export interface GroupedTicket {
   ticketPrice: number;
   soldSlot: number;
   phases: GroupedTicketPhase[];
+
 }
 export interface TicketPhaseStatistic {
   conferencePriceId: string;
