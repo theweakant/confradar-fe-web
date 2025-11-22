@@ -62,6 +62,19 @@ export function MetaInfoSection({
             </div>
           </div>
 
+          <div className="flex items-start">
+            <span className="text-sm text-gray-500 w-32 flex-shrink-0">Bán vé</span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-900 font-medium">
+                {formatDate(conference.ticketSaleStart)}
+              </span>
+              <span className="text-sm text-gray-500">→</span>
+              <span className="text-sm text-gray-900 font-medium">
+                {formatDate(conference.ticketSaleEnd)}
+              </span>
+            </div>
+          </div>
+
           {/* City */}
           <div className="flex items-start">
             <span className="text-sm text-gray-500 w-32 flex-shrink-0">Thành phố</span>

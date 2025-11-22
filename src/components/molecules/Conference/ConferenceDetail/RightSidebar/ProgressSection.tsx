@@ -1,36 +1,42 @@
 // components/RightSidebar/ProgressTimelineSection.tsx
 import { Clock } from "lucide-react";
 import type { CommonConference } from "@/types/conference.type";
-import { useState } from "react";
 
 interface ProgressTimelineSectionProps {
   conference: CommonConference;
   getStatusName: (id: string) => string;
+  onOpenTimeline?: () => void;
 }
 
 export function ProgressTimelineSection({
   conference,
   getStatusName,
+  onOpenTimeline,
 }: ProgressTimelineSectionProps) {
   const statusName = getStatusName(conference.conferenceStatusId ?? "");
 
-  const statusProgression = [
-    { name: "Draft", color: "bg-gray-400" },
-    { name: "Pending", color: "bg-yellow-400" },
-    { name: "Preparing", color: "bg-blue-500" },
-    { name: "Ready", color: "bg-purple-500" },
-    { name: "Completed", color: "bg-green-500" },
-  ];
-
-  const getCurrentStatusIndex = () => {
-    const index = statusProgression.findIndex(s => s.name === statusName);
-    return index >= 0 ? index : 0;
+  const statusToPercent: Record<string, number> = {
+    Draft: 0,
+    Pending: 0,
+    Preparing: 0,
+    "OnHold": 25,
+    Ready: 50,
+    Completed: 100,
+    Canceled: 0, 
   };
 
-  const currentIndex = getCurrentStatusIndex();
-  const progressPercentage = ((currentIndex + 1) / statusProgression.length) * 100;
+  const progressPercentage = statusToPercent[statusName] ?? 0;
 
-  // Calculate days until conference starts
+  // Các trạng thái sẽ hiển thị trên timeline (bắt đầu từ Preparing)
+  const visibleStatuses = ["Preparing", "OnHold", "Ready", "Completed"];
+  const statusColors: Record<string, string> = {
+    Preparing: "bg-blue-500",
+    "OnHold": "bg-orange-500",
+    Ready: "bg-purple-500",
+    Completed: "bg-green-500",
+  };
+
+  // Tính ngày đến khai mạc (giữ nguyên)
   const calculateDaysUntilStart = () => {
     if (!conference.startDate) return null;
     const now = new Date();
@@ -42,11 +48,9 @@ export function ProgressTimelineSection({
 
   const daysUntilStart = calculateDaysUntilStart();
 
-  // Get display label for time
   const getTimeLabel = () => {
     if (daysUntilStart === null) return "Chưa xác định";
     if (daysUntilStart > 0) return `${daysUntilStart} ngày`;
-    // Check if already ended
     if (conference.endDate) {
       const now = new Date();
       const end = new Date(conference.endDate);
@@ -57,11 +61,20 @@ export function ProgressTimelineSection({
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-5">
-      {/* Header */}
-      <h3 className="text-sm font-semibold text-gray-900 mb-5">Tiến độ</h3>
-      
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-sm font-semibold text-gray-900">Tiến độ</h3>
+        {onOpenTimeline && (
+          <button
+            onClick={onOpenTimeline}
+            className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors px-2 py-1 rounded-md hover:bg-blue-50"
+          >
+            Xem
+          </button>
+        )}
+      </div>
+
       <div className="space-y-5">
-        {/* Time Until Start */}
+        {/* Thời gian đến khai mạc */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-gray-600">
             <Clock className="w-4 h-4" />
@@ -70,9 +83,9 @@ export function ProgressTimelineSection({
           <span className="text-sm font-semibold text-gray-900">
             {getTimeLabel()}
           </span>
-        </div>  
+        </div>
 
-        {/* Progress Section */}
+        {/* Thanh tiến độ */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -81,12 +94,15 @@ export function ProgressTimelineSection({
               </div>
               <span className="text-sm font-medium text-gray-900">Tiến độ</span>
             </div>
-            <span className="text-sm font-semibold text-gray-900">{Math.round(progressPercentage)}%</span>
+            <span className="text-sm font-semibold text-gray-900">
+              {Math.round(progressPercentage)}%
+            </span>
           </div>
 
-          {/* Progress Bar with Status Milestones */}
+          {/* Thanh tiến độ với các mốc - đã rút gọn width */}
           <div className="relative pt-2">
-            <div className="relative">
+            <div className="relative max-w-[100%] mx-auto"> {/* ← Giảm width, căn giữa */}
+              {/* Background bar */}
               <div className="h-2 bg-gray-200 rounded-full relative overflow-hidden">
                 <div
                   className="absolute top-0 left-0 h-full bg-blue-600 rounded-full transition-all duration-500"
@@ -94,57 +110,63 @@ export function ProgressTimelineSection({
                 />
               </div>
 
-              <div className="absolute inset-0 flex items-center justify-between">
-                {statusProgression.map((status, index) => {
-                  const isCompleted = index <= currentIndex;
-                  const isCurrent = index === currentIndex;
-                  
+              {/* Các điểm mốc */}
+              <div className="absolute inset-0">
+                {visibleStatuses.map((status) => {
+                  const percent = statusToPercent[status] ?? 0;
+                  const isCompleted = progressPercentage >= percent;
+                  const isCurrent = status === statusName;
+
                   return (
                     <div
-                      key={status.name}
-                      className="relative flex flex-col items-center"
-                      style={{ 
-                        left: `${(index / (statusProgression.length - 1)) * 100}%`,
-                        transform: 'translateX(-50%)'
-                      }}
+                      key={status}
+                      className="absolute top-1/2 -translate-y-1/2"
+                      style={{ left: `${percent}%` }}
                     >
                       <div
                         className={`w-2 h-2 rounded-full z-10 transition-all ${
-                          isCompleted ? status.color : 'bg-gray-300'
-                        } ${isCurrent ? 'ring-4 ring-blue-100' : ''}`}
+                          isCompleted ? statusColors[status] : "bg-gray-300"
+                        } ${isCurrent ? "ring-4 ring-blue-100" : ""}`}
                       />
                     </div>
                   );
                 })}
               </div>
 
-              {currentIndex >= 0 && (
-                <div 
+              {/* Indicator động */}
+              {progressPercentage > 0 && (
+                <div
                   className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-blue-600 border-2 border-white shadow-md z-20 transition-all duration-500"
                   style={{ left: `calc(${progressPercentage}% - 6px)` }}
                 />
               )}
             </div>
 
-            {/* Status labels (in English as requested) */}
-            <div className="relative mt-3 flex justify-between text-xs">
-              {statusProgression.map((status, index) => {
-                const isCompleted = index <= currentIndex;
-                const isCurrent = index === currentIndex;
-                
+            {/* Nhãn trạng thái - căn chỉnh theo thanh mới */}
+            <div className="relative mt-3 max-w-[93%] mx-auto">
+              {visibleStatuses.map((status) => {
+                const percent = statusToPercent[status] ?? 0;
+                const isCompleted = progressPercentage >= percent;
+                const isCurrent = status === statusName;
+
                 return (
                   <div
-                    key={status.name}
-                    className={`text-center transition-colors ${
-                      isCurrent 
-                        ? 'text-blue-600 font-semibold' 
-                        : isCompleted 
-                        ? 'text-gray-700' 
-                        : 'text-gray-400'
+                    key={status}
+                    className={`absolute text-[10px] whitespace-nowrap text-center transition-colors ${
+                      isCurrent
+                        ? "text-blue-600 font-semibold"
+                        : isCompleted
+                        ? "text-gray-700"
+                        : "text-gray-400"
                     }`}
-                    style={{ width: '20%' }}
+                    style={{
+                      left: `${percent}%`,
+                      transform: "translateX(-50%)",
+                      top: "100%",
+                      width: "auto",
+                    }}
                   >
-                    {status.name}
+                    {status === "OnHold" ? "OnHold" : status}
                   </div>
                 );
               })}
@@ -152,20 +174,25 @@ export function ProgressTimelineSection({
           </div>
         </div>
 
-        {/* Current Status Info — keep in English */}
+        {/* Trạng thái hiện tại */}
         <div className="pt-4 border-t border-gray-100">
           <div className="flex items-center justify-between">
             <span className="text-xs text-gray-500">Trạng thái hiện tại</span>
-            <span className={`px-2.5 py-1 rounded-md text-xs font-medium ${
-              statusName === "Draft" ? "bg-gray-100 text-gray-700" :
-              statusName === "Pending" ? "bg-yellow-100 text-yellow-700" :
-              statusName === "Preparing" ? "bg-blue-100 text-blue-700" :
-              statusName === "Ready" ? "bg-purple-100 text-purple-700" :
-              statusName === "Completed" ? "bg-green-100 text-green-700" :
-              statusName === "Canceled" ? "bg-red-100 text-red-700" :
-              statusName === "On Hold" ? "bg-orange-100 text-orange-700" :
-              "bg-gray-100 text-gray-700"
-            }`}>
+            <span
+              className={`px-2.5 py-1 rounded-md text-xs font-medium ${
+                statusName === "Preparing"
+                  ? "bg-blue-100 text-blue-700"
+                  : statusName === "On Hold"
+                  ? "bg-orange-100 text-orange-700"
+                  : statusName === "Ready"
+                  ? "bg-purple-100 text-purple-700"
+                  : statusName === "Completed"
+                  ? "bg-green-100 text-green-700"
+                  : statusName === "Canceled"
+                  ? "bg-red-100 text-red-700"
+                  : "bg-gray-100 text-gray-700"
+              }`}
+            >
               {statusName}
             </span>
           </div>

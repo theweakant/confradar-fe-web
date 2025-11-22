@@ -66,7 +66,6 @@ export const RequestConferenceApproval: React.FC<RequestConferenceApprovalProps>
     return status?.conferenceStatusName || "N/A";
   }, [conferenceDetail?.data?.conferenceStatusId, statusData?.data]);
 
-  // VALIDATION LOGIC
   useEffect(() => {
     if (!conferenceDetail?.data || !open) {
       setValidationErrors([]);
@@ -114,7 +113,6 @@ export const RequestConferenceApproval: React.FC<RequestConferenceApprovalProps>
     setValidationErrors(errors);
   }, [conferenceDetail, open]);
 
-  // SUBMIT HANDLER
   const handleRequest = async () => {
     if (!conferenceId) {
       toast.error("Không tìm thấy ID hội thảo.");
@@ -145,12 +143,10 @@ export const RequestConferenceApproval: React.FC<RequestConferenceApprovalProps>
     return null;
   }
 
-  // Render trigger button
   const TriggerButton = asDropdownItem ? (
     <DropdownMenuItem
       onClick={(e) => {
         e.preventDefault();
-        // Delay để dropdown đóng trước khi mở dialog
         setTimeout(() => {
           setOpen(true);
         }, 0);

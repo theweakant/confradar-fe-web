@@ -1,5 +1,5 @@
 // components/RightSidebar/index.tsx
-import { ProgressTimelineSection } from "./ProgressSection";
+import { ProgressTimelineSection } from "./ProgressSection"; 
 import { StatisticsSection } from "./StatisticsSection";
 import { RegisteredUserSection } from "./RegisteredUserSection";
 import type { CommonConference } from "@/types/conference.type";
@@ -12,6 +12,8 @@ interface RightSidebarProps {
   getCategoryName: (id: string) => string;
   getStatusName: (id: string) => string;
   getCityName: (id: string) => string;
+  onOpenTimeline?: () => void; 
+  onOpenFullAttendees?: () => void;
 }
 
 export function RightSidebar({
@@ -19,6 +21,8 @@ export function RightSidebar({
   conferenceId,
   isCollaborator,
   getStatusName,
+  onOpenTimeline,
+  onOpenFullAttendees
 }: RightSidebarProps) {
   return (
     <div className="w-80 flex-shrink-0 space-y-4 sticky top-6 self-start">
@@ -26,6 +30,7 @@ export function RightSidebar({
       <ProgressTimelineSection
         conference={conference}
         getStatusName={getStatusName}
+        onOpenTimeline={onOpenTimeline} 
       />
 
       {/* Statistics */}
@@ -37,7 +42,9 @@ export function RightSidebar({
       {/* Recent Activities */}
       <RegisteredUserSection
         conferenceId={conference.conferenceId!}
-        limit={10}
+        conferenceName={conference.conferenceName!}
+        limit={1}
+        onOpenFullList={onOpenFullAttendees}
       />
     </div>
   );
