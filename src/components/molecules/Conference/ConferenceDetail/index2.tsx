@@ -24,9 +24,9 @@ import { useGetResearchConferenceDetailInternalQuery } from "@/redux/services/co
 import { useGetAllConferenceStatusesQuery } from "@/redux/services/status.service";
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
-import { useViewRegisteredUsersForConferenceQuery } from "@/redux/services/conference.service"; // 👈 Thêm import
+import { useViewRegisteredUsersForConferenceQuery } from "@/redux/services/conference.service"; 
 
-import { UpdateConferenceStatus } from "@/components/molecules/Status/UpdateStatus";
+import { UpdateConferenceStatus } from "@/components/molecules/Status/UpdateStatus1/index";
 import { DeleteConferenceStatus } from "@/components/molecules/Status/DeleteStatus";
 import { RequestConferenceApproval } from "@/components/molecules/Status/RequestStatus";
 import { HistoryTimelineStatus } from "@/components/molecules/Status/HistoryTimelineStatus";
@@ -246,13 +246,11 @@ export default function ConferenceDetailPage() {
       <UpdateConferenceStatus
         open={statusDialogOpen}
         onClose={() => setStatusDialogOpen(false)}
-        conference={{
-          conferenceId: conference.conferenceId!,
-          conferenceName: conference.conferenceName!,
-          conferenceStatusId: conference.conferenceStatusId!,
-        }}
+        conference={conference}
+        conferenceType={conferenceType || "technical"}
         onSuccess={handleRefetch}
       />
+
       <DeleteConferenceStatus
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}

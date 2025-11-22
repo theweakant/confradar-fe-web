@@ -145,8 +145,8 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
         icon: FileText,
       },
       {
-        label: "Cài đặt",
-        href: "/workspace/collaborator/settings",
+        label: "Hợp đồng",
+        href: "/workspace/collaborator/contract",
         icon: Settings,
       },
     ],

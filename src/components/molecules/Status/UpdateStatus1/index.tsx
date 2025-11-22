@@ -29,13 +29,13 @@ import {
 import { ApiResponse } from "@/types/api.type";
 import { ConferenceStatus } from "@/types/conference.type";
 
-// Import validate & alerts
 import {
   Conference,
   ConferenceType,
   validateConferenceForStatusChange,
+  validateTimelineForOnHoldToReady,
 } from "./validateConferenceStatus";
-import { ConferenceValidationAlerts } from "./ValidationAlerts";
+import { ConferenceValidationAlerts, TimeValidationAlerts } from "./ValidationAlerts";
 
 interface UpdateConferenceStatusProps {
   open: boolean;
@@ -77,9 +77,8 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
   const currentStatusName = statusIdToNameMap[conference?.conferenceStatusId || ""] || "N/A";
   const targetStatusName = selectedStatusId ? statusIdToNameMap[selectedStatusId] : "";
 
-  // === Validate dữ liệu hội thảo ===
+  // === Validate dữ liệu hội thảo (Draft→Pending, Preparing→Ready) ===
   const { missingRequired, missingRecommended } = useMemo(() => {
-    // Chỉ validate khi cần (Draft→Pending, Preparing→Ready)
     const needsValidation =
       (currentStatusName === "Draft" && targetStatusName === "Pending") ||
       (currentStatusName === "Preparing" && targetStatusName === "Ready");
@@ -88,6 +87,14 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
       return { missingRequired: [], missingRecommended: [] };
     }
     return validateConferenceForStatusChange(conference, conferenceType);
+  }, [conference, conferenceType, currentStatusName, targetStatusName]);
+
+  // === Validate thời gian (OnHold→Ready) ===
+  const timeValidation = useMemo(() => {
+    if (currentStatusName === "OnHold" && targetStatusName === "Ready") {
+      return validateTimelineForOnHoldToReady(conference, conferenceType);
+    }
+    return { valid: true, expiredDates: [], message: undefined };
   }, [conference, conferenceType, currentStatusName, targetStatusName]);
 
   // === Logic quyền & trạng thái hợp lệ ===
@@ -108,8 +115,11 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
 
     let allowedNames: string[] = [];
     switch (currentStatusName) {
+      case "Draft":
+        allowedNames = hasCollaboratorRole ? ["Pending"] : [];
+        break;
       case "Preparing":
-        allowedNames = ["Ready", "Cancelled"];
+        allowedNames = ["Ready"];
         break;
       case "Ready":
         allowedNames = ["Completed", "OnHold"];
@@ -127,14 +137,20 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
         name,
       }))
       .filter((opt) => opt.id);
-  }, [roles, currentStatusName, statusData]);
+  }, [roles, currentStatusName, statusData, hasCollaboratorRole, hasOrganizerRole]);
 
   // === Trạng thái nút submit ===
-  const needsValidation =
+  const needsDataValidation =
     (currentStatusName === "Draft" && targetStatusName === "Pending") ||
     (currentStatusName === "Preparing" && targetStatusName === "Ready");
 
-  const canSubmit = !isLoading && selectedStatusId && (!needsValidation || missingRequired.length === 0);
+  const needsTimeValidation = currentStatusName === "OnHold" && targetStatusName === "Ready";
+
+  const canSubmit =
+    !isLoading &&
+    selectedStatusId &&
+    (!needsDataValidation || missingRequired.length === 0) &&
+    (!needsTimeValidation || timeValidation.valid);
 
   // === Gửi yêu cầu cập nhật ===
   const handleSubmit = async () => {
@@ -142,17 +158,8 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
       return toast.error("Vui lòng chọn trạng thái mới");
     }
 
-    // Validate transition thời gian (nếu cần)
+    // Validate transition thời gian Ready → Completed
     const now = new Date();
-    if (currentStatusName === "OnHold" && targetStatusName === "Ready") {
-      const startDate = conference.startDate ? new Date(conference.startDate) : null;
-      if (startDate && now >= startDate) {
-        return toast.error("Không thể chuyển trạng thái", {
-          description: "Thời gian hội thảo đã bắt đầu. Vui lòng cập nhật lại ngày tổ chức.",
-        });
-      }
-    }
-
     if (currentStatusName === "Ready" && targetStatusName === "Completed") {
       const endDate = conference.endDate ? new Date(conference.endDate) : null;
       if (!endDate || now <= endDate) {
@@ -161,8 +168,6 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
         });
       }
     }
-
-    // Validate refund nếu cần (tạm thời chưa có → bỏ qua)
 
     try {
       if (!conference?.conferenceId) {
@@ -194,6 +199,10 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
   // === Màu sắc trạng thái ===
   const getStatusColor = (statusName: string): string => {
     switch (statusName) {
+      case "Draft":
+        return "text-gray-600 bg-gray-100 border border-gray-300";
+      case "Pending":
+        return "text-purple-600 bg-purple-100 border border-purple-300";
       case "Preparing":
         return "text-yellow-600 bg-yellow-100 border border-yellow-300";
       case "Ready":
@@ -211,7 +220,7 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md p-6">
+      <DialogContent className="max-w-md p-6 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Cập nhật trạng thái hội thảo</DialogTitle>
         </DialogHeader>
@@ -265,16 +274,25 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
           />
         </div>
 
-        {/* Hiển thị cảnh báo validate khi cần */}
-        {(currentStatusName === "Draft" || currentStatusName === "Preparing") &&
-          (targetStatusName === "Pending" || targetStatusName === "Ready") && (
-            <div className="mb-4">
-              <ConferenceValidationAlerts
-                missingRequired={missingRequired}
-                missingRecommended={missingRecommended}
-              />
-            </div>
-          )}
+        {/* Hiển thị cảnh báo validate dữ liệu (Draft→Pending, Preparing→Ready) */}
+        {needsDataValidation && (
+          <div className="mb-4">
+            <ConferenceValidationAlerts
+              missingRequired={missingRequired}
+              missingRecommended={missingRecommended}
+            />
+          </div>
+        )}
+
+        {/* Hiển thị cảnh báo validate thời gian (OnHold→Ready) */}
+        {needsTimeValidation && (
+          <div className="mb-4">
+            <TimeValidationAlerts
+              expiredDates={timeValidation.expiredDates}
+              message={timeValidation.message}
+            />
+          </div>
+        )}
 
         <DialogFooter className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>

@@ -1,6 +1,6 @@
-// components/molecules/Status/ConferenceValidationAlerts.tsx
+// components/molecules/Status/ValidationAlerts.tsx
 
-import { AlertCircle, AlertTriangle } from "lucide-react";
+import { AlertCircle, AlertTriangle, Clock } from "lucide-react";
 
 interface ValidationAlertsProps {
   missingRequired: string[];
@@ -89,5 +89,76 @@ export const ConferenceValidationAlerts = ({
         </div>
       )}
     </>
+  );
+};
+
+interface TimeValidationAlertsProps {
+  expiredDates: string[];
+  message?: string;
+  isLoading?: boolean;
+}
+
+export const TimeValidationAlerts = ({
+  expiredDates,
+  message,
+  isLoading = false,
+}: TimeValidationAlertsProps) => {
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-gray-500">
+        <div className="animate-spin h-4 w-4 border-2 border-gray-300 border-t-gray-600 rounded-full" />
+        <span>Đang kiểm tra thời gian...</span>
+      </div>
+    );
+  }
+
+  if (expiredDates.length === 0) {
+    return (
+      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="flex items-center gap-2">
+          <div className="h-5 w-5 rounded-full bg-green-600 flex items-center justify-center">
+            <svg
+              className="w-3 h-3 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </div>
+          <p className="text-sm font-semibold text-green-800">
+            Thời gian hội thảo vẫn còn hợp lệ
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+      <div className="flex items-start gap-2">
+        <Clock className="h-5 w-5 text-orange-600 mt-0.5 flex-shrink-0" />
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-orange-800 mb-2">
+            {message || "Các mốc thời gian sau đã qua:"}
+          </p>
+          <ul className="list-disc list-inside space-y-1 max-h-48 overflow-y-auto">
+            {expiredDates.map((date, idx) => (
+              <li key={idx} className="text-sm text-orange-700">
+                {date}
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-orange-600 mt-3 font-medium">
+            Vui lòng cập nhật lại các mốc thời gian này trước khi chuyển sang trạng thái Ready
+          </p>
+        </div>
+      </div>
+    </div>
   );
 };
