@@ -557,13 +557,11 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
                                           {formatDateTime(transaction.createdAt)}
                                         </div>
                                       </div>
-                                      <div className={`text-lg font-semibold ${transaction.transactionType.toLowerCase().includes('deposit') ||
-                                          transaction.transactionType.toLowerCase().includes('refund')
-                                          ? 'text-green-400'
-                                          : 'text-red-400'
+                                      <div className={`text-lg font-semibold ${transaction.amount >= 0
+                                        ? 'text-green-400'
+                                        : 'text-red-400'
                                         }`}>
-                                        {transaction.transactionType.toLowerCase().includes('deposit') ||
-                                          transaction.transactionType.toLowerCase().includes('refund')
+                                        {transaction.amount >= 0
                                           ? '+'
                                           : '-'}
                                         {formatCurrency(Math.abs(transaction.amount))}
