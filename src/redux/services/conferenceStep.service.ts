@@ -864,17 +864,21 @@ export const conferenceStepApi = createApi({
       invalidatesTags: ["ConferenceStep"],
     }),
 
-    updateResearchRankingReference: builder.mutation<
-      ApiResponse<{ success: boolean }>,
-      { referenceId: string; referenceUrl: string }
-    >({
-      query: ({ referenceId, referenceUrl }) => ({
-        url: endpoint.CONFERENCE_STEP.UPDATE_RESEARCH_RANKING_REFERENCE(referenceId),
-        method: "PUT",
-        body: { referenceUrl },
-      }),
-      invalidatesTags: ["ConferenceStep"],
-    }),
+updateResearchRankingReference: builder.mutation<
+  ApiResponse<{ success: boolean }>,
+  { referenceId: string; referenceUrl: string }
+>({
+  query: ({ referenceId, referenceUrl }) => ({
+    url: endpoint.CONFERENCE_STEP.UPDATE_RESEARCH_RANKING_REFERENCE(referenceId),
+    method: "PUT",
+    body: {
+      referenceUrlId: referenceId,
+      referenceUrl,
+    },
+  }),
+  invalidatesTags: ["ConferenceStep"],
+}),
+
 
     updateRevisionRoundDeadline: builder.mutation<
       ApiResponse<{ success: boolean }>,

@@ -5,7 +5,6 @@ import type {
 } from "@/types/conference.type";
 import type { ValidationResult } from "../basic";
 
-// Research Material Validation
 export const validateMaterialFileName = (value: string): ValidationResult => {
   if (!value.trim()) {
     return { isValid: false, error: "Tên file không được để trống" };
@@ -19,17 +18,20 @@ export const validateMaterialFileName = (value: string): ValidationResult => {
   return { isValid: true };
 };
 
-export const validateMaterialFile = (file: File | null | undefined): ValidationResult => {
+export const validateMaterialFile = (file: File | string | null | undefined): ValidationResult => {
+  if (typeof file === 'string') {
+    return { isValid: true };
+  }
+
   if (!file) {
     return { isValid: false, error: "Vui lòng chọn file" };
   }
 
-  const maxSize = 10 * 1024 * 1024; // 10MB
+  const maxSize = 10 * 1024 * 1024;
   if (file.size > maxSize) {
     return { isValid: false, error: "File không được vượt quá 10MB" };
   }
 
-  // Allow common document formats
   const allowedTypes = [
     "application/pdf",
     "application/msword",
@@ -59,10 +61,9 @@ export const validateMaterial = (material: ResearchMaterial): ValidationResult =
   return { isValid: true };
 };
 
-// Ranking File Validation
 export const validateRankingFileUrl = (url: string): ValidationResult => {
   if (!url.trim()) {
-    return { isValid: true }; // URL is optional if file is provided
+    return { isValid: true };
   }
 
   try {
@@ -71,7 +72,6 @@ export const validateRankingFileUrl = (url: string): ValidationResult => {
     return { isValid: false, error: "URL không hợp lệ" };
   }
 
-  // Check if URL is HTTP/HTTPS
   if (!url.startsWith("http://") && !url.startsWith("https://")) {
     return { isValid: false, error: "URL phải bắt đầu bằng http:// hoặc https://" };
   }
@@ -80,20 +80,17 @@ export const validateRankingFileUrl = (url: string): ValidationResult => {
 };
 
 export const validateRankingFile = (rankingFile: ResearchRankingFile): ValidationResult => {
-  // Must have either URL or file
   if (!rankingFile.fileUrl && !rankingFile.file) {
     return { isValid: false, error: "Vui lòng nhập URL hoặc chọn file" };
   }
 
-  // Validate URL if provided
   if (rankingFile.fileUrl) {
     const urlResult = validateRankingFileUrl(rankingFile.fileUrl);
     if (!urlResult.isValid) return urlResult;
   }
 
-  // Validate file if provided
-  if (rankingFile.file) {
-    const maxSize = 10 * 1024 * 1024; // 10MB
+  if (rankingFile.file && rankingFile.file instanceof File) {
+    const maxSize = 10 * 1024 * 1024;
     if (rankingFile.file.size > maxSize) {
       return { isValid: false, error: "File không được vượt quá 10MB" };
     }
@@ -102,7 +99,6 @@ export const validateRankingFile = (rankingFile: ResearchRankingFile): Validatio
   return { isValid: true };
 };
 
-// Ranking Reference Validation
 export const validateRankingReferenceUrl = (url: string): ValidationResult => {
   if (!url.trim()) {
     return { isValid: false, error: "Vui lòng nhập URL tham khảo" };
@@ -114,12 +110,10 @@ export const validateRankingReferenceUrl = (url: string): ValidationResult => {
     return { isValid: false, error: "URL không hợp lệ" };
   }
 
-  // Check if URL is HTTP/HTTPS
   if (!url.startsWith("http://") && !url.startsWith("https://")) {
     return { isValid: false, error: "URL phải bắt đầu bằng http:// hoặc https://" };
   }
 
-  // Common ranking websites
   const commonDomains = [
     "core.edu.au",
     "scopus.com",
@@ -148,7 +142,6 @@ export const validateRankingReference = (
   return validateRankingReferenceUrl(reference.referenceUrl);
 };
 
-// List validation
 export const validateMaterialsList = (materials: ResearchMaterial[]): ValidationResult => {
   if (materials.length > 20) {
     return {
@@ -183,7 +176,6 @@ export const validateRankingReferencesList = (
     };
   }
 
-  // Check for duplicate URLs
   const urls = references.map((r) => r.referenceUrl.toLowerCase());
   const uniqueUrls = new Set(urls);
 

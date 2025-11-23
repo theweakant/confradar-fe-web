@@ -344,13 +344,13 @@ export function useResearchConferenceData({
         fileName: m.fileName ?? "Tài liệu",
         fileDescription: m.fileDescription ?? "",
         fileUrl: m.fileUrl ?? "",
-        file: null,
+        file: m.fileUrl ?? null,
       }));
 
       const rankingFiles: ResearchRankingFile[] = (data.rankingFileUrls || []).map((f) => ({
         rankingFileId: f.rankingFileUrlId,
         fileUrl: f.fileUrl,
-        file: null,
+        file: f.fileUrl ?? null,
       }));
 
       const rankingReferences: ResearchRankingReference[] = (data.rankingReferenceUrls || []).map((r) => ({

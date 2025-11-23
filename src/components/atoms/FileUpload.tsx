@@ -36,14 +36,13 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     }
 
     onChange(file);
-    e.target.value = ""; // reset input để có thể chọn lại cùng file
+    e.target.value = ""; 
   };
 
   const handleRemove = () => {
     onChange(null);
   };
 
-  // Xử lý hiển thị tên file hoặc URL
   const getDisplayName = () => {
     if (!value) return placeholder;
     if (typeof value === "string") {

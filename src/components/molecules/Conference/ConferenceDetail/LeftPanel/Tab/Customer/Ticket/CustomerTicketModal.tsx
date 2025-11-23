@@ -92,32 +92,36 @@ export function CustomerTicketModal({
           </div>
         </div>
 
-        <DialogFooter className="flex flex-row justify-end gap-2 pt-2 mt-4 border-t">
-          <Button 
-            variant="outline" 
-            onClick={() => onOpenChange(false)}
-            className="px-6"
-          >
-            Đóng
-          </Button>
+<DialogFooter className="flex flex-row justify-end gap-2 pt-2 mt-4 border-t">
+  <Button 
+    variant="outline" 
+    onClick={() => onOpenChange(false)}
+    className="px-6"
+  >
+    Đóng
+  </Button>
 
-          {conferenceType === "technical" ? (
-            <CancelTechTicket
-              ticketIds={[ticket.ticketId]}
-              onSuccess={() => onOpenChange(false)}
-            />
-          ) : conferenceType === "research" ? (
-            <CancelResearchTicket
-              ticketIds={[ticket.ticketId]}
-              onSuccess={() => onOpenChange(false)}
-            />
-          ) : (
-            <CancelTechTicket
-              ticketIds={[ticket.ticketId]}
-              onSuccess={() => onOpenChange(false)}
-            />
-          )}
-        </DialogFooter>
+  {!ticket.isRefunded && ( 
+    <>
+      {conferenceType === "technical" ? (
+        <CancelTechTicket
+          ticketIds={[ticket.ticketId]}
+          onSuccess={() => onOpenChange(false)}
+        />
+      ) : conferenceType === "research" ? (
+        <CancelResearchTicket
+          ticketIds={[ticket.ticketId]}
+          onSuccess={() => onOpenChange(false)}
+        />
+      ) : (
+        <CancelTechTicket
+          ticketIds={[ticket.ticketId]}
+          onSuccess={() => onOpenChange(false)}
+        />
+      )}
+    </>
+  )}
+</DialogFooter>
       </DialogContent>
     </Dialog>
   );

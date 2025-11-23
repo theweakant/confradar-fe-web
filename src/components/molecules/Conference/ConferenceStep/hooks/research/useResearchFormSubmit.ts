@@ -752,30 +752,50 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
       toast.error("Không tìm thấy conference ID!");
       return { success: false };
     }
+
     try {
       setIsSubmitting(true);
+
       if (mode === "edit") {
         if (deletedMaterialIds.length > 0) {
-          await Promise.all(deletedMaterialIds.map((id) => deleteMaterial(id).unwrap()));
-        }
-        if (deletedRankingFileIds.length > 0) {
-          await Promise.all(deletedRankingFileIds.map((id) => deleteRankingFile(id).unwrap()));
-        }
-        if (deletedRankingReferenceIds.length > 0) {
-          await Promise.all(deletedRankingReferenceIds.map((id) => deleteRankingReference(id).unwrap()));
-        }
-        const existingMaterials = materials.filter((m) => m.materialId);
-        if (existingMaterials.length > 0) {
           await Promise.all(
-            existingMaterials.map((mat) =>
-              updateMaterial({
-                materialId: mat.materialId!,
-                fileDescription: mat.fileDescription,
-                file: mat.file instanceof File ? mat.file : undefined,
-              }).unwrap()
+            deletedMaterialIds.map((id) => deleteMaterial(id).unwrap())
+          );
+        }
+
+        if (deletedRankingFileIds.length > 0) {
+          await Promise.all(
+            deletedRankingFileIds.map((id) => deleteRankingFile(id).unwrap())
+          );
+        }
+
+        if (deletedRankingReferenceIds.length > 0) {
+          await Promise.all(
+            deletedRankingReferenceIds.map((id) =>
+              deleteRankingReference(id).unwrap()
             )
           );
         }
+
+        const existingMaterials = materials.filter((m) => m.materialId);
+        if (existingMaterials.length > 0) {
+          const materialsWithNewFile = existingMaterials.filter(
+            (mat): mat is ResearchMaterial & { file: File } => mat.file instanceof File
+          );
+
+          if (materialsWithNewFile.length > 0) {
+            await Promise.all(
+              materialsWithNewFile.map((mat) =>
+                updateMaterial({
+                  materialId: mat.materialId!,
+                  fileDescription: mat.fileDescription,
+                  file: mat.file,
+                }).unwrap()
+              )
+            );
+          }
+        }
+
         const newMaterials = materials.filter((m) => !m.materialId);
         if (newMaterials.length > 0) {
           await Promise.all(
@@ -789,18 +809,26 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
             )
           );
         }
+
         const existingRankingFiles = rankingFiles.filter((f) => f.rankingFileId);
         if (existingRankingFiles.length > 0) {
-          await Promise.all(
-            existingRankingFiles.map((file) =>
-              updateRankingFile({
-                rankingFileId: file.rankingFileId!,
-                fileUrl: file.fileUrl,
-                file: file.file instanceof File ? file.file : undefined,
-              }).unwrap()
-            )
+          const filesWithNewFile = existingRankingFiles.filter(
+            (file): file is ResearchRankingFile & { file: File } => file.file instanceof File
           );
+
+          if (filesWithNewFile.length > 0) {
+            await Promise.all(
+              filesWithNewFile.map((file) =>
+                updateRankingFile({
+                  rankingFileId: file.rankingFileId!,
+                  fileUrl: file.fileUrl,
+                  file: file.file,
+                }).unwrap()
+              )
+            );
+          }
         }
+
         const newRankingFiles = rankingFiles.filter((f) => !f.rankingFileId);
         if (newRankingFiles.length > 0) {
           await Promise.all(
@@ -813,6 +841,7 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
             )
           );
         }
+
         const existingRefs = rankingReferences.filter((r) => r.rankingReferenceId);
         if (existingRefs.length > 0) {
           await Promise.all(
@@ -824,6 +853,7 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
             )
           );
         }
+
         const newRefs = rankingReferences.filter((r) => !r.rankingReferenceId);
         if (newRefs.length > 0) {
           await Promise.all(
@@ -835,13 +865,21 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
             )
           );
         }
+
         await triggerRefetch();
+        toast.success("Cập nhật tài liệu thành công!");
+
       } else {
-        if (materials.length === 0 && rankingFiles.length === 0 && rankingReferences.length === 0) {
+        if (
+          materials.length === 0 &&
+          rankingFiles.length === 0 &&
+          rankingReferences.length === 0
+        ) {
           dispatch(markStepCompleted(7));
           toast.info("Đã bỏ qua phần tài liệu");
           return { success: true, skipped: true };
         }
+
         await Promise.all([
           ...materials.map((mat) =>
             createResearchMaterial({
@@ -865,10 +903,13 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
             }).unwrap()
           ),
         ]);
+
+        toast.success("Lưu tài liệu thành công!");
       }
+
       dispatch(markStepCompleted(7));
-      toast.success("Lưu tài liệu thành công!");
       return { success: true };
+
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Materials submit failed:", error);
