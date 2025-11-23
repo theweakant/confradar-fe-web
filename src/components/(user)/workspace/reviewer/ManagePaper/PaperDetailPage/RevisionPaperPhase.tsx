@@ -24,6 +24,7 @@ import {
     useSubmitPaperRevisionReviewMutation,
     useListRevisionPaperReviewsQuery,
     useDecideRevisionStatusMutation,
+    useMarkCompleteReviseMutation,
 } from "@/redux/services/paper.service";
 import { toast } from "sonner";
 import { ApiError } from "@/types/api.type";
@@ -32,6 +33,7 @@ import { isValidUrl } from "@/helper/paper";
 import ReusableDocViewer from "@/components/molecules/ReusableDocViewer ";
 import ReviewerPaperCard from "./ReviewerPaperCard";
 import RevisionReviewsList from "./RevisionReviewsList";
+import { parseApiError } from "@/helper/api";
 
 interface RevisionPaperPhaseProps {
     paperDetail: PaperDetailForReviewer;
@@ -96,12 +98,28 @@ export default function RevisionPaperPhase({
         [key: string]: boolean | null;
     }>({});
 
+    const [markingComplete, setMarkingComplete] = useState<{
+        [key: string]: boolean;
+    }>({});
+
+    const { data: revisionReviews, isLoading } = useListRevisionPaperReviewsQuery(
+        { revisionPaperId: paperDetail?.revisionPaper?.revisionPaperId || "", paperId },
+        { skip: !paperDetail?.revisionPaper?.revisionPaperId }
+    );
+
     const [submitRevisionReview, { isLoading: isSubmittingRevisionReview }] =
         useSubmitPaperRevisionReviewMutation();
     const [submitRevisionFeedback, { isLoading: isSubmittingRevision }] =
         useSubmitPaperRevisionFeedbackMutation();
     const [decideRevisionStatus, { isLoading: isDecidingRevision }] =
         useDecideRevisionStatusMutation();
+
+    const [markCompleteRevise, { isLoading: isMarkingComplete, error: markCompleteReviseError }] =
+        useMarkCompleteReviseMutation();
+
+    useEffect(() => {
+        if (markCompleteReviseError) toast.error(parseApiError(markCompleteReviseError)?.data?.message);
+    }, [markCompleteReviseError])
 
     useEffect(() => {
         if (!paperDetail?.revisionPaper?.revisionPaperSubmissions) return;
@@ -134,12 +152,66 @@ export default function RevisionPaperPhase({
     };
 
     const canSubmitRevisionReview = (): boolean => {
-        if (!currentPhase?.reviseStartDate || !currentPhase?.reviseEndDate) {
+        if (!currentPhase?.revisionPaperReviewStart || !currentPhase?.revisionPaperReviewEnd) {
             return false;
         }
         return isWithinDateRange(
-            currentPhase.reviseStartDate,
-            currentPhase.reviseEndDate
+            currentPhase.revisionPaperReviewStart,
+            currentPhase.revisionPaperReviewEnd
+        );
+    };
+
+    const isSubmissionCompleted = (submissionId: string): boolean => {
+        if (!paperDetail?.revisionPaper?.revisionRoundDeadlineId) return false;
+
+        const submission = paperDetail.revisionPaper.revisionPaperSubmissions.find(
+            s => s.revisionPaperSubmissionId === submissionId
+        );
+
+        if (!submission) return false;
+
+        const currentRound = currentPhase?.revisionRoundsDetail?.find(
+            r => r.revisionRoundDeadlineId === submission.revisionDeadlineRoundId
+        );
+
+        const markedRound = currentPhase?.revisionRoundsDetail?.find(
+            r => r.revisionRoundDeadlineId === paperDetail?.revisionPaper?.revisionRoundDeadlineId
+        );
+
+        if (!currentRound || !markedRound) return false;
+
+        if (currentRound.roundNumber == null || markedRound.roundNumber == null) return false;
+
+        return currentRound.roundNumber >= markedRound.roundNumber;
+    };
+
+    const isLatestSubmission = (submissionId: string): boolean => {
+        if (!paperDetail?.revisionPaper?.revisionPaperSubmissions) return false;
+
+        const submissions = paperDetail.revisionPaper.revisionPaperSubmissions;
+        if (submissions.length === 0) return false;
+
+        const sortedSubmissions = [...submissions].sort((a, b) => {
+            const roundA = currentPhase?.revisionRoundsDetail?.find(
+                r => r.revisionRoundDeadlineId === a.revisionDeadlineRoundId
+            );
+            const roundB = currentPhase?.revisionRoundsDetail?.find(
+                r => r.revisionRoundDeadlineId === b.revisionDeadlineRoundId
+            );
+
+            return (roundB?.roundNumber || 0) - (roundA?.roundNumber || 0);
+        });
+
+        return sortedSubmissions[0].revisionPaperSubmissionId === submissionId;
+    };
+
+    const canDecideRevisionStatus = (): boolean => {
+        if (!currentPhase?.revisionPaperDecideStatusStart || !currentPhase?.revisionPaperDecideStatusEnd) {
+            return false;
+        }
+        return isWithinDateRange(
+            currentPhase.revisionPaperDecideStatusStart,
+            currentPhase.revisionPaperDecideStatusEnd
         );
     };
 
@@ -166,12 +238,45 @@ export default function RevisionPaperPhase({
         );
     };
 
-    const isNotAllSubmittedRevision =
-        !paperDetail.revisionPaper?.isAllSubmittedRevisionPaperReview;
-    const isOutOfRevisionDecisionTime = !canSubmitRevisionReview();
+    // const isNotAllSubmittedRevision =
+    //     !paperDetail.revisionPaper?.isAllSubmittedRevisionPaperReview;
+    const hasAtLeastOneReview =
+        revisionReviews?.data &&
+        revisionReviews?.data.length > 0;
+    const isOutOfRevisionDecisionTime = !canDecideRevisionStatus();
 
     const toggleReviewsExpansion = () => {
         setExpandedReviewsSubmissions((prev) => !prev);
+    };
+
+    const handleMarkCompleteRevise = async (submissionId: string) => {
+        if (!paperDetail?.revisionPaper) return;
+
+        const submission = paperDetail.revisionPaper.revisionPaperSubmissions.find(
+            s => s.revisionPaperSubmissionId === submissionId
+        );
+
+        if (!submission?.revisionDeadlineRoundId) {
+            toast.error("Không tìm thấy thông tin round");
+            return;
+        }
+
+        setMarkingComplete(prev => ({ ...prev, [submissionId]: true }));
+
+        try {
+            await markCompleteRevise({
+                revisionRoundDeadlineId: submission.revisionDeadlineRoundId,
+                revisionPaperId: paperDetail.revisionPaper.revisionPaperId,
+                paperId: paperId
+            }).unwrap();
+
+            toast.success("Đã đánh dấu hoàn tất revision, chờ kết quả review");
+        } catch (error: unknown) {
+            // const err = error as ApiError;
+            // toast.error(err?.data?.message || "Lỗi khi đánh dấu hoàn tất");
+        } finally {
+            setMarkingComplete(prev => ({ ...prev, [submissionId]: false }));
+        }
     };
 
     const handleSubmitRevisionReview = async () => {
@@ -184,7 +289,7 @@ export default function RevisionPaperPhase({
 
         if (!canSubmitRevisionReview()) {
             toast.error(
-                `Thời hạn nộp đánh giá Revision là từ ${formatDate(currentPhase!.reviseStartDate)} đến ${formatDate(currentPhase!.reviseEndDate)}`
+                `Thời hạn nộp đánh giá Revision là từ ${formatDate(currentPhase!.revisionPaperReviewStart)} đến ${formatDate(currentPhase!.revisionPaperReviewEnd)}`
             );
             return;
         }
@@ -301,9 +406,9 @@ export default function RevisionPaperPhase({
 
     const handleDecideRevisionStatus = async () => {
         if (!paperDetail?.revisionPaper) return;
-        if (!canSubmitRevisionReview()) {
+        if (!canDecideRevisionStatus()) {
             toast.error(
-                `Chỉ có thể quyết định Revision sau ngày ${formatDate(currentPhase!.reviseEndDate)}`,
+                `Chỉ có thể quyết định Revision trong khoảng ${formatDate(currentPhase!.revisionPaperDecideStatusStart)} - ${formatDate(currentPhase!.revisionPaperDecideStatusEnd)}`,
             );
             return;
         }
@@ -386,17 +491,23 @@ export default function RevisionPaperPhase({
                             onClick={() => setShowRevisionDecisionPopup(true)}
                             className="bg-orange-600 hover:bg-orange-700"
                             size="lg"
-                            disabled={isNotAllSubmittedRevision || isOutOfRevisionDecisionTime}
+                            disabled={!hasAtLeastOneReview || isOutOfRevisionDecisionTime}
                         >
                             <Gavel className="w-4 h-4 mr-2" />
-                            {isNotAllSubmittedRevision && !isOutOfRevisionDecisionTime &&
+                            {/* {isNotAllSubmittedRevision && !isOutOfRevisionDecisionTime &&
                                 "Chưa thể quyết định, còn reviewer chưa nộp"}
                             {!isNotAllSubmittedRevision && isOutOfRevisionDecisionTime &&
                                 "Chưa thể quyết định, ngoài khoảng thời gian"}
                             {isNotAllSubmittedRevision && isOutOfRevisionDecisionTime &&
                                 "Chưa thể quyết định, reviewer chưa nộp & ngoài thời gian"}
                             {!isNotAllSubmittedRevision && !isOutOfRevisionDecisionTime &&
-                                "Quyết định cuối cùng"}
+                                "Quyết định cuối cùng"} */}
+
+                            {!hasAtLeastOneReview && !isOutOfRevisionDecisionTime && "Chưa thể quyết định, chưa có review nào"}
+                            {hasAtLeastOneReview && isOutOfRevisionDecisionTime && "Ngoài thời gian quyết định"}
+                            {!hasAtLeastOneReview && isOutOfRevisionDecisionTime && "Chưa có review & ngoài thời gian"}
+                            {hasAtLeastOneReview && !isOutOfRevisionDecisionTime && "Quyết định cuối cùng"}
+
                         </Button>
                         // <Button
                         //     onClick={() => setShowRevisionDecisionPopup(true)}
@@ -447,6 +558,8 @@ export default function RevisionPaperPhase({
 
                         getStatusIcon={getStatusIcon}
                         getStatusColor={getStatusColor}
+                        revisionReviews={revisionReviews}
+                        isLoading={isLoading}
                     />
                 )}
 
@@ -522,6 +635,30 @@ export default function RevisionPaperPhase({
                                                     r => r.revisionRoundDeadlineId === submission.revisionDeadlineRoundId
                                                 )?.roundNumber}`}
                                         </Button>
+
+                                        {/* Status và nút đánh dấu hoàn tất */}
+                                        <div className="flex items-center gap-2">
+                                            {isSubmissionCompleted(submission.revisionPaperSubmissionId) ? (
+                                                <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg">
+                                                    <CheckCircle className="w-4 h-4 text-green-600" />
+                                                    <span className="text-sm font-medium text-green-700">
+                                                        Đã hoàn tất, chờ kết quả review
+                                                    </span>
+                                                </div>
+                                            ) : isLatestSubmission(submission.revisionPaperSubmissionId) ? (
+                                                <Button
+                                                    onClick={() => handleMarkCompleteRevise(submission.revisionPaperSubmissionId)}
+                                                    disabled={markingComplete[submission.revisionPaperSubmissionId] || isMarkingComplete}
+                                                    className="bg-green-600 hover:bg-green-700"
+                                                    size="sm"
+                                                >
+                                                    <CheckCircle className="w-4 h-4 mr-2" />
+                                                    {markingComplete[submission.revisionPaperSubmissionId]
+                                                        ? "Đang xử lý..."
+                                                        : "Đánh dấu hoàn tất revise"}
+                                                </Button>
+                                            ) : null}
+                                        </div>
                                         {/* <button
                                             onClick={() => setShowFeedbackDialogs(prev => ({
                                                 ...prev,

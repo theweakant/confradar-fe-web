@@ -211,8 +211,6 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
           {(() => {
             const purchasedInfo = getPurchasedTicketInfo();
 
-            console.log('ne', purchasedInfo);
-
             if (purchasedInfo) {
               return (
                 <div className="space-y-3">

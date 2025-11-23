@@ -157,6 +157,7 @@ export interface RevisionPaperForReviewer {
   createdAt: string;
   isAllSubmittedRevisionPaperReview: boolean;
   isAnsweredAllDiscussion: boolean;
+  revisionRoundDeadlineId?: string;
   revisionPaperSubmissions: RevisionPaperSubmissionForReviewer[];
 }
 
@@ -240,14 +241,24 @@ export interface CurrentResearchConferencePhaseForReviewer {
   conferenceId?: string;
   registrationStartDate?: string;
   registrationEndDate?: string;
+  abstractDecideStatusStart?: string;
+  abstractDecideStatusEnd?: string;
   fullPaperStartDate?: string;
   fullPaperEndDate?: string;
   reviewStartDate?: string;
   reviewEndDate?: string;
+  fullPaperDecideStatusStart?: string;
+  fullPaperDecideStatusEnd?: string;
   reviseStartDate?: string;
   reviseEndDate?: string;
+  revisionPaperReviewStart?: string;
+  revisionPaperReviewEnd?: string;
+  revisionPaperDecideStatusStart?: string;
+  revisionPaperDecideStatusEnd?: string;
   cameraReadyStartDate?: string;
   cameraReadyEndDate?: string;
+  cameraReadyDecideStatusStart?: string;
+  cameraReadyDecideStatusEnd?: string;
   isWaitlist?: boolean;
   isActive?: boolean;
   revisionRoundsDetail?: RevisionRoundDeadlineForReviewer[];
@@ -372,14 +383,24 @@ export type ResearchPhaseDtoDetail = {
   conferenceId?: string
   registrationStartDate?: string
   registrationEndDate?: string
+  abstractDecideStatusStart?: string
+  abstractDecideStatusEnd?: string
   fullPaperStartDate?: string
   fullPaperEndDate?: string
   reviewStartDate?: string
   reviewEndDate?: string
+  fullPaperDecideStatusStart?: string
+  fullPaperDecideStatusEnd?: string
   reviseStartDate?: string
   reviseEndDate?: string
+  revisionPaperReviewStart?: string
+  revisionPaperReviewEnd?: string
+  revisionPaperDecideStatusStart?: string
+  revisionPaperDecideStatusEnd?: string
   cameraReadyStartDate?: string
   cameraReadyEndDate?: string
+  cameraReadyDecideStatusStart?: string
+  cameraReadyDecideStatusEnd?: string
 }
 
 export interface Author {
@@ -419,6 +440,7 @@ export interface RevisionPaper {
   // description?: string;
   revisionRound?: number | null;
   overallStatus?: string | null;
+  revisionRoundDeadlineId?: string;
   submissions: RevisionSubmission[];
   created?: string;
   updated?: string;

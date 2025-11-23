@@ -457,13 +457,15 @@ export default function ReviewerManagePaperPage() {
 
         {/* Statistics Cards */}
         <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-          <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-blue-500">
-            <p className="text-sm text-gray-600">Tổng bài báo</p>
-            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.totalPapers}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm p-4 my-5 border-l-4 border-purple-500">
-            <p className="text-sm text-gray-600">Hội nghị</p>
-            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.totalConferences}</p>
+          <div className="flex flex-row gap-4">
+            <div className="flex-1 bg-white rounded-lg shadow-sm p-4 border-l-4 border-blue-500">
+              <p className="text-sm text-gray-600">Tổng bài báo</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{stats.totalPapers}</p>
+            </div>
+            <div className="flex-1 bg-white rounded-lg shadow-sm p-4 border-l-4 border-purple-500">
+              <p className="text-sm text-gray-600">Hội nghị</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{stats.totalConferences}</p>
+            </div>
           </div>
           <div className="flex items-center justify-between">
             <div>
