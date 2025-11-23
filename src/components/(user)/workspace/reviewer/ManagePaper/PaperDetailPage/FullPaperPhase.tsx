@@ -92,18 +92,21 @@ export default function FullPaperPhase({
     const canDecideFullPaperStatus = (): boolean => {
         if (
             !currentPhase ||
-            !currentPhase.reviewStartDate ||
-            !currentPhase.reviewEndDate
+            !currentPhase.fullPaperDecideStatusStart ||
+            !currentPhase.fullPaperDecideStatusEnd
         ) {
             return false;
         }
         return isWithinDateRange(
-            currentPhase.reviewStartDate,
-            currentPhase.reviewEndDate,
+            currentPhase.fullPaperDecideStatusStart,
+            currentPhase.fullPaperDecideStatusEnd,
         );
     };
 
-    const isNotAllSubmitted = !paperDetail.fullPaper?.isAllSubmittedFullPaperReview;
+    // const isNotAllSubmitted = !paperDetail.fullPaper?.isAllSubmittedFullPaperReview;
+    const hasAtLeastOneReview =
+        paperDetail?.fullPaper?.fullPaperReviews &&
+        paperDetail?.fullPaper?.fullPaperReviews.length > 0;
     const isOutOfDecisionTime = !canDecideFullPaperStatus();
 
     const handleSubmitReview = async () => {
@@ -137,7 +140,7 @@ export default function FullPaperPhase({
         if (!paperDetail?.fullPaper) return;
         if (!canDecideFullPaperStatus()) {
             toast.error(
-                `Thời hạn quyết định Full Paper là từ ${formatDate(currentPhase!.reviewStartDate)} đến ${formatDate(currentPhase!.reviewEndDate)}`,
+                `Thời hạn quyết định Full Paper là từ ${formatDate(currentPhase!.fullPaperDecideStatusStart)} đến ${formatDate(currentPhase!.fullPaperDecideStatusEnd)}`,
             );
             return;
         }
@@ -179,13 +182,19 @@ export default function FullPaperPhase({
                             onClick={() => setShowDecisionPopup(true)}
                             className="bg-purple-600 hover:bg-purple-700"
                             size="lg"
-                            disabled={isNotAllSubmitted || isOutOfDecisionTime}
+                            disabled={!hasAtLeastOneReview || isOutOfDecisionTime}
                         >
                             <Gavel className="w-4 h-4 mr-2" />
-                            {isNotAllSubmitted && !isOutOfDecisionTime && "Chưa thể quyết định, còn reviewer chưa nộp"}
+                            {/* {isNotAllSubmitted && !isOutOfDecisionTime && "Chưa thể quyết định, còn reviewer chưa nộp"}
                             {!isNotAllSubmitted && isOutOfDecisionTime && "Chưa thể quyết định, ngoài khoảng thời gian"}
                             {isNotAllSubmitted && isOutOfDecisionTime && "Chưa thể quyết định, reviewer chưa nộp & ngoài thời gian"}
-                            {!isNotAllSubmitted && !isOutOfDecisionTime && "Quyết định cuối cùng"}
+                            {!isNotAllSubmitted && !isOutOfDecisionTime && "Quyết định cuối cùng"} */}
+
+                            {!hasAtLeastOneReview && !isOutOfDecisionTime && "Chưa thể quyết định, chưa có review nào"}
+                            {hasAtLeastOneReview && isOutOfDecisionTime && "Ngoài thời gian quyết định"}
+                            {!hasAtLeastOneReview && isOutOfDecisionTime && "Chưa có review & ngoài thời gian"}
+                            {hasAtLeastOneReview && !isOutOfDecisionTime && "Quyết định cuối cùng"}
+
                         </Button>
                         // <Button
                         //     onClick={() => setShowDecisionPopup(true)}

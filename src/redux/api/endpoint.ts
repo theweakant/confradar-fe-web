@@ -26,7 +26,7 @@ export const endpoint = {
     ACTIVATE_EXTERNAL_REVIEWER: (userId: string) =>
       `/auth/activate-external-reviewer/${userId}`,
 
-    GET_NOTIFICATION:"/notification/own-notification"
+    GET_NOTIFICATION: "/notification/own-notification"
   },
   DESTINATION: {
     LIST: "/Destination",
@@ -287,6 +287,7 @@ export const endpoint = {
     UPDATE_FULLPAPER: "/Paper/update-fullpaper",
     UPDATE_REVISION_SUBMISSION: "/Paper/update-revision-submission",
     UPDATE_CAMERA_READY: "/Paper/update-camera-ready",
+    MARK_COMPLETE_REVISE: "/paper/mark-complete-revise"
   },
 
   FAVOURITE_CONFERENCE: {
