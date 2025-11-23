@@ -562,7 +562,7 @@ export default function RevisionPaperPhase({
                             revisionReviews={revisionReviews}
                             isLoading={isLoading}
                         />
-                        <div className="mt-6">
+                        {/* <div className="mt-6">
                             {canSubmitRevisionReview() ? (
                                 <Button
                                     className="bg-black hover:bg-gray-800"
@@ -576,10 +576,22 @@ export default function RevisionPaperPhase({
                                     Hiện không trong thời gian đánh giá Revision Paper
                                 </p>
                             )}
-                        </div>
+                        </div> */}
                     </>
 
                 )}
+
+            {paperDetail.revisionPaper && (
+                <div className="mt-6">
+                    {canSubmitRevisionReview() ? (
+                        <Button onClick={() => setShowReviewDialog(true)}>
+                            Đánh giá Revision Paper
+                        </Button>
+                    ) : (
+                        <p>Hiện không trong thời gian đánh giá...</p>
+                    )}
+                </div>
+            )}
 
             {/* Revision Submissions with Review Forms */}
             <div className="bg-white border rounded-lg p-6">
