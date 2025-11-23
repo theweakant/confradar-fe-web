@@ -792,21 +792,11 @@ export const conferenceStepApi = createApi({
       ApiResponse<{ success: boolean }>,
       { researchPhaseId: string; data: UpdateResearchPhaseRequest }
     >({
-      query: ({ researchPhaseId, data }) => {
-        const {
-          registrationStartDate, registrationEndDate, fullPaperStartDate, fullPaperEndDate, reviewStartDate, reviewEndDate,
-          reviseStartDate, reviseEndDate, cameraReadyStartDate, cameraReadyEndDate, isWaitlist, isActive
-        } = data;
-
-        return {
-          url: endpoint.CONFERENCE_STEP.UPDATE_RESEARCH_PHASE(researchPhaseId),
-          method: "PUT",
-          body: {
-            registrationStartDate, registrationEndDate, fullPaperStartDate, fullPaperEndDate, reviewStartDate, reviewEndDate,
-            reviseStartDate, reviseEndDate, cameraReadyStartDate, cameraReadyEndDate, isWaitlist, isActive,
-          },
-        };
-      },
+      query: ({ researchPhaseId, data }) => ({
+        url: endpoint.CONFERENCE_STEP.UPDATE_RESEARCH_PHASE(researchPhaseId),
+        method: "PUT",
+        body: data, 
+      }),
       invalidatesTags: ["ConferenceStep"],
     }),
 

@@ -325,6 +325,10 @@ export interface RevisionRoundDeadline {
 
 export interface ResearchPhase {
   researchPhaseId?: string;
+  isWaitlist: boolean;
+  isActive: boolean;
+  revisionRoundDeadlines: RevisionRoundDeadline[];
+
   registrationStartDate: string;
   registrationEndDate: string;
   fullPaperStartDate: string;
@@ -335,15 +339,28 @@ export interface ResearchPhase {
   reviseEndDate: string;
   cameraReadyStartDate: string;
   cameraReadyEndDate: string;
-  isWaitlist: boolean;
-  isActive: boolean;
-  revisionRoundDeadlines: RevisionRoundDeadline[];
+
+  abstractDecideStatusStart: string;
+  abstractDecideStatusEnd: string;
+  fullPaperDecideStatusStart: string;
+  fullPaperDecideStatusEnd: string;
+  revisionPaperReviewStart: string;
+  revisionPaperReviewEnd: string;
+  revisionPaperDecideStatusStart: string;
+  revisionPaperDecideStatusEnd: string;
+  cameraReadyDecideStatusStart: string;
+  cameraReadyDecideStatusEnd: string;
 
   registrationDuration?: number;
   fullPaperDuration?: number;
   reviewDuration?: number;
   reviseDuration?: number;
   cameraReadyDuration?: number;
+  abstractDecideStatusDuration?: number;
+  fullPaperDecideStatusDuration?: number;
+  revisionPaperReviewDuration?: number;
+  revisionPaperDecideStatusDuration?: number;
+  cameraReadyDecideStatusDuration?: number;
 }
 export type UpdateResearchPhaseRequest = {
   registrationStartDate: string;
@@ -356,13 +373,26 @@ export type UpdateResearchPhaseRequest = {
   reviseEndDate: string;
   cameraReadyStartDate: string;
   cameraReadyEndDate: string;
-  isWaitlist: boolean;
-  isActive: boolean;
+
+  abstractDecideStatusStart: string;
+  abstractDecideStatusEnd: string;
+  fullPaperDecideStatusStart: string;
+  fullPaperDecideStatusEnd: string;
+  revisionPaperReviewStart: string;
+  revisionPaperReviewEnd: string;
+  revisionPaperDecideStatusStart: string;
+  revisionPaperDecideStatusEnd: string;
+  cameraReadyDecideStatusStart: string;
+  cameraReadyDecideStatusEnd: string;
+
   registrationDuration?: number;
   fullPaperDuration?: number;
   reviewDuration?: number;
   reviseDuration?: number;
   cameraReadyDuration?: number;
+
+  isWaitlist: boolean;
+  isActive: boolean;
 };
 export interface ConferenceResearchPhaseData {
   researchPhase: ResearchPhase;
@@ -666,6 +696,18 @@ export interface ResearchConferencePhaseResponse {
   revisionRoundDeadlines?: RevisionRoundDeadlineResponse[];
 
   waitlistPhase?: ResearchConferencePhaseResponse;
+  
+  abstractDecideStatusStart?: string;
+  abstractDecideStatusEnd?: string;
+  fullPaperDecideStatusStart?: string;
+  fullPaperDecideStatusEnd?: string;
+  revisionPaperReviewStart?: string;
+  revisionPaperReviewEnd?: string;
+  revisionPaperDecideStatusStart?: string;
+  revisionPaperDecideStatusEnd?: string;
+  cameraReadyDecideStatusStart?: string;
+  cameraReadyDecideStatusEnd?: string;
+
 }
 
 export interface RevisionRoundDeadlineResponse {

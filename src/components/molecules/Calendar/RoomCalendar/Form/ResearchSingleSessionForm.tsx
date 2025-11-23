@@ -225,53 +225,53 @@ const convertToTimeOnly = (isoString: string): string => {
   return `${hours}:${minutes}:${seconds}`;
 };
 
-  // ✅ Submit form
-  const handleSubmit = () => {
-    if (!formData.title.trim()) {
-      toast.error("Vui lòng nhập tiêu đề session!");
-      return;
-    }
+const handleSubmit = () => {
+  if (!formData.title.trim()) {
+    toast.error("Vui lòng nhập tiêu đề session!");
+    return;
+  }
 
-    if (formData.timeRange < 0.5) {
-      toast.error("Thời lượng tối thiểu là 0.5 giờ (30 phút)!");
-      return;
-    }
+  if (formData.timeRange < 0.5) {
+    toast.error("Thời lượng tối thiểu là 0.5 giờ (30 phút)!");
+    return;
+  }
 
-    const maxTime = maxTimeRange || 24;
-    if (formData.timeRange > maxTime) {
-      toast.error(`Thời lượng tối đa là ${maxTime} giờ!`);
-      return;
-    }
+  const maxTime = maxTimeRange || 24;
+  if (formData.timeRange > maxTime) {
+    toast.error(`Thời lượng tối đa là ${maxTime} giờ!`);
+    return;
+  }
 
-    const proposedEnd = new Date(formData.selectedStartTime);
-    proposedEnd.setTime(proposedEnd.getTime() + formData.timeRange * 60 * 60 * 1000);
-    const maxEnd = new Date(slotEndTime);
+  const proposedEnd = new Date(formData.selectedStartTime);
+  proposedEnd.setTime(proposedEnd.getTime() + formData.timeRange * 60 * 60 * 1000);
+  const maxEnd = new Date(slotEndTime);
 
-    if (proposedEnd > maxEnd) {
-      toast.error(
-        `Thời gian kết thúc (${formatTime(proposedEnd.toISOString())}) vượt quá khung giờ trống (${formatTime(slotEndTime)})!`
-      );
-      return;
-    }
+  if (proposedEnd > maxEnd) {
+    toast.error(
+      `Thời gian kết thúc (${formatTime(proposedEnd.toISOString())}) vượt quá khung giờ trống (${formatTime(slotEndTime)})!`
+    );
+    return;
+  }
 
-    const session: ResearchSession = {
-      sessionId: initialSession?.sessionId,
-      conferenceId,
-      title: formData.title,
-      description: formData.description,
-      date,
-      startTime: convertToTimeOnly(formData.selectedStartTime),
-      endTime: convertToTimeOnly(calculatedEndTime),
-      timeRange: formData.timeRange,
-      roomId,
-      roomDisplayName,
-      roomNumber,
-      sessionMedias: formData.sessionMedias,
-    };
-
-    onSave(session);
-    toast.success(isEditMode ? "Đã cập nhật phiên họp thành công!" : "Đã tạo phiên họp thành công!");
+  // ✅ GỬI ISO STRING GIỐNG TECH
+  const session: ResearchSession = {
+    sessionId: initialSession?.sessionId,
+    conferenceId,
+    title: formData.title,
+    description: formData.description,
+    date,
+    startTime: formData.selectedStartTime,  // ✅ ISO: "2026-08-25T08:00:00"
+    endTime: calculatedEndTime,              // ✅ ISO: "2026-08-25T10:00:00"
+    timeRange: formData.timeRange,
+    roomId,
+    roomDisplayName,
+    roomNumber,
+    sessionMedias: formData.sessionMedias,
   };
+
+  onSave(session);
+  toast.success(isEditMode ? "Đã cập nhật phiên họp thành công!" : "Đã tạo phiên họp thành công!");
+};
 
   return (
     <div className="space-y-4">

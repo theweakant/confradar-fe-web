@@ -2,7 +2,7 @@
 
 import { toast } from "sonner";
 import { useEffect, useMemo, useCallback, useRef, useState } from "react";
-import { useAppDispatch } from "@/redux/hooks/hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks/hooks";
 import { setMaxStep, setMode } from "@/redux/slices/conferenceStep.slice";
 
 // API Queries
@@ -34,7 +34,7 @@ import { MaterialsForm } from "@/components/molecules/Conference/ConferenceStep/
 
 import {
   useStepNavigation,
-  useResearchFormSubmit,
+  useResearchFormSubmit,  
   useValidation,
   useResearchForm,
   useDeleteTracking,
@@ -57,7 +57,7 @@ import {
 } from "@/components/molecules/Conference/ConferenceStep/constants";
 
 import RoomCalendar from "@/components/molecules/Calendar/RoomCalendar/RoomCalendar";
-import { ResearchSession, Session } from "@/types/conference.type";
+import { ResearchSession } from "@/types/conference.type";
 
 // DELETE TRACKING FOR CREATE MODE
 const useMockDeleteTracking = () => {
@@ -90,6 +90,10 @@ export default function ResearchConferenceStepForm({
   conferenceId,
 }: ResearchConferenceStepFormProps) {
   const dispatch = useAppDispatch();
+
+  // ✅ LẤY CONFERENCE ID TỪ REDUX (GIỐNG TECH)
+  const reduxConferenceId = useAppSelector((state) => state.conferenceStep.conferenceId);
+  const actualConferenceId = mode === "create" ? reduxConferenceId : conferenceId;
 
   // === DELETE TRACKING (REAL OR MOCK) ===
   const realDeleteTracking = useDeleteTracking();
@@ -555,6 +559,7 @@ export default function ResearchConferenceStepForm({
     }
   };
 
+  // ✅ SESSION CALLBACKS - GIỐNG TECH
   const handleSessionCreatedFromCalendar = (session: ResearchSession) => {
     setSessions((prev) => [...prev, session]);
     handleMarkHasData(5);
@@ -581,7 +586,7 @@ export default function ResearchConferenceStepForm({
   };
 
   const handleSessionDeletedFromCalendar = (index: number) => {
-        const deletedSession = sessions[index];
+    const deletedSession = sessions[index];
     
     if (deletedSession?.sessionId && mode === "edit") {
       realDeleteTracking.trackDeletedSession(deletedSession.sessionId);
@@ -1019,6 +1024,7 @@ export default function ResearchConferenceStepForm({
             maxTotalSlot={basicForm.totalSlot}
             allowListener={researchDetail.allowListener}
             numberPaperAccept={researchDetail.numberPaperAccept ?? 0}
+            reviewFee={researchDetail.reviewFee ?? 0}
           />
           <FlexibleNavigationButtons
             currentStep={4}
@@ -1034,14 +1040,14 @@ export default function ResearchConferenceStepForm({
         </StepContainer>
       )}
 
-      {/* STEP 5: SESSIONS – ĐÃ CẬP NHẬT THEO PATTERN TECH */}
+      {/* STEP 5: SESSIONS – ✅ ĐÃ FIX GIỐNG TECH */}
       {currentStep === 5 && (
         <StepContainer
           stepNumber={5}
           title="Phiên họp (Tùy chọn)"
           isCompleted={isStepCompleted(5)}
         >
-          {/* Cảnh báo nếu thiếu ngày */}
+          {/* ⚠️ Cảnh báo nếu thiếu ngày */}
           {(!basicForm.startDate || !basicForm.endDate) && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
               <div className="flex items-start gap-3">
@@ -1058,6 +1064,30 @@ export default function ResearchConferenceStepForm({
                     className="mt-2 text-sm text-red-700 underline hover:text-red-900"
                   >
                     Quay về Bước 1 →
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ⚠️ Cảnh báo nếu chưa có Conference ID (CREATE MODE) */}
+          {!actualConferenceId && mode === "create" && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+              <div className="flex items-start gap-3">
+                <svg className="w-5 h-5 text-yellow-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <div>
+                  <h4 className="text-sm font-semibold text-yellow-900 mb-1">Chưa có Conference ID</h4>
+                  <p className="text-sm text-yellow-800">
+                    Vui lòng hoàn thành <strong>Bước 1-4</strong> để hệ thống tạo Conference ID. 
+                    Sau đó bạn mới có thể tạo phiên họp.
+                  </p>
+                  <button
+                    onClick={() => handleGoToStep(1)}
+                    className="mt-2 px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 transition-colors text-sm"
+                  >
+                    Quay về Bước 1
                   </button>
                 </div>
               </div>
@@ -1090,7 +1120,7 @@ export default function ResearchConferenceStepForm({
 
           <div className="border rounded-lg overflow-hidden bg-white shadow-sm mb-4">
             <RoomCalendar
-              conferenceId={conferenceId || undefined}
+              conferenceId={actualConferenceId || undefined} 
               conferenceType="Research"
               onSessionCreated={handleSessionCreatedFromCalendar}
               onSessionUpdated={handleSessionUpdatedFromCalendar}

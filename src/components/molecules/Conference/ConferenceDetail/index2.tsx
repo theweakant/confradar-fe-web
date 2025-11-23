@@ -77,7 +77,6 @@ export default function ConferenceDetailPage() {
     refetch: researchRefetch,
   } = useGetResearchConferenceDetailInternalQuery(conferenceId);
 
-  // 👇 Gọi query riêng cho danh sách người tham dự
   const { data: attendeesData } = useViewRegisteredUsersForConferenceQuery(conferenceId);
 
   const { data: categoriesData } = useGetAllCategoriesQuery();

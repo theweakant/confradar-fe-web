@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Clock, FileText } from "lucide-react";
+import { Clock, FileText, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useGetSubmittedPapersQuery, useGetAssignReviewersQuery } from "@/redux/services/statistics.service";
 import { useGetReviewersListQuery } from "@/redux/services/user.service";
@@ -18,25 +18,24 @@ import { ReviewerList } from "./List/ReviewerList";
 import { AssignmentModal } from "./Modal/AssignmentModal";
 import { AbstractList } from "./List/AbstractList";
 import { Abstract1, DecisionType } from "@/types/paper.type";
+import { ResearchPhase, ResearchConferenceDetailResponse, ResearchConferencePhaseResponse } from "@/types/conference.type";
 
 interface PaperTabProps {
   conferenceId: string;
+  conferenceData?: ResearchConferenceDetailResponse; 
 }
 
-export function PaperTab({ conferenceId }: PaperTabProps) {
-  // Assignment Modal States
+export function PaperTab({ conferenceId, conferenceData }: PaperTabProps) {
   const [selectedPaperId, setSelectedPaperId] = useState<string | null>(null);
   const [selectedReviewer, setSelectedReviewer] = useState<string>("");
   const [isHeadReviewer, setIsHeadReviewer] = useState(false);
 
-  // Pending Abstracts States
   const [showPendingAbstracts, setShowPendingAbstracts] = useState(false);
   const [selectedAbstract, setSelectedAbstract] = useState<Abstract1 | null>(null);
   const [showDecisionDialog, setShowDecisionDialog] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingDecision, setPendingDecision] = useState<DecisionType | null>(null);
 
-  // Queries
   const {
     data: papersData,
     isLoading: isLoadingPapers,
@@ -55,14 +54,68 @@ export function PaperTab({ conferenceId }: PaperTabProps) {
   const { data: pendingAbstractsResponse, isLoading: isLoadingAbstracts } =
     useListPendingAbstractsQuery(conferenceId ? conferenceId : skipToken);
 
-  // Mutations
   const [assignPaper, { isLoading: isAssigning }] = useAssignPaperToReviewerMutation();
   const [decideAbstractStatus, { isLoading: isDeciding }] = useDecideAbstractStatusMutation();
 
   const isLoading = isLoadingPapers || isLoadingReviewers;
   const isError = isErrorPapers || isErrorReviewers;
 
-  // Assignment Modal Handlers
+  const activePhase = conferenceData?.researchPhase?.find(
+    (phase: ResearchConferencePhaseResponse) => phase.isActive
+  );
+
+  const isAbstractReviewPeriod = () => {
+    if (!activePhase) return false;
+
+    const startStr = activePhase.abstractDecideStatusStart;
+    const endStr = activePhase.abstractDecideStatusEnd;
+
+    if (!startStr || !endStr) return false;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const startDate = new Date(startStr);
+    const endDate = new Date(endStr);
+
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return false;
+
+    startDate.setHours(0, 0, 0, 0);
+    endDate.setHours(23, 59, 59, 999);
+
+    return today >= startDate && today <= endDate;
+  };
+
+  const isPastReviewPeriod = () => {
+    if (!activePhase) return false;
+
+    const endStr = activePhase.abstractDecideStatusEnd;
+
+    if (!endStr) return false;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const endDate = new Date(endStr);
+
+    if (isNaN(endDate.getTime())) return false;
+
+    endDate.setHours(23, 59, 59, 999);
+
+    return today > endDate;
+  };
+
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return "—";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "—";
+    return date.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
   const handlePaperClick = (paperId: string) => {
     setSelectedPaperId(paperId);
     setSelectedReviewer("");
@@ -99,7 +152,6 @@ export function PaperTab({ conferenceId }: PaperTabProps) {
     }
   };
 
-  // Pending Abstracts Handlers
   const handleOpenDecisionDialog = (abstract: Abstract1) => {
     setSelectedAbstract(abstract);
     setShowDecisionDialog(true);
@@ -144,6 +196,18 @@ export function PaperTab({ conferenceId }: PaperTabProps) {
     setShowDecisionDialog(true);
   };
 
+  const handlePendingAbstractsClick = () => {
+    if (!canReviewAbstracts) {
+      if (isPastReviewPeriod()) {
+        toast.warning("Đã hết thời gian duyệt Abstract!");
+      } else {
+        toast.warning("Chưa đến thời gian duyệt Abstract!");
+      }
+      return;
+    }
+    setShowPendingAbstracts(true);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -172,28 +236,74 @@ export function PaperTab({ conferenceId }: PaperTabProps) {
   const reviewersList = reviewersListData?.data ?? [];
   const selectedPaper = papers.find((p) => p.paperId === selectedPaperId);
   const pendingAbstracts = pendingAbstractsResponse?.data || [];
+  const canReviewAbstracts = isAbstractReviewPeriod();
+
+  const getReviewStatus = () => {
+    if (!activePhase) return null;
+    
+    if (canReviewAbstracts) {
+      return {
+        label: "Đang trong thời gian duyệt",
+        color: "bg-green-100 text-green-700"
+      };
+    } else if (isPastReviewPeriod()) {
+      return {
+        label: "Đã hết thời gian duyệt",
+        color: "bg-red-100 text-red-700"
+      };
+    } else {
+      return {
+        label: "Chưa đến thời gian duyệt",
+        color: "bg-amber-100 text-amber-700"
+      };
+    }
+  };
+
+  const reviewStatus = getReviewStatus();
 
   return (
     <>
       <div className="space-y-6">
-        <div className="flex items-center gap-2 justify-end">
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            onClick={() => setShowPendingAbstracts(true)}
-          >
-            <Clock className="w-4 h-4" />
-            Chờ duyệt ({pendingAbstracts.length})
-          </Button>
-        </div>
+        {activePhase && (
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-3">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-blue-600" />
+                <h3 className="font-semibold text-gray-900">Thời gian duyệt Abstract</h3>
+                {reviewStatus && (
+                  <span className={`ml-2 px-2 py-1 text-xs font-medium rounded-full ${reviewStatus.color}`}>
+                    {reviewStatus.label}
+                  </span>
+                )}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={handlePendingAbstractsClick}
+                disabled={!canReviewAbstracts}
+              >
+                <Clock className="w-4 h-4" />
+                Chờ duyệt ({pendingAbstracts.length})
+              </Button>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-gray-700">
+                {formatDate(activePhase.abstractDecideStatusStart)}
+              </span>
+              <span className="text-blue-600 font-medium">→</span>
+              <span className="text-gray-700">
+                {formatDate(activePhase.abstractDecideStatusEnd)}
+              </span>
+            </div>
+          </div>
+        )}
 
         <PaperList papers={papers} onPaperClick={handlePaperClick} />
 
         <ReviewerList reviewers={reviewers} />
       </div>
 
-      {/* Assignment Modal */}
       {selectedPaperId && (
         <AssignmentModal
           paper={selectedPaper}
@@ -209,7 +319,6 @@ export function PaperTab({ conferenceId }: PaperTabProps) {
         />
       )}
 
-      {/* Pending Abstracts Modal */}
       {showPendingAbstracts && (
         <AbstractList
           abstracts={pendingAbstracts}

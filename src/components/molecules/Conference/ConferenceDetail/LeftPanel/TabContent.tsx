@@ -2,18 +2,18 @@
 import type { CommonConference } from "@/types/conference.type";
 import type { TabId } from "../constants/tab";
 
-import { PriceTab } from "../Tab/PriceTab";
-import { RefundPolicyTab } from "../Tab/RefundPolicyTab";
-import { SessionTab } from "../Tab/SessionTab";
-import { SponsorsMediaTab } from "../Tab/SponsorsMediaTab";
-import { ResearchMaterialsTab } from "../Tab/ResearchMaterialsTab";
-import { ResearchInfoTab } from "../Tab/ResearchInfoTab";
-import { RefundRequestTab } from "../Tab/RefundRequestTab";
-import { OtherRequestTab } from "../Tab/OtherRequest";
-import { ResearchTimelineTab } from "../Tab/ResearchTimelineTab";
-import { PaperTab } from "../Tab/Paper/index";
-import { PaperAssignmentTab } from "../Tab/PaperAssignmentTab";
-import { CustomerTab } from "../Tab/Customer/CustomerTab";
+import { PriceTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/PriceTab";
+import { RefundPolicyTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/RefundPolicyTab";
+import { SessionTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/SessionTab";
+import { SponsorsMediaTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/SponsorsMediaTab";
+import { ResearchMaterialsTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/ResearchMaterialsTab";
+import { ResearchInfoTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/ResearchInfoTab";
+import { RefundRequestTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/RefundRequestTab";
+import { OtherRequestTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/OtherRequest";
+import { ResearchTimelineTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/ResearchTimelineTab";
+import { PaperTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/Paper/index";
+import { PaperAssignmentTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/PaperAssignmentTab";
+import { CustomerTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/Customer/CustomerTab";
 
 interface TabContentProps {
   activeSubtab: TabId;
@@ -57,7 +57,12 @@ export function TabContent({
         return <ResearchTimelineTab conferenceId={conference.conferenceId!} />;
       
       case "paper-phase":
-        return conferenceType === "research" ? <PaperTab conferenceId={conference.conferenceId!} /> : null;
+        return conferenceType === "research" ? (
+          <PaperTab 
+            conferenceId={conference.conferenceId!} 
+            conferenceData={conference} 
+          />
+        ) : null;
       
       case "refund-requests":
         return (

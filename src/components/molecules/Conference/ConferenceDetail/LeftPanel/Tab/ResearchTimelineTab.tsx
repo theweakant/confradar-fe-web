@@ -26,7 +26,7 @@ import {
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ConferencePriceResponse, Phase, RefundInPhase, RefundPolicyResponse, ResearchConferencePhaseResponse, ResearchDetail, ResearchPhase, Ticket } from "@/types/conference.type";
-import { ResearchPriceForm } from "../../ConferenceStep/forms/research/ResearchPriceForm";
+import { ResearchPriceForm } from "@/components/molecules/Conference/ConferenceStep/forms/research/ResearchPriceForm";
 import { formatCurrency } from "@/helper/format";
 import { useAddPricePhaseForWaitlistMutation } from "@/redux/services/conferenceStep.service";
 

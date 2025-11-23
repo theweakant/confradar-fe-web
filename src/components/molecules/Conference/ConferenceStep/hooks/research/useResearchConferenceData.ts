@@ -18,7 +18,7 @@ import type {
   ResearchRankingReference,
   RefundPolicyResponse,
 } from "@/types/conference.type";
-import { RevisionDeadlineDetail,  } from "@/types/paper.type";
+import { RevisionDeadlineDetail } from "@/types/paper.type";
 
 interface UseResearchConferenceDataProps {
   conferenceId: string;
@@ -157,6 +157,39 @@ export function useResearchConferenceData({
               mainPhaseData.cameraReadyStartDate ?? "",
               mainPhaseData.cameraReadyEndDate ?? ""
             ),
+
+            // === NEW: Decision phases ===
+            abstractDecideStatusStart: mainPhaseData.abstractDecideStatusStart ?? "",
+            abstractDecideStatusEnd: mainPhaseData.abstractDecideStatusEnd ?? "",
+            abstractDecideStatusDuration: calcDuration(
+              mainPhaseData.abstractDecideStatusStart ?? "",
+              mainPhaseData.abstractDecideStatusEnd ?? ""
+            ),
+            fullPaperDecideStatusStart: mainPhaseData.fullPaperDecideStatusStart ?? "",
+            fullPaperDecideStatusEnd: mainPhaseData.fullPaperDecideStatusEnd ?? "",
+            fullPaperDecideStatusDuration: calcDuration(
+              mainPhaseData.fullPaperDecideStatusStart ?? "",
+              mainPhaseData.fullPaperDecideStatusEnd ?? ""
+            ),
+            revisionPaperReviewStart: mainPhaseData.revisionPaperReviewStart ?? "",
+            revisionPaperReviewEnd: mainPhaseData.revisionPaperReviewEnd ?? "",
+            revisionPaperReviewDuration: calcDuration(
+              mainPhaseData.revisionPaperReviewStart ?? "",
+              mainPhaseData.revisionPaperReviewEnd ?? ""
+            ),
+            revisionPaperDecideStatusStart: mainPhaseData.revisionPaperDecideStatusStart ?? "",
+            revisionPaperDecideStatusEnd: mainPhaseData.revisionPaperDecideStatusEnd ?? "",
+            revisionPaperDecideStatusDuration: calcDuration(
+              mainPhaseData.revisionPaperDecideStatusStart ?? "",
+              mainPhaseData.revisionPaperDecideStatusEnd ?? ""
+            ),
+            cameraReadyDecideStatusStart: mainPhaseData.cameraReadyDecideStatusStart ?? "",
+            cameraReadyDecideStatusEnd: mainPhaseData.cameraReadyDecideStatusEnd ?? "",
+            cameraReadyDecideStatusDuration: calcDuration(
+              mainPhaseData.cameraReadyDecideStatusStart ?? "",
+              mainPhaseData.cameraReadyDecideStatusEnd ?? ""
+            ),
+
             isWaitlist: false,
             isActive: mainPhaseData.isActive ?? true,
             revisionRoundDeadlines: (mainPhaseData.revisionRoundDeadlines || []).map((rd) => ({
@@ -202,6 +235,39 @@ export function useResearchConferenceData({
               waitlistPhaseData.cameraReadyStartDate ?? "",
               waitlistPhaseData.cameraReadyEndDate ?? ""
             ),
+
+            // === NEW: Decision phases ===
+            abstractDecideStatusStart: waitlistPhaseData.abstractDecideStatusStart ?? "",
+            abstractDecideStatusEnd: waitlistPhaseData.abstractDecideStatusEnd ?? "",
+            abstractDecideStatusDuration: calcDuration(
+              waitlistPhaseData.abstractDecideStatusStart ?? "",
+              waitlistPhaseData.abstractDecideStatusEnd ?? ""
+            ),
+            fullPaperDecideStatusStart: waitlistPhaseData.fullPaperDecideStatusStart ?? "",
+            fullPaperDecideStatusEnd: waitlistPhaseData.fullPaperDecideStatusEnd ?? "",
+            fullPaperDecideStatusDuration: calcDuration(
+              waitlistPhaseData.fullPaperDecideStatusStart ?? "",
+              waitlistPhaseData.fullPaperDecideStatusEnd ?? ""
+            ),
+            revisionPaperReviewStart: waitlistPhaseData.revisionPaperReviewStart ?? "",
+            revisionPaperReviewEnd: waitlistPhaseData.revisionPaperReviewEnd ?? "",
+            revisionPaperReviewDuration: calcDuration(
+              waitlistPhaseData.revisionPaperReviewStart ?? "",
+              waitlistPhaseData.revisionPaperReviewEnd ?? ""
+            ),
+            revisionPaperDecideStatusStart: waitlistPhaseData.revisionPaperDecideStatusStart ?? "",
+            revisionPaperDecideStatusEnd: waitlistPhaseData.revisionPaperDecideStatusEnd ?? "",
+            revisionPaperDecideStatusDuration: calcDuration(
+              waitlistPhaseData.revisionPaperDecideStatusStart ?? "",
+              waitlistPhaseData.revisionPaperDecideStatusEnd ?? ""
+            ),
+            cameraReadyDecideStatusStart: waitlistPhaseData.cameraReadyDecideStatusStart ?? "",
+            cameraReadyDecideStatusEnd: waitlistPhaseData.cameraReadyDecideStatusEnd ?? "",
+            cameraReadyDecideStatusDuration: calcDuration(
+              waitlistPhaseData.cameraReadyDecideStatusStart ?? "",
+              waitlistPhaseData.cameraReadyDecideStatusEnd ?? ""
+            ),
+
             isWaitlist: true,
             isActive: waitlistPhaseData.isActive ?? false,
             revisionRoundDeadlines: (waitlistPhaseData.revisionRoundDeadlines || []).map((rd) => ({

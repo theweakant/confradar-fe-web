@@ -67,12 +67,32 @@ const INITIAL_RESEARCH_PHASES: ResearchPhase[] = [
     cameraReadyStartDate: "",
     cameraReadyEndDate: "",
     cameraReadyDuration: 1,
+
+    abstractDecideStatusStart: "",
+    abstractDecideStatusEnd: "",
+    abstractDecideStatusDuration: 1,
+
+    fullPaperDecideStatusStart: "",
+    fullPaperDecideStatusEnd: "",
+    fullPaperDecideStatusDuration: 1,
+
+    revisionPaperReviewStart: "",
+    revisionPaperReviewEnd: "",
+    revisionPaperReviewDuration: 1,
+
+    revisionPaperDecideStatusStart: "",
+    revisionPaperDecideStatusEnd: "",
+    revisionPaperDecideStatusDuration: 1,
+
+    cameraReadyDecideStatusStart: "",
+    cameraReadyDecideStatusEnd: "",
+    cameraReadyDecideStatusDuration: 1,
+
     isWaitlist: false,
     isActive: true,
     revisionRoundDeadlines: [],
   },
   {
-    // Waitlist phase
     registrationStartDate: "",
     registrationEndDate: "",
     registrationDuration: 1,
@@ -88,6 +108,27 @@ const INITIAL_RESEARCH_PHASES: ResearchPhase[] = [
     cameraReadyStartDate: "",
     cameraReadyEndDate: "",
     cameraReadyDuration: 1,
+
+    abstractDecideStatusStart: "",
+    abstractDecideStatusEnd: "",
+    abstractDecideStatusDuration: 1,
+
+    fullPaperDecideStatusStart: "",
+    fullPaperDecideStatusEnd: "",
+    fullPaperDecideStatusDuration: 1,
+
+    revisionPaperReviewStart: "",
+    revisionPaperReviewEnd: "",
+    revisionPaperReviewDuration: 1,
+
+    revisionPaperDecideStatusStart: "",
+    revisionPaperDecideStatusEnd: "",
+    revisionPaperDecideStatusDuration: 1,
+
+    cameraReadyDecideStatusStart: "",
+    cameraReadyDecideStatusEnd: "",
+    cameraReadyDecideStatusDuration: 1,
+
     isWaitlist: true,
     isActive: false,
     revisionRoundDeadlines: [],

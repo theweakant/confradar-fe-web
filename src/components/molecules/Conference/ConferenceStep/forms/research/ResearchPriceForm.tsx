@@ -448,7 +448,6 @@ function PhaseModal({
   );
 }
 
-// ResearchPriceForm (đã cập nhật validation tổng)
 interface ResearchPriceFormProps {
   tickets: Ticket[];
   onTicketsChange: (tickets: Ticket[]) => void;
@@ -461,6 +460,7 @@ interface ResearchPriceFormProps {
   maxTotalSlot: number;
   allowListener: boolean;
   numberPaperAccept: number;
+  reviewFee: number;
 }
 
 export function ResearchPriceForm({
@@ -475,6 +475,7 @@ export function ResearchPriceForm({
   maxTotalSlot,
   allowListener,
   numberPaperAccept,
+  reviewFee,
 }: ResearchPriceFormProps) {
   const [newTicket, setNewTicket] = useState<Omit<Ticket, "ticketId">>({
     ticketPrice: 0,
@@ -498,6 +499,16 @@ export function ResearchPriceForm({
       setNewTicket((prev) => ({ ...prev, isAuthor: true }));
     }
   }, [allowListener]);
+
+  useEffect(() => {
+    if (!allowListener) {
+      setNewTicket((prev) => ({ 
+        ...prev, 
+        isAuthor: true,
+        ticketPrice: reviewFee || 0  
+      }));
+    }
+  }, [allowListener, reviewFee]);
 
   const currentTimelineStart = newTicket.isAuthor ? authorTimelineStart : ticketSaleStart;
   const currentTimelineEnd = newTicket.isAuthor ? authorTimelineEnd : ticketSaleEnd;
@@ -549,154 +560,164 @@ export function ResearchPriceForm({
     return totalUsed - editingPhaseSlot;
   };
 
-  const handleAddTicket = () => {
-    if (!newTicket.ticketName.trim()) {
-      toast.error("Vui lòng nhập tên vé!");
-      return;
-    }
-    if (newTicket.ticketPrice <= 0) {
-      toast.error("Giá vé phải lớn hơn 0!");
-      return;
-    }
-    if (newTicket.totalSlot <= 0) {
-      toast.error("Số lượng vé phải lớn hơn 0!");
-      return;
-    }
 
-    if (newTicket.isAuthor) {
-      if (newTicket.totalSlot > numberPaperAccept) {
-        toast.error(
-          `Số lượng vé tác giả (${newTicket.totalSlot}) không được vượt quá số bài báo được chấp nhận (${numberPaperAccept})!`
-        );
-        return;
-      }
-      if (!authorTimelineStart || !authorTimelineEnd) {
-        toast.error("Vui lòng điền Timeline (Registration) trước khi thêm vé tác giả!");
-        return;
-      }
-    } else {
-      if (!ticketSaleStart || !ticketSaleEnd) {
-        toast.error("Thiếu thông tin thời gian bán vé!");
-        return;
-      }
-    }
+const handleAddTicket = () => {
+  if (!newTicket.ticketName.trim()) {
+    toast.error("Vui lòng nhập tên vé!");
+    return;
+  }
+  if (newTicket.ticketPrice <= 0) {
+    toast.error("Giá vé phải lớn hơn 0!");
+    return;
+  }
 
-    if (newTicket.phases.length === 0) {
-      toast.error("Phải có ít nhất 1 giai đoạn giá!");
-      return;
-    }
+  if (newTicket.isAuthor && newTicket.ticketPrice < reviewFee) {
+    toast.error(
+      `Giá vé tác giả (${newTicket.ticketPrice.toLocaleString()} VND) không được nhỏ hơn phí đánh giá bài báo (${reviewFee.toLocaleString()} VND)!`
+    );
+    return;
+  }
 
-    const totalPhaseSlots = newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0);
-    if (totalPhaseSlots !== newTicket.totalSlot) {
+  if (newTicket.totalSlot <= 0) {
+    toast.error("Số lượng vé phải lớn hơn 0!");
+    return;
+  }
+
+  if (newTicket.isAuthor) {
+    if (newTicket.totalSlot > numberPaperAccept) {
       toast.error(
-        `Tổng slot các giai đoạn (${totalPhaseSlots}) phải bằng tổng slot vé (${newTicket.totalSlot})!`
+        `Số lượng vé tác giả (${newTicket.totalSlot}) không được vượt quá số bài báo được chấp nhận (${numberPaperAccept})!`
+      );
+      return;
+    }
+    if (!authorTimelineStart || !authorTimelineEnd) {
+      toast.error("Vui lòng điền Timeline (Registration) trước khi thêm vé tác giả!");
+      return;
+    }
+  } else {
+    if (!ticketSaleStart || !ticketSaleEnd) {
+      toast.error("Thiếu thông tin thời gian bán vé!");
+      return;
+    }
+  }
+
+  if (newTicket.phases.length === 0) {
+    toast.error("Phải có ít nhất 1 giai đoạn giá!");
+    return;
+  }
+
+  const totalPhaseSlots = newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0);
+  if (totalPhaseSlots !== newTicket.totalSlot) {
+    toast.error(
+      `Tổng slot các giai đoạn (${totalPhaseSlots}) phải bằng tổng slot vé (${newTicket.totalSlot})!`
+    );
+    return;
+  }
+
+  const sortedPhases = [...newTicket.phases].sort(
+    (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+  );
+
+  if (sortedPhases[0].startDate !== currentTimelineStart) {
+    toast.error(`Giai đoạn đầu tiên phải bắt đầu từ ${formatDate(currentTimelineStart)}`);
+    return;
+  }
+
+  const lastPhase = sortedPhases[sortedPhases.length - 1];
+  if (lastPhase.endDate !== currentTimelineEnd) {
+    toast.error(`Giai đoạn cuối cùng phải kết thúc vào ${formatDate(currentTimelineEnd)}`);
+    return;
+  }
+
+  for (let i = 0; i < sortedPhases.length - 1; i++) {
+    const current = sortedPhases[i];
+    const next = sortedPhases[i + 1];
+    const currentDate = new Date(current.endDate);
+    const nextStartDate = new Date(next.startDate);
+    const expectedNextDate = new Date(currentDate);
+    expectedNextDate.setDate(currentDate.getDate() + 1);
+
+    if (nextStartDate.getTime() !== expectedNextDate.getTime()) {
+      toast.error(
+        `Giai đoạn "${current.phaseName}" và "${next.phaseName}" bị đứt quãng hoặc chồng lấn!`
+      );
+      return;
+    }
+  }
+
+  // === ✅ VALIDATE TỔNG SAU KHI THÊM/CẬP NHẬT ===
+  const finalTickets = editingTicketIndex !== null
+    ? tickets.map((t, i) => i === editingTicketIndex ? newTicket : t)
+    : [...tickets, newTicket];
+
+  const totalAuthorSlots = finalTickets
+    .filter(t => t.isAuthor)
+    .reduce((sum, t) => sum + t.totalSlot, 0);
+
+  const totalListenerSlots = finalTickets
+    .filter(t => !t.isAuthor)
+    .reduce((sum, t) => sum + t.totalSlot, 0);
+
+  // === ✅ VALIDATION MỚI - CHO PHÉP THÊM TỪNG VÉ ===
+  if (!allowListener) {
+    // Không cho phép listener
+    if (!newTicket.isAuthor) {
+      toast.error("Không cho phép tạo vé người nghe!");
+      return;
+    }
+    
+    if (totalAuthorSlots > numberPaperAccept) {
+      toast.error(
+        `Tổng số vé tác giả (${totalAuthorSlots}) không được vượt quá số bài báo được chấp nhận (${numberPaperAccept})!`
+      );
+      return;
+    }
+  } else {
+    // Cho phép listener
+    
+    // Check vé Author không vượt quá
+    if (totalAuthorSlots > numberPaperAccept) {
+      toast.error(
+        `Tổng số vé tác giả (${totalAuthorSlots}) không được vượt quá số bài báo được chấp nhận (${numberPaperAccept})!`
       );
       return;
     }
 
-    const sortedPhases = [...newTicket.phases].sort(
-      (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
-    );
-
-    if (sortedPhases[0].startDate !== currentTimelineStart) {
-      toast.error(`Giai đoạn đầu tiên phải bắt đầu từ ${formatDate(currentTimelineStart)}`);
+    // Check vé Listener không vượt quá
+    const expectedListenerSlots = maxTotalSlot - numberPaperAccept;
+    if (totalListenerSlots > expectedListenerSlots) {
+      toast.error(
+        `Tổng số vé người nghe (${totalListenerSlots}) vượt quá giới hạn ${expectedListenerSlots}!`
+      );
       return;
     }
+  }
 
-    const lastPhase = sortedPhases[sortedPhases.length - 1];
-    if (lastPhase.endDate !== currentTimelineEnd) {
-      toast.error(`Giai đoạn cuối cùng phải kết thúc vào ${formatDate(currentTimelineEnd)}`);
-      return;
-    }
+  // === LƯU VÉ ===
+  if (editingTicketIndex !== null) {
+    const updatedTickets = [...tickets];
+    updatedTickets[editingTicketIndex] = {
+      ...newTicket,
+      ticketId: updatedTickets[editingTicketIndex]?.ticketId,
+      priceId: updatedTickets[editingTicketIndex]?.priceId
+    };
+    onTicketsChange(updatedTickets);
+    toast.success("Cập nhật vé thành công!");
+  } else {
+    onTicketsChange([...tickets, { ...newTicket }]);
+    toast.success("Đã thêm vé!");
+  }
 
-    for (let i = 0; i < sortedPhases.length - 1; i++) {
-      const current = sortedPhases[i];
-      const next = sortedPhases[i + 1];
-      const currentDate = new Date(current.endDate);
-      const nextStartDate = new Date(next.startDate);
-      const expectedNextDate = new Date(currentDate);
-      expectedNextDate.setDate(currentDate.getDate() + 1);
-
-      if (nextStartDate.getTime() !== expectedNextDate.getTime()) {
-        toast.error(
-          `Giai đoạn "${current.phaseName}" và "${next.phaseName}" bị đứt quãng hoặc chồng lấn!`
-        );
-        return;
-      }
-    }
-
-    // === ✅ VALIDATE TỔNG TOÀN CỤC SAU KHI THÊM/CẬP NHẬT ===
-    const finalTickets = editingTicketIndex !== null
-      ? tickets.map((t, i) => i === editingTicketIndex ? newTicket : t)
-      : [...tickets, newTicket];
-
-    const totalAuthorSlots = finalTickets
-      .filter(t => t.isAuthor)
-      .reduce((sum, t) => sum + t.totalSlot, 0);
-
-    const totalListenerSlots = finalTickets
-      .filter(t => !t.isAuthor)
-      .reduce((sum, t) => sum + t.totalSlot, 0);
-
-    // === ✅ VALIDATE THEO allowListener ===
-    if (!allowListener) {
-      if (totalAuthorSlots !== numberPaperAccept) {
-        toast.error(
-          `Tổng số vé tác giả (${totalAuthorSlots}) phải bằng số bài báo được chấp nhận (${numberPaperAccept})!`
-        );
-        return;
-      }
-      if (totalListenerSlots > 0) {
-        toast.error("Không cho phép tạo vé người nghe!");
-        return;
-      }
-    } else {
-      if (totalAuthorSlots !== numberPaperAccept) {
-        toast.error(
-          `Tổng số vé tác giả (${totalAuthorSlots}) phải bằng số bài báo được chấp nhận (${numberPaperAccept})!`
-        );
-        return;
-      }
-
-      const expectedListenerSlots = maxTotalSlot - numberPaperAccept;
-      if (totalListenerSlots !== expectedListenerSlots) {
-        toast.error(
-          `Tổng số vé người nghe (${totalListenerSlots}) phải bằng ${expectedListenerSlots} (tổng slot ${maxTotalSlot} - ${numberPaperAccept} vé tác giả)!`
-        );
-        return;
-      }
-
-      if (expectedListenerSlots > 0 && !finalTickets.some(t => !t.isAuthor)) {
-        toast.error("Cần có ít nhất một loại vé dành cho người nghe!");
-        return;
-      }
-    }
-
-    // === LƯU VÉ ===
-    if (editingTicketIndex !== null) {
-      const updatedTickets = [...tickets];
-      updatedTickets[editingTicketIndex] = {
-        ...newTicket,
-        ticketId: updatedTickets[editingTicketIndex]?.ticketId,
-        priceId: updatedTickets[editingTicketIndex]?.priceId
-      };
-      onTicketsChange(updatedTickets);
-      toast.success("Cập nhật vé thành công!");
-    } else {
-      onTicketsChange([...tickets, { ...newTicket }]);
-      toast.success("Đã thêm vé!");
-    }
-
-    setNewTicket({
-      ticketPrice: 0,
-      ticketName: "",
-      ticketDescription: "",
-      isAuthor: false,
-      totalSlot: 0,
-      phases: [],
-    });
-    setEditingTicketIndex(null);
-  };
+  setNewTicket({
+    ticketPrice: 0,
+    ticketName: "",
+    ticketDescription: "",
+    isAuthor: false,
+    totalSlot: 0,
+    phases: [],
+  });
+  setEditingTicketIndex(null);
+};
 
   const handleEditTicket = (ticket: Ticket, index: number) => {
     setNewTicket({
@@ -834,6 +855,14 @@ export function ResearchPriceForm({
         <h4 className="font-medium mb-3">
           {editingTicketIndex !== null ? "Chỉnh sửa vé" : "Thêm vé mới"}
         </h4>
+        {newTicket.isAuthor && reviewFee > 0 && (
+          <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="text-sm text-blue-800">
+              <strong>Lưu ý:</strong> Giá vé tác giả phải lớn hơn hoặc bằng phí đánh giá bài báo:{" "}
+              <strong className="text-blue-900">{reviewFee.toLocaleString()} VND</strong>
+            </div>
+          </div>
+        )}
 
         {newTicket.isAuthor && mainPhase?.registrationStartDate && mainPhase?.registrationEndDate && (
           <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
@@ -885,11 +914,16 @@ export function ResearchPriceForm({
 
         <div className="grid grid-cols-2 gap-3 mt-2">
           <FormInput
-            label="Giá vé gốc (VND)"
+            label={
+              newTicket.isAuthor 
+                ? `Giá vé gốc (VND) - Tối thiểu: ${reviewFee.toLocaleString()}` 
+                : "Giá vé gốc (VND)"
+            }
             type="number"
             value={newTicket.ticketPrice}
             onChange={(val) => setNewTicket({ ...newTicket, ticketPrice: Number(val) })}
-            placeholder="500000"
+            placeholder={newTicket.isAuthor ? reviewFee.toString() : "500000"}  
+            min={newTicket.isAuthor ? reviewFee : 0} 
           />
           <FormInput
             label={
