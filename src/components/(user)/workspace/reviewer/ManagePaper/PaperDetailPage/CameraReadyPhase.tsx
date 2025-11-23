@@ -59,19 +59,19 @@ export default function CameraReadyPhase({
     const canDecideCameraReadyStatus = (): boolean => {
         if (
             !currentPhase ||
-            !currentPhase.cameraReadyStartDate ||
-            !currentPhase.cameraReadyEndDate
+            !currentPhase.cameraReadyDecideStatusStart ||
+            !currentPhase.cameraReadyDecideStatusEnd
         ) {
             return false;
         }
-        return isWithinDateRange(currentPhase.cameraReadyStartDate, currentPhase.cameraReadyEndDate);
+        return isWithinDateRange(currentPhase.cameraReadyDecideStatusStart, currentPhase.cameraReadyDecideStatusEnd);
     };
 
     const handleDecideCameraReadyStatus = async () => {
         if (!paperDetail?.cameraReady) return;
         if (!canDecideCameraReadyStatus()) {
             toast.error(
-                `Chỉ có thể quyết định Camera Ready sau ngày ${formatDate(currentPhase!.cameraReadyEndDate)}`,
+                `Chỉ có thể quyết định Camera Ready trong khoảng ${formatDate(currentPhase!.cameraReadyDecideStatusStart)} - ${formatDate(currentPhase!.cameraReadyDecideStatusEnd)}`,
             );
             return;
         }

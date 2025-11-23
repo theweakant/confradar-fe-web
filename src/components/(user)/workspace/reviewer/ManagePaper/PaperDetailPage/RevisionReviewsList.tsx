@@ -9,6 +9,8 @@ import { formatDate } from "@/helper/format";
 import {
     useListRevisionPaperReviewsQuery,
 } from "@/redux/services/paper.service";
+import { ApiResponse } from "@/types/api.type";
+import { ListRevisionPaperReview } from "@/types/paper.type";
 
 function RevisionReviewsList({
     paperId,
@@ -18,6 +20,8 @@ function RevisionReviewsList({
     onToggle,
     getStatusIcon,
     getStatusColor,
+    revisionReviews,
+    isLoading
 }: {
     paperId: string;
     revisionPaperId: string;
@@ -26,11 +30,13 @@ function RevisionReviewsList({
     onToggle: () => void;
     getStatusIcon: (status?: string) => React.ReactNode;
     getStatusColor: (status?: string) => string;
+    revisionReviews: ApiResponse<ListRevisionPaperReview[]> | undefined
+    isLoading: boolean
 }) {
-    const { data: revisionReviews, isLoading } = useListRevisionPaperReviewsQuery(
-        { revisionPaperId, paperId },
-        { skip: !isExpanded },
-    );
+    // const { data: revisionReviews, isLoading } = useListRevisionPaperReviewsQuery(
+    //     { revisionPaperId, paperId },
+    //     { skip: !isExpanded },
+    // );
 
     return (
         <div className="mb-6">

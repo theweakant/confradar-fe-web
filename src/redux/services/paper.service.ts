@@ -536,6 +536,18 @@ export const paperApi = createApi({
       }),
       invalidatesTags: ["Paper"],
     }),
+
+    markCompleteRevise: builder.mutation<
+      ApiResponse<string>,
+      { revisionRoundDeadlineId: string; revisionPaperId: string; paperId: string }
+    >({
+      query: (body) => ({
+        url: endpoint.PAPER.MARK_COMPLETE_REVISE,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["Paper"],
+    }),
   }),
 });
 
@@ -590,4 +602,6 @@ export const {
   useUpdateFullPaperMutation,
   useUpdateRevisionSubmissionMutation,
   useUpdateCameraReadyMutation,
+
+  useMarkCompleteReviseMutation,
 } = paperApi;
