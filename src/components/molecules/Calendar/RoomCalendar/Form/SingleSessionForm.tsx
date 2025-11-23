@@ -272,7 +272,24 @@ export function SingleSessionForm({
   const [isSessionDetailModalOpen, setIsSessionDetailModalOpen] = useState(false);
 
   const isEditMode = !!initialSession;
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("vi-VN", {
+      weekday: "long",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
 
+  const formatTime = (isoString: string) => {
+    const d = new Date(isoString);
+    return d.toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  };
   const startTimeOptions = useMemo(() => {
     const options: Array<{ value: string; label: string }> = [];
     const slotStart = new Date(slotStartTime);
@@ -306,24 +323,7 @@ export function SingleSessionForm({
     return options;
   }, [slotStartTime, slotEndTime]);
 
-  const formatDate = (dateStr: string) => {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString("vi-VN", {
-      weekday: "long",
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  };
 
-  const formatTime = (isoString: string) => {
-    const d = new Date(isoString);
-    return d.toLocaleTimeString("vi-VN", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-  };
 
   const calculateDuration = (start: string, end: string) => {
     const startDate = new Date(start);
