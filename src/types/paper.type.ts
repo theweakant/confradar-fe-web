@@ -1,8 +1,5 @@
 //paper.type.ts
 
-export interface Paper {
-  paperId: string;
-}
 
 
 export interface AcceptedPaper {
@@ -523,4 +520,39 @@ export interface CreateCameraReadyRequest {
   cameraReadyFile: File;
   title: string;
   description: string;
+}
+
+
+//PAPER TAB
+export interface Abstract1 {
+  abstractId: string;
+  paperId: string;
+  presenterName: string;
+  conferenceName: string;
+  globalStatusName: string;
+  createdAt: string;
+  abstractUrl: string;
+}
+
+export type DecisionType = "Accepted" | "Rejected";
+
+export interface Paper {
+  paperId: string;
+  title: string;
+  submittingAuthorId: string;
+  assignedReviewers?: string[];
+  paperPhase: string;
+}
+export interface PaperLike {
+  paperId: string;
+  title?: string;
+  submittingAuthorId?: string;
+  paperPhase?: string;
+  abstractUrl?: string;
+  globalStatusName?: string;
+}
+export interface Reviewer {
+  reviewerId: string;
+  reviewerName: string;
+  assignedPaperCount: number;
 }

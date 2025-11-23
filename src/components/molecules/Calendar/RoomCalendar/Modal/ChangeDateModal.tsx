@@ -18,7 +18,6 @@ import {
   formatDateForDisplay,
   canFitInTimeSpan,
   checkSessionConflict,
-  normalizeTime,
   detectTimeFormat,
   createISOFromDateTime,
 } from "@/components/molecules/Calendar/RoomCalendar/Modal/timeHelpers";
@@ -135,7 +134,7 @@ export const ChangeDateModal: React.FC<ChangeDateModalProps> = ({
     const start = new Date(conferenceStartDate);
     const end = new Date(conferenceEndDate);
     
-    let current = new Date(start);
+    const current = new Date(start);
     while (current <= end) {
       const dateStr = current.toISOString().split('T')[0];
       

@@ -2,7 +2,6 @@
 import type { CommonConference } from "@/types/conference.type";
 import type { TabId } from "../constants/tab";
 
-// Import all tab components
 import { PriceTab } from "../Tab/PriceTab";
 import { RefundPolicyTab } from "../Tab/RefundPolicyTab";
 import { SessionTab } from "../Tab/SessionTab";
@@ -12,7 +11,7 @@ import { ResearchInfoTab } from "../Tab/ResearchInfoTab";
 import { RefundRequestTab } from "../Tab/RefundRequestTab";
 import { OtherRequestTab } from "../Tab/OtherRequest";
 import { ResearchTimelineTab } from "../Tab/ResearchTimelineTab";
-import { PaperTab } from "../Tab/PaperTab";
+import { PaperTab } from "../Tab/Paper/index";
 import { PaperAssignmentTab } from "../Tab/PaperAssignmentTab";
 import { CustomerTab } from "../Tab/Customer/CustomerTab";
 
@@ -27,7 +26,6 @@ export function TabContent({
   conference,
   conferenceType,
 }: TabContentProps) {
-  // Render the appropriate tab component
   const renderTabContent = () => {
     switch (activeSubtab) {
       case "price":

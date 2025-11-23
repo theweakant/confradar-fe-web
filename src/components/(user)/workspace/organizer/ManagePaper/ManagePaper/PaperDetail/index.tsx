@@ -4,14 +4,14 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ApiError } from "@/types/api.type";
-import { Paper } from "@/types/paper.type";
+import { PaperLike } from "@/types/paper.type";
 import { useAssignPaperToReviewerMutation } from "@/redux/services/paper.service";
 import { useGetReviewersListQuery } from "@/redux/services/user.service";
 
 import { ReviewerListResponse } from "@/types/user.type";
 
 interface PaperDetailProps {
-  paper: Paper;
+  paper: PaperLike;
   paperId: string;
   onClose: () => void;
 }

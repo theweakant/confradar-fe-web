@@ -9,8 +9,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import Link from "next/link";
 
 import { PaperTable } from "@/components/(user)/workspace/organizer/ManagePaper/ManagePaper/PaperTable";
 import { PaperDetail } from "@/components/(user)/workspace/organizer/ManagePaper/ManagePaper/PaperDetail";
