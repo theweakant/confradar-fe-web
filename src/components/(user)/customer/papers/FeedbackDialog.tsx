@@ -160,5 +160,5 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = memo(({
     );
 });
 
-
+FeedbackDialog.displayName = 'FeedbackDialog';
 export default FeedbackDialog;
