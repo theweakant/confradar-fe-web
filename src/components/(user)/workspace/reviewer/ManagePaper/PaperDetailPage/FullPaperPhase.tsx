@@ -227,6 +227,22 @@ export default function FullPaperPhase({
                     getStatusColor={getStatusColor}
                 />
 
+                <div className="mt-6">
+                    {canSubmitFullPaperReview() ? (
+                        <Button
+                            className="bg-black hover:bg-gray-800"
+                            onClick={() => setShowReviewDialog(true)}
+                        >
+                            <FileText className="w-4 h-4 mr-2" />
+                            Đánh giá Full Paper
+                        </Button>
+                    ) : (
+                        <p className="text-sm text-gray-500">
+                            Hiện không trong thời gian đánh giá Full Paper
+                        </p>
+                    )}
+                </div>
+
                 {/* ========== FORM REVIEW ========== */}
                 {/* Dialog cho review */}
                 <Transition appear show={showReviewDialog} as={Fragment}>
