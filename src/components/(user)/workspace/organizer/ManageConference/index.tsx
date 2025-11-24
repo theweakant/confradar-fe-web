@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useState, useMemo, useEffect } from "react";
 import {
   Plus,
-  Calendar,
   Microscope,
   Cpu,
   User,
@@ -41,7 +40,6 @@ export default function ManageConference() {
   const [pageSize] = useState(12);
   const [activeTab, setActiveTab] = useState<TabType>("tech");
 
-  // Filter states
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -66,7 +64,6 @@ export default function ManageConference() {
     },
   );
 
-  // RTK Query cho Research Conferences
   const {
     data: researchConferencesData,
     isLoading: researchLoading,
@@ -220,7 +217,6 @@ export default function ManageConference() {
     setPage(1);
   };
 
-  // Loading state
   if (isLoading || categoriesLoading || citiesLoading || statusesLoading) {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
@@ -232,7 +228,6 @@ export default function ManageConference() {
     );
   }
 
-  // Error state
   if (isError) {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
@@ -267,7 +262,6 @@ export default function ManageConference() {
           </p>
         </div>
 
-        {/* Tab Switcher */}
         <div className="mb-6 border-b border-gray-200">
           <div className="flex gap-4">
             <button
@@ -387,7 +381,6 @@ export default function ManageConference() {
           statuses={statuses}
         />
 
-        {/* Pagination Controls */}
         {totalPages > 1 && (
           <div className="mt-6 flex items-center justify-center gap-2">
             <Button
@@ -411,7 +404,6 @@ export default function ManageConference() {
         )}
       </div>
 
-      {/* Modal for Selecting Conference Type */}
       <Modal
         isOpen={isSelectTypeModalOpen}
         onClose={() => setIsSelectTypeModalOpen(false)}

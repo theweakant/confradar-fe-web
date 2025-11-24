@@ -187,4 +187,4 @@ export const validateRankingReferencesList = (
   }
 
   return { isValid: true };
-};
+};  
