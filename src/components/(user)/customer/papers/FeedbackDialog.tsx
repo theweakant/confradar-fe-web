@@ -2,7 +2,7 @@ import { PhaseValidationResult } from "@/helper/timeValidation";
 import { RevisionSubmission, RevisionSubmissionFeedback } from "@/types/paper.type";
 import { Dialog, Transition } from "@headlessui/react";
 import { X } from "lucide-react";
-import { Fragment } from "react";
+import { Fragment, memo, useCallback } from "react";
 
 interface FeedbackDialogProps {
     isOpen: boolean;
@@ -16,7 +16,18 @@ interface FeedbackDialogProps {
     responseValidation: PhaseValidationResult;
 }
 
-const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
+// const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
+//     isOpen,
+//     onClose,
+//     submission,
+//     feedbackResponses,
+//     onResponseChange,
+//     onSubmitResponses,
+//     loading,
+//     canRespondToFeedback,
+//     responseValidation
+// }) => {
+const FeedbackDialog: React.FC<FeedbackDialogProps> = memo(({
     isOpen,
     onClose,
     submission,
@@ -27,6 +38,11 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
     canRespondToFeedback,
     responseValidation
 }) => {
+    // Memoize handler để tránh tạo function mới mỗi lần render
+    const handleInputChange = useCallback((feedbackId: string, value: string) => {
+        onResponseChange(feedbackId, value);
+    }, [onResponseChange]);
+
     return (
         <Transition appear show={isOpen} as={Fragment}>
             <Dialog as="div" className="relative z-50" onClose={onClose}>
@@ -98,7 +114,8 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
                                                     </label>
                                                     <textarea
                                                         value={feedbackResponses[feedback.feedbackId] || feedback.response || ''}
-                                                        onChange={(e) => onResponseChange(feedback.feedbackId, e.target.value)}
+                                                        // onChange={(e) => onResponseChange(feedback.feedbackId, e.target.value)}
+                                                        onChange={(e) => handleInputChange(feedback.feedbackId, e.target.value)}
                                                         placeholder="Nhập phản hồi cho feedback này..."
                                                         className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                         rows={3}
@@ -141,7 +158,7 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
             </Dialog>
         </Transition>
     );
-};
+});
 
-
+FeedbackDialog.displayName = 'FeedbackDialog';
 export default FeedbackDialog;

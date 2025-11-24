@@ -256,7 +256,7 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
 
   const handleSubmitResponses = useCallback(
     async (submissionId: string) => {
-      if (!revisionValidation.isAvailable) {
+      if (!responseValidation.isAvailable) {
         alert(`Không thể gửi phản hồi: ${responseValidation.message}`);
         return;
       }

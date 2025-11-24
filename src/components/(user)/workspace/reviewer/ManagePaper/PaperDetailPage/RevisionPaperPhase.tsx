@@ -543,25 +543,55 @@ export default function RevisionPaperPhase({
             {/* Reviews from Other Reviewers - Only for Head Reviewer */}
             {paperDetail.isHeadReviewer &&
                 paperDetail.revisionPaper && (
-                    <RevisionReviewsList
-                        paperId={paperId}
-                        revisionPaperId={
-                            paperDetail.revisionPaper.revisionPaperId
-                        }
-                        // submissionId={submission.revisionPaperSubmissionId}
-                        isExpanded={expandedReviewsSubmissions}
-                        onToggle={toggleReviewsExpansion}
-                        // () =>
-                        //   toggleReviewsExpansion(
-                        //     submission.revisionPaperSubmissionId,
-                        //   )
+                    <>
+                        <RevisionReviewsList
+                            paperId={paperId}
+                            revisionPaperId={
+                                paperDetail.revisionPaper.revisionPaperId
+                            }
+                            // submissionId={submission.revisionPaperSubmissionId}
+                            isExpanded={expandedReviewsSubmissions}
+                            onToggle={toggleReviewsExpansion}
+                            // () =>
+                            //   toggleReviewsExpansion(
+                            //     submission.revisionPaperSubmissionId,
+                            //   )
 
-                        getStatusIcon={getStatusIcon}
-                        getStatusColor={getStatusColor}
-                        revisionReviews={revisionReviews}
-                        isLoading={isLoading}
-                    />
+                            getStatusIcon={getStatusIcon}
+                            getStatusColor={getStatusColor}
+                            revisionReviews={revisionReviews}
+                            isLoading={isLoading}
+                        />
+                        {/* <div className="mt-6">
+                            {canSubmitRevisionReview() ? (
+                                <Button
+                                    className="bg-black hover:bg-gray-800"
+                                    onClick={() => setShowReviewDialog(true)}
+                                >
+                                    <FileText className="w-4 h-4 mr-2" />
+                                    Đánh giá Revision Paper
+                                </Button>
+                            ) : (
+                                <p className="text-sm text-gray-500">
+                                    Hiện không trong thời gian đánh giá Revision Paper
+                                </p>
+                            )}
+                        </div> */}
+                    </>
+
                 )}
+
+            {paperDetail.revisionPaper && (
+                <div className="mt-6">
+                    {canSubmitRevisionReview() ? (
+                        <Button onClick={() => setShowReviewDialog(true)}>
+                            Đánh giá Revision Paper
+                        </Button>
+                    ) : (
+                        <p>Hiện không trong thời gian đánh giá...</p>
+                    )}
+                </div>
+            )}
 
             {/* Revision Submissions with Review Forms */}
             <div className="bg-white border rounded-lg p-6">
