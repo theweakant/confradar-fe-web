@@ -514,43 +514,78 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
   }
 
   // Định nghĩa các mốc với icon riêng
-  const getTimelineSteps = (phase: ResearchConferencePhaseResponse) => [
-    {
-      title: "Đăng ký tham dự",
-      start: phase.registrationStartDate,
-      end: phase.registrationEndDate,
-      icon: UserCheck,
-      color: "text-blue-600",
-    },
-    {
-      title: "Gửi full paper",
-      start: phase.fullPaperStartDate,
-      end: phase.fullPaperEndDate,
-      icon: FileText,
-      color: "text-amber-600",
-    },
-    {
-      title: "Phản biện bài báo",
-      start: phase.reviewStartDate,
-      end: phase.reviewEndDate,
-      icon: MessageCircle,
-      color: "text-emerald-600",
-    },
-    {
-      title: "Chỉnh sửa & gửi lại",
-      start: phase.reviseStartDate,
-      end: phase.reviseEndDate,
-      icon: Edit3,
-      color: "text-violet-600",
-    },
-    {
-      title: "Gửi bản camera-ready",
-      start: phase.cameraReadyStartDate,
-      end: phase.cameraReadyEndDate,
-      icon: PackageCheck,
-      color: "text-green-600",
-    },
-  ];
+const getTimelineSteps = (phase: ResearchConferencePhaseResponse) => [
+  {
+    title: "Đăng ký tham dự",
+    start: phase.registrationStartDate,
+    end: phase.registrationEndDate,
+    icon: UserCheck,
+    color: "text-blue-600",
+  },
+  {
+    title: "Quyết định Abstract",
+    start: phase.abstractDecideStatusStart,
+    end: phase.abstractDecideStatusEnd,
+    icon: MessageCircle,
+    color: "text-amber-600",
+  },
+  {
+    title: "Gửi Full Paper",
+    start: phase.fullPaperStartDate,
+    end: phase.fullPaperEndDate,
+    icon: FileText,
+    color: "text-emerald-600",
+  },
+  {
+    title: "Phản biện",
+    start: phase.reviewStartDate,
+    end: phase.reviewEndDate,
+    icon: MessageCircle,
+    color: "text-violet-600",
+  },
+  {
+    title: "Quyết định Full Paper",
+    start: phase.fullPaperDecideStatusStart,
+    end: phase.fullPaperDecideStatusEnd,
+    icon: PackageCheck,
+    color: "text-indigo-600",
+  },
+  {
+    title: "Chỉnh sửa & gửi lại",
+    start: phase.reviseStartDate,
+    end: phase.reviseEndDate,
+    icon: Edit3,
+    color: "text-orange-600",
+  },
+  {
+    title: "Phản biện bản chỉnh sửa",
+    start: phase.revisionPaperReviewStart,
+    end: phase.revisionPaperReviewEnd,
+    icon: MessageCircle,
+    color: "text-rose-600",
+  },
+  {
+    title: "Quyết định Paper Revision",
+    start: phase.revisionPaperDecideStatusStart,
+    end: phase.revisionPaperDecideStatusEnd,
+    icon: PackageCheck,
+    color: "text-fuchsia-600",
+  },
+  {
+    title: "Gửi bản Camera Ready",
+    start: phase.cameraReadyStartDate,
+    end: phase.cameraReadyEndDate,
+    icon: FileText,
+    color: "text-green-600",
+  },
+  {
+    title: "Quyết định Camera Ready",
+    start: phase.cameraReadyDecideStatusStart,
+    end: phase.cameraReadyDecideStatusEnd,
+    icon: PackageCheck,
+    color: "text-teal-600",
+  },
+];
 
   return (
     <div className="space-y-6">

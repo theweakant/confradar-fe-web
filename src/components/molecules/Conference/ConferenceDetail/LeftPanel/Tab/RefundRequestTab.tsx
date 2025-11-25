@@ -234,7 +234,6 @@ export function RefundRequestTab({ conferenceId, conferenceType }: RefundRequest
   );
 }
 
-// Helper component
 function InfoItem({
   icon,
   label,

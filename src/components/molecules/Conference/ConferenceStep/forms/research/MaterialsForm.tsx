@@ -67,7 +67,6 @@ export function MaterialsForm({
 
   const handleRemoveMaterial = (index: number) => {
     const material = materials[index];
-
     const updatedList = materials.filter((_, i) => i !== index);
     onMaterialsChange(updatedList);
 
@@ -76,6 +75,14 @@ export function MaterialsForm({
     }
 
     toast.success("Đã xóa tài liệu!");
+  };
+
+  // ✅ Update file cho material đã tồn tại
+  const handleUpdateMaterialFile = (index: number, file: File) => {
+    const updated = [...materials];
+    updated[index] = { ...updated[index], file };
+    onMaterialsChange(updated);
+    toast.success(`Đã chọn file mới: ${file.name}`);
   };
 
   // Ranking Files Handlers
@@ -92,7 +99,6 @@ export function MaterialsForm({
 
   const handleRemoveRankingFile = (index: number) => {
     const file = rankingFiles[index];
-
     const updatedList = rankingFiles.filter((_, i) => i !== index);
     onRankingFilesChange(updatedList);
 
@@ -103,6 +109,14 @@ export function MaterialsForm({
     toast.success("Đã xóa file xếp hạng!");
   };
 
+  // ✅ Update file cho ranking file đã tồn tại
+  const handleUpdateRankingFile = (index: number, file: File) => {
+    const updated = [...rankingFiles];
+    updated[index] = { ...updated[index], file };
+    onRankingFilesChange(updated);
+    toast.success(`Đã chọn file mới: ${file.name}`);
+  };
+
   // Ranking References Handlers
   const handleAddRankingReference = () => {
     if (!newRankingReference.referenceUrl.trim()) {
@@ -110,7 +124,6 @@ export function MaterialsForm({
       return;
     }
 
-    // Basic URL validation
     try {
       new URL(newRankingReference.referenceUrl);
     } catch {
@@ -125,7 +138,6 @@ export function MaterialsForm({
 
   const handleRemoveRankingReference = (index: number) => {
     const ref = rankingReferences[index];
-
     const updatedList = rankingReferences.filter((_, i) => i !== index);
     onRankingReferencesChange(updatedList);
 
@@ -159,11 +171,41 @@ export function MaterialsForm({
                     {m.fileDescription}
                   </div>
                 )}
-                {m.file && (
-                  <div className="text-xs text-blue-600 mt-1">
-                    {m.file instanceof File ? m.file.name : "File attached"}
+                
+                {/* ✅ Hiển thị file hiện tại */}
+                <div className="mt-2 text-xs">
+                  {m.file instanceof File ? (
+                    <div className="text-blue-600">📎 {m.file.name}</div>
+                  ) : m.fileUrl ? (
+                    <a 
+                      href={m.fileUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline inline-block"
+                    >
+                      📎 Xem file hiện tại
+                    </a>
+                  ) : null}
+                </div>
+                
+                {/* ✅ Cho phép thay đổi file nếu đã tồn tại */}
+                {m.materialId && (
+                  <div className="mt-2">
+                    <label className="block text-xs text-gray-600 mb-1">
+                      Thay đổi file:
+                    </label>
+                    <input
+                      type="file"
+                      accept=".doc,.docx,.pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleUpdateMaterialFile(idx, file);
+                      }}
+                      className="w-full text-xs px-2 py-1 border border-gray-300 rounded"
+                    />
                   </div>
                 )}
+                
                 <Button
                   size="sm"
                   variant="destructive"
@@ -198,6 +240,7 @@ export function MaterialsForm({
             <label className="block text-sm font-medium mb-2">File *</label>
             <input
               type="file"
+              accept=".doc,.docx,.pdf"
               onChange={(e) =>
                 setNewMaterial({
                   ...newMaterial,
@@ -224,20 +267,49 @@ export function MaterialsForm({
             {rankingFiles.map((rf, idx) => (
               <div
                 key={idx}
-                className="p-3 bg-gray-50 rounded flex justify-between items-center hover:bg-gray-100 transition"
+                className="p-3 bg-gray-50 rounded border border-gray-200"
               >
-                <div className="text-sm break-all flex-1">
-                  {rf.fileUrl ||
-                    (rf.file instanceof File ? rf.file.name : "File uploaded")}
+                <div className="flex justify-between items-start gap-2">
+                  <div className="flex-1 min-w-0">
+                    {rf.file instanceof File ? (
+                      <div className="text-sm text-blue-600">📎 {rf.file.name}</div>
+                    ) : rf.fileUrl ? (
+                      <a
+                        href={rf.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:underline break-all"
+                      >
+                        📎 {rf.fileUrl}
+                      </a>
+                    ) : null}
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => handleRemoveRankingFile(idx)}
+                  >
+                    Xóa
+                  </Button>
                 </div>
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => handleRemoveRankingFile(idx)}
-                  className="ml-2"
-                >
-                  Xóa
-                </Button>
+
+                {/* ✅ Cho phép thay đổi file */}
+                {rf.rankingFileId && (
+                  <div className="mt-2">
+                    <label className="block text-xs text-gray-600 mb-1">
+                      Thay đổi file:
+                    </label>
+                    <input
+                      type="file"
+                      accept=".doc,.docx,.pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleUpdateRankingFile(idx, file);
+                      }}
+                      className="w-full text-xs px-2 py-1 border border-gray-300 rounded"
+                    />
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -245,18 +317,13 @@ export function MaterialsForm({
 
         {/* Add Ranking File Form */}
         <div className="space-y-3 border-t pt-3">
-          <h5 className="font-medium text-sm">Thêm file xếp hạng</h5>
-          <FormInput
-            label="URL file (tùy chọn)"
-            value={newRankingFile.fileUrl || ""}
-            onChange={(val) => setNewRankingFile({ ...newRankingFile, fileUrl: val })}
-          />
           <div>
             <label className="block text-sm font-medium mb-2">
-              Hoặc upload file
+              Upload file
             </label>
             <input
               type="file"
+              accept=".doc,.docx,.pdf"
               onChange={(e) =>
                 setNewRankingFile({
                   ...newRankingFile,

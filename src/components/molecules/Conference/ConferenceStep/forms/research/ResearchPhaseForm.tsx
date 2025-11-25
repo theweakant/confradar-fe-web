@@ -63,7 +63,7 @@ export function ResearchPhaseForm({
     cameraReadyEndDate: "",
     cameraReadyDuration: 1,
 
-    // === Organizer/Reviewer decision phases ===
+    
     abstractDecideStatusStart: "",
     abstractDecideStatusEnd: "",
     abstractDecideStatusDuration: 1,
@@ -831,7 +831,7 @@ export function ResearchPhaseForm({
             updatePhaseDuration('cameraReadyDecideStatus', val);
           }
         }}
-        minDate={addDays(activePhase.cameraReadyStartDate) || undefined}
+        minDate={addDays(activePhase.cameraReadyEndDate) || undefined}
         isWaitlistManual={isWaitlistActive}
         showDuration={!!(activePhase.cameraReadyDecideStatusStart && activePhase.cameraReadyDecideStatusEnd)}
       />

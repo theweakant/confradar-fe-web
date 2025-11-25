@@ -402,7 +402,7 @@ export interface ConferenceResearchPhaseData {
 export interface ResearchRankingFile {
   rankingFileId?: string;
   fileUrl?: string;
-  file?: File | null;
+  file?: File | null | string;
 }
 
 export interface ConferenceResearchRankingFileData {
@@ -424,7 +424,7 @@ export interface ResearchMaterial {
   materialId?: string;
   fileName: string;
   fileDescription?: string;
-  file?: File | null;
+  file?: File | null | string;
   fileUrl?: string;
 }
 

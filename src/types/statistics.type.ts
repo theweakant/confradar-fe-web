@@ -47,8 +47,10 @@ export interface TicketHolder {
   ticketTypeName: string;
   phaseName: string;
   actualPrice: number;
-  purchaseDate: string; // ISO date string
+  purchaseDate: string; 
   status: string;
+
+  isRefunded:boolean
 }
 
 export interface PaperDetail {

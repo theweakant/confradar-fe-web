@@ -70,7 +70,9 @@ const SessionCalendar: React.FC<SessionCalendarProps> = ({
     },
   }));
 
+
   const handleEventClick = (info: EventClickArg) => {
+    info.jsEvent.preventDefault(); 
     const session = info.event.extendedProps.session as SessionDetailForScheduleResponse;
     setSelectedSession(session);
     onSessionSelected?.(session);
