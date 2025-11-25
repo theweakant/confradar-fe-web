@@ -5,6 +5,7 @@ import { Lock, ArrowLeft, CheckCircle2, Eye, EyeOff } from "lucide-react";
 import { useVerifyForgetPasswordMutation } from "@/redux/services/auth.service";
 import { toast } from "sonner";
 import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function ResetPassword() {
     const [password, setPassword] = useState("");
@@ -263,8 +264,8 @@ export default function ResetPassword() {
                         onClick={handleSubmit}
                         disabled={isLoading}
                         className={`w-full py-3 rounded-lg font-medium text-white transition-all ${isLoading
-                                ? "bg-indigo-400 cursor-not-allowed"
-                                : "bg-indigo-600 hover:bg-indigo-700 hover:shadow-lg"
+                            ? "bg-indigo-400 cursor-not-allowed"
+                            : "bg-indigo-600 hover:bg-indigo-700 hover:shadow-lg"
                             }`}
                     >
                         {isLoading ? (
@@ -295,12 +296,12 @@ export default function ResetPassword() {
 
                 <p className="mt-6 text-center text-sm text-gray-600">
                     Remember your password?{" "}
-                    <a
+                    <Link
                         href="/login"
                         className="text-indigo-600 hover:text-indigo-700 font-medium"
                     >
                         Sign In
-                    </a>
+                    </Link>
                 </p>
             </div>
         </div>

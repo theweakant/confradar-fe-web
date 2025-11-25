@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Mail, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { useForgetPasswordMutation } from "@/redux/services/auth.service";
 import { toast } from "sonner";
+import Link from "next/link";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -185,12 +186,12 @@ export default function ForgotPassword() {
 
         <p className="text-sm text-gray-600">
           Remember your password?{" "}
-          <a
+          <Link
             href="/login"
             className="text-indigo-600 hover:text-indigo-700 font-medium"
           >
             Sign In
-          </a>
+          </Link>
         </p>
       </div>
     </div>

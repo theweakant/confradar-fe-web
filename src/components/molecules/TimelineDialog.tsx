@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { X, Calendar, Clock, CheckCircle, AlertCircle, Users, FileText, Eye } from 'lucide-react';
+import { X, Calendar, Clock, CheckCircle, AlertCircle, Users, FileText, Eye, LucideIcon } from 'lucide-react';
 import { CurrentResearchConferencePhaseForReviewer, ResearchPhaseDtoDetail, RevisionDeadlineDetail, RevisionRoundDeadlineForReviewer } from '@/types/paper.type';
 
 interface TimelineDialogProps {
@@ -85,7 +85,7 @@ const TimelineDialog: React.FC<TimelineDialogProps> = ({
         color = 'blue'
     }: {
         title: string;
-        icon: any;
+        icon: LucideIcon;
         items: { label: string; start?: string; end?: string; note?: string }[];
         color?: 'blue' | 'green' | 'purple' | 'orange';
     }) => {

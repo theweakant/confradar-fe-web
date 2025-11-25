@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { CheckCircle2, XCircle, Mail, CreditCard, Link2, ArrowRight } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 
 type StatusType = "email-confirm" | "payment" | "link-orcid";
 type ResultType = "success" | "fail";
@@ -187,12 +188,12 @@ export default function StatusPage() {
                     <div className="mt-6 pt-6 border-t border-gray-200">
                         <p className="text-sm text-gray-500">
                             Need help?{" "}
-                            <a
+                            <Link
                                 href="/support"
                                 className="text-indigo-600 hover:text-indigo-700 font-medium"
                             >
                                 Contact Support
-                            </a>
+                            </Link>
                         </p>
                     </div>
                 )}
