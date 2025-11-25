@@ -139,7 +139,7 @@ export function BasicInfoForm({
       {/* Capacity & Category */}
       <div className="grid grid-cols-2 gap-4">
         <FormInput
-          label="Sức chứa"
+          label="Tổng số người tham dự"
           name="totalSlot"
           type="number"
           value={formData.totalSlot}
@@ -191,7 +191,7 @@ export function BasicInfoForm({
           />
         )}
       </div>
-      {/* Contract & Commission */}
+
       {!isInternalHosted && (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FileUpload

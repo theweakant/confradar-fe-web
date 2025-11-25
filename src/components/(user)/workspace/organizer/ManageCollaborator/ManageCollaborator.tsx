@@ -107,7 +107,7 @@ export default function ManageCollaborator() {
     const handleSave = async (data: CollaboratorRequest) => {
         try {
             const response = await createCollaborator(data).unwrap();
-            toast.success(response.message || "Thêm cộng tác viên thành công!");
+            toast.success(response.message || "Thêm đối tác thành công!");
             setIsFormModalOpen(false);
             refetch();
         } catch (error: unknown) {
@@ -155,7 +155,7 @@ export default function ManageCollaborator() {
 
     const stats = [
         {
-            title: "Tổng số Cộng tác viên",
+            title: "Tổng số đối tác",
             value: collaborators.length.toString(),
             icon: Users,
             variant: "info" as const
@@ -179,7 +179,7 @@ export default function ManageCollaborator() {
             <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Đang tải danh sách cộng tác viên...</p>
+                    <p className="text-gray-600">Đang tải danh sách đối tác...</p>
                 </div>
             </div>
         );
@@ -190,7 +190,7 @@ export default function ManageCollaborator() {
             <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
                 <div className="text-center">
                     <p className="text-red-600 mb-4">
-                        Không thể tải danh sách cộng tác viên
+                        Không thể tải danh sách đối tác
                     </p>
                     <button
                         onClick={() => refetch()}
@@ -210,7 +210,7 @@ export default function ManageCollaborator() {
                 <div className="mb-8">
                     <div className="flex items-center justify-between">
                         <h1 className="text-3xl font-bold text-gray-900">
-                            Quản lý Cộng tác viên
+                            Quản lý đối tác
                         </h1>
                         <button
                             onClick={handleCreate}
@@ -218,11 +218,11 @@ export default function ManageCollaborator() {
                             disabled={isCreating}
                         >
                             <Plus className="w-5 h-5" />
-                            {isCreating ? "Đang thêm..." : "Thêm Cộng tác viên"}
+                            {isCreating ? "Đang thêm..." : "Thêm đối tác"}
                         </button>
                     </div>
                     <p className="text-gray-600 mt-2">
-                        Quản lý tài khoản cộng tác viên trong hệ thống
+                        Quản lý tài khoản đối tác trong hệ thống
                     </p>
                 </div>
 
@@ -265,7 +265,7 @@ export default function ManageCollaborator() {
             <Modal
                 isOpen={isFormModalOpen}
                 onClose={() => setIsFormModalOpen(false)}
-                title="Thêm cộng tác viên mới"
+                title="Thêm đối tác mới"
             >
                 <CollaboratorForm
                     onSave={handleSave}
@@ -280,7 +280,7 @@ export default function ManageCollaborator() {
                     setIsDetailModalOpen(false);
                     setViewingUserId(null);
                 }}
-                title="Chi tiết cộng tác viên"
+                title="Chi tiết đối tác"
             >
                 {isLoadingProfile ? (
                     <div className="flex items-center justify-center py-8">
@@ -297,7 +297,7 @@ export default function ManageCollaborator() {
                     />
                 ) : (
                     <p className="text-center text-gray-600 py-8">
-                        Không tìm thấy thông tin cộng tác viên
+                        Không tìm thấy thông tin đối tác
                     </p>
                 )}
             </Modal>
@@ -311,7 +311,7 @@ export default function ManageCollaborator() {
                     <AlertDialogHeader>
                         <AlertDialogTitle>Xác nhận tạm ngưng</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Bạn có chắc chắn muốn tạm ngưng tài khoản cộng tác viên này?
+                            Bạn có chắc chắn muốn tạm ngưng tài khoản đối tác này?
                             Họ sẽ không thể đăng nhập cho đến khi được kích hoạt lại.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
@@ -337,7 +337,7 @@ export default function ManageCollaborator() {
                     <AlertDialogHeader>
                         <AlertDialogTitle>Xác nhận kích hoạt</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Bạn có chắc chắn muốn kích hoạt lại tài khoản cộng tác viên này?
+                            Bạn có chắc chắn muốn kích hoạt lại tài khoản đối tác này?
                             Họ sẽ có thể đăng nhập và sử dụng hệ thống.
                         </AlertDialogDescription>
                     </AlertDialogHeader>

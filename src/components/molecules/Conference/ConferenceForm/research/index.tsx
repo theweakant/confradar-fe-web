@@ -884,8 +884,8 @@ export default function ResearchConferenceStepForm({
       <PageHeader
         title={
           mode === "create"
-            ? "Tạo hội thảo nghiên cứu mới"
-            : "Chỉnh sửa hội thảo nghiên cứu"
+            ? "Tạo hội nghị nghiên cứu mới"
+            : "Chỉnh sửa hội nghị nghiên cứu"
         }
         description={
           mode === "create"
@@ -950,7 +950,7 @@ export default function ResearchConferenceStepForm({
       {currentStep === 2 && (
         <StepContainer
           stepNumber={2}
-          title="Chi tiết nghiên cứu"
+          title="Thông tin chi tiết về hội nghị nghiên cứu"
           isCompleted={isStepCompleted(2)}
         >
           <ResearchDetailForm
@@ -1002,14 +1002,14 @@ export default function ResearchConferenceStepForm({
             onSubmit={handleTimelineSubmit}
             onUpdate={handleUpdateCurrentStep}
           />
-        </StepContainer>
+        </StepContainer>  
       )}
 
       {/* STEP 4 */}
       {currentStep === 4 && (
         <StepContainer
           stepNumber={4}
-          title="Giá vé"
+          title="Chi phí tham dự"
           isCompleted={isStepCompleted(4)}
         >
           <ResearchPriceForm
@@ -1040,7 +1040,7 @@ export default function ResearchConferenceStepForm({
         </StepContainer>
       )}
 
-      {/* STEP 5: SESSIONS – ✅ ĐÃ FIX GIỐNG TECH */}
+      {/* STEP 5: SESSIONS  */}
       {currentStep === 5 && (
         <StepContainer
           stepNumber={5}

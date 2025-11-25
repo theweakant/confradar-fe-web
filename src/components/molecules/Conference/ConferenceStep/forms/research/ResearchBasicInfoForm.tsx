@@ -156,7 +156,7 @@ export function ResearchBasicInfoForm({
       {/* Capacity & Category */}
       <div className="grid grid-cols-2 gap-4">
         <FormInput
-          label="Sức chứa"
+          label="Tổng số người tham dự"
           name="totalSlot"
           type="number"
           value={value.totalSlot}
@@ -212,7 +212,7 @@ export function ResearchBasicInfoForm({
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
         <p className="text-sm text-blue-800">
           <strong>Chú ý:</strong> Hội thảo nghiên cứu yêu cầu thiết lập Timeline 
-          (Registration, Full Paper, Review, Revision, Camera Ready) ở bước tiếp theo.
+          (Registration, Full Paper, Review, Revision, Camera Ready) ở bước 3.
         </p>
       </div>
     </div>

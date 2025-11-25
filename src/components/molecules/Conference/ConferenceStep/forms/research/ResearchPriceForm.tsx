@@ -658,7 +658,6 @@ const handleAddTicket = () => {
     .filter(t => !t.isAuthor)
     .reduce((sum, t) => sum + t.totalSlot, 0);
 
-  // === ✅ VALIDATION MỚI - CHO PHÉP THÊM TỪNG VÉ ===
   if (!allowListener) {
     // Không cho phép listener
     if (!newTicket.isAuthor) {
@@ -754,7 +753,7 @@ const handleAddTicket = () => {
     <div className="space-y-4">
       {/* Ticket List */}
       <div className="border p-4 rounded mb-4">
-        <h4 className="font-medium mb-3 text-blue-600">Danh sách vé ({tickets.length})</h4>
+        <h4 className="font-medium mb-3 text-blue-600">Danh sách đã tạo ({tickets.length})</h4>
 
         {tickets.map((t, idx) => (
           <div
@@ -767,7 +766,7 @@ const handleAddTicket = () => {
                   <h3 className="font-semibold text-base text-gray-800">{t.ticketName}</h3>
                   {t.isAuthor && (
                     <span className="bg-blue-600 text-white text-xs font-semibold px-2 py-0.5 rounded">
-                      Vé tác giả
+                      Tác giả
                     </span>
                   )}
                 </div>
@@ -787,7 +786,7 @@ const handleAddTicket = () => {
             {t.phases && t.phases.length > 0 && (
               <div className="mt-2">
                 <div className="text-xs font-medium text-gray-600 mb-1.5">
-                  Giai đoạn giá ({t.phases.length}):
+                  Giai đoạn ({t.phases.length}):
                 </div>
                 <div className="grid grid-cols-5 gap-2">
                   {t.phases.map((p, pi) => {
@@ -835,7 +834,7 @@ const handleAddTicket = () => {
 
             <div className="flex gap-2 mt-3">
               <Button size="sm" variant="outline" onClick={() => handleEditTicket(t, idx)} className="flex-1">
-                Sửa vé
+                Sửa
               </Button>
               <Button
                 size="sm"
@@ -843,7 +842,7 @@ const handleAddTicket = () => {
                 onClick={() => handleRemoveTicket(idx)}
                 className="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium text-sm py-1.5"
               >
-                Xóa vé
+                Xóa
               </Button>
             </div>
           </div>
@@ -853,12 +852,12 @@ const handleAddTicket = () => {
       {/* Add New Ticket Form */}
       <div className="border p-4 rounded">
         <h4 className="font-medium mb-3">
-          {editingTicketIndex !== null ? "Chỉnh sửa vé" : "Thêm vé mới"}
+          {editingTicketIndex !== null ? "Chỉnh sửa" : "Thêm mới"}
         </h4>
         {newTicket.isAuthor && reviewFee > 0 && (
           <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="text-sm text-blue-800">
-              <strong>Lưu ý:</strong> Giá vé tác giả phải lớn hơn hoặc bằng phí đánh giá bài báo:{" "}
+              <strong>Lưu ý:</strong> Chi phí cho tác giả phải lớn hơn hoặc bằng phí đánh giá bài báo:{" "}
               <strong className="text-blue-900">{reviewFee.toLocaleString()} VND</strong>
             </div>
           </div>
@@ -878,10 +877,10 @@ const handleAddTicket = () => {
         )}
 
         <FormInput
-          label="Tên vé"
+          label="Loại phí tham dự"
           value={newTicket.ticketName}
           onChange={(val) => setNewTicket({ ...newTicket, ticketName: val })}
-          placeholder="Vé cơ bản, tiêu chuẩn, nâng cao ..."
+          placeholder="Người nghe, tác giả"
         />
 
         <FormTextArea
@@ -901,14 +900,14 @@ const handleAddTicket = () => {
               className="w-4 h-4 text-blue-600"
             />
             <label htmlFor="isAuthor" className="text-sm font-medium text-blue-900">
-              Đây là vé dành cho tác giả
+              Dành cho tác giả
             </label>
           </div>
         )}
 
         {!allowListener && (
           <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <div className="text-sm text-amber-800">Chỉ cho phép tạo vé dành cho tác giả.</div>
+            <div className="text-sm text-amber-800">Chỉ cho phép tạo dành cho tác giả.</div>
           </div>
         )}
 
@@ -916,8 +915,8 @@ const handleAddTicket = () => {
           <FormInput
             label={
               newTicket.isAuthor 
-                ? `Giá vé gốc (VND) - Tối thiểu: ${reviewFee.toLocaleString()}` 
-                : "Giá vé gốc (VND)"
+                ? `Chi phí gốc (VND) - Tối thiểu: ${reviewFee.toLocaleString()}` 
+                : "Chi phí thính giả (VND)"
             }
             type="number"
             value={newTicket.ticketPrice}
@@ -928,8 +927,8 @@ const handleAddTicket = () => {
           <FormInput
             label={
               newTicket.isAuthor
-                ? `Số lượng vé tác giả (Còn lại: ${numberPaperAccept})`
-                : `Số lượng vé người nghe (Còn lại: ${maxTotalSlot - numberPaperAccept})`
+                ? `Số lượng cho tác giả (Còn lại: ${numberPaperAccept})`
+                : `Số lượng cho người nghe (Còn lại: ${maxTotalSlot - numberPaperAccept})`
             }         
             type="number"
             value={newTicket.totalSlot}
@@ -943,7 +942,7 @@ const handleAddTicket = () => {
         <div className="border-t pt-3 mt-3">
           <div className="flex justify-between items-center mb-3">
             <h5 className="font-medium text-sm">
-              Giai đoạn giá ({newTicket.phases.length}) - Đã dùng: {newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0)}/{newTicket.totalSlot}
+              Chi phí từng giai đoạn ({newTicket.phases.length}) - Đã dùng: {newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0)}/{newTicket.totalSlot}
             </h5>
             <Button
               size="sm"
@@ -1002,7 +1001,7 @@ const handleAddTicket = () => {
         </div>
 
         <Button className="mt-4 w-full" onClick={handleAddTicket}>
-          {editingTicketIndex !== null ? "Cập nhật vé" : "Thêm vé"}
+          {editingTicketIndex !== null ? "Cập nhật" : "Thêm"}
         </Button>
       </div>
 
