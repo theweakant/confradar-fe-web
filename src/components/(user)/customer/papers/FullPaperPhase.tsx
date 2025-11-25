@@ -6,6 +6,7 @@ import "@cyntler/react-doc-viewer/dist/index.css";
 import { validatePhaseTime } from "@/helper/timeValidation";
 import SubmittedPaperCard from "./SubmittedPaperCard";
 import { toast } from "sonner";
+import SubmissionFormDialog from "./SubmissionFormDialog";
 
 interface FullPaperPhaseProps {
   paperId?: string;
@@ -28,6 +29,7 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper, res
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false);
 
   const {
     handleSubmitFullPaper,
@@ -98,6 +100,32 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper, res
     }
   };
 
+  useEffect(() => {
+    if (submitFullPaperError) {
+      let errorMessage = "Có lỗi xảy ra khi nộp FullPaper";
+
+      if (submitFullPaperError?.data?.message) {
+        errorMessage = submitFullPaperError.data.message;
+      }
+
+
+      toast.error(errorMessage);
+    }
+  }, [submitFullPaperError]);
+
+  useEffect(() => {
+    if (updateFullPaperError) {
+      let errorMessage = "Có lỗi xảy ra khi nộp FullPaper";
+
+      if (updateFullPaperError?.data?.message) {
+        errorMessage = updateFullPaperError.data.message;
+      }
+
+
+      toast.error(errorMessage);
+    }
+  }, [updateFullPaperError]);
+
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold">Giai đoạn Full Paper</h3>
@@ -150,7 +178,79 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper, res
         />
       )}
 
-      {fullPaper && phaseValidation.isAvailable && !isEditing && (
+      {!fullPaper && phaseValidation.isAvailable && (
+        <div className="text-center py-12">
+          <p className="text-gray-400 mb-4">Bạn chưa có submission nào</p>
+          <button
+            onClick={() => setIsSubmitDialogOpen(true)}
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition"
+          >
+            Nộp Full Paper
+          </button>
+        </div>
+      )}
+
+      {fullPaper && phaseValidation.isAvailable && (
+        <div className="flex justify-end mt-4">
+          <button
+            onClick={() => setIsSubmitDialogOpen(true)}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition"
+          >
+            Chỉnh sửa Full Paper
+          </button>
+        </div>
+      )}
+
+      {/* Submission Dialog */}
+      <SubmissionFormDialog
+        isOpen={isSubmitDialogOpen}
+        onClose={() => setIsSubmitDialogOpen(false)}
+        onSubmit={async (data) => {
+          try {
+            if (fullPaper) {
+              const result = await handleUpdateFullPaper(paperId!, {
+                title: data.title,
+                description: data.description,
+                fullPaperFile: data.file,
+              });
+
+              if (result.success) {
+                toast.success("Cập nhật full paper thành công!");
+                onSubmittedFullPaper?.();
+                return { success: true };
+              }
+            } else {
+              const result = await handleSubmitFullPaper({
+                fullPaperFile: data.file!,
+                paperId: paperId!,
+                title: data.title,
+                description: data.description
+              });
+
+              if (result.success) {
+                toast.success("Nộp full paper thành công!");
+                onSubmittedFullPaper?.();
+                return { success: true };
+              }
+            }
+            return { success: false };
+          } catch (error) {
+            return { success: false };
+          }
+        }}
+        title={fullPaper ? "Chỉnh sửa Full Paper" : "Nộp Full Paper"}
+        loading={submitLoading}
+        includeCoauthors={false}
+        isEditMode={!!fullPaper}
+        initialData={fullPaper ? {
+          title: fullPaper.title || "",
+          description: fullPaper.description || "",
+          file: null,
+        } : undefined}
+        shouldCloseOnSuccess={false}
+      />
+
+      {/* {fullPaper && phaseValidation.isAvailable && !isEditing && (
         <div className="flex justify-end">
           <button
             onClick={() => setIsEditing(true)}
@@ -159,9 +259,9 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper, res
             Chỉnh sửa Full Paper
           </button>
         </div>
-      )}
+      )} */}
 
-      {(!fullPaper || isEditing) && (
+      {/* {(!fullPaper || isEditing) && (
         <>
           <div className="bg-gray-800 border border-gray-700 rounded-xl p-5 space-y-4">
             <div>
@@ -208,7 +308,6 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper, res
             </div>
           </div>
 
-          {/* Submit Button */}
           <div className="flex justify-end gap-3">
             {isEditing && (
               <button
@@ -235,69 +334,6 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper, res
             </button>
           </div>
         </>
-      )}
-
-      {/* <div className="bg-gray-800 border border-gray-700 rounded-xl p-5 space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">Tiêu đề</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            disabled={isSubmitted || !phaseValidation.isAvailable}
-            placeholder="Nhập tiêu đề bài báo"
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">Mô tả</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            disabled={isSubmitted || !phaseValidation.isAvailable}
-            placeholder="Nhập mô tả bài báo"
-            rows={3}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed resize-none"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">Tải lên tệp full paper (.pdf)</label>
-          <input
-            type="file"
-            accept="application/pdf"
-            onChange={handleFileChange}
-            disabled={isSubmitted || !phaseValidation.isAvailable}
-            className="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 
-                            file:rounded-lg file:border-0 file:text-sm file:font-semibold
-                            file:bg-blue-600 file:text-white hover:file:bg-blue-700
-                            disabled:opacity-50 disabled:cursor-not-allowed"
-          />
-          {selectedFile && (
-            <p className="text-green-400 text-sm mt-2">
-              Đã chọn: {selectedFile.name}
-            </p>
-          )}
-        </div>
-      </div>
-
-      <div className="flex justify-end">
-        <button
-          onClick={handleSubmitFullPaperForm}
-          disabled={isSubmitted || !phaseValidation.isAvailable || !selectedFile || !paperId || !title.trim() || !description.trim() || submitLoading}
-          className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition"
-        >
-          {isSubmitted ? "Đã nộp Full Paper" : submitLoading ? "Đang nộp..." : "Nộp Full Paper"}
-        </button>
-      </div>
-
-      {submitFullPaperError && (
-        <div className="bg-red-900/20 border border-red-700 rounded-xl p-4">
-          <p className="text-red-400 text-sm">
-            Lỗi: {typeof submitFullPaperError === 'string' ? submitFullPaperError : 'Có lỗi xảy ra khi nộp full paper'}
-          </p>
-        </div>
       )} */}
     </div>
   );

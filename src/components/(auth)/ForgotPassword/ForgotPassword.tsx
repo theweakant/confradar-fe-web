@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Mail, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { useForgetPasswordMutation } from "@/redux/services/auth.service";
-import { toast } from "sonner"; 
+import { toast } from "sonner";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -49,13 +49,13 @@ export default function ForgotPassword() {
         error instanceof Error
           ? error.message
           : (
-              error as {
-                data?: { message?: string; errors?: { email?: string[] } };
-              }
-            )?.data?.message ||
-            (error as { data?: { errors?: { email?: string[] } } })?.data
-              ?.errors?.email?.[0] ||
-            "Failed to send reset email. Please try again.";
+            error as {
+              data?: { message?: string; errors?: { email?: string[] } };
+            }
+          )?.data?.message ||
+          (error as { data?: { errors?: { email?: string[] } } })?.data
+            ?.errors?.email?.[0] ||
+          "Failed to send reset email. Please try again.";
 
       setError(message);
       toast.error(message);
@@ -64,8 +64,10 @@ export default function ForgotPassword() {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md text-center">
+      // <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      //   <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md text-center">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-transparent">
+        <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl p-8 w-full max-w-md">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle2 className="w-8 h-8 text-green-600" />
           </div>
@@ -93,8 +95,10 @@ export default function ForgotPassword() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+    // <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    //   <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-transparent">
+      <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl p-8 w-full max-w-md">
         <button
           onClick={() => window.history.back()}
           className="flex items-center text-gray-600 hover:text-gray-800 mb-6 transition-colors"
@@ -134,9 +138,8 @@ export default function ForgotPassword() {
                   setError("");
                 }}
                 placeholder="Enter your email"
-                className={`w-full pl-10 pr-4 py-3 border ${
-                  error ? "border-red-500" : "border-gray-300"
-                } rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all`}
+                className={`w-full pl-10 pr-4 py-3 border ${error ? "border-red-500" : "border-gray-300"
+                  } rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all`}
               />
             </div>
             {error && (
@@ -149,11 +152,10 @@ export default function ForgotPassword() {
           <button
             type="submit"
             disabled={isLoading}
-            className={`w-full py-3 rounded-lg font-medium text-white transition-all ${
-              isLoading
-                ? "bg-indigo-400 cursor-not-allowed"
-                : "bg-indigo-600 hover:bg-indigo-700 hover:shadow-lg"
-            }`}
+            className={`w-full py-3 rounded-lg font-medium text-white transition-all ${isLoading
+              ? "bg-indigo-400 cursor-not-allowed"
+              : "bg-indigo-600 hover:bg-indigo-700 hover:shadow-lg"
+              }`}
           >
             {isLoading ? (
               <span className="flex items-center justify-center">

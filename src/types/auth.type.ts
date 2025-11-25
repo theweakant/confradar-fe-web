@@ -15,7 +15,6 @@ export interface ForgetPasswordData {
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ForgetPasswordResponse {
-  // Response trả về null data theo API của bạn
 }
 
 export interface VerifyForgetPasswordData {
@@ -26,5 +25,4 @@ export interface VerifyForgetPasswordData {
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface VerifyForgetPasswordResponse {
-  // Response trả về null data theo API
 }
