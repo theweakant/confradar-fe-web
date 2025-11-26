@@ -362,24 +362,33 @@ const SessionCalendar: React.FC<SessionCalendarProps> = ({
     ? externalAcceptedPapers
     : internalAcceptedPapers;
 
-  // 🔹 Chuẩn hóa SessionDetailForScheduleResponse → CalendarSession
-  const normalizeApiSession = (s: SessionDetailForScheduleResponse): CalendarSession => {
-    const start = s.startTime ? new Date(s.startTime) : new Date();
-    const end = s.endTime ? new Date(s.endTime) : new Date();
-    const date = start.toISOString().split("T")[0]; 
-    const startTime = start.toTimeString().slice(0, 5); 
-    const endTime = end.toTimeString().slice(0, 5);
+const normalizeApiSession = (s: SessionDetailForScheduleResponse): CalendarSession => {
+  let start = s.startTime ? new Date(s.startTime) : new Date();
+  let end = s.endTime ? new Date(s.endTime) : new Date();
 
-    return {
-      id: s.conferenceSessionId,
-      title: s.title ||"",
-      date,
-      startTime,
-      endTime,
-      speaker: s.speakerNames || [],
-      original: s,
-    };
+  if (isNaN(start.getTime())) {
+    console.warn(`Invalid start time for session: ${s.title}`, s.startTime);
+    start = new Date();
+  }
+  if (isNaN(end.getTime())) {
+    console.warn(`Invalid end time for session: ${s.title}`, s.endTime);
+    end = new Date(start.getTime() + 30 * 60 * 1000); 
+  }
+
+  const date = start.toISOString().split("T")[0]; // YYYY-MM-DD
+  const startTime = start.toTimeString().slice(0, 5); // HH:mm
+  const endTime = end.toTimeString().slice(0, 5);
+
+  return {
+    id: s.conferenceSessionId,
+    title: s.title || "",
+    date,
+    startTime,
+    endTime,
+    speaker: s.speakerNames || [],
+    original: s,
   };
+};
 
   // 🔹 Chuẩn hóa Session (collaborator) → CalendarSession
   const normalizeCollaboratorSession = (s: Session): CalendarSession => ({

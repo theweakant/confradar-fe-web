@@ -10,7 +10,7 @@ import { EventClickArg } from "@fullcalendar/core";
 import { Loader2, Info } from "lucide-react";
 import {
   useGetTechnicalConferencesByOrganizerQuery,
-  useGetTechnicalConferencesByCollaboratorQuery,
+  useGetTechnicalConferencesByCollaboratorNoDraftQuery,
   useGetResearchConferencesForOrganizerQuery,
 } from "@/redux/services/conference.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
@@ -77,12 +77,11 @@ const ConferenceCalendar: React.FC<ConferenceCalendarProps> = ({
     }
   );
 
-  // API cho Collaborator - Technical conferences
   const { 
     data: techCollaboratorData, 
     isLoading: techCollaboratorLoading, 
     error: techCollaboratorError 
-  } = useGetTechnicalConferencesByCollaboratorQuery(
+  } = useGetTechnicalConferencesByCollaboratorNoDraftQuery(
     {
       page: 1,
       pageSize: 1000,

@@ -11,8 +11,7 @@ import { SearchFilter } from "@/components/molecules/SearchFilter";
 import { ConferenceTable } from "@/components/molecules/Conference/ConferenceTable";
 import { ConferenceResponse } from "@/types/conference.type";
 
-// ✅ CẬP NHẬT: Dùng hook mới cho Collaborator
-import { useGetTechnicalConferencesByCollaboratorQuery } from "@/redux/services/conference.service";
+import { useGetTechnicalConferencesByCollaboratorNoDraftQuery } from "@/redux/services/conference.service";
 
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
@@ -38,7 +37,7 @@ export default function ExternalConference() {
     isLoading: techLoading,
     isError: techError,
     refetch: refetchTech,
-  } = useGetTechnicalConferencesByCollaboratorQuery({
+  } = useGetTechnicalConferencesByCollaboratorNoDraftQuery({
     page,
     pageSize,
     ...(filterStatus !== "all" && { conferenceStatusId: filterStatus }),
