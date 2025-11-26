@@ -58,3 +58,18 @@ export interface OwnContractDetailResponse {
     conferenceDescription?: string;
     conferenceBannerImageUrl?: string;
 }
+
+export interface CreateCollaboratorContractRequest {
+    userId: string;
+    isMediaStep: boolean;
+    isPolicyStep: boolean;
+    isSessionStep: boolean;
+    isPriceStep: boolean;
+    isTicketSelling: boolean;
+    isSponsorStep: boolean;
+    commission?: number;
+    signDay: string;
+    finalizePaymentDate: string;
+    conferenceId: string;
+    contractFile: File;
+}

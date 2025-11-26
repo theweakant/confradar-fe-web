@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { endpoint } from "../api/endpoint";
-import { ContractDetailResponseForOrganizer, CreateNewReviewerContractRequest, CreateReviewerContractRequest, GetUsersForReviewerContractRequest, GetUsersForReviewerContractResponse, OwnContractDetailResponse } from "@/types/contract.type";
+import { ContractDetailResponseForOrganizer, CreateCollaboratorContractRequest, CreateNewReviewerContractRequest, CreateReviewerContractRequest, GetUsersForReviewerContractRequest, GetUsersForReviewerContractResponse, OwnContractDetailResponse } from "@/types/contract.type";
 import { apiClient } from "../api/apiClient";
 import { ApiResponse } from "@/types/api.type";
 
@@ -106,6 +106,39 @@ export const contractApi = createApi({
             }),
             providesTags: ["Contract"],
         }),
+
+        createCollaboratorContract: builder.mutation<
+            ApiResponse<number>,
+            CreateCollaboratorContractRequest
+        >({
+            query: (data) => {
+                const formData = new FormData();
+
+                formData.append("userId", data.userId);
+                formData.append("isMediaStep", data.isMediaStep.toString());
+                formData.append("isPolicyStep", data.isPolicyStep.toString());
+                formData.append("isSessionStep", data.isSessionStep.toString());
+                formData.append("isPriceStep", data.isPriceStep.toString());
+                formData.append("isTicketSelling", data.isTicketSelling.toString());
+                formData.append("isSponsorStep", data.isSponsorStep.toString());
+                formData.append("signDay", data.signDay);
+                formData.append("finalizePaymentDate", data.finalizePaymentDate);
+                formData.append("conferenceId", data.conferenceId);
+
+                if (data.commission !== undefined) {
+                    formData.append("commission", data.commission.toString());
+                }
+
+                formData.append("contractFile", data.contractFile);
+
+                return {
+                    url: endpoint.CONTRACT.CREATE_COLLABORATOR_CONTRACT,
+                    method: "POST",
+                    body: formData,
+                };
+            },
+            invalidatesTags: ["Contract"],
+        }),
     }),
 });
 
@@ -118,4 +151,5 @@ export const {
     useCreateReviewContractForNewUserMutation,
     useGetContractsByReviewerQuery,
     useGetOwnReviewContractsQuery,
+    useCreateCollaboratorContractMutation,
 } = contractApi;

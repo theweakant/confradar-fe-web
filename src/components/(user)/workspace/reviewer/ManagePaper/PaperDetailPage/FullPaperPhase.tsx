@@ -21,6 +21,7 @@ import { CurrentResearchConferencePhaseForReviewer, FullPaperReview, PaperDetail
 import { isValidUrl, isWithinDateRange } from "@/helper/paper";
 import ReusableDocViewer from "@/components/molecules/ReusableDocViewer ";
 import ReviewerPaperCard from "./ReviewerPaperCard";
+import { parseApiError } from "@/helper/api";
 
 interface FullPaperPhaseProps {
     paperDetail: PaperDetailForReviewer;
@@ -50,11 +51,17 @@ export default function FullPaperPhase({
     const [docAvailable, setDocAvailable] = useState<boolean | null>(null);
     const [docViewerError, setDocViewerError] = useState<boolean>(false);
 
-    const [submitReview, { isLoading: isSubmitting }] =
+    const [showReviewsDialog, setShowReviewsDialog] = useState(false);
+
+    const [submitReview, { isLoading: isSubmitting, error: submitReviewError }] =
         useSubmitFullPaperReviewMutation();
 
     const [decideStatus, { isLoading: isDeciding }] =
         useDecideFullPaperStatusMutation();
+
+    useEffect(() => {
+        if (submitReviewError) toast.error(parseApiError<string>(submitReviewError)?.data?.message)
+    }, [submitReviewError])
 
 
     useEffect(() => {
@@ -178,24 +185,38 @@ export default function FullPaperPhase({
                     </h3>
 
                     {paperDetail.isHeadReviewer && (
-                        <Button
-                            onClick={() => setShowDecisionPopup(true)}
-                            className="bg-purple-600 hover:bg-purple-700"
-                            size="lg"
-                            disabled={!hasAtLeastOneReview || isOutOfDecisionTime}
-                        >
-                            <Gavel className="w-4 h-4 mr-2" />
-                            {/* {isNotAllSubmitted && !isOutOfDecisionTime && "Chưa thể quyết định, còn reviewer chưa nộp"}
+                        <div className="flex gap-3">
+                            {paperDetail.fullPaper.fullPaperReviews?.length > 0 && (
+                                <Button
+                                    onClick={() => setShowReviewsDialog(true)}
+                                    variant="outline"
+                                    size="lg"
+                                    className="border-purple-600 text-purple-600 hover:bg-purple-50"
+                                >
+                                    <FileText className="w-4 h-4 mr-2" />
+                                    {paperDetail.fullPaper.fullPaperReviews.length} lượt đánh giá
+                                </Button>
+                            )}
+
+                            <Button
+                                onClick={() => setShowDecisionPopup(true)}
+                                className="bg-purple-600 hover:bg-purple-700"
+                                size="lg"
+                                disabled={!hasAtLeastOneReview || isOutOfDecisionTime}
+                            >
+                                <Gavel className="w-4 h-4 mr-2" />
+                                {/* {isNotAllSubmitted && !isOutOfDecisionTime && "Chưa thể quyết định, còn reviewer chưa nộp"}
                             {!isNotAllSubmitted && isOutOfDecisionTime && "Chưa thể quyết định, ngoài khoảng thời gian"}
                             {isNotAllSubmitted && isOutOfDecisionTime && "Chưa thể quyết định, reviewer chưa nộp & ngoài thời gian"}
                             {!isNotAllSubmitted && !isOutOfDecisionTime && "Quyết định cuối cùng"} */}
 
-                            {!hasAtLeastOneReview && !isOutOfDecisionTime && "Chưa thể quyết định, chưa có review nào"}
-                            {hasAtLeastOneReview && isOutOfDecisionTime && "Ngoài thời gian quyết định"}
-                            {!hasAtLeastOneReview && isOutOfDecisionTime && "Chưa có review & ngoài thời gian"}
-                            {hasAtLeastOneReview && !isOutOfDecisionTime && "Quyết định cuối cùng"}
+                                {!hasAtLeastOneReview && !isOutOfDecisionTime && "Chưa thể quyết định, chưa có review nào"}
+                                {hasAtLeastOneReview && isOutOfDecisionTime && "Ngoài thời gian quyết định"}
+                                {!hasAtLeastOneReview && isOutOfDecisionTime && "Chưa có review & ngoài thời gian"}
+                                {hasAtLeastOneReview && !isOutOfDecisionTime && "Quyết định cuối cùng"}
 
-                        </Button>
+                            </Button>
+                        </div>
                         // <Button
                         //     onClick={() => setShowDecisionPopup(true)}
                         //     className="bg-purple-600 hover:bg-purple-700"
@@ -418,7 +439,109 @@ export default function FullPaperPhase({
             </div>
 
             {/* ========== DANH SÁCH REVIEW CỦA CÁC REVIEWER KHÁC ========== */}
-            <div className="bg-white border rounded-lg p-6">
+            <Transition appear show={showReviewsDialog} as={Fragment}>
+                <Dialog as="div" className="relative z-50" onClose={() => setShowReviewsDialog(false)}>
+                    <Transition.Child
+                        as={Fragment}
+                        enter="ease-out duration-300"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="ease-in duration-200"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                    >
+                        <div className="fixed inset-0 bg-black bg-opacity-50" />
+                    </Transition.Child>
+
+                    <div className="fixed inset-0 overflow-y-auto">
+                        <div className="flex min-h-full items-center justify-center p-4">
+                            <Transition.Child
+                                as={Fragment}
+                                enter="ease-out duration-300"
+                                enterFrom="opacity-0 scale-95"
+                                enterTo="opacity-100 scale-100"
+                                leave="ease-in duration-200"
+                                leaveFrom="opacity-100 scale-100"
+                                leaveTo="opacity-0 scale-95"
+                            >
+                                <Dialog.Panel className="w-full max-w-3xl transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all max-h-[85vh] flex flex-col">
+                                    <div className="sticky top-0 bg-white border-b px-6 py-4 z-10">
+                                        <Dialog.Title as="h3" className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                            <FileText className="w-5 h-5 text-purple-600" />
+                                            Các đánh giá từ Reviewer ({paperDetail.fullPaper.fullPaperReviews?.length || 0})
+                                        </Dialog.Title>
+                                    </div>
+
+                                    <div className="overflow-y-auto px-6 py-4 space-y-3">
+                                        {paperDetail.fullPaper.fullPaperReviews?.map((review: FullPaperReview) => (
+                                            <div key={review.fullPaperReviewId} className="border rounded-lg p-4 bg-gray-50">
+                                                <div className="flex items-center gap-3 mb-3">
+                                                    {review.reviewerAvatarUrl ? (
+                                                        <img
+                                                            src={review.reviewerAvatarUrl}
+                                                            alt={review.reviewerName || "Reviewer"}
+                                                            className="w-10 h-10 rounded-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-semibold text-sm">
+                                                            {review.reviewerName?.charAt(0).toUpperCase() || "R"}
+                                                        </div>
+                                                    )}
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center justify-between">
+                                                            <p className="font-semibold text-gray-900">{review.reviewerName || "N/A"}</p>
+                                                            <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(review.reviewStatusName)}`}>
+                                                                {getStatusIcon(review.reviewStatusName)}
+                                                                {review.reviewStatusName}
+                                                            </span>
+                                                        </div>
+                                                        {review.createdAt && (
+                                                            <p className="text-xs text-gray-500">{formatDate(review.createdAt)}</p>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {review.note && (
+                                                    <div className="mb-2 bg-yellow-50 border-l-4 border-yellow-400 p-2.5 rounded text-sm">
+                                                        <p className="font-semibold text-yellow-800 text-xs mb-1">Ghi chú nội bộ:</p>
+                                                        <p className="text-gray-700">{review.note}</p>
+                                                    </div>
+                                                )}
+
+                                                {review.feedbackToAuthor && (
+                                                    <div className="mb-2 text-sm">
+                                                        <p className="font-semibold text-gray-600 text-xs mb-1">Phản hồi tới tác giả:</p>
+                                                        <p className="text-gray-700 leading-relaxed">{review.feedbackToAuthor}</p>
+                                                    </div>
+                                                )}
+
+                                                {review.feedbackMaterialUrl && (
+                                                    <a
+                                                        href={review.feedbackMaterialUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 text-xs rounded-lg hover:bg-blue-100 transition-colors"
+                                                    >
+                                                        <Download className="w-3.5 h-3.5" />
+                                                        Tải tài liệu
+                                                    </a>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="sticky bottom-0 bg-white border-t px-6 py-4">
+                                        <Button variant="outline" onClick={() => setShowReviewsDialog(false)} className="w-full">
+                                            Đóng
+                                        </Button>
+                                    </div>
+                                </Dialog.Panel>
+                            </Transition.Child>
+                        </div>
+                    </div>
+                </Dialog>
+            </Transition>
+            {/* <div className="bg-white border rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                     <FileText className="w-5 h-5 text-purple-600" />
                     Các đánh giá từ Reviewer khác
@@ -511,143 +634,55 @@ export default function FullPaperPhase({
                         Chưa có đánh giá nào từ Reviewer khác
                     </div>
                 )}
-            </div>
-            {/* {paperDetail.fullPaper.fullPaperReviews?.length > 0 && (
-                <div className="bg-white border rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                        <FileText className="w-5 h-5 text-purple-600" />
-                        Các đánh giá từ Reviewer khác
-                    </h3>
+            </div> */}
 
-                    <div className="space-y-4">
-                        {paperDetail.fullPaper.fullPaperReviews.map((review: any) => (
-                            <div
-                                key={review.fullPaperReviewId}
-                                className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow"
-                            >
-                                <div className="flex items-start gap-3 mb-3">
-                                    <div className="flex-shrink-0">
-                                        {review.reviewerAvatarUrl ? (
-                                            <img
-                                                src={review.reviewerAvatarUrl}
-                                                alt={review.reviewerName || "Reviewer"}
-                                                className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
-                                            />
-                                        ) : (
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-semibold text-sm">
-                                                {review.reviewerName
-                                                    ? review.reviewerName.charAt(0).toUpperCase()
-                                                    : "R"}
-                                            </div>
-                                        )}
-                                    </div>
+            {
+                showDecisionPopup && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
+                            <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <Gavel className="w-5 h-5 text-purple-600" />
+                                Quyết định cuối cùng - Full Paper
+                            </h3>
 
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center justify-between gap-2">
-                                            <p className="font-semibold text-gray-900">
-                                                {review.reviewerName || "N/A"}
-                                            </p>
-                                            <span
-                                                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(
-                                                    review.reviewStatusName,
-                                                )}`}
-                                            >
-                                                {getStatusIcon(review.reviewStatusName)}
-                                                {review.reviewStatusName}
-                                            </span>
-                                        </div>
-                                        {review.createdAt && (
-                                            <p className="text-xs text-gray-500 mt-0.5">
-                                                {formatDate(review.createdAt)}
-                                            </p>
-                                        )}
-                                    </div>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Chọn trạng thái
+                                    </label>
+                                    <select
+                                        className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-purple-500"
+                                        value={decisionStatus}
+                                        onChange={(e) => setDecisionStatus(e.target.value)}
+                                    >
+                                        <option value="Accepted">Accepted</option>
+                                        <option value="Revise">Revise</option>
+                                        <option value="Rejected">Rejected</option>
+                                    </select>
                                 </div>
 
-                                {review.note && (
-                                    <div className="mb-3 bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded">
-                                        <p className="text-xs font-semibold text-yellow-800 mb-1">
-                                            Ghi chú nội bộ:
-                                        </p>
-                                        <p className="text-sm text-gray-700">{review.note}</p>
-                                    </div>
-                                )}
-
-                                {review.feedbackToAuthor && (
-                                    <div className="mb-3">
-                                        <p className="text-xs font-semibold text-gray-600 mb-1">
-                                            Phản hồi tới tác giả:
-                                        </p>
-                                        <p className="text-sm text-gray-700 leading-relaxed">
-                                            {review.feedbackToAuthor}
-                                        </p>
-                                    </div>
-                                )}
-
-                                {review.feedbackMaterialUrl && (
-                                    <div className="pt-3 border-t">
-                                        <a
-                                            href={review.feedbackMaterialUrl}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 text-sm rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
-                                        >
-                                            <Download className="w-4 h-4" />
-                                            Tải tài liệu đánh giá
-                                        </a>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )} */}
-
-            {showDecisionPopup && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
-                        <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <Gavel className="w-5 h-5 text-purple-600" />
-                            Quyết định cuối cùng - Full Paper
-                        </h3>
-
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Chọn trạng thái
-                                </label>
-                                <select
-                                    className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-purple-500"
-                                    value={decisionStatus}
-                                    onChange={(e) => setDecisionStatus(e.target.value)}
-                                >
-                                    <option value="Accepted">Accepted</option>
-                                    <option value="Revise">Revise</option>
-                                    <option value="Rejected">Rejected</option>
-                                </select>
-                            </div>
-
-                            <div className="flex gap-3">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setShowDecisionPopup(false)}
-                                    className="flex-1"
-                                    disabled={isDeciding}
-                                >
-                                    Hủy
-                                </Button>
-                                <Button
-                                    onClick={handleDecideStatus}
-                                    disabled={isDeciding}
-                                    className="flex-1 bg-purple-600 hover:bg-purple-700"
-                                >
-                                    {isDeciding ? "Đang xử lý..." : "Xác nhận"}
-                                </Button>
+                                <div className="flex gap-3">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setShowDecisionPopup(false)}
+                                        className="flex-1"
+                                        disabled={isDeciding}
+                                    >
+                                        Hủy
+                                    </Button>
+                                    <Button
+                                        onClick={handleDecideStatus}
+                                        disabled={isDeciding}
+                                        className="flex-1 bg-purple-600 hover:bg-purple-700"
+                                    >
+                                        {isDeciding ? "Đang xử lý..." : "Xác nhận"}
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }

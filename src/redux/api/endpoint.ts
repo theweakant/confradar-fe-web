@@ -26,7 +26,9 @@ export const endpoint = {
     ACTIVATE_EXTERNAL_REVIEWER: (userId: string) =>
       `/auth/activate-external-reviewer/${userId}`,
 
-    GET_NOTIFICATION: "/notification/own-notification"
+    GET_NOTIFICATION: "/notification/own-notification",
+
+    LIST_COLLABORATOR_ACCOUNTS: "/auth/list-collaborator-accounts",
   },
   DESTINATION: {
     LIST: "/Destination",
@@ -319,6 +321,7 @@ export const endpoint = {
     CREATE_REVIEW_CONTRACT_FOR_NEW_USER: "/contract/create-review-contract-for-new-user",
     LIST_BY_REVIEWER: "/contract/list-review-contract-by-reviewer",
     LIST_OWN_REVIEW_CONTRACT: "/contract/list-own-review-contract",
+    CREATE_COLLABORATOR_CONTRACT: "/contract/create-collaborator-contract",
   },
 
   ASSIGNINGPRESENTERSESSION: {

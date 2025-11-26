@@ -9,12 +9,12 @@ import {
 import { DataTable, Column } from "@/components/molecules/DataTable";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { StatusBadge } from "@/components/atoms/StatusBadge";
-import { UserDetailForAdminAndOrganizerResponse, UserProfileResponse } from "@/types/user.type";
+import { CollaboratorAccountResponse, UserDetailForAdminAndOrganizerResponse, UserProfileResponse } from "@/types/user.type";
 import { getStatusLabel, getStatusVariant } from "@/helper/user";
 
 interface CollaboratorTableProps {
-    collaborators: UserDetailForAdminAndOrganizerResponse[];
-    onView: (collaborator: UserDetailForAdminAndOrganizerResponse) => void;
+    collaborators: CollaboratorAccountResponse[];
+    onView: (collaborator: CollaboratorAccountResponse) => void;
     onSuspend: (collaboratorId: string) => void;
     onActivate: (collaboratorId: string) => void;
 }
@@ -25,54 +25,21 @@ export function CollaboratorTable({
     onSuspend,
     onActivate
 }: CollaboratorTableProps) {
-    // const getRoleLabel = (role: string) => {
-    //     const labels: Record<string, string> = {
-    //         customer: "Khách hàng",
-    //         conferenceorganizer: "Người tổ chức hội nghị",
-    //         collaborator: "Cộng tác viên",
-    //         localreviewer: "Phản biện nội bộ",
-    //         externalreviewer: "Phản biện bên ngoài",
-    //         admin: "Quản trị viên"
-    //     };
-    //     return labels[role] || role;
-    // };
-
-    // const getRoleVariant = (role: string): "success" | "danger" | "warning" | "info" => {
-    //     const variants: Record<string, "success" | "danger" | "warning" | "info"> = {
-    //         customer: "info",
-    //         conferenceorganizer: "warning",
-    //         collaborator: "success",
-    //         localreviewer: "info",
-    //         externalreviewer: "warning",
-    //         admin: "danger"
-    //     };
-    //     return variants[role] || "info";
-    // };
-
-    // const getStatusLabel = (status: string) => {
-    //     const labels: Record<string, string> = {
-    //         active: "Hoạt động",
-    //         inactive: "Tạm ngưng"
-    //     };
-    //     return labels[status] || status;
-    // };
-
-    // const getStatusVariant = (status: string): "success" | "danger" | "warning" | "info" => {
-    //     const variants: Record<string, "success" | "danger" | "warning" | "info"> = {
-    //         active: "success",
-    //         inactive: "danger"
-    //     };
-    //     return variants[status] || "info";
-    // };
-
-    const columns: Column<UserDetailForAdminAndOrganizerResponse>[] = [
+    const columns: Column<CollaboratorAccountResponse>[] = [
         {
             key: "fullName",
-            header: "Tên cộng tác viên",
+            header: "Đối tác",
             render: (collaborator) => (
-                <div className="max-w-xs">
-                    <p className="font-medium text-gray-900 truncate">{collaborator.fullName}</p>
-                    <p className="text-sm text-gray-500 truncate">{collaborator.email}</p>
+                <div className="flex items-center gap-3 max-w-xs">
+                    <img
+                        src={collaborator.avatarUrl || "/images/default-avatar.jpg"}
+                        alt="avatar"
+                        className="w-8 h-8 rounded-full object-cover border"
+                    />
+                    <div>
+                        <p className="font-medium text-gray-900 truncate">{collaborator.fullName}</p>
+                        <p className="text-sm text-gray-500 truncate">{collaborator.email}</p>
+                    </div>
                 </div>
             ),
         },
@@ -86,25 +53,25 @@ export function CollaboratorTable({
                 />
             ),
         },
-        {
-            key: "status",
-            header: "Trạng thái",
-            render: (collaborator) => (
-                <StatusBadge
-                    status={getStatusLabel(collaborator.isActive ?? false)}
-                    variant={getStatusVariant(collaborator.isActive ?? false)}
-                />
-            ),
-        },
         // {
-        //     key: "registeredConferences",
-        //     header: "Hội nghị được giao",
+        //     key: "status",
+        //     header: "Trạng thái",
         //     render: (collaborator) => (
-        //         <span className="text-gray-900 font-medium">
-        //             {collaborator.registeredConferences || 0}
-        //         </span>
+        //         <StatusBadge
+        //             status={getStatusLabel(collaborator.isActive ?? false)}
+        //             variant={getStatusVariant(collaborator.isActive ?? false)}
+        //         />
         //     ),
         // },
+        {
+            key: "organizationName",
+            header: "Tổ chức công tác",
+            render: (collaborator) => (
+                <span className="text-gray-900 font-medium">
+                    {collaborator.organizationName || 0}
+                </span>
+            ),
+        },
         {
             key: "actions",
             header: "Thao tác",
@@ -125,7 +92,7 @@ export function CollaboratorTable({
                                 <Eye className="w-4 h-4 mr-2" />
                                 Xem chi tiết
                             </DropdownMenuItem>
-                            {collaborator.isActive ? (
+                            {/* {collaborator.isActive ? (
                                 <DropdownMenuItem
                                     onClick={() => onSuspend(collaborator.userId)}
                                     className="cursor-pointer text-orange-600 focus:text-orange-600"
@@ -141,7 +108,7 @@ export function CollaboratorTable({
                                     <CheckCircle className="w-4 h-4 mr-2" />
                                     Kích hoạt
                                 </DropdownMenuItem>
-                            )}
+                            )} */}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

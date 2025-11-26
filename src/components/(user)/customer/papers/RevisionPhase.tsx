@@ -17,6 +17,7 @@ import { cn } from '@/utils/utils';
 import EmblaCarousel from '@/components/molecules/EmblaCarousel';
 import SubmittedPaperCard from './SubmittedPaperCard';
 import SubmissionFormDialog from './SubmissionFormDialog';
+import { parseApiError } from '@/helper/api';
 
 interface RevisionPhaseProps {
   paperId: string;
@@ -58,6 +59,8 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
     title: string;
     description: string;
   } | null>(null);
+
+  const [activeRoundTab, setActiveRoundTab] = useState<number>(0);
 
   const revisionValidation: PhaseValidationResult = useMemo(() => {
     if (!revisionDeadline || revisionDeadline.length === 0) {
@@ -203,17 +206,21 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
     return roundNumber > getCompletedRoundNumber;
   }, [isRevisionCompleted, getCompletedRoundNumber]);
 
-  const MemoizedFeedbackDialog = memo(FeedbackDialog);
+  // const MemoizedFeedbackDialog = memo(FeedbackDialog);
 
   useEffect(() => {
-    if (submitRevisionError) {
-      let errorMessage = "Có lỗi xảy ra";
-      if (submitRevisionError.data?.message) {
-        errorMessage = submitRevisionError.data.message;
-      }
-      toast.error(errorMessage);
-    }
-  }, [submitRevisionError]);
+    if (submitRevisionError) toast.error(parseApiError<string>(submitRevisionError)?.data?.message)
+  }, [submitRevisionError])
+
+  // useEffect(() => {
+  //   if (submitRevisionError) {
+  //     let errorMessage = "Có lỗi xảy ra";
+  //     if (submitRevisionError.data?.message) {
+  //       errorMessage = submitRevisionError.data.message;
+  //     }
+  //     toast.error(errorMessage);
+  //   }
+  // }, [submitRevisionError]);
 
   const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -360,6 +367,12 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
   }, []);
 
   useEffect(() => {
+    if (allRounds.length > 0 && activeRoundTab >= allRounds.length) {
+      setActiveRoundTab(0);
+    }
+  }, [allRounds.length]);
+
+  useEffect(() => {
     if (submitRevisionError) {
       let errorMessage = "Có lỗi xảy ra khi nộp RevisionPaper";
 
@@ -432,357 +445,345 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
               <div className="rounded-xl p-2">
                 <h3 className="text-lg font-bold mb-4">Các Round Revision</h3>
 
-                <EmblaCarousel>
+                {/* Thay thế phần EmblaCarousel bằng code này */}
+                {/* <div className="rounded-xl p-2"> */}
+                {/* <h3 className="text-lg font-bold mb-4">Các Round Revision</h3> */}
+
+                {/* Completion Message */}
+                {isRevisionCompleted && getCompletedRoundNumber !== null && (
+                  <div className="mb-4 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                    <p className="text-green-400 text-sm">
+                      ✓ Bạn đã hoàn tất vòng chỉnh sửa Round {getCompletedRoundNumber}.
+                      Bạn không cần thực hiện các vòng sau nữa, vui lòng đợi đến giai đoạn quyết định trạng thái của bài báo.
+                    </p>
+                  </div>
+                )}
+
+                {/* Tab Navigation */}
+                <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+                  {/* <div className="flex gap-2 mb-6 overflow-x-auto pb-2 border-2 border-white/30 rounded-full bg-white/5 px-3 py-2"> */}
                   {allRounds.map((round, index) => {
                     const isCompleted = isRevisionCompleted && getCompletedRoundNumber === round.roundNumber;
                     const isDisabled = shouldDisableSubmission(round.roundNumber);
+                    const isActive = activeRoundTab === index;
 
                     return (
-                      <SwiperSlide key={`round-${round.roundNumber}`}>
-                        {/* <div className="border border-gray-600 rounded-lg p-4 bg-gray-800"> */}
+                      <button
+                        key={`tab-${round.roundNumber}`}
+                        onClick={() => setActiveRoundTab(index)}
+                        disabled={isDisabled}
+                        className={cn(
+                          "relative flex items-center gap-3 px-5 py-3 rounded-full transition-all min-w-[180px]",
+                          "border-2",
+                          // Active states
+                          isActive && !isDisabled && !isCompleted && "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/50",
+                          isActive && isCompleted && "bg-green-600 border-green-600 text-white shadow-lg shadow-green-500/50",
+                          isActive && isDisabled && "bg-gray-600 border-gray-600 text-white",
+                          // Inactive states
+                          !isActive && !isDisabled && !isCompleted && "bg-gray-800 border-gray-600 text-gray-300 hover:border-gray-500",
+                          !isActive && isCompleted && "bg-gray-800 border-green-600/50 text-gray-300 hover:border-green-500",
+                          !isActive && isDisabled && "bg-gray-800/50 border-gray-700 text-gray-500",
+                          isDisabled && "opacity-60 cursor-not-allowed"
+                        )}
+                      >
+                        {/* Icon/Status Indicator */}
                         <div className={cn(
-                          "border rounded-lg p-4 bg-gray-800",
-                          isCompleted ? "border-green-500" : "border-gray-600",
-                          isDisabled && "opacity-60"
+                          "flex items-center justify-center w-2 h-2 rounded-full",
+                          isCompleted && "bg-green-400",
+                          isDisabled && !isCompleted && "bg-gray-400",
+                          !isCompleted && !isDisabled && round.hasSubmission && "bg-green-400",
+                          !isCompleted && !isDisabled && !round.hasSubmission && round.validation.isAvailable && "bg-blue-400",
+                          !isCompleted && !isDisabled && !round.hasSubmission && round.validation.isPending && "bg-yellow-400",
+                          !isCompleted && !isDisabled && !round.hasSubmission && !round.validation.isAvailable && !round.validation.isPending && "bg-gray-400"
                         )}>
-                          <div className="flex justify-between items-center mb-4">
-                            {/* Left side */}
-                            <div>
-                              <h4 className="font-semibold text-lg text-white">Round {round.roundNumber}</h4>
-                              <p className="text-xs text-gray-400 mt-1">
-                                {round.hasSubmission
-                                  ? `ID submission: ${round.submission?.submissionId}`
-                                  : "Chưa có submission"}
-                              </p>
-                            </div>
+                          <div className={cn(
+                            "w-2 h-2 rounded-full animate-pulse",
+                            isActive && "opacity-100",
+                            !isActive && "opacity-0"
+                          )} />
+                        </div>
 
-                            {/* Right side: badge + feedback button */}
-                            <div className="flex items-center gap-2">
-                              {/* Completed Badge */}
-                              {isCompleted && (
-                                <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 flex items-center gap-1">
-                                  <CheckCircle className="w-3.5 h-3.5" />
-                                  Đã hoàn tất, chờ review
-                                </span>
-                              )}
+                        {/* Content */}
+                        <div className="flex flex-col items-start flex-1">
+                          <span className={cn(
+                            "font-semibold text-sm",
+                            isActive && "text-white",
+                            !isActive && "text-gray-300"
+                          )}>
+                            Round {round.roundNumber}
+                          </span>
 
-                              {/* Disabled Badge */}
-                              {isDisabled && (
-                                <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400">
-                                  Không cần nộp
-                                </span>
-                              )}
+                          <span className={cn(
+                            "text-xs",
+                            isActive && "text-white/80",
+                            !isActive && "text-gray-400"
+                          )}>
+                            {isCompleted ? "Hoàn tất" :
+                              isDisabled ? "Không cần" :
+                                round.hasSubmission ? "Đã nộp" :
+                                  round.validation.isAvailable ? "Đang mở" :
+                                    round.validation.isPending ? "Sắp tới" : "Đã đóng"}
+                          </span>
 
-                              {/* Feedback Button */}
-                              {round.hasSubmission &&
-                                round.submission?.feedbacks &&
-                                round.submission.feedbacks.length > 0 && (
-                                  <button
-                                    onClick={() =>
-                                      setActiveSubmissionId(round.submission?.submissionId ?? null)
-                                    }
-                                    className="flex items-center gap-1 px-2.5 py-1 bg-blue-600/80 hover:bg-blue-700 text-white text-xs rounded-md transition"
-                                  >
-                                    <MessageSquare className="w-3.5 h-3.5" />
-                                    <span>{round.submission.feedbacks.length} Feedback(s) từ Reviewer</span>
-                                  </button>
-                                )}
-
-                              {/* Status Badge */}
-                              {!isCompleted && !isDisabled && (
-                                <span
-                                  className={cn(
-                                    "px-2.5 py-1 rounded-full text-xs font-medium",
-                                    round.hasSubmission
-                                      ? "bg-green-500/20 text-green-400"
-                                      : round.validation.isAvailable
-                                        ? "bg-blue-500/20 text-blue-400"
-                                        : round.validation.isPending
-                                          ? "bg-yellow-500/20 text-yellow-400"
-                                          : "bg-gray-500/20 text-gray-400"
-                                  )}
-                                >
-                                  {round.hasSubmission
-                                    ? "Đã nộp"
-                                    : round.validation.isAvailable
-                                      ? "Đang mở"
-                                      : round.validation.isPending
-                                        ? "Sắp tới"
-                                        : "Đã đóng"}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Deadline Information */}
-                          <div className="mb-4 p-4 bg-gray-700 rounded-lg">
-                            <h5 className="font-medium text-white mb-2">Thông tin Deadline</h5>
-                            {round.validation.formattedPeriod && (
-                              <p className="text-sm text-gray-300 mb-2">
-                                <span className="font-medium">Thời gian nộp:</span> {round.validation.formattedPeriod}
-                              </p>
-                            )}
-
-                            {isDisabled ? (
-                              <div className="text-sm font-medium text-gray-400">
-                                Bạn không cần nộp submission cho round này nữa
-                              </div>
-                            ) : (
-                              <>
-                                <div className={`text-sm font-medium ${round.validation.isAvailable ? 'text-green-400' :
-                                  round.validation.isExpired ? 'text-red-400' : 'text-yellow-400'
-                                  }`}>
-                                  {round.validation.message}
-                                </div>
-                                {round.validation.daysRemaining && (
-                                  <div className="text-sm text-blue-400 mt-1">
-                                    Còn {round.validation.daysRemaining} ngày
-                                  </div>
-                                )}
-                                {round.validation.daysUntilStart && (
-                                  <div className="text-sm text-yellow-400 mt-1">
-                                    Còn {round.validation.daysUntilStart} ngày nữa mới có thể nộp
-                                  </div>
-                                )}
-                              </>
-                            )}
-                          </div>
-
-                          {/* If has submission - show submission info */}
-                          {isDisabled ? (
-                            <div className="text-center py-8 text-gray-400">
-                              <p className="text-sm">Round này không cần nộp submission</p>
-                            </div>
-                          ) : round.hasSubmission && round.submission ? (
-                            <div>
-                              {/* ✅ View mode - Đơn giản hơn nhiều */}
-                              <div className="mb-4">
-                                <SubmittedPaperCard
-                                  paperInfo={{
-                                    id: round.submission.submissionId,
-                                    title: round.submission.title,
-                                    description: round.submission.description,
-                                    fileUrl: round.submission.fileUrl,
-                                  }}
-                                  paperType={`Submission Round ${round.roundNumber}`}
-                                />
-                                {round.validation.isAvailable && (
-                                  <div className="flex justify-end mt-3">
-                                    <button
-                                      onClick={() => handleStartEdit(round.submission)}
-                                      className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg font-medium transition-colors"
-                                    >
-                                      Chỉnh sửa Submission
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Feedback Dialog - giữ nguyên */}
-                              {round.submission.feedbacks && round.submission.feedbacks.length > 0 && (
-                                <MemoizedFeedbackDialog
-                                  isOpen={activeSubmissionId === round.submission.submissionId}
-                                  onClose={() => setActiveSubmissionId(null)}
-                                  submission={round.submission}
-                                  feedbackResponses={feedbackResponses}
-                                  onResponseChange={handleResponseChange}
-                                  onSubmitResponses={() =>
-                                    round.submission?.submissionId && handleSubmitResponses(round.submission.submissionId)
-                                  }
-                                  loading={loading}
-                                  canRespondToFeedback={canRespondToFeedback}
-                                  responseValidation={responseValidation}
-                                />
-                              )}
-                            </div>
-                          ) : (
-                            /* ✅ If no submission - show button only */
-                            <div className="text-center py-8">
-                              <button
-                                onClick={() => {
-                                  setCurrentRoundNumber(round.roundNumber);
-                                  setIsSubmitDialogOpen(true);
-                                }}
-                                disabled={!round.validation.isAvailable}
-                                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition"
-                              >
-                                Nộp Submission Round {round.roundNumber}
-                              </button>
-                            </div>
-                          )}
-                          {/* {isDisabled ? (
-                            <div className="text-center py-8 text-gray-400">
-                              <p className="text-sm">Round này không cần nộp submission</p>
-                            </div>
-                          ) : (
-                            round.hasSubmission && round.submission ? (
+                          <div className={cn(
+                            "text-[10px] mt-0.5",
+                            isActive && "text-white/70",
+                            !isActive && "text-gray-500"
+                          )}>
+                            {round.deadline.startSubmissionDate && round.deadline.endSubmissionDate && (
                               <div>
-                                {editingSubmissionId === round.submission.submissionId ? (
-                                  // Edit mode for this submission
-                                  <div className="space-y-4 mb-4 p-4 bg-gray-700 rounded-lg">
-                                    <h5 className="font-medium text-white">Chỉnh sửa Submission</h5>
-                                    <div>
-                                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                                        Tiêu đề
-                                      </label>
-                                      <input
-                                        type="text"
-                                        value={editTitle}
-                                        onChange={(e) => setEditTitle(e.target.value)}
-                                        placeholder="Nhập tiêu đề bài báo"
-                                        className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                      />
-                                    </div>
-                                    <div>
-                                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                                        Mô tả
-                                      </label>
-                                      <textarea
-                                        value={editDescription}
-                                        onChange={(e) => setEditDescription(e.target.value)}
-                                        placeholder="Nhập mô tả bài báo"
-                                        rows={3}
-                                        className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                                      />
-                                    </div>
-                                    <div>
-                                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                                        Chọn file mới (tùy chọn)
-                                      </label>
-                                      <input
-                                        type="file"
-                                        accept=".pdf,.doc,.docx"
-                                        onChange={handleEditFileSelect}
-                                        className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                      />
-                                      {editFile && (
-                                        <p className="text-sm text-green-400 mt-1">
-                                          File mới đã chọn: {editFile.name}
-                                        </p>
-                                      )}
-                                    </div>
-                                    <div className="flex gap-3">
-                                      <button
-                                        onClick={() => handleUpdateSubmission(round.submission!.submissionId)}
-                                        disabled={!editTitle.trim() || !editDescription.trim() || loading}
-                                        className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
-                                      >
-                                        {loading ? 'Đang cập nhật...' : 'Cập nhật'}
-                                      </button>
-                                      <button
-                                        onClick={handleCancelEdit}
-                                        className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
-                                      >
-                                        Hủy
-                                      </button>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  // View mode for this submission
-                                  <div className="mb-4">
-                                    <SubmittedPaperCard
-                                      paperInfo={{
-                                        id: round.submission.submissionId,
-                                        title: round.submission.title,
-                                        description: round.submission.description,
-                                        fileUrl: round.submission.fileUrl,
-                                      }}
-                                      paperType={`Submission Round ${round.roundNumber}`}
-                                    />
-                                    {round.validation.isAvailable && (
-                                      <div className="flex justify-end mt-3">
-                                        <button
-                                          onClick={() => handleStartEdit(round.submission)}
-                                          className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg font-medium transition-colors"
-                                        >
-                                          Chỉnh sửa Submission
-                                        </button>
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-
-                                {round.submission.feedbacks && round.submission.feedbacks.length > 0 && (
-                                  <>
-                                    <MemoizedFeedbackDialog
-                                      isOpen={activeSubmissionId === round.submission.submissionId}
-                                      onClose={() => setActiveSubmissionId(null)}
-                                      submission={round.submission}
-                                      feedbackResponses={feedbackResponses}
-                                      onResponseChange={handleResponseChange}
-                                      onSubmitResponses={() =>
-                                        round.submission?.submissionId && handleSubmitResponses(round.submission.submissionId)
-                                      }
-                                      loading={loading}
-                                      canRespondToFeedback={canRespondToFeedback}
-                                      responseValidation={responseValidation}
-                                    />
-                                  </>
-                                )}
+                                {new Date(round.deadline.startSubmissionDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })} - {new Date(round.deadline.endSubmissionDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}
                               </div>
-                            ) : (
-                              <div className="space-y-4">
-                                <div>
-                                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                                    Tiêu đề
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
-                                    placeholder="Nhập tiêu đề bài báo"
-                                    disabled={!round.validation.isAvailable}
-                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-                                  />
-                                </div>
+                            )}
+                          </div>
+                        </div>
 
-                                <div>
-                                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                                    Mô tả
-                                  </label>
-                                  <textarea
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    placeholder="Nhập mô tả bài báo"
-                                    disabled={!round.validation.isAvailable}
-                                    rows={3}
-                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none disabled:opacity-50 disabled:cursor-not-allowed"
-                                  />
-                                </div>
+                        {/* Active Indicator */}
+                        {isActive && (
+                          <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                        )}
+                      </button>
+                    );
 
-                                <div>
-                                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                                    Chọn file revision paper
-                                  </label>
-                                  <input
-                                    type="file"
-                                    accept=".pdf,.doc,.docx"
-                                    disabled={!round.validation.isAvailable}
-                                    onChange={handleFileSelect}
-                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-                                  />
-                                  {selectedFile && (
-                                    <p className="text-sm text-green-400 mt-1">
-                                      File đã chọn: {selectedFile.name}
-                                    </p>
-                                  )}
-                                </div>
+                    // return (
+                    //   <button
+                    //     key={`tab-${round.roundNumber}`}
+                    //     onClick={() => setActiveRoundTab(index)}
+                    //     disabled={isDisabled}
+                    //     className={cn(
+                    //       "flex flex-col items-center px-4 py-3 rounded-lg border-2 transition-all min-w-[140px]",
+                    //       isActive && !isDisabled && "border-blue-500 bg-blue-500/20",
+                    //       isActive && isCompleted && "border-green-500 bg-green-500/20",
+                    //       isActive && isDisabled && "border-gray-500 bg-gray-500/20",
+                    //       !isActive && !isDisabled && "border-gray-600 bg-gray-800 hover:border-gray-500",
+                    //       !isActive && isCompleted && "border-green-600/50 bg-green-500/10",
+                    //       !isActive && isDisabled && "border-gray-700 bg-gray-800/50",
+                    //       isDisabled && "opacity-60 cursor-not-allowed"
+                    //     )}
+                    //   >
+                    //     <span className={cn(
+                    //       "font-semibold text-sm mb-1",
+                    //       isActive && !isDisabled && "text-blue-400",
+                    //       isActive && isCompleted && "text-green-400",
+                    //       isActive && isDisabled && "text-gray-400",
+                    //       !isActive && "text-gray-300"
+                    //     )}>
+                    //       Round {round.roundNumber}
+                    //     </span>
 
+                    //     <span className={cn(
+                    //       "text-xs px-2 py-0.5 rounded-full mb-2",
+                    //       isCompleted && "bg-green-500/20 text-green-400",
+                    //       isDisabled && !isCompleted && "bg-gray-500/20 text-gray-400",
+                    //       !isCompleted && !isDisabled && round.hasSubmission && "bg-green-500/20 text-green-400",
+                    //       !isCompleted && !isDisabled && !round.hasSubmission && round.validation.isAvailable && "bg-blue-500/20 text-blue-400",
+                    //       !isCompleted && !isDisabled && !round.hasSubmission && round.validation.isPending && "bg-yellow-500/20 text-yellow-400",
+                    //       !isCompleted && !isDisabled && !round.hasSubmission && !round.validation.isAvailable && !round.validation.isPending && "bg-gray-500/20 text-gray-400"
+                    //     )}>
+                    //       {isCompleted ? "Hoàn tất" :
+                    //         isDisabled ? "Không cần" :
+                    //           round.hasSubmission ? "Đã nộp" :
+                    //             round.validation.isAvailable ? "Đang mở" :
+                    //               round.validation.isPending ? "Sắp tới" : "Đã đóng"}
+                    //     </span>
+
+
+                    //     <div className="text-[10px] text-gray-400 text-center">
+                    //       {round.deadline.startSubmissionDate && (
+                    //         <div>Từ: {new Date(round.deadline.startSubmissionDate).toLocaleDateString('vi-VN')}</div>
+                    //       )}
+                    //       {round.deadline.endSubmissionDate && (
+                    //         <div>Đến: {new Date(round.deadline.endSubmissionDate).toLocaleDateString('vi-VN')}</div>
+                    //       )}
+                    //     </div>
+                    //   </button>
+                    // );
+                  })}
+                </div>
+
+                {/* Tab Content */}
+                {allRounds[activeRoundTab] && (() => {
+                  const round = allRounds[activeRoundTab];
+                  const isCompleted = isRevisionCompleted && getCompletedRoundNumber === round.roundNumber;
+                  const isDisabled = shouldDisableSubmission(round.roundNumber);
+
+                  return (
+                    <div className={cn(
+                      "border rounded-lg p-4 bg-gray-800",
+                      isCompleted ? "border-green-500" : "border-gray-600",
+                      isDisabled && "opacity-60"
+                    )}>
+                      {/* Phần content bên trong giữ nguyên từ code cũ */}
+                      <div className="flex justify-between items-center mb-4">
+                        {/* Left side */}
+                        <div>
+                          <h4 className="font-semibold text-lg text-white">Round {round.roundNumber}</h4>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {round.hasSubmission
+                              ? `ID submission: ${round.submission?.submissionId}`
+                              : "Chưa có submission"}
+                          </p>
+                        </div>
+
+                        {/* Right side: badge + feedback button */}
+                        <div className="flex items-center gap-2">
+                          {/* Completed Badge */}
+                          {isCompleted && (
+                            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 flex items-center gap-1">
+                              <CheckCircle className="w-3.5 h-3.5" />
+                              Đã hoàn tất, chờ review
+                            </span>
+                          )}
+
+                          {/* Disabled Badge */}
+                          {isDisabled && (
+                            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400">
+                              Không cần nộp
+                            </span>
+                          )}
+
+                          {/* Feedback Button */}
+                          {round.hasSubmission &&
+                            round.submission?.feedbacks &&
+                            round.submission.feedbacks.length > 0 && (
+                              <button
+                                onClick={() =>
+                                  setActiveSubmissionId(round.submission?.submissionId ?? null)
+                                }
+                                className="flex items-center gap-1 px-2.5 py-1 bg-blue-600/80 hover:bg-blue-700 text-white text-xs rounded-md transition"
+                              >
+                                <MessageSquare className="w-3.5 h-3.5" />
+                                <span>{round.submission.feedbacks.length} Feedback(s) từ Reviewer</span>
+                              </button>
+                            )}
+
+                          {/* Status Badge */}
+                          {!isCompleted && !isDisabled && (
+                            <span
+                              className={cn(
+                                "px-2.5 py-1 rounded-full text-xs font-medium",
+                                round.hasSubmission
+                                  ? "bg-green-500/20 text-green-400"
+                                  : round.validation.isAvailable
+                                    ? "bg-blue-500/20 text-blue-400"
+                                    : round.validation.isPending
+                                      ? "bg-yellow-500/20 text-yellow-400"
+                                      : "bg-gray-500/20 text-gray-400"
+                              )}
+                            >
+                              {round.hasSubmission
+                                ? "Đã nộp"
+                                : round.validation.isAvailable
+                                  ? "Đang mở"
+                                  : round.validation.isPending
+                                    ? "Sắp tới"
+                                    : "Đã đóng"}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+
+                      {/* Deadline Information */}
+                      <div className="mb-4 p-4 bg-gray-700 rounded-lg">
+                        <h5 className="font-medium text-white mb-2">Thông tin Deadline</h5>
+                        {round.validation.formattedPeriod && (
+                          <p className="text-sm text-gray-300 mb-2">
+                            <span className="font-medium">Thời gian nộp:</span> {round.validation.formattedPeriod}
+                          </p>
+                        )}
+
+                        {isDisabled ? (
+                          <div className="text-sm font-medium text-gray-400">
+                            Bạn không cần nộp submission cho round này nữa
+                          </div>
+                        ) : (
+                          <>
+                            <div className={`text-sm font-medium ${round.validation.isAvailable ? 'text-green-400' :
+                              round.validation.isExpired ? 'text-red-400' : 'text-yellow-400'
+                              }`}>
+                              {round.validation.message}
+                            </div>
+                            {round.validation.daysRemaining && (
+                              <div className="text-sm text-blue-400 mt-1">
+                                Còn {round.validation.daysRemaining} ngày
+                              </div>
+                            )}
+                            {round.validation.daysUntilStart && (
+                              <div className="text-sm text-yellow-400 mt-1">
+                                Còn {round.validation.daysUntilStart} ngày nữa mới có thể nộp
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+
+                      {/* If has submission - show submission info */}
+                      {isDisabled ? (
+                        <div className="text-center py-8 text-gray-400">
+                          <p className="text-sm">Round này không cần nộp submission</p>
+                        </div>
+                      ) : round.hasSubmission && round.submission ? (
+                        <div>
+                          {/* ✅ View mode - Đơn giản hơn nhiều */}
+                          <div className="mb-4">
+                            <SubmittedPaperCard
+                              paperInfo={{
+                                id: round.submission.submissionId,
+                                title: round.submission.title,
+                                description: round.submission.description,
+                                fileUrl: round.submission.fileUrl,
+                              }}
+                              paperType={`Submission Round ${round.roundNumber}`}
+                            />
+                            {/* {round.validation.isAvailable && (
+                              <div className="flex justify-end mt-3">
                                 <button
-                                  onClick={handleSubmitNewSubmission}
-                                  disabled={!round.validation.isAvailable || !selectedFile || !title.trim() || !description.trim() || loading}
-                                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-white py-2 px-4 rounded-lg font-medium transition-colors"
+                                  onClick={() => handleStartEdit(round.submission)}
+                                  className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg font-medium transition-colors"
                                 >
-                                  {loading ? 'Đang nộp...' : 'Nộp Submission'}
+                                  Chỉnh sửa Submission
                                 </button>
                               </div>
-                            )
-                          )} */}
+                            )} */}
+                          </div>
+
+                          {/* Feedback Dialog - giữ nguyên */}
+                          {round.submission.feedbacks && round.submission.feedbacks.length > 0 && (
+                            <FeedbackDialog
+                              isOpen={activeSubmissionId === round.submission.submissionId}
+                              onClose={() => setActiveSubmissionId(null)}
+                              submission={round.submission}
+                              feedbackResponses={feedbackResponses}
+                              onResponseChange={handleResponseChange}
+                              onSubmitResponses={() =>
+                                round.submission?.submissionId && handleSubmitResponses(round.submission.submissionId)
+                              }
+                              loading={loading}
+                              canRespondToFeedback={canRespondToFeedback}
+                              responseValidation={responseValidation}
+                            />
+                          )}
                         </div>
-                      </SwiperSlide>
-                    );
-                  })}
-                </EmblaCarousel>
+                      ) : (
+                        /* ✅ If no submission - show button only */
+                        <div className="text-center py-8">
+                          <button
+                            onClick={() => {
+                              setCurrentRoundNumber(round.roundNumber);
+                              setIsSubmitDialogOpen(true);
+                            }}
+                            disabled={!round.validation.isAvailable}
+                            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition"
+                          >
+                            Nộp Submission Round {round.roundNumber}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+                {/* </div> */}
 
                 <SubmissionFormDialog
                   isOpen={isSubmitDialogOpen}
@@ -953,7 +954,7 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
           </Transition>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

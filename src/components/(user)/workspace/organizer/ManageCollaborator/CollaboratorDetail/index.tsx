@@ -67,7 +67,7 @@ export function CollaboratorDetail({ collaborator, onClose }: CollaboratorDetail
                     <div className="flex items-start gap-3">
                         <UserIcon className="w-5 h-5 text-blue-600 mt-0.5" />
                         <div>
-                            <p className="text-sm font-medium text-gray-700">Tên cộng tác viên</p>
+                            <p className="text-sm font-medium text-gray-700">Tên Đối tác</p>
                             <p className="text-gray-900">{collaborator.fullName}</p>
                         </div>
                     </div>

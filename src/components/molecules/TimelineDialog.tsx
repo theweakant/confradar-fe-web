@@ -267,7 +267,7 @@ const TimelineDialog: React.FC<TimelineDialogProps> = ({
                                             />
 
                                             {/* Revision Phase */}
-                                            <PhaseSection
+                                            {/* <PhaseSection
                                                 title="Giai đoạn Revision"
                                                 icon={Eye}
                                                 color="purple"
@@ -291,7 +291,7 @@ const TimelineDialog: React.FC<TimelineDialogProps> = ({
                                                         note: 'Head reviewer phải decide status trong khoảng này'
                                                     }
                                                 ]}
-                                            />
+                                            /> */}
 
                                             {/* Revision Rounds */}
                                             {revisionDeadlines && revisionDeadlines.length > 0 && (
