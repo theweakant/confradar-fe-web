@@ -167,3 +167,16 @@ export interface CollaboratorAccountResponse {
   avatarUrl: string;
   bioDescription: string | null;
 }
+
+export interface Organization {
+  organizationId?: string | null;
+  organizationDescription?: string | null;
+  organizationName?: string | null;
+  userId?: string | null;
+  email?: string | null;
+  fullName?: string | null;
+  phoneNumber?: string | null;
+  avatarUrl?: string | null;
+  isActive?: boolean | null;
+  // contractDetail?: any[];
+}

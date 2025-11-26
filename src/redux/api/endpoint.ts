@@ -29,6 +29,7 @@ export const endpoint = {
     GET_NOTIFICATION: "/notification/own-notification",
 
     LIST_COLLABORATOR_ACCOUNTS: "/auth/list-collaborator-accounts",
+    LIST_ORGANIZATION: "/auth/list-organization",
   },
   DESTINATION: {
     LIST: "/Destination",
