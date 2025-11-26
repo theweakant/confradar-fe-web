@@ -273,7 +273,7 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { EventClickArg, DatesSetArg } from "@fullcalendar/core";
+import { EventClickArg } from "@fullcalendar/core";
 import { FileText, Plus, Calendar, Clock, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useGetResearchSessionsQuery } from "@/redux/services/conferenceStep.service";
@@ -285,13 +285,25 @@ import PaperCard from "./Paper/PaperCard";
 import SessionDetailDialog from "./SessionDetail";
 import { CollaboratorSessionFormDialog } from "@/components/molecules/Calendar/RoomCalendar/Form/CollaboratorSessionForm";
 
+// 🔹 Kiểu chung để chuẩn hóa dữ liệu lịch
+interface CalendarSession {
+  id?: string;
+  title: string;
+  date: string; // "YYYY-MM-DD"
+  startTime: string; // "HH:mm"
+  endTime: string; // "HH:mm"
+  speaker?: string[];
+  // Lưu lại nguồn gốc nếu cần (tuỳ chọn)
+  original?: Session | SessionDetailForScheduleResponse;
+}
+
 interface SessionCalendarProps {
   conferenceId?: string;
   onPaperSelected?: (paperId: string) => void;
   onSessionSelected?: (session: SessionDetailForScheduleResponse) => void;
-  startDate?: string; 
+  startDate?: string;
   acceptedPapers?: AcceptedPaper[];
-  
+
   // 🔹 Props mới cho Collaborator
   isCollaboratorMode?: boolean;
   conferenceStartDate?: string;
@@ -308,8 +320,7 @@ const SessionCalendar: React.FC<SessionCalendarProps> = ({
   onSessionSelected,
   startDate,
   acceptedPapers: externalAcceptedPapers,
-  
-  // 🔹 Destructure props mới
+
   isCollaboratorMode = false,
   conferenceStartDate,
   conferenceEndDate,
@@ -320,12 +331,11 @@ const SessionCalendar: React.FC<SessionCalendarProps> = ({
 }) => {
   const [selectedSession, setSelectedSession] = useState<SessionDetailForScheduleResponse | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  
-  // 🔹 State cho Collaborator session form
+
   const [showSessionForm, setShowSessionForm] = useState(false);
   const [editingSession, setEditingSession] = useState<Session | null>(null);
   const [editingIndex, setEditingIndex] = useState<number>(-1);
-  
+
   const calendarRef = useRef<FullCalendar>(null);
 
   const {
@@ -352,51 +362,88 @@ const SessionCalendar: React.FC<SessionCalendarProps> = ({
     ? externalAcceptedPapers
     : internalAcceptedPapers;
 
-  const allSessions = isCollaboratorMode 
-    ? [...sessions, ...existingSessions]
-    : sessions;
+  // 🔹 Chuẩn hóa SessionDetailForScheduleResponse → CalendarSession
+  const normalizeApiSession = (s: SessionDetailForScheduleResponse): CalendarSession => {
+    const start = s.startTime ? new Date(s.startTime) : new Date();
+    const end = s.endTime ? new Date(s.endTime) : new Date();
+    const date = start.toISOString().split("T")[0]; 
+    const startTime = start.toTimeString().slice(0, 5); 
+    const endTime = end.toTimeString().slice(0, 5);
 
-  const calendarEvents = allSessions.map((session) => {
-    const isLocal = !session.sessionId;
     return {
-      id: session.sessionId || `temp-${session.title}-${session.date}-${session.startTime}`,
+      id: s.conferenceSessionId,
+      title: s.title ||"",
+      date,
+      startTime,
+      endTime,
+      speaker: s.speakerNames || [],
+      original: s,
+    };
+  };
+
+  // 🔹 Chuẩn hóa Session (collaborator) → CalendarSession
+  const normalizeCollaboratorSession = (s: Session): CalendarSession => ({
+    id: s.sessionId,
+    title: s.title,
+    date: s.date,
+    startTime: s.startTime,
+    endTime: s.endTime,
+    speaker: s.speaker?.map(sp => sp.name) || [],
+    original: s,
+  });
+
+const apiSessions: SessionDetailForScheduleResponse[] = sessionsResponse?.data || [];
+const localSessions: Session[] = existingSessions;
+
+// Chuẩn hóa riêng
+const normalizedApiSessions = apiSessions.map(normalizeApiSession);
+const normalizedLocalSessions = localSessions.map(normalizeCollaboratorSession);
+
+  const allNormalizedSessions = isCollaboratorMode
+    ? [...normalizedApiSessions, ...normalizedLocalSessions]
+    : normalizedApiSessions;
+
+  const calendarEvents = allNormalizedSessions.map((session) => {
+    const isLocal = !session.id;
+    return {
+      id: session.id || `temp-${session.title}-${session.date}-${session.startTime}`,
       title: session.title,
       start: `${session.date}T${session.startTime}`,
       end: `${session.date}T${session.endTime}`,
-      backgroundColor: isLocal ? "#8b5cf6" : "#3b82f6", 
+      backgroundColor: isLocal ? "#8b5cf6" : "#3b82f6",
       borderColor: isLocal ? "#7c3aed" : "#2563eb",
       extendedProps: {
-        session,
+        session, 
         isLocal,
       },
     };
   });
 
   const handleEventClick = (info: EventClickArg) => {
-    info.jsEvent.preventDefault(); 
-    const session = info.event.extendedProps.session as SessionDetailForScheduleResponse | Session;
+    info.jsEvent.preventDefault();
+    const calendarSession = info.event.extendedProps.session as CalendarSession;
     const isLocal = info.event.extendedProps.isLocal;
-    
+
     if (isCollaboratorMode && isLocal) {
-      const index = existingSessions.findIndex(s => 
-        s.title === session.title && 
-        s.date === session.date && 
-        s.startTime === session.startTime
+      const index = existingSessions.findIndex((s) =>
+        s.title === calendarSession.title &&
+        s.date === calendarSession.date &&
+        s.startTime === calendarSession.startTime
       );
-      
+
       if (index !== -1) {
         setEditingSession(existingSessions[index]);
         setEditingIndex(index);
         setShowSessionForm(true);
       }
     } else {
-      setSelectedSession(session as SessionDetailForScheduleResponse);
-      onSessionSelected?.(session as SessionDetailForScheduleResponse);
+      const originalSession = calendarSession.original as SessionDetailForScheduleResponse;
+      setSelectedSession(originalSession);
+      onSessionSelected?.(originalSession);
       setDialogOpen(true);
     }
   };
 
-  // 🔹 Handler tạo session mới
   const handleCreateSession = () => {
     if (!conferenceId) {
       toast.error("Thiếu Conference ID!");
@@ -411,13 +458,10 @@ const SessionCalendar: React.FC<SessionCalendarProps> = ({
     setShowSessionForm(true);
   };
 
-  // 🔹 Handler save session từ form
   const handleSessionFormSave = (session: Session) => {
     if (editingIndex !== -1) {
-      // Update existing
       onSessionUpdated?.(session, editingIndex);
     } else {
-      // Create new
       onSessionCreated?.(session);
     }
     setShowSessionForm(false);
@@ -425,7 +469,6 @@ const SessionCalendar: React.FC<SessionCalendarProps> = ({
     setEditingIndex(-1);
   };
 
-  // 🔹 Handler delete session
   const handleDeleteSession = (index: number) => {
     const session = existingSessions[index];
     if (window.confirm(`Xóa phiên họp "${session.title}"?`)) {
@@ -458,24 +501,23 @@ const SessionCalendar: React.FC<SessionCalendarProps> = ({
   if (error) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <p className="text-sm text-red-600 mb-3">Có lỗi xảy ra khi tải dữ liệu phiên</p>
-          <button
-            onClick={() => refetchSessions()}
-            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-          >
-            Thử lại
-          </button>
-        </div>
+      <div className="text-center">
+        <p className="text-sm text-red-600 mb-3">Có lỗi xảy ra khi tải dữ liệu phiên</p>
+        <button
+          onClick={() => refetchSessions()}
+          className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+        >
+          Thử lại
+        </button>
       </div>
+    </div>
     );
   }
 
   return (
     <div className="w-full">
-      {/* 🔹 Header với button tạo session cho Collaborator */}
+      {/* Header */}
       <div className="ml-2 mb-4 flex justify-between items-center">
-        {/* Legend */}
         <div className="flex gap-4 items-center text-xs px-1">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded bg-blue-600"></div>
@@ -489,7 +531,6 @@ const SessionCalendar: React.FC<SessionCalendarProps> = ({
           )}
         </div>
 
-        {/* 🔹 Button tạo session cho Collaborator */}
         {isCollaboratorMode && conferenceId && (
           <button
             onClick={handleCreateSession}
@@ -602,10 +643,9 @@ const SessionCalendar: React.FC<SessionCalendarProps> = ({
           />
         </div>
 
-        {/* Right Sidebar - Papers hoặc Sessions List */}
+        {/* Right Sidebar */}
         <div className="bg-white border border-gray-200 rounded-lg p-2 shadow-sm">
           {isCollaboratorMode ? (
-            // 🔹 Hiển thị danh sách sessions cho Collaborator
             <>
               <h2 className="text-base font-semibold mb-3 flex items-center gap-2 text-gray-900">
                 <FileText className="w-4 h-4 text-blue-600" />
@@ -625,7 +665,7 @@ const SessionCalendar: React.FC<SessionCalendarProps> = ({
                 ) : (
                   existingSessions.map((session, index) => {
                     const formatTime = (timeStr: string) => {
-                      if (timeStr.includes('T')) {
+                      if (timeStr.includes("T")) {
                         return new Date(timeStr).toLocaleTimeString("vi-VN", {
                           hour: "2-digit",
                           minute: "2-digit",
@@ -679,7 +719,6 @@ const SessionCalendar: React.FC<SessionCalendarProps> = ({
               </div>
             </>
           ) : (
-            // 🔹 Hiển thị danh sách papers cho non-Collaborator
             <>
               <h2 className="text-base font-semibold mb-3 flex items-center gap-2 text-gray-900">
                 <FileText className="w-4 h-4 text-blue-600" />
@@ -705,7 +744,7 @@ const SessionCalendar: React.FC<SessionCalendarProps> = ({
         </div>
       </div>
 
-      {/* Session Detail Dialog - cho view-only */}
+      {/* Session Detail Dialog */}
       <SessionDetailDialog
         open={dialogOpen}
         session={selectedSession}
@@ -715,23 +754,27 @@ const SessionCalendar: React.FC<SessionCalendarProps> = ({
         }}
       />
 
-      {/* 🔹 Session Form Dialog cho Collaborator */}
-      {isCollaboratorMode && showSessionForm && conferenceId && conferenceStartDate && conferenceEndDate && (
-        <CollaboratorSessionFormDialog
-          open={showSessionForm}
-          conferenceId={conferenceId}
-          conferenceStartDate={conferenceStartDate}
-          conferenceEndDate={conferenceEndDate}
-          existingSessions={existingSessions}
-          initialSession={editingSession}
-          onSave={handleSessionFormSave}
-          onClose={() => {
-            setShowSessionForm(false);
-            setEditingSession(null);
-            setEditingIndex(-1);
-          }}
-        />
-      )}
+      {/* Session Form Dialog cho Collaborator */}
+      {isCollaboratorMode &&
+        showSessionForm &&
+        conferenceId &&
+        conferenceStartDate &&
+        conferenceEndDate && (
+          <CollaboratorSessionFormDialog
+            open={showSessionForm}
+            conferenceId={conferenceId}
+            conferenceStartDate={conferenceStartDate}
+            conferenceEndDate={conferenceEndDate}
+            existingSessions={existingSessions}
+            initialSession={editingSession}
+            onSave={handleSessionFormSave}
+            onClose={() => {
+              setShowSessionForm(false);
+              setEditingSession(null);
+              setEditingIndex(-1);
+            }}
+          />
+        )}
     </div>
   );
 };

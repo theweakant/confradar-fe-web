@@ -19,7 +19,7 @@ import { ConferenceTable } from "@/components/molecules/Conference/ConferenceTab
 import { ConferenceResponse } from "@/types/conference.type";
 
 import {
-  useGetTechnicalConferencesByOrganizerQuery, // ✅ ĐÃ CẬP NHẬT
+  useGetTechnicalConferencesByOrganizerQuery, 
   useGetResearchConferencesForOrganizerQuery,
 } from "@/redux/services/conference.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";

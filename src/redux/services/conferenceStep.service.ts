@@ -29,7 +29,9 @@ import type {
   ConferenceRefundPolicyData,
   UpdateResearchPhaseRequest,
   ConferencePriceResponse,
-  ResearchSession
+  ResearchSession,
+
+  SessionDetailForScheduleResponse
 } from "@/types/conference.type";
 
 export const conferenceStepApi = createApi({
@@ -967,7 +969,7 @@ updateResearchRankingReference: builder.mutation<
     }),
     //GET
     getResearchSessions: builder.query<
-      ApiResponse<Session[]>,
+      ApiResponse<SessionDetailForScheduleResponse[]>,
       string // conferenceId
     >({
       query: (conferenceId) => ({

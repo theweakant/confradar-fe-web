@@ -43,17 +43,14 @@ export default function DraftConferenceListPage() {
   );
   const [pendingStatusId, setPendingStatusId] = useState<string | null>(null);
 
-  // Get statuses first to find Pending status ID
   const { data: statusesData, isLoading: statusesLoading } =
     useGetAllConferenceStatusesQuery();
   const statuses = statusesData?.data || [];
 
-  // Find Pending status ID
   useEffect(() => {
     if (statuses.length > 0) {
       const pendingStatus = statuses.find(
         (status) =>
-          status.conferenceStatusName?.toLowerCase() === "pending" ||
           status.conferenceStatusName?.toLowerCase() === "draft",
       );
       if (pendingStatus) {
@@ -62,7 +59,6 @@ export default function DraftConferenceListPage() {
     }
   }, [statuses]);
 
-  // RTK Query hooks - automatically filter by Pending status
   const { data, isLoading, isFetching, error, refetch } =
     useGetTechnicalConferencesByCollaboratorQuery(
       {

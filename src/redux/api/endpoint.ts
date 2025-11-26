@@ -349,5 +349,12 @@ export const endpoint = {
     RESPONSE: (reportId: string) => `/report/${reportId}/response`,
     GET_RESPONSE: (reportId: string) => `/report/${reportId}/get-response`,
   },
+
+  DASHBOARD: {
+    CONFERENCES_GROUP_BY_STATUS: "/api/dashboard/conferences-group-by-status",
+    UPCOMING_CONFERENCES: "/api/dashboard/upcoming-conferences",
+    TOP_REGISTERED_CONFERENCES: "/api/dashboard/top-registered-conferences",
+    REVENUE: "/api/dashboard/revenue",
+  },
 }
 

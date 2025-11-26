@@ -22,9 +22,9 @@ type ConferenceSession =
   | TechnicalConferenceSessionResponse;
 
 // Mở rộng session với trường `days`
-interface SessionWithDays extends ConferenceSession {
+type SessionWithDays = ConferenceSession & {
   days: number | null;
-}
+};
 
 // Type guards
 function isResearchConference(

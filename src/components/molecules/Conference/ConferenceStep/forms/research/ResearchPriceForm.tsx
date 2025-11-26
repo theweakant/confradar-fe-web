@@ -20,6 +20,7 @@ interface PhaseModalProps {
   usedSlots: number;
   editingPhase?: Phase | null;
   isAuthorTicket?: boolean;
+  minStartDateForNewPhase?: string;
   onRemoveRefundPolicy?: (refundPolicyId: string) => void;
 }
 
@@ -34,6 +35,7 @@ function PhaseModal({
   usedSlots,
   editingPhase,
   isAuthorTicket = false,
+  minStartDateForNewPhase,
   onRemoveRefundPolicy
 }: PhaseModalProps) {
   const [phaseData, setPhaseData] = useState({
@@ -102,7 +104,7 @@ function PhaseModal({
 
   useEffect(() => {
     if (isOpen && !editingPhase) {
-      const startDate = timelineStart;
+      const startDate = minStartDateForNewPhase || timelineStart;
       setPhaseData({
         phaseName: "",
         percentValue: 0,
@@ -113,9 +115,7 @@ function PhaseModal({
       });
       setRefundPolicies([]); 
     }
-  }, [isOpen, timelineStart, editingPhase]);
-
-
+  }, [isOpen, timelineStart, editingPhase, minStartDateForNewPhase]);
 
   
   const handleAddRefund = () => {
@@ -321,14 +321,14 @@ function PhaseModal({
 
           <div className="grid grid-cols-4 gap-3">
             <div>
-              <DatePickerInput
-                label="Ngày bắt đầu"
-                value={phaseData.startDate}
-                onChange={(val) => setPhaseData({ ...phaseData, startDate: val })}
-                minDate={timelineStart}
-                maxDate={timelineEnd}
-                required
-              />
+            <DatePickerInput
+              label="Ngày bắt đầu"
+              value={phaseData.startDate}
+              onChange={(val) => setPhaseData({ ...phaseData, startDate: val })}
+              minDate={editingPhase ? timelineStart : (minStartDateForNewPhase || timelineStart)}
+              maxDate={timelineEnd}
+              required
+            />
             </div>
 
             <FormInput
@@ -584,6 +584,21 @@ useEffect(() => {
     return totalUsed - editingPhaseSlot;
   };
 
+const getNextValidStartDate = (): string => {
+  if (newTicket.phases.length === 0) {
+    return currentTimelineStart;
+  }
+
+  const sortedPhases = [...newTicket.phases].sort(
+    (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+  );
+  const lastPhase = sortedPhases[sortedPhases.length - 1];
+  const nextDay = new Date(lastPhase.endDate);
+  nextDay.setDate(nextDay.getDate() + 1);
+  return nextDay.toISOString().split("T")[0];
+};
+
+const minStartDateForNewPhase = getNextValidStartDate();
 
 const handleAddTicket = () => {
   if (!newTicket.ticketName.trim()) {
@@ -1050,6 +1065,7 @@ if (!allowListener) {
         usedSlots={getUsedSlotsForPhaseModal()}
         editingPhase={editingPhaseIndex !== null ? newTicket.phases[editingPhaseIndex] : null}
         isAuthorTicket={newTicket.isAuthor}
+        minStartDateForNewPhase={minStartDateForNewPhase}
         onRemoveRefundPolicy={onRemoveRefundPolicy}
       />
     </div>

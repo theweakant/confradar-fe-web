@@ -829,6 +829,7 @@ export interface SessionDetailForScheduleResponse {
   cityName?: string;
 
   presenterAuthor?: PresenterAuthor[];
+  speakerNames?: string[];
 }
 
 export interface PresenterAuthor {

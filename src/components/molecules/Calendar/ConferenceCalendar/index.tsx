@@ -9,7 +9,8 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { EventClickArg } from "@fullcalendar/core";
 import { Loader2, Info } from "lucide-react";
 import {
-  useGetTechConferencesForCollaboratorAndOrganizerQuery,
+  useGetTechnicalConferencesByOrganizerQuery,
+  useGetTechnicalConferencesByCollaboratorQuery,
   useGetResearchConferencesForOrganizerQuery,
 } from "@/redux/services/conference.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
@@ -42,65 +43,105 @@ const ConferenceCalendar: React.FC<ConferenceCalendarProps> = ({
   const isConferenceOrganizer = hasRole(user?.role, "Conference Organizer");
   const isCollaborator = hasRole(user?.role, "Collaborator");
 
-  const { data: techData, isLoading: techLoading, error: techError } =
-    useGetTechConferencesForCollaboratorAndOrganizerQuery({
+  // API cho Conference Organizer - Technical conferences
+  const { 
+    data: techOrganizerData, 
+    isLoading: techOrganizerLoading, 
+    error: techOrganizerError 
+  } = useGetTechnicalConferencesByOrganizerQuery(
+    {
       page: 1,
       pageSize: 1000,
       ...(statusId && { conferenceStatusId: statusId }),
       ...(categoryId && { conferenceCategoryId: categoryId }),
-    });
+    },
+    {
+      skip: !isConferenceOrganizer,
+    }
+  );
 
-  const { data: researchData, isLoading: researchLoading, error: researchError } =
-    useGetResearchConferencesForOrganizerQuery(
-      {
-        page: 1,
-        pageSize: 1000,
-        ...(statusId && { conferenceStatusId: statusId }),
-        ...(categoryId && { conferenceCategoryId: categoryId }),
-      },
-      {
-        skip: !isConferenceOrganizer,
-      }
-    );
+  // API cho Conference Organizer - Research conferences
+  const { 
+    data: researchData, 
+    isLoading: researchLoading, 
+    error: researchError 
+  } = useGetResearchConferencesForOrganizerQuery(
+    {
+      page: 1,
+      pageSize: 1000,
+      ...(statusId && { conferenceStatusId: statusId }),
+      ...(categoryId && { conferenceCategoryId: categoryId }),
+    },
+    {
+      skip: !isConferenceOrganizer,
+    }
+  );
+
+  // API cho Collaborator - Technical conferences
+  const { 
+    data: techCollaboratorData, 
+    isLoading: techCollaboratorLoading, 
+    error: techCollaboratorError 
+  } = useGetTechnicalConferencesByCollaboratorQuery(
+    {
+      page: 1,
+      pageSize: 1000,
+      ...(statusId && { conferenceStatusId: statusId }),
+      ...(categoryId && { conferenceCategoryId: categoryId }),
+    },
+    {
+      skip: !isCollaborator,
+    }
+  );
 
   const { data: categoriesData } = useGetAllCategoriesQuery();
   const { data: statusesData } = useGetAllConferenceStatusesQuery();
   const { data: citiesData } = useGetAllCitiesQuery();
 
-  const techConferences = techData?.data?.items || [];
+  const techOrganizerConferences = techOrganizerData?.data?.items || [];
   const researchConferences = researchData?.data?.items || [];
+  const techCollaboratorConferences = techCollaboratorData?.data?.items || [];
   const categories = categoriesData?.data || [];
   const statuses = statusesData?.data || [];
   const cities = citiesData?.data || [];
 
-  const isLoading = techLoading || researchLoading;
-  const error = techError || researchError;
+  const isLoading = techOrganizerLoading || researchLoading || techCollaboratorLoading;
+  const error = techOrganizerError || researchError || techCollaboratorError;
 
   const allConferences = useMemo(() => {
-    let conferences: Conference[] = [...techConferences];
+    let conferences: Conference[] = [];
 
+    // Lấy conferences dựa trên role
     if (isConferenceOrganizer) {
-      conferences = [...conferences, ...researchConferences];
+      conferences = [...techOrganizerConferences, ...researchConferences];
+    } else if (isCollaborator) {
+      conferences = [...techCollaboratorConferences];
     }
 
+    // Áp dụng filter theo loại conference
     if (filterType !== "all") {
       conferences = conferences.filter((conf) =>
         filterType === "research" ? conf.isResearchConference : !conf.isResearchConference
       );
     }
 
+    // Áp dụng filter theo category
     if (categoryId) {
       conferences = conferences.filter((conf) => conf.conferenceCategoryId === categoryId);
     }
+
+    // Áp dụng filter theo status
     if (statusId) {
       conferences = conferences.filter((conf) => conf.conferenceStatusId === statusId);
     }
 
     return conferences;
   }, [
-    techConferences,
+    techOrganizerConferences,
     researchConferences,
+    techCollaboratorConferences,
     isConferenceOrganizer,
+    isCollaborator,
     filterType,
     categoryId,
     statusId,
