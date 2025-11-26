@@ -26,6 +26,7 @@ import { SponsorForm } from "@/components/molecules/Conference/ConferenceStep/fo
 import { BasicInfoForm } from "@/components/molecules/Conference/ConferenceStep/forms/BasicInfoForm";
 import { PriceForm } from "@/components/molecules/Conference/ConferenceStep/forms/PriceForm";
 import RoomCalendar from "@/components/molecules/Calendar/RoomCalendar/RoomCalendar";
+import SessionCalendar from "@/components/molecules/Calendar/SessionCalendar/SessionCalendar";
 
 // Hooks
 import {
@@ -801,16 +802,31 @@ const handleSessionDeletedFromCalendar = (index: number) => {
           )}
 
           <div className="border rounded-lg overflow-hidden bg-white shadow-sm mb-4">
-            <RoomCalendar 
-              conferenceId={actualConferenceId || undefined}
-              conferenceType="Tech"
-              onSessionCreated={handleSessionCreatedFromCalendar}
-              onSessionUpdated={handleSessionUpdatedFromCalendar}
-              onSessionDeleted={handleSessionDeletedFromCalendar}
-              startDate={basicForm.startDate}
-              endDate={basicForm.endDate}
-              existingSessions={sessions}
-            />
+            {isCollaborator ? (
+              <SessionCalendar 
+                conferenceId={actualConferenceId || undefined}
+                startDate={basicForm.startDate}
+                acceptedPapers={[]}
+                isCollaboratorMode={true}
+                conferenceStartDate={basicForm.startDate}
+                conferenceEndDate={basicForm.endDate}
+                existingSessions={sessions}
+                onSessionCreated={handleSessionCreatedFromCalendar}
+                onSessionUpdated={handleSessionUpdatedFromCalendar}
+                onSessionDeleted={handleSessionDeletedFromCalendar}
+              />
+            ) : (
+              <RoomCalendar 
+                conferenceId={actualConferenceId || undefined}
+                conferenceType="Tech"
+                onSessionCreated={handleSessionCreatedFromCalendar}
+                onSessionUpdated={handleSessionUpdatedFromCalendar}
+                onSessionDeleted={handleSessionDeletedFromCalendar}
+                startDate={basicForm.startDate}
+                endDate={basicForm.endDate}
+                existingSessions={sessions}
+              />
+            )}
           </div>
 
           <FlexibleNavigationButtons

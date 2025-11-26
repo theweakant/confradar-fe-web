@@ -12,7 +12,7 @@ import { useLoginForm } from "@/hooks/useLoginForm";
 export const LoginForm = () => {
   const {
     formData,
-    errors,
+    errors, 
     isLoading,
     handleInputChange,
     handleLogin,

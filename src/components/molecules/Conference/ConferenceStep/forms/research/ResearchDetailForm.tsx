@@ -80,16 +80,6 @@ export function ResearchDetailForm({
 
   return (
     <div className="space-y-4">
-      <FormInput
-        label="Loại nghiên cứu"
-        name="name"
-        value={formData.name}
-        onChange={(val) => handleChange("name", val)}
-        error={validationErrors.name}
-        required
-        
-      />
-
       <div className="grid grid-cols-3 gap-4">
         <FormSelect
           label="Định dạng bài báo"

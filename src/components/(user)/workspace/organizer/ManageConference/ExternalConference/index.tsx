@@ -11,7 +11,9 @@ import { SearchFilter } from "@/components/molecules/SearchFilter";
 import { ConferenceTable } from "@/components/molecules/Conference/ConferenceTable";
 import { ConferenceResponse } from "@/types/conference.type";
 
-import { useGetTechConferencesForCollaboratorAndOrganizerQuery } from "@/redux/services/conference.service";
+// ✅ CẬP NHẬT: Dùng hook mới cho Collaborator
+import { useGetTechnicalConferencesByCollaboratorQuery } from "@/redux/services/conference.service";
+
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllConferenceStatusesQuery } from "@/redux/services/status.service";
@@ -30,18 +32,19 @@ export default function ExternalConference() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterCity, setFilterCity] = useState("all");
 
-  // Fetch tech conferences
+  // ✅ Gọi API mới cho collaborator
   const {
     data: techConferencesData,
     isLoading: techLoading,
     isError: techError,
     refetch: refetchTech,
-  } = useGetTechConferencesForCollaboratorAndOrganizerQuery({
+  } = useGetTechnicalConferencesByCollaboratorQuery({
     page,
     pageSize,
     ...(filterStatus !== "all" && { conferenceStatusId: filterStatus }),
     ...(filterCity !== "all" && { cityId: filterCity }),
     ...(searchQuery && { searchKeyword: searchQuery }),
+    // ⚠️ KHÔNG truyền collaboratorId/organizationName (theo yêu cầu)
   });
 
   const { data: categoriesData, isLoading: categoriesLoading } =

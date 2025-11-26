@@ -192,35 +192,6 @@ export function BasicInfoForm({
         )}
       </div>
 
-      {!isInternalHosted && (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FileUpload
-          label="Hợp đồng"
-          value={formData.contractURL}
-          onChange={(file) => handleChange("contractURL", file)}
-          accept=".pdf,.doc,.docx"
-          placeholder="Chọn file hợp đồng (PDF/DOC)"
-          error={validationErrors.contractURL}
-          required
-          maxSizeMB={10}
-        />
-
-        <FormInput
-          label="Hoa hồng (%)"
-          name="commission"
-          type="number"
-          min="10"
-          max="50"
-          step="0.5"
-          value={formData.commission}
-          onChange={(val) => handleChange("commission", Number(val))}
-          placeholder="1"
-          error={validationErrors.commission}
-          required
-        />
-      </div>
-      )}
-
 
       {/* Banner Image */}
       <ImageUpload

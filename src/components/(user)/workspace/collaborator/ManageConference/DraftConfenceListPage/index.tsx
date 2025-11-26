@@ -25,7 +25,7 @@ import { ConferenceTable } from "@/components/molecules/Conference/ConferenceTab
 import { Conference } from "@/types/conference.type";
 
 // Import your RTK Query hooks
-import { useGetTechConferencesForCollaboratorAndOrganizerQuery } from "@/redux/services/conference.service";
+import { useGetTechnicalConferencesByCollaboratorQuery } from "@/redux/services/conference.service";
 import { useGetAllConferenceStatusesQuery } from "@/redux/services/status.service";
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
@@ -64,7 +64,7 @@ export default function DraftConferenceListPage() {
 
   // RTK Query hooks - automatically filter by Pending status
   const { data, isLoading, isFetching, error, refetch } =
-    useGetTechConferencesForCollaboratorAndOrganizerQuery(
+    useGetTechnicalConferencesByCollaboratorQuery(
       {
         page,
         pageSize,

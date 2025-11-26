@@ -36,6 +36,8 @@ export function ConferenceTable({
 }: ConferenceTableProps) {
   const { user } = useAuth();
   const currentUserId = user?.userId || null;
+  const userRoles = user?.role || [];
+  const isOrganizer = userRoles.includes("Organizer");
 
   const getStatusClass = (statusName: string): string => {
     switch (statusName) {
@@ -92,6 +94,31 @@ export function ConferenceTable({
         </div>
       ),
     },
+    // 👇 Hiển thị 2 cột mới chỉ cho Organizer
+    ...(isOrganizer
+      ? [
+          {
+            key: "userNameCreator",
+            header: "Người tạo",
+            render: (conference: Conference) => (
+              <span className="text-sm text-gray-700">
+                {conference.userNameCreator || "—"}
+              </span>
+            ),
+          },
+          {
+            key: "organization",
+            header: "Tổ chức",
+            render: (conference: Conference) => (
+              <span className="text-sm text-gray-700">
+                {conference.organization || "—"}
+              </span>
+            ),
+          },
+        ]
+      : []),
+    // 👆 Kết thúc phần điều kiện
+
     {
       key: "startDate",
       header: "Bắt đầu sự kiện",

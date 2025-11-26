@@ -19,7 +19,7 @@ import { ConferenceTable } from "@/components/molecules/Conference/ConferenceTab
 import { ConferenceResponse } from "@/types/conference.type";
 
 import {
-  useGetTechConferencesForCollaboratorAndOrganizerQuery,
+  useGetTechnicalConferencesByOrganizerQuery, // ✅ ĐÃ CẬP NHẬT
   useGetResearchConferencesForOrganizerQuery,
 } from "@/redux/services/conference.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
@@ -45,19 +45,20 @@ export default function ManageConference() {
   const [filterCity, setFilterCity] = useState("all");
   const [isSelectTypeModalOpen, setIsSelectTypeModalOpen] = useState(false);
 
-  // Fetch tech conferences (for "My" tab)
+  // ✅ CẬP NHẬT: Dùng getTechnicalConferencesByOrganizer cho tab "my"
   const {
     data: techConferencesData,
     isLoading: techLoading,
     isError: techError,
     refetch: refetchTech,
-  } = useGetTechConferencesForCollaboratorAndOrganizerQuery(
+  } = useGetTechnicalConferencesByOrganizerQuery(
     {
       page,
       pageSize,
       ...(filterStatus !== "all" && { conferenceStatusId: filterStatus }),
       ...(filterCity !== "all" && { cityId: filterCity }),
       ...(searchQuery && { searchKeyword: searchQuery }),
+      // ⚠️ Không cần truyền conferenceCategoryId vì endpoint hiện tại KHÔNG hỗ trợ (theo Swagger bạn gửi)
     },
     {
       skip: activeTab !== "my",
@@ -76,6 +77,7 @@ export default function ManageConference() {
       ...(filterStatus !== "all" && { conferenceStatusId: filterStatus }),
       ...(filterCity !== "all" && { cityId: filterCity }),
       ...(searchQuery && { searchKeyword: searchQuery }),
+      ...(filterCategory !== "all" && { conferenceCategoryId: filterCategory }), // research endpoint hỗ trợ category
     },
     {
       skip: activeTab !== "research",
@@ -95,16 +97,14 @@ export default function ManageConference() {
     return () => clearTimeout(timer);
   }, [searchQuery, filterCategory, filterStatus, filterCity, activeTab]);
 
-  // My conferences: filter tech conferences by createdBy
+  // ✅ Không cần filter client-side nữa — API đã trả đúng conferences của organizer
   const myConferences = useMemo(() => {
-    if (activeTab === "my" && currentUserId) {
-      const rawConferences = techConferencesData?.data?.items || [];
-      return rawConferences.filter((conf) => conf.createdBy === currentUserId);
+    if (activeTab === "my") {
+      return techConferencesData?.data?.items || [];
     }
     return [];
-  }, [techConferencesData, activeTab, currentUserId]);
+  }, [techConferencesData, activeTab]);
 
-  // Research conferences: all from organizer
   const researchConferences = useMemo(() => {
     if (activeTab === "research") {
       return researchConferencesData?.data?.items || [];
@@ -116,16 +116,18 @@ export default function ManageConference() {
   const statuses = statusesData?.data || [];
   const categories = categoriesData?.data || [];
 
-  // Display conferences based on active tab
+  // ✅ Cập nhật logic display: chỉ research tab mới filter theo category (nếu API hỗ trợ)
   const displayConferences = useMemo(() => {
-    const conferences = activeTab === "my" ? myConferences : researchConferences;
-    let result = [...conferences];
+    let conferences = activeTab === "my" ? myConferences : researchConferences;
 
-    if (activeTab !== "my" && filterCategory !== "all") {
-      result = result.filter(conf => conf.conferenceCategoryId === filterCategory);
+    // Chỉ filter category ở tab research (nếu endpoint hỗ trợ)
+    if (activeTab === "research" && filterCategory !== "all") {
+      conferences = conferences.filter(
+        (conf) => conf.conferenceCategoryId === filterCategory
+      );
     }
 
-    return result;
+    return conferences;
   }, [myConferences, researchConferences, activeTab, filterCategory]);
 
   const isLoading = activeTab === "my" ? techLoading : researchLoading;

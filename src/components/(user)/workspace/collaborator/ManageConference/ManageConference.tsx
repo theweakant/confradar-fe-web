@@ -15,7 +15,7 @@ import { SearchFilter } from "@/components/molecules/SearchFilter";
 import { ConferenceTable } from "@/components/molecules/Conference/ConferenceTable";
 import { Conference } from "@/types/conference.type";
 
-import { useGetTechConferencesForCollaboratorAndOrganizerQuery } from "@/redux/services/conference.service";
+import { useGetTechnicalConferencesByCollaboratorQuery } from "@/redux/services/conference.service";
 import { useGetAllConferenceStatusesQuery } from "@/redux/services/status.service";
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
@@ -41,7 +41,7 @@ export default function ManageConference() {
 
   // RTK Query hooks
   const { data, isLoading, isFetching, error, refetch } =
-    useGetTechConferencesForCollaboratorAndOrganizerQuery({
+    useGetTechnicalConferencesByCollaboratorQuery({
       page,
       pageSize,
       ...(filterCategory !== "all" && { conferenceCategoryId: filterCategory }),

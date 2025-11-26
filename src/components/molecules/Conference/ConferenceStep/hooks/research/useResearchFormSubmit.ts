@@ -457,8 +457,6 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
                 abstractDecideStatusEnd: phase.abstractDecideStatusEnd,
                 fullPaperDecideStatusStart: phase.fullPaperDecideStatusStart,
                 fullPaperDecideStatusEnd: phase.fullPaperDecideStatusEnd,
-                revisionPaperReviewStart: phase.revisionPaperReviewStart,
-                revisionPaperReviewEnd: phase.revisionPaperReviewEnd,
                 revisionPaperDecideStatusStart: phase.revisionPaperDecideStatusStart,
                 revisionPaperDecideStatusEnd: phase.revisionPaperDecideStatusEnd,
                 cameraReadyDecideStatusStart: phase.cameraReadyDecideStatusStart,
@@ -505,16 +503,20 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
         await triggerRefetch();
       } else {
         // CREATE MODE
-        const validPhases = phases.filter(phase => {
-          const hasData = !!(
-            phase.registrationStartDate ||
-            phase.fullPaperStartDate ||
-            phase.reviewStartDate ||
-            phase.reviseStartDate ||
-            phase.cameraReadyStartDate
-          );
-          return hasData;
-        });
+      const validPhases = phases.filter(phase => {
+        const hasData = !!(
+          phase.registrationStartDate ||
+          phase.fullPaperStartDate ||
+          phase.reviewStartDate ||
+          phase.reviseStartDate ||
+          phase.cameraReadyStartDate ||
+          phase.abstractDecideStatusStart ||
+          phase.fullPaperDecideStatusStart ||
+          phase.revisionPaperDecideStatusStart ||
+          phase.cameraReadyDecideStatusStart
+        );
+        return hasData;
+      });
 
         if (validPhases.length === 0) {
           toast.error("Vui lòng điền ít nhất 1 timeline!");
