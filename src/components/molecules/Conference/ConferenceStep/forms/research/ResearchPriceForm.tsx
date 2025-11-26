@@ -115,6 +115,9 @@ function PhaseModal({
     }
   }, [isOpen, timelineStart, editingPhase]);
 
+
+
+  
   const handleAddRefund = () => {
     const minDeadline = calculateMinRefundDate(phaseData.startDate);
     setRefundPolicies([...refundPolicies, { percentRefund: 100, refundDeadline: minDeadline }]);
@@ -477,14 +480,14 @@ export function ResearchPriceForm({
   numberPaperAccept,
   reviewFee,
 }: ResearchPriceFormProps) {
-  const [newTicket, setNewTicket] = useState<Omit<Ticket, "ticketId">>({
-    ticketPrice: 0,
-    ticketName: "",
-    ticketDescription: "",
-    isAuthor: false,
-    totalSlot: 0,
-    phases: [],
-  });
+const [newTicket, setNewTicket] = useState<Omit<Ticket, "ticketId">>({
+  ticketPrice: allowListener ? 0 : (reviewFee || 0),
+  ticketName: "",
+  ticketDescription: "",
+  isAuthor: !allowListener,
+  totalSlot: 0,
+  phases: [],
+});
 
   const [isPhaseModalOpen, setIsPhaseModalOpen] = useState(false);
   const [editingTicketIndex, setEditingTicketIndex] = useState<number | null>(null);
@@ -494,21 +497,42 @@ export function ResearchPriceForm({
   const authorTimelineStart = mainPhase?.registrationStartDate || "";
   const authorTimelineEnd = mainPhase?.registrationEndDate || "";
 
-  useEffect(() => {
-    if (!allowListener) {
-      setNewTicket((prev) => ({ ...prev, isAuthor: true }));
+  const getUsedAuthorSlots = () => {
+    let usedSlots = tickets
+      .filter(t => t.isAuthor)
+      .reduce((sum, t) => sum + t.totalSlot, 0);
+    
+    if (editingTicketIndex !== null && tickets[editingTicketIndex]?.isAuthor) {
+      usedSlots -= tickets[editingTicketIndex].totalSlot;
     }
-  }, [allowListener]);
+    
+    return usedSlots;
+  };
 
-  useEffect(() => {
-    if (!allowListener) {
-      setNewTicket((prev) => ({ 
-        ...prev, 
-        isAuthor: true,
-        ticketPrice: reviewFee || 0  
-      }));
+  const getUsedListenerSlots = () => {
+    let usedSlots = tickets
+      .filter(t => !t.isAuthor)
+      .reduce((sum, t) => sum + t.totalSlot, 0);
+    
+    if (editingTicketIndex !== null && !tickets[editingTicketIndex]?.isAuthor) {
+      usedSlots -= tickets[editingTicketIndex].totalSlot;
     }
-  }, [allowListener, reviewFee]);
+    
+    return usedSlots;
+  };
+
+  const remainingAuthorSlots = numberPaperAccept - getUsedAuthorSlots();
+  const remainingListenerSlots = (maxTotalSlot - numberPaperAccept) - getUsedListenerSlots();
+
+useEffect(() => {
+  if (editingTicketIndex === null) {
+    setNewTicket((prev) => ({ 
+      ...prev, 
+      isAuthor: !allowListener,
+      ticketPrice: allowListener ? prev.ticketPrice : (reviewFee || prev.ticketPrice)
+    }));
+  }
+}, [allowListener, reviewFee, editingTicketIndex]);
 
   const currentTimelineStart = newTicket.isAuthor ? authorTimelineStart : ticketSaleStart;
   const currentTimelineEnd = newTicket.isAuthor ? authorTimelineEnd : ticketSaleEnd;
@@ -645,52 +669,58 @@ const handleAddTicket = () => {
     }
   }
 
-  // === ✅ VALIDATE TỔNG SAU KHI THÊM/CẬP NHẬT ===
   const finalTickets = editingTicketIndex !== null
     ? tickets.map((t, i) => i === editingTicketIndex ? newTicket : t)
     : [...tickets, newTicket];
 
-  const totalAuthorSlots = finalTickets
-    .filter(t => t.isAuthor)
+  const currentAuthorSlots = tickets
+    .filter((t, i) => t.isAuthor && i !== editingTicketIndex)
     .reduce((sum, t) => sum + t.totalSlot, 0);
 
-  const totalListenerSlots = finalTickets
-    .filter(t => !t.isAuthor)
+  const currentListenerSlots = tickets
+    .filter((t, i) => !t.isAuthor && i !== editingTicketIndex)
     .reduce((sum, t) => sum + t.totalSlot, 0);
 
-  if (!allowListener) {
-    // Không cho phép listener
-    if (!newTicket.isAuthor) {
-      toast.error("Không cho phép tạo vé người nghe!");
-      return;
-    }
-    
-    if (totalAuthorSlots > numberPaperAccept) {
-      toast.error(
-        `Tổng số vé tác giả (${totalAuthorSlots}) không được vượt quá số bài báo được chấp nhận (${numberPaperAccept})!`
-      );
-      return;
-    }
-  } else {
-    // Cho phép listener
-    
-    // Check vé Author không vượt quá
-    if (totalAuthorSlots > numberPaperAccept) {
-      toast.error(
-        `Tổng số vé tác giả (${totalAuthorSlots}) không được vượt quá số bài báo được chấp nhận (${numberPaperAccept})!`
-      );
-      return;
-    }
+  // Tổng sau khi thêm vé mới
+  const totalAuthorSlots = newTicket.isAuthor 
+    ? currentAuthorSlots + newTicket.totalSlot 
+    : currentAuthorSlots;
 
-    // Check vé Listener không vượt quá
-    const expectedListenerSlots = maxTotalSlot - numberPaperAccept;
-    if (totalListenerSlots > expectedListenerSlots) {
-      toast.error(
-        `Tổng số vé người nghe (${totalListenerSlots}) vượt quá giới hạn ${expectedListenerSlots}!`
-      );
-      return;
-    }
+  const totalListenerSlots = !newTicket.isAuthor 
+    ? currentListenerSlots + newTicket.totalSlot 
+    : currentListenerSlots;
+
+if (!allowListener) {
+  // Không cho phép listener
+  if (!newTicket.isAuthor) {
+    toast.error("Không cho phép tạo vé người nghe!");
+    return;
   }
+  
+  if (totalAuthorSlots > numberPaperAccept) {
+    toast.error(
+      `Tổng số vé tác giả (${totalAuthorSlots}) không được vượt quá số bài báo được chấp nhận (${numberPaperAccept})!`
+    );
+    return;
+  }
+} else {
+  // Cho phép listener - CHECK TỔNG TRƯỚC
+  const totalSlots = totalAuthorSlots + totalListenerSlots;
+  if (totalSlots > maxTotalSlot) {
+    toast.error(
+      `Tổng số vé (${totalSlots}) vượt quá giới hạn ${maxTotalSlot}!`
+    );
+    return;
+  }
+
+  // Check vé Author riêng
+  if (totalAuthorSlots > numberPaperAccept) {
+    toast.error(
+      `Tổng số vé tác giả (${totalAuthorSlots}) không được vượt quá số bài báo được chấp nhận (${numberPaperAccept})!`
+    );
+    return;
+  }
+}
 
   // === LƯU VÉ ===
   if (editingTicketIndex !== null) {
@@ -711,7 +741,7 @@ const handleAddTicket = () => {
     ticketPrice: 0,
     ticketName: "",
     ticketDescription: "",
-    isAuthor: false,
+    isAuthor: !allowListener,
     totalSlot: 0,
     phases: [],
   });
@@ -927,17 +957,17 @@ const handleAddTicket = () => {
           <FormInput
             label={
               newTicket.isAuthor
-                ? `Số lượng cho tác giả (Còn lại: ${numberPaperAccept})`
-                : `Số lượng cho người nghe (Còn lại: ${maxTotalSlot - numberPaperAccept})`
+                ? `Số lượng cho tác giả (Còn lại: ${remainingAuthorSlots})`
+                : `Số lượng cho người nghe (Còn lại: ${remainingListenerSlots})`
             }         
             type="number"
             value={newTicket.totalSlot}
             onChange={(val) => setNewTicket({ ...newTicket, totalSlot: Number(val) })}
             placeholder="100"
-            max={newTicket.isAuthor ? numberPaperAccept : maxTotalSlot - numberPaperAccept}
+            max={newTicket.isAuthor ? remainingAuthorSlots : remainingListenerSlots}
             min="0"
           />
-        </div>
+          </div>
 
         <div className="border-t pt-3 mt-3">
           <div className="flex justify-between items-center mb-3">

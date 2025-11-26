@@ -263,12 +263,12 @@ export function ResearchPhaseForm({
 
   const createWaitlistFromMain = () => {
     const currentMainPhase = phases[0];
-    if (!currentMainPhase.cameraReadyEndDate) {
+    if (!currentMainPhase.cameraReadyDecideStatusEnd) {
       toast.error("Vui lòng hoàn thành Timeline chính trước khi tạo Waitlist!");
       return;
     }
     
-    const currentStartDate = new Date(currentMainPhase.cameraReadyEndDate);
+    const currentStartDate = new Date(currentMainPhase.cameraReadyDecideStatusEnd);
     currentStartDate.setDate(currentStartDate.getDate() + 1);
     const formatDateISO = (date: Date) => date.toISOString().split("T")[0];
 
