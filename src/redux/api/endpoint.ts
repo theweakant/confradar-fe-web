@@ -69,14 +69,16 @@ export const endpoint = {
     RESEARCH_CONF_FOR_ORGANIZER:
       "/Conference/research-conferences-for-organizer",
     TECHNICAL_CONFERENCES_BY_ORGANIZER: "/Conference/technical-conferences-by-organizer",
-    TECHNICAL_CONFERENCES_BY_COLLABORATOR: "/Conference/technical-conferences-by-collaborator",  
+    // TECHNICAL_CONFERENCES_BY_COLLABORATOR: "/Conference/technical-conferences-by-collaborator",  
+  TECHNICAL_CONFERENCES_BY_COLLABORATOR_NO_DRAFT: "/Conference/technical-conferences-by-collaborator-no-draft",
+  TECHNICAL_CONFERENCES_BY_COLLABORATOR_ONLY_DRAFT: "/Conference/technical-conferences-by-collaborator-only-draft",
 
     //DETAIL CONF
     GET_TECH_BY_ID_INTERNAL: (conferenceId: string) =>
       `/Conference/detail-technical-for-organizer-collaborator/${conferenceId}`,
     GET_RESEARCH_BY_ID_INTERNAL: (conferenceId: string) =>
       `/Conference/detail-research-organizer-for-organizer/${conferenceId}`,
-
+    
     //CUSTOMER
     GET_TECH_BY_ID: (conferenceId: string) =>
       `/Conference/technical-detail-for-anon/${conferenceId}`,

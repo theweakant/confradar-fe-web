@@ -3,7 +3,7 @@ import { useGetTechnicalConferenceDetailInternalQuery } from "@/redux/services/c
 import { useAppDispatch } from "@/redux/hooks/hooks";
 import { goToStep, loadExistingConference, markStepCompleted } from "@/redux/slices/conferenceStep.slice";
 import type { ConferenceBasicForm, Ticket, Session, Policy, RefundPolicy, Media, Sponsor, ConferencePriceResponse, ConferencePricePhaseResponse, ConferencePolicyResponse, RefundPolicyResponse } from "@/types/conference.type";
-
+import type {CollaboratorContract} from "@/types/contract.type"
 interface UseConferenceDataProps {
   conferenceId: string;
   onLoad?: (data: {
@@ -14,6 +14,7 @@ interface UseConferenceDataProps {
     refundPolicies: RefundPolicy[];
     mediaList: Media[];
     sponsors: Sponsor[];
+    contract: CollaboratorContract | null;
   }) => void;
   onError?: (error: unknown) => void;
 }
@@ -144,6 +145,8 @@ export function useTechConferenceData({
         imageUrl: s.imageUrl ?? "",
       }));
 
+      const contract = conferenceDetail.data.contract || null;
+
       //  XÁC ĐỊNH CÁC STEP ĐÃ HOÀN TẤT
       const completedSteps: number[] = [];
 
@@ -201,6 +204,7 @@ export function useTechConferenceData({
         refundPolicies,
         mediaList,
         sponsors,
+        contract,
       });
     }
   }, [conferenceDetail, conferenceId, isError, error, dispatch, stableOnLoad, stableOnError]);

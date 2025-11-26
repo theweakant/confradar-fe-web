@@ -89,7 +89,6 @@ export const conferenceStepApi = createApi({
       query: ({ conferenceId, data }) => {
         const formData = new FormData();
 
-        // Required fields (the API docs mark these as required or have no indication of optional)
         formData.append("conferenceName", data.conferenceName);
         formData.append("startDate", data.startDate);
         formData.append("endDate", data.endDate);

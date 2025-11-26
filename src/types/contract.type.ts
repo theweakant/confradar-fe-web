@@ -1,3 +1,18 @@
+export interface CollaboratorContract {
+  collaboratorContractId: string;
+  isSponsorStep: boolean;
+  isMediaStep: boolean;
+  isPolicyStep: boolean;
+  isSessionStep: boolean;
+  isPriceStep: boolean;
+  isTicketSelling: boolean;
+  isClosed: boolean;
+  signDay: string;
+  finalizePaymentDate: string;
+  commission: number;
+  contractUrl: string | null;
+}
+
 export interface CreateReviewerContractRequest {
     reviewerId: string;
     wage: number;

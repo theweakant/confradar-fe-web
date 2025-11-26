@@ -116,37 +116,87 @@ export const conferenceApi = createApi({
     providesTags: ["Conference"],
   }),
     
-  getTechnicalConferencesByCollaborator: builder.query<
-    ApiResponsePagination<Conference[]>,
-    {
-      page?: number;
-      pageSize?: number;
-      conferenceStatusId?: string;
-      searchKeyword?: string;
-      cityId?: string;
-      startDate?: string;
-      endDate?: string;
-      collaboratorId?: string;    
-      organizationName?: string;   
-    }
-  >({
-    query: (params) => ({
-      url: endpoint.CONFERENCE.TECHNICAL_CONFERENCES_BY_COLLABORATOR,
-      method: "GET",
-      params: {
-        page: params?.page ?? 1,
-        pageSize: params?.pageSize ?? 10,
-        ...(params?.conferenceStatusId && { conferenceStatusId: params.conferenceStatusId }),
-        ...(params?.searchKeyword && { searchKeyword: params.searchKeyword }),
-        ...(params?.cityId && { cityId: params.cityId }),
-        ...(params?.startDate && { startDate: params.startDate }),
-        ...(params?.endDate && { endDate: params.endDate }),
-        ...(params?.collaboratorId && { collaboratorId: params.collaboratorId }),
-        ...(params?.organizationName && { organizationName: params.organizationName }),
-      },
+    getTechnicalConferencesByCollaboratorNoDraft: builder.query<
+      ApiResponsePagination<Conference[]>,
+      {
+        page?: number;
+        pageSize?: number;
+        conferenceStatusId?: string;
+        searchKeyword?: string;
+        cityId?: string;
+        startDate?: string;
+        endDate?: string;
+        collaboratorId?: string;    
+        organizationName?: string;   
+      }
+    >({
+      query: (params) => ({
+        url: endpoint.CONFERENCE.TECHNICAL_CONFERENCES_BY_COLLABORATOR_NO_DRAFT,
+        method: "GET",
+        params: {
+          page: params?.page ?? 1,
+          pageSize: params?.pageSize ?? 10,
+          ...(params?.conferenceStatusId && { conferenceStatusId: params.conferenceStatusId }),
+          ...(params?.searchKeyword && { searchKeyword: params.searchKeyword }),
+          ...(params?.cityId && { cityId: params.cityId }),
+          ...(params?.startDate && { startDate: params.startDate }),
+          ...(params?.endDate && { endDate: params.endDate }),
+          ...(params?.collaboratorId && { collaboratorId: params.collaboratorId }),
+          ...(params?.organizationName && { organizationName: params.organizationName }),
+        },
+      }),
+      providesTags: (result) =>
+        result?.data?.items
+          ? [
+              ...result.data.items.map(({ conferenceId }) => ({
+                type: "Conference" as const,
+                id: conferenceId,
+              })),
+              { type: "Conference", id: "LIST" },
+            ]
+          : [{ type: "Conference", id: "LIST" }],
     }),
-    providesTags: ["Conference"],
-  }),
+
+    getTechnicalConferencesByCollaboratorOnlyDraft: builder.query<
+      ApiResponsePagination<Conference[]>,
+      {
+        page?: number;
+        pageSize?: number;
+        conferenceStatusId?: string;
+        searchKeyword?: string;
+        cityId?: string;
+        startDate?: string;
+        endDate?: string;
+        collaboratorId?: string;    
+        organizationName?: string;   
+      }
+    >({
+      query: (params) => ({
+        url: endpoint.CONFERENCE.TECHNICAL_CONFERENCES_BY_COLLABORATOR_ONLY_DRAFT,
+        method: "GET",
+        params: {
+          page: params?.page ?? 1,
+          pageSize: params?.pageSize ?? 10,
+          ...(params?.conferenceStatusId && { conferenceStatusId: params.conferenceStatusId }),
+          ...(params?.searchKeyword && { searchKeyword: params.searchKeyword }),
+          ...(params?.cityId && { cityId: params.cityId }),
+          ...(params?.startDate && { startDate: params.startDate }),
+          ...(params?.endDate && { endDate: params.endDate }),
+          ...(params?.collaboratorId && { collaboratorId: params.collaboratorId }),
+          ...(params?.organizationName && { organizationName: params.organizationName }),
+        },
+      }),
+      providesTags: (result) =>
+        result?.data?.items
+          ? [
+              ...result.data.items.map(({ conferenceId }) => ({
+                type: "Conference" as const,
+                id: conferenceId,
+              })),
+              { type: "Conference", id: "LIST" },
+            ]
+          : [{ type: "Conference", id: "LIST" }],
+    }),
 
     getResearchConferencesForOrganizer: builder.query<
       ApiResponsePagination<Conference[]>,
@@ -470,11 +520,13 @@ export const {
   useGetTechnicalConferenceDetailQuery,
 
   useGetTechnicalConferencesByOrganizerQuery,
-    useGetTechnicalConferencesByCollaboratorQuery,
+  useGetTechnicalConferencesByCollaboratorNoDraftQuery,
+  useGetTechnicalConferencesByCollaboratorOnlyDraftQuery,
+    // useGetTechnicalConferencesByCollaboratorQuery,
 
   useGetResearchConferenceDetailQuery,
   useGetAllConferencesWithPricesPaginationQuery,
-  useGetTechnicalConferenceDetailInternalQuery, //collab
+  useGetTechnicalConferenceDetailInternalQuery, //collab & organizer
   useGetResearchConferenceDetailInternalQuery, //organizer
   useGetResearchConferencesForOrganizerQuery,
   // useGetTechConferencesForCollaboratorAndOrganizerQuery,

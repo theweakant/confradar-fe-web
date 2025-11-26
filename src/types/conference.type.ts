@@ -1,5 +1,7 @@
 // // src/types/conference.type.ts
 
+import { CollaboratorContract } from "./contract.type";
+
 //NAM
 export type CommonConference =
   | TechnicalConferenceDetailResponse
@@ -526,9 +528,7 @@ export interface TechnicalConferenceDetailResponse {
   conferencePrices?: ConferencePriceResponse[];
   conferenceTimelines?: ConferenceTimelineResponse[];
   purchasedInfo?: PurchasedInfo;
-
-  contractURL: File | string;
-  commission: number;
+contract:CollaboratorContract;
 
 }
 
