@@ -20,6 +20,7 @@ interface PhaseModalProps {
   usedSlots: number;
   editingPhase?: Phase | null;
   isAuthorTicket?: boolean;
+  minStartDateForNewPhase?: string;
   onRemoveRefundPolicy?: (refundPolicyId: string) => void;
 }
 
@@ -34,6 +35,7 @@ function PhaseModal({
   usedSlots,
   editingPhase,
   isAuthorTicket = false,
+  minStartDateForNewPhase,
   onRemoveRefundPolicy
 }: PhaseModalProps) {
   const [phaseData, setPhaseData] = useState({
@@ -102,7 +104,7 @@ function PhaseModal({
 
   useEffect(() => {
     if (isOpen && !editingPhase) {
-      const startDate = timelineStart;
+      const startDate = minStartDateForNewPhase || timelineStart;
       setPhaseData({
         phaseName: "",
         percentValue: 0,
@@ -113,8 +115,9 @@ function PhaseModal({
       });
       setRefundPolicies([]); 
     }
-  }, [isOpen, timelineStart, editingPhase]);
+  }, [isOpen, timelineStart, editingPhase, minStartDateForNewPhase]);
 
+  
   const handleAddRefund = () => {
     const minDeadline = calculateMinRefundDate(phaseData.startDate);
     setRefundPolicies([...refundPolicies, { percentRefund: 100, refundDeadline: minDeadline }]);
@@ -318,14 +321,14 @@ function PhaseModal({
 
           <div className="grid grid-cols-4 gap-3">
             <div>
-              <DatePickerInput
-                label="Ngày bắt đầu"
-                value={phaseData.startDate}
-                onChange={(val) => setPhaseData({ ...phaseData, startDate: val })}
-                minDate={timelineStart}
-                maxDate={timelineEnd}
-                required
-              />
+            <DatePickerInput
+              label="Ngày bắt đầu"
+              value={phaseData.startDate}
+              onChange={(val) => setPhaseData({ ...phaseData, startDate: val })}
+              minDate={editingPhase ? timelineStart : (minStartDateForNewPhase || timelineStart)}
+              maxDate={timelineEnd}
+              required
+            />
             </div>
 
             <FormInput
@@ -477,14 +480,14 @@ export function ResearchPriceForm({
   numberPaperAccept,
   reviewFee,
 }: ResearchPriceFormProps) {
-  const [newTicket, setNewTicket] = useState<Omit<Ticket, "ticketId">>({
-    ticketPrice: 0,
-    ticketName: "",
-    ticketDescription: "",
-    isAuthor: false,
-    totalSlot: 0,
-    phases: [],
-  });
+const [newTicket, setNewTicket] = useState<Omit<Ticket, "ticketId">>({
+  ticketPrice: allowListener ? 0 : (reviewFee || 0),
+  ticketName: "",
+  ticketDescription: "",
+  isAuthor: !allowListener,
+  totalSlot: 0,
+  phases: [],
+});
 
   const [isPhaseModalOpen, setIsPhaseModalOpen] = useState(false);
   const [editingTicketIndex, setEditingTicketIndex] = useState<number | null>(null);
@@ -494,21 +497,42 @@ export function ResearchPriceForm({
   const authorTimelineStart = mainPhase?.registrationStartDate || "";
   const authorTimelineEnd = mainPhase?.registrationEndDate || "";
 
-  useEffect(() => {
-    if (!allowListener) {
-      setNewTicket((prev) => ({ ...prev, isAuthor: true }));
+  const getUsedAuthorSlots = () => {
+    let usedSlots = tickets
+      .filter(t => t.isAuthor)
+      .reduce((sum, t) => sum + t.totalSlot, 0);
+    
+    if (editingTicketIndex !== null && tickets[editingTicketIndex]?.isAuthor) {
+      usedSlots -= tickets[editingTicketIndex].totalSlot;
     }
-  }, [allowListener]);
+    
+    return usedSlots;
+  };
 
-  useEffect(() => {
-    if (!allowListener) {
-      setNewTicket((prev) => ({ 
-        ...prev, 
-        isAuthor: true,
-        ticketPrice: reviewFee || 0  
-      }));
+  const getUsedListenerSlots = () => {
+    let usedSlots = tickets
+      .filter(t => !t.isAuthor)
+      .reduce((sum, t) => sum + t.totalSlot, 0);
+    
+    if (editingTicketIndex !== null && !tickets[editingTicketIndex]?.isAuthor) {
+      usedSlots -= tickets[editingTicketIndex].totalSlot;
     }
-  }, [allowListener, reviewFee]);
+    
+    return usedSlots;
+  };
+
+  const remainingAuthorSlots = numberPaperAccept - getUsedAuthorSlots();
+  const remainingListenerSlots = (maxTotalSlot - numberPaperAccept) - getUsedListenerSlots();
+
+useEffect(() => {
+  if (editingTicketIndex === null) {
+    setNewTicket((prev) => ({ 
+      ...prev, 
+      isAuthor: !allowListener,
+      ticketPrice: allowListener ? prev.ticketPrice : (reviewFee || prev.ticketPrice)
+    }));
+  }
+}, [allowListener, reviewFee, editingTicketIndex]);
 
   const currentTimelineStart = newTicket.isAuthor ? authorTimelineStart : ticketSaleStart;
   const currentTimelineEnd = newTicket.isAuthor ? authorTimelineEnd : ticketSaleEnd;
@@ -560,6 +584,21 @@ export function ResearchPriceForm({
     return totalUsed - editingPhaseSlot;
   };
 
+const getNextValidStartDate = (): string => {
+  if (newTicket.phases.length === 0) {
+    return currentTimelineStart;
+  }
+
+  const sortedPhases = [...newTicket.phases].sort(
+    (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+  );
+  const lastPhase = sortedPhases[sortedPhases.length - 1];
+  const nextDay = new Date(lastPhase.endDate);
+  nextDay.setDate(nextDay.getDate() + 1);
+  return nextDay.toISOString().split("T")[0];
+};
+
+const minStartDateForNewPhase = getNextValidStartDate();
 
 const handleAddTicket = () => {
   if (!newTicket.ticketName.trim()) {
@@ -645,53 +684,58 @@ const handleAddTicket = () => {
     }
   }
 
-  // === ✅ VALIDATE TỔNG SAU KHI THÊM/CẬP NHẬT ===
   const finalTickets = editingTicketIndex !== null
     ? tickets.map((t, i) => i === editingTicketIndex ? newTicket : t)
     : [...tickets, newTicket];
 
-  const totalAuthorSlots = finalTickets
-    .filter(t => t.isAuthor)
+  const currentAuthorSlots = tickets
+    .filter((t, i) => t.isAuthor && i !== editingTicketIndex)
     .reduce((sum, t) => sum + t.totalSlot, 0);
 
-  const totalListenerSlots = finalTickets
-    .filter(t => !t.isAuthor)
+  const currentListenerSlots = tickets
+    .filter((t, i) => !t.isAuthor && i !== editingTicketIndex)
     .reduce((sum, t) => sum + t.totalSlot, 0);
 
-  // === ✅ VALIDATION MỚI - CHO PHÉP THÊM TỪNG VÉ ===
-  if (!allowListener) {
-    // Không cho phép listener
-    if (!newTicket.isAuthor) {
-      toast.error("Không cho phép tạo vé người nghe!");
-      return;
-    }
-    
-    if (totalAuthorSlots > numberPaperAccept) {
-      toast.error(
-        `Tổng số vé tác giả (${totalAuthorSlots}) không được vượt quá số bài báo được chấp nhận (${numberPaperAccept})!`
-      );
-      return;
-    }
-  } else {
-    // Cho phép listener
-    
-    // Check vé Author không vượt quá
-    if (totalAuthorSlots > numberPaperAccept) {
-      toast.error(
-        `Tổng số vé tác giả (${totalAuthorSlots}) không được vượt quá số bài báo được chấp nhận (${numberPaperAccept})!`
-      );
-      return;
-    }
+  // Tổng sau khi thêm vé mới
+  const totalAuthorSlots = newTicket.isAuthor 
+    ? currentAuthorSlots + newTicket.totalSlot 
+    : currentAuthorSlots;
 
-    // Check vé Listener không vượt quá
-    const expectedListenerSlots = maxTotalSlot - numberPaperAccept;
-    if (totalListenerSlots > expectedListenerSlots) {
-      toast.error(
-        `Tổng số vé người nghe (${totalListenerSlots}) vượt quá giới hạn ${expectedListenerSlots}!`
-      );
-      return;
-    }
+  const totalListenerSlots = !newTicket.isAuthor 
+    ? currentListenerSlots + newTicket.totalSlot 
+    : currentListenerSlots;
+
+if (!allowListener) {
+  // Không cho phép listener
+  if (!newTicket.isAuthor) {
+    toast.error("Không cho phép tạo vé người nghe!");
+    return;
   }
+  
+  if (totalAuthorSlots > numberPaperAccept) {
+    toast.error(
+      `Tổng số vé tác giả (${totalAuthorSlots}) không được vượt quá số bài báo được chấp nhận (${numberPaperAccept})!`
+    );
+    return;
+  }
+} else {
+  // Cho phép listener - CHECK TỔNG TRƯỚC
+  const totalSlots = totalAuthorSlots + totalListenerSlots;
+  if (totalSlots > maxTotalSlot) {
+    toast.error(
+      `Tổng số vé (${totalSlots}) vượt quá giới hạn ${maxTotalSlot}!`
+    );
+    return;
+  }
+
+  // Check vé Author riêng
+  if (totalAuthorSlots > numberPaperAccept) {
+    toast.error(
+      `Tổng số vé tác giả (${totalAuthorSlots}) không được vượt quá số bài báo được chấp nhận (${numberPaperAccept})!`
+    );
+    return;
+  }
+}
 
   // === LƯU VÉ ===
   if (editingTicketIndex !== null) {
@@ -712,7 +756,7 @@ const handleAddTicket = () => {
     ticketPrice: 0,
     ticketName: "",
     ticketDescription: "",
-    isAuthor: false,
+    isAuthor: !allowListener,
     totalSlot: 0,
     phases: [],
   });
@@ -754,7 +798,7 @@ const handleAddTicket = () => {
     <div className="space-y-4">
       {/* Ticket List */}
       <div className="border p-4 rounded mb-4">
-        <h4 className="font-medium mb-3 text-blue-600">Danh sách vé ({tickets.length})</h4>
+        <h4 className="font-medium mb-3 text-blue-600">Danh sách đã tạo ({tickets.length})</h4>
 
         {tickets.map((t, idx) => (
           <div
@@ -767,7 +811,7 @@ const handleAddTicket = () => {
                   <h3 className="font-semibold text-base text-gray-800">{t.ticketName}</h3>
                   {t.isAuthor && (
                     <span className="bg-blue-600 text-white text-xs font-semibold px-2 py-0.5 rounded">
-                      Vé tác giả
+                      Tác giả
                     </span>
                   )}
                 </div>
@@ -787,7 +831,7 @@ const handleAddTicket = () => {
             {t.phases && t.phases.length > 0 && (
               <div className="mt-2">
                 <div className="text-xs font-medium text-gray-600 mb-1.5">
-                  Giai đoạn giá ({t.phases.length}):
+                  Giai đoạn ({t.phases.length}):
                 </div>
                 <div className="grid grid-cols-5 gap-2">
                   {t.phases.map((p, pi) => {
@@ -835,7 +879,7 @@ const handleAddTicket = () => {
 
             <div className="flex gap-2 mt-3">
               <Button size="sm" variant="outline" onClick={() => handleEditTicket(t, idx)} className="flex-1">
-                Sửa vé
+                Sửa
               </Button>
               <Button
                 size="sm"
@@ -843,7 +887,7 @@ const handleAddTicket = () => {
                 onClick={() => handleRemoveTicket(idx)}
                 className="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium text-sm py-1.5"
               >
-                Xóa vé
+                Xóa
               </Button>
             </div>
           </div>
@@ -853,12 +897,12 @@ const handleAddTicket = () => {
       {/* Add New Ticket Form */}
       <div className="border p-4 rounded">
         <h4 className="font-medium mb-3">
-          {editingTicketIndex !== null ? "Chỉnh sửa vé" : "Thêm vé mới"}
+          {editingTicketIndex !== null ? "Chỉnh sửa" : "Thêm mới"}
         </h4>
         {newTicket.isAuthor && reviewFee > 0 && (
           <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="text-sm text-blue-800">
-              <strong>Lưu ý:</strong> Giá vé tác giả phải lớn hơn hoặc bằng phí đánh giá bài báo:{" "}
+              <strong>Lưu ý:</strong> Chi phí cho tác giả phải lớn hơn hoặc bằng phí đánh giá bài báo:{" "}
               <strong className="text-blue-900">{reviewFee.toLocaleString()} VND</strong>
             </div>
           </div>
@@ -878,10 +922,10 @@ const handleAddTicket = () => {
         )}
 
         <FormInput
-          label="Tên vé"
+          label="Loại phí tham dự"
           value={newTicket.ticketName}
           onChange={(val) => setNewTicket({ ...newTicket, ticketName: val })}
-          placeholder="Vé cơ bản, tiêu chuẩn, nâng cao ..."
+          placeholder="Người nghe, tác giả"
         />
 
         <FormTextArea
@@ -901,14 +945,14 @@ const handleAddTicket = () => {
               className="w-4 h-4 text-blue-600"
             />
             <label htmlFor="isAuthor" className="text-sm font-medium text-blue-900">
-              Đây là vé dành cho tác giả
+              Dành cho tác giả
             </label>
           </div>
         )}
 
         {!allowListener && (
           <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <div className="text-sm text-amber-800">Chỉ cho phép tạo vé dành cho tác giả.</div>
+            <div className="text-sm text-amber-800">Chỉ cho phép tạo dành cho tác giả.</div>
           </div>
         )}
 
@@ -916,8 +960,8 @@ const handleAddTicket = () => {
           <FormInput
             label={
               newTicket.isAuthor 
-                ? `Giá vé gốc (VND) - Tối thiểu: ${reviewFee.toLocaleString()}` 
-                : "Giá vé gốc (VND)"
+                ? `Chi phí gốc (VND) - Tối thiểu: ${reviewFee.toLocaleString()}` 
+                : "Chi phí thính giả (VND)"
             }
             type="number"
             value={newTicket.ticketPrice}
@@ -928,22 +972,22 @@ const handleAddTicket = () => {
           <FormInput
             label={
               newTicket.isAuthor
-                ? `Số lượng vé tác giả (Còn lại: ${numberPaperAccept})`
-                : `Số lượng vé người nghe (Còn lại: ${maxTotalSlot - numberPaperAccept})`
+                ? `Số lượng cho tác giả (Còn lại: ${remainingAuthorSlots})`
+                : `Số lượng cho người nghe (Còn lại: ${remainingListenerSlots})`
             }         
             type="number"
             value={newTicket.totalSlot}
             onChange={(val) => setNewTicket({ ...newTicket, totalSlot: Number(val) })}
             placeholder="100"
-            max={newTicket.isAuthor ? numberPaperAccept : maxTotalSlot - numberPaperAccept}
+            max={newTicket.isAuthor ? remainingAuthorSlots : remainingListenerSlots}
             min="0"
           />
-        </div>
+          </div>
 
         <div className="border-t pt-3 mt-3">
           <div className="flex justify-between items-center mb-3">
             <h5 className="font-medium text-sm">
-              Giai đoạn giá ({newTicket.phases.length}) - Đã dùng: {newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0)}/{newTicket.totalSlot}
+              Chi phí từng giai đoạn ({newTicket.phases.length}) - Đã dùng: {newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0)}/{newTicket.totalSlot}
             </h5>
             <Button
               size="sm"
@@ -1002,7 +1046,7 @@ const handleAddTicket = () => {
         </div>
 
         <Button className="mt-4 w-full" onClick={handleAddTicket}>
-          {editingTicketIndex !== null ? "Cập nhật vé" : "Thêm vé"}
+          {editingTicketIndex !== null ? "Cập nhật" : "Thêm"}
         </Button>
       </div>
 
@@ -1021,6 +1065,7 @@ const handleAddTicket = () => {
         usedSlots={getUsedSlotsForPhaseModal()}
         editingPhase={editingPhaseIndex !== null ? newTicket.phases[editingPhaseIndex] : null}
         isAuthorTicket={newTicket.isAuthor}
+        minStartDateForNewPhase={minStartDateForNewPhase}
         onRemoveRefundPolicy={onRemoveRefundPolicy}
       />
     </div>

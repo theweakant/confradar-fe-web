@@ -50,7 +50,6 @@ export function useTechConferenceData({
     if (conferenceDetail?.data) {
       const data = conferenceDetail.data;
 
-      // === Map Basic Form ===
       const basicForm: ConferenceBasicForm = {
         conferenceId: data.conferenceId ?? "",
         conferenceName: data.conferenceName ?? "",
@@ -67,8 +66,6 @@ export function useTechConferenceData({
         ticketSaleStart: data.ticketSaleStart ?? "",
         ticketSaleEnd: data.ticketSaleEnd ?? "",
         targetAudienceTechnicalConference: data.targetAudience ?? "",
-        contractURL: null,
-        commission: data.commission ?? "",
         conferenceStatusId: data.conferenceStatusId ?? ""
       };
 

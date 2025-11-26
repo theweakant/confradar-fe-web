@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Users, Globe } from "lucide-react";
-import ManageExternalReviewer from "@/components/(user)/workspace/organizer/ManageExternalReviewer/ManageExternalReviewer";
+// import ManageExternalReviewer from "@/components/(user)/workspace/organizer/ManageExternalReviewer/ManageExternalReviewer";
 import ManageLocalReviewer from "@/components/(user)/workspace/organizer/ManageLocalReviewer/ManageLocalReviewer";
 
 export default function ManageCustomerPage() {
@@ -53,7 +53,7 @@ export default function ManageCustomerPage() {
       {/* Tab Content */}
       <div>
         {activeTab === "LocalReviewer" && <ManageLocalReviewer />}
-        {activeTab === "ExternalReviewer" && <ManageExternalReviewer />}
+        {/* {activeTab === "ExternalReviewer" && <ManageExternalReviewer />} */}
       </div>
     </div>
   );

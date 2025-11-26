@@ -183,12 +183,11 @@ export function MaterialsForm({
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:underline inline-block"
                     >
-                      📎 Xem file hiện tại
+                      Xem file hiện tại
                     </a>
                   ) : null}
                 </div>
-                
-                {/* ✅ Cho phép thay đổi file nếu đã tồn tại */}
+                 
                 {m.materialId && (
                   <div className="mt-2">
                     <label className="block text-xs text-gray-600 mb-1">

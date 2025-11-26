@@ -32,12 +32,9 @@ const INITIAL_BASIC_FORM: ConferenceBasicForm = {
   ticketSaleEnd: "",
   ticketSaleDuration: 0,
   createdby: "",
-  contractURL: "", // ⚠️ @TEMP(T): tạm thời để trống để build không lỗi
-  commission: 0, // ⚠️ @TEMP(T): tạm thời để trống để build không lỗi
 };
 
 const INITIAL_RESEARCH_DETAIL: ResearchDetail = {
-  name: "",
   paperFormat: "",
   numberPaperAccept: 0,
   revisionAttemptAllowed: 0,
@@ -76,10 +73,6 @@ const INITIAL_RESEARCH_PHASES: ResearchPhase[] = [
     fullPaperDecideStatusEnd: "",
     fullPaperDecideStatusDuration: 1,
 
-    revisionPaperReviewStart: "",
-    revisionPaperReviewEnd: "",
-    revisionPaperReviewDuration: 1,
-
     revisionPaperDecideStatusStart: "",
     revisionPaperDecideStatusEnd: "",
     revisionPaperDecideStatusDuration: 1,
@@ -116,10 +109,6 @@ const INITIAL_RESEARCH_PHASES: ResearchPhase[] = [
     fullPaperDecideStatusStart: "",
     fullPaperDecideStatusEnd: "",
     fullPaperDecideStatusDuration: 1,
-
-    revisionPaperReviewStart: "",
-    revisionPaperReviewEnd: "",
-    revisionPaperReviewDuration: 1,
 
     revisionPaperDecideStatusStart: "",
     revisionPaperDecideStatusEnd: "",

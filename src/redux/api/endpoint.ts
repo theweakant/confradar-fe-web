@@ -65,10 +65,13 @@ export const endpoint = {
     LIST_BY_STATUS: "/Conference/by-status",
     VIEW_REGISTERED_USERS: "/Conference/view-registered-users-for-conference",
 
-    TECH_CONF_FOR_COLLABORATOR_AND_ORGANIZER:
-      "/Conference/technical-conferences-for-collaborator-and-Organizer",
+    // TECH_CONF_FOR_COLLABORATOR_AND_ORGANIZER:
+    //   "/Conference/technical-conferences-for-collaborator-and-Organizer",
+
     RESEARCH_CONF_FOR_ORGANIZER:
-      "/Conference/research-conferences-for-Organizer",
+      "/Conference/research-conferences-for-organizer",
+    TECHNICAL_CONFERENCES_BY_ORGANIZER: "/Conference/technical-conferences-by-organizer",
+    TECHNICAL_CONFERENCES_BY_COLLABORATOR: "/Conference/technical-conferences-by-collaborator",  
 
     //DETAIL CONF
     GET_TECH_BY_ID_INTERNAL: (conferenceId: string) =>
@@ -348,6 +351,13 @@ export const endpoint = {
     GET_UNRESOLVED: "/report/unresolved",
     RESPONSE: (reportId: string) => `/report/${reportId}/response`,
     GET_RESPONSE: (reportId: string) => `/report/${reportId}/get-response`,
+  },
+
+  DASHBOARD: {
+    CONFERENCES_GROUP_BY_STATUS: "/api/dashboard/conferences-group-by-status",
+    UPCOMING_CONFERENCES: "/api/dashboard/upcoming-conferences",
+    TOP_REGISTERED_CONFERENCES: "/api/dashboard/top-registered-conferences",
+    REVENUE: "/api/dashboard/revenue",
   },
 }
 

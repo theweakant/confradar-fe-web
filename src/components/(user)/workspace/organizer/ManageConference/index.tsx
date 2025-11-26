@@ -6,7 +6,6 @@ import { useState, useMemo, useEffect } from "react";
 import {
   Plus,
   Microscope,
-  Cpu,
   User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,7 +19,7 @@ import { ConferenceTable } from "@/components/molecules/Conference/ConferenceTab
 import { ConferenceResponse } from "@/types/conference.type";
 
 import {
-  useGetTechConferencesForCollaboratorAndOrganizerQuery,
+  useGetTechnicalConferencesByOrganizerQuery, 
   useGetResearchConferencesForOrganizerQuery,
 } from "@/redux/services/conference.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
@@ -29,7 +28,7 @@ import { useGetAllConferenceStatusesQuery } from "@/redux/services/status.servic
 import { useAuth } from "@/redux/hooks/useAuth";
 
 type ConferenceType = boolean | null;
-type TabType = "tech" | "research" | "my";
+type TabType = "my" | "research";
 
 export default function ManageConference() {
   const router = useRouter();
@@ -38,7 +37,7 @@ export default function ManageConference() {
 
   const [page, setPage] = useState(1);
   const [pageSize] = useState(12);
-  const [activeTab, setActiveTab] = useState<TabType>("tech");
+  const [activeTab, setActiveTab] = useState<TabType>("my");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
@@ -46,21 +45,23 @@ export default function ManageConference() {
   const [filterCity, setFilterCity] = useState("all");
   const [isSelectTypeModalOpen, setIsSelectTypeModalOpen] = useState(false);
 
+  // ✅ CẬP NHẬT: Dùng getTechnicalConferencesByOrganizer cho tab "my"
   const {
     data: techConferencesData,
     isLoading: techLoading,
     isError: techError,
     refetch: refetchTech,
-  } = useGetTechConferencesForCollaboratorAndOrganizerQuery(
+  } = useGetTechnicalConferencesByOrganizerQuery(
     {
       page,
       pageSize,
       ...(filterStatus !== "all" && { conferenceStatusId: filterStatus }),
       ...(filterCity !== "all" && { cityId: filterCity }),
       ...(searchQuery && { searchKeyword: searchQuery }),
+      // ⚠️ Không cần truyền conferenceCategoryId vì endpoint hiện tại KHÔNG hỗ trợ (theo Swagger bạn gửi)
     },
     {
-      skip: activeTab !== "tech" && activeTab !== "my",
+      skip: activeTab !== "my",
     },
   );
 
@@ -76,6 +77,7 @@ export default function ManageConference() {
       ...(filterStatus !== "all" && { conferenceStatusId: filterStatus }),
       ...(filterCity !== "all" && { cityId: filterCity }),
       ...(searchQuery && { searchKeyword: searchQuery }),
+      ...(filterCategory !== "all" && { conferenceCategoryId: filterCategory }), // research endpoint hỗ trợ category
     },
     {
       skip: activeTab !== "research",
@@ -95,52 +97,46 @@ export default function ManageConference() {
     return () => clearTimeout(timer);
   }, [searchQuery, filterCategory, filterStatus, filterCity, activeTab]);
 
-  let currentData;
-  let isLoading;
-  let isError;
-  let refetch: (() => void) | undefined = undefined;
-
-  if (activeTab === "tech") {
-    currentData = techConferencesData;
-    isLoading = techLoading;
-    isError = techError;
-    refetch = refetchTech;
-  } else if (activeTab === "research") {
-    currentData = researchConferencesData;
-    isLoading = researchLoading;
-    isError = researchError;
-    refetch = refetchResearch;
-  } else if (activeTab === "my") {
-    currentData = techConferencesData;
-    isLoading = techLoading;
-    isError = techError;
-    refetch = refetchTech;
-  }
-
-  const rawConferences = currentData?.data?.items || [];
-  const totalPages = currentData?.data?.totalPages || 1;
-  const totalItems = currentData?.data?.totalCount || 0;
-
-  const conferences = useMemo(() => {
-    if (activeTab === "my" && currentUserId) {
-      return rawConferences.filter((conf) => conf.createdBy === currentUserId);
+  // ✅ Không cần filter client-side nữa — API đã trả đúng conferences của organizer
+  const myConferences = useMemo(() => {
+    if (activeTab === "my") {
+      return techConferencesData?.data?.items || [];
     }
-    return rawConferences;
-  }, [rawConferences, activeTab, currentUserId]);
+    return [];
+  }, [techConferencesData, activeTab]);
+
+  const researchConferences = useMemo(() => {
+    if (activeTab === "research") {
+      return researchConferencesData?.data?.items || [];
+    }
+    return [];
+  }, [researchConferencesData, activeTab]);
 
   const cities = citiesData?.data || [];
   const statuses = statusesData?.data || [];
   const categories = categoriesData?.data || [];
 
+  // ✅ Cập nhật logic display: chỉ research tab mới filter theo category (nếu API hỗ trợ)
   const displayConferences = useMemo(() => {
-    let result = [...conferences];
+    let conferences = activeTab === "my" ? myConferences : researchConferences;
 
-    if (activeTab !== "my" && filterCategory !== "all") {
-      result = result.filter(conf => conf.conferenceCategoryId === filterCategory);
+    // Chỉ filter category ở tab research (nếu endpoint hỗ trợ)
+    if (activeTab === "research" && filterCategory !== "all") {
+      conferences = conferences.filter(
+        (conf) => conf.conferenceCategoryId === filterCategory
+      );
     }
 
-    return result;
-  }, [conferences, activeTab, filterCategory]);
+    return conferences;
+  }, [myConferences, researchConferences, activeTab, filterCategory]);
+
+  const isLoading = activeTab === "my" ? techLoading : researchLoading;
+  const isError = activeTab === "my" ? techError : researchError;
+  const refetch = activeTab === "my" ? refetchTech : refetchResearch;
+
+  const totalPages = activeTab === "my" 
+    ? techConferencesData?.data?.totalPages || 1
+    : researchConferencesData?.data?.totalPages || 1;
 
   const categoryOptions = useMemo(() => {
     const allOption = { value: "all", label: "Tất cả danh mục" };
@@ -247,7 +243,7 @@ export default function ManageConference() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold text-gray-900">
-              Quản lý Hội thảo
+              Quản lý Hội thảo - ConfRadar
             </h1>
             <Button
               onClick={handleCreate}
@@ -258,10 +254,11 @@ export default function ManageConference() {
             </Button>
           </div>
           <p className="text-gray-600 mt-2">
-            Quản lý thông tin các hội thảo trên ConfRadar
+            Quản lý các hội thảo do bạn tổ chức trên ConfRadar
           </p>
         </div>
 
+        {/* Tabs: My | Research */}
         <div className="mb-6 border-b border-gray-200">
           <div className="flex gap-4">
             <button
@@ -274,27 +271,10 @@ export default function ManageConference() {
             >
               <div className="flex items-center gap-2">
                 <User className="w-4 h-4" />
-                <span>Của tôi</span>
+                <span>Technical</span>
               </div>
               {activeTab === "my" && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-600" />
-              )}
-            </button>
-
-            <button
-              onClick={() => handleTabChange("tech")}
-              className={`pb-4 px-2 font-medium text-sm transition-colors relative ${
-                activeTab === "tech"
-                  ? "text-blue-600"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Cpu className="w-4 h-4" />
-                <span>Tech Conferences</span>
-              </div>
-              {activeTab === "tech" && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
               )}
             </button>
 
@@ -308,7 +288,7 @@ export default function ManageConference() {
             >
               <div className="flex items-center gap-2">
                 <Microscope className="w-4 h-4" />
-                <span>Research Conferences</span>
+                <span>Research</span>
               </div>
               {activeTab === "research" && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-600" />
@@ -344,35 +324,20 @@ export default function ManageConference() {
           <StatCard
             title={
               activeTab === "my"
-                ? "Hội nghị của tôi"
-                : `Tổng ${activeTab === "tech" ? "Tech" : "Research"} Conference`
+                ? "Tổng Techical Conference"
+                : "Tổng Research Conference"
             }
             value={isLoading ? "..." : displayConferences.length}
             icon={
               activeTab === "my" ? (
                 <User className="w-10 h-10" />
-              ) : activeTab === "tech" ? (
-                <Cpu className="w-10 h-10" />
               ) : (
                 <Microscope className="w-10 h-10" />
               )
             }
-            color={activeTab === "my" ? "purple" : activeTab === "tech" ? "blue" : "green"}
+            color={activeTab === "my" ? "purple" : "green"}
           />
         </div>
-
-        {activeTab === "tech" && (
-          <div className="flex justify-end mb-4">
-            <Link href="/workspace/organizer/manage-conference/pending-conference">
-              <Button
-                variant="link"
-                className="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1.5"
-              >
-                Xem hội nghị đang chờ duyệt
-              </Button>
-            </Link>
-          </div>
-        )}
 
         <ConferenceTable
           conferences={displayConferences}
@@ -421,7 +386,7 @@ export default function ManageConference() {
             >
               <div className="flex flex-col items-center gap-4">
                 <div className="rounded-full bg-blue-100 p-4 transition-colors group-hover:bg-blue-500">
-                  <Cpu className="h-10 w-10 text-blue-600 transition-colors group-hover:text-white" />
+                  <User className="h-10 w-10 text-blue-600 transition-colors group-hover:text-white" />
                 </div>
                 <div className="text-center">
                   <h4 className="text-xl font-bold text-gray-900 mb-2">

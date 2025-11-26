@@ -72,10 +72,6 @@ export function ResearchPhaseForm({
     fullPaperDecideStatusEnd: "",
     fullPaperDecideStatusDuration: 1,
 
-    revisionPaperReviewStart: "",
-    revisionPaperReviewEnd: "",
-    revisionPaperReviewDuration: 1,
-
     revisionPaperDecideStatusStart: "",
     revisionPaperDecideStatusEnd: "",
     revisionPaperDecideStatusDuration: 1,
@@ -123,7 +119,6 @@ export function ResearchPhaseForm({
       cameraReadyStartDate: "cameraReadyDuration",
       abstractDecideStatusStart: "abstractDecideStatusDuration",
       fullPaperDecideStatusStart: "fullPaperDecideStatusDuration",
-      revisionPaperReviewStart: "revisionPaperReviewDuration",
       revisionPaperDecideStatusStart: "revisionPaperDecideStatusDuration",
       cameraReadyDecideStatusStart: "cameraReadyDecideStatusDuration",
     } as const;
@@ -268,12 +263,12 @@ export function ResearchPhaseForm({
 
   const createWaitlistFromMain = () => {
     const currentMainPhase = phases[0];
-    if (!currentMainPhase.cameraReadyEndDate) {
+    if (!currentMainPhase.cameraReadyDecideStatusEnd) {
       toast.error("Vui lòng hoàn thành Timeline chính trước khi tạo Waitlist!");
       return;
     }
     
-    const currentStartDate = new Date(currentMainPhase.cameraReadyEndDate);
+    const currentStartDate = new Date(currentMainPhase.cameraReadyDecideStatusEnd);
     currentStartDate.setDate(currentStartDate.getDate() + 1);
     const formatDateISO = (date: Date) => date.toISOString().split("T")[0];
 
@@ -302,9 +297,6 @@ export function ResearchPhaseForm({
 
     const reviseDur = currentMainPhase.reviseDuration ?? 1;
     const [reviseStart, reviseEnd] = createPhase(reviseDur);
-
-    const revPaperRevDur = currentMainPhase.revisionPaperReviewDuration ?? 1;
-    const [revPaperRevStart, revPaperRevEnd] = createPhase(revPaperRevDur);
 
     const revPaperDecDur = currentMainPhase.revisionPaperDecideStatusDuration ?? 1;
     const [revPaperDecStart, revPaperDecEnd] = createPhase(revPaperDecDur);
@@ -340,12 +332,11 @@ export function ResearchPhaseForm({
       fullPaperDecideStatusStart: fpDecStart,
       fullPaperDecideStatusEnd: fpDecEnd,
       fullPaperDecideStatusDuration: fpDecDur,
-      revisionPaperReviewStart: revPaperRevStart,
-      revisionPaperReviewEnd: revPaperRevEnd,
-      revisionPaperReviewDuration: revPaperRevDur,
+
       revisionPaperDecideStatusStart: revPaperDecStart,
       revisionPaperDecideStatusEnd: revPaperDecEnd,
       revisionPaperDecideStatusDuration: revPaperDecDur,
+
       cameraReadyDecideStatusStart: camDecStart,
       cameraReadyDecideStatusEnd: camDecEnd,
       cameraReadyDecideStatusDuration: camDecDur,
@@ -423,7 +414,7 @@ export function ResearchPhaseForm({
             variant={phases[1]?.isActive ? "default" : "outline"}
             onClick={switchToWaitlistPhase}
           >
-            Waitlist Phase
+            Waitlist
           </Button>
           <Button
             size="sm"
@@ -438,7 +429,7 @@ export function ResearchPhaseForm({
         {isWaitlistActive && (
           <div className="mb-6">
             <Button size="sm" variant="outline" onClick={createWaitlistFromMain}>
-              Tạo Waitlist Timeline từ Main Timeline
+              Tạo giai đoạn Waitlist từ Timeline chính
             </Button>
           </div>
         )}
@@ -446,8 +437,8 @@ export function ResearchPhaseForm({
         {isWaitlistActive && waitlistPhase && waitlistPhase.registrationStartDate && (
           <div className="bg-green-50 p-3 rounded-lg border border-green-200 mb-4">
             <p className="text-sm text-green-800">
-              ✓ Bạn có thể tùy chỉnh ngày tháng cho Waitlist Timeline. 
-              Chỉ cần nhập ngày bắt đầu, duration sẽ tự động lấy từ Main Phase.
+              ✓ Bạn có thể tùy chỉnh ngày tháng cho giai đoạn Waitlist. 
+              Chỉ cần nhập ngày bắt đầu, duration sẽ tự động lấy từ Timeline chính.
             </p>
           </div>
         )}
@@ -483,7 +474,7 @@ export function ResearchPhaseForm({
 
       {/* 2. Abstract Decide Status - SAU Registration */}
       <PhaseSection
-        title="2. Quyết định Abstract"
+        title="2. Quyết định trạng thái Abstract"
         startDate={activePhase.abstractDecideStatusStart}
         endDate={activePhase.abstractDecideStatusEnd}
         duration={activePhase.abstractDecideStatusDuration ?? 1}
@@ -508,7 +499,7 @@ export function ResearchPhaseForm({
 
       {/* 3. Full Paper - SAU Abstract Decide */}
       <PhaseSection
-        title="3. Nộp bài full paper"
+        title="3. Nộp Full Paper"
         startDate={activePhase.fullPaperStartDate}
         endDate={activePhase.fullPaperEndDate}
         duration={activePhase.fullPaperDuration ?? 1}
@@ -536,7 +527,7 @@ export function ResearchPhaseForm({
 
       {/* 4. Review - SAU Full Paper */}
       <PhaseSection
-        title="4. Phản biện"
+        title="4. Giai đoạn Reviewer đánh giá"
         startDate={activePhase.reviewStartDate}
         endDate={activePhase.reviewEndDate}
         duration={activePhase.reviewDuration ?? 1}
@@ -564,7 +555,7 @@ export function ResearchPhaseForm({
 
       {/* 5. Full Paper Decide Status - SAU Review */}
       <PhaseSection
-        title="5. Quyết định Full Paper"
+        title="5. Quyết định trạng thái Full Paper (dành cho Head Reviewer)"
         startDate={activePhase.fullPaperDecideStatusStart}
         endDate={activePhase.fullPaperDecideStatusEnd}
         duration={activePhase.fullPaperDecideStatusDuration ?? 1}
@@ -590,7 +581,7 @@ export function ResearchPhaseForm({
       {/* 6. Revise - SAU Full Paper Decide */}
       <div>
         <h4 className="font-medium mb-3 flex items-center gap-2">
-          6. Chỉnh sửa
+          6. Giai đoạn phản biện (Reviewer với Author)
           {activePhase.reviseStartDate && activePhase.reviseEndDate && (
             <span className="text-sm text-orange-600">
               ({formatDate(activePhase.reviseStartDate)} → {formatDate(activePhase.reviseEndDate)})
@@ -732,37 +723,10 @@ export function ResearchPhaseForm({
         )}
       </div>
 
-      {/* 7. Revision Paper Review - SAU Revise End */}
-      <PhaseSection
-        title="7. Phản biện Paper Review"
-        startDate={activePhase.revisionPaperReviewStart}
-        endDate={activePhase.revisionPaperReviewEnd}
-        duration={activePhase.revisionPaperReviewDuration ?? 1}
-        onStartDateChange={(val) => {
-          if (isWaitlistActive) {
-            updateWaitlistPhaseWithAutoCalculation('revisionPaperReviewStart', val);
-          } else {
-            updateActivePhase({ revisionPaperReviewStart: val });
-          }
-        }}
-        onDurationChange={(val) => {
-          if (isWaitlistActive) {
-            updateWaitlistPhaseDuration('revisionPaperReview', val);
-          } else {
-            updatePhaseDuration('revisionPaperReview', val);
-          }
-        }}
-        minDate={
-          addDays(activePhase.reviseEndDate) || 
-          undefined
-        }
-        isWaitlistManual={isWaitlistActive}
-        showDuration={!!(activePhase.revisionPaperReviewStart && activePhase.revisionPaperReviewEnd)}
-      />
 
-      {/* 8. Revision Paper Decide Status - SAU Revision Paper Review */}
+      {/* 7. Revision Paper Decide Status - SAU Revise */}
       <PhaseSection
-        title="8. Quyết định Revision Paper"
+        title="7. Quyết định trạng thái Revision Paper (dành cho Head Reviewer)"
         startDate={activePhase.revisionPaperDecideStatusStart}
         endDate={activePhase.revisionPaperDecideStatusEnd}
         duration={activePhase.revisionPaperDecideStatusDuration ?? 1}
@@ -780,14 +744,14 @@ export function ResearchPhaseForm({
             updatePhaseDuration('revisionPaperDecideStatus', val);
           }
         }}
-        minDate={addDays(activePhase.revisionPaperReviewEnd) || undefined}
+        minDate={addDays(activePhase.reviseEndDate) || undefined} 
         isWaitlistManual={isWaitlistActive}
         showDuration={!!(activePhase.revisionPaperDecideStatusStart && activePhase.revisionPaperDecideStatusEnd)}
       />
 
-      {/* 9. Camera Ready - SAU Revision Paper Decide */}
+      {/* 8. Camera Ready - SAU Revision Paper Decide */}
       <PhaseSection
-        title="9. Camera Ready"
+        title="8. Nộp Camera Ready"
         startDate={activePhase.cameraReadyStartDate}
         endDate={activePhase.cameraReadyEndDate}
         duration={activePhase.cameraReadyDuration ?? 1}
@@ -811,9 +775,9 @@ export function ResearchPhaseForm({
         showDuration={!!(activePhase.cameraReadyStartDate && activePhase.cameraReadyEndDate)}
       />
 
-      {/* 10. Camera Ready Decide Status - SAU Camera Ready Start */}
+      {/* 9. Camera Ready Decide Status - SAU Camera Ready Start */}
       <PhaseSection
-        title="10. Quyết định Camera Ready"
+        title="9. Quyết định trạng thái Camera Ready (dành cho Head Reviewer)"
         startDate={activePhase.cameraReadyDecideStatusStart}
         endDate={activePhase.cameraReadyDecideStatusEnd}
         duration={activePhase.cameraReadyDecideStatusDuration ?? 1}

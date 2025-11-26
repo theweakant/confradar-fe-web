@@ -29,7 +29,9 @@ import type {
   ConferenceRefundPolicyData,
   UpdateResearchPhaseRequest,
   ConferencePriceResponse,
-  ResearchSession
+  ResearchSession,
+
+  SessionDetailForScheduleResponse
 } from "@/types/conference.type";
 
 export const conferenceStepApi = createApi({
@@ -70,12 +72,6 @@ export const conferenceStepApi = createApi({
             "targetAudienceTechnicalConference",
             body.targetAudienceTechnicalConference,
           );
-        if (body.contractURL instanceof File) {
-          formData.append("contractURL", body.contractURL);
-        }
-        if (body.commission !== undefined && body.commission !== null)
-
-          formData.append("commission", String(body.commission));
         return {
           url: endpoint.CONFERENCE_STEP.CREATE_BASIC,
           method: "POST",
@@ -108,8 +104,6 @@ export const conferenceStepApi = createApi({
         if (data.description) formData.append("description", data.description);
         if (data.address) formData.append("address", data.address);
         if (data.bannerImageFile) formData.append("bannerImageFile", data.bannerImageFile);
-        if (data.contractURL) formData.append("contractURL", data.contractURL);
-        if (data.commission !== undefined) formData.append("commission", String(data.commission));
         if (data.targetAudienceTechnicalConference) { formData.append("targetAudienceTechnicalConference", data.targetAudienceTechnicalConference); }
         return {
           url: endpoint.CONFERENCE_STEP.UPDATE_BASIC(conferenceId),
@@ -975,7 +969,7 @@ updateResearchRankingReference: builder.mutation<
     }),
     //GET
     getResearchSessions: builder.query<
-      ApiResponse<Session[]>,
+      ApiResponse<SessionDetailForScheduleResponse[]>,
       string // conferenceId
     >({
       query: (conferenceId) => ({

@@ -26,6 +26,7 @@ import { SponsorForm } from "@/components/molecules/Conference/ConferenceStep/fo
 import { BasicInfoForm } from "@/components/molecules/Conference/ConferenceStep/forms/BasicInfoForm";
 import { PriceForm } from "@/components/molecules/Conference/ConferenceStep/forms/PriceForm";
 import RoomCalendar from "@/components/molecules/Calendar/RoomCalendar/RoomCalendar";
+import SessionCalendar from "@/components/molecules/Calendar/SessionCalendar/SessionCalendar";
 
 // Hooks
 import {
@@ -87,20 +88,17 @@ export default function TechConferenceStepForm({
   const reduxConferenceId = useAppSelector((state) => state.conferenceStep.conferenceId);
   const actualConferenceId = mode === "create" ? reduxConferenceId : conferenceId;
 
-  // === DELETE TRACKING ===
   const realDeleteTracking = useDeleteTracking();
   const mockDeleteTracking = useMockDeleteTracking();
   const deleteTracking =
     mode === "edit" ? realDeleteTracking : mockDeleteTracking;
 
-  // === API QUERIES ===
   const { data: categoriesData, isLoading: isCategoriesLoading } =
     useGetAllCategoriesQuery();
   const { data: roomsData, isLoading: isRoomsLoading } = useGetAllRoomsQuery();
   const { data: citiesData, isLoading: isCitiesLoading } =
     useGetAllCitiesQuery();
 
-  // === HOOKS ===
   const {
     currentStep,
     activeStep,
@@ -148,8 +146,6 @@ export default function TechConferenceStepForm({
 
   const initialDataRef = useRef<InitialFormData | null>(null);
   const [hasLoadedData, setHasLoadedData] = useState(false);
-
-
 
   const {
     isLoading: isConferenceLoading,
@@ -466,10 +462,7 @@ const handleSessionUpdatedFromCalendar = (updatedSession: Session | ResearchSess
     console.error("Unexpected ResearchSession in Tech update", updatedSession);
     toast.error("Phiên họp không hợp lệ để cập nhật.");
     return;
-  }
-
-  console.log('📝 Updating session at index:', index, updatedSession);
-  
+  }  
   setSessions((prev) => {
     const newSessions = [...prev];
     newSessions[index] = updatedSession as Session;
@@ -481,8 +474,7 @@ const handleSessionUpdatedFromCalendar = (updatedSession: Session | ResearchSess
 };
 
 const handleSessionDeletedFromCalendar = (index: number) => {
-  console.log('🗑️ Deleting session at index:', index);
-  
+ 
   const deletedSession = sessions[index];
   
   if (deletedSession?.sessionId && mode === "edit") {
@@ -650,7 +642,7 @@ const handleSessionDeletedFromCalendar = (index: number) => {
   }
 
   return (
-    <div className="max-w-8xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-6">
       <div className="flex items-center justify-between mb-6">
         <PageHeader
           title={
@@ -810,16 +802,31 @@ const handleSessionDeletedFromCalendar = (index: number) => {
           )}
 
           <div className="border rounded-lg overflow-hidden bg-white shadow-sm mb-4">
-            <RoomCalendar 
-              conferenceId={actualConferenceId || undefined}
-              conferenceType="Tech"
-              onSessionCreated={handleSessionCreatedFromCalendar}
-              onSessionUpdated={handleSessionUpdatedFromCalendar}
-              onSessionDeleted={handleSessionDeletedFromCalendar}
-              startDate={basicForm.startDate}
-              endDate={basicForm.endDate}
-              existingSessions={sessions}
-            />
+            {isCollaborator ? (
+              <SessionCalendar 
+                conferenceId={actualConferenceId || undefined}
+                startDate={basicForm.startDate}
+                acceptedPapers={[]}
+                isCollaboratorMode={true}
+                conferenceStartDate={basicForm.startDate}
+                conferenceEndDate={basicForm.endDate}
+                existingSessions={sessions}
+                onSessionCreated={handleSessionCreatedFromCalendar}
+                onSessionUpdated={handleSessionUpdatedFromCalendar}
+                onSessionDeleted={handleSessionDeletedFromCalendar}
+              />
+            ) : (
+              <RoomCalendar 
+                conferenceId={actualConferenceId || undefined}
+                conferenceType="Tech"
+                onSessionCreated={handleSessionCreatedFromCalendar}
+                onSessionUpdated={handleSessionUpdatedFromCalendar}
+                onSessionDeleted={handleSessionDeletedFromCalendar}
+                startDate={basicForm.startDate}
+                endDate={basicForm.endDate}
+                existingSessions={sessions}
+              />
+            )}
           </div>
 
           <FlexibleNavigationButtons

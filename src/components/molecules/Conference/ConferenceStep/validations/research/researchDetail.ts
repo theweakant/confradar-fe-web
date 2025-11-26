@@ -141,10 +141,6 @@ export const validateReviewFee = (value: number): ValidationResult => {
 
 export const validateResearchDetail = (detail: ResearchDetail): ValidationResult => {
   // Check required fields
-  if (!detail.name.trim()) {
-    return { isValid: false, error: "Tên nghiên cứu không được để trống" };
-  }
-  
   if (!detail.paperFormat) {
     return { isValid: false, error: "Vui lòng chọn định dạng bài báo" };
   }
@@ -156,10 +152,6 @@ export const validateResearchDetail = (detail: ResearchDetail): ValidationResult
   if (!detail.rankValue.trim()) {
     return { isValid: false, error: "Vui lòng nhập giá trị xếp hạng" };
   }
-  
-  // Validate individual fields
-  const nameResult = validateResearchName(detail.name);
-  if (!nameResult.isValid) return nameResult;
   
   const paperFormatResult = validatePaperFormat(detail.paperFormat);
   if (!paperFormatResult.isValid) return paperFormatResult;

@@ -223,7 +223,7 @@ export default function ManageCollaborator() {
                 <div className="mb-8">
                     <div className="flex items-center justify-between">
                         <h1 className="text-3xl font-bold text-gray-900">
-                            Quản lý Cộng tác viên
+                            Quản lý đối tác
                         </h1>
                         <button
                             onClick={handleCreate}

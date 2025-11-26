@@ -18,7 +18,6 @@ import type {
   ResearchRankingReference,
   RefundPolicyResponse,
 } from "@/types/conference.type";
-import { RevisionDeadlineDetail } from "@/types/paper.type";
 
 interface UseResearchConferenceDataProps {
   conferenceId: string;
@@ -96,7 +95,6 @@ export function useResearchConferenceData({
       // === Map Research Detail ===
       const researchDetail: ResearchDetail = {
         researchDetailId: "detail",
-        name: data.name ?? "",
         paperFormat: data.paperFormat ?? "",
         numberPaperAccept: data.numberPaperAccept ?? 0,
         revisionAttemptAllowed: data.revisionAttemptAllowed ?? 1,
@@ -158,7 +156,7 @@ export function useResearchConferenceData({
               mainPhaseData.cameraReadyEndDate ?? ""
             ),
 
-            // === NEW: Decision phases ===
+            // === Decision phases (ĐÃ XÓA revisionPaperReviewStart/End/Duration) ===
             abstractDecideStatusStart: mainPhaseData.abstractDecideStatusStart ?? "",
             abstractDecideStatusEnd: mainPhaseData.abstractDecideStatusEnd ?? "",
             abstractDecideStatusDuration: calcDuration(
@@ -170,12 +168,6 @@ export function useResearchConferenceData({
             fullPaperDecideStatusDuration: calcDuration(
               mainPhaseData.fullPaperDecideStatusStart ?? "",
               mainPhaseData.fullPaperDecideStatusEnd ?? ""
-            ),
-            revisionPaperReviewStart: mainPhaseData.revisionPaperReviewStart ?? "",
-            revisionPaperReviewEnd: mainPhaseData.revisionPaperReviewEnd ?? "",
-            revisionPaperReviewDuration: calcDuration(
-              mainPhaseData.revisionPaperReviewStart ?? "",
-              mainPhaseData.revisionPaperReviewEnd ?? ""
             ),
             revisionPaperDecideStatusStart: mainPhaseData.revisionPaperDecideStatusStart ?? "",
             revisionPaperDecideStatusEnd: mainPhaseData.revisionPaperDecideStatusEnd ?? "",
@@ -236,7 +228,7 @@ export function useResearchConferenceData({
               waitlistPhaseData.cameraReadyEndDate ?? ""
             ),
 
-            // === NEW: Decision phases ===
+            // === Decision phases (ĐÃ XÓA revisionPaperReviewStart/End/Duration) ===
             abstractDecideStatusStart: waitlistPhaseData.abstractDecideStatusStart ?? "",
             abstractDecideStatusEnd: waitlistPhaseData.abstractDecideStatusEnd ?? "",
             abstractDecideStatusDuration: calcDuration(
@@ -248,12 +240,6 @@ export function useResearchConferenceData({
             fullPaperDecideStatusDuration: calcDuration(
               waitlistPhaseData.fullPaperDecideStatusStart ?? "",
               waitlistPhaseData.fullPaperDecideStatusEnd ?? ""
-            ),
-            revisionPaperReviewStart: waitlistPhaseData.revisionPaperReviewStart ?? "",
-            revisionPaperReviewEnd: waitlistPhaseData.revisionPaperReviewEnd ?? "",
-            revisionPaperReviewDuration: calcDuration(
-              waitlistPhaseData.revisionPaperReviewStart ?? "",
-              waitlistPhaseData.revisionPaperReviewEnd ?? ""
             ),
             revisionPaperDecideStatusStart: waitlistPhaseData.revisionPaperDecideStatusStart ?? "",
             revisionPaperDecideStatusEnd: waitlistPhaseData.revisionPaperDecideStatusEnd ?? "",

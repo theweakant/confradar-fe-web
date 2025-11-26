@@ -48,6 +48,9 @@ export interface Conference {
   targetAudience?: string;
   conferenceMedia?: Media[];
   conferencePrices?: ConferencePrice[];
+
+  userNameCreator?: string;    
+  organization?: string; 
 }
 
 export interface PendingConference extends Conference {
@@ -91,9 +94,6 @@ export interface ConferenceBasicForm {
 
   targetAudienceTechnicalConference?: string; //for tech conf
   customTarget?: string;
-
-  contractURL?: File | string | null;
-  commission?: number;
   conferenceStatusId?: string
 }
 
@@ -298,7 +298,6 @@ export interface ConferenceBasicResponse {
 //RESEARCH DETAIL STEP
 export interface ResearchDetail {
   researchDetailId?: string;
-  name: string;
   paperFormat: string;
   numberPaperAccept: number;
   revisionAttemptAllowed: number;
@@ -344,8 +343,6 @@ export interface ResearchPhase {
   abstractDecideStatusEnd: string;
   fullPaperDecideStatusStart: string;
   fullPaperDecideStatusEnd: string;
-  revisionPaperReviewStart: string;
-  revisionPaperReviewEnd: string;
   revisionPaperDecideStatusStart: string;
   revisionPaperDecideStatusEnd: string;
   cameraReadyDecideStatusStart: string;
@@ -378,8 +375,6 @@ export type UpdateResearchPhaseRequest = {
   abstractDecideStatusEnd: string;
   fullPaperDecideStatusStart: string;
   fullPaperDecideStatusEnd: string;
-  revisionPaperReviewStart: string;
-  revisionPaperReviewEnd: string;
   revisionPaperDecideStatusStart: string;
   revisionPaperDecideStatusEnd: string;
   cameraReadyDecideStatusStart: string;
@@ -834,6 +829,7 @@ export interface SessionDetailForScheduleResponse {
   cityName?: string;
 
   presenterAuthor?: PresenterAuthor[];
+  speakerNames?: string[];
 }
 
 export interface PresenterAuthor {

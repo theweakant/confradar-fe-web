@@ -80,16 +80,6 @@ export function ResearchDetailForm({
 
   return (
     <div className="space-y-4">
-      <FormInput
-        label="Tên nghiên cứu"
-        name="name"
-        value={formData.name}
-        onChange={(val) => handleChange("name", val)}
-        error={validationErrors.name}
-        required
-        placeholder="VD: International Conference on AI Research"
-      />
-
       <div className="grid grid-cols-3 gap-4">
         <FormSelect
           label="Định dạng bài báo"
@@ -216,7 +206,7 @@ export function ResearchDetailForm({
 
 
       <FormInput
-        label="Phí đánh giá bài báo (VND)"
+        label="Phí review bài báo (VND)"
         name="reviewFee"
         type="number"
         value={formData.reviewFee}
