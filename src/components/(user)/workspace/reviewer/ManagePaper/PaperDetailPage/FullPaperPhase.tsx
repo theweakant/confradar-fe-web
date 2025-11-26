@@ -244,6 +244,7 @@ export default function FullPaperPhase({
                         fileUrl: paperDetail.fullPaper.fullPaperUrl
                     }}
                     paperType="Full Paper"
+                    phaseInfo={paperDetail.currentResearchConferencePhase}
                     getStatusIcon={getStatusIcon}
                     getStatusColor={getStatusColor}
                 />

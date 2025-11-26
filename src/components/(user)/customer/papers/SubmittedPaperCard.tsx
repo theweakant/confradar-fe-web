@@ -129,7 +129,7 @@ const SubmittedPaperCard: React.FC<SubmittedPaperCardProps> = ({
                 {paperInfo.fileUrl && (
                     <div className="space-y-2">
                         <p className="text-xs text-gray-400">Xem trước tài liệu</p>
-                        <div className="max-h-[70vh] border border-green-700/50 rounded-lg overflow-auto bg-gray-900/50">
+                        <div className="max-h-[70vh] border border-green-700/50 rounded-lg bg-gray-900/50">
                             <ReusableDocViewer
                                 fileUrl={paperInfo.fileUrl}
                                 minHeight="70vh"

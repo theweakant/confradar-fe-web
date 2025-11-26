@@ -136,6 +136,7 @@ export default function CameraReadyPhase({
                         fileUrl: paperDetail.cameraReady.cameraReadyUrl
                     }}
                     paperType="Camera Ready"
+                    phaseInfo={paperDetail.currentResearchConferencePhase}
                     getStatusIcon={getStatusIcon}
                     getStatusColor={getStatusColor}
                 />

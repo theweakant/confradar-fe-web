@@ -269,7 +269,7 @@ export const conferenceStepApi = createApi({
       query: ({ sessionId, data }) => ({
         url: endpoint.CONFERENCE_STEP.UPDATE_SESSION(sessionId),
         method: "PUT",
-        body:  data ,
+        body: data,
       }),
       invalidatesTags: ["ConferenceStep"],
     }),
@@ -789,7 +789,7 @@ export const conferenceStepApi = createApi({
       query: ({ researchPhaseId, data }) => ({
         url: endpoint.CONFERENCE_STEP.UPDATE_RESEARCH_PHASE(researchPhaseId),
         method: "PUT",
-        body: data, 
+        body: data,
       }),
       invalidatesTags: ["ConferenceStep"],
     }),
@@ -858,20 +858,20 @@ export const conferenceStepApi = createApi({
       invalidatesTags: ["ConferenceStep"],
     }),
 
-updateResearchRankingReference: builder.mutation<
-  ApiResponse<{ success: boolean }>,
-  { referenceId: string; referenceUrl: string }
->({
-  query: ({ referenceId, referenceUrl }) => ({
-    url: endpoint.CONFERENCE_STEP.UPDATE_RESEARCH_RANKING_REFERENCE(referenceId),
-    method: "PUT",
-    body: {
-      referenceUrlId: referenceId,
-      referenceUrl,
-    },
-  }),
-  invalidatesTags: ["ConferenceStep"],
-}),
+    updateResearchRankingReference: builder.mutation<
+      ApiResponse<{ success: boolean }>,
+      { referenceId: string; referenceUrl: string }
+    >({
+      query: ({ referenceId, referenceUrl }) => ({
+        url: endpoint.CONFERENCE_STEP.UPDATE_RESEARCH_RANKING_REFERENCE(referenceId),
+        method: "PUT",
+        body: {
+          referenceUrlId: referenceId,
+          referenceUrl,
+        },
+      }),
+      invalidatesTags: ["ConferenceStep"],
+    }),
 
 
     updateRevisionRoundDeadline: builder.mutation<
@@ -978,6 +978,18 @@ updateResearchRankingReference: builder.mutation<
       }),
       providesTags: ["ConferenceStep"],
     }),
+
+    createSkeletonNameForConferenceInContract: builder.mutation<
+      ApiResponse<{ success: boolean }>,
+      { name: string; collabId: string }
+    >({
+      query: ({ name, collabId }) => ({
+        url: endpoint.CONFERENCE_STEP.CREATE_SKELETON_NAME_FOR_CONTRACT,
+        method: "POST",
+        params: { name, collabId },
+      }),
+      invalidatesTags: ["ConferenceStep"],
+    }),
   }),
 });
 
@@ -1045,4 +1057,5 @@ export const {
   useDeleteRevisionRoundDeadlineMutation,
 
   useAddPricePhaseForWaitlistMutation,
+  useCreateSkeletonNameForConferenceInContractMutation,
 } = conferenceStepApi;

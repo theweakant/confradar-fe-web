@@ -641,6 +641,7 @@ export default function RevisionPaperPhase({
                         fileUrl: undefined
                     }}
                     paperType="Revision Paper"
+                    phaseInfo={paperDetail.currentResearchConferencePhase}
                     getStatusIcon={getStatusIcon}
                     getStatusColor={getStatusColor}
                 />
@@ -1075,6 +1076,8 @@ export default function RevisionPaperPhase({
                                             fileUrl: submission.revisionPaperUrl
                                         }}
                                         paperType={`Submission Round ${round.roundNumber}`}
+                                        phaseInfo={paperDetail.currentResearchConferencePhase}
+                                        revisionRoundDetail={round.roundDetail}
                                         getStatusIcon={getStatusIcon}
                                         getStatusColor={getStatusColor}
                                     />

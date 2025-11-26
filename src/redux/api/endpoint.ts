@@ -71,7 +71,7 @@ export const endpoint = {
     RESEARCH_CONF_FOR_ORGANIZER:
       "/Conference/research-conferences-for-organizer",
     TECHNICAL_CONFERENCES_BY_ORGANIZER: "/Conference/technical-conferences-by-organizer",
-    TECHNICAL_CONFERENCES_BY_COLLABORATOR: "/Conference/technical-conferences-by-collaborator",  
+    TECHNICAL_CONFERENCES_BY_COLLABORATOR: "/Conference/technical-conferences-by-collaborator",
 
     //DETAIL CONF
     GET_TECH_BY_ID_INTERNAL: (conferenceId: string) =>
@@ -115,6 +115,7 @@ export const endpoint = {
     GET_CONFERENCES_HAS_ASSIGNED_PAPERS: "/Conference/get-conferences-assigned-papers-belong-to",
 
     ACTIVATE_WAITLIST: "/conference/activate-waitlist",
+    GET_SKELETON_TECH_CONF_FOR_COLLABORATOR: "/conference/get-skeleton-tech-conf-created-for-collaborator",
   },
 
   CONFERENCE_STEP: {
@@ -214,6 +215,8 @@ export const endpoint = {
 
 
     ADD_PRICE_PHASE_WAITLIST: '/conferencestep/add-pricephase-for-waitlist',
+
+    CREATE_SKELETON_NAME_FOR_CONTRACT: "/conferencestep/create-skeleton-name-for-conference-in-contract-with-collaborator"
   },
 
   CITY: {
@@ -325,6 +328,7 @@ export const endpoint = {
     LIST_BY_REVIEWER: "/contract/list-review-contract-by-reviewer",
     LIST_OWN_REVIEW_CONTRACT: "/contract/list-own-review-contract",
     CREATE_COLLABORATOR_CONTRACT: "/contract/create-collaborator-contract",
+    LIST_COLLABORATOR_CONTRACT: "/contract/list-collaborator-contract",
   },
 
   ASSIGNINGPRESENTERSESSION: {

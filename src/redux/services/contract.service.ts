@@ -1,8 +1,8 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { endpoint } from "../api/endpoint";
-import { ContractDetailResponseForOrganizer, CreateCollaboratorContractRequest, CreateNewReviewerContractRequest, CreateReviewerContractRequest, GetUsersForReviewerContractRequest, GetUsersForReviewerContractResponse, OwnContractDetailResponse } from "@/types/contract.type";
+import { CollaboratorContractResponse, ContractDetailResponseForOrganizer, CreateCollaboratorContractRequest, CreateNewReviewerContractRequest, CreateReviewerContractRequest, GetUsersForReviewerContractRequest, GetUsersForReviewerContractResponse, OwnContractDetailResponse } from "@/types/contract.type";
 import { apiClient } from "../api/apiClient";
-import { ApiResponse } from "@/types/api.type";
+import { ApiResponse, ApiResponsePagination } from "@/types/api.type";
 
 export const contractApi = createApi({
     reducerPath: "contractApi",
@@ -139,6 +139,23 @@ export const contractApi = createApi({
             },
             invalidatesTags: ["Contract"],
         }),
+
+        listCollaboratorContracts: builder.query<
+            ApiResponsePagination<CollaboratorContractResponse[]>,
+            {
+                conferenceName?: string;
+                organizationId?: string;
+                userId?: string;
+                page?: number;
+                pageSize?: number;
+            }
+        >({
+            query: (params) => ({
+                url: endpoint.CONTRACT.LIST_COLLABORATOR_CONTRACT,
+                params,
+            }),
+            providesTags: ["Contract"],
+        }),
     }),
 });
 
@@ -152,4 +169,6 @@ export const {
     useGetContractsByReviewerQuery,
     useGetOwnReviewContractsQuery,
     useCreateCollaboratorContractMutation,
+    useListCollaboratorContractsQuery,
+    useLazyListCollaboratorContractsQuery,
 } = contractApi;
