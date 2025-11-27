@@ -1,4 +1,5 @@
 // components/LeftPanel/index.tsx
+
 import { getFilteredTabs, type TabId } from "../constants/tab";
 import type { CommonConference } from "@/types/conference.type";
 import { TabContent } from "./TabContent";
@@ -10,6 +11,8 @@ interface LeftPanelProps {
   onSubtabChange: (subtab: TabId) => void;
   conference: CommonConference;
   conferenceType: "technical" | "research" | null;
+  isCollaborator: boolean;     // 👈 THÊM
+  userRoles: string[];         // 👈 THÊM
   getCategoryName: (id: string) => string;
   getStatusName: (id: string) => string;
   getCityName: (id: string) => string;
@@ -21,11 +24,14 @@ export function LeftPanel({
   onSubtabChange,
   conference,
   conferenceType,
+  isCollaborator,   // 👈 destruct
+  userRoles,        // 👈 destruct
   getCategoryName,
   getStatusName,
   getCityName,
 }: LeftPanelProps) {
-  const tabs = getFilteredTabs(primaryTab, conferenceType);
+  // 👇 TRUYỀN userRoles vào getFilteredTabs
+  const tabs = getFilteredTabs(primaryTab, conferenceType, userRoles);
 
   return (
     <div className="space-y-6">
@@ -56,9 +62,7 @@ export function LeftPanel({
                         : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                     }`}
                   >
-                    <span className="text-sm">
-                      {tab.label}
-                    </span>
+                    <span className="text-sm">{tab.label}</span>
                   </button>
                 );
               })}
@@ -66,13 +70,13 @@ export function LeftPanel({
           </div>
         </div>
 
-
         {/* Tab Content */}
         <div className="p-6">
           <TabContent
             activeSubtab={activeSubtab}
             conference={conference}
             conferenceType={conferenceType}
+            isCollaborator={isCollaborator}
           />
         </div>
       </div>

@@ -816,7 +816,10 @@ export interface SessionDetailForScheduleResponse {
   description?: string;
   startTime?: string;
   endTime?: string;
+
+  date?:string
   sessionDate?: string;
+
   conferenceId?: string;
   roomId?: string;
   roomNumber?: string;

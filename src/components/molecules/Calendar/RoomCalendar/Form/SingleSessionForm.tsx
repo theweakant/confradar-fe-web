@@ -290,38 +290,25 @@ export function SingleSessionForm({
       hour12: false,
     });
   };
-  const startTimeOptions = useMemo(() => {
-    const options: Array<{ value: string; label: string }> = [];
-    const slotStart = new Date(slotStartTime);
-    const slotEnd = new Date(slotEndTime);
+const startTimeOptions = useMemo(() => {
+  const options: Array<{ value: string; label: string }> = [];
+  
+  // Lấy ngày từ date prop
+  const dateStr = date; // "YYYY-MM-DD"
+  
+  // Tạo các option từ 6:00 đến 23:00 (mỗi giờ)
+  for (let hour = 6; hour <= 23; hour++) {
+    const timeStr = `${hour.toString().padStart(2, '0')}:00`;
+    const isoString = `${dateStr}T${timeStr}:00`;
     
-    let currentHour = new Date(slotStart);
-    currentHour.setMinutes(0, 0, 0);
-    if (currentHour < slotStart) {
-      currentHour.setHours(currentHour.getHours() + 1);
-    }
-    
-    while (currentHour < slotEnd) {
-      const hourValue = currentHour.toISOString();
-      const hourLabel = currentHour.toLocaleTimeString("vi-VN", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      });
-      
-      options.push({ value: hourValue, label: hourLabel });
-      currentHour = new Date(currentHour.getTime() + 60 * 60 * 1000);
-    }
-    
-    if (options.length === 0) {
-      options.push({
-        value: slotStartTime,
-        label: formatTime(slotStartTime),
-      });
-    }
-    
-    return options;
-  }, [slotStartTime, slotEndTime]);
+    options.push({
+      value: isoString,
+      label: timeStr,
+    });
+  }
+  
+  return options;
+}, [date]);
 
 
 
@@ -334,27 +321,38 @@ export function SingleSessionForm({
     return `${hours}h${minutes > 0 ? ` ${minutes}p` : ""}`;
   };
 
-  const maxTimeRange = useMemo(() => {
-    const start = new Date(formData.selectedStartTime);
-    const max = new Date(slotEndTime);
-    const diffMs = max.getTime() - start.getTime();
-    const hours = diffMs / (1000 * 60 * 60);
-    return Math.max(0.5, Math.floor(hours * 2) / 2);
-  }, [formData.selectedStartTime, slotEndTime]);
+const maxTimeRange = useMemo(() => {
+  const start = new Date(formData.selectedStartTime);
+  
+  // Tạo thời điểm 23:59:59 của cùng ngày
+  const endOfDay = new Date(start);
+  endOfDay.setHours(23, 59, 59, 999);
+  
+  // Tính số giờ từ start đến 23:59
+  const diffMs = endOfDay.getTime() - start.getTime();
+  const hours = diffMs / (1000 * 60 * 60);
+  
+  // Làm tròn xuống theo bước 0.5 giờ
+  return Math.max(0.5, Math.floor(hours * 2) / 2);
+}, [formData.selectedStartTime]);
 
-  useEffect(() => {
-    const start = new Date(formData.selectedStartTime);
-    const proposedEnd = new Date(start.getTime() + formData.timeRange * 60 * 60 * 1000);
-    const maxEnd = new Date(slotEndTime);
+useEffect(() => {
+  const start = new Date(formData.selectedStartTime);
+  const proposedEnd = new Date(start.getTime() + formData.timeRange * 60 * 60 * 1000);
+  
+  // Tạo thời điểm 23:59:59 của cùng ngày
+  const endOfDay = new Date(start);
+  endOfDay.setHours(23, 59, 59, 999);
 
-    if (proposedEnd > maxEnd) {
-      setCalculatedEndTime(slotEndTime);
-      const maxHours = (maxEnd.getTime() - start.getTime()) / (1000 * 60 * 60);
-      setFormData(prev => ({ ...prev, timeRange: Math.floor(maxHours * 2) / 2 }));
-    } else {
-      setCalculatedEndTime(proposedEnd.toISOString());
-    }
-  }, [formData.timeRange, formData.selectedStartTime, slotEndTime]);
+  // Nếu proposedEnd vượt quá 23:59, giới hạn lại
+  if (proposedEnd > endOfDay) {
+    setCalculatedEndTime(endOfDay.toISOString());
+    const maxHours = (endOfDay.getTime() - start.getTime()) / (1000 * 60 * 60);
+    setFormData(prev => ({ ...prev, timeRange: Math.floor(maxHours * 2) / 2 }));
+  } else {
+    setCalculatedEndTime(proposedEnd.toISOString());
+  }
+}, [formData.timeRange, formData.selectedStartTime]);
 
   useEffect(() => {
     if (!isEditMode) {
@@ -425,6 +423,18 @@ const handleSubmit = () => {
     return;
   }
 
+// Kiểm tra không qua ngày
+const startDate = new Date(formData.selectedStartTime);
+const endDate = new Date(calculatedEndTime);
+
+const startDay = startDate.toISOString().split('T')[0];
+const endDay = endDate.toISOString().split('T')[0];
+
+if (startDay !== endDay) {
+  toast.error("Session không được qua ngày hôm sau. Chọn thời gian kết thúc trước 23:59.");
+  return;
+}
+
   const proposedEnd = new Date(formData.selectedStartTime);
   proposedEnd.setTime(proposedEnd.getTime() + formData.timeRange * 60 * 60 * 1000);
   const maxEnd = new Date(slotEndTime);
@@ -437,7 +447,6 @@ const handleSubmit = () => {
   }
 
   const session: Session = {
-    // Giữ lại sessionId từ initialSession nếu đang edit
     sessionId: initialSession?.sessionId,
     
     conferenceId,
@@ -520,7 +529,7 @@ const handleSubmit = () => {
       <div className="space-y-3">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Tiêu đề phiên họp <span className="text-red-500">*</span>
+            Tên session <span className="text-red-500">*</span>
           </label>
           <input
             type="text"

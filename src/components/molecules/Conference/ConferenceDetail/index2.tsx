@@ -279,16 +279,18 @@ export default function ConferenceDetailPage() {
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="flex gap-6">
           <div className="flex-1 min-w-0">
-            <LeftPanel
-              primaryTab={primaryTab}
-              activeSubtab={activeSubtab}
-              onSubtabChange={setActiveSubtab}
-              conference={conference}
-              conferenceType={conferenceType}
-              getCategoryName={getCategoryName}
-              getStatusName={getStatusName}
-              getCityName={getCityName}
-            />
+          <LeftPanel
+            primaryTab={primaryTab}
+            activeSubtab={activeSubtab}
+            onSubtabChange={setActiveSubtab}
+            conference={conference}
+            conferenceType={conferenceType}
+            isCollaborator={isCollaborator} 
+            userRoles={userRoles}           
+            getCategoryName={getCategoryName}
+            getStatusName={getStatusName}
+            getCityName={getCityName}
+          />
           </div>
 
           <RightSidebar

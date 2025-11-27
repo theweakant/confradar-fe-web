@@ -1,4 +1,6 @@
+// src/components/molecules/Conference/ConferenceStep/TechConferenceStepForm.tsx
 "use client";
+
 import { useEffect, useMemo, useCallback, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks/hooks";
 import { setMaxStep, setMode } from "@/redux/slices/conferenceStep.slice";
@@ -17,7 +19,7 @@ import { SponsorForm } from "@/components/molecules/Conference/ConferenceStep/fo
 import { BasicInfoForm } from "@/components/molecules/Conference/ConferenceStep/forms/BasicInfoForm";
 import { PriceForm } from "@/components/molecules/Conference/ConferenceStep/forms/PriceForm";
 import RoomCalendar from "@/components/molecules/Calendar/RoomCalendar/RoomCalendar";
-import SessionCalendar from "@/components/molecules/Calendar/SessionCalendar/SessionCalendar";
+import SessionProposalCalendar from "@/components/molecules/Calendar/SessionCalendar/SessionProposalCalendar"; 
 import {
   useStepNavigation,
   useFormSubmit,
@@ -105,11 +107,6 @@ export default function TechConferenceStepForm({
     );
   }
 
-  // Render loading state cho wrapper
-  if (mode === "edit" && !conferenceId) {
-    return <LoadingOverlay message="Đang kiểm tra thông tin..." />;
-  }
-
   // Render component chính sau khi kiểm tra điều kiện
   return <TechConferenceStepFormContent mode={mode} conferenceId={conferenceId} />;
 }
@@ -142,11 +139,14 @@ function TechConferenceStepFormContent({
     completedSteps,
     stepsWithData,
     dirtySteps,
+    handleNext,      
+    handlePrevious,
     handleGoToStep,
     handleReset,
     handleMarkHasData,
     handleMarkDirty,
     handleClearDirty,
+    handleMarkCompleted,
     isStepCompleted,
     mode: stepMode,
   } = useStepNavigation();
@@ -244,7 +244,6 @@ function TechConferenceStepFormContent({
   );
 
   const onErrorCallback = useCallback((error: unknown) => {
-    console.error("Failed to load tech conference:", error);
     toast.error("Không thể tải dữ liệu hội thảo!");
   }, []);
 
@@ -404,10 +403,10 @@ function TechConferenceStepFormContent({
     if (result.success) {
       handleMarkHasData(1);
       if (visibleSteps.indexOf(1) < visibleSteps.length - 1) {
-        handleNextStep();
+        handleNext();
       }
     }
-  }, [basicForm, submitBasicInfo, handleMarkHasData, visibleSteps, handleNextStep]);
+  }, [basicForm, submitBasicInfo, handleMarkHasData, visibleSteps, handleNext]);
 
   const handlePriceSubmit = useCallback(async () => {
     if (tickets.length === 0) {
@@ -415,16 +414,19 @@ function TechConferenceStepFormContent({
         toast.error("Vui lòng thêm ít nhất 1 loại vé!");
         return;
       } else {
-        handleNextStep();
+        handleMarkHasData(2);
+        handleNext(); 
         return;
       }
     }
+    
     const result = await submitPrice(tickets);
+    
     if (result.success) {
       handleMarkHasData(2);
-      handleNextStep();
+      handleNext(); 
     }
-  }, [tickets, requiredSteps, submitPrice, handleMarkHasData, handleNextStep]);
+  }, [tickets, requiredSteps, submitPrice, handleMarkHasData, handleNext]);
 
   const handleSessionsSubmit = useCallback(async () => {
     if (sessions.length > 0) {
@@ -450,7 +452,7 @@ function TechConferenceStepFormContent({
     );
     if (result.success) {
       if (sessions.length > 0) handleMarkHasData(3);
-      handleNextStep();
+      handleNext();
     }
   }, [
     sessions,
@@ -460,24 +462,24 @@ function TechConferenceStepFormContent({
     submitSessions,
     realDeleteTracking.deletedSessionIds,
     handleMarkHasData,
-    handleNextStep,
+    handleNext,
   ]);
 
   const handlePoliciesSubmit = useCallback(async () => {
     const result = await submitPolicies(policies);
     if (result.success) {
       if (policies.length > 0) handleMarkHasData(4);
-      handleNextStep();
+      handleNext();
     }
-  }, [policies, submitPolicies, handleMarkHasData, handleNextStep]);
+  }, [policies, submitPolicies, handleMarkHasData, handleNext]);
 
   const handleMediaSubmit = useCallback(async () => {
     const result = await submitMedia(mediaList);
     if (result.success) {
       if (mediaList.length > 0) handleMarkHasData(5);
-      handleNextStep();
+      handleNext();
     }
-  }, [mediaList, submitMedia, handleMarkHasData, handleNextStep]);
+  }, [mediaList, submitMedia, handleMarkHasData, handleNext]);
 
   const handleSponsorsSubmit = useCallback(async () => {
     const result = await submitSponsors(sponsors);
@@ -490,7 +492,6 @@ function TechConferenceStepFormContent({
   const handleSessionCreatedFromCalendar = useCallback(
     (session: Session | ResearchSession) => {
       if (!('speaker' in session)) {
-        console.error("Unexpected ResearchSession in Tech mode", session);
         toast.error("Phiên họp không hợp lệ cho hội thảo công nghệ.");
         return;
       }
@@ -505,7 +506,6 @@ function TechConferenceStepFormContent({
   const handleSessionUpdatedFromCalendar = useCallback(
     (updatedSession: Session | ResearchSession, index: number) => {
       if (!('speaker' in updatedSession)) {
-        console.error("Unexpected ResearchSession in Tech update", updatedSession);
         toast.error("Phiên họp không hợp lệ để cập nhật.");
         return;
       }
@@ -555,7 +555,7 @@ function TechConferenceStepFormContent({
             toast.error("Vui lòng thêm ít nhất 1 loại vé!");
             return { success: false };
           } else {
-            handleNextStep();
+            handleNext();
             return { success: true };
           }
         }
@@ -588,7 +588,7 @@ function TechConferenceStepFormContent({
       }
       case 4: {
         if (policies.length === 0 && !requiredSteps.includes(4)) {
-          handleNextStep();
+          handleNext();
           return { success: true };
         }
         result = await submitPolicies(policies);
@@ -596,7 +596,7 @@ function TechConferenceStepFormContent({
       }
       case 5: {
         if (mediaList.length === 0 && !requiredSteps.includes(5)) {
-          handleNextStep();
+          handleNext();
           return { success: true };
         }
         result = await submitMedia(mediaList);
@@ -656,7 +656,7 @@ function TechConferenceStepFormContent({
     submitMedia,
     submitSponsors,
     handleClearDirty,
-    handleNextStep,
+    handleNext,
     realDeleteTracking.deletedSessionIds,
   ]);
 
@@ -670,7 +670,7 @@ function TechConferenceStepFormContent({
       policies: visibleSteps.includes(4) ? policies : [],
       mediaList: visibleSteps.includes(5) ? mediaList : [],
       sponsors: visibleSteps.includes(6) ? sponsors : [],
-      refundPolicies, // Added missing dependency
+      refundPolicies,
     };
     const result = await submitAll(filteredData);
     if (result?.success) {
@@ -699,7 +699,7 @@ function TechConferenceStepFormContent({
     policies,
     mediaList,
     sponsors,
-    refundPolicies, // Added missing dependency
+    refundPolicies,
     visibleSteps,
     submitAll,
     realDeleteTracking,
@@ -716,7 +716,6 @@ function TechConferenceStepFormContent({
   const filteredStepLabels = useMemo(() => {
     return visibleSteps.map((step) => {
       if (step < 1 || step > TECH_STEP_LABELS.length) {
-        console.warn(`Invalid step: ${step}. Skipping.`);
         return `Bước ${step}`;
       }
       return TECH_STEP_LABELS[step - 1];
@@ -859,7 +858,7 @@ function TechConferenceStepFormContent({
             isSubmitting={isSubmitting || isFetching}
             mode={mode}
             isStepCompleted={isStepCompleted}
-            onNext={handleNextStep}
+            onNext={handleNext}
             onSubmit={handleBasicSubmit}
             onUpdate={handleUpdateCurrentStep}
           />
@@ -886,7 +885,7 @@ function TechConferenceStepFormContent({
             isOptionalStep={!requiredSteps.includes(2)}
             isSkippable={tickets.length === 0 && !requiredSteps.includes(2)}
             onPrevious={handlePreviousStep}
-            onNext={handleNextStep}
+            onNext={handleNext}
             onSubmit={handlePriceSubmit}
             onUpdate={handleUpdateCurrentStep}
           />
@@ -959,17 +958,15 @@ function TechConferenceStepFormContent({
           )}
           <div className="border rounded-lg overflow-hidden bg-white shadow-sm mb-4">
             {isCollaborator ? (
-              <SessionCalendar
+              <SessionProposalCalendar
                 conferenceId={actualConferenceId || undefined}
-                startDate={basicForm.startDate}
-                acceptedPapers={[]}
-                isCollaboratorMode={true}
                 conferenceStartDate={basicForm.startDate}
                 conferenceEndDate={basicForm.endDate}
                 existingSessions={sessions}
                 onSessionCreated={handleSessionCreatedFromCalendar}
                 onSessionUpdated={handleSessionUpdatedFromCalendar}
                 onSessionDeleted={handleSessionDeletedFromCalendar}
+                startDate={basicForm.startDate}
               />
             ) : (
               <RoomCalendar
@@ -993,7 +990,7 @@ function TechConferenceStepFormContent({
             isOptionalStep={!requiredSteps.includes(3)}
             isSkippable={sessions.length === 0 && !requiredSteps.includes(3)}
             onPrevious={handlePreviousStep}
-            onNext={handleNextStep}
+            onNext={handleNext}
             onSubmit={handleSessionsSubmit}
             onUpdate={handleUpdateCurrentStep}
           />
@@ -1019,7 +1016,7 @@ function TechConferenceStepFormContent({
             isOptionalStep={true}
             isSkippable={policies.length === 0 && refundPolicies.length === 0}
             onPrevious={handlePreviousStep}
-            onNext={handleNextStep}
+            onNext={handleNext}
             onSubmit={handlePoliciesSubmit}
             onUpdate={handleUpdateCurrentStep}
           />
@@ -1042,7 +1039,7 @@ function TechConferenceStepFormContent({
             isOptionalStep={true}
             isSkippable={mediaList.length === 0}
             onPrevious={handlePreviousStep}
-            onNext={handleNextStep}
+            onNext={handleNext}
             onSubmit={handleMediaSubmit}
             onUpdate={handleUpdateCurrentStep}
           />
@@ -1066,7 +1063,7 @@ function TechConferenceStepFormContent({
             isOptionalStep={true}
             isSkippable={sponsors.length === 0}
             onPrevious={handlePreviousStep}
-            onNext={handleNextStep}
+            onNext={handleNext}
             onSubmit={handleSponsorsSubmit}
             onUpdate={handleUpdateCurrentStep}
             onUpdateAll={mode === "edit" ? handleUpdateAll : undefined}
