@@ -10,6 +10,8 @@ import {
   ProfileUpdateRequest,
   ChangePasswordRequest,
   ListUserDetailForAdminAndOrganizerResponse,
+  OrganizationListResponse,
+  CollaboratorListResponse,
   
 } from "@/types/user.type";
 import { Notification } from "@/types/notification.type";
@@ -122,6 +124,22 @@ export const userApi = createApi({
       }),
       providesTags: ["Notifications"], 
     }),
+
+    getOrganizationList: builder.query<ApiResponse<OrganizationListResponse>, void>({
+      query: () => ({
+        url: endpoint.AUTH.ORGANIZATION_LIST,
+        method: "GET",
+      }),
+      providesTags: ["User"], 
+    }),
+
+    getCollaboratorList: builder.query<ApiResponse<CollaboratorListResponse>, void>({
+      query: () => ({
+        url: endpoint.AUTH.COLLABORATOR_LIST,
+        method: "GET",
+      }),
+      providesTags: ["User"],
+    }),
   }),
 });
 
@@ -138,5 +156,8 @@ export const {
 
   useSuspendExternalReviewerMutation,
   useActivateExternalReviewerMutation,
-  useGetOwnNotificationsQuery
+  useGetOwnNotificationsQuery,
+
+  useGetOrganizationListQuery,
+  useGetCollaboratorListQuery,
 } = userApi;

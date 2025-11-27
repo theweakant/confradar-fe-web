@@ -205,7 +205,7 @@ export default function ManageConference() {
                 variant="link"
                 className="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1.5"
               >
-                Xem hội nghị đã kí
+                Xem danh sách hội nghị nháp
               </Button>
             </Link>
           </div>

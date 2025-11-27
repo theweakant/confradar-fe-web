@@ -69,12 +69,47 @@ export interface TicketHolder {
   isRefunded:boolean
 }
 
+
+//PAPER
+export interface AbstractPhase {
+  id: string;
+  status:  string; 
+  title: string;
+  description: string;
+}
+
+export interface FullPaperPhase {
+  id: string;
+  status:  string;
+  title: string;
+  description: string;
+}
+
+export interface RevisionPhase {
+  id: string;
+  status:  string;
+  title: string;
+  description: string;
+}
+
+export interface CameraReadyPhase {
+  id: string;
+  status: string;
+  title: string;
+  description: string;
+}
+
 export interface PaperDetail {
   paperId: string;
   title: string;
   submittingAuthorId: string;
-  paperPhase: string;
-  assignedReviewers: string[];
+  paperPhase: string; 
+  assignedReviewers: string[]; 
+
+  abstractPhase: AbstractPhase | null;
+  fullPaperPhase: FullPaperPhase | null;
+  revisionPhase: RevisionPhase | null;
+  cameraReadyPhase: CameraReadyPhase | null;
 }
 
 export interface SubmittedPapersResponse {
