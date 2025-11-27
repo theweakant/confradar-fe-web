@@ -73,3 +73,57 @@ export interface OwnContractDetailResponse {
     conferenceDescription?: string;
     conferenceBannerImageUrl?: string;
 }
+
+export interface CreateCollaboratorContractRequest {
+    userId: string;
+    isMediaStep: boolean;
+    isPolicyStep: boolean;
+    isSessionStep: boolean;
+    isPriceStep: boolean;
+    isTicketSelling: boolean;
+    isSponsorStep: boolean;
+    commission?: number;
+    signDay: string;
+    finalizePaymentDate: string;
+    conferenceId: string;
+    contractFile: File;
+}
+
+export interface CollaboratorContractResponse {
+    collaboratorContractId?: string | null;
+    collaboratorContractUserId?: string | null;
+    organizationId?: string | null;
+    organizationDescription?: string | null;
+    organizationName?: string | null;
+    isSponsorStep?: boolean | null;
+    isMediaStep?: boolean | null;
+    isPolicyStep?: boolean | null;
+    isSessionStep?: boolean | null;
+    isPriceStep?: boolean | null;
+    isTicketSelling?: boolean | null;
+    isClosed?: boolean | null;
+    signDay?: string | null;
+    finalizePaymentDate?: string | null;
+    commission?: number | null;
+    contractUrl?: string | null;
+    conferenceId?: string | null;
+    conferenceName?: string | null;
+    conferenceDescription?: string | null;
+    conferenceStartDate?: string | null;
+    conferenceEndDate?: string | null;
+    conferenceTotalSlot?: number | null;
+    conferenceAvailableSlot?: number | null;
+    conferenceAddress?: string | null;
+    conferenceBannerImageUrl?: string | null;
+    conferenceCreatedAt?: string | null;
+    conferenceTicketSaleStart?: string | null;
+    conferenceTicketSaleEnd?: string | null;
+    isInternalHosted?: boolean | null;
+    isResearchConference?: boolean | null;
+    cityId?: string | null;
+    conferenceCreatedBy?: string | null;
+    conferenceCategoryId?: string | null;
+    conferenceCategoryName?: string | null;
+    conferenceStatusId?: string | null;
+    conferenceStatusName?: string | null;
+}

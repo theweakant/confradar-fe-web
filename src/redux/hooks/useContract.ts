@@ -1,4 +1,5 @@
 import {
+    useCreateCollaboratorContractMutation,
     useCreateReviewContractMutation,
     useGetUsersForReviewerContractQuery,
     useLazyGetUsersForReviewerContractQuery,
@@ -8,6 +9,7 @@ import {
 import { parseApiError } from "@/helper/api";
 import { ApiResponse } from "@/types/api.type";
 import {
+    CreateCollaboratorContractRequest,
     CreateReviewerContractRequest,
     GetUsersForReviewerContractRequest,
     GetUsersForReviewerContractResponse,
@@ -39,9 +41,20 @@ export const useContract = (conferenceId: string) => {
         },
     ] = useLazyGetUsersForReviewerContractQuery();
 
+    const [
+        createCollaboratorContract,
+        {
+            isLoading: createCollaboratorLoading,
+            error: createCollaboratorRawError,
+            data: createCollaboratorData,
+        },
+    ] = useCreateCollaboratorContractMutation();
+
     // ---------- ERROR PARSING ----------
     const createContractError = parseApiError<string>(createContractRawError);
     const usersError = parseApiError<string>(error || lazyError);
+    const createCollaboratorContractError =
+        parseApiError<string>(createCollaboratorRawError);
 
     // ---------- ACTIONS ----------
     const createReviewerContract = async (
@@ -66,6 +79,17 @@ export const useContract = (conferenceId: string) => {
         }
     };
 
+    const createNewCollaboratorContract = async (
+        request: CreateCollaboratorContractRequest
+    ): Promise<ApiResponse<number>> => {
+        try {
+            const result = await createCollaboratorContract(request).unwrap();
+            return result;
+        } catch (err) {
+            throw err;
+        }
+    };
+
     // ---------- (OPTIONAL) CONFERENCE & PAPER ----------
     // const { data: conferencesData, isLoading: conferencesLoading } = useGetConferencesForOutsourcedReviewerQuery();
     // const { data: papersData, isLoading: papersLoading } = useGetPapersBelongToConferenceQuery(conferenceId);
@@ -78,12 +102,14 @@ export const useContract = (conferenceId: string) => {
         // Data
         createContractResponse: createContractData,
         usersForReviewerContract: data?.data || lazyData?.data || [],
+        createCollaboratorResponse: createCollaboratorData,
 
         // Loading
-        loading: createContractLoading || isLoading || lazyLoading,
+        loading: createContractLoading || createCollaboratorLoading || isLoading || lazyLoading,
 
         // Errors
         createContractError,
         usersError,
+        createCollaboratorContractError,
     };
 };

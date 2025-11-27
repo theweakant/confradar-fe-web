@@ -45,7 +45,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor} onBeforeLift={handleBeforeLift}>
+      <PersistGate loading={null} persistor={persistor}>
         {children}
       </PersistGate>
     </Provider>

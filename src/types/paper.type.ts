@@ -251,8 +251,8 @@ export interface CurrentResearchConferencePhaseForReviewer {
   fullPaperDecideStatusEnd?: string;
   reviseStartDate?: string;
   reviseEndDate?: string;
-  revisionPaperReviewStart?: string;
-  revisionPaperReviewEnd?: string;
+  // revisionPaperReviewStart?: string;
+  // revisionPaperReviewEnd?: string;
   revisionPaperDecideStatusStart?: string;
   revisionPaperDecideStatusEnd?: string;
   cameraReadyStartDate?: string;

@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/molecules/FormInput";
-import type { UserProfileResponse, CollaboratorRequest } from "@/types/user.type";
+import type { UserProfileResponse, CollaboratorRequest, CollaboratorAccountResponse } from "@/types/user.type";
 
 interface CollaboratorFormProps {
-  collaborator?: UserProfileResponse | null;
+  collaborator?: CollaboratorAccountResponse | null;
   onSave: (data: CollaboratorRequest) => void;
   onCancel: () => void;
 }
@@ -14,9 +14,9 @@ interface CollaboratorFormProps {
 export function CollaboratorForm({ collaborator, onSave, onCancel }: CollaboratorFormProps) {
   const [formData, setFormData] = useState<CollaboratorRequest>({
     email: collaborator?.email || "",
-    password: "",
-    confirmPassword: "",
     fullName: collaborator?.fullName || "",
+    organizationName: collaborator?.organizationName || "",
+    organizationDescription: collaborator?.organizationDescription || "",
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof CollaboratorRequest, string>>>({});
@@ -36,26 +36,26 @@ export function CollaboratorForm({ collaborator, onSave, onCancel }: Collaborato
     value: string
   ): boolean => {
     // Validate password
-    if (field === "password") {
-      if (!value || value.length < 6) {
-        setErrors((prev) => ({
-          ...prev,
-          [field]: "Mật khẩu phải có ít nhất 6 ký tự"
-        }));
-        return false;
-      }
-    }
+    // if (field === "password") {
+    //   if (!value || value.length < 6) {
+    //     setErrors((prev) => ({
+    //       ...prev,
+    //       [field]: "Mật khẩu phải có ít nhất 6 ký tự"
+    //     }));
+    //     return false;
+    //   }
+    // }
 
-    // Validate confirmPassword
-    if (field === "confirmPassword") {
-      if (value !== formData.password) {
-        setErrors((prev) => ({
-          ...prev,
-          [field]: "Mật khẩu xác nhận không khớp"
-        }));
-        return false;
-      }
-    }
+    // // Validate confirmPassword
+    // if (field === "confirmPassword") {
+    //   if (value !== formData.password) {
+    //     setErrors((prev) => ({
+    //       ...prev,
+    //       [field]: "Mật khẩu xác nhận không khớp"
+    //     }));
+    //     return false;
+    //   }
+    // }
 
     // Validate fullName
     if (field === "fullName") {
@@ -80,6 +80,12 @@ export function CollaboratorForm({ collaborator, onSave, onCancel }: Collaborato
       }
     }
 
+    if ((field === "organizationName" || field === "organizationDescription") && !value.trim()) {
+      setErrors((prev) => ({ ...prev, [field]: "Không được để trống" }));
+      return false;
+    }
+
+
     setErrors((prev) => ({
       ...prev,
       [field]: ""
@@ -102,13 +108,13 @@ export function CollaboratorForm({ collaborator, onSave, onCancel }: Collaborato
     });
 
     // Additional check for password match
-    if (formData.password !== formData.confirmPassword) {
-      setErrors((prev) => ({
-        ...prev,
-        confirmPassword: "Mật khẩu xác nhận không khớp"
-      }));
-      isValid = false;
-    }
+    // if (formData.password !== formData.confirmPassword) {
+    //   setErrors((prev) => ({
+    //     ...prev,
+    //     confirmPassword: "Mật khẩu xác nhận không khớp"
+    //   }));
+    //   isValid = false;
+    // }
 
     return isValid;
   };
@@ -123,7 +129,7 @@ export function CollaboratorForm({ collaborator, onSave, onCancel }: Collaborato
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-4">
         <FormInput
-          label="Tên cộng tác viên"
+          label="Tên Đối tác"
           name="fullName"
           value={formData.fullName}
           onChange={(value: string) => handleChange("fullName", value)}
@@ -148,6 +154,30 @@ export function CollaboratorForm({ collaborator, onSave, onCancel }: Collaborato
         />
 
         <FormInput
+          label="Tên tổ chức"
+          name="organizationName"
+          value={formData.organizationName}
+          onChange={(value: string) => handleChange("organizationName", value)}
+          onBlur={() => validateField("organizationName", formData.organizationName)}
+          required
+          error={touched.has("organizationName") ? errors.organizationName : undefined}
+          success={touched.has("organizationName") && !errors.organizationName}
+          placeholder="VD: Công ty ABC"
+        />
+
+        <FormInput
+          label="Mô tả tổ chức"
+          name="organizationDescription"
+          value={formData.organizationDescription}
+          onChange={(value: string) => handleChange("organizationDescription", value)}
+          onBlur={() => validateField("organizationDescription", formData.organizationDescription)}
+          required
+          error={touched.has("organizationDescription") ? errors.organizationDescription : undefined}
+          success={touched.has("organizationDescription") && !errors.organizationDescription}
+          placeholder="Thông tin giới thiệu về đối tác..."
+        />
+
+        {/* <FormInput
           label="Mật khẩu"
           name="password"
           type="password"
@@ -171,7 +201,7 @@ export function CollaboratorForm({ collaborator, onSave, onCancel }: Collaborato
           error={touched.has("confirmPassword") ? errors.confirmPassword : undefined}
           success={touched.has("confirmPassword") && !errors.confirmPassword}
           placeholder="Nhập lại mật khẩu"
-        />
+        /> */}
       </div>
 
       <div className="flex justify-end gap-3 pt-4 border-t">
@@ -187,7 +217,7 @@ export function CollaboratorForm({ collaborator, onSave, onCancel }: Collaborato
           onClick={handleSubmit}
           className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
-          {collaborator ? "Cập nhật" : "Thêm Cộng tác viên"}
+          {collaborator ? "Cập nhật" : "Thêm Đối tác"}
         </Button>
       </div>
     </div>

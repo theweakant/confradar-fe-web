@@ -26,7 +26,10 @@ export const endpoint = {
     ACTIVATE_EXTERNAL_REVIEWER: (userId: string) =>
       `/auth/activate-external-reviewer/${userId}`,
 
-    GET_NOTIFICATION: "/notification/own-notification"
+    GET_NOTIFICATION: "/notification/own-notification",
+
+    LIST_COLLABORATOR_ACCOUNTS: "/auth/list-collaborator-accounts",
+    LIST_ORGANIZATION: "/auth/list-organization",
   },
   DESTINATION: {
     LIST: "/Destination",
@@ -70,15 +73,15 @@ export const endpoint = {
       "/Conference/research-conferences-for-organizer",
     TECHNICAL_CONFERENCES_BY_ORGANIZER: "/Conference/technical-conferences-by-organizer",
     // TECHNICAL_CONFERENCES_BY_COLLABORATOR: "/Conference/technical-conferences-by-collaborator",  
-  TECHNICAL_CONFERENCES_BY_COLLABORATOR_NO_DRAFT: "/Conference/technical-conferences-by-collaborator-no-draft",
-  TECHNICAL_CONFERENCES_BY_COLLABORATOR_ONLY_DRAFT: "/Conference/technical-conferences-by-collaborator-only-draft",
+    TECHNICAL_CONFERENCES_BY_COLLABORATOR_NO_DRAFT: "/Conference/technical-conferences-by-collaborator-no-draft",
+    TECHNICAL_CONFERENCES_BY_COLLABORATOR_ONLY_DRAFT: "/Conference/technical-conferences-by-collaborator-only-draft",
 
     //DETAIL CONF
     GET_TECH_BY_ID_INTERNAL: (conferenceId: string) =>
       `/Conference/detail-technical-for-organizer-collaborator/${conferenceId}`,
     GET_RESEARCH_BY_ID_INTERNAL: (conferenceId: string) =>
       `/Conference/detail-research-organizer-for-organizer/${conferenceId}`,
-    
+
     //CUSTOMER
     GET_TECH_BY_ID: (conferenceId: string) =>
       `/Conference/technical-detail-for-anon/${conferenceId}`,
@@ -115,6 +118,7 @@ export const endpoint = {
     GET_CONFERENCES_HAS_ASSIGNED_PAPERS: "/Conference/get-conferences-assigned-papers-belong-to",
 
     ACTIVATE_WAITLIST: "/conference/activate-waitlist",
+    GET_SKELETON_TECH_CONF_FOR_COLLABORATOR: "/conference/get-skeleton-tech-conf-created-for-collaborator",
   },
 
   CONFERENCE_STEP: {
@@ -214,6 +218,8 @@ export const endpoint = {
 
 
     ADD_PRICE_PHASE_WAITLIST: '/conferencestep/add-pricephase-for-waitlist',
+
+    CREATE_SKELETON_NAME_FOR_CONTRACT: "/conferencestep/create-skeleton-name-for-conference-in-contract-with-collaborator"
   },
 
   CITY: {
@@ -324,6 +330,8 @@ export const endpoint = {
     CREATE_REVIEW_CONTRACT_FOR_NEW_USER: "/contract/create-review-contract-for-new-user",
     LIST_BY_REVIEWER: "/contract/list-review-contract-by-reviewer",
     LIST_OWN_REVIEW_CONTRACT: "/contract/list-own-review-contract",
+    CREATE_COLLABORATOR_CONTRACT: "/contract/create-collaborator-contract",
+    LIST_COLLABORATOR_CONTRACT: "/contract/list-collaborator-contract",
   },
 
   ASSIGNINGPRESENTERSESSION: {

@@ -39,9 +39,12 @@ export interface ChangePasswordRequest {
 export interface CollaboratorRequest {
   // userId?: string;
   email: string;
-  password: string;
-  confirmPassword: string;
   fullName: string;
+  organizationName: string;
+  organizationDescription: string;
+  // password: string;
+  // confirmPassword: string;
+
 }
 
 
@@ -153,3 +156,27 @@ export interface ValidationRule {
 export type FieldValidation = {
   [K in keyof UserFormData]?: ValidationRule[];
 };
+
+export interface CollaboratorAccountResponse {
+  organizationId: string | null;
+  organizationDescription: string | null;
+  organizationName: string | null;
+  userId: string;
+  email: string;
+  fullName: string;
+  avatarUrl: string;
+  bioDescription: string | null;
+}
+
+export interface Organization {
+  organizationId?: string | null;
+  organizationDescription?: string | null;
+  organizationName?: string | null;
+  userId?: string | null;
+  email?: string | null;
+  fullName?: string | null;
+  phoneNumber?: string | null;
+  avatarUrl?: string | null;
+  isActive?: boolean | null;
+  // contractDetail?: any[];
+}

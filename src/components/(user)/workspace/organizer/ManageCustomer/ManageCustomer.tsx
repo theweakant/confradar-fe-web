@@ -206,14 +206,14 @@ export default function ManageCustomer() {
                         <h1 className="text-3xl font-bold text-gray-900">
                             Quản lý Khách hàng
                         </h1>
-                        <button
+                        {/* <button
                             onClick={handleCreate}
                             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled={isCreating}
                         >
                             <Plus className="w-5 h-5" />
                             {isCreating ? "Đang thêm..." : "Thêm Khách hàng"}
-                        </button>
+                        </button> */}
                     </div>
                     <p className="text-gray-600 mt-2">
                         Quản lý tài khoản khách hàng trong hệ thống

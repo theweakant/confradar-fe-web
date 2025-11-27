@@ -23,12 +23,14 @@ import {
     useGetProfileByIdQuery,
     useSuspendAccountMutation,
     useActivateAccountMutation,
-    useCreateCollaboratorMutation
+    useCreateCollaboratorMutation,
+    useGetCollaboratorAccountsQuery
 } from "@/redux/services/user.service";
 import {
     ListUserDetailForAdminAndOrganizerResponse,
     UserDetailForAdminAndOrganizerResponse,
-    CollaboratorRequest
+    CollaboratorRequest,
+    CollaboratorAccountResponse
 } from "@/types/user.type";
 import { toast } from "sonner";
 import { ApiError } from "@/types/api.type";
@@ -43,12 +45,18 @@ export default function ManageCollaborator() {
     const [activateUserId, setActivateUserId] = useState<string | null>(null);
 
     // API hooks
+    // const {
+    //     data: allUsers,
+    //     isLoading: isLoadingList,
+    //     error: errorList,
+    //     refetch
+    // } = useGetUsersListQuery();
     const {
-        data: allUsers,
+        data: allCollaborators,
         isLoading: isLoadingList,
         error: errorList,
         refetch
-    } = useGetUsersListQuery();
+    } = useGetCollaboratorAccountsQuery();
 
     const [suspendAccount, { isLoading: isSuspending }] = useSuspendAccountMutation();
     const [activateAccount, { isLoading: isActivating }] = useActivateAccountMutation();
@@ -65,20 +73,25 @@ export default function ManageCollaborator() {
         { skip: !viewingUserId }
     );
 
+    const collaborators: CollaboratorAccountResponse[] =
+        allCollaborators?.data ?? [];
+
     // const viewingUserProfile: UserDetailForAdminAndOrganizerResponse | undefined =
     //     userProfileData?.data;
 
-    const allUsersData: ListUserDetailForAdminAndOrganizerResponse[] =
-        Array.isArray(allUsers?.data) ? allUsers.data : [];
+    // const allUsersData: ListUserDetailForAdminAndOrganizerResponse[] =
+    //     Array.isArray(allUsers?.data) ? allUsers.data : [];
+
+
 
     // Filter users to only show collaborators
-    const collaboratorRole = allUsersData.find(
-        (roleGroup): roleGroup is ListUserDetailForAdminAndOrganizerResponse =>
-            roleGroup.roleName.toLowerCase() === "collaborator"
-    );
+    // const collaboratorRole = allUsersData.find(
+    //     (roleGroup): roleGroup is ListUserDetailForAdminAndOrganizerResponse =>
+    //         roleGroup.roleName.toLowerCase() === "collaborator"
+    // );
 
-    const collaborators: UserDetailForAdminAndOrganizerResponse[] =
-        collaboratorRole?.users ?? [];
+    // const collaborators: UserDetailForAdminAndOrganizerResponse[] =
+    //     collaboratorRole?.users ?? [];
 
     const viewingUserProfile = collaborators.find(
         c => c.userId === viewingUserId
@@ -107,7 +120,7 @@ export default function ManageCollaborator() {
     const handleSave = async (data: CollaboratorRequest) => {
         try {
             const response = await createCollaborator(data).unwrap();
-            toast.success(response.message || "Thêm đối tác thành công!");
+            toast.success(response.message || "Thêm tài khoản đối tác thành công!");
             setIsFormModalOpen(false);
             refetch();
         } catch (error: unknown) {
@@ -155,23 +168,23 @@ export default function ManageCollaborator() {
 
     const stats = [
         {
-            title: "Tổng số đối tác",
+            title: "Tổng số tài khoản đối tác",
             value: collaborators.length.toString(),
             icon: Users,
             variant: "info" as const
         },
-        {
-            title: "Đang hoạt động",
-            value: collaborators.filter(c => c.isActive === true).length.toString(),
-            icon: Users,
-            variant: "success" as const
-        },
-        {
-            title: "Tạm ngưng",
-            value: collaborators.filter(c => c.isActive === false).length.toString(),
-            icon: Users,
-            variant: "danger" as const
-        }
+        // {
+        //     title: "Đang hoạt động",
+        //     value: collaborators.filter(c => c.isActive === true).length.toString(),
+        //     icon: Users,
+        //     variant: "success" as const
+        // },
+        // {
+        //     title: "Tạm ngưng",
+        //     value: collaborators.filter(c => c.isActive === false).length.toString(),
+        //     icon: Users,
+        //     variant: "danger" as const
+        // }
     ];
 
     if (isLoadingList) {
@@ -179,7 +192,7 @@ export default function ManageCollaborator() {
             <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Đang tải danh sách đối tác...</p>
+                    <p className="text-gray-600">Đang tải danh sách tài khoản đối tác...</p>
                 </div>
             </div>
         );
@@ -190,7 +203,7 @@ export default function ManageCollaborator() {
             <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
                 <div className="text-center">
                     <p className="text-red-600 mb-4">
-                        Không thể tải danh sách đối tác
+                        Không thể tải danh sách tài khoản đối tác
                     </p>
                     <button
                         onClick={() => refetch()}
@@ -218,7 +231,7 @@ export default function ManageCollaborator() {
                             disabled={isCreating}
                         >
                             <Plus className="w-5 h-5" />
-                            {isCreating ? "Đang thêm..." : "Thêm đối tác"}
+                            {isCreating ? "Đang thêm..." : "Thêm tài khoản đối tác mới"}
                         </button>
                     </div>
                     <p className="text-gray-600 mt-2">
@@ -280,7 +293,7 @@ export default function ManageCollaborator() {
                     setIsDetailModalOpen(false);
                     setViewingUserId(null);
                 }}
-                title="Chi tiết đối tác"
+                title="Chi tiết về tài khoản đối tác"
             >
                 {isLoadingProfile ? (
                     <div className="flex items-center justify-center py-8">
@@ -297,7 +310,7 @@ export default function ManageCollaborator() {
                     />
                 ) : (
                     <p className="text-center text-gray-600 py-8">
-                        Không tìm thấy thông tin đối tác
+                        Không tìm thấy thông tin tài khoản đối tác
                     </p>
                 )}
             </Modal>

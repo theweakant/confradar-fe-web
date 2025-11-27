@@ -14,6 +14,7 @@ import type {
   FavouriteConferenceDetailResponse,
   FavouriteConferenceRequest,
   ConferenceDetailForScheduleResponse,
+  SkeletonTechConference,
 } from "@/types/conference.type";
 import type { ApiResponse, ApiResponsePagination } from "@/types/api.type";
 
@@ -88,34 +89,34 @@ export const conferenceApi = createApi({
     //   providesTags: ["Conference"],
     // }),
 
-  getTechnicalConferencesByOrganizer: builder.query<
-    ApiResponsePagination<Conference[]>,
-    {
-      page?: number;
-      pageSize?: number;
-      conferenceStatusId?: string;
-      searchKeyword?: string;
-      cityId?: string;
-      startDate?: string;
-      endDate?: string;
-    }
-  >({
-    query: (params) => ({
-      url: endpoint.CONFERENCE.TECHNICAL_CONFERENCES_BY_ORGANIZER,
-      method: "GET",
-      params: {
-        page: params?.page ?? 1,
-        pageSize: params?.pageSize ?? 10,
-        ...(params?.conferenceStatusId && { conferenceStatusId: params.conferenceStatusId }),
-        ...(params?.searchKeyword && { searchKeyword: params.searchKeyword }),
-        ...(params?.cityId && { cityId: params.cityId }),
-        ...(params?.startDate && { startDate: params.startDate }),
-        ...(params?.endDate && { endDate: params.endDate }),
-      },
+    getTechnicalConferencesByOrganizer: builder.query<
+      ApiResponsePagination<Conference[]>,
+      {
+        page?: number;
+        pageSize?: number;
+        conferenceStatusId?: string;
+        searchKeyword?: string;
+        cityId?: string;
+        startDate?: string;
+        endDate?: string;
+      }
+    >({
+      query: (params) => ({
+        url: endpoint.CONFERENCE.TECHNICAL_CONFERENCES_BY_ORGANIZER,
+        method: "GET",
+        params: {
+          page: params?.page ?? 1,
+          pageSize: params?.pageSize ?? 10,
+          ...(params?.conferenceStatusId && { conferenceStatusId: params.conferenceStatusId }),
+          ...(params?.searchKeyword && { searchKeyword: params.searchKeyword }),
+          ...(params?.cityId && { cityId: params.cityId }),
+          ...(params?.startDate && { startDate: params.startDate }),
+          ...(params?.endDate && { endDate: params.endDate }),
+        },
+      }),
+      providesTags: ["Conference"],
     }),
-    providesTags: ["Conference"],
-  }),
-    
+
     getTechnicalConferencesByCollaboratorNoDraft: builder.query<
       ApiResponsePagination<Conference[]>,
       {
@@ -126,8 +127,8 @@ export const conferenceApi = createApi({
         cityId?: string;
         startDate?: string;
         endDate?: string;
-        collaboratorId?: string;    
-        organizationName?: string;   
+        collaboratorId?: string;
+        organizationName?: string;
       }
     >({
       query: (params) => ({
@@ -148,12 +149,12 @@ export const conferenceApi = createApi({
       providesTags: (result) =>
         result?.data?.items
           ? [
-              ...result.data.items.map(({ conferenceId }) => ({
-                type: "Conference" as const,
-                id: conferenceId,
-              })),
-              { type: "Conference", id: "LIST" },
-            ]
+            ...result.data.items.map(({ conferenceId }) => ({
+              type: "Conference" as const,
+              id: conferenceId,
+            })),
+            { type: "Conference", id: "LIST" },
+          ]
           : [{ type: "Conference", id: "LIST" }],
     }),
 
@@ -167,8 +168,8 @@ export const conferenceApi = createApi({
         cityId?: string;
         startDate?: string;
         endDate?: string;
-        collaboratorId?: string;    
-        organizationName?: string;   
+        collaboratorId?: string;
+        organizationName?: string;
       }
     >({
       query: (params) => ({
@@ -189,12 +190,12 @@ export const conferenceApi = createApi({
       providesTags: (result) =>
         result?.data?.items
           ? [
-              ...result.data.items.map(({ conferenceId }) => ({
-                type: "Conference" as const,
-                id: conferenceId,
-              })),
-              { type: "Conference", id: "LIST" },
-            ]
+            ...result.data.items.map(({ conferenceId }) => ({
+              type: "Conference" as const,
+              id: conferenceId,
+            })),
+            { type: "Conference", id: "LIST" },
+          ]
           : [{ type: "Conference", id: "LIST" }],
     }),
 
@@ -512,6 +513,18 @@ export const conferenceApi = createApi({
       }),
       invalidatesTags: ["Conference"],
     }),
+
+    getSkeletonTechConferencesForCollaborator: builder.query<
+      ApiResponse<SkeletonTechConference[]>,
+      { collaboratorId: string }
+    >({
+      query: ({ collaboratorId }) => ({
+        url: endpoint.CONFERENCE.GET_SKELETON_TECH_CONF_FOR_COLLABORATOR,
+        method: "GET",
+        params: { collaboratorId },
+      }),
+      providesTags: ["Conference"],
+    }),
   }),
 });
 
@@ -522,7 +535,7 @@ export const {
   useGetTechnicalConferencesByOrganizerQuery,
   useGetTechnicalConferencesByCollaboratorNoDraftQuery,
   useGetTechnicalConferencesByCollaboratorOnlyDraftQuery,
-    // useGetTechnicalConferencesByCollaboratorQuery,
+  // useGetTechnicalConferencesByCollaboratorQuery,
 
   useGetResearchConferenceDetailQuery,
   useGetAllConferencesWithPricesPaginationQuery,
@@ -558,4 +571,7 @@ export const {
   useLazyGetConferencesHasAssignedPaperForLocalReviewerQuery,
 
   useActivateWaitlistMutation,
+
+  useGetSkeletonTechConferencesForCollaboratorQuery,
+  useLazyGetSkeletonTechConferencesForCollaboratorQuery,
 } = conferenceApi;

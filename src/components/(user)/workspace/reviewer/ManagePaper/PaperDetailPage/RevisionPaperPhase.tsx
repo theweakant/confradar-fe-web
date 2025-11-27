@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
     FileText,
     Download,
@@ -34,6 +34,7 @@ import ReusableDocViewer from "@/components/molecules/ReusableDocViewer ";
 import ReviewerPaperCard from "./ReviewerPaperCard";
 import RevisionReviewsList from "./RevisionReviewsList";
 import { parseApiError } from "@/helper/api";
+import { cn } from "@/utils/utils";
 
 interface RevisionPaperPhaseProps {
     paperDetail: PaperDetailForReviewer;
@@ -102,6 +103,9 @@ export default function RevisionPaperPhase({
         [key: string]: boolean;
     }>({});
 
+    const [activeRoundTab, setActiveRoundTab] = useState<number>(0);
+    const [showReviewsDialog, setShowReviewsDialog] = useState(false);
+
     const { data: revisionReviews, isLoading } = useListRevisionPaperReviewsQuery(
         { revisionPaperId: paperDetail?.revisionPaper?.revisionPaperId || "", paperId },
         { skip: !paperDetail?.revisionPaper?.revisionPaperId }
@@ -109,40 +113,13 @@ export default function RevisionPaperPhase({
 
     const [submitRevisionReview, { isLoading: isSubmittingRevisionReview }] =
         useSubmitPaperRevisionReviewMutation();
-    const [submitRevisionFeedback, { isLoading: isSubmittingRevision }] =
+    const [submitRevisionFeedback, { isLoading: isSubmittingRevision, error: submitRevisionFeedbackError }] =
         useSubmitPaperRevisionFeedbackMutation();
-    const [decideRevisionStatus, { isLoading: isDecidingRevision }] =
+    const [decideRevisionStatus, { isLoading: isDecidingRevision, error: decideStatusError }] =
         useDecideRevisionStatusMutation();
 
     const [markCompleteRevise, { isLoading: isMarkingComplete, error: markCompleteReviseError }] =
         useMarkCompleteReviseMutation();
-
-    useEffect(() => {
-        if (markCompleteReviseError) toast.error(parseApiError(markCompleteReviseError)?.data?.message);
-    }, [markCompleteReviseError])
-
-    useEffect(() => {
-        if (!paperDetail?.revisionPaper?.revisionPaperSubmissions) return;
-
-        paperDetail.revisionPaper.revisionPaperSubmissions.forEach((submission) => {
-            const url = submission.revisionPaperUrl;
-
-            if (!url || !isValidUrl(url)) {
-                setDocAvailability(prev => ({ ...prev, [submission.revisionPaperSubmissionId]: false }));
-                return;
-            }
-
-            fetch(url, { method: "HEAD" })
-                .then((res) => setDocAvailability(prev => ({
-                    ...prev,
-                    [submission.revisionPaperSubmissionId]: res.ok
-                })))
-                .catch(() => setDocAvailability(prev => ({
-                    ...prev,
-                    [submission.revisionPaperSubmissionId]: false
-                })));
-        });
-    }, [paperDetail?.revisionPaper?.revisionPaperSubmissions]);
 
     const isWithinDateRange = (startDate: string, endDate: string): boolean => {
         const now = new Date();
@@ -151,15 +128,15 @@ export default function RevisionPaperPhase({
         return now >= start && now <= end;
     };
 
-    const canSubmitRevisionReview = (): boolean => {
-        if (!currentPhase?.revisionPaperReviewStart || !currentPhase?.revisionPaperReviewEnd) {
-            return false;
-        }
-        return isWithinDateRange(
-            currentPhase.revisionPaperReviewStart,
-            currentPhase.revisionPaperReviewEnd
-        );
-    };
+    // const canSubmitRevisionReview = (): boolean => {
+    //     if (!currentPhase?.revisionPaperReviewStart || !currentPhase?.revisionPaperReviewEnd) {
+    //         return false;
+    //     }
+    //     return isWithinDateRange(
+    //         currentPhase.revisionPaperReviewStart,
+    //         currentPhase.revisionPaperReviewEnd
+    //     );
+    // };
 
     const isSubmissionCompleted = (submissionId: string): boolean => {
         if (!paperDetail?.revisionPaper?.revisionRoundDeadlineId) return false;
@@ -240,9 +217,9 @@ export default function RevisionPaperPhase({
 
     // const isNotAllSubmittedRevision =
     //     !paperDetail.revisionPaper?.isAllSubmittedRevisionPaperReview;
-    const hasAtLeastOneReview =
-        revisionReviews?.data &&
-        revisionReviews?.data.length > 0;
+    // const hasAtLeastOneReview =
+    //     revisionReviews?.data &&
+    //     revisionReviews?.data.length > 0;
     const isOutOfRevisionDecisionTime = !canDecideRevisionStatus();
 
     const toggleReviewsExpansion = () => {
@@ -279,45 +256,45 @@ export default function RevisionPaperPhase({
         }
     };
 
-    const handleSubmitRevisionReview = async () => {
-        if (!paperDetail?.revisionPaper) return;
+    // const handleSubmitRevisionReview = async () => {
+    //     if (!paperDetail?.revisionPaper) return;
 
-        if (!revisionReview.note && !revisionReview.feedbackToAuthor && !revisionReview.file) {
-            toast.error("Vui lòng nhập thông tin đánh giá");
-            return;
-        }
+    //     if (!revisionReview.note && !revisionReview.feedbackToAuthor && !revisionReview.file) {
+    //         toast.error("Vui lòng nhập thông tin đánh giá");
+    //         return;
+    //     }
 
-        if (!canSubmitRevisionReview()) {
-            toast.error(
-                `Thời hạn nộp đánh giá Revision là từ ${formatDate(currentPhase!.revisionPaperReviewStart)} đến ${formatDate(currentPhase!.revisionPaperReviewEnd)}`
-            );
-            return;
-        }
+    //     if (!canSubmitRevisionReview()) {
+    //         toast.error(
+    //             `Thời hạn nộp đánh giá Revision là từ ${formatDate(currentPhase!.revisionPaperReviewStart)} đến ${formatDate(currentPhase!.revisionPaperReviewEnd)}`
+    //         );
+    //         return;
+    //     }
 
-        try {
-            await submitRevisionReview({
-                paperId,
-                revisionPaperId: paperDetail.revisionPaper.revisionPaperId,
-                globalStatus: revisionReview.globalStatus,
-                note: revisionReview.note,
-                feedbackToAuthor: revisionReview.feedbackToAuthor,
-                feedbackMaterialFile: revisionReview.file || undefined,
-            }).unwrap();
+    //     try {
+    //         await submitRevisionReview({
+    //             paperId,
+    //             revisionPaperId: paperDetail.revisionPaper.revisionPaperId,
+    //             globalStatus: revisionReview.globalStatus,
+    //             note: revisionReview.note,
+    //             feedbackToAuthor: revisionReview.feedbackToAuthor,
+    //             feedbackMaterialFile: revisionReview.file || undefined,
+    //         }).unwrap();
 
-            toast.success("Gửi đánh giá revision thành công");
+    //         toast.success("Gửi đánh giá revision thành công");
 
-            setRevisionReview({
-                note: "",
-                feedbackToAuthor: "",
-                globalStatus: "Accepted",
-                file: null,
-            });
-        } catch (error: unknown) {
-            const err = error as ApiError;
-            const errorMessage = err?.message || "Lỗi khi gửi revision review";
-            toast.error(errorMessage);
-        }
-    };
+    //         setRevisionReview({
+    //             note: "",
+    //             feedbackToAuthor: "",
+    //             globalStatus: "Accepted",
+    //             file: null,
+    //         });
+    //     } catch (error: unknown) {
+    //         const err = error as ApiError;
+    //         const errorMessage = err?.message || "Lỗi khi gửi revision review";
+    //         toast.error(errorMessage);
+    //     }
+    // };
 
     const handleSubmitRevisionFeedback = async (submissionId: string) => {
         if (!paperDetail?.revisionPaper) return;
@@ -469,6 +446,97 @@ export default function RevisionPaperPhase({
         });
     };
 
+    const allRounds = useMemo(() => {
+        if (!currentPhase?.revisionRoundsDetail) return [];
+
+        // Sort rounds by roundNumber
+        const sortedRounds = [...currentPhase.revisionRoundsDetail].sort((a, b) =>
+            (a.roundNumber || 0) - (b.roundNumber || 0)
+        );
+
+        return sortedRounds.map((roundDetail) => {
+            // Find submission for this round
+            const submission = paperDetail.revisionPaper?.revisionPaperSubmissions?.find(
+                (s) => s.revisionDeadlineRoundId === roundDetail.revisionRoundDeadlineId
+            );
+
+            const hasSubmission = !!submission;
+            const isCompleted = hasSubmission && isSubmissionCompleted(submission.revisionPaperSubmissionId);
+            const isLatest = hasSubmission && isLatestSubmission(submission.revisionPaperSubmissionId);
+            const canFeedback = hasSubmission && canSubmitRevisionFeedback(submission.revisionPaperSubmissionId);
+
+            const now = new Date();
+            const startDate = roundDetail.startSubmissionDate ? new Date(roundDetail.startSubmissionDate) : null;
+            const endDate = roundDetail.endSubmissionDate ? new Date(roundDetail.endSubmissionDate) : null;
+
+            let roundStatus: 'pending' | 'open' | 'expired' = 'pending';
+            if (startDate && endDate) {
+                if (now < startDate) {
+                    roundStatus = 'pending';
+                } else if (now >= startDate && now <= endDate) {
+                    roundStatus = 'open';
+                } else {
+                    roundStatus = 'expired';
+                }
+            }
+
+            return {
+                roundNumber: roundDetail.roundNumber || 0,
+                submission: submission || null,
+                roundDetail,
+                hasSubmission,
+                isCompleted,
+                isLatest,
+                canFeedback,
+                roundStatus,
+                isDisabled: !hasSubmission,
+            };
+        });
+    }, [
+        currentPhase?.revisionRoundsDetail,
+        paperDetail.revisionPaper?.revisionPaperSubmissions,
+    ]);
+
+    useEffect(() => {
+        if (submitRevisionFeedbackError) toast.error(parseApiError<string>(submitRevisionFeedbackError)?.data?.message)
+        if (decideStatusError) toast.error(parseApiError<string>(decideStatusError)?.data?.message)
+    }, [submitRevisionFeedbackError, decideStatusError])
+
+    useEffect(() => {
+        // Auto-select first round with submission
+        const firstSubmissionIndex = allRounds.findIndex(r => r.hasSubmission);
+        if (firstSubmissionIndex !== -1) {
+            setActiveRoundTab(firstSubmissionIndex);
+        }
+    }, [allRounds]);
+
+    useEffect(() => {
+        if (markCompleteReviseError) toast.error(parseApiError(markCompleteReviseError)?.data?.message);
+    }, [markCompleteReviseError])
+
+    useEffect(() => {
+        if (!paperDetail?.revisionPaper?.revisionPaperSubmissions) return;
+
+        paperDetail.revisionPaper.revisionPaperSubmissions.forEach((submission) => {
+            const url = submission.revisionPaperUrl;
+
+            if (!url || !isValidUrl(url)) {
+                setDocAvailability(prev => ({ ...prev, [submission.revisionPaperSubmissionId]: false }));
+                return;
+            }
+
+            fetch(url, { method: "HEAD" })
+                .then((res) => setDocAvailability(prev => ({
+                    ...prev,
+                    [submission.revisionPaperSubmissionId]: res.ok
+                })))
+                .catch(() => setDocAvailability(prev => ({
+                    ...prev,
+                    [submission.revisionPaperSubmissionId]: false
+                })));
+        });
+    }, [paperDetail?.revisionPaper?.revisionPaperSubmissions]);
+
     if (!paperDetail.revisionPaper) {
         return (
             <div className="text-center py-12 bg-gray-50 rounded-lg">
@@ -477,6 +545,26 @@ export default function RevisionPaperPhase({
             </div>
         );
     }
+
+    // const allRounds = useMemo(() => {
+    //     if (!paperDetail.revisionPaper?.revisionPaperSubmissions) return [];
+
+    //     return paperDetail.revisionPaper.revisionPaperSubmissions
+    //         .map((submission) => {
+    //             const roundDetail = currentPhase?.revisionRoundsDetail?.find(
+    //                 (r) => r.revisionRoundDeadlineId === submission.revisionDeadlineRoundId
+    //             );
+
+    //             return {
+    //                 roundNumber: roundDetail?.roundNumber || 0,
+    //                 submission,
+    //                 roundDetail,
+    //                 isCompleted: isSubmissionCompleted(submission.revisionPaperSubmissionId),
+    //                 isLatest: isLatestSubmission(submission.revisionPaperSubmissionId),
+    //             };
+    //         })
+    //         .sort((a, b) => a.roundNumber - b.roundNumber);
+    // }, [paperDetail.revisionPaper?.revisionPaperSubmissions, currentPhase?.revisionRoundsDetail]);
 
     return (
         <div className="space-y-6">
@@ -487,14 +575,27 @@ export default function RevisionPaperPhase({
                         Đánh giá tổng Revision Paper
                     </h3>
                     {paperDetail.isHeadReviewer && (
-                        <Button
-                            onClick={() => setShowRevisionDecisionPopup(true)}
-                            className="bg-orange-600 hover:bg-orange-700"
-                            size="lg"
-                            disabled={!hasAtLeastOneReview || isOutOfRevisionDecisionTime}
-                        >
-                            <Gavel className="w-4 h-4 mr-2" />
-                            {/* {isNotAllSubmittedRevision && !isOutOfRevisionDecisionTime &&
+                        <div className="flex gap-3">
+                            {revisionReviews?.data && revisionReviews.data.length > 0 && (
+                                <Button
+                                    onClick={() => setShowReviewsDialog(true)}
+                                    variant="outline"
+                                    size="lg"
+                                    className="border-orange-600 text-orange-600 hover:bg-orange-50"
+                                >
+                                    <FileText className="w-4 h-4 mr-2" />
+                                    {revisionReviews.data.length} lượt đánh giá
+                                </Button>
+                            )}
+
+                            <Button
+                                onClick={() => setShowRevisionDecisionPopup(true)}
+                                className="bg-orange-600 hover:bg-orange-700"
+                                size="lg"
+                                disabled={isOutOfRevisionDecisionTime}
+                            >
+                                <Gavel className="w-4 h-4 mr-2" />
+                                {/* {isNotAllSubmittedRevision && !isOutOfRevisionDecisionTime &&
                                 "Chưa thể quyết định, còn reviewer chưa nộp"}
                             {!isNotAllSubmittedRevision && isOutOfRevisionDecisionTime &&
                                 "Chưa thể quyết định, ngoài khoảng thời gian"}
@@ -503,12 +604,17 @@ export default function RevisionPaperPhase({
                             {!isNotAllSubmittedRevision && !isOutOfRevisionDecisionTime &&
                                 "Quyết định cuối cùng"} */}
 
-                            {!hasAtLeastOneReview && !isOutOfRevisionDecisionTime && "Chưa thể quyết định, chưa có review nào"}
-                            {hasAtLeastOneReview && isOutOfRevisionDecisionTime && "Ngoài thời gian quyết định"}
-                            {!hasAtLeastOneReview && isOutOfRevisionDecisionTime && "Chưa có review & ngoài thời gian"}
-                            {hasAtLeastOneReview && !isOutOfRevisionDecisionTime && "Quyết định cuối cùng"}
+                                {isOutOfRevisionDecisionTime
+                                    ? "Ngoài thời gian quyết định"
+                                    : "Quyết định cuối cùng"}
+                                {/* 
+                                {!hasAtLeastOneReview && !isOutOfRevisionDecisionTime && "Chưa thể quyết định, chưa có review nào"}
+                                {hasAtLeastOneReview && isOutOfRevisionDecisionTime && "Ngoài thời gian quyết định"}
+                                {!hasAtLeastOneReview && isOutOfRevisionDecisionTime && "Chưa có review & ngoài thời gian"}
+                                {hasAtLeastOneReview && !isOutOfRevisionDecisionTime && "Quyết định cuối cùng"} */}
 
-                        </Button>
+                            </Button>
+                        </div>
                         // <Button
                         //     onClick={() => setShowRevisionDecisionPopup(true)}
                         //     className="bg-orange-600 hover:bg-orange-700"
@@ -535,13 +641,127 @@ export default function RevisionPaperPhase({
                         fileUrl: undefined
                     }}
                     paperType="Revision Paper"
+                    phaseInfo={paperDetail.currentResearchConferencePhase}
                     getStatusIcon={getStatusIcon}
                     getStatusColor={getStatusColor}
                 />
             </div>
 
             {/* Reviews from Other Reviewers - Only for Head Reviewer */}
-            {paperDetail.isHeadReviewer &&
+            <Transition appear show={showReviewsDialog} as={Fragment}>
+                <Dialog as="div" className="relative z-50" onClose={() => setShowReviewsDialog(false)}>
+                    <Transition.Child
+                        as={Fragment}
+                        enter="ease-out duration-300"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="ease-in duration-200"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                    >
+                        <div className="fixed inset-0 bg-black bg-opacity-50" />
+                    </Transition.Child>
+
+                    <div className="fixed inset-0 overflow-y-auto">
+                        <div className="flex min-h-full items-center justify-center p-4">
+                            <Transition.Child
+                                as={Fragment}
+                                enter="ease-out duration-300"
+                                enterFrom="opacity-0 scale-95"
+                                enterTo="opacity-100 scale-100"
+                                leave="ease-in duration-200"
+                                leaveFrom="opacity-100 scale-100"
+                                leaveTo="opacity-0 scale-95"
+                            >
+                                <Dialog.Panel className="w-full max-w-3xl transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all max-h-[85vh] flex flex-col">
+                                    <div className="sticky top-0 bg-white border-b px-6 py-4 z-10">
+                                        <Dialog.Title as="h3" className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                            <FileText className="w-5 h-5 text-orange-600" />
+                                            Các đánh giá từ Reviewer ({revisionReviews?.data?.length || 0})
+                                        </Dialog.Title>
+                                    </div>
+
+                                    <div className="overflow-y-auto px-6 py-4">
+                                        {isLoading ? (
+                                            <div className="text-center py-8">
+                                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-3"></div>
+                                                <p className="text-sm text-gray-600">Đang tải đánh giá...</p>
+                                            </div>
+                                        ) : revisionReviews?.data?.length ? (
+                                            <div className="space-y-3">
+                                                {revisionReviews.data.map((review) => (
+                                                    <div key={review.revisionPaperReviewId} className="border rounded-lg p-4 bg-gray-50">
+                                                        <div className="flex items-center gap-3 mb-3">
+                                                            {review.reviewerAvatarUrl ? (
+                                                                <img
+                                                                    src={review.reviewerAvatarUrl}
+                                                                    alt={review.reviewerName || "Reviewer"}
+                                                                    className="w-10 h-10 rounded-full object-cover"
+                                                                />
+                                                            ) : (
+                                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white font-semibold text-sm">
+                                                                    {review.reviewerName?.charAt(0).toUpperCase() || "R"}
+                                                                </div>
+                                                            )}
+                                                            <div className="flex-1">
+                                                                <div className="flex items-center justify-between">
+                                                                    <p className="font-semibold text-gray-900">{review.reviewerName || "N/A"}</p>
+                                                                    <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(review.globalStatusName)}`}>
+                                                                        {getStatusIcon(review.globalStatusName)}
+                                                                        {review.globalStatusName}
+                                                                    </span>
+                                                                </div>
+                                                                {review.createdAt && (
+                                                                    <p className="text-xs text-gray-500">{formatDate(review.createdAt)}</p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {review.note && (
+                                                            <div className="mb-2 bg-yellow-50 border-l-4 border-yellow-400 p-2.5 rounded text-sm">
+                                                                <p className="font-semibold text-yellow-800 text-xs mb-1">Ghi chú nội bộ:</p>
+                                                                <p className="text-gray-700">{review.note}</p>
+                                                            </div>
+                                                        )}
+
+                                                        {review.feedbackToAuthor && (
+                                                            <div className="mb-2 text-sm">
+                                                                <p className="font-semibold text-gray-600 text-xs mb-1">Phản hồi tới tác giả:</p>
+                                                                <p className="text-gray-700 leading-relaxed">{review.feedbackToAuthor}</p>
+                                                            </div>
+                                                        )}
+
+                                                        {review.feedbackMaterialUrl && (
+                                                            <a
+                                                                href={review.feedbackMaterialUrl}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 text-xs rounded-lg hover:bg-blue-100 transition-colors"
+                                                            >
+                                                                <Download className="w-3.5 h-3.5" />
+                                                                Tải tài liệu
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-gray-500 py-8 text-center">Chưa có đánh giá nào</p>
+                                        )}
+                                    </div>
+
+                                    <div className="sticky bottom-0 bg-white border-t px-6 py-4">
+                                        <Button variant="outline" onClick={() => setShowReviewsDialog(false)} className="w-full">
+                                            Đóng
+                                        </Button>
+                                    </div>
+                                </Dialog.Panel>
+                            </Transition.Child>
+                        </div>
+                    </div>
+                </Dialog>
+            </Transition>
+            {/* {paperDetail.isHeadReviewer &&
                 paperDetail.revisionPaper && (
                     <>
                         <RevisionReviewsList
@@ -562,36 +782,9 @@ export default function RevisionPaperPhase({
                             revisionReviews={revisionReviews}
                             isLoading={isLoading}
                         />
-                        {/* <div className="mt-6">
-                            {canSubmitRevisionReview() ? (
-                                <Button
-                                    className="bg-black hover:bg-gray-800"
-                                    onClick={() => setShowReviewDialog(true)}
-                                >
-                                    <FileText className="w-4 h-4 mr-2" />
-                                    Đánh giá Revision Paper
-                                </Button>
-                            ) : (
-                                <p className="text-sm text-gray-500">
-                                    Hiện không trong thời gian đánh giá Revision Paper
-                                </p>
-                            )}
-                        </div> */}
                     </>
 
-                )}
-
-            {paperDetail.revisionPaper && (
-                <div className="mt-6">
-                    {canSubmitRevisionReview() ? (
-                        <Button onClick={() => setShowReviewDialog(true)}>
-                            Đánh giá Revision Paper
-                        </Button>
-                    ) : (
-                        <p>Hiện không trong thời gian đánh giá...</p>
-                    )}
-                </div>
-            )}
+                )} */}
 
             {/* Revision Submissions with Review Forms */}
             <div className="bg-white border rounded-lg p-6">
@@ -600,82 +793,263 @@ export default function RevisionPaperPhase({
                     Các Round Revision
                 </h3>
 
-                {/* Overall Status */}
-                {/* <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                    <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-700">
-                            Trạng thái tổng thể:
-                        </span>
-                        <span
-                            className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(paperDetail.revisionPaper.globalStatusName)}`}
-                        >
-                            {getStatusIcon(paperDetail.revisionPaper.globalStatusName)}
-                            {paperDetail.revisionPaper.globalStatusName}
-                        </span>
+                {allRounds.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-10 text-gray-500">
+                        <FileText className="w-10 h-10 text-gray-400 mb-2" />
+                        <p className="text-sm text-center">
+                            Chưa có vòng revision nào được mở cho bài báo này.
+                        </p>
                     </div>
-                </div> */}
+                ) : (
+                    <>
+                        {/* Tab Navigation */}
+                        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+                            {allRounds.map((round, index) => {
+                                const isActive = activeRoundTab === index;
 
-                {/* Revision Submissions */}
-                <EmblaCarousel>
-                    {paperDetail.revisionPaper.revisionPaperSubmissions.map(
-                        (submission: RevisionPaperSubmissionForReviewer) => (
-                            // <SwiperSlide key={submission.revisionPaperSubmissionId}>
-                            <div key={submission.revisionPaperSubmissionId} className="border border-gray-600 rounded-lg p-4">
-                                <div className="flex justify-between items-center mb-4">
-                                    <div>
-                                        <h4 className="font-semibold text-lg text-black">
-                                            Round {currentPhase?.revisionRoundsDetail?.find(
-                                                r => r.revisionRoundDeadlineId === submission.revisionDeadlineRoundId
-                                            )?.roundNumber}
-                                        </h4>
-                                        <p className="text-xs text-black-400 mt-1">
-                                            ID: {submission.revisionPaperSubmissionId}
-                                        </p>
-                                    </div>
-
-                                    <div className="flex items-center gap-2">
-                                        {submission.revisionSubmissionFeedbacks.length > 0 && (
-                                            <button
-                                                onClick={() => setShowViewFeedbackDialogs(prev => ({
-                                                    ...prev,
-                                                    [submission.revisionPaperSubmissionId]: true
-                                                }))}
-                                                className="flex items-center gap-1 px-2.5 py-1 bg-green-600/80 hover:bg-green-700 text-white text-xs rounded-md transition"
-                                            >
-                                                <CheckCircle className="w-3.5 h-3.5" />
-                                                <span>{submission.revisionSubmissionFeedbacks.length} Feedback đã gửi</span>
-                                            </button>
+                                return (
+                                    <button
+                                        key={`tab-${round.roundNumber}`}
+                                        onClick={() => !round.isDisabled && setActiveRoundTab(index)}
+                                        disabled={round.isDisabled}
+                                        className={cn(
+                                            "relative flex items-center gap-3 px-5 py-3 rounded-full transition-all min-w-[180px]",
+                                            "border-2",
+                                            // Disabled state
+                                            round.isDisabled && "opacity-50 cursor-not-allowed bg-gray-100 border-gray-300 text-gray-400",
+                                            // Active states (only when not disabled)
+                                            !round.isDisabled && isActive && round.isCompleted && "bg-green-600 border-green-600 text-white shadow-lg shadow-green-500/50",
+                                            !round.isDisabled && isActive && !round.isCompleted && round.canFeedback && "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/50",
+                                            !round.isDisabled && isActive && !round.isCompleted && !round.canFeedback && "bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-500/50",
+                                            // Inactive states (only when not disabled)
+                                            !round.isDisabled && !isActive && round.isCompleted && "bg-white border-green-600/50 text-gray-700 hover:border-green-500",
+                                            !round.isDisabled && !isActive && !round.isCompleted && "bg-white border-gray-300 text-gray-700 hover:border-gray-400"
                                         )}
+                                    >
+                                        {/* Status Indicator Dot */}
+                                        <div className={cn(
+                                            "flex items-center justify-center w-2 h-2 rounded-full",
+                                            round.isDisabled && "bg-gray-300",
+                                            !round.isDisabled && round.isCompleted && "bg-green-400",
+                                            !round.isDisabled && !round.isCompleted && round.canFeedback && "bg-blue-400",
+                                            !round.isDisabled && !round.isCompleted && !round.canFeedback && "bg-orange-400"
+                                        )}>
+                                            <div className={cn(
+                                                "w-2 h-2 rounded-full animate-pulse",
+                                                isActive && !round.isDisabled && "opacity-100",
+                                                "opacity-0"
+                                            )} />
+                                        </div>
 
-                                        <Button
-                                            onClick={() =>
-                                                setShowFeedbackDialogs((prev) => ({
-                                                    ...prev,
-                                                    [submission.revisionPaperSubmissionId]: true,
-                                                }))
-                                            }
-                                            className="bg-blue-600 hover:bg-blue-700"
-                                            size="sm"
-                                            disabled={!canSubmitRevisionFeedback(submission.revisionPaperSubmissionId)}
-                                        >
-                                            <MessageSquare className="w-4 h-4 mr-2" />
-                                            {canSubmitRevisionFeedback(submission.revisionPaperSubmissionId)
-                                                ? "Nhập feedback"
-                                                : `Chưa đến hạn feedback cho round ${currentPhase?.revisionRoundsDetail?.find(
-                                                    r => r.revisionRoundDeadlineId === submission.revisionDeadlineRoundId
-                                                )?.roundNumber}`}
-                                        </Button>
+                                        {/* Content */}
+                                        <div className="flex flex-col items-start flex-1">
+                                            <span className={cn(
+                                                "font-semibold text-sm",
+                                                round.isDisabled && "text-gray-400",
+                                                !round.isDisabled && isActive && "text-white",
+                                                !round.isDisabled && !isActive && "text-gray-700"
+                                            )}>
+                                                Round {round.roundNumber}
+                                            </span>
 
-                                        {/* Status và nút đánh dấu hoàn tất */}
+                                            <span className={cn(
+                                                "text-xs",
+                                                round.isDisabled && "text-gray-400",
+                                                !round.isDisabled && isActive && "text-white/80",
+                                                !round.isDisabled && !isActive && "text-gray-500"
+                                            )}>
+                                                {round.isDisabled
+                                                    ? round.roundStatus === 'pending'
+                                                        ? "Chưa diễn ra"
+                                                        : round.roundStatus === 'expired'
+                                                            ? "Đã hết hạn, chưa có submission"
+                                                            : "Chưa được nộp"
+                                                    : round.isCompleted
+                                                        ? "Đã hoàn tất"
+                                                        : round.canFeedback
+                                                            ? "Đang mở feedback"
+                                                            : "Đã kết thúc"}
+                                            </span>
+
+                                            {round.roundDetail?.startSubmissionDate && round.roundDetail?.endSubmissionDate && (
+                                                <div className={cn(
+                                                    "text-[10px] mt-0.5",
+                                                    round.isDisabled && "text-gray-400",
+                                                    !round.isDisabled && isActive && "text-white/70",
+                                                    !round.isDisabled && !isActive && "text-gray-400"
+                                                )}>
+                                                    {new Date(round.roundDetail.startSubmissionDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })} - {new Date(round.roundDetail.endSubmissionDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Active Indicator */}
+                                        {isActive && !round.isDisabled && (
+                                            <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        {/* <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+                            {allRounds.map((round, index) => {
+                                const isActive = activeRoundTab === index;
+                                const canFeedback = canSubmitRevisionFeedback(round.submission.revisionPaperSubmissionId);
+
+                                return (
+                                    <button
+                                        key={`tab-${round.roundNumber}`}
+                                        onClick={() => setActiveRoundTab(index)}
+                                        className={cn(
+                                            "relative flex items-center gap-3 px-5 py-3 rounded-full transition-all min-w-[180px]",
+                                            "border-2",
+                                            // Active states
+                                            isActive && round.isCompleted && "bg-green-600 border-green-600 text-white shadow-lg shadow-green-500/50",
+                                            isActive && !round.isCompleted && canFeedback && "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/50",
+                                            isActive && !round.isCompleted && !canFeedback && "bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-500/50",
+                                            // Inactive states
+                                            !isActive && round.isCompleted && "bg-white border-green-600/50 text-gray-700 hover:border-green-500",
+                                            !isActive && !round.isCompleted && "bg-white border-gray-300 text-gray-700 hover:border-gray-400"
+                                        )}
+                                    >
+                                       
+                                        <div className={cn(
+                                            "flex items-center justify-center w-2 h-2 rounded-full",
+                                            round.isCompleted && "bg-green-400",
+                                            !round.isCompleted && canFeedback && "bg-blue-400",
+                                            !round.isCompleted && !canFeedback && "bg-orange-400"
+                                        )}>
+                                            <div className={cn(
+                                                "w-2 h-2 rounded-full animate-pulse",
+                                                isActive && "opacity-100",
+                                                !isActive && "opacity-0"
+                                            )} />
+                                        </div>
+
+                                        <div className="flex flex-col items-start flex-1">
+                                            <span className={cn(
+                                                "font-semibold text-sm",
+                                                isActive && "text-white",
+                                                !isActive && "text-gray-700"
+                                            )}>
+                                                Round {round.roundNumber}
+                                            </span>
+
+                                            <span className={cn(
+                                                "text-xs",
+                                                isActive && "text-white/80",
+                                                !isActive && "text-gray-500"
+                                            )}>
+                                                {round.isCompleted
+                                                    ? "Đã hoàn tất"
+                                                    : canFeedback
+                                                        ? "Đang mở feedback"
+                                                        : "Chưa đến hạn"}
+                                            </span>
+
+                                            {round.roundDetail?.startSubmissionDate && round.roundDetail?.endSubmissionDate && (
+                                                <div className={cn(
+                                                    "text-[10px] mt-0.5",
+                                                    isActive && "text-white/70",
+                                                    !isActive && "text-gray-400"
+                                                )}>
+                                                    {new Date(round.roundDetail.startSubmissionDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })} - {new Date(round.roundDetail.endSubmissionDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                               
+                                        {isActive && (
+                                            <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div> */}
+
+                        {/* Tab Content */}
+                        {allRounds[activeRoundTab] && (() => {
+                            const round = allRounds[activeRoundTab];
+
+                            if (!round.hasSubmission || !round.submission) {
+                                return (
+                                    <div className="border border-gray-200 rounded-lg p-8 text-center">
+                                        <div className="flex flex-col items-center justify-center py-8 text-gray-400">
+                                            <FileText className="w-12 h-12 mb-3 text-gray-300" />
+                                            <h4 className="font-semibold text-lg text-gray-600 mb-2">
+                                                Round {round.roundNumber}
+                                            </h4>
+                                            <p className="text-sm text-gray-500">
+                                                {round.roundStatus === 'pending' && "Vòng này chưa bắt đầu"}
+                                                {round.roundStatus === 'open' && "Vòng này đang mở nhưng chưa có submission"}
+                                                {round.roundStatus === 'expired' && "Vòng này đã kết thúc mà chưa có submission"}
+                                            </p>
+                                            {round.roundDetail?.startSubmissionDate && round.roundDetail?.endSubmissionDate && (
+                                                <p className="text-xs text-gray-400 mt-2">
+                                                    Thời gian: {new Date(round.roundDetail.startSubmissionDate).toLocaleDateString('vi-VN')} - {new Date(round.roundDetail.endSubmissionDate).toLocaleDateString('vi-VN')}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            }
+
+                            const submission = round.submission;
+
+                            return (
+                                <div className="border border-gray-200 rounded-lg p-4">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <div>
+                                            <h4 className="font-semibold text-lg text-black">
+                                                Round {round.roundNumber}
+                                            </h4>
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                ID: {submission.revisionPaperSubmissionId}
+                                            </p>
+                                        </div>
+
                                         <div className="flex items-center gap-2">
-                                            {isSubmissionCompleted(submission.revisionPaperSubmissionId) ? (
+                                            {/* View Feedback Button */}
+                                            {submission.revisionSubmissionFeedbacks.length > 0 && (
+                                                <button
+                                                    onClick={() => setShowViewFeedbackDialogs(prev => ({
+                                                        ...prev,
+                                                        [submission.revisionPaperSubmissionId]: true
+                                                    }))}
+                                                    className="flex items-center gap-1 px-2.5 py-1 bg-green-600/80 hover:bg-green-700 text-white text-xs rounded-md transition"
+                                                >
+                                                    <CheckCircle className="w-3.5 h-3.5" />
+                                                    <span>{submission.revisionSubmissionFeedbacks.length} Feedback đã gửi</span>
+                                                </button>
+                                            )}
+
+                                            {/* Submit Feedback Button */}
+                                            <Button
+                                                onClick={() =>
+                                                    setShowFeedbackDialogs((prev) => ({
+                                                        ...prev,
+                                                        [submission.revisionPaperSubmissionId]: true,
+                                                    }))
+                                                }
+                                                className="bg-blue-600 hover:bg-blue-700"
+                                                size="sm"
+                                                disabled={!canSubmitRevisionFeedback(submission.revisionPaperSubmissionId)}
+                                            >
+                                                <MessageSquare className="w-4 h-4 mr-2" />
+                                                {canSubmitRevisionFeedback(submission.revisionPaperSubmissionId)
+                                                    ? "Nhập feedback"
+                                                    : `Chưa đến hạn feedback cho round ${round.roundNumber}`}
+                                            </Button>
+
+                                            {/* Completion Status */}
+                                            {round.isCompleted ? (
                                                 <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg">
                                                     <CheckCircle className="w-4 h-4 text-green-600" />
                                                     <span className="text-sm font-medium text-green-700">
                                                         Đã hoàn tất, chờ kết quả review
                                                     </span>
                                                 </div>
-                                            ) : isLatestSubmission(submission.revisionPaperSubmissionId) ? (
+                                            ) : round.isLatest ? (
                                                 <Button
                                                     onClick={() => handleMarkCompleteRevise(submission.revisionPaperSubmissionId)}
                                                     disabled={markingComplete[submission.revisionPaperSubmissionId] || isMarkingComplete}
@@ -689,340 +1063,205 @@ export default function RevisionPaperPhase({
                                                 </Button>
                                             ) : null}
                                         </div>
-                                        {/* <button
-                                            onClick={() => setShowFeedbackDialogs(prev => ({
-                                                ...prev,
-                                                [submission.revisionPaperSubmissionId]: true
-                                            }))}
-                                            className="flex items-center gap-1 px-2.5 py-1 bg-blue-600/80 hover:bg-blue-700 text-white text-xs rounded-md transition"
-                                            disabled={!canSubmitRevisionFeedback(submission.revisionPaperSubmissionId)}
-                                        >
-                                            <MessageSquare className="w-3.5 h-3.5" />
-                                            <span>Nhập feedback</span>
-                                        </button> */}
-                                    </div>
-                                </div>
-
-                                {/* Paper Card */}
-                                <ReviewerPaperCard
-                                    paperInfo={{
-                                        id: submission.revisionPaperSubmissionId,
-                                        title: submission.title,
-                                        description: submission.description,
-                                        reviewStartDate: currentPhase?.revisionRoundsDetail?.find(
-                                            r => r.revisionRoundDeadlineId === submission.revisionDeadlineRoundId
-                                        )?.startSubmissionDate,
-                                        reviewEndDate: currentPhase?.revisionRoundsDetail?.find(
-                                            r => r.revisionRoundDeadlineId === submission.revisionDeadlineRoundId
-                                        )?.endSubmissionDate,
-                                        fileUrl: submission.revisionPaperUrl
-                                    }}
-                                    paperType={`Submission Round ${currentPhase?.revisionRoundsDetail?.find(
-                                        r => r.revisionRoundDeadlineId === submission.revisionDeadlineRoundId
-                                    )?.roundNumber}`}
-                                    getStatusIcon={getStatusIcon}
-                                    getStatusColor={getStatusColor}
-                                />
-                            </div>
-                            // </SwiperSlide>
-                        )
-                    )}
-                </EmblaCarousel>
-                {/* <div className="space-y-6">
-                    {(!paperDetail?.revisionPaper?.revisionPaperSubmissions ||
-                        paperDetail.revisionPaper.revisionPaperSubmissions.length === 0) && (
-                            <div className="flex flex-col items-center justify-center py-10 text-gray-500">
-                                <FileText className="w-10 h-10 text-gray-400 mb-2" />
-                                <p className="text-sm text-center">
-                                    Chưa có vòng revision nào được mở cho bài báo này.
-                                </p>
-                            </div>
-                        )}
-
-                    {paperDetail.revisionPaper.revisionPaperSubmissions.map(
-                        (submission: RevisionPaperSubmissionForReviewer) => {
-                            return (
-                                <div
-                                    key={submission.revisionPaperSubmissionId}
-                                // className="bg-gradient-to-br from-orange-50 to-white rounded-lg p-6 border-2 border-orange-200"
-                                >
-                                    <div className="my-4">
-                                        <Button
-                                            onClick={() =>
-                                                setShowFeedbackDialogs((prev) => ({
-                                                    ...prev,
-                                                    [submission.revisionPaperSubmissionId]: true,
-                                                }))
-                                            }
-                                            className="bg-blue-600 hover:bg-blue-700"
-                                            size="sm"
-                                            disabled={!canSubmitRevisionFeedback(submission.revisionPaperSubmissionId)}
-                                        >
-                                            <MessageSquare className="w-4 h-4 mr-2" />
-                                            {canSubmitRevisionFeedback(submission.revisionPaperSubmissionId)
-                                                ? "Nhập feedback"
-                                                : `Chưa đến hạn feedback cho round ${currentPhase?.revisionRoundsDetail?.find(
-                                                    r => r.revisionRoundDeadlineId === submission.revisionDeadlineRoundId
-                                                )?.roundNumber}`}
-                                        </Button>
                                     </div>
 
+                                    {/* Paper Card */}
                                     <ReviewerPaperCard
-                                        key={submission.revisionPaperSubmissionId}
                                         paperInfo={{
                                             id: submission.revisionPaperSubmissionId,
                                             title: submission.title,
                                             description: submission.description,
-                                            reviewStartDate: currentPhase?.revisionRoundsDetail?.find(
-                                                r => r.revisionRoundDeadlineId === submission.revisionDeadlineRoundId
-                                            )?.startSubmissionDate,
-                                            reviewEndDate: currentPhase?.revisionRoundsDetail?.find(
-                                                r => r.revisionRoundDeadlineId === submission.revisionDeadlineRoundId
-                                            )?.endSubmissionDate,
+                                            reviewStartDate: round.roundDetail?.startSubmissionDate,
+                                            reviewEndDate: round.roundDetail?.endSubmissionDate,
                                             fileUrl: submission.revisionPaperUrl
                                         }}
-                                        paperType={`Submission Round ${currentPhase?.revisionRoundsDetail?.find(
-                                            r => r.revisionRoundDeadlineId === submission.revisionDeadlineRoundId
-                                        )?.roundNumber}`}
+                                        paperType={`Submission Round ${round.roundNumber}`}
+                                        phaseInfo={paperDetail.currentResearchConferencePhase}
+                                        revisionRoundDetail={round.roundDetail}
                                         getStatusIcon={getStatusIcon}
                                         getStatusColor={getStatusColor}
                                     />
-
-
-                                    <div className="flex flex-col items-start justify-between mb-4 pb-4 border-b border-orange-200">
-                                        <div className="flex w-full items-start justify-between mb-4 pb-4 border-b border-orange-200">
-
-
-
-                                        </div>
-
-                                    </div>
-
-                            
-                                    {submission.revisionSubmissionFeedbacks.length > 0 && (
-                                        <div className="mb-6">
-                                            <h5 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                                                <CheckCircle className="w-4 h-4 text-green-600" />
-                                                Feedbacks đã gửi
-                                            </h5>
-                                            <div className="space-y-2">
-                                                {submission.revisionSubmissionFeedbacks.map(
-                                                    (feedback: RevisionSubmissionFeedbackForReviewer) => (
-                                                        <div
-                                                            key={feedback.revisionSubmissionFeedbackId}
-                                                            className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm"
-                                                        >
-                                                            <div className="flex items-start gap-3">
-                                                                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-bold flex items-center justify-center">
-                                                                    {feedback.sortOrder}
-                                                                </span>
-                                                                <div className="flex-1">
-                                                                    <p className="text-sm text-gray-900 leading-relaxed">
-                                                                        {feedback.feedback || "N/A"}
-                                                                    </p>
-                                                                    {feedback.response && (
-                                                                        <div className="mt-3 pl-4 border-l-2 border-blue-300 bg-blue-50 p-3 rounded">
-                                                                            <p className="text-xs text-gray-600">
-                                                                                <span className="font-semibold text-blue-700">
-                                                                                    Response:
-                                                                                </span>{" "}
-                                                                                {feedback.response}
-                                                                            </p>
-                                                                        </div>
-                                                                    )}
-                                                                    {feedback.createdAt && (
-                                                                        <p className="text-xs text-gray-400 mt-2">
-                                                                            {formatDate(feedback.createdAt)}
-                                                                        </p>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    ),
-                                                )}
-                                            </div>
-                                        </div>
-                                    )}
-
                                 </div>
                             );
-                        },
-                    )}
-                </div> */}
+                        })()}
+                    </>
+                )}
             </div>
 
             {/* Dialog XEM feedbacks đã gửi*/}
-            {paperDetail.revisionPaper.revisionPaperSubmissions.map(
-                (submission: RevisionPaperSubmissionForReviewer) => (
-                    <Transition
-                        key={`view-${submission.revisionPaperSubmissionId}`}
-                        appear
-                        show={showViewFeedbackDialogs[submission.revisionPaperSubmissionId] || false}
-                        as={Fragment}
-                    >
-                        <Dialog
-                            as="div"
-                            className="relative z-50"
-                            onClose={() =>
-                                setShowViewFeedbackDialogs((prev) => ({
-                                    ...prev,
-                                    [submission.revisionPaperSubmissionId]: false,
-                                }))
-                            }
+            {
+                paperDetail.revisionPaper.revisionPaperSubmissions.map(
+                    (submission: RevisionPaperSubmissionForReviewer) => (
+                        <Transition
+                            key={`view-${submission.revisionPaperSubmissionId}`}
+                            appear
+                            show={showViewFeedbackDialogs[submission.revisionPaperSubmissionId] || false}
+                            as={Fragment}
                         >
-                            <Transition.Child
-                                as={Fragment}
-                                enter="ease-out duration-300"
-                                enterFrom="opacity-0"
-                                enterTo="opacity-100"
-                                leave="ease-in duration-200"
-                                leaveFrom="opacity-100"
-                                leaveTo="opacity-0"
+                            <Dialog
+                                as="div"
+                                className="relative z-50"
+                                onClose={() =>
+                                    setShowViewFeedbackDialogs((prev) => ({
+                                        ...prev,
+                                        [submission.revisionPaperSubmissionId]: false,
+                                    }))
+                                }
                             >
-                                <div className="fixed inset-0 bg-black bg-opacity-50" />
-                            </Transition.Child>
+                                <Transition.Child
+                                    as={Fragment}
+                                    enter="ease-out duration-300"
+                                    enterFrom="opacity-0"
+                                    enterTo="opacity-100"
+                                    leave="ease-in duration-200"
+                                    leaveFrom="opacity-100"
+                                    leaveTo="opacity-0"
+                                >
+                                    <div className="fixed inset-0 bg-black bg-opacity-50" />
+                                </Transition.Child>
 
-                            <div className="fixed inset-0 overflow-y-auto">
-                                <div className="flex min-h-full items-center justify-center p-4">
-                                    <Transition.Child
-                                        as={Fragment}
-                                        enter="ease-out duration-300"
-                                        enterFrom="opacity-0 scale-95"
-                                        enterTo="opacity-100 scale-100"
-                                        leave="ease-in duration-200"
-                                        leaveFrom="opacity-100 scale-100"
-                                        leaveTo="opacity-0 scale-95"
-                                    >
-                                        <Dialog.Panel className="w-full max-w-3xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all max-h-[80vh] overflow-y-auto">
-                                            <Dialog.Title
-                                                as="h3"
-                                                className="text-lg font-medium leading-6 text-gray-900 mb-4 flex items-center gap-2"
-                                            >
-                                                <CheckCircle className="w-5 h-5 text-green-600" />
-                                                Feedbacks đã gửi cho Round {currentPhase?.revisionRoundsDetail?.find(
-                                                    r => r.revisionRoundDeadlineId === submission.revisionDeadlineRoundId
-                                                )?.roundNumber}
-                                            </Dialog.Title>
+                                <div className="fixed inset-0 overflow-y-auto">
+                                    <div className="flex min-h-full items-center justify-center p-4">
+                                        <Transition.Child
+                                            as={Fragment}
+                                            enter="ease-out duration-300"
+                                            enterFrom="opacity-0 scale-95"
+                                            enterTo="opacity-100 scale-100"
+                                            leave="ease-in duration-200"
+                                            leaveFrom="opacity-100 scale-100"
+                                            leaveTo="opacity-0 scale-95"
+                                        >
+                                            <Dialog.Panel className="w-full max-w-3xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all max-h-[80vh] overflow-y-auto">
+                                                <Dialog.Title
+                                                    as="h3"
+                                                    className="text-lg font-medium leading-6 text-gray-900 mb-4 flex items-center gap-2"
+                                                >
+                                                    <CheckCircle className="w-5 h-5 text-green-600" />
+                                                    Feedbacks đã gửi cho Round {currentPhase?.revisionRoundsDetail?.find(
+                                                        r => r.revisionRoundDeadlineId === submission.revisionDeadlineRoundId
+                                                    )?.roundNumber}
+                                                </Dialog.Title>
 
-                                            <div className="space-y-4">
-                                                {submission.revisionSubmissionFeedbacks.length === 0 ? (
-                                                    <div className="text-center py-8 text-gray-500">
-                                                        <MessageSquare className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-                                                        <p>Chưa có feedback nào</p>
-                                                    </div>
-                                                ) : (
-                                                    submission.revisionSubmissionFeedbacks.length > 0 && (
-                                                        <div className="mb-6">
-                                                            <h5 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                                                                <CheckCircle className="w-4 h-4 text-green-600" />
-                                                                Feedbacks đã gửi
-                                                            </h5>
-                                                            <div className="space-y-2">
-                                                                {submission.revisionSubmissionFeedbacks.map(
-                                                                    (feedback: RevisionSubmissionFeedbackForReviewer) => (
-                                                                        <div
-                                                                            key={feedback.revisionSubmissionFeedbackId}
-                                                                            className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm"
-                                                                        >
-                                                                            <div className="flex items-start gap-3">
-                                                                                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-bold flex items-center justify-center">
-                                                                                    {feedback.sortOrder}
-                                                                                </span>
-                                                                                <div className="flex-1">
-                                                                                    <p className="text-sm text-gray-900 leading-relaxed">
-                                                                                        {feedback.feedback || "N/A"}
-                                                                                    </p>
-                                                                                    {feedback.response && (
-                                                                                        <div className="mt-3 pl-4 border-l-2 border-blue-300 bg-blue-50 p-3 rounded">
-                                                                                            <p className="text-xs text-gray-600">
-                                                                                                <span className="font-semibold text-blue-700">
-                                                                                                    Response:
-                                                                                                </span>{" "}
-                                                                                                {feedback.response}
-                                                                                            </p>
-                                                                                        </div>
-                                                                                    )}
-                                                                                    {feedback.createdAt && (
-                                                                                        <p className="text-xs text-gray-400 mt-2">
-                                                                                            {formatDate(feedback.createdAt)}
+                                                <div className="space-y-4">
+                                                    {submission.revisionSubmissionFeedbacks.length === 0 ? (
+                                                        <div className="text-center py-8 text-gray-500">
+                                                            <MessageSquare className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                                                            <p>Chưa có feedback nào</p>
+                                                        </div>
+                                                    ) : (
+                                                        submission.revisionSubmissionFeedbacks.length > 0 && (
+                                                            <div className="mb-6">
+                                                                <h5 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                                                    <CheckCircle className="w-4 h-4 text-green-600" />
+                                                                    Feedbacks đã gửi
+                                                                </h5>
+                                                                <div className="space-y-2">
+                                                                    {submission.revisionSubmissionFeedbacks.map(
+                                                                        (feedback: RevisionSubmissionFeedbackForReviewer) => (
+                                                                            <div
+                                                                                key={feedback.revisionSubmissionFeedbackId}
+                                                                                className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm"
+                                                                            >
+                                                                                <div className="flex items-start gap-3">
+                                                                                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-bold flex items-center justify-center">
+                                                                                        {feedback.sortOrder}
+                                                                                    </span>
+                                                                                    <div className="flex-1">
+                                                                                        <p className="text-sm text-gray-900 leading-relaxed">
+                                                                                            {feedback.feedback || "N/A"}
                                                                                         </p>
-                                                                                    )}
+                                                                                        {feedback.response && (
+                                                                                            <div className="mt-3 pl-4 border-l-2 border-blue-300 bg-blue-50 p-3 rounded">
+                                                                                                <p className="text-xs text-gray-600">
+                                                                                                    <span className="font-semibold text-blue-700">
+                                                                                                        Response:
+                                                                                                    </span>{" "}
+                                                                                                    {feedback.response}
+                                                                                                </p>
+                                                                                            </div>
+                                                                                        )}
+                                                                                        {feedback.createdAt && (
+                                                                                            <p className="text-xs text-gray-400 mt-2">
+                                                                                                {formatDate(feedback.createdAt)}
+                                                                                            </p>
+                                                                                        )}
+                                                                                    </div>
                                                                                 </div>
                                                                             </div>
-                                                                        </div>
-                                                                    ),
-                                                                )}
+                                                                        ),
+                                                                    )}
+                                                                </div>
                                                             </div>
-                                                        </div>
 
-                                                        // submission.revisionSubmissionFeedbacks.map(
-                                                        //     (feedback: RevisionSubmissionFeedbackForReviewer) => (
-                                                        //         <div
-                                                        //             key={feedback.revisionSubmissionFeedbackId}
-                                                        //             className="flex gap-4 p-4 hover:bg-gray-50 rounded-lg transition-colors"
-                                                        //         >
-                                                        //             <div className="flex-shrink-0">
-                                                        //                 <div className="w-10 h-10 rounded-full bg-green-100 text-green-700 font-bold flex items-center justify-center">
-                                                        //                     {feedback.sortOrder}
-                                                        //                 </div>
-                                                        //             </div>
+                                                            // submission.revisionSubmissionFeedbacks.map(
+                                                            //     (feedback: RevisionSubmissionFeedbackForReviewer) => (
+                                                            //         <div
+                                                            //             key={feedback.revisionSubmissionFeedbackId}
+                                                            //             className="flex gap-4 p-4 hover:bg-gray-50 rounded-lg transition-colors"
+                                                            //         >
+                                                            //             <div className="flex-shrink-0">
+                                                            //                 <div className="w-10 h-10 rounded-full bg-green-100 text-green-700 font-bold flex items-center justify-center">
+                                                            //                     {feedback.sortOrder}
+                                                            //                 </div>
+                                                            //             </div>
 
-                                                        //             <div className="flex-1 min-w-0">
-                                                        //                 <div className="flex items-center gap-2 mb-2">
-                                                        //                     <span className="font-semibold text-gray-900">
-                                                        //                         Feedback #{feedback.sortOrder}
-                                                        //                     </span>
-                                                        //                     {feedback.createdAt && (
-                                                        //                         <span className="text-xs text-gray-500">
-                                                        //                             {formatDate(feedback.createdAt)}
-                                                        //                         </span>
-                                                        //                     )}
-                                                        //                 </div>
+                                                            //             <div className="flex-1 min-w-0">
+                                                            //                 <div className="flex items-center gap-2 mb-2">
+                                                            //                     <span className="font-semibold text-gray-900">
+                                                            //                         Feedback #{feedback.sortOrder}
+                                                            //                     </span>
+                                                            //                     {feedback.createdAt && (
+                                                            //                         <span className="text-xs text-gray-500">
+                                                            //                             {formatDate(feedback.createdAt)}
+                                                            //                         </span>
+                                                            //                     )}
+                                                            //                 </div>
 
-                                                        //                 <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
-                                                        //                     {feedback.feedback || "N/A"}
-                                                        //                 </p>
+                                                            //                 <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
+                                                            //                     {feedback.feedback || "N/A"}
+                                                            //                 </p>
 
-                                                        //                 {feedback.response && (
-                                                        //                     <div className="mt-3 pl-4 border-l-3 border-blue-400 bg-blue-50 p-3 rounded-lg">
-                                                        //                         <div className="flex items-center gap-2 mb-1">
-                                                        //                             <span className="text-xs font-semibold text-blue-700">
-                                                        //                                 Phản hồi từ tác giả:
-                                                        //                             </span>
-                                                        //                         </div>
-                                                        //                         <p className="text-sm text-gray-700">
-                                                        //                             {feedback.response}
-                                                        //                         </p>
-                                                        //                     </div>
-                                                        //                 )}
-                                                        //             </div>
-                                                        //         </div>
-                                                        //     )
-                                                    )
-                                                )}
-                                            </div>
+                                                            //                 {feedback.response && (
+                                                            //                     <div className="mt-3 pl-4 border-l-3 border-blue-400 bg-blue-50 p-3 rounded-lg">
+                                                            //                         <div className="flex items-center gap-2 mb-1">
+                                                            //                             <span className="text-xs font-semibold text-blue-700">
+                                                            //                                 Phản hồi từ tác giả:
+                                                            //                             </span>
+                                                            //                         </div>
+                                                            //                         <p className="text-sm text-gray-700">
+                                                            //                             {feedback.response}
+                                                            //                         </p>
+                                                            //                     </div>
+                                                            //                 )}
+                                                            //             </div>
+                                                            //         </div>
+                                                            //     )
+                                                        )
+                                                    )}
+                                                </div>
 
-                                            <div className="mt-6 flex justify-end">
-                                                <Button
-                                                    variant="outline"
-                                                    onClick={() =>
-                                                        setShowViewFeedbackDialogs((prev) => ({
-                                                            ...prev,
-                                                            [submission.revisionPaperSubmissionId]: false,
-                                                        }))
-                                                    }
-                                                >
-                                                    Đóng
-                                                </Button>
-                                            </div>
-                                        </Dialog.Panel>
-                                    </Transition.Child>
+                                                <div className="mt-6 flex justify-end">
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() =>
+                                                            setShowViewFeedbackDialogs((prev) => ({
+                                                                ...prev,
+                                                                [submission.revisionPaperSubmissionId]: false,
+                                                            }))
+                                                        }
+                                                    >
+                                                        Đóng
+                                                    </Button>
+                                                </div>
+                                            </Dialog.Panel>
+                                        </Transition.Child>
+                                    </div>
                                 </div>
-                            </div>
-                        </Dialog>
-                    </Transition>
+                            </Dialog>
+                        </Transition>
+                    )
                 )
-            )}
+            }
 
             <div>
                 {/* Feedback for each submission */}
@@ -1310,7 +1549,7 @@ export default function RevisionPaperPhase({
                                             </Button>
                                             <Button
                                                 className="flex-1 bg-orange-600 hover:bg-orange-700"
-                                                onClick={handleSubmitRevisionReview}
+                                                // onClick={handleSubmitRevisionReview}
                                                 disabled={isSubmittingRevisionReview}
                                             >
                                                 {isSubmittingRevisionReview ? "Đang gửi..." : "Gửi đánh giá"}
@@ -1324,51 +1563,53 @@ export default function RevisionPaperPhase({
                 </Dialog>
             </Transition>
 
-            {showRevisionDecisionPopup && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
-                        <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <Gavel className="w-5 h-5 text-orange-600" />
-                            Quyết định cuối cùng - Revision Paper
-                        </h3>
+            {
+                showRevisionDecisionPopup && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
+                            <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <Gavel className="w-5 h-5 text-orange-600" />
+                                Quyết định cuối cùng - Revision Paper
+                            </h3>
 
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Chọn trạng thái
-                                </label>
-                                <select
-                                    className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-orange-500"
-                                    value={revisionDecisionStatus}
-                                    onChange={(e) => setRevisionDecisionStatus(e.target.value)}
-                                >
-                                    <option value="Pending">Pending</option>
-                                    <option value="Accepted">Accepted</option>
-                                    <option value="Rejected">Rejected</option>
-                                </select>
-                            </div>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Chọn trạng thái
+                                    </label>
+                                    <select
+                                        className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-orange-500"
+                                        value={revisionDecisionStatus}
+                                        onChange={(e) => setRevisionDecisionStatus(e.target.value)}
+                                    >
+                                        <option value="Pending">Pending</option>
+                                        <option value="Accepted">Accepted</option>
+                                        <option value="Rejected">Rejected</option>
+                                    </select>
+                                </div>
 
-                            <div className="flex gap-3">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setShowRevisionDecisionPopup(false)}
-                                    className="flex-1"
-                                    disabled={isDecidingRevision}
-                                >
-                                    Hủy
-                                </Button>
-                                <Button
-                                    onClick={handleDecideRevisionStatus}
-                                    disabled={isDecidingRevision}
-                                    className="flex-1 bg-orange-600 hover:bg-orange-700"
-                                >
-                                    {isDecidingRevision ? "Đang xử lý..." : "Xác nhận"}
-                                </Button>
+                                <div className="flex gap-3">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setShowRevisionDecisionPopup(false)}
+                                        className="flex-1"
+                                        disabled={isDecidingRevision}
+                                    >
+                                        Hủy
+                                    </Button>
+                                    <Button
+                                        onClick={handleDecideRevisionStatus}
+                                        disabled={isDecidingRevision}
+                                        className="flex-1 bg-orange-600 hover:bg-orange-700"
+                                    >
+                                        {isDecidingRevision ? "Đang xử lý..." : "Xác nhận"}
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }
