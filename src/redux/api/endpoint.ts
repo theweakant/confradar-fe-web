@@ -30,6 +30,8 @@ export const endpoint = {
 
     LIST_COLLABORATOR_ACCOUNTS: "/auth/list-collaborator-accounts",
     LIST_ORGANIZATION: "/auth/list-organization",
+
+    CREATE_LOCAL_REVIEWER_ACCOUNT: "/auth/create-local-reviewer-account",
   },
   DESTINATION: {
     LIST: "/Destination",

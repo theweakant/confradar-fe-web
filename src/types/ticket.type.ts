@@ -17,6 +17,27 @@ export interface CustomerPaidTicketResponse {
   userCheckIns: CustomerCheckInDetailResponse[];
   ticketPricePhase?: TicketPricePhaseResponse;
   hasRefundPolicy?: boolean;
+
+  conferenceId?: string;
+  conferenceName?: string;
+  conferenceDescription?: string;
+  conferenceStartDate?: string;
+  conferenceEndDate?: string;
+  conferenceTotalSlot?: number;
+  conferenceAvailableSlot?: number;
+  conferenceAddress?: string;
+  bannerImageUrl?: string;
+  conferenceCreatedAt?: string;
+  conferenceTicketSaleStart?: string;
+  conferenceTicketSaleEnd?: string;
+  isInternalHosted?: boolean;
+  isResearchConference?: boolean;
+  cityId?: string;
+  cityName?: string;
+  conferenceCategoryId?: string;
+  conferenceCategoryName?: string;
+  conferenceStatusId?: string;
+  conferenceStatusName?: string;
 }
 
 export interface CustomerTransactionDetailResponse {

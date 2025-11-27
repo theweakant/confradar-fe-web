@@ -10,6 +10,7 @@ import { validatePhaseTime } from "@/helper/timeValidation";
 import SubmittedPaperCard from "./SubmittedPaperCard";
 import { toast } from "sonner";
 import SubmissionFormDialog from "./SubmissionFormDialog";
+import { parseApiError } from "@/helper/api";
 
 interface AbstractPhaseProps {
   paperId?: string;
@@ -169,30 +170,9 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract, resear
   );
 
   useEffect(() => {
-    if (submitAbstractError) {
-      let errorMessage = "Có lỗi xảy ra khi nộp abstract";
-
-      if (submitAbstractError?.data?.message) {
-        errorMessage = submitAbstractError.data.message;
-      }
-
-
-      toast.error(errorMessage);
-    }
-  }, [submitAbstractError]);
-
-  useEffect(() => {
-    if (updateAbstractError) {
-      let errorMessage = "Có lỗi xảy ra khi nộp abstract";
-
-      if (updateAbstractError?.data?.message) {
-        errorMessage = updateAbstractError.data.message;
-      }
-
-
-      toast.error(errorMessage);
-    }
-  }, [updateAbstractError]);
+    if (submitAbstractError) toast.error(parseApiError<string>(submitAbstractError)?.data?.message)
+    if (updateAbstractError) toast.error(parseApiError<string>(updateAbstractError)?.data?.message)
+  }, [submitAbstractError, updateAbstractError]);
 
   return (
     <div className="space-y-6">

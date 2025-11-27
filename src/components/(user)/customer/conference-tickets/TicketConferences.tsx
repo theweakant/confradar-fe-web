@@ -11,6 +11,10 @@ import {
   MapPin,
   CheckCircle2,
   X,
+  Building2,
+  Users,
+  Tag,
+  User,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -399,108 +403,197 @@ export default function TicketConferences() {
         </div>
 
         {/* Ticket List */}
+        {/* Ticket List */}
         <div className="space-y-6">
           {filteredTickets.map((ticket) => (
             <Card
               key={ticket.ticketId}
-              className="bg-gray-800 border-gray-700 hover:shadow-lg hover:shadow-purple-500/10 transition-shadow"
+              className="bg-gray-800 border-gray-700 hover:shadow-lg hover:shadow-purple-500/10 transition-shadow overflow-hidden"
             >
+              {/* Banner Image */}
+              {/* {ticket.bannerImageUrl && (
+                <div className="relative h-48 w-full overflow-hidden">
+                  <img
+                    src={ticket.bannerImageUrl}
+                    alt={ticket.conferenceName}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-gray-800 via-gray-800/50 to-transparent" />
+
+                  
+                  <div className="absolute top-4 right-4">
+                    {getStatusBadge(ticket.isRefunded)}
+                  </div>
+                </div>
+              )} */}
+
+              <div className="flex justify-between items-start gap-4 ml-5">
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-gray-400">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      <p>Ngày đăng ký:</p>
+                      {formatDate(ticket.registeredDate)}
+                    </div>
+                    <div>{getStatusBadge(ticket.isRefunded)}</div>
+                  </div>
+                </div>
+              </div>
+
               <div className="flex flex-col lg:flex-row">
                 {/* Content */}
                 <CardContent className="flex-1 p-6 overflow-hidden">
                   <div className="flex flex-col gap-4">
-                    <div className="flex-1 space-y-3">
-                      {/* Header */}
-                      <div className="flex justify-between items-start gap-4">
-                        {/* Left: Date + Status + Title */}
-                        <div className="flex flex-col gap-2">
-                          {/* Date & Status */}
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-gray-400">
-                            <div className="flex items-center gap-2">
-                              <Calendar className="h-4 w-4" />
-                              {formatDate(ticket.registeredDate)}
-                            </div>
-                            <div>{getStatusBadge(ticket.isRefunded)}</div>
+                    <div className="flex-1 space-y-4">
+                      {/* Conference Title & Info */}
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-start gap-4">
+                          <div className="flex-1">
+                            <h2 className="text-2xl font-bold text-white leading-tight mb-2">
+                              {ticket.conferenceName || 'Tên hội nghị'}
+                            </h2>
+                            {ticket.conferenceDescription && (
+                              <p className="text-sm text-gray-400 line-clamp-2">
+                                {ticket.conferenceDescription}
+                              </p>
+                            )}
                           </div>
 
-                          {/* Title */}
-                          {/* <h2 className="text-xl sm:text-2xl font-bold text-white leading-tight">
-                            Mã vé của bạn: {ticket.ticketId}
-                          </h2> */}
+                          {/* Refund Button */}
+                          {!ticket.isRefunded && ticket.transactions && ticket.transactions.length > 0 && (() => {
+                            const refundInfo = canRefundTicket(ticket);
+                            const isAuthor = ticket.ticketPricePhase?.conferencePrice?.isAuthor;
+
+                            return (
+                              <Button
+                                variant="outline"
+                                size="lg"
+                                onClick={() =>
+                                  handleOpenRefundDialog(
+                                    ticket.ticketId,
+                                    ticket.transactions[0].transactionId
+                                  )
+                                }
+                                disabled={!refundInfo.canRefund}
+                                className={`
+                          flex items-center gap-2 text-white font-semibold transition-all
+                          ${refundInfo.canRefund
+                                    ? 'bg-red-600 border-red-700 hover:bg-red-700 hover:shadow-lg shadow-red-500/50'
+                                    : 'bg-gray-600 border-gray-500 cursor-not-allowed opacity-50'
+                                  }
+                        `}
+                                title={!refundInfo.canRefund
+                                  ? (isAuthor ? 'Ngoài thời gian đăng ký' : 'Đã hết hạn hoàn vé')
+                                  : undefined
+                                }
+                              >
+                                <X className="h-4 w-4" />
+                                Hoàn vé
+                                {refundInfo.canRefund && !isAuthor && refundInfo.refundPercent && (
+                                  <span className="text-xs">({refundInfo.refundPercent}%)</span>
+                                )}
+                              </Button>
+                            );
+                          })()}
                         </div>
 
-                        {/* Right: Refund Button */}
-                        {!ticket.isRefunded && ticket.transactions && ticket.transactions.length > 0 && (() => {
-                          const refundInfo = canRefundTicket(ticket);
-                          const isAuthor = ticket.ticketPricePhase?.conferencePrice?.isAuthor;
+                        {/* Conference Meta Info */}
+                        <div className="flex flex-col lg:flex-row gap-4">
+                          {ticket.bannerImageUrl && (
+                            <div className="flex-shrink-0 w-full lg:w-48 h-48 overflow-hidden relative">
+                              <img
+                                src={ticket.bannerImageUrl}
+                                alt={ticket.conferenceName || "Banner"}
+                                className="w-full h-full object-cover"
+                              />
+                              {/* <div className="absolute inset-0 bg-gradient-to-t from-gray-800 via-gray-800/50 to-transparent" />
+                              <div className="absolute top-2 right-2">
+                                {getStatusBadge(ticket.isRefunded)}
+                              </div> */}
+                            </div>
+                          )}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
 
-                          return (
-                            <Button
-                              variant="outline"
-                              size="lg"
-                              onClick={() =>
-                                handleOpenRefundDialog(
-                                  ticket.ticketId,
-                                  ticket.transactions[0].transactionId
-                                )
-                              }
-                              disabled={!refundInfo.canRefund}
-                              className={`
-        flex items-center gap-2
-        text-white
-        font-semibold
-        transition-all
-        ${refundInfo.canRefund
-                                  ? 'bg-red-600 border-red-700 hover:bg-red-700 hover:shadow-lg shadow-red-500/50'
-                                  : 'bg-gray-600 border-gray-500 cursor-not-allowed opacity-50'
-                                }
-      `}
-                              title={!refundInfo.canRefund
-                                ? (isAuthor
-                                  ? 'Ngoài thời gian đăng ký'
-                                  : 'Đã hết hạn hoàn vé'
-                                )
-                                : undefined
-                              }
-                            >
-                              <X className="h-4 w-4" />
-                              Hoàn vé
-                              {refundInfo.canRefund && !isAuthor && refundInfo.refundPercent && (
-                                <span className="text-xs">
-                                  ({refundInfo.refundPercent}%)
+                            {/* Date Range */}
+                            {ticket.conferenceStartDate && ticket.conferenceEndDate && (
+                              <div className="flex items-center gap-2 text-gray-300">
+                                <Calendar className="h-4 w-4 text-purple-400" />
+                                <span>
+                                  {formatDate(ticket.conferenceStartDate)} - {formatDate(ticket.conferenceEndDate)}
                                 </span>
-                              )}
-                            </Button>
-                          );
-                        })()}
-                        {/* {!ticket.isRefunded && ticket.transactions && ticket.transactions.length > 0 && (
-                          <Button
-                            variant="outline"
-                            size="lg"
-                            onClick={() =>
-                              handleOpenRefundDialog(
-                                ticket.ticketId,
-                                ticket.transactions[0].transactionId
-                              )
-                            }
-                            className="
-    flex items-center gap-2
-    text-white
-    bg-red-600
-    border-red-700
-    hover:bg-red-700
-    hover:shadow-lg
-    shadow-red-500/50
-    font-semibold
-    transition-all
-  "
-                          >
-                            <X className="h-4 w-4" />
-                            Hoàn vé
-                          </Button>
-                        )} */}
+                              </div>
+                            )}
+
+                            {/* Location */}
+                            {ticket.conferenceAddress && (
+                              <div className="flex items-center gap-2 text-gray-300">
+                                <MapPin className="h-4 w-4 text-purple-400" />
+                                <span className="truncate">{ticket.conferenceAddress}</span>
+                              </div>
+                            )}
+
+                            {/* City */}
+                            {ticket.cityName && (
+                              <div className="flex items-center gap-2 text-gray-300">
+                                <Building2 className="h-4 w-4 text-purple-400" />
+                                <span>{ticket.cityName}</span>
+                              </div>
+                            )}
+
+                            {/* Slots */}
+                            {ticket.conferenceTotalSlot && (
+                              <div className="flex items-center gap-2 text-gray-300">
+                                <Users className="h-4 w-4 text-purple-400" />
+                                <span>
+                                  {ticket.conferenceAvailableSlot || 0}/{ticket.conferenceTotalSlot} chỗ còn trống
+                                </span>
+                              </div>
+                            )}
+
+                            {/* Category */}
+                            {ticket.conferenceCategoryName && (
+                              <div className="flex items-center gap-2 text-gray-300">
+                                <Tag className="h-4 w-4 text-purple-400" />
+                                <span>{ticket.conferenceCategoryName}</span>
+                              </div>
+                            )}
+
+                            {/* Status */}
+                            {ticket.conferenceStatusName && (
+                              <div className="flex items-center gap-2">
+                                <Badge className="bg-green-800 text-green-200 border-green-600">
+                                  {ticket.conferenceStatusName}
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Conference Type Badges */}
+                        <div className="flex flex-wrap gap-2">
+                          {ticket.isInternalHosted && (
+                            <Badge className="bg-blue-800 text-blue-200 border-blue-600">
+                              Tổ chức nội bộ
+                            </Badge>
+                          )}
+                          {ticket.isResearchConference && (
+                            <Badge className="bg-purple-800 text-purple-200 border-purple-600">
+                              Hội nghị nghiên cứu
+                            </Badge>
+                          )}
+                        </div>
                       </div>
 
+                      {/* Ticket Sale Period */}
+                      {ticket.conferenceTicketSaleStart && ticket.conferenceTicketSaleEnd && (
+                        <div className="bg-gray-700/50 border border-gray-600 p-3 rounded-lg">
+                          <div className="text-xs text-gray-400 mb-1">Thời gian bán vé</div>
+                          <div className="flex items-center gap-2 text-sm text-gray-300">
+                            <Clock className="h-4 w-4" />
+                            {formatDate(ticket.conferenceTicketSaleStart)} - {formatDate(ticket.conferenceTicketSaleEnd)}
+                          </div>
+                        </div>
+                      )}
 
                       {/* Ticket Info */}
                       <div className="bg-gray-700 border border-gray-600 p-4 rounded-lg space-y-2">
@@ -514,30 +607,25 @@ export default function TicketConferences() {
                             </span>
                           </div>
                           <div className="flex items-center gap-2 text-sm text-gray-400">
-                            <Clock className="h-4 w-4" />
-                            {formatDate(ticket.registeredDate)}
+                            <User className="h-4 w-4" />
+                            Đăng ký: {formatDate(ticket.registeredDate)}
                           </div>
-                        </div>
-                        <div className="text-sm text-gray-400">
-                          Ngày đăng ký: {formatDate(ticket.registeredDate)}
                         </div>
                         <div className="text-xs text-gray-500 font-mono">
                           Mã vé: {ticket.ticketId}
                         </div>
                       </div>
 
-                      {/* Refund Information Section - Thêm sau Ticket Info và trước Actions */}
+                      {/* Refund Information Section */}
                       {(() => {
                         const refundInfo = canRefundTicket(ticket);
                         const isAuthor = ticket.ticketPricePhase?.conferencePrice?.isAuthor;
                         const allDeadlines = getAllRefundDeadlines(ticket);
 
-                        // Không hiển thị gì nếu vé đã được hoàn
                         if (ticket.isRefunded) {
                           return null;
                         }
 
-                        // Trường hợp 1: Không có refund policy
                         if (!ticket.hasRefundPolicy) {
                           return (
                             <div className="bg-gray-700/20 border border-gray-600/50 p-4 rounded-lg">
@@ -549,7 +637,6 @@ export default function TicketConferences() {
                           );
                         }
 
-                        // Trường hợp 2: Có refund policy nhưng không có policies cụ thể
                         if (allDeadlines.length === 0) {
                           return (
                             <div className="bg-gray-700/20 border border-gray-600/50 p-4 rounded-lg">
@@ -561,7 +648,6 @@ export default function TicketConferences() {
                           );
                         }
 
-                        // Trường hợp 3: Có refund policy và có policies cụ thể
                         return (
                           <div className="bg-blue-900/20 border border-blue-600/50 p-4 rounded-lg space-y-2">
                             <h4 className="text-sm font-semibold text-blue-400 flex items-center gap-2">
@@ -620,120 +706,10 @@ export default function TicketConferences() {
                           </div>
                         );
                       })()}
-                      {/* {(() => {
-                        const refundInfo = canRefundTicket(ticket);
-                        const isAuthor = ticket.ticketPricePhase?.conferencePrice?.isAuthor;
-                        const allDeadlines = getAllRefundDeadlines(ticket);
-
-                        if (!ticket.isRefunded && (refundInfo.canRefund || allDeadlines.length > 0 || isAuthor)) {
-                          return (
-                            <div className="bg-blue-900/20 border border-blue-600/50 p-4 rounded-lg space-y-2">
-                              <h4 className="text-sm font-semibold text-blue-400 flex items-center gap-2">
-                                <CreditCard className="h-4 w-4" />
-                                Thông tin hoàn vé
-                              </h4>
-
-                              {isAuthor ? (
-                                // Author ticket info
-                                <div className="space-y-2">
-                                  <div className="text-sm text-gray-300">
-                                    <Badge className="bg-purple-800 text-purple-200 border-purple-600 mb-2">
-                                      Vé tác giả
-                                    </Badge>
-                                    <div className="mt-2">
-                                      Thời gian đăng ký: {' '}
-                                      <span className="text-white font-medium">
-                                        {formatDate(ticket.ticketPricePhase?.conferencePrice?.registrationStartDate)} - {formatDate(ticket.ticketPricePhase?.conferencePrice?.registrationEndDate)}
-                                      </span>
-                                    </div>
-                                    {refundInfo.canRefund ? (
-                                      <div className="text-green-400 text-xs mt-1">
-                                        ✓ Hiện tại trong thời gian được phép hoàn vé
-                                      </div>
-                                    ) : (
-                                      <div className="text-red-400 text-xs mt-1">
-                                        ✗ Ngoài thời gian đăng ký, không thể hoàn vé
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              ) : (
-                                // Non-author ticket info
-                                <div className="space-y-2">
-                                  {refundInfo.canRefund && refundInfo.refundAmount !== undefined && (
-                                    <div className="bg-green-900/30 border border-green-600/50 p-3 rounded">
-                                      <div className="text-green-400 font-semibold mb-1">
-                                        Bạn sẽ được hoàn lại: {formatPrice(refundInfo.refundAmount)}
-                                      </div>
-                                      <div className="text-xs text-gray-400">
-                                        ({refundInfo.refundPercent}% giá vé gốc)
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {allDeadlines.length > 0 && (
-                                    <div className="text-sm text-gray-300">
-                                      <div className="font-medium mb-2">Các mốc thời gian hoàn vé:</div>
-                                      <div className="space-y-1">
-                                        {allDeadlines.map((policy, index) => (
-                                          <div
-                                            key={policy.refundPolicyId}
-                                            className={`flex justify-between items-center text-xs p-2 rounded ${refundInfo.applicableDeadline === policy.refundDeadline
-                                              ? 'bg-green-900/30 border border-green-600/50'
-                                              : 'bg-gray-800/50'
-                                              }`}
-                                          >
-                                            <span>
-                                              {refundInfo.applicableDeadline === policy.refundDeadline && (
-                                                <span className="text-green-400 mr-1">→</span>
-                                              )}
-                                              Trước {formatDateTime(policy.refundDeadline)}
-                                            </span>
-                                            <span className="font-medium text-white">
-                                              {policy.percentRefund}%
-                                            </span>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {!refundInfo.canRefund && (
-                                    <div className="text-red-400 text-xs">
-                                      ✗ Đã hết hạn hoàn vé
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        }
-                        return null;
-                      })()} */}
 
                       {/* Actions */}
                       <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-2">
                         <div className="flex flex-wrap gap-2">
-                          {/* {!ticket.isRefunded && (
-                            <>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="flex items-center gap-2 text-purple-400 border-purple-600 hover:bg-purple-900/50 bg-gray-800"
-                              >
-                                <QrCode className="h-4 w-4" />
-                                QR Code
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="flex items-center gap-2 text-gray-300 border-gray-600 hover:bg-gray-700 bg-gray-800"
-                              >
-                                <Download className="h-4 w-4" />
-                                Tải vé
-                              </Button>
-                            </>
-                          )} */}
                           {!ticket.isRefunded && ticket.transactions && ticket.transactions.length > 0 && (() => {
                             const refundInfo = canRefundTicket(ticket);
                             const isAuthor = ticket.ticketPricePhase?.conferencePrice?.isAuthor;
@@ -748,12 +724,12 @@ export default function TicketConferences() {
                                 )}
                                 disabled={!refundInfo.canRefund}
                                 className={`
-        flex items-center gap-2
-        ${refundInfo.canRefund
+                          flex items-center gap-2
+                          ${refundInfo.canRefund
                                     ? 'text-red-400 border-red-600 hover:bg-red-900/50 bg-gray-800'
                                     : 'text-gray-500 border-gray-600 bg-gray-800 cursor-not-allowed opacity-50'
                                   }
-      `}
+                        `}
                                 title={!refundInfo.canRefund
                                   ? (!ticket.hasRefundPolicy
                                     ? 'Vé không áp dụng chính sách hoàn tiền'
@@ -771,20 +747,6 @@ export default function TicketConferences() {
                               </Button>
                             );
                           })()}
-                          {/* {!ticket.isRefunded && ticket.transactions && ticket.transactions.length > 0 && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleOpenRefundDialog(
-                                ticket.ticketId,
-                                ticket.transactions[0].transactionId
-                              )}
-                              className="flex items-center gap-2 text-red-400 border-red-600 hover:bg-red-900/50 bg-gray-800"
-                            >
-                              <X className="h-4 w-4" />
-                              Hoàn vé
-                            </Button>
-                          )} */}
 
                           <Button
                             variant="outline"
@@ -792,9 +754,7 @@ export default function TicketConferences() {
                             onClick={() => toggleExpand(ticket.ticketId)}
                             className="flex items-center gap-2 text-gray-300 border-gray-600 hover:bg-gray-700 bg-gray-800"
                           >
-                            {expandedTicketId === ticket.ticketId
-                              ? "Thu gọn"
-                              : "Chi tiết"}
+                            {expandedTicketId === ticket.ticketId ? "Thu gọn" : "Chi tiết"}
                             <ExternalLink className="h-4 w-4" />
                           </Button>
                         </div>
@@ -805,98 +765,88 @@ export default function TicketConferences() {
                     {expandedTicketId === ticket.ticketId && (
                       <div className="border-t border-gray-600 pt-4 space-y-4 w-full">
                         {/* Transactions Section */}
-                        {ticket.transactions &&
-                          ticket.transactions.length > 0 && (
-                            <div className="bg-gray-700/50 rounded-lg p-4 w-full">
-                              <h3 className="text-lg font-semibold text-white flex items-center gap-2 mb-3">
-                                <CreditCard className="h-5 w-5 text-purple-400" />
-                                Giao dịch ({ticket.transactions.length})
-                              </h3>
-                              <div
-                                className="w-full overflow-x-auto -mx-4 px-4"
-                                style={{
-                                  scrollbarWidth: "thin",
-                                  scrollbarColor:
-                                    "rgba(148,163,184,0.4) transparent",
-                                }}
-                              >
-                                <div className="flex gap-3 pb-2">
-                                  {ticket.transactions.map((transaction) => (
-                                    <div
-                                      key={transaction.transactionId}
-                                      className="bg-gray-800 p-3 rounded border border-gray-600 text-sm cursor-pointer hover:bg-gray-700 transition-colors flex-shrink-0 w-64"
-                                      onClick={() =>
-                                        handleViewSingleTransaction(transaction)
-                                      }
-                                    >
-                                      <div className="flex justify-between items-start mb-1">
-                                        <span className="text-gray-400 truncate">
-                                          Mã GD: {transaction.transactionCode}
-                                        </span>
-                                        <span className="text-green-400 font-semibold ml-2 whitespace-nowrap">
-                                          {formatPrice(transaction.amount)}
-                                        </span>
-                                      </div>
-                                      <div className="text-xs text-gray-500">
-                                        {formatDateTime(transaction.createdAt)}
-                                      </div>
-                                      <div className="text-xs text-purple-400 mt-1">
-                                        Click để xem chi tiết
-                                      </div>
+                        {ticket.transactions && ticket.transactions.length > 0 && (
+                          <div className="bg-gray-700/50 rounded-lg p-4 w-full">
+                            <h3 className="text-lg font-semibold text-white flex items-center gap-2 mb-3">
+                              <CreditCard className="h-5 w-5 text-purple-400" />
+                              Giao dịch ({ticket.transactions.length})
+                            </h3>
+                            <div
+                              className="w-full overflow-x-auto -mx-4 px-4"
+                              style={{
+                                scrollbarWidth: "thin",
+                                scrollbarColor: "rgba(148,163,184,0.4) transparent",
+                              }}
+                            >
+                              <div className="flex gap-3 pb-2">
+                                {ticket.transactions.map((transaction) => (
+                                  <div
+                                    key={transaction.transactionId}
+                                    className="bg-gray-800 p-3 rounded border border-gray-600 text-sm cursor-pointer hover:bg-gray-700 transition-colors flex-shrink-0 w-64"
+                                    onClick={() => handleViewSingleTransaction(transaction)}
+                                  >
+                                    <div className="flex justify-between items-start mb-1">
+                                      <span className="text-gray-400 truncate">
+                                        Mã GD: {transaction.transactionCode}
+                                      </span>
+                                      <span className="text-green-400 font-semibold ml-2 whitespace-nowrap">
+                                        {formatPrice(transaction.amount)}
+                                      </span>
                                     </div>
-                                  ))}
-                                </div>
+                                    <div className="text-xs text-gray-500">
+                                      {formatDateTime(transaction.createdAt)}
+                                    </div>
+                                    <div className="text-xs text-purple-400 mt-1">
+                                      Click để xem chi tiết
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
                             </div>
-                          )}
+                          </div>
+                        )}
 
                         {/* Check-ins Section */}
-                        {ticket.userCheckIns &&
-                          ticket.userCheckIns.length > 0 && (
-                            <div className="bg-gray-700/50 rounded-lg p-4 w-full">
-                              <h3 className="text-lg font-semibold text-white flex items-center gap-2 mb-3">
-                                <CheckCircle2 className="h-5 w-5 text-green-400" />
-                                Điểm danh ({ticket.userCheckIns.length})
-                              </h3>
-                              <div
-                                className="w-full overflow-x-auto -mx-4 px-4"
-                                style={{
-                                  scrollbarWidth: "thin",
-                                  scrollbarColor:
-                                    "rgba(148,163,184,0.4) transparent",
-                                }}
-                              >
-                                <div className="flex gap-3 pb-2">
-                                  {ticket.userCheckIns.map((checkIn) => (
-                                    <div
-                                      key={checkIn.userCheckinId}
-                                      className="bg-gray-800 p-3 rounded border border-gray-600 text-sm cursor-pointer hover:bg-gray-700 transition-colors flex-shrink-0 w-72"
-                                      onClick={() =>
-                                        handleViewSingleCheckIn(checkIn)
-                                      }
-                                    >
-                                      <div className="flex justify-between items-start mb-1">
-                                        <span className="text-white font-medium truncate flex-1 max-w-[180px]">
-                                          {checkIn.conferenceSessionDetail
-                                            ?.title || "Phiên không xác định"}
-                                        </span>
-                                        <Badge className="bg-green-800 text-green-200 border-green-600 text-xs ml-2 flex-shrink-0 whitespace-nowrap">
-                                          {checkIn.checkinStatusName}
-                                        </Badge>
-                                      </div>
-                                      <div className="text-xs text-gray-400">
-                                        Ngày check-in:{" "}
-                                        {formatDateTime(checkIn.checkInTime)}
-                                      </div>
-                                      <div className="text-xs text-green-400 mt-1">
-                                        Click để xem chi tiết
-                                      </div>
+                        {ticket.userCheckIns && ticket.userCheckIns.length > 0 && (
+                          <div className="bg-gray-700/50 rounded-lg p-4 w-full">
+                            <h3 className="text-lg font-semibold text-white flex items-center gap-2 mb-3">
+                              <CheckCircle2 className="h-5 w-5 text-green-400" />
+                              Điểm danh ({ticket.userCheckIns.length})
+                            </h3>
+                            <div
+                              className="w-full overflow-x-auto -mx-4 px-4"
+                              style={{
+                                scrollbarWidth: "thin",
+                                scrollbarColor: "rgba(148,163,184,0.4) transparent",
+                              }}
+                            >
+                              <div className="flex gap-3 pb-2">
+                                {ticket.userCheckIns.map((checkIn) => (
+                                  <div
+                                    key={checkIn.userCheckinId}
+                                    className="bg-gray-800 p-3 rounded border border-gray-600 text-sm cursor-pointer hover:bg-gray-700 transition-colors flex-shrink-0 w-72"
+                                    onClick={() => handleViewSingleCheckIn(checkIn)}
+                                  >
+                                    <div className="flex justify-between items-start mb-1">
+                                      <span className="text-white font-medium truncate flex-1 max-w-[180px]">
+                                        {checkIn.conferenceSessionDetail?.title || "Phiên không xác định"}
+                                      </span>
+                                      <Badge className="bg-green-800 text-green-200 border-green-600 text-xs ml-2 flex-shrink-0 whitespace-nowrap">
+                                        {checkIn.checkinStatusName}
+                                      </Badge>
                                     </div>
-                                  ))}
-                                </div>
+                                    <div className="text-xs text-gray-400">
+                                      Ngày check-in: {formatDateTime(checkIn.checkInTime)}
+                                    </div>
+                                    <div className="text-xs text-green-400 mt-1">
+                                      Click để xem chi tiết
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
                             </div>
-                          )}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -905,6 +855,7 @@ export default function TicketConferences() {
             </Card>
           ))}
         </div>
+
 
         {/* Empty State */}
         {tickets.length === 0 && (

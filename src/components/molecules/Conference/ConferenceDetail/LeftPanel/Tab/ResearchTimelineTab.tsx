@@ -23,12 +23,13 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ConferencePriceResponse, Phase, RefundInPhase, RefundPolicyResponse, ResearchConferencePhaseResponse, ResearchDetail, ResearchPhase, Ticket } from "@/types/conference.type";
 import { ResearchPriceForm } from "@/components/molecules/Conference/ConferenceStep/forms/research/ResearchPriceForm";
 import { formatCurrency } from "@/helper/format";
 import { useAddPricePhaseForWaitlistMutation } from "@/redux/services/conferenceStep.service";
+import { parseApiError } from "@/helper/api";
 
 interface ResearchConferencePhase {
   researchConferencePhaseId: string;
@@ -83,6 +84,11 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
 
   const [addPricePhase, { isLoading: isSubmitting, error: submitError }] = useAddPricePhaseForWaitlistMutation();
   const [activateWaitlist, { isLoading: isActivating, error: activeError }] = useActivateWaitlistMutation();
+
+  useEffect(() => {
+    if (submitError) toast.error(parseApiError<string>(submitError)?.data?.message)
+    if (activeError) toast.error(parseApiError<string>(activeError)?.data?.message)
+  }, [submitError, activeError]);
 
   const calculateEndDate = (startDate: string, duration: number): string => {
     if (!startDate || duration <= 0) return "";
@@ -443,7 +449,7 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
         if (phases && phases.length > 0) {
           await addPricePhase({
             conferencePriceId: price.conferencePriceId,
-            data: { pricePhases: phases }
+            data: { phases: phases }
           }).unwrap();
         }
       }
@@ -458,7 +464,7 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
       setSelectedPrices({});
       setValidationErrors({});
     } catch (error) {
-      toast.error("Có lỗi xảy ra khi kích hoạt phase");
+      // toast.error("Có lỗi xảy ra khi kích hoạt phase");
       console.error(error);
     }
   };
@@ -514,78 +520,78 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
   }
 
   // Định nghĩa các mốc với icon riêng
-const getTimelineSteps = (phase: ResearchConferencePhaseResponse) => [
-  {
-    title: "Đăng ký tham dự",
-    start: phase.registrationStartDate,
-    end: phase.registrationEndDate,
-    icon: UserCheck,
-    color: "text-blue-600",
-  },
-  {
-    title: "Quyết định Abstract",
-    start: phase.abstractDecideStatusStart,
-    end: phase.abstractDecideStatusEnd,
-    icon: MessageCircle,
-    color: "text-amber-600",
-  },
-  {
-    title: "Gửi Full Paper",
-    start: phase.fullPaperStartDate,
-    end: phase.fullPaperEndDate,
-    icon: FileText,
-    color: "text-emerald-600",
-  },
-  {
-    title: "Phản biện",
-    start: phase.reviewStartDate,
-    end: phase.reviewEndDate,
-    icon: MessageCircle,
-    color: "text-violet-600",
-  },
-  {
-    title: "Quyết định Full Paper",
-    start: phase.fullPaperDecideStatusStart,
-    end: phase.fullPaperDecideStatusEnd,
-    icon: PackageCheck,
-    color: "text-indigo-600",
-  },
-  {
-    title: "Chỉnh sửa & gửi lại",
-    start: phase.reviseStartDate,
-    end: phase.reviseEndDate,
-    icon: Edit3,
-    color: "text-orange-600",
-  },
-  {
-    title: "Phản biện bản chỉnh sửa",
-    start: phase.revisionPaperReviewStart,
-    end: phase.revisionPaperReviewEnd,
-    icon: MessageCircle,
-    color: "text-rose-600",
-  },
-  {
-    title: "Quyết định Paper Revision",
-    start: phase.revisionPaperDecideStatusStart,
-    end: phase.revisionPaperDecideStatusEnd,
-    icon: PackageCheck,
-    color: "text-fuchsia-600",
-  },
-  {
-    title: "Gửi bản Camera Ready",
-    start: phase.cameraReadyStartDate,
-    end: phase.cameraReadyEndDate,
-    icon: FileText,
-    color: "text-green-600",
-  },
-  {
-    title: "Quyết định Camera Ready",
-    start: phase.cameraReadyDecideStatusStart,
-    end: phase.cameraReadyDecideStatusEnd,
-    icon: PackageCheck,
-    color: "text-teal-600",
-  },
-];
+  const getTimelineSteps = (phase: ResearchConferencePhaseResponse) => [
+    {
+      title: "Đăng ký tham dự",
+      start: phase.registrationStartDate,
+      end: phase.registrationEndDate,
+      icon: UserCheck,
+      color: "text-blue-600",
+    },
+    {
+      title: "Quyết định Abstract",
+      start: phase.abstractDecideStatusStart,
+      end: phase.abstractDecideStatusEnd,
+      icon: MessageCircle,
+      color: "text-amber-600",
+    },
+    {
+      title: "Gửi Full Paper",
+      start: phase.fullPaperStartDate,
+      end: phase.fullPaperEndDate,
+      icon: FileText,
+      color: "text-emerald-600",
+    },
+    {
+      title: "Phản biện",
+      start: phase.reviewStartDate,
+      end: phase.reviewEndDate,
+      icon: MessageCircle,
+      color: "text-violet-600",
+    },
+    {
+      title: "Quyết định Full Paper",
+      start: phase.fullPaperDecideStatusStart,
+      end: phase.fullPaperDecideStatusEnd,
+      icon: PackageCheck,
+      color: "text-indigo-600",
+    },
+    {
+      title: "Chỉnh sửa & gửi lại",
+      start: phase.reviseStartDate,
+      end: phase.reviseEndDate,
+      icon: Edit3,
+      color: "text-orange-600",
+    },
+    {
+      title: "Phản biện bản chỉnh sửa",
+      start: phase.revisionPaperReviewStart,
+      end: phase.revisionPaperReviewEnd,
+      icon: MessageCircle,
+      color: "text-rose-600",
+    },
+    {
+      title: "Quyết định Paper Revision",
+      start: phase.revisionPaperDecideStatusStart,
+      end: phase.revisionPaperDecideStatusEnd,
+      icon: PackageCheck,
+      color: "text-fuchsia-600",
+    },
+    {
+      title: "Gửi bản Camera Ready",
+      start: phase.cameraReadyStartDate,
+      end: phase.cameraReadyEndDate,
+      icon: FileText,
+      color: "text-green-600",
+    },
+    {
+      title: "Quyết định Camera Ready",
+      start: phase.cameraReadyDecideStatusStart,
+      end: phase.cameraReadyDecideStatusEnd,
+      icon: PackageCheck,
+      color: "text-teal-600",
+    },
+  ];
 
   return (
     <div className="space-y-6">

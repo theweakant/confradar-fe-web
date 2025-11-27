@@ -7,6 +7,7 @@ import { validatePhaseTime } from "@/helper/timeValidation";
 import SubmittedPaperCard from "./SubmittedPaperCard";
 import { toast } from "sonner";
 import SubmissionFormDialog from "./SubmissionFormDialog";
+import { parseApiError } from "@/helper/api";
 
 interface CameraReadyPhaseProps {
   paperId?: string;
@@ -107,30 +108,9 @@ const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({ paperId, cameraRead
   };
 
   useEffect(() => {
-    if (submitCameraReadyError) {
-      let errorMessage = "Có lỗi xảy ra khi nộp CameraReady";
-
-      if (submitCameraReadyError?.data?.message) {
-        errorMessage = submitCameraReadyError.data.message;
-      }
-
-
-      toast.error(errorMessage);
-    }
-  }, [submitCameraReadyError]);
-
-  useEffect(() => {
-    if (updateCameraReadyError) {
-      let errorMessage = "Có lỗi xảy ra khi nộp CameraReady";
-
-      if (updateCameraReadyError?.data?.message) {
-        errorMessage = updateCameraReadyError.data.message;
-      }
-
-
-      toast.error(errorMessage);
-    }
-  }, [updateCameraReadyError]);
+    if (submitCameraReadyError) toast.error(parseApiError<string>(submitCameraReadyError)?.data?.message)
+    if (updateCameraReadyError) toast.error(parseApiError<string>(updateCameraReadyError)?.data?.message)
+  }, [submitCameraReadyError, updateCameraReadyError]);
 
   return (
     <div className="space-y-6">

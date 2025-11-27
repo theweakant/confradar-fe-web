@@ -47,7 +47,12 @@ export interface CollaboratorRequest {
 
 }
 
-
+export interface CreateLocalReviewerRequest {
+  email: string;
+  // password: string;
+  // confirmPassword: string;
+  fullName: string;
+}
 
 
 //+++++

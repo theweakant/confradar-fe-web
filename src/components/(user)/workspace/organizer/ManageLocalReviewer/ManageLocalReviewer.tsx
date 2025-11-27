@@ -23,12 +23,14 @@ import {
     useGetProfileByIdQuery,
     useSuspendAccountMutation,
     useActivateAccountMutation,
-    useCreateCollaboratorMutation
+    useCreateCollaboratorMutation,
+    useCreateLocalReviewerAccountMutation
 } from "@/redux/services/user.service";
 import {
     ListUserDetailForAdminAndOrganizerResponse,
     UserDetailForAdminAndOrganizerResponse,
-    CollaboratorRequest
+    CollaboratorRequest,
+    CreateLocalReviewerRequest
 } from "@/types/user.type";
 import { toast } from "sonner";
 import { ApiError } from "@/types/api.type";
@@ -52,7 +54,7 @@ export default function ManageLocalReviewer() {
 
     const [suspendAccount, { isLoading: isSuspending }] = useSuspendAccountMutation();
     const [activateAccount, { isLoading: isActivating }] = useActivateAccountMutation();
-    const [createLocalReviewer, { isLoading: isCreating, error: createRawError }] = useCreateCollaboratorMutation();
+    const [createLocalReviewer, { isLoading: isCreating, error: createRawError }] = useCreateLocalReviewerAccountMutation();
 
     const createError = parseApiError<string>(createRawError);
 
@@ -101,7 +103,7 @@ export default function ManageLocalReviewer() {
         setIsDetailModalOpen(true);
     };
 
-    const handleSave = async (data: CollaboratorRequest) => {
+    const handleSave = async (data: CreateLocalReviewerRequest) => {
         try {
             const reviewerData = { ...data, roleName: 'Local Reviewer' };
             const response = await createLocalReviewer(reviewerData).unwrap();

@@ -957,7 +957,7 @@ export const conferenceStepApi = createApi({
 
     addPricePhaseForWaitlist: builder.mutation<
       ApiResponse<unknown>,
-      { conferencePriceId: string; data: { pricePhases: Phase[] } }
+      { conferencePriceId: string; data: { phases: Phase[] } }
     >({
       query: ({ conferencePriceId, data }) => ({
         url: `${endpoint.CONFERENCE_STEP.ADD_PRICE_PHASE_WAITLIST}?conferencePriceId=${conferencePriceId}`,

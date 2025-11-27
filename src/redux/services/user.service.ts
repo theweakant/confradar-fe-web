@@ -12,6 +12,7 @@ import {
   ListUserDetailForAdminAndOrganizerResponse,
   CollaboratorAccountResponse,
   Organization,
+  CreateLocalReviewerRequest,
 
 } from "@/types/user.type";
 import { Notification } from "@/types/notification.type";
@@ -146,6 +147,17 @@ export const userApi = createApi({
       }),
       providesTags: ["ORGANIZATION"],
     }),
+
+    createLocalReviewerAccount: builder.mutation<
+      ApiResponse<null>,
+      CreateLocalReviewerRequest
+    >({
+      query: (data) => ({
+        url: endpoint.AUTH.CREATE_LOCAL_REVIEWER_ACCOUNT,
+        method: "POST",
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -169,4 +181,6 @@ export const {
 
   useListOrganizationsQuery,
   useLazyListOrganizationsQuery,
+
+  useCreateLocalReviewerAccountMutation,
 } = userApi;
