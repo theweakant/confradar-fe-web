@@ -24,7 +24,7 @@ export function CollaboratorDetail({ collaborator, onClose }: CollaboratorDetail
     //     const labels: Record<string, string> = {
     //         customer: "Khách hàng",
     //         conferenceorganizer: "Người tổ chức hội nghị",
-    //         collaborator: "Cộng tác viên",
+    //         collaborator: "Đối tác",
     //         localreviewer: "Phản biện nội bộ",
     //         externalreviewer: "Phản biện bên ngoài",
     //         admin: "Quản trị viên"

@@ -6,6 +6,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ManageCollaborator from "@/components/(user)/workspace/organizer/ManageCollaborator/ManageCollaborator";
+import ManageCollaboratorContract from "@/components/(user)/workspace/organizer/ManageCollaborator/ManageCollaboratorContract";
 // import ManageCollaboratorContract from "./ManageCollaboratorContract";
 
 export default function ManageCollaboratorPage() {
@@ -14,7 +15,7 @@ export default function ManageCollaboratorPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Quản lý Cộng tác viên</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Quản lý Đối tác</h1>
           <p className="text-gray-600 mt-2">
             Quản lý tài khoản và hợp đồng của tất cả đối tác trong hệ thống
           </p>
@@ -42,7 +43,6 @@ export default function ManageCollaboratorPage() {
             </TabsTrigger>
           </TabsList>
 
-          {/* TAB 1 --- Quản lý tài khoản */}
           <TabsContent
             value="account"
             className="mt-4 p-4 bg-white rounded-xl shadow-sm border border-gray-200"
@@ -50,13 +50,11 @@ export default function ManageCollaboratorPage() {
             <ManageCollaborator />
           </TabsContent>
 
-          {/* TAB 2 --- Quản lý hợp đồng (Sẽ code sau) */}
           <TabsContent
             value="contract"
             className="mt-4 p-6 bg-white rounded-xl shadow-sm border border-gray-200 text-center text-gray-600"
           >
-            <p className="text-lg font-medium">Tính năng quản lý hợp đồng sẽ được phát triển sau.</p>
-            <p className="text-sm mt-2">Bạn có thể thêm bảng & API hợp đồng ở đây.</p>
+            <ManageCollaboratorContract />
           </TabsContent>
         </Tabs>
       </div>
