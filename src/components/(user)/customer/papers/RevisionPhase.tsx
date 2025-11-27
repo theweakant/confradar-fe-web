@@ -373,30 +373,10 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
   }, [allRounds.length]);
 
   useEffect(() => {
-    if (submitRevisionError) {
-      let errorMessage = "Có lỗi xảy ra khi nộp RevisionPaper";
+    if (submitRevisionError) toast.error(parseApiError<string>(submitRevisionError)?.data?.message)
+    if (updateRevisionError) toast.error(parseApiError<string>(updateRevisionError)?.data?.message)
+  }, [submitRevisionError, updateRevisionError]);
 
-      if (submitRevisionError?.data?.message) {
-        errorMessage = submitRevisionError.data.message;
-      }
-
-
-      toast.error(errorMessage);
-    }
-  }, [submitRevisionError]);
-
-  useEffect(() => {
-    if (updateRevisionError) {
-      let errorMessage = "Có lỗi xảy ra khi nộp RevisionPaper";
-
-      if (updateRevisionError?.data?.message) {
-        errorMessage = updateRevisionError.data.message;
-      }
-
-
-      toast.error(errorMessage);
-    }
-  }, [updateRevisionError]);
 
   return (
     <div>

@@ -22,8 +22,8 @@ export const ExternalReviewerForm: React.FC<ExternalReviewerFormProps> = ({
   const [formData, setFormData] = useState<Omit<CreateNewReviewerContractRequest, 'contractFile'> & { contractFile: File | null }>({
     email: '',
     fullName: '',
-    password: '',
-    confirmPassword: '',
+    // password: '',
+    // confirmPassword: '',
     wage: 0,
     conferenceId: '',
     signDay: '',
@@ -52,17 +52,17 @@ export const ExternalReviewerForm: React.FC<ExternalReviewerFormProps> = ({
       newErrors.email = 'Email không hợp lệ';
     }
 
-    if (!formData.password) {
-      newErrors.password = 'Vui lòng nhập mật khẩu';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
-    }
+    // if (!formData.password) {
+    //   newErrors.password = 'Vui lòng nhập mật khẩu';
+    // } else if (formData.password.length < 6) {
+    //   newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
+    // }
 
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Vui lòng xác nhận mật khẩu';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Mật khẩu xác nhận không khớp';
-    }
+    // if (!formData.confirmPassword) {
+    //   newErrors.confirmPassword = 'Vui lòng xác nhận mật khẩu';
+    // } else if (formData.password !== formData.confirmPassword) {
+    //   newErrors.confirmPassword = 'Mật khẩu xác nhận không khớp';
+    // }
 
     if (!formData.conferenceId) {
       newErrors.conferenceId = 'Vui lòng chọn hội nghị';
@@ -90,8 +90,8 @@ export const ExternalReviewerForm: React.FC<ExternalReviewerFormProps> = ({
       const submitData: CreateNewReviewerContractRequest = {
         email: formData.email,
         fullName: formData.fullName,
-        password: formData.password,
-        confirmPassword: formData.confirmPassword,
+        // password: formData.password,
+        // confirmPassword: formData.confirmPassword,
         wage: formData.wage,
         conferenceId: formData.conferenceId,
         signDay: formData.signDay,
@@ -162,7 +162,7 @@ export const ExternalReviewerForm: React.FC<ExternalReviewerFormProps> = ({
           </div>
 
           {/* Password */}
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Mật khẩu <span className="text-red-500">*</span>
             </label>
@@ -179,10 +179,10 @@ export const ExternalReviewerForm: React.FC<ExternalReviewerFormProps> = ({
             {errors.password && (
               <p className="mt-1 text-sm text-red-600">{errors.password}</p>
             )}
-          </div>
+          </div> */}
 
           {/* Confirm Password */}
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Xác nhận mật khẩu <span className="text-red-500">*</span>
             </label>
@@ -199,7 +199,7 @@ export const ExternalReviewerForm: React.FC<ExternalReviewerFormProps> = ({
             {errors.confirmPassword && (
               <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
             )}
-          </div>
+          </div> */}
         </div>
       </div>
 

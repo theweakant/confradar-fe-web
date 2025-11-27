@@ -1,16 +1,16 @@
 export interface CollaboratorContract {
-  collaboratorContractId: string;
-  isSponsorStep: boolean;
-  isMediaStep: boolean;
-  isPolicyStep: boolean;
-  isSessionStep: boolean;
-  isPriceStep: boolean;
-  isTicketSelling: boolean;
-  isClosed: boolean;
-  signDay: string;
-  finalizePaymentDate: string;
-  commission: number;
-  contractUrl: string | null;
+    collaboratorContractId: string;
+    isSponsorStep: boolean;
+    isMediaStep: boolean;
+    isPolicyStep: boolean;
+    isSessionStep: boolean;
+    isPriceStep: boolean;
+    isTicketSelling: boolean;
+    isClosed: boolean;
+    signDay: string;
+    finalizePaymentDate: string;
+    commission: number;
+    contractUrl: string | null;
 }
 
 export interface CreateReviewerContractRequest {
@@ -36,8 +36,8 @@ export interface GetUsersForReviewerContractResponse {
 export interface CreateNewReviewerContractRequest {
     email: string;
     fullName: string;
-    password: string;
-    confirmPassword: string;
+    // password: string;
+    // confirmPassword: string;
     wage: number;
     contractFile: File;
     conferenceId: string;

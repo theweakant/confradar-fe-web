@@ -66,8 +66,8 @@ export const contractApi = createApi({
 
                 formData.append("email", data.email);
                 formData.append("fullName", data.fullName);
-                formData.append("password", data.password);
-                formData.append("confirmPassword", data.confirmPassword);
+                // formData.append("password", data.password);
+                // formData.append("confirmPassword", data.confirmPassword);
                 formData.append("wage", data.wage.toString());
                 formData.append("conferenceId", data.conferenceId);
                 formData.append("signDay", data.signDay);

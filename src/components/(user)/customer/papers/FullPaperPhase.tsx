@@ -7,6 +7,7 @@ import { validatePhaseTime } from "@/helper/timeValidation";
 import SubmittedPaperCard from "./SubmittedPaperCard";
 import { toast } from "sonner";
 import SubmissionFormDialog from "./SubmissionFormDialog";
+import { parseApiError } from "@/helper/api";
 
 interface FullPaperPhaseProps {
   paperId?: string;
@@ -101,30 +102,10 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper, res
   };
 
   useEffect(() => {
-    if (submitFullPaperError) {
-      let errorMessage = "Có lỗi xảy ra khi nộp FullPaper";
+    if (submitFullPaperError) toast.error(parseApiError<string>(submitFullPaperError)?.data?.message)
+    if (updateFullPaperError) toast.error(parseApiError<string>(updateFullPaperError)?.data?.message)
+  }, [submitFullPaperError, updateFullPaperError]);
 
-      if (submitFullPaperError?.data?.message) {
-        errorMessage = submitFullPaperError.data.message;
-      }
-
-
-      toast.error(errorMessage);
-    }
-  }, [submitFullPaperError]);
-
-  useEffect(() => {
-    if (updateFullPaperError) {
-      let errorMessage = "Có lỗi xảy ra khi nộp FullPaper";
-
-      if (updateFullPaperError?.data?.message) {
-        errorMessage = updateFullPaperError.data.message;
-      }
-
-
-      toast.error(errorMessage);
-    }
-  }, [updateFullPaperError]);
 
   return (
     <div className="space-y-6">
