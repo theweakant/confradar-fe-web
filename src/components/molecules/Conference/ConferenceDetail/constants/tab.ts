@@ -1,4 +1,5 @@
 // constants/tabConfig.ts
+
 import {
   Info,
   DollarSign,
@@ -12,8 +13,12 @@ import {
   MessageCircle,
   ClipboardList,
   Activity,
+  FileSignature, // 👈 Icon cho hợp đồng
 } from "lucide-react";
 
+// Giả sử TabId được export từ file khác (như bạn đã dùng)
+// Nếu bạn muốn định nghĩa TabId trong file này, hãy bỏ comment dòng dưới
+// và xóa import { TabId } ở nơi dùng (nhưng bạn đang import từ "../constants/tab")
 export type TabId = 
   | "price"
   | "customers"
@@ -26,7 +31,9 @@ export type TabId =
   | "refund-requests"
   | "other-requests"
   | "session"
-  | "paper-assignment";
+  | "paper-assignment"
+  | "contract"; // 👈 ĐÃ THÊM
+
 type LucideIcon = React.ComponentType<React.SVGProps<SVGSVGElement>>;
 
 export interface TabConfig {
@@ -34,7 +41,7 @@ export interface TabConfig {
   label: string;
   icon: LucideIcon;
   conferenceType?: "technical" | "research" | "all";
-  roles?: string[];
+  roles?: string[]; // 👈 thêm roles
 }
 
 export interface TabGroup {
@@ -92,6 +99,14 @@ export const TAB_GROUPS: TabGroup[] = [
         icon: Calendar,
         conferenceType: "all",
       },
+      // 👇 TAB HỢP ĐỒNG - CHỈ TECH & COLLABORATOR
+      {
+        id: "contract",
+        label: "Hợp đồng",
+        icon: FileSignature,
+        conferenceType: "technical",
+        roles: ["Collaborator"],
+      },
     ],
   },
   {
@@ -111,7 +126,6 @@ export const TAB_GROUPS: TabGroup[] = [
         icon: MessageCircle,
         conferenceType: "research",
       },
-
       {
         id: "paper-assignment",
         label: "Xếp bài báo",
@@ -136,7 +150,8 @@ export const TAB_GROUPS: TabGroup[] = [
 
 export function getFilteredTabs(
   groupId: "detail" | "action",
-  conferenceType: "technical" | "research" | null
+  conferenceType: "technical" | "research" | null,
+  userRoles: string[] = []
 ): TabConfig[] {
   const group = TAB_GROUPS.find((g) => g.id === groupId);
   if (!group) return [];
@@ -144,6 +159,12 @@ export function getFilteredTabs(
   return group.tabs.filter((tab) => {
     if (!conferenceType) return true;
     if (tab.conferenceType === "all") return true;
-    return tab.conferenceType === conferenceType;
+    if (tab.conferenceType !== conferenceType) return false;
+
+    if (tab.roles && tab.roles.length > 0) {
+      return tab.roles.some((requiredRole) => userRoles.includes(requiredRole));
+    }
+
+    return true;
   });
 }

@@ -1,5 +1,6 @@
+// src/components/.../PaperAssignmentTab.tsx
 import { useState, useCallback } from "react";
-import SessionCalendar from "@/components/molecules/Calendar/SessionCalendar/SessionCalendar";
+import PaperAssignmentCalendar from "@/components/molecules/Calendar/SessionCalendar/PaperAssignmentCalendar";
 import { SessionDetailForScheduleResponse } from "@/types/conference.type";
 import { useAssignPresenterToSessionMutation } from "@/redux/services/paper.service";
 import { toast } from "sonner";
@@ -95,7 +96,7 @@ export const PaperAssignmentTab: React.FC<PaperAssignmentTabProps> = ({ conferen
 
       {/* Calendar Section */}
       <div className="flex-1 overflow-auto">
-        <SessionCalendar
+        <PaperAssignmentCalendar // 🔸 ĐÃ CẬP NHẬT
           conferenceId={conferenceId}
           onPaperSelected={setSelectedPaperId}
           onSessionSelected={handleSessionSelected}

@@ -1,4 +1,5 @@
 // components/LeftPanel/TabContent.tsx
+
 import type { CommonConference } from "@/types/conference.type";
 import type { TabId } from "../constants/tab";
 
@@ -14,17 +15,22 @@ import { ResearchTimelineTab } from "@/components/molecules/Conference/Conferenc
 import { PaperTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/Paper/index";
 import { PaperAssignmentTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/PaperAssignmentTab";
 import { CustomerTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/Customer/CustomerTab";
+import { ContractTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/ContractTab";
+
+import { TechnicalConferenceDetailResponse } from "@/types/conference.type";
 
 interface TabContentProps {
   activeSubtab: TabId;
   conference: CommonConference;
   conferenceType: "technical" | "research" | null;
+  isCollaborator: boolean; 
 }
 
 export function TabContent({
   activeSubtab,
   conference,
   conferenceType,
+  isCollaborator, 
 }: TabContentProps) {
   const renderTabContent = () => {
     switch (activeSubtab) {
@@ -35,7 +41,7 @@ export function TabContent({
         return <RefundPolicyTab conference={conference} />;
       
       case "session":
-        return <SessionTab conference={conference} conferenceId={conference.conferenceId!} conferenceType={conferenceType}  />;
+        return <SessionTab conference={conference} conferenceId={conference.conferenceId!} conferenceType={conferenceType} />;
       
       case "customers":
         return <CustomerTab conferenceId={conference.conferenceId!} conferenceType={conferenceType} />;
@@ -81,7 +87,18 @@ export function TabContent({
         return conferenceType === "research" ? (
           <PaperAssignmentTab conferenceId={conference.conferenceId!} />
         ) : null;
-      
+
+      case "contract":
+        if (
+          conferenceType === "technical" &&
+          isCollaborator &&
+          "contract" in conference &&
+          conference.contract
+        ) {
+          return <ContractTab conferenceData={conference as TechnicalConferenceDetailResponse} />;
+        }
+        return null;
+
       default:
         return (
           <div className="text-center py-12">

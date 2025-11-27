@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type {
   ConferenceBasicForm,
   Ticket,
@@ -27,7 +27,6 @@ const INITIAL_BASIC_FORM: ConferenceBasicForm = {
   ticketSaleDuration: 0,
   createdby: "",
   targetAudienceTechnicalConference: "",
-  // ❌ ĐÃ XÓA: contractURL và commission — không còn cần thiết
 };
 
 export function useConferenceForm() {
@@ -50,17 +49,23 @@ export function useConferenceForm() {
   // Step 6: Sponsors
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
 
+  // ✅ FIX: Thêm kiểm tra để tránh vòng lặp vô hạn
   // Auto-calculate end date based on start date and date range
   useEffect(() => {
     if (basicForm.startDate && basicForm.dateRange && basicForm.dateRange > 0) {
       const start = new Date(basicForm.startDate);
       const end = new Date(start);
       end.setDate(start.getDate() + basicForm.dateRange - 1);
-      const endDate = end.toISOString().split("T")[0];
-      setBasicForm((prev) => ({ ...prev, endDate }));
+      const calculatedEndDate = end.toISOString().split("T")[0];
+      
+      // ✅ CHỈ UPDATE NẾU GIÁ TRỊ MỚI KHÁC GIÁ TRỊ CŨ
+      if (basicForm.endDate !== calculatedEndDate) {
+        setBasicForm((prev) => ({ ...prev, endDate: calculatedEndDate }));
+      }
     }
-  }, [basicForm.startDate, basicForm.dateRange]);
+  }, [basicForm.startDate, basicForm.dateRange, basicForm.endDate]);
 
+  // ✅ FIX: Thêm kiểm tra để tránh vòng lặp vô hạn
   // Auto-calculate ticket sale end date
   useEffect(() => {
     if (
@@ -71,12 +76,15 @@ export function useConferenceForm() {
       const start = new Date(basicForm.ticketSaleStart);
       const end = new Date(start);
       end.setDate(start.getDate() + basicForm.ticketSaleDuration - 1);
-      const ticketSaleEnd = end.toISOString().split("T")[0];
-      setBasicForm((prev) => ({ ...prev, ticketSaleEnd }));
+      const calculatedTicketSaleEnd = end.toISOString().split("T")[0];
+      
+      if (basicForm.ticketSaleEnd !== calculatedTicketSaleEnd) {
+        setBasicForm((prev) => ({ ...prev, ticketSaleEnd: calculatedTicketSaleEnd }));
+      }
     }
-  }, [basicForm.ticketSaleStart, basicForm.ticketSaleDuration]);
+  }, [basicForm.ticketSaleStart, basicForm.ticketSaleDuration, basicForm.ticketSaleEnd]);
 
-  const resetAllForms = () => {
+  const resetAllForms = useCallback(() => {
     setBasicForm(INITIAL_BASIC_FORM);
     setTickets([]);
     setSessions([]);
@@ -84,7 +92,7 @@ export function useConferenceForm() {
     setRefundPolicies([]);
     setMediaList([]);
     setSponsors([]);
-  };
+  }, []);
 
   return {
     // Basic form

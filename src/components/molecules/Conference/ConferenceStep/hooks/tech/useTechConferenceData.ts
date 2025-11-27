@@ -3,7 +3,8 @@ import { useGetTechnicalConferenceDetailInternalQuery } from "@/redux/services/c
 import { useAppDispatch } from "@/redux/hooks/hooks";
 import { goToStep, loadExistingConference, markStepCompleted } from "@/redux/slices/conferenceStep.slice";
 import type { ConferenceBasicForm, Ticket, Session, Policy, RefundPolicy, Media, Sponsor, ConferencePriceResponse, ConferencePricePhaseResponse, ConferencePolicyResponse, RefundPolicyResponse } from "@/types/conference.type";
-import type {CollaboratorContract} from "@/types/contract.type"
+import type { CollaboratorContract } from "@/types/contract.type";
+
 interface UseConferenceDataProps {
   conferenceId: string;
   onLoad?: (data: {
@@ -37,14 +38,11 @@ export function useTechConferenceData({
     refetchOnMountOrArgChange: true, 
   });
 
-  const stableOnLoad = useCallback(onLoad || (() => { }), []);
-  const stableOnError = useCallback(onError || (() => { }), []);
-  
   const hasInitializedRef = useRef(false);
 
   useEffect(() => {
     if (isError) {
-      stableOnError(error);
+      onError?.(error);
       return;
     }
 
@@ -195,8 +193,8 @@ export function useTechConferenceData({
         hasInitializedRef.current = true;
       }
 
-      //(mỗi lần refetch sẽ update state)
-      stableOnLoad({
+      // ✅ FIX: Gọi trực tiếp với optional chaining thay vì qua stableOnLoad
+      onLoad?.({
         basicForm,
         tickets,
         sessions,
@@ -207,7 +205,15 @@ export function useTechConferenceData({
         contract,
       });
     }
-  }, [conferenceDetail, conferenceId, isError, error, dispatch, stableOnLoad, stableOnError]);
+  }, [
+    conferenceDetail, 
+    conferenceId, 
+    isError, 
+    error, 
+    dispatch, 
+    onLoad,  
+    onError  
+  ]);
 
   useEffect(() => {
     hasInitializedRef.current = false;

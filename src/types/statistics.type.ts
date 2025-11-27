@@ -6,10 +6,15 @@ export interface GroupedTicketPhase {
   actualPrice: number;
   revenue: number;
   commission: number | null;
-
-  commissionPercent:number |null;
-  amountToConfRadar:number|null
-
+  commissionPercent: number | null;
+  amountToConfRadar: number | null;
+  hasCheckin: number;
+  expireCheckin: number;
+  pending: number;
+  totalNotRefuned: number;
+  totalRefunded: number;
+  totalAmountNotRefunded: number;
+  totalAmountRefunded: number;
 }
 
 export interface GroupedTicket {
@@ -17,7 +22,6 @@ export interface GroupedTicket {
   ticketPrice: number;
   soldSlot: number;
   phases: GroupedTicketPhase[];
-
 }
 export interface TicketPhaseStatistic {
   conferencePriceId: string;
@@ -25,7 +29,14 @@ export interface TicketPhaseStatistic {
   ticketName: string;
   phaseName: string;
   applyPhasePercent: number;
+  hasCheckin: number;
+  expireCheckin: number;
+  pending: number;
+  totalNotRefuned: number;
+  totalRefunded: number;
   totalSold: number;
+  totalAmountNotRefunded: number;
+  totalAmountRefunded: number;
   totalAmount: number;
   commissionPercentage: number | null;
   amountToCollaborator: number | null;
@@ -36,8 +47,13 @@ export interface SoldTicketResponse {
   conferenceId: string;
   conferenceName: string;
   isInternalHosted: boolean;
+  commision: number;
   ticketPhaseStatistics: TicketPhaseStatistic[];
+  totalTicketRefunded: number;
+  totalNotRefundedTicket: number;
   totalTicketsSold: number;
+  totalRefundedAmount: number;
+  totalRevenueWithoutRefunded: number;
   totalRevenue: number;
 }
 

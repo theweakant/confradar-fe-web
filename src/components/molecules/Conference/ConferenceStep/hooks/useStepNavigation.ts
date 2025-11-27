@@ -37,13 +37,13 @@ export function useStepNavigation() {
       return;
     }
 
-    // CREATE mode: Cho phép next nếu step hiện tại đã completed HOẶC là step kế tiếp hợp lệ
-    if (completedSteps.includes(currentStep)) {
-      dispatch(nextStep());
+    if (!completedSteps.includes(currentStep)) {
+      dispatch(markStepCompleted(currentStep));
     }
+    
+    dispatch(nextStep());
   }, [dispatch, mode, currentStep, completedSteps]);
 
-  // ✅ FIXED: Luôn cho phép previous (không unmark step)
   const handlePrevious = useCallback(() => {
     if (currentStep > 1) {
       dispatch(prevStep());
@@ -57,7 +57,7 @@ export function useStepNavigation() {
         return;
       }
       // Trong chế độ "create", chỉ cho phép nhảy đến step đã hoàn thành hoặc step tiếp theo
-      if (step <= currentStep || completedSteps.includes(step)) {
+      if (step <= currentStep + 1 || completedSteps.includes(step)) {
         dispatch(goToStep(step));
       }
     },

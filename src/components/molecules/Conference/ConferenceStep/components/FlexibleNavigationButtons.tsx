@@ -49,91 +49,68 @@ export function FlexibleNavigationButtons({
   // ========================================
   // CREATE MODE
   // ========================================
-  if (mode === "create") {
-    return (
-      <div className="flex flex-wrap gap-3 mt-6">
-        {/* Nút Quay lại */}
-        {showPrevious && (
-          <Button
-            onClick={onPrevious}
-            variant="outline"
-            className="flex-1 min-w-[120px]"
-            disabled={isSubmitting}
-          >
-            ← Quay lại
-          </Button>
-        )}
+if (mode === "create") {
+  return (
+    <div className="flex flex-wrap gap-3 mt-6">
+      {/* Nút Quay lại */}
+      {showPrevious && (
+        <Button
+          onClick={onPrevious}
+          variant="outline"
+          className="flex-1 min-w-[120px]"
+          disabled={isSubmitting}
+        >
+          ← Quay lại
+        </Button>
+      )}
 
-        {/* ✅ Nếu step đã completed: Show "Cập nhật" + "Tiếp theo" */}
-        {currentStepCompleted ? (
-          <>
-            {/* Nút Tiếp theo (nếu không phải step cuối) */}
-            {showNext && (
-              <Button
-                onClick={onNext}
-                variant="outline"
-                className="flex-1 min-w-[120px]"
-                disabled={isSubmitting}
-              >
-                Tiếp theo →
-              </Button>
-            )}
+      {/* ✅ Luôn hiển thị nút "Tiếp theo" nếu không phải step cuối */}
+      {showNext && (
+        <Button
+          onClick={onNext}
+          variant="outline"
+          className="flex-1 min-w-[120px]"
+          disabled={isSubmitting}
+        >
+          Tiếp theo →
+        </Button>
+      )}
 
-            {/* Nút Cập nhật step hiện tại */}
-            {onUpdate && (
-              <Button
-                onClick={onUpdate}
-                disabled={isSubmitting}
-                className="flex-1 min-w-[180px] bg-blue-600 text-white hover:bg-blue-700"
-              >
-                {isSubmitting ? "Đang cập nhật..." : "Cập nhật bước này"}
-              </Button>
-            )}
-          </>
-        ) : (
-          <>
-            {/* ✅ Nếu step chưa completed: Show "Lưu & Tiếp tục" hoặc "Hoàn tất" */}
-            {!isLastStep && onSubmit && (
-              <Button
-                onClick={onSubmit}
-                disabled={isSubmitting}
-                className="flex-1 min-w-[180px] bg-blue-600 text-white hover:bg-blue-700"
-              >
-                {isSubmitting ? "Đang xử lý..." : "Lưu & Tiếp tục →"}
-              </Button>
-            )}
+      {/* Nút Lưu & Tiếp tục (hoặc Hoàn tất ở step cuối) */}
+      {onSubmit && (
+        <Button
+          onClick={onSubmit}
+          disabled={isSubmitting}
+          className={`flex-1 min-w-[180px] ${
+            isLastStep 
+              ? "bg-green-600 hover:bg-green-700" 
+              : "bg-blue-600 hover:bg-blue-700"
+          } text-white`}
+        >
+          {isSubmitting
+            ? "Đang xử lý..."
+            : isLastStep
+            ? "Hoàn tất"
+            : currentStepCompleted
+            ? "Lưu thay đổi & Tiếp tục →"
+            : "Lưu & Tiếp tục →"}
+        </Button>
+      )}
 
-            {/* Nút Hoàn tất (bước cuối) */}
-            {isLastStep && onSubmit && (
-              <Button
-                onClick={onSubmit}
-                disabled={isSubmitting}
-                className="flex-1 min-w-[180px] bg-green-600 text-white hover:bg-green-700"
-              >
-                {isSubmitting
-                  ? "Đang hoàn tất..."
-                  : isOptionalStep && isSkippable
-                  ? "Hoàn tất (Bỏ qua)"
-                  : "Hoàn tất"}
-              </Button>
-            )}
-
-            {/* Nút Bỏ qua (các bước optional chưa completed) */}
-            {isOptionalStep && isSkippable && onNext && !isLastStep && (
-              <Button
-                onClick={onNext}
-                variant="ghost"
-                className="flex-1 min-w-[120px] text-gray-500 hover:text-gray-700"
-                disabled={isSubmitting}
-              >
-                Bỏ qua
-              </Button>
-            )}
-          </>
-        )}
-      </div>
-    );
-  }
+      {/* Nút Bỏ qua (các bước optional chưa có dữ liệu) */}
+      {isOptionalStep && isSkippable && onNext && !isLastStep && !currentStepCompleted && (
+        <Button
+          onClick={onNext}
+          variant="ghost"
+          className="flex-1 min-w-[120px] text-gray-500 hover:text-gray-700"
+          disabled={isSubmitting}
+        >
+          Bỏ qua
+        </Button>
+      )}
+    </div>
+  );
+}
 
   // ========================================
   // EDIT MODE: Previous, Next, Update riêng biệt
