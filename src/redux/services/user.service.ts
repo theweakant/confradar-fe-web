@@ -13,7 +13,6 @@ import {
   CollaboratorAccountResponse,
   Organization,
   CreateLocalReviewerRequest,
-
 } from "@/types/user.type";
 import { Notification } from "@/types/notification.type";
 import { ApiResponse } from "@/types/api.type";

@@ -166,8 +166,7 @@ export function StatisticsSection({
                 Xem chi tiết
               </button>
             </DialogTrigger>
-            <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col p-0">
-              <DialogHeader className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <DialogContent className="max-w-screen-xl max-h-[90vh] overflow-y-auto flex flex-col p-0">              <DialogHeader className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
                 <DialogTitle className="text-xl font-bold text-gray-900">Báo cáo thống kê chi tiết</DialogTitle>
                 <DialogDescription className="text-sm text-gray-600 mt-1">
                   {data?.conferenceName}
@@ -202,7 +201,7 @@ export function StatisticsSection({
                     <div className="bg-white rounded-lg p-4 border border-red-200 shadow-sm">
                       <div className="flex items-center gap-2 mb-2">
                         <XCircle className="w-4 h-4 text-red-600" />
-                        <p className="text-xs text-gray-600 font-medium">Vé đã hoàn tiền </p>
+                        <p className="text-xs text-gray-600 font-medium">Đã hoàn tiền </p>
                       </div>
                       <p className="text-2xl font-bold text-red-600">{totalTicketRefunded}</p>
                     </div>
@@ -210,7 +209,7 @@ export function StatisticsSection({
                     <div className="bg-white rounded-lg p-4 border border-yellow-200 shadow-sm">
                       <div className="flex items-center gap-2 mb-2">
                         <Clock className="w-4 h-4 text-yellow-600" />
-                        <p className="text-xs text-gray-600 font-medium">Vé đang chờ xử lý</p>
+                        <p className="text-xs text-gray-600 font-medium">Đang chờ xử lý</p>
                       </div>
                       <p className="text-2xl font-bold text-yellow-600">{totalPending}</p>
                     </div>
@@ -227,10 +226,9 @@ export function StatisticsSection({
                     <div className="bg-white rounded-lg p-4 border border-green-200 shadow-sm">
                       <div className="flex items-center gap-2 mb-2">
                         <CheckCircle className="w-4 h-4 text-green-600" />
-                        <p className="text-xs text-gray-600 font-medium">Đã check-in thành công</p>
+                        <p className="text-xs text-gray-600 font-medium">Check-in thành công</p>
                       </div>
                       <p className="text-3xl font-bold text-green-600">{totalHasCheckin}</p>
-                      <p className="text-xs text-gray-500 mt-1">Khách đã tham dự sự kiện</p>
                     </div>
 
                     <div className="bg-white rounded-lg p-4 border border-blue-200 shadow-sm">
@@ -239,7 +237,6 @@ export function StatisticsSection({
                         <p className="text-xs text-gray-600 font-medium">Chưa check-in</p>
                       </div>
                       <p className="text-3xl font-bold text-blue-600">{notCheckedIn}</p>
-                      <p className="text-xs text-gray-500 mt-1">Vé hợp lệ chưa check-in</p>
                     </div>
 
                     <div className="bg-white rounded-lg p-4 border border-orange-200 shadow-sm">
@@ -248,7 +245,6 @@ export function StatisticsSection({
                         <p className="text-xs text-gray-600 font-medium">Quá hạn check-in</p>
                       </div>
                       <p className="text-3xl font-bold text-orange-600">{totalExpireCheckin}</p>
-                      <p className="text-xs text-gray-500 mt-1">Đã hết thời gian check-in</p>
                     </div>
                   </div>
                 </div>
@@ -482,21 +478,6 @@ export function StatisticsSection({
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="bg-green-50 rounded p-2 border border-green-200">
-              <p className="text-xs text-green-700 mb-1">Đã check-in</p>
-              <p className="text-base font-bold text-green-900">{totalHasCheckin}</p>
-            </div>
-            <div className="bg-blue-50 rounded p-2 border border-blue-200">
-              <p className="text-xs text-blue-700 mb-1">Chưa check-in</p>
-              <p className="text-base font-bold text-blue-900">{notCheckedIn}</p>
-            </div>
-            <div className="bg-orange-50 rounded p-2 border border-orange-200">
-              <p className="text-xs text-orange-700 mb-1">Quá hạn</p>
-              <p className="text-base font-bold text-orange-900">{totalExpireCheckin}</p>
-            </div>
-          </div>
-
           <div className="pt-3 border-t border-gray-200">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
@@ -505,12 +486,12 @@ export function StatisticsSection({
               <div className="flex-1">
                 {isCollaborator && hasCommissionData ? (
                   <>
-                    <p className="text-xs text-gray-500">Bạn thực nhận</p>
+                    <p className="text-xs text-gray-500">Nhận được</p>
                     <p className="text-base font-bold text-green-700">{formatCurrency(netRevenue)}</p>
                   </>
                 ) : (
                   <>
-                    <p className="text-xs text-gray-500">Doanh thu thực tế</p>
+                    <p className="text-xs text-gray-500">Doanh thu ròng</p>
                     <p className="text-base font-bold text-green-700">{formatCurrency(totalRevenueWithoutRefunded)}</p>
                   </>
                 )}

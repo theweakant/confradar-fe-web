@@ -13,6 +13,8 @@ export const endpoint = {
     USERS_LIST: "/Auth/list-users",
     REVIEWERS_LIST: "/Auth/list-all-reviewers",
     CREATE_COLLABORATOR: "/Auth/create-collaborator-account",
+    ORGANIZATION_LIST: "/auth/list-organization",
+    COLLABORATOR_LIST:"/auth/list-collaborator-accounts",
 
     UPDATE_PROFILE: "/Auth/update-profile",
     CHANGE_PASSWORD: "/Auth/change-password",
@@ -22,7 +24,6 @@ export const endpoint = {
 
     SUSPEND_EXTERNAL_REVIEWER: (userId: string) =>
       `/auth/suspend-external-reviewer/${userId}`,
-
     ACTIVATE_EXTERNAL_REVIEWER: (userId: string) =>
       `/auth/activate-external-reviewer/${userId}`,
 
