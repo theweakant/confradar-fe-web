@@ -15,7 +15,7 @@ import { SearchFilter } from "@/components/molecules/SearchFilter";
 import { ConferenceTable } from "@/components/molecules/Conference/ConferenceTable";
 import { Conference } from "@/types/conference.type";
 
-import { useGetTechnicalConferencesByCollaboratorQuery } from "@/redux/services/conference.service";
+import { useGetTechnicalConferencesByCollaboratorNoDraftQuery } from "@/redux/services/conference.service";
 import { useGetAllConferenceStatusesQuery } from "@/redux/services/status.service";
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
@@ -41,7 +41,7 @@ export default function ManageConference() {
 
   // RTK Query hooks
   const { data, isLoading, isFetching, error, refetch } =
-    useGetTechnicalConferencesByCollaboratorQuery({
+    useGetTechnicalConferencesByCollaboratorNoDraftQuery({
       page,
       pageSize,
       ...(filterCategory !== "all" && { conferenceCategoryId: filterCategory }),
@@ -153,14 +153,14 @@ export default function ManageConference() {
                 Quản lý Hội thảo
               </h1>
 
-              <div className="flex items-center gap-3">
+              {/* <div className="flex items-center gap-3">
                 <Link href="/workspace/collaborator/manage-conference/create-tech-conference">
                   <Button className="flex items-center gap-2 whitespace-nowrap">
                     <Plus className="w-5 h-5" />
                     Thêm hội thảo
                   </Button>
                 </Link>
-              </div>
+              </div> */}
             </div>
             <p className="text-gray-600 mt-2">
               Quản lý thông tin các hội thảo trên ConfRadar
