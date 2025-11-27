@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Link from "next/link";
 
 export default function Footer() {
   const [email, setEmail] = useState("");
@@ -83,7 +84,7 @@ export default function Footer() {
           {footerLinks.map((column) => (
             <div key={column.platform}>
               {/* Platform Header */}
-              <a
+              <Link
                 href={column.href}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -92,7 +93,7 @@ export default function Footer() {
               >
                 {column.platform}
                 <ExternalLink className="w-5 h-5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-              </a>
+              </Link>
 
               {/* Link Sections */}
               {column.sections.map((section, idx) => (
@@ -103,12 +104,12 @@ export default function Footer() {
                   <ul className="space-y-3">
                     {section.links.map((link) => (
                       <li key={link.label}>
-                        <a
+                        <Link
                           href={link.href}
                           className="text-sm text-white/80 hover:text-orange-500 transition-colors block"
                         >
                           {link.label}
-                        </a>
+                        </Link>
                       </li>
                     ))}
                   </ul>
@@ -164,19 +165,19 @@ export default function Footer() {
         <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-white/40">
           <p>© 2025 ConfRadar | Bản quyền thuộc về nhóm phát triển</p>
           <div className="flex gap-6">
-            <a
+            <Link
               href="/privacy"
               className="hover:text-orange-500 transition-colors"
             >
               Chính sách bảo mật
-            </a>
+            </Link>
             <span>|</span>
-            <a
+            <Link
               href="/terms"
               className="hover:text-orange-500 transition-colors"
             >
               Điều khoản sử dụng
-            </a>
+            </Link>
           </div>
           <p>Được phát triển bởi FA25SE045 - FPTU HCM</p>
         </div>
