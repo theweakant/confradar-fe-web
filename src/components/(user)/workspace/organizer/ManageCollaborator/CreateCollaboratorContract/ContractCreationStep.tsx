@@ -128,7 +128,13 @@ const ContractCreationStep: React.FC<ContractCreationStepProps> = ({
                             id="contractFile"
                             type="file"
                             className="h-11 cursor-pointer"
-                            onChange={(e) => onDataChange({ contractFile: e.target.files?.[0]! })}
+                            // onChange={(e) => onDataChange({ contractFile: e.target.files?.[0]! })}
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                    onDataChange({ contractFile: file });
+                                }
+                            }}
                         />
                         <p className="text-xs text-gray-500">Định dạng: PDF, DOC, DOCX (Tối đa 10MB)</p>
                     </div>

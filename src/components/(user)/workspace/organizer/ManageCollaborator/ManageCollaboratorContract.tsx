@@ -86,7 +86,7 @@ export default function ManageCollaboratorContract() {
 
   // Load contracts with current filters
   const loadContracts = () => {
-    const params: any = {
+    const params: Partial<ContractFilters> = {
       page: filters.page,
       pageSize: filters.pageSize
     };

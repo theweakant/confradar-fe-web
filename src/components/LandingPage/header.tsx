@@ -6,12 +6,18 @@ import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { useAppSelector } from "@/redux/hooks/hooks";
 import { RootState } from "@/redux/store";
+import { AuthUser } from "@/types/user.type";
+import { getRoleForRedirect, getRouteByRole } from "@/constants/roles";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const accessToken = useAppSelector(
-    (state: RootState) => state.auth.accessToken,
-  );
+  const auth = useAppSelector((state: RootState) => state.auth);
+  const user = auth?.user as AuthUser | null;
+  const accessToken = auth?.accessToken;
+
+  const profileRoute = user?.role
+    ? getRouteByRole(getRoleForRedirect(user.role))
+    : "/auth/login";
 
   return (
     <header className="bg-black sticky top-0 z-50 w-full">
@@ -58,7 +64,7 @@ export default function Header() {
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center">
             {accessToken ? (
-              <Link href="/customer">
+              <Link href={profileRoute}>
                 <Button
                   variant="outline"
                   className="border-white text-white hover:bg-white hover:text-black uppercase tracking-wide bg-transparent"
