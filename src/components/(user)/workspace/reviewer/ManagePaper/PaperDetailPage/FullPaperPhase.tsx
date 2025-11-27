@@ -61,7 +61,7 @@ export default function FullPaperPhase({
 
     useEffect(() => {
         if (submitReviewError) toast.error(parseApiError<string>(submitReviewError)?.data?.message)
-    }, [submitReviewError])
+    }, [submitReviewError]);
 
 
     useEffect(() => {
