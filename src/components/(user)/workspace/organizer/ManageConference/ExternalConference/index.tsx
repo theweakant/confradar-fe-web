@@ -31,8 +31,8 @@ import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllConferenceStatusesQuery } from "@/redux/services/status.service";
 import {
-  useGetOrganizationListQuery,
-  useGetCollaboratorListQuery,
+  useLazyGetCollaboratorAccountsQuery,
+  useLazyListOrganizationsQuery,
 } from "@/redux/services/user.service";
 import { useAuth } from "@/redux/hooks/useAuth";
 
@@ -81,16 +81,9 @@ export default function ExternalConference() {
   const { data: citiesData, isLoading: citiesLoading } = useGetAllCitiesQuery();
   const { data: statusesData, isLoading: statusesLoading } =
     useGetAllConferenceStatusesQuery();
-  const {
-    data: organizationData,
-    isLoading: orgLoading,
-    isError: orgError,
-  } = useGetOrganizationListQuery();
-  const {
-    data: collaboratorData,
-    isLoading: collabLoading,
-    isError: collabError,
-  } = useGetCollaboratorListQuery();
+  const [fetchOrganizations, { data: organizationData, isLoading: orgLoading }] = useLazyListOrganizationsQuery();
+  const [fetchCollaborators, { data: collaboratorData, isLoading: collabLoading }] = useLazyGetCollaboratorAccountsQuery();
+
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -166,14 +159,13 @@ export default function ExternalConference() {
 
   const organizationOptions = useMemo(() => {
     const allOption = { value: "all", label: "Tất cả tổ chức" };
-    const apiOrgs = organizationData?.data?.map((org) => ({
-      value: org.organizationName,
-      label: org.organizationName,
-    })) || [];
+    const apiOrgs = (organizationData?.data || []).map((org, index) => ({
+      value: org.organizationName?.trim() || `org-${index}`,
+      label: org.organizationName || "Tên tổ chức không xác định",
+    }));
     return [allOption, ...apiOrgs];
   }, [organizationData]);
 
-  // Count active filters
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (filterCategory !== "all") count++;
@@ -185,6 +177,14 @@ export default function ExternalConference() {
   }, [filterCategory, filterStatus, filterCity, filterCollaborator, filterOrganization]);
 
   const handleOpenFilterModal = () => {
+    if (!collaboratorData) {
+      fetchCollaborators(); 
+    }
+    if (!organizationData) {
+      fetchOrganizations(); 
+    }
+
+    // Đặt lại temp filter
     setTempFilterCategory(filterCategory);
     setTempFilterStatus(filterStatus);
     setTempFilterCity(filterCity);
