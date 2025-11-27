@@ -81,7 +81,7 @@
 //   const roleOptions = [
 //     { value: "all", label: "Tất cả danh mục" },
 //     { value: "Customer", label: "Khách hàng" },
-//     { value: "Collaborator", label: "Cộng tác viên" },
+//     { value: "Collaborator", label: "Đối tác" },
 //     { value: "Local Reviewer", label: "Người đánh giá địa phương" },
 //   ];
 
@@ -237,7 +237,7 @@
 //           <div className="bg-white rounded-xl shadow-sm p-6">
 //             <div className="flex items-center justify-between">
 //               <div>
-//                 <p className="text-sm text-gray-600 mb-1">Cộng tác viên</p>
+//                 <p className="text-sm text-gray-600 mb-1">Đối tác</p>
 //                 <p className="text-3xl font-bold text-purple-600">
 //                   {countByRole("Collaborator")}
 //                 </p>

@@ -10,9 +10,8 @@ import {
   ProfileUpdateRequest,
   ChangePasswordRequest,
   ListUserDetailForAdminAndOrganizerResponse,
-  OrganizationListResponse,
-  CollaboratorListResponse,
-  
+  CollaboratorAccountResponse,
+  Organization,
 } from "@/types/user.type";
 import { Notification } from "@/types/notification.type";
 import { ApiResponse } from "@/types/api.type";
@@ -20,7 +19,7 @@ import { ApiResponse } from "@/types/api.type";
 export const userApi = createApi({
   reducerPath: "userApi",
   baseQuery: apiClient,
-  tagTypes: ["Notifications", "User"],
+  tagTypes: ["Notifications", "User", "ORGANIZATION"],
   endpoints: (builder) => ({
     getProfileById: builder.query<ApiResponse<UserProfileResponse>, string>({
       query: (userId) => ({
@@ -122,23 +121,29 @@ export const userApi = createApi({
         url: endpoint.AUTH.GET_NOTIFICATION,
         method: "GET",
       }),
-      providesTags: ["Notifications"], 
+      providesTags: ["Notifications"],
     }),
 
-    getOrganizationList: builder.query<ApiResponse<OrganizationListResponse>, void>({
+    getCollaboratorAccounts: builder.query<
+      ApiResponse<CollaboratorAccountResponse[]>,
+      void
+    >({
       query: () => ({
-        url: endpoint.AUTH.ORGANIZATION_LIST,
-        method: "GET",
-      }),
-      providesTags: ["User"], 
-    }),
-
-    getCollaboratorList: builder.query<ApiResponse<CollaboratorListResponse>, void>({
-      query: () => ({
-        url: endpoint.AUTH.COLLABORATOR_LIST,
+        url: endpoint.AUTH.LIST_COLLABORATOR_ACCOUNTS,
         method: "GET",
       }),
       providesTags: ["User"],
+    }),
+
+    listOrganizations: builder.query<
+      ApiResponse<Organization[]>,
+      void
+    >({
+      query: () => ({
+        url: endpoint.AUTH.LIST_ORGANIZATION,
+        method: "GET",
+      }),
+      providesTags: ["ORGANIZATION"],
     }),
   }),
 });
@@ -158,6 +163,9 @@ export const {
   useActivateExternalReviewerMutation,
   useGetOwnNotificationsQuery,
 
-  useGetOrganizationListQuery,
-  useGetCollaboratorListQuery,
+  useGetCollaboratorAccountsQuery,
+  useLazyGetCollaboratorAccountsQuery,
+
+  useListOrganizationsQuery,
+  useLazyListOrganizationsQuery,
 } = userApi;

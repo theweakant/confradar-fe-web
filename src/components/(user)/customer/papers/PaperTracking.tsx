@@ -12,6 +12,8 @@ import { usePaperCustomer } from "@/redux/hooks/usePaper";
 import type { PaperPhase, PaperDetailResponse } from "@/types/paper.type";
 import { steps } from "@/helper/paper";
 import PaperStepIndicator from "@/components/molecules/PaperStepIndicator";
+import { Calendar } from "lucide-react";
+import TimelineDialog from "@/components/molecules/TimelineDialog";
 
 const PaperTracking = () => {
   const [currentStage, setCurrentStage] = useState<number>(1);
@@ -23,6 +25,7 @@ const PaperTracking = () => {
   const [isLoadingPaperDetail, setIsLoadingPaperDetail] =
     useState<boolean>(false);
   const [paperDetailError, setPaperDetailError] = useState<string | null>(null);
+  const [isTimelineOpen, setIsTimelineOpen] = useState(false);
 
   const params = useParams();
   const paperId = params?.id as string;
@@ -186,6 +189,16 @@ const PaperTracking = () => {
                   {paperDetail.currentPhase.phaseName ||
                     paperDetail.currentPhase.paperPhaseId}
                 </p>
+              )}
+
+              {paperDetail?.researchPhase && (
+                <button
+                  onClick={() => setIsTimelineOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  <Calendar className="w-4 h-4" />
+                  Xem lịch trình đầy đủ
+                </button>
               )}
             </div>
 
@@ -521,6 +534,15 @@ const PaperTracking = () => {
           </div>
         </main>
       </div>
+
+      <TimelineDialog
+        isOpen={isTimelineOpen}
+        onClose={() => setIsTimelineOpen(false)}
+        phaseData={paperDetail?.researchPhase}
+        revisionDeadlines={paperDetail?.revisionDeadline}
+        variant="submitted"
+        theme="dark"
+      />
     </div>
   );
 };

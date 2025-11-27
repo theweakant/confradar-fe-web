@@ -92,14 +92,47 @@ const ReusableDocViewer = memo<ReusableDocViewerProps>(({
     // Render DocViewer when URL is valid
     if (urlStatus === 'valid' || !checkUrlBeforeRender) {
         return (
-            <div className={className} style={{ minHeight, ...style }}>
-                <DocViewer
-                    documents={documents}
-                    pluginRenderers={DocViewerRenderers}
-                    config={config}
-                    style={{ width: "100%", minHeight, borderRadius: 8 }}
-                />
-            </div>
+            <iframe
+                src={fileUrl}
+                className={className}
+                style={{
+                    width: '100%',
+                    minHeight,
+                    height: '100%',
+                    border: 'none',
+                    borderRadius: 8,
+                    ...style
+                }}
+            />
+            // <div className={className}
+            //     style={{ minHeight, ...style }}
+            // // style={{
+            // //     minHeight: '500px',
+            // //     maxHeight: '70vh',
+            // //     overflow: 'auto',
+            // //     ...style
+            // // }}
+            // >
+            //     <DocViewer
+            //         documents={documents}
+            //         pluginRenderers={DocViewerRenderers}
+            //         config={config}
+            //         style={{ width: "100%", minHeight, borderRadius: 8 }}
+            //     />
+            // </div>
+
+            // // <iframe
+            // //     src={fileUrl}
+            // //     className={className}
+            // //     style={{
+            // //         width: '100%',
+            // //         minHeight,
+            // //         height: '100%',
+            // //         border: 'none',
+            // //         ...style
+            // //     }}
+            // // />
+
         );
     }
 

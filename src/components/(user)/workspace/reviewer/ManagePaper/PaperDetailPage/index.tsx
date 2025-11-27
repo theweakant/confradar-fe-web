@@ -7,6 +7,7 @@ import {
   AlertCircle,
   CheckCircle,
   XCircle,
+  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/helper/format";
@@ -21,6 +22,7 @@ import CameraReadyPhase from "./CameraReadyPhase";
 import { PaperDetailForReviewer, PaperDetailWrapperForReviewer } from "@/types/paper.type";
 import { steps } from "@/helper/paper";
 import PaperStepIndicator from "@/components/molecules/PaperStepIndicator";
+import TimelineDialog from "@/components/molecules/TimelineDialog";
 
 export default function ReviewPaperPage() {
   const params = useParams();
@@ -40,6 +42,8 @@ export default function ReviewPaperPage() {
   const [currentStage, setCurrentStage] = useState<number>(0);
   const [maxReachedStage, setMaxReachedStage] = useState<number>(0);
   const [isValidPhase, setIsValidPhase] = useState<boolean>(true);
+
+  const [isTimelineOpen, setIsTimelineOpen] = useState(false);
 
   const reviewerStages = steps.filter(s => s.label.toLowerCase() !== "abstract");
 
@@ -305,6 +309,16 @@ export default function ReviewPaperPage() {
             <p className="text-sm text-gray-500 mt-1">Paper ID: {paperId}</p>
           </div>
 
+          {currentPhase && (
+            <button
+              onClick={() => setIsTimelineOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+            >
+              <Calendar className="w-4 h-4" />
+              Xem lịch trình đầy đủ
+            </button>
+          )}
+
           {/* Role Badge with Decision Button */}
           <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
             <div className="flex items-center justify-between">
@@ -318,7 +332,7 @@ export default function ReviewPaperPage() {
               </p>
             </div>
           </div>
-          {currentPhase && (
+          {/* {currentPhase && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <h4 className="text-sm font-semibold text-blue-900 mb-3 flex items-center gap-2">
                 <Clock className="w-4 h-4" />
@@ -390,7 +404,7 @@ export default function ReviewPaperPage() {
                 </div>
               )}
             </div>
-          )}
+          )} */}
 
           {/* Progress Bar Navigation */}
           <div className="bg-white border rounded-lg p-6 mb-6">
@@ -487,6 +501,15 @@ export default function ReviewPaperPage() {
           </div>
         </div>
       </div>
+
+      <TimelineDialog
+        isOpen={isTimelineOpen}
+        onClose={() => setIsTimelineOpen(false)}
+        phaseData={currentPhase}
+        revisionDeadlines={currentPhase?.revisionRoundsDetail}
+        variant="reviewer"
+        theme="light"
+      />
     </div>
   );
 }

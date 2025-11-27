@@ -51,8 +51,8 @@ export interface Conference {
   conferenceMedia?: Media[];
   conferencePrices?: ConferencePrice[];
 
-  userNameCreator?: string;    
-  organization?: string; 
+  userNameCreator?: string;
+  organization?: string;
 }
 
 export interface PendingConference extends Conference {
@@ -189,8 +189,8 @@ export interface Session {
   sessionMedias?: SessionMedia[];
 
   roomId: string;
-  roomDisplayName?:string
-  roomNumber?:string
+  roomDisplayName?: string
+  roomNumber?: string
 
   conferenceName?: string;
 }
@@ -691,7 +691,7 @@ export interface ResearchConferencePhaseResponse {
   revisionRoundDeadlines?: RevisionRoundDeadlineResponse[];
 
   waitlistPhase?: ResearchConferencePhaseResponse;
-  
+
   abstractDecideStatusStart?: string;
   abstractDecideStatusEnd?: string;
   fullPaperDecideStatusStart?: string;
@@ -856,4 +856,10 @@ export interface PaperAuthor {
   paperId: string;
   isPresenter?: boolean;
   isRootAuthor?: boolean;
+}
+
+export interface SkeletonTechConference {
+  conferenceId?: string | null;
+  name?: string | null;
+  createdAt?: string | null;
 }

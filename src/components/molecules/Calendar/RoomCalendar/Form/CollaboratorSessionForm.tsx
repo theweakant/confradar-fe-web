@@ -131,7 +131,7 @@ function SpeakerModal({ isOpen, onClose, onAdd }: SpeakerModalProps) {
 }
 
 /**
- * Form tạo hoặc chỉnh sửa phiên họp cộng tác viên.
+ * Form tạo hoặc chỉnh sửa phiên họp Đối tác.
  * - Khi tạo mới: cho phép chọn ngày trong khoảng [conferenceStartDate, conferenceEndDate]
  * - Khi chỉnh sửa: ngày bị khóa, hiển thị chỉ đọc
  */
