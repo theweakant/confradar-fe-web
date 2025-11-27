@@ -25,6 +25,7 @@ import {
 } from "@/types/user.type";
 import { toast } from "sonner";
 import { parseApiError } from "@/helper/api";
+import { useRouter } from "next/navigation";
 
 interface ContractFilters {
   userId?: string;
@@ -35,6 +36,8 @@ interface ContractFilters {
 }
 
 export default function ManageCollaboratorContract() {
+  const router = useRouter();
+
   // State management
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<ContractFilters>({
@@ -133,7 +136,8 @@ export default function ManageCollaboratorContract() {
   };
 
   const handleCreate = () => {
-    setIsCreateModalOpen(true);
+    // setIsCreateModalOpen(true);
+    router.push('/workspace/organizer/manage-user/manage-collaborator/create-collaborator-contract');
   };
 
   const handleFilterChange = (key: keyof ContractFilters, value: string | number) => {
