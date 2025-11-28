@@ -29,12 +29,12 @@ export function StepIndicator({
     const isCompleted = completedSteps.includes(step);
     const hasData = stepsWithData.includes(step);
 
+    // 🔥 FIX: Updated priority order
     // Priority order:
-    // 1. Current step (hiện tại đang ở)
-    // 2. Dirty (có thay đổi chưa lưu) - màu vàng warning
-    // 3. Completed (đã hoàn thành trong create mode)
-    // 4. Has Data (có data trong edit mode) - màu xanh
-    // 5. Empty (chưa có gì)
+    // 1. Current step (hiện tại đang ở) - LUÔN ƯU TIÊN CAO NHẤT
+    // 2. Dirty (có thay đổi chưa lưu) - chỉ show nếu KHÔNG phải current
+    // 3. Completed/HasData (đã lưu) - màu xanh
+    // 4. Empty (chưa có gì)
 
     if (isCurrent) {
       return {
@@ -42,34 +42,54 @@ export function StepIndicator({
         text: "text-white",
         ring: "ring-4 ring-blue-200",
         icon: step.toString(),
+        showWarning: isDirty, // Vẫn show warning icon nhưng giữ màu xanh
       };
     }
 
-    if (isDirty) {
-      return {
-        bg: "bg-yellow-500",
-        text: "text-white",
-        ring: "ring-2 ring-yellow-300",
-        icon: "!",
-      };
-    }
+    // 🔥 FIX: Trong edit mode, nếu step có data thì ưu tiên xanh hơn dirty
+    if (mode === "edit") {
+      // Nếu step đã có data/completed, show xanh kể cả khi dirty
+      if (hasData || isCompleted) {
+        return {
+          bg: "bg-green-600",
+          text: "text-white",
+          ring: "",
+          icon: "✓",
+          showWarning: isDirty, // Show warning overlay
+        };
+      }
+      
+      // Chỉ show vàng khi dirty VÀ chưa có data
+      if (isDirty) {
+        return {
+          bg: "bg-yellow-500",
+          text: "text-white",
+          ring: "ring-2 ring-yellow-300",
+          icon: "!",
+          showWarning: false,
+        };
+      }
+    } else {
+      // Create mode: dirty luôn ưu tiên cao
+      if (isDirty) {
+        return {
+          bg: "bg-yellow-500",
+          text: "text-white",
+          ring: "ring-2 ring-yellow-300",
+          icon: "!",
+          showWarning: false,
+        };
+      }
 
-    if (isCompleted) {
-      return {
-        bg: "bg-green-600",
-        text: "text-white",
-        ring: "",
-        icon: "✓",
-      };
-    }
-
-    if (mode === "edit" && hasData) {
-      return {
-        bg: "bg-green-600",
-        text: "text-white",
-        ring: "",
-        icon: "✓",
-      };
+      if (isCompleted) {
+        return {
+          bg: "bg-green-600",
+          text: "text-white",
+          ring: "",
+          icon: "✓",
+          showWarning: false,
+        };
+      }
     }
 
     return {
@@ -77,6 +97,7 @@ export function StepIndicator({
       text: "text-gray-500",
       ring: "",
       icon: step.toString(),
+      showWarning: false,
     };
   };
 
@@ -133,10 +154,10 @@ export function StepIndicator({
                   {status.icon}
                 </button>
 
-                {/* Warning icon overlay cho dirty steps */}
-                {isDirty && (
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">!</span>
+                {/* 🔥 FIX: Warning icon overlay - chỉ show khi showWarning = true */}
+                {status.showWarning && (
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center border-2 border-white">
+                    <span className="text-white text-[10px] font-bold">!</span>
                   </div>
                 )}
               </div>
@@ -180,7 +201,6 @@ export function StepIndicator({
               }}
             >
               {label}
-              {isDirty}
             </span>
           );
         })}

@@ -382,107 +382,154 @@ function TechConferenceStepFormContent({
     return currentIndex === visibleSteps.length - 1;
   }, [currentStep, visibleSteps]);
 
-  const handleBasicSubmit = useCallback(async () => {
-    const basicValidation = validateBasicForm(basicForm);
-    if (!basicValidation.isValid) {
-      toast.error(`Thông tin cơ bản: ${basicValidation.error || "Dữ liệu không hợp lệ"}`);
-      return;
+const handleBasicSubmit = useCallback(async () => {
+  const basicValidation = validateBasicForm(basicForm);
+  if (!basicValidation.isValid) {
+    toast.error(`Thông tin cơ bản: ${basicValidation.error || "Dữ liệu không hợp lệ"}`);
+    return;
+  }
+  isSubmittingRef.current = true;
+  const result = await submitBasicInfo(basicForm, true);
+  if (result.success) {
+    handleMarkHasData(1);
+    handleMarkCompleted(1);
+    handleClearDirty(1); 
+    if (initialDataRef.current) {
+      initialDataRef.current.basicForm = { ...basicForm }; 
     }
-    const result = await submitBasicInfo(basicForm, true);
-    if (result.success) {
-      handleMarkHasData(1);
-      handleMarkCompleted(1);
-    }
-  }, [basicForm, submitBasicInfo, handleMarkHasData, handleMarkCompleted]);
+    lastSubmitTimeRef.current = Date.now();
+  }
+  isSubmittingRef.current = false;
+}, [basicForm, submitBasicInfo, handleMarkHasData, handleMarkCompleted, handleClearDirty]);
 
-  const handlePriceSubmit = useCallback(async () => {
-    if (tickets.length === 0 && requiredSteps.includes(2)) {
-      toast.error("Vui lòng thêm ít nhất 1 loại vé!");
-      return;
-    }
-    if (tickets.length > 0) {
-      const result = await submitPrice(tickets);
-      if (result.success) {
-        handleMarkHasData(2);
-        handleMarkCompleted(2);
-      }
-    } else {
+const handlePriceSubmit = useCallback(async () => {
+  if (tickets.length === 0 && requiredSteps.includes(2)) {
+    toast.error("Vui lòng thêm ít nhất 1 loại vé!");
+    return;
+  }
+  if (tickets.length > 0) {
+    isSubmittingRef.current = true;
+    const result = await submitPrice(tickets);
+    if (result.success) {
+      handleMarkHasData(2);
       handleMarkCompleted(2);
+      handleClearDirty(2);
+      if (initialDataRef.current) {
+        initialDataRef.current.tickets = [...tickets]; 
+      }
+      lastSubmitTimeRef.current = Date.now();
     }
-  }, [tickets, requiredSteps, submitPrice, handleMarkHasData, handleMarkCompleted]);
+    isSubmittingRef.current = false;
+  } else {
+    handleMarkCompleted(2);
+    handleClearDirty(2);
+  }
+}, [tickets, requiredSteps, submitPrice, handleMarkHasData, handleMarkCompleted, handleClearDirty]);
 
-  const handleSessionsSubmit = useCallback(async () => {
-    if (sessions.length > 0) {
-      if (!basicForm.startDate || !basicForm.endDate) {
-        toast.error("Thiếu ngày bắt đầu/kết thúc hội thảo!");
-        return;
-      }
-      const hasStart = sessions.some((s) => s.date === basicForm.startDate);
-      const hasEnd = sessions.some((s) => s.date === basicForm.endDate);
-      if (!hasStart || !hasEnd) {
-        toast.error("Phải có phiên họp vào ngày bắt đầu và kết thúc!");
-        return;
-      }
-    } else if (requiredSteps.includes(3)) {
-      toast.error("Vui lòng thêm ít nhất 1 phiên họp!");
+const handleSessionsSubmit = useCallback(async () => {
+  if (sessions.length > 0) {
+    if (!basicForm.startDate || !basicForm.endDate) {
+      toast.error("Thiếu ngày bắt đầu/kết thúc hội thảo!");
       return;
     }
-    const result = await submitSessions(
-      sessions,
-      basicForm.startDate!,
-      basicForm.endDate!,
-      { deletedSessionIds: realDeleteTracking.deletedSessionIds }
-    );
-    if (result.success) {
-      if (sessions.length > 0) handleMarkHasData(3);
-      handleMarkCompleted(3);
+    const hasStart = sessions.some((s) => s.date === basicForm.startDate);
+    const hasEnd = sessions.some((s) => s.date === basicForm.endDate);
+    if (!hasStart || !hasEnd) {
+      toast.error("Phải có phiên họp vào ngày bắt đầu và kết thúc!");
+      return;
     }
-  }, [
+  } else if (requiredSteps.includes(3)) {
+    toast.error("Vui lòng thêm ít nhất 1 phiên họp!");
+    return;
+  }
+  isSubmittingRef.current = true;
+  const result = await submitSessions(
     sessions,
-    basicForm.startDate,
-    basicForm.endDate,
-    requiredSteps,
-    submitSessions,
-    realDeleteTracking.deletedSessionIds,
-    handleMarkHasData,
-    handleMarkCompleted
-  ]);
+    basicForm.startDate!,
+    basicForm.endDate!,
+    { deletedSessionIds: realDeleteTracking.deletedSessionIds }
+  );
+  if (result.success) {
+    if (sessions.length > 0) handleMarkHasData(3);
+    handleMarkCompleted(3);
+    handleClearDirty(3); 
+    if (initialDataRef.current) {
+      initialDataRef.current.sessions = [...sessions]; 
+    }
+    lastSubmitTimeRef.current = Date.now();
+  }
+  isSubmittingRef.current = false;
+}, [
+  sessions,
+  basicForm.startDate,
+  basicForm.endDate,
+  requiredSteps,
+  submitSessions,
+  realDeleteTracking.deletedSessionIds,
+  handleMarkHasData,
+  handleMarkCompleted,
+  handleClearDirty,
+]);
 
-  const handlePoliciesSubmit = useCallback(async () => {
-    if (policies.length > 0) {
-      const result = await submitPolicies(policies);
-      if (result.success) {
-        handleMarkHasData(4);
-        handleMarkCompleted(4);
-      }
-    } else {
+const handlePoliciesSubmit = useCallback(async () => {
+  if (policies.length > 0) {
+    isSubmittingRef.current = true;
+    const result = await submitPolicies(policies);
+    if (result.success) {
+      handleMarkHasData(4);
       handleMarkCompleted(4);
-    }
-  }, [policies, submitPolicies, handleMarkHasData, handleMarkCompleted]);
-
-  const handleMediaSubmit = useCallback(async () => {
-    if (mediaList.length > 0) {
-      const result = await submitMedia(mediaList);
-      if (result.success) {
-        handleMarkHasData(5);
-        handleMarkCompleted(5);
+      handleClearDirty(4); 
+      if (initialDataRef.current) {
+        initialDataRef.current.policies = [...policies]; 
       }
-    } else {
+      lastSubmitTimeRef.current = Date.now();
+    }
+    isSubmittingRef.current = false;
+  } else {
+    handleMarkCompleted(4);
+    handleClearDirty(4); 
+  }
+}, [policies, submitPolicies, handleMarkHasData, handleMarkCompleted, handleClearDirty]);
+
+const handleMediaSubmit = useCallback(async () => {
+  if (mediaList.length > 0) {
+    isSubmittingRef.current = true;
+    const result = await submitMedia(mediaList);
+    if (result.success) {
+      handleMarkHasData(5);
       handleMarkCompleted(5);
-    }
-  }, [mediaList, submitMedia, handleMarkHasData, handleMarkCompleted]);
-
-  const handleSponsorsSubmit = useCallback(async () => {
-    if (sponsors.length > 0) {
-      const result = await submitSponsors(sponsors);
-      if (result.success) {
-        handleMarkHasData(6);
-        handleMarkCompleted(6);
+      handleClearDirty(5);
+      if (initialDataRef.current) {
+        initialDataRef.current.mediaList = [...mediaList];
       }
-    } else {
-      handleMarkCompleted(6);
+      lastSubmitTimeRef.current = Date.now();
     }
-  }, [sponsors, submitSponsors, handleMarkHasData, handleMarkCompleted]);
+    isSubmittingRef.current = false;
+  } else {
+    handleMarkCompleted(5);
+    handleClearDirty(5);
+  }
+}, [mediaList, submitMedia, handleMarkHasData, handleMarkCompleted, handleClearDirty]);
+
+const handleSponsorsSubmit = useCallback(async () => {
+  if (sponsors.length > 0) {
+    isSubmittingRef.current = true;
+    const result = await submitSponsors(sponsors);
+    if (result.success) {
+      handleMarkHasData(6);
+      handleMarkCompleted(6);
+      handleClearDirty(6);
+      if (initialDataRef.current) {
+        initialDataRef.current.sponsors = [...sponsors];
+      }
+      lastSubmitTimeRef.current = Date.now();
+    }
+    isSubmittingRef.current = false;
+  } else {
+    handleMarkCompleted(6);
+    handleClearDirty(6);
+  }
+}, [sponsors, submitSponsors, handleMarkHasData, handleMarkCompleted, handleClearDirty]);
 
   const handleSessionCreatedFromCalendar = useCallback(
     (session: Session | ResearchSession) => {
@@ -528,185 +575,206 @@ function TechConferenceStepFormContent({
     [sessions, mode, realDeleteTracking, setSessions, handleMarkDirty]
   );
 
-  const handleUpdateCurrentStep = useCallback(async () => {
-    if (!visibleSteps.includes(currentStep)) {
-      return { success: false, error: "Step not visible" };
-    }
-    let result;
-    switch (currentStep) {
-      case 1: {
-        const basicValidation = validateBasicForm(basicForm);
-        if (!basicValidation.isValid) {
-          toast.error(`Thông tin cơ bản: ${basicValidation.error || "Dữ liệu không hợp lệ"}`);
-          return { success: false };
-        }
-        result = await submitBasicInfo(basicForm);
-        break;
-      }
-      case 2: {
-        if (tickets.length === 0) {
-          if (requiredSteps.includes(2)) {
-            toast.error("Vui lòng thêm ít nhất 1 loại vé!");
-            return { success: false };
-          } else {
-            const currentIndex = visibleSteps.indexOf(2);
-            if (currentIndex < visibleSteps.length - 1) {
-              handleGoToStep(visibleSteps[currentIndex + 1]);
-            }
-            return { success: true };
-          }
-        }
-        result = await submitPrice(tickets);
-        break;
-      }
-      case 3: {
-        if (sessions.length > 0) {
-          if (!basicForm.startDate || !basicForm.endDate) {
-            toast.error("Thiếu ngày bắt đầu/kết thúc hội thảo!");
-            return { success: false };
-          }
-          const hasStart = sessions.some((s) => s.date === basicForm.startDate);
-          const hasEnd = sessions.some((s) => s.date === basicForm.endDate);
-          if (!hasStart || !hasEnd) {
-            toast.error("Phải có phiên họp vào ngày bắt đầu và kết thúc!");
-            return { success: false };
-          }
-        } else if (requiredSteps.includes(3)) {
-          toast.error("Vui lòng thêm ít nhất 1 phiên họp!");
-          return { success: false };
-        }
-        result = await submitSessions(
-          sessions,
-          basicForm.startDate!,
-          basicForm.endDate!,
-          { deletedSessionIds: realDeleteTracking.deletedSessionIds }
-        );
-        break;
-      }
-      case 4: {
-        if (policies.length === 0 && !requiredSteps.includes(4)) {
-          const currentIndex = visibleSteps.indexOf(4);
-          if (currentIndex < visibleSteps.length - 1) {
-            handleGoToStep(visibleSteps[currentIndex + 1]);
-          }
-          return { success: true };
-        }
-        result = await submitPolicies(policies);
-        break;
-      }
-      case 5: {
-        if (mediaList.length === 0 && !requiredSteps.includes(5)) {
-          const currentIndex = visibleSteps.indexOf(5);
-          if (currentIndex < visibleSteps.length - 1) {
-            handleGoToStep(visibleSteps[currentIndex + 1]);
-          }
-          return { success: true };
-        }
-        result = await submitMedia(mediaList);
-        break;
-      }
-      case 6: {
-        if (sponsors.length === 0 && !requiredSteps.includes(6)) {
-          return { success: true };
-        }
-        result = await submitSponsors(sponsors);
-        break;
-      }
-      default:
-        toast.error(`Bước không hợp lệ: ${currentStep}`);
+const handleUpdateCurrentStep = useCallback(async () => {
+  if (!visibleSteps.includes(currentStep)) {
+    return { success: false, error: "Step not visible" };
+  }
+  
+  isSubmittingRef.current = true;
+  let result;
+  
+  switch (currentStep) {
+    case 1: {
+      const basicValidation = validateBasicForm(basicForm);
+      if (!basicValidation.isValid) {
+        toast.error(`Thông tin cơ bản: ${basicValidation.error || "Dữ liệu không hợp lệ"}`);
+        isSubmittingRef.current = false;
         return { success: false };
+      }
+      result = await submitBasicInfo(basicForm);
+      break;
     }
-    if (result?.success) {
-      handleClearDirty(currentStep);
-      if (initialDataRef.current) {
-        switch (currentStep) {
-          case 1:
-            initialDataRef.current.basicForm = { ...basicForm };
-            break;
-          case 2:
-            initialDataRef.current.tickets = [...tickets];
-            break;
-          case 3:
-            initialDataRef.current.sessions = [...sessions];
-            break;
-          case 4:
-            initialDataRef.current.policies = [...policies];
-            break;
-          case 5:
-            initialDataRef.current.mediaList = [...mediaList];
-            break;
-          case 6:
-            initialDataRef.current.sponsors = [...sponsors];
-            break;
+    case 2: {
+      if (tickets.length === 0) {
+        if (requiredSteps.includes(2)) {
+          toast.error("Vui lòng thêm ít nhất 1 loại vé!");
+          isSubmittingRef.current = false;
+          return { success: false };
+        } else {
+          const currentIndex = visibleSteps.indexOf(2);
+          if (currentIndex < visibleSteps.length - 1) {
+            handleGoToStep(visibleSteps[currentIndex + 1]);
+          }
+          isSubmittingRef.current = false;
+          return { success: true };
         }
       }
+      result = await submitPrice(tickets);
+      break;
     }
-    return result || { success: false };
-  }, [
-    currentStep,
-    visibleSteps,
-    requiredSteps,
-    basicForm,
-    tickets,
-    sessions,
-    policies,
-    mediaList,
-    sponsors,
-    submitBasicInfo,
-    submitPrice,
-    submitSessions,
-    submitPolicies,
-    submitMedia,
-    submitSponsors,
-    handleClearDirty,
-    handleGoToStep,
-    realDeleteTracking.deletedSessionIds,
-  ]);
+    case 3: {
+      if (sessions.length > 0) {
+        if (!basicForm.startDate || !basicForm.endDate) {
+          toast.error("Thiếu ngày bắt đầu/kết thúc hội thảo!");
+          isSubmittingRef.current = false;
+          return { success: false };
+        }
+        const hasStart = sessions.some((s) => s.date === basicForm.startDate);
+        const hasEnd = sessions.some((s) => s.date === basicForm.endDate);
+        if (!hasStart || !hasEnd) {
+          toast.error("Phải có phiên họp vào ngày bắt đầu và kết thúc!");
+          isSubmittingRef.current = false;
+          return { success: false };
+        }
+      } else if (requiredSteps.includes(3)) {
+        toast.error("Vui lòng thêm ít nhất 1 phiên họp!");
+        isSubmittingRef.current = false;
+        return { success: false };
+      }
+      result = await submitSessions(
+        sessions,
+        basicForm.startDate!,
+        basicForm.endDate!,
+        { deletedSessionIds: realDeleteTracking.deletedSessionIds }
+      );
+      break;
+    }
+    case 4: {
+      if (policies.length === 0 && !requiredSteps.includes(4)) {
+        const currentIndex = visibleSteps.indexOf(4);
+        if (currentIndex < visibleSteps.length - 1) {
+          handleGoToStep(visibleSteps[currentIndex + 1]);
+        }
+        isSubmittingRef.current = false;
+        return { success: true };
+      }
+      result = await submitPolicies(policies);
+      break;
+    }
+    case 5: {
+      if (mediaList.length === 0 && !requiredSteps.includes(5)) {
+        const currentIndex = visibleSteps.indexOf(5);
+        if (currentIndex < visibleSteps.length - 1) {
+          handleGoToStep(visibleSteps[currentIndex + 1]);
+        }
+        isSubmittingRef.current = false;
+        return { success: true };
+      }
+      result = await submitMedia(mediaList);
+      break;
+    }
+    case 6: {
+      if (sponsors.length === 0 && !requiredSteps.includes(6)) {
+        isSubmittingRef.current = false;
+        return { success: true };
+      }
+      result = await submitSponsors(sponsors);
+      break;
+    }
+    default:
+      toast.error(`Bước không hợp lệ: ${currentStep}`);
+      isSubmittingRef.current = false;
+      return { success: false };
+  }
+  
+  if (result?.success) {
+    handleClearDirty(currentStep);
+    lastSubmitTimeRef.current = Date.now();
+    if (initialDataRef.current) {
+      switch (currentStep) {
+        case 1:
+          initialDataRef.current.basicForm = { ...basicForm };
+          break;
+        case 2:
+          initialDataRef.current.tickets = [...tickets];
+          break;
+        case 3:
+          initialDataRef.current.sessions = [...sessions];
+          break;
+        case 4:
+          initialDataRef.current.policies = [...policies];
+          break;
+        case 5:
+          initialDataRef.current.mediaList = [...mediaList];
+          break;
+        case 6:
+          initialDataRef.current.sponsors = [...sponsors];
+          break;
+      }
+    }
+  }
+  
+  isSubmittingRef.current = false;
+  return result || { success: false };
+}, [
+  currentStep,
+  visibleSteps,
+  requiredSteps,
+  basicForm,
+  tickets,
+  sessions,
+  policies,
+  mediaList,
+  sponsors,
+  submitBasicInfo,
+  submitPrice,
+  submitSessions,
+  submitPolicies,
+  submitMedia,
+  submitSponsors,
+  handleClearDirty,
+  handleGoToStep,
+  realDeleteTracking.deletedSessionIds,
+]);
 
-  const handleUpdateAll = useCallback(async () => {
-    if (mode !== "edit") return { success: false };
-    const filteredData = {
-      basicForm,
-      tickets: visibleSteps.includes(2) ? tickets : [],
-      sessions: visibleSteps.includes(3) ? sessions : [],
-      policies: visibleSteps.includes(4) ? policies : [],
-      mediaList: visibleSteps.includes(5) ? mediaList : [],
-      sponsors: visibleSteps.includes(6) ? sponsors : [],
-      refundPolicies,
-    };
-    const result = await submitAll(filteredData);
-    if (result?.success) {
-      toast.success("Cập nhật toàn bộ hội thảo thành công!");
-      realDeleteTracking.resetDeleteTracking();
-      visibleSteps.forEach((step) => handleClearDirty(step));
-      initialDataRef.current = {
-        basicForm: { ...basicForm },
-        tickets: [...tickets],
-        sessions: [...sessions],
-        policies: [...policies],
-        refundPolicies: [...refundPolicies],
-        mediaList: [...mediaList],
-        sponsors: [...sponsors],
-      };
-    } else {
-      const errorMsg = result?.errors?.join("; ") || "Lưu toàn bộ thất bại";
-      toast.error(errorMsg);
-    }
-    return result || { success: false };
-  }, [
-    mode,
+const handleUpdateAll = useCallback(async () => {
+  if (mode !== "edit") return { success: false };
+  
+  isSubmittingRef.current = true;
+  const filteredData = {
     basicForm,
-    tickets,
-    sessions,
-    policies,
-    mediaList,
-    sponsors,
+    tickets: visibleSteps.includes(2) ? tickets : [],
+    sessions: visibleSteps.includes(3) ? sessions : [],
+    policies: visibleSteps.includes(4) ? policies : [],
+    mediaList: visibleSteps.includes(5) ? mediaList : [],
+    sponsors: visibleSteps.includes(6) ? sponsors : [],
     refundPolicies,
-    visibleSteps,
-    submitAll,
-    realDeleteTracking,
-    handleClearDirty,
-  ]);
+  };
+  const result = await submitAll(filteredData);
+  if (result?.success) {
+    toast.success("Cập nhật toàn bộ hội thảo thành công!");
+    realDeleteTracking.resetDeleteTracking();
+    visibleSteps.forEach((step) => handleClearDirty(step));
+    lastSubmitTimeRef.current = Date.now();
+    initialDataRef.current = {
+      basicForm: { ...basicForm },
+      tickets: [...tickets],
+      sessions: [...sessions],
+      policies: [...policies],
+      refundPolicies: [...refundPolicies],
+      mediaList: [...mediaList],
+      sponsors: [...sponsors],
+    };
+  } else {
+    const errorMsg = result?.errors?.join("; ") || "Lưu toàn bộ thất bại";
+    toast.error(errorMsg);
+  }
+  isSubmittingRef.current = false;
+  return result || { success: false };
+}, [
+  mode,
+  basicForm,
+  tickets,
+  sessions,
+  policies,
+  mediaList,
+  sponsors,
+  refundPolicies,
+  visibleSteps,
+  submitAll,
+  realDeleteTracking,
+  handleClearDirty,
+]);
 
   const handleApprovalSuccess = useCallback(() => {
     if (refetch) refetch();
@@ -722,28 +790,52 @@ function TechConferenceStepFormContent({
     });
   }, [visibleSteps]);
 
-  useEffect(() => {
-    if (!hasLoadedData || mode !== "edit" || !initialDataRef.current) return;
-    const current = initialDataRef.current;
-    if (JSON.stringify(basicForm) !== JSON.stringify(current.basicForm)) {
+
+  const isSubmittingRef = useRef(false);
+  const lastSubmitTimeRef = useRef<number>(0);
+  
+ useEffect(() => {
+  if (!hasLoadedData || mode !== "edit" || !initialDataRef.current) {
+    return;
+  }
+
+  const timeSinceSubmit = Date.now() - lastSubmitTimeRef.current;
+  if (isSubmittingRef.current || isSubmitting || timeSinceSubmit < 500) {
+    return;
+  }
+
+  const timeoutId = setTimeout(() => {
+    const current = initialDataRef.current!;
+
+    const basicFormChanged = JSON.stringify(basicForm) !== JSON.stringify(current.basicForm);
+    const ticketsChanged = JSON.stringify(tickets) !== JSON.stringify(current.tickets);
+    const sessionsChanged = JSON.stringify(sessions) !== JSON.stringify(current.sessions);
+    const policiesChanged = JSON.stringify(policies) !== JSON.stringify(current.policies);
+    const mediaChanged = JSON.stringify(mediaList) !== JSON.stringify(current.mediaList);
+    const sponsorsChanged = JSON.stringify(sponsors) !== JSON.stringify(current.sponsors);
+
+    if (basicFormChanged) {
       handleMarkDirty(1);
     }
-    if (JSON.stringify(tickets) !== JSON.stringify(current.tickets)) {
+    if (ticketsChanged) {
       handleMarkDirty(2);
     }
-    if (JSON.stringify(sessions) !== JSON.stringify(current.sessions)) {
+    if (sessionsChanged) {
       handleMarkDirty(3);
     }
-    if (JSON.stringify(policies) !== JSON.stringify(current.policies)) {
+    if (policiesChanged) {
       handleMarkDirty(4);
     }
-    if (JSON.stringify(mediaList) !== JSON.stringify(current.mediaList)) {
+    if (mediaChanged) {
       handleMarkDirty(5);
     }
-    if (JSON.stringify(sponsors) !== JSON.stringify(current.sponsors)) {
+    if (sponsorsChanged) {
       handleMarkDirty(6);
     }
-  }, [basicForm, tickets, sessions, policies, mediaList, sponsors, hasLoadedData, mode, handleMarkDirty]);
+  }, 200);
+
+  return () => clearTimeout(timeoutId);
+}, [basicForm, tickets, sessions, policies, mediaList, sponsors, hasLoadedData, mode, isSubmitting, handleMarkDirty]);
 
   useEffect(() => {
     if (mode === "create") {

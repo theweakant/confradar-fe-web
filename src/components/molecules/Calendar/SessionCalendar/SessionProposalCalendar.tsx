@@ -4,7 +4,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { EventClickArg } from "@fullcalendar/core";
-import { FileText, Plus, Calendar, Clock, Users } from "lucide-react";
+import { Plus, Calendar, Clock, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useGetResearchSessionsQuery } from "@/redux/services/conferenceStep.service";
 import type { SessionDetailForScheduleResponse } from "@/types/conference.type";
