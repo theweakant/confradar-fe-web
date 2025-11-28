@@ -39,8 +39,19 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
 }) => {
     return (
         <div className="space-y-6">
+            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-md">
+                <div className="flex items-start gap-2">
+                    <Info className="w-5 h-5 text-blue-500 mt-1" />
+                    <p className="text-sm text-blue-700">
+                        Đây là bước chọn hội thảo để tạo hợp đồng cho đối tác.
+                        Danh sách chỉ hiển thị những hội thảo <span className="font-semibold">thuộc về người dùng {selectedUser?.fullName}</span> mà chưa có hợp đồng mới.
+                        Vui lòng chọn một hội thảo để tiếp tục, hoặc tạo hội thảo mới nếu chưa có.
+                    </p>
+                </div>
+            </div>
+
             <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Chọn hội nghị</h3>
+                <h3 className="text-lg font-semibold">Chọn hội thảo</h3>
                 <Button
                     variant="outline"
                     size="sm"
@@ -48,7 +59,7 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
                     className="flex items-center gap-2"
                 >
                     <PlusIcon className="h-4 w-4" />
-                    Tạo hội nghị mới
+                    Tạo hội thảo mới
                 </Button>
             </div>
 
@@ -93,9 +104,13 @@ const ConferenceSelectionStep: React.FC<ConferenceSelectionStepProps> = ({
 
             {!isLoading && conferences.length === 0 && (
                 <div className="text-center py-8">
-                    <p className="text-gray-500">Người dùng {selectedUser?.fullName} chưa có hội nghị nào</p>
+                    {/* <p className="text-gray-500">Người dùng {selectedUser?.fullName} chưa có hội thảo nào</p> */}
+                    <p className="text-gray-500">
+                        Vui lòng chọn một hội thảo từ danh sách bên dưới. Chỉ hiển thị các hội thảo thuộc về người dùng {selectedUser?.fullName} mà chưa có hợp đồng nào.
+                        Nếu chưa có hội thảo, bạn có thể tạo mới.
+                    </p>
                     <Button variant="outline" className="mt-2" onClick={onCreateConference}>
-                        Tạo hội nghị đầu tiên
+                        Tạo hội thảo cho {selectedUser?.fullName}
                     </Button>
                 </div>
             )}

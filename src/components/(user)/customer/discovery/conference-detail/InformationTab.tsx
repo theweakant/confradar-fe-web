@@ -7,8 +7,8 @@ import {
 // Information Tab Component
 interface InformationTabProps {
   conference:
-    | TechnicalConferenceDetailResponse
-    | ResearchConferenceDetailResponse;
+  | TechnicalConferenceDetailResponse
+  | ResearchConferenceDetailResponse;
   setSelectedImage: (image: string | null) => void;
 }
 
@@ -32,14 +32,14 @@ const InformationTab: React.FC<InformationTabProps> = ({
           Thông tin cơ bản
         </h3>
         <div className="bg-white/20 backdrop-blur-md rounded-lg p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
+          {/* <div>
             <span className="text-white/70 text-sm">Conference ID:</span>
             <p className="text-white font-medium">
               {conference.conferenceId || "Chưa có ID"}
             </p>
-          </div>
+          </div> */}
           <div>
-            <span className="text-white/70 text-sm">Conference Name:</span>
+            <span className="text-white/70 text-sm">Tên hội nghị:</span>
             <p className="text-white font-medium">
               {conference.conferenceName || "Chưa có tên hội nghị"}
             </p>
@@ -51,7 +51,7 @@ const InformationTab: React.FC<InformationTabProps> = ({
             </p>
           </div>
           <div>
-            <span className="text-white/70 text-sm">Start Date:</span>
+            <span className="text-white/70 text-sm">Ngày diễn ra:</span>
             <p className="text-white font-medium">
               {conference.startDate
                 ? new Date(conference.startDate).toLocaleDateString("vi-VN")
@@ -59,7 +59,7 @@ const InformationTab: React.FC<InformationTabProps> = ({
             </p>
           </div>
           <div>
-            <span className="text-white/70 text-sm">End Date:</span>
+            <span className="text-white/70 text-sm">Ngày kết thúc:</span>
             <p className="text-white font-medium">
               {conference.endDate
                 ? new Date(conference.endDate).toLocaleDateString("vi-VN")
@@ -67,7 +67,7 @@ const InformationTab: React.FC<InformationTabProps> = ({
             </p>
           </div>
           <div>
-            <span className="text-white/70 text-sm">Total Slots:</span>
+            <span className="text-white/70 text-sm">Tổng số người tham dự tối đa:</span>
             <p className="text-white font-medium">
               {conference.totalSlot !== undefined
                 ? conference.totalSlot
@@ -75,7 +75,7 @@ const InformationTab: React.FC<InformationTabProps> = ({
             </p>
           </div>
           <div>
-            <span className="text-white/70 text-sm">Available Slots:</span>
+            <span className="text-white/70 text-sm">Số lượng chỗ còn lại:</span>
             <p className="text-white font-medium">
               {conference.availableSlot !== undefined
                 ? conference.availableSlot
@@ -83,13 +83,13 @@ const InformationTab: React.FC<InformationTabProps> = ({
             </p>
           </div>
           <div>
-            <span className="text-white/70 text-sm">Address:</span>
+            <span className="text-white/70 text-sm">Địa chỉ:</span>
             <p className="text-white font-medium">
               {conference.address || "Chưa có địa chỉ"}
             </p>
           </div>
           <div>
-            <span className="text-white/70 text-sm">Created At:</span>
+            <span className="text-white/70 text-sm">Ngày tạo hội nghị:</span>
             <p className="text-white font-medium">
               {conference.createdAt
                 ? new Date(conference.createdAt).toLocaleDateString("vi-VN")
@@ -97,17 +97,23 @@ const InformationTab: React.FC<InformationTabProps> = ({
             </p>
           </div>
           <div>
-            <span className="text-white/70 text-sm">Ticket Sale Start:</span>
+            <span className="text-white/70 text-sm">
+              {isResearch
+                ? "Ngày mở đăng ký tham dự (dành cho thính giả):"
+                : "Ngày bắt đầu bán vé:"}
+            </span>
             <p className="text-white font-medium">
               {conference.ticketSaleStart
-                ? new Date(conference.ticketSaleStart).toLocaleDateString(
-                    "vi-VN",
-                  )
+                ? new Date(conference.ticketSaleStart).toLocaleDateString("vi-VN")
                 : "Chưa xác định"}
             </p>
           </div>
           <div>
-            <span className="text-white/70 text-sm">Ticket Sale End:</span>
+            <span className="text-white/70 text-sm">
+              {isResearch
+                ? "Ngày kết thúc thời hạn đăng ký tham dự (dành cho thính giả):"
+                : "Ngày kết thúc bán vé:"}
+            </span>
             <p className="text-white font-medium">
               {conference.ticketSaleEnd
                 ? new Date(conference.ticketSaleEnd).toLocaleDateString("vi-VN")
@@ -115,7 +121,7 @@ const InformationTab: React.FC<InformationTabProps> = ({
             </p>
           </div>
           <div>
-            <span className="text-white/70 text-sm">Internal Hosted:</span>
+            <span className="text-white/70 text-sm">Hội nghị được tổ chức bởi nội bộ Confradar?:</span>
             <p className="text-white font-medium">
               {conference.isInternalHosted !== undefined
                 ? conference.isInternalHosted
@@ -125,12 +131,12 @@ const InformationTab: React.FC<InformationTabProps> = ({
             </p>
           </div>
           <div>
-            <span className="text-white/70 text-sm">Research Conference:</span>
+            <span className="text-white/70 text-sm">Loại:</span>
             <p className="text-white font-medium">
               {conference.isResearchConference !== undefined
                 ? conference.isResearchConference
-                  ? "Có"
-                  : "Không"
+                  ? "Hội Nghị Nghiên cứu"
+                  : "Hội Thảo Công nghệ"
                 : "Chưa xác định"}
             </p>
           </div>
@@ -161,81 +167,102 @@ const InformationTab: React.FC<InformationTabProps> = ({
       {isResearch && (
         <div className="mb-8">
           <h3 className="text-xl font-semibold text-white mb-4">
-            Research Conference Details
+            Thông tin chi tiết về hội nghị nghiên cứu
           </h3>
+          {isResearch && (
+            <div className="col-span-full my-2 bg-white/10 rounded-lg p-3 border border-white/20">
+              <p className="text-white/80 text-sm italic">
+                💡 <b>Lưu ý:</b> Khi nộp bài báo (với tư cách tác giả), bạn sẽ thanh toán toàn bộ phí đăng ký ngay tại thời điểm nộp.
+                Nếu bài báo bị từ chối, hệ thống sẽ hoàn lại <b>số tiền đã thanh toán, nhưng đã trừ đi khoản phí đánh giá bài báo</b> tương ứng với hội nghị này.
+              </p>
+            </div>
+          )}
           <div className="bg-white/20 backdrop-blur-md rounded-lg p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <span className="text-white/70 text-sm">Conference Name:</span>
+            {/* <div>
+              <span className="text-white/70 text-sm">Tên hội nghị:</span>
               <p className="text-white font-medium">
                 {(conference as ResearchConferenceDetailResponse).name ||
                   "Chưa có tên hội nghị nghiên cứu"}
               </p>
-            </div>
+            </div> */}
             <div>
-              <span className="text-white/70 text-sm">Paper Format:</span>
+              <span className="text-white/70 text-sm">Định dạng bài báo chấp nhận:</span>
               <p className="text-white font-medium">
                 {(conference as ResearchConferenceDetailResponse).paperFormat ||
                   "Chưa có thông tin về định dạng bài báo"}
               </p>
             </div>
             <div>
-              <span className="text-white/70 text-sm">Papers Accepted:</span>
+              <span className="text-white/70 text-sm">Số lượng bài báo tối đa chấp nhận:</span>
               <p className="text-white font-medium">
                 {(conference as ResearchConferenceDetailResponse)
                   .numberPaperAccept !== undefined
                   ? (conference as ResearchConferenceDetailResponse)
-                      .numberPaperAccept
+                    .numberPaperAccept
                   : "Chưa xác định số lượng bài báo được chấp nhận"}
               </p>
             </div>
             <div>
               <span className="text-white/70 text-sm">
-                Revision Attempts Allowed:
+                Số vòng chỉnh sửa tối đa:
               </span>
               <p className="text-white font-medium">
                 {(conference as ResearchConferenceDetailResponse)
                   .revisionAttemptAllowed !== undefined
                   ? (conference as ResearchConferenceDetailResponse)
-                      .revisionAttemptAllowed
-                  : "Chưa xác định số lần sửa đổi cho phép"}
+                    .revisionAttemptAllowed
+                  : "Chưa xác định số lần sửa đổi tối đa"}
               </p>
             </div>
             <div>
-              <span className="text-white/70 text-sm">Allow Listeners:</span>
+              <span className="text-white/70 text-sm">Cho phép thính giả tham dự?</span>
               <p className="text-white font-medium">
                 {(conference as ResearchConferenceDetailResponse)
                   .allowListener !== undefined
                   ? (conference as ResearchConferenceDetailResponse)
-                      .allowListener
+                    .allowListener
                     ? "Có"
                     : "Không"
                   : "Chưa xác định chính sách người nghe"}
               </p>
             </div>
             <div>
-              <span className="text-white/70 text-sm">Rank Value:</span>
+              <span className="text-white/70 text-sm">Giá trị xếp hạng:</span>
               <p className="text-white font-medium">
                 {(conference as ResearchConferenceDetailResponse).rankValue ||
                   "Chưa có thông tin về giá trị xếp hạng"}
               </p>
             </div>
             <div>
-              <span className="text-white/70 text-sm">Rank Year:</span>
+              <span className="text-white/70 text-sm">Năm xếp hạng:</span>
               <p className="text-white font-medium">
                 {(conference as ResearchConferenceDetailResponse).rankYear ||
                   "Chưa có thông tin về năm xếp hạng"}
               </p>
             </div>
             <div>
-              <span className="text-white/70 text-sm">Review Fee:</span>
+              <span className="text-white/70 text-sm">
+                Phí review bài báo <br />
+                <span className="text-white/50 text-xs italic">
+                  (Khoản phí này đã được **tính gộp** vào phí đăng ký tham dự nếu bạn đăng ký với tư cách <b>tác giả</b>)
+                </span>
+              </span>
               <p className="text-white font-medium">
-                {(conference as ResearchConferenceDetailResponse).reviewFee !==
-                undefined
+                {(conference as ResearchConferenceDetailResponse).reviewFee !== undefined
                   ? `${(conference as ResearchConferenceDetailResponse).reviewFee?.toLocaleString("vi-VN")}₫`
                   : "Phí đánh giá bài báo chưa xác định"}
               </p>
             </div>
-            <div>
+            {/* <div>
+              <span className="text-white/70 text-sm">Phí review bài báo (nếu bạn đăng ký tham dự với tư cách tác giả, đã được bao gồm vào phí đăng ký lúc thanh toán):</span>
+              <p className="text-white font-medium">
+                {(conference as ResearchConferenceDetailResponse).reviewFee !==
+                  undefined
+                  ? `${(conference as ResearchConferenceDetailResponse).reviewFee?.toLocaleString("vi-VN")}₫`
+                  : "Phí đánh giá bài báo chưa xác định"}
+              </p>
+            </div> */}
+            {/* <div>
               <span className="text-white/70 text-sm">
                 Ranking Category ID:
               </span>
@@ -243,7 +270,7 @@ const InformationTab: React.FC<InformationTabProps> = ({
                 {(conference as ResearchConferenceDetailResponse)
                   .rankingCategoryId || "Chưa có ID danh mục xếp hạng"}
               </p>
-            </div>
+            </div> */}
             <div>
               <span className="text-white/70 text-sm">
                 Ranking Category Name:

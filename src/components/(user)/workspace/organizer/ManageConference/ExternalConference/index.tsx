@@ -149,7 +149,7 @@ export default function ExternalConference() {
   }, [cities]);
 
   const collaboratorOptions = useMemo(() => {
-    const allOption = { value: "all", label: "Tất cả cộng tác viên" };
+    const allOption = { value: "all", label: "Tất cả đối tác" };
     const apiCollabs = collaboratorData?.data?.map((collab) => ({
       value: collab.userId,
       label: collab.fullName || collab.email,
@@ -178,10 +178,10 @@ export default function ExternalConference() {
 
   const handleOpenFilterModal = () => {
     if (!collaboratorData) {
-      fetchCollaborators(); 
+      fetchCollaborators();
     }
     if (!organizationData) {
-      fetchOrganizations(); 
+      fetchOrganizations();
     }
 
     // Đặt lại temp filter
@@ -343,7 +343,7 @@ export default function ExternalConference() {
             <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t">
               {filterCollaborator !== "all" && (
                 <Badge variant="secondary" className="gap-1">
-                  Cộng tác viên: {collaboratorOptions.find(o => o.value === filterCollaborator)?.label}
+                  đối tác: {collaboratorOptions.find(o => o.value === filterCollaborator)?.label}
                   <X
                     className="w-3 h-3 cursor-pointer"
                     onClick={() => setFilterCollaborator("all")}
@@ -401,14 +401,14 @@ export default function ExternalConference() {
               {/* Collaborator Filter */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
-                  Cộng tác viên
+                  đối tác
                 </label>
                 <Select
                   value={tempFilterCollaborator}
                   onValueChange={setTempFilterCollaborator}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Chọn cộng tác viên" />
+                    <SelectValue placeholder="Chọn đối tác" />
                   </SelectTrigger>
                   <SelectContent>
                     {collaboratorOptions.map((option) => (

@@ -264,22 +264,22 @@ const ConferenceDetail = () => {
           <div>
             <ConferenceHeader
               conference={conference}
-              isDialogOpen={isDialogOpen}
-              setIsDialogOpen={setIsDialogOpen}
-              selectedTicket={selectedTicket}
-              setSelectedTicket={setSelectedTicket}
-              paymentLoading={paymentLoading}
+              // isDialogOpen={isDialogOpen}
+              // setIsDialogOpen={setIsDialogOpen}
+              // selectedTicket={selectedTicket}
+              // setSelectedTicket={setSelectedTicket}
+              // paymentLoading={paymentLoading}
               handlePurchaseTicket={handlePurchaseTicket}
               accessToken={accessToken}
               formatDate={formatDate}
-              authorInfo={authorInfo}
-              setAuthorInfo={setAuthorInfo}
-              showAuthorForm={showAuthorForm}
-              setShowAuthorForm={setShowAuthorForm}
-              selectedPaymentMethod={selectedPaymentMethod}
-              setSelectedPaymentMethod={setSelectedPaymentMethod}
-              showPaymentMethods={showPaymentMethods}
-              setShowPaymentMethods={setShowPaymentMethods}
+            // authorInfo={authorInfo}
+            // setAuthorInfo={setAuthorInfo}
+            // showAuthorForm={showAuthorForm}
+            // setShowAuthorForm={setShowAuthorForm}
+            // selectedPaymentMethod={selectedPaymentMethod}
+            // setSelectedPaymentMethod={setSelectedPaymentMethod}
+            // showPaymentMethods={showPaymentMethods}
+            // setShowPaymentMethods={setShowPaymentMethods}
             />
           </div>
 
