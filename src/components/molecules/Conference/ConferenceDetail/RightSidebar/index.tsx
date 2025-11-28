@@ -43,7 +43,7 @@ export function RightSidebar({
       <RegisteredUserSection
         conferenceId={conference.conferenceId!}
         conferenceName={conference.conferenceName!}
-        limit={1}
+        limit={2}
         onOpenFullList={onOpenFullAttendees}
       />
     </div>

@@ -12,10 +12,23 @@ export function ResearchInfoTab({ conference }: ResearchInfoTabProps) {
   return (
     <div className="space-y-6">
       {/* Basic Research Info */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-5">
-          Thông tin nghiên cứu
-        </h3>
+      <div className="bg-white rounded-lg p-2">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Thông tin nghiên cứu
+          </h3>
+          <div className="flex items-center gap-2">
+            <span
+              className={`px-2.5 py-1 rounded-md text-xs font-medium ${
+                conference.allowListener
+                  ? "bg-green-50 text-green-700"
+                  : "bg-gray-100 text-gray-600"
+              }`}
+            >
+              {conference.allowListener ? "Có thính giả" : "Không có thính giả"}
+            </span>
+          </div>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <InfoField label="Tên hội nghị" value={conference.name} />
           <InfoField label="Định dạng bài báo" value={conference.paperFormat} />
@@ -32,42 +45,25 @@ export function ResearchInfoTab({ conference }: ResearchInfoTabProps) {
             value={`${(conference.reviewFee || 0).toLocaleString("vi-VN")}₫`}
           />
           <InfoField label="Xếp hạng" value={`${conference.rankValue} (${conference.rankYear})`} />
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-gray-500">Cho phép thính giả:</span>
-            <span
-              className={`px-2.5 py-1 rounded-md text-xs font-medium ${conference.allowListener
-                ? "bg-green-50 text-green-700"
-                : "bg-gray-100 text-gray-600"
-                }`}
-            >
-              {conference.allowListener ? "Có" : "Không"}
-            </span>
-          </div>
+          <InfoField 
+            label="Mô tả xếp hạng" 
+            value={
+              conference.rankingDescription && conference.rankingDescription.length > 20 
+                ? `${conference.rankingDescription.substring(0, 20)}...` 
+                : conference.rankingDescription
+            } 
+          />
         </div>
       </div>
 
-      {/* Ranking Description */}
-      {conference.rankingDescription && (
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-blue-600" />
-            Mô tả xếp hạng
-          </h3>
-          <p className="text-sm text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-lg whitespace-pre-line">
-            {conference.rankingDescription}
-          </p>
-        </div>
-      )}
-
       {/* Research Phase Timeline */}
-      {Array.isArray(conference.researchPhase) && conference.researchPhase.length > 0 ? (
+      {/* {Array.isArray(conference.researchPhase) && conference.researchPhase.length > 0 ? (
         <div className="bg-white border border-gray-200 rounded-lg p-6">
           <h3 className="font-semibold text-gray-900 mb-5 flex items-center gap-2">
             <Calendar className="w-5 h-5 text-blue-600" />
             Lộ trình nghiên cứu
           </h3>
 
-          {/* Lặp từng phase */}
           {conference.researchPhase.map((phase, idx) => (
             <div key={phase.researchConferencePhaseId ?? idx} className="mb-6">
               <h4 className="text-md font-semibold text-gray-700 mb-3">
@@ -97,7 +93,6 @@ export function ResearchInfoTab({ conference }: ResearchInfoTabProps) {
                   endDate={phase.reviewEndDate ?? null}
                 />
 
-                {/* Revision */}
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                   <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                     <span className="flex items-center justify-center w-6 h-6 bg-yellow-500 text-white rounded text-xs font-bold">
@@ -139,7 +134,6 @@ export function ResearchInfoTab({ conference }: ResearchInfoTabProps) {
                   ) : null}
                 </div>
 
-                {/* Camera Ready */}
                 <PhaseCard
                   title="Hoàn thiện"
                   number={5}
@@ -148,7 +142,6 @@ export function ResearchInfoTab({ conference }: ResearchInfoTabProps) {
                   endDate={phase.cameraReadyEndDate ?? null}
                 />
 
-                {/* Status */}
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                   <h4 className="font-semibold text-gray-900 mb-3">Trạng thái</h4>
                   <div className="flex flex-wrap gap-2">
@@ -176,7 +169,7 @@ export function ResearchInfoTab({ conference }: ResearchInfoTabProps) {
             Chưa có thông tin lộ trình nghiên cứu
           </p>
         </div>
-      )}
+      )} */}
 
       {/* {conference.researchPhase ? (
         <div className="bg-white border border-gray-200 rounded-lg p-6">

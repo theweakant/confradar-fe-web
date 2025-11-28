@@ -181,7 +181,7 @@ export function MetaInfoSection({
   const startDateDays = getDaysRemaining(conference.startDate);
   const ticketSaleEndDays = getDaysRemaining(conference.ticketSaleEnd);
 
-  return (
+return (
     <div className="space-y-6">
       {/* Conference Title & Description */}
       <div>
@@ -204,21 +204,21 @@ export function MetaInfoSection({
       {/* Grid Layout: Info on Left, Banner on Right */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Left Column - Meta Information */}
-        <div className="space-y-4">
-          <div className="flex items-start">
-            <span className="text-sm text-gray-500 w-32 flex-shrink-0">Phân loại</span>
+        <div className="space-y-3">
+          <div className="flex items-start gap-3">
+            <span className="text-xs text-gray-500 w-28 flex-shrink-0">Danh mục</span>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-blue-600 font-medium">
+              <span className="text-xs text-blue-600 font-medium">
                 {getCategoryName(conference.conferenceCategoryId ?? "")}
               </span>
             </div>
           </div>
 
           {startDateDays !== null && startDateDays >= 0 && (
-            <div className="flex items-start">
-              <span className="text-sm text-gray-500 w-32 flex-shrink-0">Thời gian</span>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-900 font-medium">
+            <div className="flex items-start gap-3">
+              <span className="text-xs text-gray-500 w-28 flex-shrink-0">Thời gian</span>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs text-gray-900 font-medium whitespace-nowrap">
                   {formatDate(conference.startDate)} → {formatDate(conference.endDate)}
                 </span>
               </div>
@@ -227,15 +227,15 @@ export function MetaInfoSection({
 
           {/* Ticket Sale - only show if upcoming */}
           {ticketSaleEndDays !== null && ticketSaleEndDays >= 0 && (
-            <div className="flex items-start">
-              <span className="text-sm text-gray-500 w-32 flex-shrink-0">Bán vé</span>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-900 font-medium">
+            <div className="flex items-start gap-3">
+              <span className="text-xs text-gray-500 w-28 flex-shrink-0">Bán vé</span>
+              <div className="flex flex-col gap-1">
+                <span className="text-xs text-gray-900 font-medium whitespace-nowrap">
                   {formatDate(conference.ticketSaleStart)} → {formatDate(
                     conference.ticketSaleEnd
                   )}
                 </span>
-                <span className="text-xs text-orange-600 font-medium">
+                <span className="text-[10px] text-orange-600 font-medium">
                   ({formatCountdown(ticketSaleEndDays)})
                 </span>
               </div>
@@ -243,32 +243,32 @@ export function MetaInfoSection({
           )}
 
           {/* City */}
-          <div className="flex items-start">
-            <span className="text-sm text-gray-500 w-32 flex-shrink-0">Thành phố</span>
-            <span className="text-sm text-gray-900 font-medium">
+          <div className="flex items-start gap-3">
+            <span className="text-xs text-gray-500 w-28 flex-shrink-0">Thành phố</span>
+            <span className="text-xs text-gray-900 font-medium">
               {getCityName(conference.cityId ?? "")}
             </span>
           </div>
 
           {/* Capacity */}
-          <div className="flex items-start">
-            <span className="text-sm text-gray-500 w-32 flex-shrink-0">Số lượng tham dự</span>
+          <div className="flex items-start gap-3">
+            <span className="text-xs text-gray-500 w-28 flex-shrink-0">Số lượng tham dự</span>
             <div className="flex items-baseline gap-1">
-              <span className="text-sm text-gray-900 font-bold">
+              <span className="text-xs text-gray-900 font-bold">
                 {conference.availableSlot}
               </span>
-              <span className="text-sm text-gray-500">
+              <span className="text-xs text-gray-500">
                 / {conference.totalSlot} chỗ
               </span>
             </div>
           </div>
 
           {/* Type Badges */}
-          <div className="flex items-start">
-            <span className="text-sm text-gray-500 w-32 flex-shrink-0">Loại hình</span>
+          <div className="flex items-start gap-3">
+            <span className="text-xs text-gray-500 w-28 flex-shrink-0">Loại hình</span>
             <div className="flex flex-wrap gap-2">
               <span
-                className={`px-2.5 py-1 rounded-md text-xs font-medium ${
+                className={`px-2 py-0.5 rounded-md text-[10px] font-medium ${
                   conference.isInternalHosted
                     ? "bg-green-50 text-green-700"
                     : "bg-gray-50 text-gray-600"
@@ -277,7 +277,7 @@ export function MetaInfoSection({
                 {conference.isInternalHosted ? "ConfRadar" : "Đối tác"}
               </span>
               <span
-                className={`px-2.5 py-1 rounded-md text-xs font-medium ${
+                className={`px-2 py-0.5 rounded-md text-[10px] font-medium ${
                   conference.isResearchConference
                     ? "bg-blue-50 text-blue-700"
                     : "bg-gray-50 text-gray-600"
@@ -290,15 +290,15 @@ export function MetaInfoSection({
 
           {/* Next Price Phase */}
           {nextPricePhase && (
-            <div className="flex items-start">
-              <span className="text-sm text-gray-500 w-32 flex-shrink-0">
+            <div className="flex items-start gap-3">
+              <span className="text-xs text-gray-500 w-28 flex-shrink-0">
                 Giai đoạn sắp tới
               </span>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-900 font-medium">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs text-gray-900 font-medium">
                   {nextPricePhase.phaseName}
                 </span>
-                <span className="text-xs text-orange-600 font-medium">
+                <span className="text-[10px] text-orange-600 font-medium">
                   ({formatCountdown(nextPricePhase.days)})
                 </span>
               </div>
@@ -307,25 +307,25 @@ export function MetaInfoSection({
 
           {/* Next Session */}
           {nextSession && (
-            <div className="flex items-start">
-              <span className="text-sm text-gray-500 w-32 flex-shrink-0">
+            <div className="flex items-start gap-3">
+              <span className="text-xs text-gray-500 w-28 flex-shrink-0">
                 Session sắp tới
               </span>
               <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-900 font-medium">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs text-gray-900 font-medium">
                     {nextSession.title}
                   </span>
-                  <span className="text-xs text-orange-600 font-medium">
+                  <span className="text-[10px] text-orange-600 font-medium">
                     ({formatCountdown(nextSession.days)})
                   </span>
                 </div>
-                <div className="flex items-center gap-3 text-xs text-gray-600">
-                  <span className="flex items-center gap-1">
+                <div className="flex items-center flex-wrap gap-2 text-[10px] text-gray-600">
+                  <span className="flex items-center gap-1 whitespace-nowrap">
                     <Calendar className="w-3 h-3" />
                     {formatDate(nextSession.date || (isTechnicalSession(nextSession) ? nextSession.sessionDate : ""))}
                   </span>
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1 whitespace-nowrap">
                     <Clock className="w-3 h-3" />
                     {nextSession.startTime}
                   </span>
@@ -342,19 +342,16 @@ export function MetaInfoSection({
 
           {/* Research Phase - only for research conferences */}
           {isResearch && nextResearchDeadline && (
-            <div className="flex items-start">
-              <span className="text-sm text-gray-500 w-32 flex-shrink-0">
+            <div className="flex items-start gap-3">
+              <span className="text-xs text-gray-500 w-28 flex-shrink-0">
                 Research Phase
               </span>
-              <div className="flex flex-col gap-1">
-                <span className="text-sm text-gray-900 font-medium">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs text-gray-900 font-medium">
                   {nextResearchDeadline.name}
                 </span>
-                <span className="text-xs text-gray-600">
-                  {formatDate(nextResearchDeadline.date)}
-                </span>
-                <span className="text-xs text-orange-600 font-medium">
-                  {formatCountdown(nextResearchDeadline.days)}
+                <span className="text-[10px] text-orange-600 font-medium">
+                  ({formatCountdown(nextResearchDeadline.days)})
                 </span>
               </div>
             </div>

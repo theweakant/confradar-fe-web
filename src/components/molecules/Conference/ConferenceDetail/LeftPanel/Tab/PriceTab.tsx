@@ -16,8 +16,8 @@ export function PriceTab({ conference }: PriceTabProps) {
     <div className="space-y-6">
       <div className="mb-8">
         <h2 className="text-3xl font-bold text-foreground">Giá Vé</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Thông tin chi tiết về giá vé và các đợt bán vé
+        <p className="text-sm text-muted-foreground mt-3">
+          Thông tin chi tiết về chi phí
         </p>
       </div>
 
@@ -69,46 +69,56 @@ export function PriceTab({ conference }: PriceTabProps) {
               {price.pricePhases && price.pricePhases.length > 0 && (
                 <div className="mt-6 pt-6 border-t border-border">
                   <h4 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wide">
-                    Các Đợt Bán Hàng
+                    Các Giai Đoạn
                   </h4>
                   {/* Grid 3 phase / row */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {price.pricePhases.map(
-                      (phase: ConferencePricePhaseResponse) => (
-                        <div
-                          key={phase.phaseName}
-                          className="bg-background border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors text-xs md:text-sm flex flex-col justify-between"
-                        >
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold text-foreground">
+                      (phase: ConferencePricePhaseResponse) => {
+                        const badge = getPhaseBadge(phase.startDate, phase.endDate);
+                        
+                        return (
+                          <div
+                            key={phase.phaseName}
+                            className="bg-background border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors text-xs md:text-sm flex flex-col justify-between min-w-0"
+                          >
+                          <div className="flex items-center justify-between mb-3 gap-2">
+                            <div className="flex items-center gap-2 flex-shrink min-w-0">
+                              <span className="font-semibold text-foreground text-sm truncate">
                                 {phase.phaseName}
                               </span>
-                              <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-[10px] font-bold border border-emerald-200 dark:border-emerald-800">
-                                -{phase.applyPercent}%
+                            </div>
+                            <div className="flex-shrink-0">
+                              <span className={`px-2 py-0.5 rounded-full text-[9px] font-semibold border inline-block whitespace-nowrap ${badge.className}`}>
+                                {badge.text}
                               </span>
                             </div>
                           </div>
-                          <div className="border-t border-border pt-2 space-y-1 text-[11px] md:text-xs">
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Thời Gian</span>
-                              <span className="font-medium">{`${formatDate(phase.startDate)} - ${formatDate(phase.endDate)}`}</span>
+
+                          <div className="border-t border-border pt-2 space-y-1 text-[11px]">
+                            <div className="flex justify-between gap-2">
+                              <span className="text-muted-foreground flex-shrink-0">Thời Gian</span>
+                              <span className="font-medium text-right break-words">
+                                {`${formatDate(phase.startDate)} - ${formatDate(phase.endDate)}`}
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">Áp dụng</span>
                               <span className="font-medium">{phase.applyPercent}%</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Tổng Slot</span>
-                              <span className="font-medium">{phase.totalSlot}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Còn Lại</span>
-                              <span className="font-medium">{phase.availableSlot}</span>
+                              <span className="text-muted-foreground">Còn lại</span>
+                              <span className="font-medium">
+                                <span className="text-emerald-600 dark:text-emerald-400">{phase.availableSlot}</span>
+                                <span className="text-muted-foreground"> (</span>
+                                <span className="text-blue-600 dark:text-blue-400">{phase.totalSlot}</span>
+                                <span className="text-muted-foreground">)</span>
+                              </span>
                             </div>
                           </div>
-                        </div>
-                      )
+                          </div>
+                        );
+                      }
                     )}
                   </div>
                 </div>
@@ -123,6 +133,55 @@ export function PriceTab({ conference }: PriceTabProps) {
       )}
     </div>
   );
+}
+
+// --- Helper function để tính badge trạng thái ---
+function getPhaseBadge(startDate?: string, endDate?: string): { text: string; className: string } {
+  // Nếu không có ngày, trả về trạng thái mặc định
+  if (!startDate || !endDate) {
+    return {
+      text: 'Chưa xác định',
+      className: 'bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800'
+    };
+  }
+
+  const now = new Date();
+  now.setHours(0, 0, 0, 0); // Reset về đầu ngày để so sánh chính xác
+  
+  const start = new Date(startDate);
+  start.setHours(0, 0, 0, 0);
+  
+  const end = new Date(endDate);
+  end.setHours(23, 59, 59, 999); // Cuối ngày
+  
+  // Kiểm tra ngày hợp lệ
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    return {
+      text: 'Ngày không hợp lệ',
+      className: 'bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800'
+    };
+  }
+  
+  if (now < start) {
+    // Sắp tới
+    const daysLeft = Math.ceil((start.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    return {
+      text: `Sắp tới (còn ${daysLeft} ngày)`,
+      className: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800'
+    };
+  } else if (now >= start && now <= end) {
+    // Đang diễn ra
+    return {
+      text: 'Đang diễn ra',
+      className: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800'
+    };
+  } else {
+    // Hoàn thành
+    return {
+      text: 'Hoàn thành',
+      className: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800'
+    };
+  }
 }
 
 // --- Reusable Helper Component (nội bộ) ---
