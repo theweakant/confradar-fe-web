@@ -1,6 +1,6 @@
 // components/RightSidebar/index.tsx
 import { ProgressTimelineSection } from "./ProgressSection"; 
-import { StatisticsSection } from "./StatisticsSection";
+import { StatisticsSection } from "./StatisticSection";
 import { RegisteredUserSection } from "./RegisteredUserSection";
 import type { CommonConference } from "@/types/conference.type";
 
@@ -36,7 +36,6 @@ export function RightSidebar({
       {/* Statistics */}
       <StatisticsSection
         conferenceId={conferenceId}
-        isCollaborator={isCollaborator}
       />
 
       {/* Recent Activities */}

@@ -18,6 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { truncateText } from "@/helper/format";
 
 interface ConferenceTableProps {
   conferences: Conference[];
@@ -100,18 +101,18 @@ export function ConferenceTable({
             key: "userNameCreator",
             header: "Người tạo",
             render: (conference: Conference) => (
-              <span className="text-sm text-gray-700">
-                {conference.userNameCreator || "—"}
-              </span>
+            <span className="text-sm text-gray-700">
+              {truncateText(conference.userNameCreator, 12)}
+            </span>
             ),
           },
           {
             key: "organization",
             header: "Tổ chức",
             render: (conference: Conference) => (
-              <span className="text-sm text-gray-700">
-                {conference.organization || "—"}
-              </span>
+            <span className="text-sm text-gray-700">
+              {truncateText(conference.organization, 5)}
+            </span>
             ),
           },
         ]
