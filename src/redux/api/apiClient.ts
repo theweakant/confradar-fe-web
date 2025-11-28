@@ -64,7 +64,7 @@ export const apiClient: BaseQueryFn<
       })
       clearTokens()
       clearReduxState()
-      window.location.href = "/auth/login"
+      // window.location.href = "/auth/login"
       return result
     }
 

@@ -27,6 +27,7 @@ const ConferencePriceTab: React.FC<ConferencePriceTabProps> = ({
   formatTime,
 }) => {
   const pricesList = conference.conferencePrices || [];
+  const isResearch = conference.isResearchConference;
 
   const getPhaseStatus = (phase: ConferencePricePhaseResponse) => {
     if (!phase.startDate || !phase.endDate) return "unknown";
@@ -75,7 +76,9 @@ const ConferencePriceTab: React.FC<ConferencePriceTabProps> = ({
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-white mb-6">Các loại vé</h2>
+      <h2 className="text-2xl font-bold text-white mb-6">
+        {isResearch ? "Các hình thức tham dự" : "Các loại vé"}
+      </h2>
 
       {pricesList.length > 0 ? (
         <div className="space-y-6">
@@ -89,18 +92,20 @@ const ConferencePriceTab: React.FC<ConferencePriceTabProps> = ({
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
                     <h3 className="text-xl font-bold text-white mb-2">
-                      {ticket.ticketName || "Vé chưa đặt tên"}
+                      {ticket.ticketName || (isResearch ? "Chưa đặt tên" : "Vé chưa đặt tên")}
                     </h3>
                     <p className="text-white/70 text-sm">
                       {ticket.ticketDescription ||
-                        "Chưa có mô tả cho loại vé này"}
+                        (isResearch
+                          ? "Chưa có mô tả cho hình thức tham dự này"
+                          : "Chưa có mô tả cho loại vé này")}
                     </p>
                   </div>
                   <div className="text-right">
                     <div className="text-2xl font-bold text-coral-400 mb-1">
                       {ticket.ticketPrice
                         ? `${ticket.ticketPrice.toLocaleString("vi-VN")}₫`
-                        : "Giá chưa xác định"}
+                        : (isResearch ? "Phí chưa xác định" : "Giá chưa xác định")}
                     </div>
                     {ticket.isAuthor && (
                       <span className="inline-block bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm">
@@ -113,7 +118,9 @@ const ConferencePriceTab: React.FC<ConferencePriceTabProps> = ({
                 {/* Ticket Availability */}
                 <div className="flex items-center gap-4 mt-4 text-sm">
                   <div className="text-white/70">
-                    <span className="font-medium">Tổng số vé:</span>{" "}
+                    <span className="font-medium">
+                      {isResearch ? "Tổng số chỗ:" : "Tổng số vé:"}
+                    </span>{" "}
                     {ticket.totalSlot || "Chưa xác định"}
                   </div>
                   <div className="text-white/70">
@@ -213,7 +220,9 @@ const ConferencePriceTab: React.FC<ConferencePriceTabProps> = ({
 
               {/* Price Phases */}
               <div>
-                <h4 className="text-lg font-semibold text-white mb-4">Các giai đoạn giá vé</h4>
+                <h4 className="text-lg font-semibold text-white mb-4">
+                  {isResearch ? "Các giai đoạn phí đăng ký" : "Các giai đoạn giá vé"}
+                </h4>
                 {ticket.pricePhases && ticket.pricePhases.length > 0 ? (
                   <div className="space-y-3">
                     {Array.from(ticket.pricePhases || [])
@@ -293,7 +302,7 @@ const ConferencePriceTab: React.FC<ConferencePriceTabProps> = ({
                   </div>
                 ) : (
                   <div className="text-center text-white/70 py-6 bg-white/10 rounded-lg">
-                    <p>Chưa có thông tin về các giai đoạn giá vé</p>
+                    <p>{isResearch ? "Chưa có thông tin về các giai đoạn phí đăng ký" : "Chưa có thông tin về các giai đoạn giá vé"}</p>
                   </div>
                   //                 )}
                   //               </div>

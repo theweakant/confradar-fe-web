@@ -64,19 +64,39 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
 
   const [isFavorite, setIsFavorite] = useState(false);
 
-  useEffect(() => {
-    fetchFavouriteConferences();
-  }, [fetchFavouriteConferences]);
+  const isResearch = conference.isResearchConference;
 
-  // Check if current conference is in favorites
   useEffect(() => {
-    if (lazyFavouriteConferences && conference.conferenceId) {
+    if (accessToken) {
+      fetchFavouriteConferences();
+    }
+  }, [accessToken, fetchFavouriteConferences]);
+
+  // Check if current conference is in favorites - chỉ khi đã login
+  useEffect(() => {
+    if (accessToken && lazyFavouriteConferences && conference.conferenceId) {
       const isInFavorites = lazyFavouriteConferences.some(
         (fav) => fav.conferenceId === conference.conferenceId,
       );
       setIsFavorite(isInFavorites);
+    } else {
+      setIsFavorite(false);
     }
-  }, [lazyFavouriteConferences, conference.conferenceId]);
+  }, [accessToken, lazyFavouriteConferences, conference.conferenceId]);
+
+  // useEffect(() => {
+  //   fetchFavouriteConferences();
+  // }, [fetchFavouriteConferences]);
+
+  // // Check if current conference is in favorites
+  // useEffect(() => {
+  //   if (lazyFavouriteConferences && conference.conferenceId) {
+  //     const isInFavorites = lazyFavouriteConferences.some(
+  //       (fav) => fav.conferenceId === conference.conferenceId,
+  //     );
+  //     setIsFavorite(isInFavorites);
+  //   }
+  // }, [lazyFavouriteConferences, conference.conferenceId]);
 
   const getPurchasedTicketInfo = () => {
     if (!conference.purchasedInfo?.conferencePriceId) return null;
@@ -166,16 +186,19 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
             >
               {conference.conferenceName}
             </h1>
-            <button
-              onClick={handleFavoriteToggle}
-              disabled={addingToFavourite || deletingFromFavourite}
-              className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              title={isFavorite ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
-            >
-              <Star
-                className={`w-6 h-6 transition-colors ${isFavorite ? "fill-yellow-400 text-yellow-400" : "text-white"} ${addingToFavourite || deletingFromFavourite ? "animate-pulse" : ""}`}
-              />
-            </button>
+            {accessToken && (
+              <button
+                onClick={handleFavoriteToggle}
+                disabled={addingToFavourite || deletingFromFavourite}
+                className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                title={isFavorite ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
+              >
+                <Star
+                  className={`w-6 h-6 transition-colors ${isFavorite ? "fill-yellow-400 text-yellow-400" : "text-white"} ${addingToFavourite || deletingFromFavourite ? "animate-pulse" : ""}`}
+                />
+              </button>
+            )}
+
             <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap">
               {conference.isResearchConference ? "Nghiên cứu" : "Công nghệ"}
             </span>
@@ -319,7 +342,7 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                      shadow-lg shadow-indigo-500/30 transition-all duration-300
                      hover:scale-[1.02]"
               >
-                Mua vé
+                {isResearch ? "Đăng ký tham dự" : "Mua vé"}
               </button>
             );
 
@@ -392,7 +415,7 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
              max-h-[95vh] flex flex-col"
             >
               <DialogTitle as="h3" className="text-lg font-semibold mb-4">
-                Chọn loại vé
+                {isResearch ? "Chọn hình thức tham dự" : "Chọn loại vé"}
               </DialogTitle>
 
               <div
@@ -481,10 +504,21 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                       <div className="flex justify-between items-start mb-1">
                         <div className="flex flex-col">
                           <span className="font-semibold text-lg">{ticket.ticketName}</span>
-                          {ticket.isAuthor && (
+                          {/* {ticket.isAuthor && (
                             <span className="text-xs text-yellow-300 font-medium mt-0.5">
-                              Vé dành cho tác giả
+                              {isResearch ? "Phí đăng ký với tư cách tác giả" : "Vé dành cho tác giả"}
                             </span>
+                          )} */}
+                          {ticket.isAuthor ? (
+                            <span className="text-xs text-yellow-300 font-medium mt-0.5">
+                              {isResearch ? "Phí đăng ký với tư cách tác giả" : "Vé dành cho tác giả"}
+                            </span>
+                          ) : (
+                            isResearch && (
+                              <span className="text-xs text-blue-300 font-medium mt-0.5">
+                                Phí đăng ký với tư cách thính giả
+                              </span>
+                            )
                           )}
                         </div>
                         <div className="text-right">
@@ -509,7 +543,7 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                         {currentPhase && (
                           <div>
                             <p>
-                              <span className="font-medium text-coral-200">Giai đoạn vé hiện tại:</span>{" "}
+                              <span className="font-medium text-coral-200">{isResearch ? "Giai đoạn phí tham dự hiện tại" : "Giai đoạn vé hiện tại:"}</span>{" "}
                               {currentPhase.phaseName || "Không xác định"}
                             </p>
                             {currentPhase.applyPercent !== undefined && (
@@ -1125,7 +1159,7 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                       <span>Đang xử lý...</span>
                     </div>
                   ) : accessToken ? (
-                    "Thanh toán"
+                    isResearch ? "Đăng ký" : "Thanh toán"
                   ) : (
                     "Đăng nhập"
                   )}

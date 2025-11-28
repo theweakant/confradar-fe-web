@@ -25,6 +25,8 @@ import { getRouteByRole } from "@/constants/roles";
 import { useReport } from "@/redux/hooks/useReport";
 import { toast } from "sonner";
 import { useTransaction } from "@/redux/hooks/useTransaction";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
 
 interface SidebarProps {
   className?: string;
@@ -35,6 +37,8 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
 
   const router = useRouter();
   const { user, signout } = useAuth();
+
+  const { accessToken } = useSelector((state: RootState) => state.auth);
 
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -53,6 +57,11 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
   // const [activeItem, setActiveItem] = useState('home');
 
   const handleOpenWallet = async () => {
+    if (!accessToken) {
+      toast.error('Vui lòng đăng nhập để xem ví');
+      return;
+    }
+
     setIsWalletDialogOpen(true);
     try {
       await fetchOwnWallet();
