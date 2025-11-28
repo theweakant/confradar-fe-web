@@ -337,6 +337,9 @@ export interface PaperCustomer {
   paperId: string;
   title?: string;
   description?: string;
+  paperTitle?: string | null;
+  paperDescription?: string | null;
+  createdAt?: string | null;
 
   // presenterId?: string;
   fullPaperId?: string;
@@ -345,13 +348,85 @@ export interface PaperCustomer {
   abstractId?: string;
   conferenceId?: string;
   paperPhaseId?: string;
-  createdAt?: string;
+  // createdAt?: string;
 
-  // cameraReady?: CameraReady | null;
-  // conference?: Conference | null;
-  // paperPhase?: PaperPhase | null;
-  // presenter?: User | null;
+  phaseName?: string | null;
+  researchConferencePhaseId?: string | null;
+  ticketId?: string | null;
+
+  conferenceName?: string | null;
+  conferenceDescription?: string | null;
+  conferenceStartDate?: string | null;
+  conferenceEndDate?: string | null;
+  conferenceTotalSlot?: number | null;
+  conferenceAvailableSlot?: number | null;
+  address?: string | null;
+  bannerImageUrl?: string | null;
+  conferenceCreatedAt?: string | null;
+  ticketSaleStart?: string | null;
+  ticketSaleEnd?: string | null;
+  isInternalHosted?: boolean | null;
+  isResearchConference?: boolean | null;
+  cityId?: string | null;
+  cityName?: string | null;
+
+  conferenceCreatedBy?: string | null;
+  conferenceCreatedByEmail?: string | null;
+  conferenceCreatedByFullName?: string | null;
+  conferenceCreatedByAvatarUrl?: string | null;
+
+  conferenceCategoryId?: string | null;
+  conferenceStatusId?: string | null;
+
+  abstract?: AbstractDetailForListType | null;
+  fullPaper?: FullPaperDetailForListType | null;
+  revisionPaper?: RevisionPaperDetailForListType | null;
+  cameraReady?: CameraReadyDetailForListType | null;
 }
+
+export interface AbstractDetailForListType {
+  abstractId: string;
+  abstractUrl: string;
+  title: string;
+  description: string;
+  createdAt: string;
+  reviewAt: string | null;
+  globalStatusId: string;
+  globalStatusName: string;
+}
+
+export interface FullPaperDetailForListType {
+  fullPaperId: string;
+  fullPaperUrl: string;
+  title: string;
+  description: string;
+  reviewStatusId: string;
+  reviewStatusName: string;
+  createdAt: string;
+  reviewAt: string | null;
+}
+
+export interface RevisionPaperDetailForListType {
+  revisionPaperId: string;
+  revisionRound: number;
+  globalStatusId: string;
+  globalStatusName: string;
+  createdAt: string;
+  reviewAt: string | null;
+  revisionRoundDeadlineId: string;
+  revisionRoundDeadlineStartSubmissionDate: string;
+  revisionRoundDeadlineEndSubmissionDate: string;
+  revisionRoundDeadlineRoundNumber: number;
+}
+
+export interface CameraReadyDetailForListType {
+  cameraReadyId: string;
+  cameraReadyUrl: string;
+  title: string;
+  description: string;
+  createdAt: string;
+}
+
 
 export interface PaperDetailResponse {
   paperId: string;

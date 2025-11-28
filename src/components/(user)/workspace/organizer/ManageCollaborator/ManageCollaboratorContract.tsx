@@ -169,6 +169,16 @@ export default function ManageCollaboratorContract() {
       ),
     },
     {
+      key: "name",
+      header: "Tên tài khoản",
+      render: (contract) => (
+        <div className="max-w-xs">
+          <p className="font-medium text-gray-900 truncate">{contract.collaboratorContractFullName}</p>
+          <p className="text-sm text-gray-500 truncate">{contract.collaboratorContractEmail}</p>
+        </div>
+      ),
+    },
+    {
       key: "conference",
       header: "Hội nghị",
       render: (contract) => (

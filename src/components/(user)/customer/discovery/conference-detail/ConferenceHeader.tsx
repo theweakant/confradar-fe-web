@@ -450,7 +450,8 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                       className={`block rounded-xl p-4 border transition-all ${isDisabled
                         ? "bg-gray-500/20 border-gray-400/30 cursor-not-allowed opacity-60"
                         : selectedTicket?.conferencePriceId === ticket.conferencePriceId
-                          ? "bg-coral-500/30 border-coral-400 cursor-pointer"
+                          // ? "bg-coral-500/30 border-coral-400 cursor-pointer"
+                          ? "bg-coral-100 border-yellow-400 border-2 shadow-md cursor-pointer"
                           : "bg-white/10 border-white/20 hover:bg-white/20 cursor-pointer"
                         }`}
                       onClick={() => {

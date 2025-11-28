@@ -1,5 +1,7 @@
 // src/types/user.type.ts
 
+import { CollaboratorContractResponse } from "./contract.type";
+
 export interface AuthUser {
   userId: string;
   email: string;
@@ -171,6 +173,10 @@ export interface CollaboratorAccountResponse {
   fullName: string;
   avatarUrl: string;
   bioDescription: string | null;
+
+  isActive: boolean | null;
+
+  contractDetail?: CollaboratorContractResponse[];
 }
 
 export interface Organization {
