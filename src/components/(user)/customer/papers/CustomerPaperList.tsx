@@ -10,6 +10,10 @@ import {
   Clock,
   ExternalLink,
   AlertCircle,
+  CheckCircle,
+  XCircle,
+  Loader,
+  Ban,
 } from "lucide-react";
 import { usePaperCustomer } from "@/redux/hooks/usePaper";
 import type { PaperCustomer } from "@/types/paper.type";
@@ -19,31 +23,166 @@ import { useEffect } from "react";
 function PaperCard({ paper }: { paper: PaperCustomer }) {
   const router = useRouter();
 
-  const getPhaseStatus = () => {
+  const getPhaseInfo = () => {
+    // Kiểm tra giai đoạn bị reject
+    let rejectedPhase: string | null = null;
+
+    if (paper.abstract?.globalStatusName === "Rejected") {
+      rejectedPhase = "Abstract";
+    } else if (paper.fullPaper?.reviewStatusName === "Rejected") {
+      rejectedPhase = "Full Paper";
+    } else if (paper.revisionPaper?.globalStatusName === "Rejected") {
+      rejectedPhase = "Revision";
+    }
+
+    const isRevisionSkipped =
+      paper.fullPaper?.reviewStatusName === "Accepted";
+
     const phases = [
-      { name: "Tóm tắt (Abstract)", available: !!paper.abstractId },
-      { name: "Bài đầy đủ (Full Paper)", available: !!paper.fullPaperId },
-      { name: "Bản chỉnh sửa (Revision)", available: !!paper.revisionPaperId },
-      { name: "Camera Ready", available: !!paper.cameraReadyId },
+      {
+        name: "Tóm tắt (Abstract)",
+        hasData: !!paper.abstractId,
+        status: paper.abstract?.globalStatusName || null,
+      },
+      {
+        name: "Bài đầy đủ (Full Paper)",
+        hasData: !!paper.fullPaperId,
+        status: paper.fullPaper?.reviewStatusName || null,
+      },
+      {
+        name: "Bản chỉnh sửa (Revision)",
+        hasData: !!paper.revisionPaperId,
+        status: paper.revisionPaper?.globalStatusName || null,
+        isSkipped: isRevisionSkipped,
+      },
+      {
+        name: "Camera Ready",
+        hasData: !!paper.cameraReadyId,
+        status: null,
+      },
     ];
 
-    return phases.map((phase, index) => (
-      <div
-        key={index}
-        className="flex items-center gap-2 text-sm text-gray-300"
-      >
-        <Badge
-          className={
-            phase.available
-              ? "bg-green-600/80 text-white"
-              : "bg-gray-700 text-gray-300"
-          }
+    // Logic cho Camera Ready: chỉ hiện nếu fullPaper hoặc revision được accepted
+    const canShowCameraReady =
+      paper.fullPaper?.reviewStatusName === "Accepted" ||
+      paper.revisionPaper?.globalStatusName === "Accepted";
+
+    return phases.map((phase, index) => {
+      let badgeColor = "bg-gray-700 text-gray-300";
+      let statusText = "Chưa nộp";
+      let icon = null;
+      let isBlocked = false;
+
+      // Kiểm tra nếu giai đoạn này bị block do reject ở giai đoạn trước
+      if (rejectedPhase) {
+        const rejectedIndex = phases.findIndex(
+          (p) => p.name.includes(rejectedPhase!)
+        );
+        if (index > rejectedIndex) {
+          isBlocked = true;
+        }
+      }
+
+      if (phase.name === "Bản chỉnh sửa (Revision)" && phase.isSkipped) {
+        badgeColor = "bg-gray-600/60 text-gray-300";
+        statusText = "Bỏ qua (Full Paper đã được chấp nhận)";
+        icon = <CheckCircle className="h-3 w-3" />;
+        return (
+          <div key={index} className="flex items-center gap-2 text-sm opacity-70">
+            <Badge className={`${badgeColor} flex items-center gap-1.5`}>
+              {icon}
+              <span>{phase.name}: {statusText}</span>
+            </Badge>
+          </div>
+        );
+      }
+
+      // Logic cho Camera Ready đặc biệt
+      if (phase.name === "Camera Ready") {
+        if (!canShowCameraReady && !isBlocked) {
+          isBlocked = true;
+        }
+        if (phase.hasData) {
+          badgeColor = "bg-green-600/80 text-white";
+          statusText = "Đã nộp";
+          icon = <CheckCircle className="h-3 w-3" />;
+        } else if (isBlocked) {
+          badgeColor = "bg-gray-800 text-gray-500";
+          statusText = rejectedPhase
+            ? `Không thể tiếp tục (Bị từ chối ở ${rejectedPhase})`
+            : "Chưa đủ điều kiện";
+          icon = <Ban className="h-3 w-3" />;
+        }
+      } else {
+        // Logic cho các giai đoạn khác
+        if (isBlocked) {
+          badgeColor = "bg-gray-800 text-gray-500";
+          statusText = `Không thể tiếp tục (Bị từ chối ở ${rejectedPhase})`;
+          icon = <Ban className="h-3 w-3" />;
+        } else if (!phase.hasData) {
+          badgeColor = "bg-gray-700 text-gray-300";
+          statusText = "Chưa nộp";
+        } else if (phase.status === "Pending") {
+          badgeColor = "bg-yellow-600/80 text-white";
+          statusText = "Đang chờ xét duyệt";
+          icon = <Loader className="h-3 w-3 animate-spin" />;
+        } else if (phase.status === "Accepted" || phase.status === "Approved") {
+          badgeColor = "bg-green-600/80 text-white";
+          statusText = "Đã chấp nhận";
+          icon = <CheckCircle className="h-3 w-3" />;
+        } else if (phase.status === "Rejected") {
+          badgeColor = "bg-red-600/80 text-white";
+          statusText = "Đã từ chối";
+          icon = <XCircle className="h-3 w-3" />;
+        } else if (phase.status === "Revise") {
+          badgeColor = "bg-blue-600/80 text-white";
+          statusText = "Cần chỉnh sửa";
+          icon = <AlertCircle className="h-3 w-3" />;
+        }
+      }
+
+      return (
+        <div
+          key={index}
+          className={`flex items-center gap-2 text-sm ${isBlocked ? "opacity-50" : ""
+            }`}
         >
-          {phase.name}: {phase.available ? "Đã mở" : "Chưa diễn ra"}
-        </Badge>
-      </div>
-    ));
+          <Badge className={`${badgeColor} flex items-center gap-1.5`}>
+            {icon}
+            <span>
+              {phase.name}: {statusText}
+            </span>
+          </Badge>
+        </div>
+      );
+    });
   };
+
+  // const getPhaseStatus = () => {
+  //   const phases = [
+  //     { name: "Tóm tắt (Abstract)", available: !!paper.abstractId },
+  //     { name: "Bài đầy đủ (Full Paper)", available: !!paper.fullPaperId },
+  //     { name: "Bản chỉnh sửa (Revision)", available: !!paper.revisionPaperId },
+  //     { name: "Camera Ready", available: !!paper.cameraReadyId },
+  //   ];
+
+  //   return phases.map((phase, index) => (
+  //     <div
+  //       key={index}
+  //       className="flex items-center gap-2 text-sm text-gray-300"
+  //     >
+  //       <Badge
+  //         className={
+  //           phase.available
+  //             ? "bg-green-600/80 text-white"
+  //             : "bg-gray-700 text-gray-300"
+  //         }
+  //       >
+  //         {phase.name}: {phase.available ? "Đã mở" : "Chưa diễn ra"}
+  //       </Badge>
+  //     </div>
+  //   ));
+  // };
 
   return (
     <Card className="overflow-hidden bg-gray-900 border border-gray-800 hover:border-gray-700 hover:shadow-md transition-all">
@@ -51,6 +190,59 @@ function PaperCard({ paper }: { paper: PaperCustomer }) {
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           {/* Left */}
           <div className="space-y-3">
+            <h2 className="text-xl font-semibold text-white leading-tight">
+              Mã bài báo: {paper.paperId}
+            </h2>
+
+            {(paper.title || paper.paperTitle) && (
+              <div className="space-y-1">
+                <span className="text-sm text-gray-400">Tiêu đề:</span>
+                <h3 className="text-lg font-medium text-white">
+                  {paper.title || paper.paperTitle}
+                </h3>
+              </div>
+            )}
+
+            {(paper.description || paper.paperDescription) && (
+              <div className="space-y-1">
+                <span className="text-sm text-gray-400">Mô tả:</span>
+                <p className="text-sm text-gray-300">
+                  {paper.description || paper.paperDescription}
+                </p>
+              </div>
+            )}
+
+            {(paper.conferenceId || paper.conferenceName) && (
+              <div className="flex items-center gap-2 text-sm text-gray-400">
+                <BookOpen className="h-4 w-4" />
+                <span>
+                  {paper.conferenceName
+                    ? `Hội nghị: ${paper.conferenceName}`
+                    : `Mã hội nghị: ${paper.conferenceId}`}
+                </span>
+              </div>
+            )}
+
+            {paper.createdAt && (
+              <div className="flex items-center gap-2 text-sm text-gray-400">
+                <Calendar className="h-4 w-4" />
+                <span>
+                  Nộp ngày:{" "}
+                  {new Date(paper.createdAt).toLocaleDateString("vi-VN")}
+                </span>
+              </div>
+            )}
+
+            {paper.phaseName && (
+              <div className="flex items-center gap-2 text-sm text-gray-400">
+                <Clock className="h-4 w-4" />
+                <span>Giai đoạn hiện tại: {paper.phaseName}</span>
+              </div>
+            )}
+
+            <div className="mt-3 space-y-1">{getPhaseInfo()}</div>
+          </div>
+          {/* <div className="space-y-3">
             <h2 className="text-xl font-semibold text-white leading-tight">
               Mã bài báo: {paper.paperId}
             </h2>
@@ -80,13 +272,8 @@ function PaperCard({ paper }: { paper: PaperCustomer }) {
                 </span>
               </div>
             )}
-            <div className="mt-3 space-y-1">{getPhaseStatus()}</div>
-            {/* {paper.paperPhaseId && (
-                            <Badge className="bg-yellow-600/80 text-white font-medium">
-                                Phase: {paper.paperPhaseId}
-                            </Badge>
-                        )} */}
-          </div>
+            <div className="mt-3 space-y-1">{getPhaseInfo()}</div>
+          </div> */}
 
           {/* Right actions */}
           <div className="flex gap-2 md:flex-col lg:flex-row md:items-end">

@@ -92,6 +92,9 @@ export interface CreateCollaboratorContractRequest {
 export interface CollaboratorContractResponse {
     collaboratorContractId?: string | null;
     collaboratorContractUserId?: string | null;
+    collaboratorContractEmail?: string | null;
+    collaboratorContractFullName?: string | null;
+    collaboratorContractAvatarUrl?: string | null;
     organizationId?: string | null;
     organizationDescription?: string | null;
     organizationName?: string | null;
@@ -122,6 +125,9 @@ export interface CollaboratorContractResponse {
     isResearchConference?: boolean | null;
     cityId?: string | null;
     conferenceCreatedBy?: string | null;
+    conferenceCreatedByName?: string | null;
+    conferenceCreatedByEmail?: string | null;
+    conferenceCreatedByAvatarUrl?: string | null;
     conferenceCategoryId?: string | null;
     conferenceCategoryName?: string | null;
     conferenceStatusId?: string | null;
