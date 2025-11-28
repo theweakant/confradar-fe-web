@@ -470,68 +470,176 @@ export default function ResearchConferenceStepForm({
     }
   };
 
-  const handleTimelineSubmit = async () => {
-    const mainPhase = researchPhases[0];
-    if (!mainPhase) {
-      toast.error("Main timeline là bắt buộc!");
-      return;
-    }
-    const waitlistPhase = researchPhases[1];
-    if (!waitlistPhase || !waitlistPhase.isWaitlist) {
-      toast.error("Bạn phải tạo Waitlist timeline trước khi tiếp tục!");
-      return;
-    }
-    if (!waitlistPhase.registrationStartDate) {
-      toast.error(
-        "Waitlist timeline chưa được điền — vui lòng điền đầy đủ timeline"
+  // const handleTimelineSubmit = async () => {
+  // console.log('📤 handleTimelineSubmit - START');
+  // console.log('📊 Current researchPhases state:', {
+  //   phasesCount: researchPhases.length,
+  //   phases: researchPhases.map((p, i) => ({
+  //     index: i,
+  //     isWaitlist: p.isWaitlist,
+  //     isActive: p.isActive,
+  //     researchPhaseId: p.researchPhaseId,
+  //     registrationStartDate: p.registrationStartDate,
+  //     fullPaperStartDate: p.fullPaperStartDate,
+  //     reviewStartDate: p.reviewStartDate,
+  //     reviseStartDate: p.reviseStartDate,
+  //     cameraReadyStartDate: p.cameraReadyStartDate,
+  //     abstractDecideStatusStart: p.abstractDecideStatusStart,
+  //     fullPaperDecideStatusStart: p.fullPaperDecideStatusStart,
+  //     revisionPaperDecideStatusStart: p.revisionPaperDecideStatusStart,
+  //     cameraReadyDecideStatusStart: p.cameraReadyDecideStatusStart,
+  //   }))
+  // });
+
+  //   const mainPhase = researchPhases[0];
+  //   if (!mainPhase) {
+  //     toast.error("Main timeline là bắt buộc!");
+  //     return;
+  //   }
+  //   const waitlistPhase = researchPhases[1];
+  //   if (!waitlistPhase || !waitlistPhase.isWaitlist) {
+  //     toast.error("Bạn phải tạo Waitlist timeline trước khi tiếp tục!");
+  //     return;
+  //   }
+  //   if (!waitlistPhase.registrationStartDate) {
+  //     toast.error(
+  //       "Waitlist timeline chưa được điền — vui lòng điền đầy đủ timeline"
+  //     );
+  //     return;
+  //   }
+
+  //   const mainValidation = validateResearchTimeline(
+  //     mainPhase,
+  //     basicForm.ticketSaleStart
+  //   );
+  //   if (!mainValidation.isValid) {
+  //     toast.error(`Lỗi ở Main Timeline: ${mainValidation.error}`);
+  //     return;
+  //   }
+  //   if (mainValidation.warning) {
+  //     toast.warning(`Cảnh báo ở Main Timeline: ${mainValidation.warning}`);
+  //   }
+
+  //   const waitlistValidation = validateResearchTimeline(
+  //     waitlistPhase,
+  //     basicForm.ticketSaleStart
+  //   );
+  //   if (!waitlistValidation.isValid) {
+  //     toast.error(`Lỗi ở Waitlist Timeline: ${waitlistValidation.error}`);
+  //     return;
+  //   }
+  //   if (waitlistValidation.warning) {
+  //     toast.warning(
+  //       `Cảnh báo ở Waitlist Timeline: ${waitlistValidation.warning}`
+  //     );
+  //   }
+
+  //   if (mainPhase.cameraReadyEndDate && waitlistPhase.registrationStartDate) {
+  //     const mainEnd = new Date(mainPhase.cameraReadyEndDate);
+  //     const waitlistStart = new Date(waitlistPhase.registrationStartDate);
+  //     if (waitlistStart <= mainEnd) {
+  //       toast.error(
+  //         "Waitlist timeline phải bắt đầu sau khi Main timeline kết thúc!"
+  //       );
+  //       return;
+  //     }
+  //   }
+  // console.log('📤 Calling submitResearchPhase with:', {
+  //   phasesCount: researchPhases.length,
+  //   phasesToSubmit: researchPhases.map((p, i) => ({
+  //     index: i,
+  //     isWaitlist: p.isWaitlist,
+  //     registrationStart: p.registrationStartDate
+  //   }))
+  // });
+  //   const result = await submitResearchPhase(researchPhases);
+  //     console.log('📥 submitResearchPhase result:', result);
+
+  //   if (result.success) {
+  //     handleMarkHasData(3);
+  //     handleNext();
+  //   }
+  // };
+const handleTimelineSubmit = async () => {
+  console.log('📤 handleTimelineSubmit - START');
+  
+  const mainPhase = researchPhases[0];
+  if (!mainPhase) {
+    toast.error("Main timeline là bắt buộc!");
+    return;
+  }
+
+  // ✅ Validate Main phase đầy đủ
+  const mainValidation = validateResearchTimeline(
+    mainPhase,
+    basicForm.ticketSaleStart
+  );
+  if (!mainValidation.isValid) {
+    toast.error(`Lỗi ở Main Timeline: ${mainValidation.error}`);
+    return;
+  }
+
+  // ✅ CHECK Waitlist phase
+  const waitlistPhase = researchPhases[1];
+  
+  if (waitlistPhase && waitlistPhase.isWaitlist) {
+    // Nếu có bất kỳ date nào được điền → validate đầy đủ
+    const hasAnyWaitlistData = 
+      waitlistPhase.registrationStartDate ||
+      waitlistPhase.fullPaperStartDate ||
+      waitlistPhase.reviewStartDate ||
+      waitlistPhase.reviseStartDate ||
+      waitlistPhase.cameraReadyStartDate;
+
+    if (hasAnyWaitlistData) {
+      // ✅ Validate waitlist nếu có data
+      const waitlistValidation = validateResearchTimeline(
+        waitlistPhase,
+        basicForm.ticketSaleStart
       );
-      return;
-    }
-
-    const mainValidation = validateResearchTimeline(
-      mainPhase,
-      basicForm.ticketSaleStart
-    );
-    if (!mainValidation.isValid) {
-      toast.error(`Lỗi ở Main Timeline: ${mainValidation.error}`);
-      return;
-    }
-    if (mainValidation.warning) {
-      toast.warning(`Cảnh báo ở Main Timeline: ${mainValidation.warning}`);
-    }
-
-    const waitlistValidation = validateResearchTimeline(
-      waitlistPhase,
-      basicForm.ticketSaleStart
-    );
-    if (!waitlistValidation.isValid) {
-      toast.error(`Lỗi ở Waitlist Timeline: ${waitlistValidation.error}`);
-      return;
-    }
-    if (waitlistValidation.warning) {
-      toast.warning(
-        `Cảnh báo ở Waitlist Timeline: ${waitlistValidation.warning}`
-      );
-    }
-
-    if (mainPhase.cameraReadyEndDate && waitlistPhase.registrationStartDate) {
-      const mainEnd = new Date(mainPhase.cameraReadyEndDate);
-      const waitlistStart = new Date(waitlistPhase.registrationStartDate);
-      if (waitlistStart <= mainEnd) {
-        toast.error(
-          "Waitlist timeline phải bắt đầu sau khi Main timeline kết thúc!"
-        );
+      
+      if (!waitlistValidation.isValid) {
+        toast.error(`Lỗi ở Waitlist Timeline: ${waitlistValidation.error}`);
         return;
       }
-    }
 
-    const result = await submitResearchPhase(researchPhases);
-    if (result.success) {
-      handleMarkHasData(3);
-      handleNext();
+      // ✅ Check thứ tự thời gian Main → Waitlist
+      if (mainPhase.cameraReadyDecideStatusEnd && waitlistPhase.registrationStartDate) {
+        const mainEnd = new Date(mainPhase.cameraReadyDecideStatusEnd);
+        const waitlistStart = new Date(waitlistPhase.registrationStartDate);
+        
+        if (waitlistStart <= mainEnd) {
+          toast.error(
+            "Waitlist timeline phải bắt đầu sau khi Main timeline kết thúc!"
+          );
+          return;
+        }
+      }
     }
-  };
+  }
 
+  console.log('📤 Calling submitResearchPhase with:', {
+    phasesCount: researchPhases.length,
+    mainPhase: {
+      registrationStart: mainPhase.registrationStartDate,
+      fullPaperStart: mainPhase.fullPaperStartDate,
+      cameraReadyStart: mainPhase.cameraReadyStartDate,
+    },
+    waitlistPhase: waitlistPhase ? {
+      registrationStart: waitlistPhase.registrationStartDate,
+      fullPaperStart: waitlistPhase.fullPaperStartDate,
+      cameraReadyStart: waitlistPhase.cameraReadyStartDate,
+    } : null
+  });
+
+  const result = await submitResearchPhase(researchPhases);
+  console.log('📥 submitResearchPhase result:', result);
+
+  if (result.success) {
+    handleMarkHasData(3);
+    handleNext();
+  }
+};
   const handlePriceSubmit = async () => {
     if (tickets.length === 0) {
       toast.error("Vui lòng thêm ít nhất 1 loại vé!");

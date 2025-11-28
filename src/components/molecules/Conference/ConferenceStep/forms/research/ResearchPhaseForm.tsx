@@ -263,6 +263,11 @@ export function ResearchPhaseForm({
 
   const createWaitlistFromMain = () => {
     const currentMainPhase = phases[0];
+      console.log('🏗️ createWaitlistFromMain - START:', {
+    hasMainPhase: !!currentMainPhase,
+    mainPhaseCameraReadyEnd: currentMainPhase?.cameraReadyDecideStatusEnd,
+    currentPhasesLength: phases.length
+  });
     if (!currentMainPhase.cameraReadyDecideStatusEnd) {
       toast.error("Vui lòng hoàn thành Timeline chính trước khi tạo Waitlist!");
       return;
@@ -345,8 +350,23 @@ export function ResearchPhaseForm({
       isActive: false,
       revisionRoundDeadlines: [],
     };
-
+  console.log('🏗️ createWaitlistFromMain - Waitlist created:', {
+    isWaitlist: copiedWaitlist.isWaitlist,
+    registrationStartDate: copiedWaitlist.registrationStartDate,
+    fullPaperStartDate: copiedWaitlist.fullPaperStartDate,
+    cameraReadyStartDate: copiedWaitlist.cameraReadyStartDate,
+    hasAllDates: !!(
+      copiedWaitlist.registrationStartDate &&
+      copiedWaitlist.fullPaperStartDate &&
+      copiedWaitlist.cameraReadyStartDate
+    )
+  });
     onPhasesChange([{ ...currentMainPhase }, copiedWaitlist]);
+      
+  console.log('✅ createWaitlistFromMain - DONE - New phases array:', [
+    { isWaitlist: false, registrationStart: currentMainPhase.registrationStartDate },
+    { isWaitlist: true, registrationStart: copiedWaitlist.registrationStartDate }
+  ]);
     toast.success("Đã tạo Waitlist Timeline! Bạn có thể chỉnh sửa ngày tháng.");
   };
 

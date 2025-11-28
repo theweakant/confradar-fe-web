@@ -141,7 +141,7 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
 
   const {
     deletedTicketIds = [],
-    deletedPhaseIds = [], // ← Thêm
+    deletedPhaseIds = [], 
     deletedSessionIds = [],
     deletedPolicyIds = [],
     deletedRefundPolicyIds = [],
@@ -348,230 +348,263 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
     }
   };
 
-  const submitResearchDetail = async (detail: ResearchDetail) => {
-    if (!conferenceId) {
-      toast.error("Không tìm thấy conference ID!");
-      return { success: false };
-    }
-    try {
-      setIsSubmitting(true);
-      let result;
+const submitResearchDetail = async (detail: ResearchDetail) => {
+  if (!conferenceId) {
+    toast.error("Không tìm thấy conference ID!");
+    return { success: false };
+  }
+  
+  try {
+    setIsSubmitting(true);
+    let result;
+    
+    // ✅ CHECK: Có researchDetailId hợp lệ không?
+    const hasValidId = !!(
+      detail.researchDetailId && 
+      detail.researchDetailId.trim() !== ''
+    );
+    
+    console.log('🔍 submitResearchDetail:', {
+      mode,
+      conferenceId,
+      hasValidId,
+      researchDetailId: detail.researchDetailId,
+      willUpdate: hasValidId,
+      willCreate: !hasValidId
+    });
+    
+    if (hasValidId) {
+      // ✅ CÓ ID → UPDATE (PUT)
+      console.log('➡️ UPDATE (PUT) with ID:', detail.researchDetailId);
+      result = await updateResearchDetail({ 
+        conferenceId, 
+        data: detail 
+      }).unwrap();
+      toast.success("Cập nhật chi tiết nghiên cứu thành công!");
+      await triggerRefetch();
+    } else {
+      // ✅ KHÔNG CÓ ID → CREATE (POST)
+      console.log('➡️ CREATE (POST)');
+      result = await createResearchDetail({ 
+        conferenceId, 
+        data: detail 
+      }).unwrap();
+      toast.success("Lưu chi tiết nghiên cứu thành công!");
+      
+      // Refetch để lấy ID mới trong edit mode
       if (mode === "edit") {
-        result = await updateResearchDetail({ conferenceId, data: detail }).unwrap();
-        toast.success("Cập nhật chi tiết nghiên cứu thành công!");
         await triggerRefetch();
-      } else {
-        result = await createResearchDetail({ conferenceId, data: detail }).unwrap();
-        toast.success("Lưu chi tiết nghiên cứu thành công!");
       }
-      dispatch(markStepCompleted(2));
-      return { success: true };
-    } catch (error) {
-      const apiError = error as { data?: ApiError };
-      console.error("Research detail submit failed:", error);
-      toast.error(apiError?.data?.message || "Lưu chi tiết nghiên cứu thất bại!");
-      return { success: false, error };
-    } finally {
-      setIsSubmitting(false);
     }
-  };
+    
+    dispatch(markStepCompleted(2));
+    return { success: true };
+    
+  } catch (error) {
+    const apiError = error as { data?: ApiError };
+    console.error("❌ Research detail submit failed:", error);
+    toast.error(apiError?.data?.message || "Lưu chi tiết nghiên cứu thất bại!");
+    return { success: false, error };
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
-  const submitResearchPhase = async (phases: ResearchPhase[]) => {
-    if (!conferenceId) {
-      toast.error("Không tìm thấy conference ID!");
+const submitResearchPhase = async (phases: ResearchPhase[]) => {
+  if (!conferenceId) {
+    toast.error("Không tìm thấy conference ID!");
+    return { success: false };
+  }
+
+  try {
+    setIsSubmitting(true);
+    
+    console.log('📤 submitResearchPhase - START:', {
+      conferenceId,
+      mode,
+      totalPhases: phases.length,
+      phasesRaw: phases.map((p, i) => ({
+        index: i,
+        isWaitlist: p.isWaitlist,
+        isActive: p.isActive,
+        researchPhaseId: p.researchPhaseId,
+        registrationStart: p.registrationStartDate,
+        fullPaperStart: p.fullPaperStartDate,
+        cameraReadyStart: p.cameraReadyStartDate,
+      }))
+    });
+    
+    // ✅ Filter riêng cho Main phase và Waitlist phase
+    const phasesToSubmit = phases.filter((phase) => {
+      // Main phase: bắt buộc phải có đủ 3 dates quan trọng
+      if (!phase.isWaitlist) {
+        return (
+          phase.registrationStartDate && 
+          phase.fullPaperStartDate && 
+          phase.cameraReadyStartDate
+        );
+      }
+      
+      // Waitlist phase: chỉ cần có registrationStartDate là đủ để submit
+      return phase.registrationStartDate;
+    });
+
+    console.log('📤 submitResearchPhase - AFTER FILTER:', {
+      filteredCount: phasesToSubmit.length,
+      filtered: phasesToSubmit.map((p, i) => ({
+        index: i,
+        isWaitlist: p.isWaitlist,
+        researchPhaseId: p.researchPhaseId,
+        registrationStart: p.registrationStartDate,
+        fullPaperStart: p.fullPaperStartDate,
+        cameraReadyStart: p.cameraReadyStartDate,
+      }))
+    });
+
+    if (phasesToSubmit.length === 0) {
+      toast.error("Không có giai đoạn hợp lệ để gửi!");
       return { success: false };
     }
 
-    try {
-      setIsSubmitting(true);
+    // ✅ Phân loại phases: CREATE vs UPDATE
+    const phasesToCreate = phasesToSubmit.filter((p) => !p.researchPhaseId);
+    const phasesToUpdate = phasesToSubmit.filter((p) => p.researchPhaseId);
 
-      if (mode === "edit") {
-        // Xóa các revision deadline đã đánh dấu
-        if (deletedRevisionDeadlineIds?.length) {
-          await Promise.all(
-            deletedRevisionDeadlineIds.map((id) => deleteRevisionDeadline(id).unwrap())
-          );
-        }
+    console.log('📤 submitResearchPhase - SPLIT:', {
+      createCount: phasesToCreate.length,
+      updateCount: phasesToUpdate.length,
+      deletedPhaseIds: deletedPhaseIds.length,
+    });
 
-        for (let i = 0; i < phases.length; i++) {
-          const phase = phases[i];
-          const hasData = !!(
-            phase.registrationStartDate ||
-            phase.fullPaperStartDate ||
-            phase.reviewStartDate ||
-            phase.reviseStartDate ||
-            phase.cameraReadyStartDate
-          );
+    const results = [];
 
-          if (!hasData) continue;
-
-          const isActiveValue = !phase.isWaitlist;
-
-          if (!phase.researchPhaseId) {
-            // CREATE new phase
-            const newPhasePayload: ResearchPhase = {
-              ...phase,
-              isActive: isActiveValue,
-              revisionRoundDeadlines: phase.revisionRoundDeadlines || [],
-            };
-
-            const newPhaseRes = await createResearchPhase({
-              conferenceId,
-              data: [newPhasePayload],
-            }).unwrap();
-
-            const createdPhase = Array.isArray(newPhaseRes.data) ? newPhaseRes.data[0] : null;
-            const newPhaseId = createdPhase?.researchPhaseId;
-
-            if (newPhaseId && phase.revisionRoundDeadlines?.length) {
-              await Promise.all(
-                phase.revisionRoundDeadlines.map((deadline) =>
-                  createRevisionDeadline({
-                    researchConferencePhaseId: newPhaseId,
-                    data: {
-                      startSubmissionDate: deadline.startSubmissionDate,
-                      endSubmissionDate: deadline.endSubmissionDate,
-                    },
-                  }).unwrap()
-                )
-              );
-            }
-          } else {
-            // UPDATE existing phase
-            await updateResearchPhase({
-              researchPhaseId: phase.researchPhaseId!,
-              data: {
-                registrationStartDate: phase.registrationStartDate,
-                registrationEndDate: phase.registrationEndDate,
-                fullPaperStartDate: phase.fullPaperStartDate,
-                fullPaperEndDate: phase.fullPaperEndDate,
-                reviewStartDate: phase.reviewStartDate,
-                reviewEndDate: phase.reviewEndDate,
-                reviseStartDate: phase.reviseStartDate,
-                reviseEndDate: phase.reviseEndDate,
-                cameraReadyStartDate: phase.cameraReadyStartDate,
-                cameraReadyEndDate: phase.cameraReadyEndDate,
-
-                // === 10 trường mới ===
-                abstractDecideStatusStart: phase.abstractDecideStatusStart,
-                abstractDecideStatusEnd: phase.abstractDecideStatusEnd,
-                fullPaperDecideStatusStart: phase.fullPaperDecideStatusStart,
-                fullPaperDecideStatusEnd: phase.fullPaperDecideStatusEnd,
-                revisionPaperDecideStatusStart: phase.revisionPaperDecideStatusStart,
-                revisionPaperDecideStatusEnd: phase.revisionPaperDecideStatusEnd,
-                cameraReadyDecideStatusStart: phase.cameraReadyDecideStatusStart,
-                cameraReadyDecideStatusEnd: phase.cameraReadyDecideStatusEnd,
-
-                isWaitlist: phase.isWaitlist,
-                isActive: isActiveValue,
-              },
-            }).unwrap();
-
-            // Xử lý revision deadlines
-            const existingDeadlines = phase.revisionRoundDeadlines.filter(d => d.revisionRoundDeadlineId);
-            const newDeadlines = phase.revisionRoundDeadlines.filter(d => !d.revisionRoundDeadlineId);
-
-            if (existingDeadlines.length > 0) {
-              await Promise.all(
-                existingDeadlines.map(deadline =>
-                  updateRevisionDeadline({
-                    deadlineId: deadline.revisionRoundDeadlineId!,
-                    startSubmissionDate: deadline.startSubmissionDate,
-                    endSubmissionDate: deadline.endSubmissionDate,
-                  }).unwrap()
-                )
-              );
-            }
-
-            if (newDeadlines.length > 0) {
-              await Promise.all(
-                newDeadlines.map(deadline =>
-                  createRevisionDeadline({
-                    researchConferencePhaseId: phase.researchPhaseId!,
-                    data: {
-                      startSubmissionDate: deadline.startSubmissionDate,
-                      endSubmissionDate: deadline.endSubmissionDate,
-                    },
-                  }).unwrap()
-                )
-              );
-            }
-          }
-        }
-
-        toast.success("Cập nhật timeline và các đợt nộp bản sửa thành công!");
-        await triggerRefetch();
-      } else {
-        // CREATE MODE
-      const validPhases = phases.filter(phase => {
-        const hasData = !!(
-          phase.registrationStartDate ||
-          phase.fullPaperStartDate ||
-          phase.reviewStartDate ||
-          phase.reviseStartDate ||
-          phase.cameraReadyStartDate ||
-          phase.abstractDecideStatusStart ||
-          phase.fullPaperDecideStatusStart ||
-          phase.revisionPaperDecideStatusStart ||
-          phase.cameraReadyDecideStatusStart
-        );
-        return hasData;
+    // ✅ 1. CREATE phases mới (nếu có)
+    if (phasesToCreate.length > 0) {
+      console.log('➡️ CREATE (POST) phases:', phasesToCreate.length);
+      
+      // ✅ FIX: data là array trực tiếp, không phải object
+      const createPayload = {
+        conferenceId,
+        data: phasesToCreate, // ← Truyền array trực tiếp
+      };
+      
+      console.log('📦 CREATE Payload:', {
+        conferenceId: createPayload.conferenceId,
+        phasesCount: createPayload.data.length,
+        phases: createPayload.data.map((p, i) => ({
+          index: i,
+          isWaitlist: p.isWaitlist,
+          registrationStart: p.registrationStartDate,
+          fullPaperStart: p.fullPaperStartDate,
+          cameraReadyStart: p.cameraReadyStartDate,
+        })),
       });
 
-        if (validPhases.length === 0) {
-          toast.error("Vui lòng điền ít nhất 1 timeline!");
-          return { success: false };
-        }
+      const createResult = await createResearchPhase(createPayload).unwrap();
+      console.log('📥 CREATE Result:', createResult);
+      results.push(createResult);
+    }
 
-        const phasesPayload: ResearchPhase[] = validPhases.map(phase => ({
-          ...phase,
-          isActive: !phase.isWaitlist,
-          revisionRoundDeadlines: phase.revisionRoundDeadlines || [],
-        }));
+    // ✅ 2. UPDATE từng phase có ID (nếu có)
+    if (phasesToUpdate.length > 0) {
+      console.log('➡️ UPDATE (PUT) phases:', phasesToUpdate.length);
+      
+      for (const phase of phasesToUpdate) {
+        if (!phase.researchPhaseId) continue;
 
-        const createdResponse = await createResearchPhase({
-          conferenceId,
-          data: phasesPayload,
-        }).unwrap();
+        const updatePayload = {
+          researchPhaseId: phase.researchPhaseId,
+          data: {
+            registrationStartDate: phase.registrationStartDate,
+            registrationEndDate: phase.registrationEndDate,
+            registrationDuration: phase.registrationDuration,
+            
+            fullPaperStartDate: phase.fullPaperStartDate,
+            fullPaperEndDate: phase.fullPaperEndDate,
+            fullPaperDuration: phase.fullPaperDuration,
+            
+            reviewStartDate: phase.reviewStartDate,
+            reviewEndDate: phase.reviewEndDate,
+            reviewDuration: phase.reviewDuration,
+            
+            reviseStartDate: phase.reviseStartDate,
+            reviseEndDate: phase.reviseEndDate,
+            reviseDuration: phase.reviseDuration,
+            
+            cameraReadyStartDate: phase.cameraReadyStartDate,
+            cameraReadyEndDate: phase.cameraReadyEndDate,
+            cameraReadyDuration: phase.cameraReadyDuration,
+            
+            abstractDecideStatusStart: phase.abstractDecideStatusStart,
+            abstractDecideStatusEnd: phase.abstractDecideStatusEnd,
+            abstractDecideStatusDuration: phase.abstractDecideStatusDuration,
+            
+            fullPaperDecideStatusStart: phase.fullPaperDecideStatusStart,
+            fullPaperDecideStatusEnd: phase.fullPaperDecideStatusEnd,
+            fullPaperDecideStatusDuration: phase.fullPaperDecideStatusDuration,
+            
+            revisionPaperDecideStatusStart: phase.revisionPaperDecideStatusStart,
+            revisionPaperDecideStatusEnd: phase.revisionPaperDecideStatusEnd,
+            revisionPaperDecideStatusDuration: phase.revisionPaperDecideStatusDuration,
+            
+            cameraReadyDecideStatusStart: phase.cameraReadyDecideStatusStart,
+            cameraReadyDecideStatusEnd: phase.cameraReadyDecideStatusEnd,
+            cameraReadyDecideStatusDuration: phase.cameraReadyDecideStatusDuration,
+            
+            isWaitlist: phase.isWaitlist,
+            isActive: phase.isActive,
+            revisionRoundDeadlines: phase.revisionRoundDeadlines || [],
+          },
+        };
 
-        const createdPhases = Array.isArray(createdResponse.data) ? createdResponse.data : [];
-        const deadlinePromises: Promise<unknown>[] = [];
-
-        validPhases.forEach((phase, index) => {
-          const createdPhase = createdPhases[index];
-          if (createdPhase?.researchPhaseId && phase.revisionRoundDeadlines?.length) {
-            phase.revisionRoundDeadlines.forEach(deadline => {
-              deadlinePromises.push(
-                createRevisionDeadline({
-                  researchConferencePhaseId: createdPhase.researchPhaseId!,
-                  data: {
-                    startSubmissionDate: deadline.startSubmissionDate,
-                    endSubmissionDate: deadline.endSubmissionDate,
-                  },
-                }).unwrap()
-              );
-            });
-          }
+        console.log('📦 UPDATE Payload for phase:', {
+          researchPhaseId: updatePayload.researchPhaseId,
+          isWaitlist: phase.isWaitlist,
+          registrationStart: phase.registrationStartDate,
         });
 
-        if (deadlinePromises.length > 0) {
-          await Promise.all(deadlinePromises);
-          toast.success("Lưu timeline và các đợt nộp bản sửa thành công!");
-        } else {
-          toast.success("Lưu timeline thành công!");
+        try {
+          const updateResult = await updateResearchPhase(updatePayload).unwrap();
+          console.log('📥 UPDATE Result for phase:', updateResult);
+          results.push(updateResult);
+        } catch (error) {
+          console.error('❌ Failed to update phase:', phase.researchPhaseId, error);
+          throw error;
         }
       }
-
-      dispatch(markStepCompleted(3));
-      return { success: true };
-    } catch (error) {
-      const apiError = error as { data?: ApiError };
-      toast.error(apiError?.data?.message || "Lưu timeline thất bại. Vui lòng kiểm tra lại dữ liệu và thử lại.");
-      return { success: false, error };
-    } finally {
-      setIsSubmitting(false);
     }
-  };
+
+    // ✅ 3. Xử lý deletedPhaseIds bằng cách không submit chúng
+    // (Backend sẽ tự động xóa phases không còn trong danh sách submit)
+    if (deletedPhaseIds.length > 0) {
+      console.log('ℹ️ Deleted phases will be removed by backend:', deletedPhaseIds);
+    }
+
+    // ✅ 4. Refetch để lấy dữ liệu mới nhất
+    await triggerRefetch();
+
+    toast.success("Lưu timeline thành công!");
+    dispatch(markStepCompleted(3));
+    
+    return { success: true, results };
+    
+  } catch (error) {
+    const apiError = error as { data?: ApiError };
+    console.error("❌ Research phase submit failed:", error);
+    console.error("❌ Error details:", {
+      message: apiError?.data?.message,
+      errors: apiError?.data?.errors,
+      fullError: apiError,
+    });
+    
+    toast.error(
+      apiError?.data?.message || "Lưu timeline thất bại!"
+    );
+    return { success: false, error };
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const submitSessions = async (
     sessions: ResearchSession[],
