@@ -528,7 +528,7 @@ export interface TechnicalConferenceDetailResponse {
   conferencePrices?: ConferencePriceResponse[];
   conferenceTimelines?: ConferenceTimelineResponse[];
   purchasedInfo?: PurchasedInfo;
-contract:CollaboratorContract;
+  contract:CollaboratorContract;
 
 }
 
@@ -552,6 +552,7 @@ export interface ResearchConferenceDetailResponse {
   conferenceStatusId?: string;
 
   // Research Conference specific fields
+  researchDetailId?:string
   name?: string;
   paperFormat?: string;
   numberPaperAccept?: number;
@@ -571,6 +572,8 @@ export interface ResearchConferenceDetailResponse {
   researchPhase?: ResearchConferencePhaseResponse[];
   researchSessions?: ResearchConferenceSessionResponse[];
 
+  sessions?:ResearchConferenceSessionResponse[];
+
   // Shared data (same as technical conference)
   policies?: ConferencePolicyResponse[];
   sponsors?: SponsorResponse[];
@@ -579,6 +582,8 @@ export interface ResearchConferenceDetailResponse {
   conferencePrices?: ConferencePriceResponse[];
   conferenceTimelines?: ConferenceTimelineResponse[];
   purchasedInfo?: PurchasedInfo;
+
+  contract?:CollaboratorContract;
 }
 
 export interface ConferencePolicyResponse {

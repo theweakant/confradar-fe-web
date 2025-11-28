@@ -45,7 +45,6 @@ export default function ManageConference() {
   const [filterCity, setFilterCity] = useState("all");
   const [isSelectTypeModalOpen, setIsSelectTypeModalOpen] = useState(false);
 
-  // ✅ CẬP NHẬT: Dùng getTechnicalConferencesByOrganizer cho tab "my"
   const {
     data: techConferencesData,
     isLoading: techLoading,
@@ -319,7 +318,14 @@ export default function ManageConference() {
             },
           ]}
         />
-
+      <div className="my-4 flex justify-end">
+        <Link
+          href="/workspace/organizer/manage-conference/pending-conference"
+          className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+        >
+          Xem hội nghị đang chờ duyệt
+        </Link>
+      </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <StatCard
             title={

@@ -94,7 +94,7 @@ export function useResearchConferenceData({
 
       // === Map Research Detail ===
       const researchDetail: ResearchDetail = {
-        researchDetailId: "detail",
+        researchDetailId: data.researchDetailId ?? undefined,
         paperFormat: data.paperFormat ?? "",
         numberPaperAccept: data.numberPaperAccept ?? 0,
         revisionAttemptAllowed: data.revisionAttemptAllowed ?? 1,

@@ -314,15 +314,21 @@ export function CollaboratorSessionForm({
       return;
     }
 
-    const startDate = new Date(formData.selectedStartTime);
-    const endDate = new Date(calculatedEndTime);
-    const startDay = startDate.toISOString().split("T")[0];
-    const endDay = endDate.toISOString().split("T")[0];
+const startDate = new Date(formData.selectedStartTime);
+const endDate = new Date(calculatedEndTime);
 
-    if (startDay !== endDay) {
-      toast.error("Phiên họp không được kéo dài qua ngày hôm sau. Vui lòng chọn thời gian kết thúc trước 23:59.");
-      return;
-    }
+// Hàm helper để lấy ngày theo timezone địa phương
+const getLocalDateStr = (date: Date): string => {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
+const startDayLocal = getLocalDateStr(startDate);
+const endDayLocal = getLocalDateStr(endDate);
+
+if (startDayLocal !== endDayLocal) {
+  toast.error("Phiên họp không được kéo dài qua ngày hôm sau. Vui lòng chọn thời gian kết thúc trước 23:59.");
+  return;
+}
 
     if (selectedDate < conferenceStartDate || selectedDate > conferenceEndDate) {
       toast.error(`Ngày phải nằm trong khoảng từ ${formatDate(conferenceStartDate)} đến ${formatDate(conferenceEndDate)}`);
