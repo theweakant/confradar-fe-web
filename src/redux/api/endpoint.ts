@@ -364,10 +364,10 @@ export const endpoint = {
   },
 
   DASHBOARD: {
-    CONFERENCES_GROUP_BY_STATUS: "/api/dashboard/conferences-group-by-status",
-    UPCOMING_CONFERENCES: "/api/dashboard/upcoming-conferences",
-    TOP_REGISTERED_CONFERENCES: "/api/dashboard/top-registered-conferences",
-    REVENUE: "/api/dashboard/revenue",
+    CONFERENCES_GROUP_BY_STATUS: "/dashboard/conferences-group-by-status",
+    UPCOMING_CONFERENCES: "/dashboard/upcoming-conferences",
+    TOP_REGISTERED_CONFERENCES: "/dashboard/top-registered-conferences",
+    REVENUE: "/dashboard/revenue",
   },
 }
 
