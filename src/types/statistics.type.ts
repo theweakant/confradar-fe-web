@@ -57,6 +57,14 @@ export interface SoldTicketResponse {
   totalRevenue: number;
 }
 
+
+export interface TicketHolderPagination {
+  items: TicketHolder[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
 export interface TicketHolder {
   ticketId: string;
   customerName: string;
@@ -64,7 +72,7 @@ export interface TicketHolder {
   phaseName: string;
   actualPrice: number;
   purchaseDate: string; 
-  status: string;
+  overallStatus: string;
 
   isRefunded:boolean
 }

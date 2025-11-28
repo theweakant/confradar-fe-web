@@ -121,14 +121,13 @@ export function ContractTab({ conferenceData }: ContractTabProps) {
           <StepItem label="Chính sách" status={contract.isPolicyStep} />
           <StepItem label="Session" status={contract.isSessionStep} />
           <StepItem label="Giá vé" status={contract.isPriceStep} />
-          <StepItem label="Bán vé hộ" status={contract.isTicketSelling} />
+          <StepItem label="Liên kết bán vé" status={contract.isTicketSelling} />
         </div>
       </div>
     </div>
   );
 }
 
-// Component con: Hiển thị 1 mục thông tin
 function InfoItem({
   label,
   children,
@@ -149,7 +148,6 @@ function InfoItem({
   );
 }
 
-// Component con: Hiển thị trạng thái bước
 function StepItem({ label, status }: { label: string; status: boolean }) {
   return (
     <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">

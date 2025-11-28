@@ -152,19 +152,17 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
     (!needsDataValidation || missingRequired.length === 0) &&
     (!needsTimeValidation || timeValidation.valid);
 
-  // === Gửi yêu cầu cập nhật ===
   const handleSubmit = async () => {
     if (!selectedStatusId) {
       return toast.error("Vui lòng chọn trạng thái mới");
     }
 
-    // Validate transition thời gian Ready → Completed
     const now = new Date();
     if (currentStatusName === "Ready" && targetStatusName === "Completed") {
       const endDate = conference.endDate ? new Date(conference.endDate) : null;
       if (!endDate || now <= endDate) {
         return toast.error("Không thể chuyển trạng thái", {
-          description: "Chỉ có thể đánh dấu hoàn thành sau ngày kết thúc hội thảo.",
+          description: "Chỉ có thể cập nhật trạng thái Completed sau ngày kết thúc sự kiện.",
         });
       }
     }

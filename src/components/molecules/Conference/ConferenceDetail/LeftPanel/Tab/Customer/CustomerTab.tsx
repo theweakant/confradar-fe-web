@@ -19,7 +19,9 @@ export function CustomerTab({ conferenceId, conferenceType }: CustomerTabProps) 
     conferenceId ? conferenceId : skipToken
   );
 
-  const ticketHolders = data?.data || [];
+  const ticketHolders = Array.isArray(data?.data?.items) ? data.data.items : [];
+  const totalRevenue = ticketHolders.reduce((sum, t) => sum + t.actualPrice, 0);
+
   const [selectedTicket, setSelectedTicket] = useState<TicketHolder | null>(null);
 
   const closeModal = () => setSelectedTicket(null);
@@ -53,7 +55,6 @@ export function CustomerTab({ conferenceId, conferenceType }: CustomerTabProps) 
     );
   }
 
-  const totalRevenue = ticketHolders.reduce((sum, t) => sum + t.actualPrice, 0);
 
   return (
     <>
@@ -122,12 +123,12 @@ export function CustomerTab({ conferenceId, conferenceType }: CustomerTabProps) 
                     </span>
                     <span
                       className={`px-2.5 py-1 text-xs font-medium rounded-full ${
-                        holder.status === "Đã thanh toán"
+                        holder.overallStatus === "Đã thanh toán"
                           ? "bg-green-100 text-green-700 border border-green-200"
                           : "bg-yellow-100 text-yellow-700 border border-yellow-200"
                       }`}
                     >
-                      {holder.status}
+                      {holder.overallStatus}
                     </span>
                   </div>
                 </div>

@@ -9,6 +9,7 @@ import {
   SubmittedPapersResponse,
   ReviewerAssignment,
   PresentSessionResponse,
+  TicketHolderPagination,
 } from '@/types/statistics.type';
 
 export const statisticsApi = createApi({
@@ -23,12 +24,12 @@ export const statisticsApi = createApi({
       }),
     }),
 
-    getTicketHolders: builder.query<ApiResponse<TicketHolder[]>, string>({
-      query: (confId) => ({
-        url: endpoint.STATISTICS.TICKET_HOLDERS,
-        params: { confId },
-      }),
+  getTicketHolders: builder.query<ApiResponse<TicketHolderPagination>, string>({
+    query: (conferenceId) => ({
+      url: endpoint.STATISTICS.TICKET_HOLDERS,
+      params: { conferenceId }, 
     }),
+  }),
 
     exportSoldTicket: builder.query<Blob, string>({
       query: (confId) => ({

@@ -38,7 +38,7 @@ export function ResearchBasicInfoForm({
     <div className="space-y-4">
       {/* Conference Name */}
       <FormInput
-        label="Tên hội thảo nghiên cứu"
+        label="Tên hội nghị nghiên cứu"
         name="conferenceName"
         value={value.conferenceName}
         onChange={(val) => handleChange("conferenceName", val)}
@@ -62,7 +62,7 @@ export function ResearchBasicInfoForm({
       {/* Event Date Range Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <DatePickerInput
-          label="Ngày bắt đầu sự kiện"
+          label="Ngày bắt đầu hội nghị"
           value={value.startDate}
           onChange={(val) => handleChange("startDate", val)}
           required
@@ -100,7 +100,7 @@ export function ResearchBasicInfoForm({
       {/* Ticket Sale Period */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <DatePickerInput
-          label="Ngày bắt đầu bán vé"
+          label="Ngày bắt đầu chi phí"
           sublabel={
             value.startDate
               ? `Trước ngày bắt đầu sự kiện ${formatDate(value.startDate)}`
@@ -116,7 +116,7 @@ export function ResearchBasicInfoForm({
         />
 
         <FormInput
-          label="Số ngày bán vé"
+          label="Số ngày diễn ra"
           type="number"
           min="1"
           value={value.ticketSaleDuration ?? ""}
@@ -129,7 +129,7 @@ export function ResearchBasicInfoForm({
 
         <div>
           <label className="block text-sm font-medium mb-2">
-            Ngày kết thúc bán vé
+            Ngày kết thúc chi phí
           </label>
           <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
             {value.ticketSaleEnd ? (

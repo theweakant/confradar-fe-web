@@ -267,7 +267,7 @@ export function StatisticsSection({
 
                       <div className="flex justify-between items-center">
                         <div>
-                          <p className="text-sm text-red-700 font-medium">Số tiền đã hoàn trả</p>
+                          <p className="text-sm text-red-700 font-medium">Số tiền đã hoàn trả cho khách</p>
                           <p className="text-xs text-gray-500">Khách đã hủy và đã được hoàn tiền</p>
                         </div>
                         <p className="text-xl font-bold text-red-700">- {formatCurrency(totalRefundedAmount)}</p>

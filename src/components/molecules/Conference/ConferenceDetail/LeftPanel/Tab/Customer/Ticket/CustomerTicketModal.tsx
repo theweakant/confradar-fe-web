@@ -80,12 +80,12 @@ export function CustomerTicketModal({
               value={
                 <span
                   className={`inline-flex px-3 py-1 text-xs font-medium rounded-full ${
-                    ticket.status === "Đã thanh toán"
+                    ticket.overallStatus === "Đã thanh toán"
                       ? "bg-green-100 text-green-700 border border-green-200"
                       : "bg-yellow-100 text-yellow-700 border border-yellow-200"
                   }`}
                 >
-                  {ticket.status}
+                  {ticket.overallStatus}
                 </span>
               }
             />
