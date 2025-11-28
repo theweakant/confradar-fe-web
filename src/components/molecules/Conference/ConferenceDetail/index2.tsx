@@ -238,7 +238,7 @@ export default function ConferenceDetailPage() {
                   </DropdownMenuItem>
                 )}
 
-              {conference.conferenceStatusId &&
+              {/* {conference.conferenceStatusId &&
                 ["Draft", "Pending"].includes(getStatusName(conference.conferenceStatusId)) && (
                   <DropdownMenuItem
                     onClick={() => setDeleteDialogOpen(true)}
@@ -247,7 +247,7 @@ export default function ConferenceDetailPage() {
                     <Trash2 className="w-4 h-4" />
                     Xóa hội thảo
                   </DropdownMenuItem>
-                )}
+                )} */}
             </DropdownMenuContent>
           </DropdownMenu>
         }
