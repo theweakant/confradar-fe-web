@@ -3,7 +3,7 @@
 import { toast } from "sonner";
 import { useEffect, useMemo, useCallback, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks/hooks";
-import { setMaxStep, setMode } from "@/redux/slices/conferenceStep.slice";
+import { setMaxStep, setMode, setVisibleSteps  } from "@/redux/slices/conferenceStep.slice";
 
 // API Queries
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
@@ -173,7 +173,9 @@ export default function ResearchConferenceStepForm({
 
   const initialDataRef = useRef<InitialFormData | null>(null);
   const [hasLoadedData, setHasLoadedData] = useState(false);
-
+  const visibleSteps = useMemo(() => {
+    return Array.from({ length: RESEARCH_MAX_STEP }, (_, i) => i + 1);
+  }, []);
   // === LOAD EXISTING DATA ===
   const {
     isLoading: isConferenceLoading,
@@ -343,10 +345,11 @@ export default function ResearchConferenceStepForm({
   const { validationErrors, validate, clearError } = useValidation();
 
   // INIT MODE & MAX STEP
-  useEffect(() => {
-    dispatch(setMode(mode));
-    dispatch(setMaxStep(RESEARCH_MAX_STEP));
-  }, [dispatch, mode]);
+useEffect(() => {
+  dispatch(setMode(mode));
+  dispatch(setMaxStep(RESEARCH_MAX_STEP));
+  dispatch(setVisibleSteps(visibleSteps));
+}, [dispatch, mode, visibleSteps]);
 
   // CLEANUP KHI UNMOUNT
   useEffect(() => {
@@ -445,8 +448,24 @@ export default function ResearchConferenceStepForm({
     [basicForm, validate, clearError]
   );
 
-  const handlePreviousStep = () => handlePrevious();
-  const handleNextStep = () => handleNext();
+const handleNextStep = useCallback(() => {
+  const currentIndex = visibleSteps.indexOf(currentStep);
+  if (currentIndex < visibleSteps.length - 1) {
+    handleGoToStep(visibleSteps[currentIndex + 1]);
+  }
+}, [currentStep, visibleSteps, handleGoToStep]);
+
+const handlePreviousStep = useCallback(() => {
+  const currentIndex = visibleSteps.indexOf(currentStep);
+  if (currentIndex > 0) {
+    handleGoToStep(visibleSteps[currentIndex - 1]);
+  }
+}, [currentStep, visibleSteps, handleGoToStep]);
+
+const isCurrentStepLast = useMemo(() => {
+  const currentIndex = visibleSteps.indexOf(currentStep);
+  return currentIndex === visibleSteps.length - 1;
+}, [currentStep, visibleSteps]);
 
   // CREATE MODE: SUBMIT & NEXT HANDLERS
   const handleBasicSubmit = async () => {
@@ -1046,6 +1065,7 @@ const handleTimelineSubmit = async () => {
             maxStep={RESEARCH_MAX_STEP}
             isSubmitting={isSubmitting || isFetching}
             mode={mode}
+            isLastStep={isCurrentStepLast}
             isStepCompleted={isStepCompleted}
             onNext={handleNextStep}
             onSubmit={handleBasicSubmit}
@@ -1074,6 +1094,7 @@ const handleTimelineSubmit = async () => {
             maxStep={RESEARCH_MAX_STEP}
             isSubmitting={isSubmitting || isFetching}
             mode={mode}
+            isLastStep={isCurrentStepLast}
             isStepCompleted={isStepCompleted}
             onPrevious={handlePreviousStep}
             onNext={handleNextStep}
@@ -1104,6 +1125,7 @@ const handleTimelineSubmit = async () => {
             maxStep={RESEARCH_MAX_STEP}
             isSubmitting={isSubmitting || isFetching}
             mode={mode}
+            isLastStep={isCurrentStepLast}
             isStepCompleted={isStepCompleted}
             onPrevious={handlePreviousStep}
             onNext={handleNextStep}
@@ -1139,6 +1161,7 @@ const handleTimelineSubmit = async () => {
             maxStep={RESEARCH_MAX_STEP}
             isSubmitting={isSubmitting || isFetching}
             mode={mode}
+            isLastStep={isCurrentStepLast}
             isStepCompleted={isStepCompleted}
             onPrevious={handlePreviousStep}
             onNext={handleNextStep}
@@ -1244,6 +1267,7 @@ const handleTimelineSubmit = async () => {
             maxStep={RESEARCH_MAX_STEP}
             isSubmitting={isSubmitting || isFetching}
             mode={mode}
+            isLastStep={isCurrentStepLast}
             isStepCompleted={isStepCompleted}
             isOptionalStep={true}
             isSkippable={sessions.length === 0}
@@ -1275,6 +1299,7 @@ const handleTimelineSubmit = async () => {
             maxStep={RESEARCH_MAX_STEP}
             isSubmitting={isSubmitting || isFetching}
             mode={mode}
+            isLastStep={isCurrentStepLast}
             isStepCompleted={isStepCompleted}
             isOptionalStep={true}
             isSkippable={policies.length === 0 && refundPolicies.length === 0}
@@ -1309,6 +1334,7 @@ const handleTimelineSubmit = async () => {
             maxStep={RESEARCH_MAX_STEP}
             isSubmitting={isSubmitting || isFetching}
             mode={mode}
+            isLastStep={isCurrentStepLast}
             isStepCompleted={isStepCompleted}
             isOptionalStep={true}
             isSkippable={
@@ -1341,6 +1367,7 @@ const handleTimelineSubmit = async () => {
             maxStep={RESEARCH_MAX_STEP}
             isSubmitting={isSubmitting || isFetching}
             mode={mode}
+            isLastStep={isCurrentStepLast}
             isStepCompleted={isStepCompleted}
             isOptionalStep={true}
             isSkippable={mediaList.length === 0}
@@ -1370,7 +1397,7 @@ const handleTimelineSubmit = async () => {
             isSubmitting={isSubmitting || isFetching}
             mode={mode}
             isStepCompleted={isStepCompleted}
-            isLastStep={true}
+            isLastStep={isCurrentStepLast}
             isOptionalStep={true}
             isSkippable={sponsors.length === 0}
             onPrevious={handlePreviousStep}
