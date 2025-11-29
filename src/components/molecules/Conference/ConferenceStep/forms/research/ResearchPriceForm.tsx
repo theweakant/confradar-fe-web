@@ -179,7 +179,7 @@ function PhaseModal({
         if (deadline > maxDeadline) {
           const deadlineLabel = isAuthorTicket
             ? "ngày kết thúc đăng ký (Registration End)"
-            : "ngày kết thúc bán vé (Ticket Sale End)";
+            : "ngày kết thúc bán (Ticket Sale End)";
           toast.error(`Hạn hoàn tiền không được sau ${deadlineLabel}!`);
           return;
         }
@@ -242,7 +242,7 @@ function PhaseModal({
         {isAuthorTicket && (
           <div className="mb-4 p-2.5 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-center gap-2 text-xs text-blue-800">
-              <span className="font-semibold">Vé tác giả:</span>
+              <span className="font-semibold">Chi phí cho tác giả:</span>
               <span>Hạn hoàn tiền không được vượt quá ngày kết thúc đăng ký</span>
             </div>
           </div>
@@ -602,40 +602,40 @@ const minStartDateForNewPhase = getNextValidStartDate();
 
 const handleAddTicket = () => {
   if (!newTicket.ticketName.trim()) {
-    toast.error("Vui lòng nhập tên vé!");
+    toast.error("Vui lòng nhập tên!");
     return;
   }
   if (newTicket.ticketPrice <= 0) {
-    toast.error("Giá vé phải lớn hơn 0!");
+    toast.error("Số tiền phải lớn hơn 0!");
     return;
   }
 
   if (newTicket.isAuthor && newTicket.ticketPrice < reviewFee) {
     toast.error(
-      `Giá vé tác giả (${newTicket.ticketPrice.toLocaleString()} VND) không được nhỏ hơn phí đánh giá bài báo (${reviewFee.toLocaleString()} VND)!`
+      `Chi phí cho tác giả (${newTicket.ticketPrice.toLocaleString()} VND) không được nhỏ hơn phí đánh giá bài báo (${reviewFee.toLocaleString()} VND)!`
     );
     return;
   }
 
   if (newTicket.totalSlot <= 0) {
-    toast.error("Số lượng vé phải lớn hơn 0!");
+    toast.error("Số lượng phải lớn hơn 0!");
     return;
   }
 
   if (newTicket.isAuthor) {
     if (newTicket.totalSlot > numberPaperAccept) {
       toast.error(
-        `Số lượng vé tác giả (${newTicket.totalSlot}) không được vượt quá số bài báo được chấp nhận (${numberPaperAccept})!`
+        `Số lượng cho tác giả (${newTicket.totalSlot}) không được vượt quá số bài báo được chấp nhận (${numberPaperAccept})!`
       );
       return;
     }
     if (!authorTimelineStart || !authorTimelineEnd) {
-      toast.error("Vui lòng điền Timeline (Registration) trước khi thêm vé tác giả!");
+      toast.error("Vui lòng điền Timeline (Registration) trước khi thêm chi phí cho tác giả!");
       return;
     }
   } else {
     if (!ticketSaleStart || !ticketSaleEnd) {
-      toast.error("Thiếu thông tin thời gian bán vé!");
+      toast.error("Thiếu thông tin thời gian bán!");
       return;
     }
   }
@@ -648,7 +648,7 @@ const handleAddTicket = () => {
   const totalPhaseSlots = newTicket.phases.reduce((sum, p) => sum + p.totalslot, 0);
   if (totalPhaseSlots !== newTicket.totalSlot) {
     toast.error(
-      `Tổng slot các giai đoạn (${totalPhaseSlots}) phải bằng tổng slot vé (${newTicket.totalSlot})!`
+      `Tổng số lượng các giai đoạn (${totalPhaseSlots}) phải bằng tổng số lượng loại chi phí (${newTicket.totalSlot})!`
     );
     return;
   }
@@ -696,7 +696,6 @@ const handleAddTicket = () => {
     .filter((t, i) => !t.isAuthor && i !== editingTicketIndex)
     .reduce((sum, t) => sum + t.totalSlot, 0);
 
-  // Tổng sau khi thêm vé mới
   const totalAuthorSlots = newTicket.isAuthor 
     ? currentAuthorSlots + newTicket.totalSlot 
     : currentAuthorSlots;
@@ -708,13 +707,13 @@ const handleAddTicket = () => {
 if (!allowListener) {
   // Không cho phép listener
   if (!newTicket.isAuthor) {
-    toast.error("Không cho phép tạo vé người nghe!");
+    toast.error("Không cho phép tạo chi phí cho người nghe!");
     return;
   }
   
   if (totalAuthorSlots > numberPaperAccept) {
     toast.error(
-      `Tổng số vé tác giả (${totalAuthorSlots}) không được vượt quá số bài báo được chấp nhận (${numberPaperAccept})!`
+      `Tổng số lượng cho tác giả (${totalAuthorSlots}) không được vượt quá số bài báo được chấp nhận (${numberPaperAccept})!`
     );
     return;
   }
@@ -723,21 +722,20 @@ if (!allowListener) {
   const totalSlots = totalAuthorSlots + totalListenerSlots;
   if (totalSlots > maxTotalSlot) {
     toast.error(
-      `Tổng số vé (${totalSlots}) vượt quá giới hạn ${maxTotalSlot}!`
+      `Tổng số lượng chi phí (${totalSlots}) vượt quá giới hạn ${maxTotalSlot}!`
     );
     return;
   }
 
-  // Check vé Author riêng
+  // Check Author riêng
   if (totalAuthorSlots > numberPaperAccept) {
     toast.error(
-      `Tổng số vé tác giả (${totalAuthorSlots}) không được vượt quá số bài báo được chấp nhận (${numberPaperAccept})!`
+      `Tổng số lượng chi phí cho tác giả (${totalAuthorSlots}) không được vượt quá số bài báo được chấp nhận (${numberPaperAccept})!`
     );
     return;
   }
 }
 
-  // === LƯU VÉ ===
   if (editingTicketIndex !== null) {
     const updatedTickets = [...tickets];
     updatedTickets[editingTicketIndex] = {
@@ -746,10 +744,10 @@ if (!allowListener) {
       priceId: updatedTickets[editingTicketIndex]?.priceId
     };
     onTicketsChange(updatedTickets);
-    toast.success("Cập nhật vé thành công!");
+    toast.success("Cập nhật thành công!");
   } else {
     onTicketsChange([...tickets, { ...newTicket }]);
-    toast.success("Đã thêm vé!");
+    toast.success("Đã thêm!");
   }
 
   setNewTicket({
@@ -791,7 +789,7 @@ if (!allowListener) {
     if (onRemoveTicket && ticket.priceId) {
       onRemoveTicket(ticket.priceId);
     }
-    toast.success("Đã xóa vé!");
+    toast.success("Đã xóa!");
   };
 
   return (
@@ -915,7 +913,7 @@ if (!allowListener) {
               {formatDate(mainPhase.registrationStartDate)} – {formatDate(mainPhase.registrationEndDate)}
             </div>
             {/* <div className="text-sm text-amber-800">
-              <strong>Thời gian vé bán:</strong>{" "}
+              <strong>Thời gian bán:</strong>{" "}
               {formatDate(ticketSaleStart)} – {formatDate(ticketSaleStart)}
             </div> */}
           </div>

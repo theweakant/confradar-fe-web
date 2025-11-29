@@ -57,13 +57,13 @@ export const DeleteConferenceStatus: React.FC<DeleteConferenceStatusProps> = ({
 
   const handleDelete = async () => {
     if (!conference.conferenceId) {
-      toast.error("Không tìm thấy ID hội thảo.");
+      toast.error("Không tìm thấy ID.");
       return;
     }
 
     if (!canDelete) {
       toast.error(
-        `Không thể xóa hội thảo ở trạng thái "${currentStatusName}". Chỉ có thể xóa hội thảo ở trạng thái "Draft" hoặc "Pending".`
+        `Không thể xóa ở trạng thái "${currentStatusName}". Chỉ có thể xóa ở trạng thái "Draft" hoặc "Pending".`
       );
       return;
     }
@@ -77,19 +77,19 @@ export const DeleteConferenceStatus: React.FC<DeleteConferenceStatusProps> = ({
       const res: ApiResponse = await updateStatus({
         confid: conference.conferenceId,
         newStatus: deletedStatusId,
-        reason: `Xóa hội thảo từ trạng thái ${currentStatusName}`,
+        reason: `Xóa từ trạng thái ${currentStatusName}`,
       }).unwrap();
 
       if (res.success) {
-        toast.success("Xóa hội thảo thành công!");
+        toast.success("Xóa thành công!");
         onSuccess?.();
         onClose();
       } else {
         toast.error(res.message || "Xóa thất bại");
       }
     } catch (err) {
-      console.error("Lỗi khi xóa hội thảo:", err);
-      toast.error("Có lỗi xảy ra khi xóa hội thảo");
+      console.error("Lỗi khi xóa:", err);
+      toast.error("Có lỗi xảy ra khi xóa");
     }
   };
 
@@ -99,7 +99,7 @@ export const DeleteConferenceStatus: React.FC<DeleteConferenceStatusProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-red-600">
             <AlertCircle className="w-5 h-5" />
-            Xác nhận xóa hội thảo
+            Xác nhận xóa
           </DialogTitle>
         </DialogHeader>
 
@@ -109,7 +109,7 @@ export const DeleteConferenceStatus: React.FC<DeleteConferenceStatusProps> = ({
             {conference.conferenceName && (
               <div>
                 <Label className="text-sm font-semibold text-gray-800">
-                  Tên hội thảo
+                  Tên
                 </Label>
                 <p className="mt-1 text-base font-semibold text-indigo-700">
                   {conference.conferenceName}
@@ -140,7 +140,7 @@ export const DeleteConferenceStatus: React.FC<DeleteConferenceStatusProps> = ({
             <div className="bg-red-50 border border-red-200 text-red-800 text-sm p-4 rounded-xl leading-relaxed">
               <p className="font-semibold mb-2">Cảnh báo</p>
               <p>
-                Bạn đang thực hiện xóa hội thảo{" "}
+                Bạn đang thực hiện xóa{" "}
                 <span className="font-semibold">
                   &quot;{conference.conferenceName}&quot;
                 </span>
@@ -156,7 +156,7 @@ export const DeleteConferenceStatus: React.FC<DeleteConferenceStatusProps> = ({
               <p>
                 Hội thảo đang ở trạng thái{" "}
                 <span className="font-semibold">&quot;{currentStatusName}&quot;</span>.
-                Chỉ có thể xóa hội thảo ở trạng thái{" "}
+                Chỉ có thể xóa ở trạng thái{" "}
                 <span className="font-semibold">&quot;Draft&quot;</span> hoặc{" "}
                 <span className="font-semibold">&quot;Pending&quot;</span>.
               </p>

@@ -14,81 +14,78 @@ interface SponsorsMediaTabProps {
 
 export function SponsorsMediaTab({ conference }: SponsorsMediaTabProps) {
   return (
-    <div className="space-y-8">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">
-        Sponsors & Media
-      </h2>
-
-      {/* Sponsors */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Handshake className="w-5 h-5 text-blue-600" />
-          Sponsors
-        </h3>
+    <div className="space-y-10">
+      {/* Sponsors Section */}
+      <section>
+        <div className="flex items-center gap-2 mb-5">
+          <Handshake className="w-5 h-5 text-primary" />
+          <h3 className="text-xl font-semibold text-foreground">Nhà Tài Trợ</h3>
+        </div>
+        
         {conference.sponsors && conference.sponsors.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {conference.sponsors.map(
-              (sponsor: SponsorResponse, index: number) => (
-                <div
-                  key={sponsor.sponsorId || index}
-                  className="bg-gradient-to-br from-yellow-50 to-white border-2 border-yellow-200 rounded-xl p-4 hover:shadow-md transition-shadow"
-                >
-                  {sponsor.imageUrl && (
-                    <div className="relative h-32 w-full mb-3 rounded-lg overflow-hidden bg-white">
-                      <Image
-                        src={sponsor.imageUrl}
-                        alt={sponsor.name ?? "N/A"}
-                        fill
-                        className="object-contain p-2"
-                      />
-                    </div>
-                  )}
-                  <h4 className="font-bold text-gray-900 text-center mb-2">
-                    {sponsor.name}
-                  </h4>
-                </div>
-              )
-            )}
-          </div>
-        ) : (
-          <p className="text-gray-500 text-center py-4">
-            No sponsors available
-          </p>
-        )}
-      </div>
-
-      {/* Conference Media */}
-      <div className="mt-8">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <ImageIcon className="w-5 h-5 text-blue-600" />
-          Conference Media
-        </h3>
-        {conference.conferenceMedia && conference.conferenceMedia.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {conference.conferenceMedia.map(
-              (media: ConferenceMediaResponse, index: number) => (
-                <div key={media.mediaId || index} className="space-y-2">
-                  <div className="relative h-48 rounded-lg overflow-hidden group">
+            {conference.sponsors.map((sponsor: SponsorResponse, index: number) => (
+              <div
+                key={sponsor.sponsorId || index}
+                className="bg-card border border-border rounded-lg p-4 hover:shadow-md hover:border-primary/30 transition-all group"
+              >
+                {sponsor.imageUrl && (
+                  <div className="relative h-24 w-full mb-3 rounded overflow-hidden bg-muted/30">
                     <Image
-                      src={
-                        media.mediaUrl?.startsWith("http")
-                          ? media.mediaUrl
-                          : `https://minio-api.confradar.io.vn/${media.mediaUrl}`
-                      }
-                      alt={`Media ${index + 1}`}
+                      src={sponsor.imageUrl}
+                      alt={sponsor.name ?? "Sponsor"}
                       fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-300"
+                      className="object-contain p-2 group-hover:scale-105 transition-transform"
                     />
                   </div>
-                </div>
-              )
-            )}
+                )}
+                <p className="text-sm font-medium text-foreground text-center truncate">
+                  {sponsor.name}
+                </p>
+              </div>
+            ))}
           </div>
         ) : (
-          <p className="text-gray-500 text-center py-4">No media available</p>
+          <div className="text-center py-8 bg-muted/30 rounded-lg">
+            <p className="text-sm text-muted-foreground">Chưa có nhà tài trợ</p>
+          </div>
         )}
-      </div>
+      </section>
+
+      {/* Media Section */}
+      <section>
+        <div className="flex items-center gap-2 mb-5">
+          <ImageIcon className="w-5 h-5 text-primary" />
+          <h3 className="text-xl font-semibold text-foreground">Hình Ảnh</h3>
+        </div>
+        
+        {conference.conferenceMedia && conference.conferenceMedia.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {conference.conferenceMedia.map((media: ConferenceMediaResponse, index: number) => (
+              <div 
+                key={media.mediaId || index} 
+                className="relative aspect-video rounded-lg overflow-hidden group cursor-pointer border border-border hover:border-primary/50 transition-all"
+              >
+                <Image
+                  src={
+                    media.mediaUrl?.startsWith("http")
+                      ? media.mediaUrl
+                      : `https://minio-api.confradar.io.vn/${media.mediaUrl}`
+                  }
+                  alt={`Hình ${index + 1}`}
+                  fill
+                  className="object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 bg-muted/30 rounded-lg">
+            <p className="text-sm text-muted-foreground">Chưa có hình ảnh</p>
+          </div>
+        )}
+      </section>
     </div>
   );
 }
-

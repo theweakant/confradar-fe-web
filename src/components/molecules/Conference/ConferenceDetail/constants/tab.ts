@@ -65,7 +65,7 @@ export const TAB_GROUPS: TabGroup[] = [
       },
       {
         id: "price",
-        label: "Giá vé",
+        label: "Chi phí",
         icon: DollarSign,
         conferenceType: "all",
       },
@@ -116,7 +116,7 @@ export const TAB_GROUPS: TabGroup[] = [
     tabs: [
       {
         id: "refund-requests",
-        label: "Hoàn vé",
+        label: "Hoàn tiền",
         icon: RefreshCw,
         conferenceType: "all",
       },

@@ -24,12 +24,12 @@ interface TabNavigationProps {
 export function TabNavigation({ activeTab, onTabChange, isResearch }: TabNavigationProps) {
   const baseTabs = [
     { id: "information", label: "Thông tin cơ bản", icon: Info },
-    { id: "price", label: "Giá vé", icon: DollarSign },
+    { id: "price", label: "Chi phí", icon: DollarSign },
     { id: "refund-policy", label: "Hoàn trả & Chính sách", icon: ShieldCheck },
     { id: "session", label: "Session", icon: Calendar },
     { id: "sponsors-media", label: "Sponsors & Media", icon: ImageIcon },
-    { id: "refund-requests", label: "Yêu cầu hoàn vé", icon: RefreshCw },
-    { id: "ticket-holders", label: "Khách đã mua vé", icon: Users },
+    { id: "refund-requests", label: "Yêu cầu hoàn tiền", icon: RefreshCw },
+    { id: "ticket-holders", label: "Khách đã mua", icon: Users },
   ];
 
   const researchOnlyTabs = [

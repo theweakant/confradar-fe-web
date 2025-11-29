@@ -11,8 +11,8 @@ interface LeftPanelProps {
   onSubtabChange: (subtab: TabId) => void;
   conference: CommonConference;
   conferenceType: "technical" | "research" | null;
-  isCollaborator: boolean;     // 👈 THÊM
-  userRoles: string[];         // 👈 THÊM
+  isCollaborator: boolean;
+  userRoles: string[];    
   getCategoryName: (id: string) => string;
   getStatusName: (id: string) => string;
   getCityName: (id: string) => string;
@@ -24,18 +24,16 @@ export function LeftPanel({
   onSubtabChange,
   conference,
   conferenceType,
-  isCollaborator,   // 👈 destruct
-  userRoles,        // 👈 destruct
+  isCollaborator,
+  userRoles,     
   getCategoryName,
   getStatusName,
   getCityName,
 }: LeftPanelProps) {
-  // 👇 TRUYỀN userRoles vào getFilteredTabs
   const tabs = getFilteredTabs(primaryTab, conferenceType, userRoles);
 
   return (
     <div className="space-y-6">
-      {/* Main Content Card */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
         <div className="px-6 pt-6 mb-12">
           <MetaInfoSection
@@ -70,7 +68,6 @@ export function LeftPanel({
           </div>
         </div>
 
-        {/* Tab Content */}
         <div className="p-6">
           <TabContent
             activeSubtab={activeSubtab}

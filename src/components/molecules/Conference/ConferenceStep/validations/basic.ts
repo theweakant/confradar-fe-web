@@ -40,10 +40,10 @@ export const validateDateRange = (value: number): ValidationResult => {
 
 export const validateTotalSlot = (value: number): ValidationResult => {
   if (value < 1) {
-    return { isValid: false, error: "Sức chứa phải lớn hơn 0" };
+    return { isValid: false, error: "Số lượng tham dự phải lớn hơn 0" };
   }
-  if (value > 100000) {
-    return { isValid: false, error: "Sức chứa không được vượt quá 100,000" };
+  if (value > 1000) {
+    return { isValid: false, error: "Số lượng tham dự không được vượt quá 100,000" };
   }
   return { isValid: true };
 };
@@ -53,7 +53,7 @@ export const validateTicketSaleStart = (
   eventStart: string
 ): ValidationResult => {
   if (!saleStart) {
-    return { isValid: false, error: "Vui lòng chọn ngày bắt đầu bán vé" };
+    return { isValid: false, error: "Vui lòng chọn ngày bắt đầu bán" };
   }
   if (!eventStart) {
     return { isValid: true };
@@ -63,7 +63,7 @@ export const validateTicketSaleStart = (
   const eventDate = new Date(eventStart);
 
   if (saleDate >= eventDate) {
-    return { isValid: false, error: "Ngày bán vé phải trước ngày sự kiện" };
+    return { isValid: false, error: "Ngày bán phải trước ngày khai mạc" };
   }
 
   const daysDiff = Math.floor(
@@ -72,7 +72,7 @@ export const validateTicketSaleStart = (
   if (daysDiff < 7) {
     return {
       isValid: true,
-      warning: "Khuyến nghị: Nên bán vé trước ít nhất 7 ngày",
+      warning: "Khuyến nghị: Nên bán trước ít nhất 7 ngày",
     };
   }
 
@@ -85,7 +85,7 @@ export const validateTicketSaleDuration = (
   eventStart: string
 ): ValidationResult => {
   if (duration < 1) {
-    return { isValid: false, error: "Thời gian bán vé phải ít nhất 1 ngày" };
+    return { isValid: false, error: "Thời gian bán phải ít nhất 1 ngày" };
   }
 
   if (saleStart && eventStart) {
@@ -97,7 +97,7 @@ export const validateTicketSaleDuration = (
     if (saleEndDate >= eventStartDate) {
       return {
         isValid: false,
-        error: "Ngày kết thúc bán vé phải trước ngày sự kiện",
+        error: "Ngày kết thúc bán phải trước ngày sự kiện",
       };
     }
   }
@@ -138,7 +138,7 @@ export const validateBasicForm = (form: ConferenceBasicForm): ValidationResult =
   if (saleStart >= eventStart || saleEnd >= eventStart) {
     return {
       isValid: false,
-      error: "Hãy chọn ngày bán vé trước ngày bắt đầu sự kiện",
+      error: "Hãy chọn ngày bán trước ngày bắt đầu sự kiện",
     };
   }
   if (!form.conferenceName.trim()) {
@@ -232,7 +232,7 @@ export const validateResearchBasicForm = (form: ConferenceBasicForm) => {
   }
 
   if (!form.ticketSaleEnd) {
-    toast.error("Ngày kết thúc bán vé chưa được tính toán");
+    toast.error("Ngày kết thúc bán chưa được tính toán");
     return { isValid: false };
   }
 
@@ -258,12 +258,12 @@ export const validateResearchBasicForm = (form: ConferenceBasicForm) => {
   const eventEnd = new Date(form.endDate);
 
   if (saleStart >= saleEnd) {
-    toast.error("Ngày bắt đầu bán vé phải trước ngày kết thúc bán vé");
+    toast.error("Ngày bắt đầu bán phải trước ngày kết thúc bán");
     return { isValid: false };
   }
 
   if (saleEnd >= eventStart) {
-    toast.error("Ngày kết thúc bán vé phải trước ngày bắt đầu sự kiện");
+    toast.error("Ngày kết thúc bán phải trước ngày bắt đầu sự kiện");
     return { isValid: false };
   }
 

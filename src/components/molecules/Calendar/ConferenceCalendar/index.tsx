@@ -159,7 +159,7 @@ const ConferenceCalendar: React.FC<ConferenceCalendarProps> = ({
     () =>
       allConferences.map((conf) => ({
         id: conf.conferenceId,
-        title: conf.conferenceName || "Hội thảo không tên",
+        title: conf.conferenceName || "N/A",
         start: conf.startDate || new Date().toISOString(),
         end: conf.endDate
           ? new Date(new Date(conf.endDate).getTime() + 86400000).toISOString().split("T")[0]
@@ -206,7 +206,7 @@ const ConferenceCalendar: React.FC<ConferenceCalendarProps> = ({
               <Info className="w-8 h-8 text-red-600" />
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">Không thể tải dữ liệu</h3>
-            <p className="text-gray-600 mb-6">Đã xảy ra lỗi khi tải danh sách hội thảo</p>
+            <p className="text-gray-600 mb-6">Đã xảy ra lỗi khi tải danh sách</p>
           </div>
         </div>
       </div>
@@ -216,27 +216,27 @@ const ConferenceCalendar: React.FC<ConferenceCalendarProps> = ({
   return (
     <div className="w-full max-w-7xl mx-auto p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Lịch hội thảo</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Lịch trình</h1>
         <p className="text-gray-600">
           {isConferenceOrganizer
-            ? "Xem lịch trình các hội thảo kỹ thuật và nghiên cứu"
-            : "Xem lịch trình các hội thảo kỹ thuật"}
+            ? "Xem lịch trình các hội thảo công nghệ và nghiên cứu"
+            : "Xem lịch trình các hội thảo công nghệ"}
         </p>
       </div>
 
       <div className="mb-4 flex gap-6 items-center text-sm px-1">
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded bg-blue-300"></div>
-          <span className="text-gray-700">Hội thảo Kỹ thuật</span>
+          <span className="text-gray-700">Hội thảo Công nghệ</span>
         </div>
         {isConferenceOrganizer && (
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-purple-300"></div>
-            <span className="text-gray-700">Hội thảo Nghiên cứu</span>
+            <span className="text-gray-700">Hội nghị Nghiên cứu</span>
           </div>
         )}
         <div className="ml-auto text-gray-600">
-          Tổng: <span className="font-semibold">{allConferences.length}</span> hội thảo
+          Tổng: <span className="font-semibold">{allConferences.length}</span>S
         </div>
       </div>
 

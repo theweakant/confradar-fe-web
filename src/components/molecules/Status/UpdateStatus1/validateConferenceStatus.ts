@@ -34,7 +34,7 @@ export const validateConferenceForStatusChange = (
   if (!conference.startDate) missingRequired.push("Ngày bắt đầu");
   if (!conference.endDate) missingRequired.push("Ngày kết thúc");
 
-  if ((conference.conferencePrices?.length || 0) === 0) missingRequired.push("Giá vé");
+  if ((conference.conferencePrices?.length || 0) === 0) missingRequired.push("Chi phí");
   if ((conference.policies?.length || 0) === 0) missingRequired.push("Chính sách");
   if ((conference.sponsors?.length || 0) === 0) missingRequired.push("Nhà tài trợ");
   if ((conference.conferenceMedia?.length || 0) === 0) missingRequired.push("Hình ảnh/video");
@@ -47,10 +47,10 @@ export const validateConferenceForStatusChange = (
   } else {
     const researchConf = conference as ResearchConferenceDetailResponse;
     if ((researchConf.researchPhase?.length || 0) === 0) {
-      missingRequired.push("Giai đoạn hội thảo");
+      missingRequired.push("Giai đoạn");
     }
     if ((researchConf.researchSessions?.length || 0) === 0) {
-      missingRequired.push("Lịch trình (sessions)");
+      missingRequired.push("Session");
     }
 
     if ((researchConf.rankingReferenceUrls?.length || 0) === 0) {
@@ -76,7 +76,6 @@ export const validateTimelineForOnHoldToReady = (
   const now = new Date();
   const expiredDates: string[] = [];
 
-  // Lấy ngày OnHold gần nhất từ conferenceTimelines
   const onHoldDate = conference.conferenceTimelines
     ?.filter((t) => t.afterwardStatusName === "OnHold")
     ?.sort((a, b) => new Date(b.changeDate).getTime() - new Date(a.changeDate).getTime())[0]
@@ -92,32 +91,27 @@ export const validateTimelineForOnHoldToReady = (
 
   const onHoldDateTime = new Date(onHoldDate);
 
-  // Helper function để kiểm tra ngày
   const checkDate = (date: string | undefined, label: string) => {
     if (date) {
       const dateTime = new Date(date);
-      // Nếu ngày này đã set trước khi OnHold, và hiện tại đã qua ngày đó
       if (dateTime < onHoldDateTime && now > dateTime) {
         expiredDates.push(label);
       }
     }
   };
 
-  // === Kiểm tra các ngày chung ===
   checkDate(conference.ticketSaleStart, "Ngày bắt đầu bán vé");
   checkDate(conference.ticketSaleEnd, "Ngày kết thúc bán vé");
-  checkDate(conference.startDate, "Ngày bắt đầu hội thảo");
-  checkDate(conference.endDate, "Ngày kết thúc hội thảo");
+  checkDate(conference.startDate, "Ngày bắt đầu");
+  checkDate(conference.endDate, "Ngày kết thúc");
 
-  // Kiểm tra price phases
   conference.conferencePrices?.forEach((price) => {
     price.pricePhases?.forEach((phase, phaseIdx) => {
-      checkDate(phase.startDate, `Giá vé "${price.ticketName}" - Phase ${phaseIdx + 1} (bắt đầu)`);
-      checkDate(phase.endDate, `Giá vé "${price.ticketName}" - Phase ${phaseIdx + 1} (kết thúc)`);
+      checkDate(phase.startDate, `Chi phí "${price.ticketName}" - Giai đoạn ${phaseIdx + 1} (bắt đầu)`);
+      checkDate(phase.endDate, `Chi phí "${price.ticketName}" - Giai đoạn ${phaseIdx + 1} (kết thúc)`);
     });
   });
 
-  // === Kiểm tra theo loại hội thảo ===
   if (conferenceType === "technical") {
     const techConf = conference as TechnicalConferenceDetailResponse;
     techConf.sessions?.forEach((session) => {
@@ -127,11 +121,10 @@ export const validateTimelineForOnHoldToReady = (
       checkDate(session.sessionDate, `Session "${session.title}" (ngày diễn ra)`);
     });
   } else {
-    // Research
     const researchConf = conference as ResearchConferenceDetailResponse;
 
     researchConf.researchPhase?.forEach((phase, idx) => {
-      const phaseLabel = phase.isWaitlist ? "Waitlist Phase" : `Phase ${idx + 1}`;
+      const phaseLabel = phase.isWaitlist ? "Giai đoạn Waitlist" : `Phase ${idx + 1}`;
       
       checkDate(phase.registrationStartDate, `${phaseLabel} - Đăng ký (bắt đầu)`);
       checkDate(phase.registrationEndDate, `${phaseLabel} - Đăng ký (kết thúc)`);
@@ -144,7 +137,6 @@ export const validateTimelineForOnHoldToReady = (
       checkDate(phase.cameraReadyStartDate, `${phaseLabel} - Camera Ready (bắt đầu)`);
       checkDate(phase.cameraReadyEndDate, `${phaseLabel} - Camera Ready (kết thúc)`);
 
-      // Kiểm tra revision round deadlines
       phase.revisionRoundDeadlines?.forEach((round) => {
         checkDate(
           round.startSubmissionDate,

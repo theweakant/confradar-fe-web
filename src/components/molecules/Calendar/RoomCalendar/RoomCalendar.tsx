@@ -3,7 +3,7 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { EventClickArg } from "@fullcalendar/core";
+import { EventClickArg } from "@fullcalendar/core"; 
 import { DoorOpen } from "lucide-react";
 import { useGetAvailableRoomsBetweenDatesQuery } from "@/redux/services/room.service";
 import type { AvailableRoom } from "@/types/room.type";

@@ -32,7 +32,7 @@ export function CustomerTicketModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">Chi tiết vé</DialogTitle>
+          <DialogTitle className="text-xl">Chi tiết</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -55,7 +55,7 @@ export function CustomerTicketModal({
           <div className="space-y-3">
             <InfoRow
               icon={<Ticket className="w-4 h-4" />}
-              label="Loại vé"
+              label="Tên loại chi phí"
               value={ticket.ticketTypeName}
             />
             <InfoRow
@@ -80,12 +80,12 @@ export function CustomerTicketModal({
               value={
                 <span
                   className={`inline-flex px-3 py-1 text-xs font-medium rounded-full ${
-                    ticket.status === "Đã thanh toán"
+                    ticket.overallStatus === "Đã thanh toán"
                       ? "bg-green-100 text-green-700 border border-green-200"
                       : "bg-yellow-100 text-yellow-700 border border-yellow-200"
                   }`}
                 >
-                  {ticket.status}
+                  {ticket.overallStatus}
                 </span>
               }
             />

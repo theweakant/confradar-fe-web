@@ -29,7 +29,7 @@ export function BasicInfoTab({
             Thông tin cơ bản
           </h2>
           <p className="text-muted-foreground text-sm">
-            Xem chi tiết về sự kiện hội nghị
+            Xem chi tiết
           </p>
         </div>
 
@@ -99,11 +99,11 @@ export function BasicInfoTab({
             value={formatDate(conference.endDate)}
           />
           <InfoField
-            label="Bắt đầu bán vé"
+            label="Bắt đầu bán"
             value={formatDate(conference.ticketSaleStart)}
           />
           <InfoField
-            label="Kết thúc bán vé"
+            label="Kết thúc bán"
             value={formatDate(conference.ticketSaleEnd)}
           />
         </div>
@@ -112,7 +112,7 @@ export function BasicInfoTab({
       {/* Capacity & Location Section */}
       <div className="bg-card border border-border rounded-lg p-6 space-y-4">
         <h3 className="text-lg font-semibold text-foreground mb-4">
-          Địa điểm & Số người tham dự tối đa:
+          Địa điểm & Số lượng tham dự
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

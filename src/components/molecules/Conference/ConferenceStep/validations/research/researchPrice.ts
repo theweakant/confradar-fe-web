@@ -23,7 +23,7 @@ export const validateAuthorTicketPhase = (
   if (phaseStart < regStart || phaseStart > regEnd) {
     return {
       isValid: false,
-      error: `Vé tác giả: Giai đoạn "${phase.phaseName}" phải bắt đầu trong thời gian đăng ký (${regStart.toLocaleDateString("vi-VN")} - ${regEnd.toLocaleDateString("vi-VN")})`,
+      error: `Chi phí cho tác giả: Giai đoạn "${phase.phaseName}" phải bắt đầu trong thời gian đăng ký (${regStart.toLocaleDateString("vi-VN")} - ${regEnd.toLocaleDateString("vi-VN")})`,
     };
   }
 
@@ -31,7 +31,7 @@ export const validateAuthorTicketPhase = (
   if (phaseEnd > regEnd) {
     return {
       isValid: false,
-      error: `Vé tác giả: Giai đoạn "${phase.phaseName}" phải kết thúc trước ${regEnd.toLocaleDateString("vi-VN")}`,
+      error: `Chi phí cho tác giả: Giai đoạn "${phase.phaseName}" phải kết thúc trước ${regEnd.toLocaleDateString("vi-VN")}`,
     };
   }
 
@@ -47,7 +47,7 @@ export const validateListenerTicketPhase = (
   if (!ticketSaleStart || !ticketSaleEnd) {
     return {
       isValid: false,
-      error: "Không tìm thấy thông tin thời gian bán vé",
+      error: "Không tìm thấy thông tin thời gian bán ",
     };
   }
 
@@ -60,7 +60,7 @@ export const validateListenerTicketPhase = (
   if (phaseStart < saleStart || phaseStart > saleEnd) {
     return {
       isValid: false,
-      error: `Vé người nghe: Giai đoạn "${phase.phaseName}" phải bắt đầu trong thời gian bán vé (${saleStart.toLocaleDateString("vi-VN")} - ${saleEnd.toLocaleDateString("vi-VN")})`,
+      error: `Chi phí người nghe: Giai đoạn "${phase.phaseName}" phải bắt đầu trong thời gian bán (${saleStart.toLocaleDateString("vi-VN")} - ${saleEnd.toLocaleDateString("vi-VN")})`,
     };
   }
 
@@ -68,7 +68,7 @@ export const validateListenerTicketPhase = (
   if (phaseEnd > saleEnd) {
     return {
       isValid: false,
-      error: `Vé người nghe: Giai đoạn "${phase.phaseName}" phải kết thúc trước ${saleEnd.toLocaleDateString("vi-VN")}`,
+      error: `Chi phí người nghe: Giai đoạn "${phase.phaseName}" phải kết thúc trước ${saleEnd.toLocaleDateString("vi-VN")}`,
     };
   }
 
@@ -84,19 +84,19 @@ export const validateResearchTicket = (
 ): ValidationResult => {
   // Basic validation
   if (!ticket.ticketName.trim()) {
-    return { isValid: false, error: "Vui lòng nhập tên vé" };
+    return { isValid: false, error: "Vui lòng nhập tên loại chi phí" };
   }
 
   if (ticket.ticketPrice <= 0) {
-    return { isValid: false, error: "Giá vé phải lớn hơn 0" };
+    return { isValid: false, error: "Số tiền loại chi phí phải lớn hơn 0" };
   }
 
   if (ticket.totalSlot <= 0) {
-    return { isValid: false, error: "Số lượng vé phải lớn hơn 0" };
+    return { isValid: false, error: "Số lượng phải lớn hơn 0" };
   }
 
   if (ticket.phases.length === 0) {
-    return { isValid: false, error: "Vé phải có ít nhất 1 giai đoạn giá" };
+    return { isValid: false, error: "Chi phí tham dự phải có ít nhất 1 giai đoạn giá" };
   }
 
   const mainPhase = researchPhases.find((p) => !p.isWaitlist);
@@ -106,7 +106,7 @@ export const validateResearchTicket = (
     if (!mainPhase?.registrationStartDate || !mainPhase?.registrationEndDate) {
       return {
         isValid: false,
-        error: "Vui lòng điền thông tin Timeline (Registration) trước khi thêm vé tác giả",
+        error: "Vui lòng điền thông tin Timeline (Registration) trước khi thêm chi phí tác giả",
       };
     }
 
@@ -127,7 +127,7 @@ export const validateResearchTicket = (
     if (!ticketSaleStart || !ticketSaleEnd) {
       return {
         isValid: false,
-        error: "Không tìm thấy thông tin thời gian bán vé",
+        error: "Không tìm thấy thông tin thời gian bán",
       };
     }
 
@@ -145,7 +145,7 @@ export const validateResearchTicket = (
   if (totalPhaseSlots !== ticket.totalSlot) {
     return {
       isValid: false,
-      error: `Tổng số lượng vé các giai đoạn (${totalPhaseSlots}) phải bằng tổng số chỗ ngồi vé (${ticket.totalSlot})`,
+      error: `Tổng số lượng loại chi phí của các giai đoạn (${totalPhaseSlots}) phải bằng số lượng người tham dự (${ticket.totalSlot})`,
     };
   }
 
@@ -159,7 +159,7 @@ export const validateAuthorTicketExists = (tickets: Ticket[]): ValidationResult 
   if (!hasAuthorTicket) {
     return {
       isValid: false,
-      error: "Hội nghị nghiên cứu cần có ít nhất một loại vé dành cho tác giả",
+      error: "Hội nghị nghiên cứu cần có ít nhất một loại chi phí dành cho tác giả",
     };
   }
 

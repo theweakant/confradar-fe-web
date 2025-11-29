@@ -377,8 +377,8 @@ export default function SystemSetting() {
                 <ToggleSwitch checked={pushNotif} onChange={setPushNotif} />
               </SettingItem>
               <SettingItem
-                label="Nhắc nhở hội thảo"
-                description="Tự động nhắc người dùng trước khi hội thảo diễn ra"
+                label="Nhắc nhở sự kiện"
+                description="Tự động nhắc người dùng trước khi sự kiện diễn ra"
               >
                 <ToggleSwitch
                   checked={conferenceReminder}
@@ -387,7 +387,7 @@ export default function SystemSetting() {
               </SettingItem>
               <SettingItem
                 label="Thời gian nhắc trước"
-                description="Số giờ nhắc trước khi hội thảo bắt đầu"
+                description="Số giờ nhắc trước khi sự kiẹn bắt đầu"
               >
                 <SelectInput
                   value={reminderTime}
@@ -402,8 +402,8 @@ export default function SystemSetting() {
                 />
               </SettingItem>
               <SettingItem
-                label="Thông báo hội thảo mới"
-                description="Thông báo khi có hội thảo mới được đăng"
+                label="Thông báo mới"
+                description="Thông báo khi có sự kiện/ hội nghị mới được đăng"
               >
                 <ToggleSwitch
                   checked={newConferenceAlert}

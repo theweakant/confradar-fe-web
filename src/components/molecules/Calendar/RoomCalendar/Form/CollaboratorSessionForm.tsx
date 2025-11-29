@@ -299,10 +299,10 @@ export function CollaboratorSessionForm({
       return;
     }
 
-    if (formData.speakers.length === 0) {
-      toast.error("Vui lòng thêm ít nhất 1 diễn giả!");
-      return;
-    }
+    // if (formData.speakers.length === 0) {
+    //   toast.error("Vui lòng thêm ít nhất 1 diễn giả!");
+    //   return;
+    // }
 
     if (formData.timeRange < 0.5) {
       toast.error("Thời lượng tối thiểu là 0.5 giờ (30 phút)!");
@@ -390,7 +390,7 @@ if (startDayLocal !== endDayLocal) {
               </div>
             )}
 
-            {isEditMode && (
+            {/* {isEditMode && (
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-3">
                 <div className="flex items-center gap-2 mb-1">
                   <CalendarIcon className="w-4 h-4 text-blue-600" />
@@ -398,7 +398,7 @@ if (startDayLocal !== endDayLocal) {
                 </div>
                 <div className="text-sm font-semibold text-gray-900">{formatDate(selectedDate)}</div>
               </div>
-            )}
+            )} */}
 
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-3">

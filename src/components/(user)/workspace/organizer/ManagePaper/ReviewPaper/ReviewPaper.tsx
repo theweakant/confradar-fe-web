@@ -138,7 +138,7 @@ export default function ReviewPaper() {
                   <p className="font-medium">{paperData.version}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Hội thảo</p>
+                  <p className="text-sm text-gray-600">Hội nghị</p>
                   <p className="font-medium">{paperData.conference}</p>
                 </div>
                 <div>

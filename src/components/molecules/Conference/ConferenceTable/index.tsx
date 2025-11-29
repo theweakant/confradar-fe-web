@@ -18,6 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { truncateText } from "@/helper/format";
 
 interface ConferenceTableProps {
   conferences: Conference[];
@@ -85,7 +86,7 @@ export function ConferenceTable({
     },
     {
       key: "conferenceName",
-      header: "Tên hội thảo",
+      header: "Tên",
       render: (conference) => (
         <div className="max-w-xs">
           <p className="font-medium text-gray-900 truncate">
@@ -100,18 +101,18 @@ export function ConferenceTable({
             key: "userNameCreator",
             header: "Người tạo",
             render: (conference: Conference) => (
-              <span className="text-sm text-gray-700">
-                {conference.userNameCreator || "—"}
-              </span>
+            <span className="text-sm text-gray-700">
+              {truncateText(conference.userNameCreator, 12)}
+            </span>
             ),
           },
           {
             key: "organization",
             header: "Tổ chức",
             render: (conference: Conference) => (
-              <span className="text-sm text-gray-700">
-                {conference.organization || "—"}
-              </span>
+            <span className="text-sm text-gray-700">
+              {truncateText(conference.organization, 5)}
+            </span>
             ),
           },
         ]
@@ -134,7 +135,7 @@ export function ConferenceTable({
     },
     {
       key: "ticketSaleStart",
-      header: "Bắt đầu bán vé",
+      header: "Bắt đầu bán",
       render: (conference) => (
         <span className="text-sm text-gray-600">
           {conference.ticketSaleStart
@@ -218,7 +219,7 @@ export function ConferenceTable({
       columns={columns}
       data={conferences}
       keyExtractor={(conference) => conference.conferenceId}
-      emptyMessage="Không tìm thấy hội thảo nào"
+      emptyMessage="Không tìm thấy conference nào"
     />
   );
 }

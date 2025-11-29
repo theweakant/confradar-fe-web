@@ -200,7 +200,7 @@ export function ResearchDetailForm({
         onChange={(val) => handleChange("rankingDescription", val)}
         error={validationErrors.rankingDescription}
         rows={3}
-        placeholder="Mô tả chi tiết về xếp hạng của hội thảo..."
+        placeholder="Mô tả chi tiết về xếp hạng của hội nghị..."
       />
 
 

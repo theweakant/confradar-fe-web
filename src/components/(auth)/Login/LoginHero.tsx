@@ -5,7 +5,7 @@ export const LoginHero = () => {
     <div className="hidden md:flex md:w-3/5 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 items-center justify-center relative overflow-hidden">
       <Image
         src="/images/login/login_conf.jpg"
-        alt="Minh họa Hội nghị"
+        alt="Ảnh minh họa"
         fill
         className="object-cover opacity-40"
         priority

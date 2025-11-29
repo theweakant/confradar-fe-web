@@ -94,7 +94,7 @@ export const validatePhaseSequence = (
 };
 
 /**
- * Validate timeline phải kết thúc trước ngày bán vé
+ * Validate timeline phải kết thúc trước ngày bán 
  */
 export const validateTimelineBeforeTicketSale = (
   timelineEndDate: string,
@@ -110,7 +110,7 @@ export const validateTimelineBeforeTicketSale = (
   if (timelineEnd >= saleStart) {
     return {
       isValid: false,
-      error: `Timeline research phải kết thúc trước ngày bán vé (${saleStart.toLocaleDateString("vi-VN")})`,
+      error: `Timeline research phải kết thúc trước ngày bán  (${saleStart.toLocaleDateString("vi-VN")})`,
     };
   }
 
@@ -122,7 +122,7 @@ export const validateTimelineBeforeTicketSale = (
   if (daysDiff < 3) {
     return {
       isValid: true,
-      warning: "Khuyến nghị: Timeline nên kết thúc trước ngày bán vé ít nhất 3 ngày",
+      warning: "Khuyến nghị: Timeline nên kết thúc trước ngày bán ít nhất 3 ngày",
     };
   }
 
@@ -194,7 +194,7 @@ export const validateResearchTimeline = (
 ): ValidationResult => {
   // 1. Check main phase tồn tại
   if (!mainPhase) {
-    return { isValid: false, error: "Thiếu timeline chính (main phase) cho hội thảo" };
+    return { isValid: false, error: "Thiếu timeline chính (main phase) cho hội nghị" };
   }
 
   const {

@@ -6,34 +6,34 @@ export const validateTicketName = (
   existingTickets: Ticket[] = []
 ): ValidationResult => {
   if (!value.trim()) {
-    return { isValid: false, error: 'Tên vé không được để trống' };
+    return { isValid: false, error: 'Tên không được để trống' };
   }
   if (value.trim().length < 3) {
-    return { isValid: false, error: 'Tên vé phải có ít nhất 3 ký tự' };
+    return { isValid: false, error: 'Tên phải có ít nhất 3 ký tự' };
   }
 
   const isDuplicate = existingTickets.some(
     (t) => t.ticketName.toLowerCase() === value.trim().toLowerCase()
   );
   if (isDuplicate) {
-    return { isValid: false, error: 'Tên vé đã tồn tại' };
+    return { isValid: false, error: 'Tên đã tồn tại' };
   }
 
   return { isValid: true };
 };
 
 export const validateTicketPrice = (value: number): ValidationResult => {
-  if (value <= 0) {
-    return { isValid: false, error: 'Giá vé phải lớn hơn 0' };
+  if (value <= 20000) {
+    return { isValid: false, error: 'Số tiền phải lớn hơn 20,000 VND' };
   }
-  if (value > 100000000) {
-    return { isValid: false, error: 'Giá vé không hợp lệ (tối đa 100 triệu)' };
+  if (value > 10000000) {
+    return { isValid: false, error: 'Số tiền không hợp lệ (tối đa 10 triệu)' };
   }
 
-  if (value < 10000) {
+  if (value < 30000) {
     return {
       isValid: true,
-      warning: 'Giá vé thấp hơn mức khuyến nghị (10,000 VND)',
+      warning: 'Giá thấp hơn mức khuyến nghị (30,000 VND)',
     };
   }
 
@@ -45,12 +45,12 @@ export const validateTicketTotalSlot = (
   conferenceMaxSlot: number
 ): ValidationResult => {
   if (value <= 0) {
-    return { isValid: false, error: 'Số lượng vé phải lớn hơn 0' };
+    return { isValid: false, error: 'Số lượng phải lớn hơn 0' };
   }
   if (value > conferenceMaxSlot) {
     return {
       isValid: false,
-      error: `Số lượng vượt quá sức chứa (${conferenceMaxSlot})`,
+      error: `Số lượng vượt quá tổng số người tham dự (${conferenceMaxSlot})`,
     };
   }
   return { isValid: true };
@@ -113,7 +113,7 @@ export const validatePhaseDuration = (
     const maxEnd = new Date(saleEnd);
 
     if (end > maxEnd) {
-      return { isValid: false, error: 'Giai đoạn vượt quá thời gian bán vé' };
+      return { isValid: false, error: 'Giai đoạn vượt quá thời gian bán' };
     }
   }
 

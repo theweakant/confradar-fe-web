@@ -74,10 +74,8 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
   const [percentValue, setPercentValue] = useState(0);
   const [durationInDays, setDurationInDays] = useState(1);
 
-  // Lấy waitlist phase
   const waitlistPhase = researchPhases.find(phase => phase.isWaitlist);
 
-  // Lọc các vé isAuthor = true và còn slot
   const authorPricesWithSlots = researchPrice.filter(
     price => price.isAuthor && (price.availableSlot ?? 0) > 0
   );
@@ -346,7 +344,7 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
     if (price) {
       const totalSlots = phases.reduce((sum, phase) => sum + phase.totalslot, 0);
       if (totalSlots !== price.availableSlot) {
-        return `Tổng slot của các phase (${totalSlots}) phải bằng available slot của vé (${price.availableSlot})`;
+        return `Tổng số lượng của các phase (${totalSlots}) phải bằng số lượng của loại chi phí (${price.availableSlot})`;
       }
     }
 
@@ -376,7 +374,6 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
     return null;
   };
 
-  // Handle thêm phase cho một vé
   const handleAddPhase = (priceId: string) => {
     const currentPhases = selectedPrices[priceId] || [];
     const newPhase: Phase = {
@@ -416,7 +413,6 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
       [priceId]: updatedPhases
     });
 
-    // Clear validation error cho vé này
     if (validationErrors[priceId]) {
       setValidationErrors({ ...validationErrors, [priceId]: "" });
     }
@@ -426,7 +422,6 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
   const handleActivate = async () => {
     const errors: Record<string, string> = {};
 
-    // Validate tất cả các vé
     for (const price of authorPricesWithSlots) {
       const phases = selectedPrices[price.conferencePriceId];
       const error = validatePhases(price.conferencePriceId, phases || []);
@@ -442,7 +437,6 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
       return;
     }
 
-    // Gọi API cho từng vé
     try {
       for (const price of authorPricesWithSlots) {
         const phases = selectedPrices[price.conferencePriceId];
@@ -691,7 +685,7 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
               </div>
             ) : authorPricesWithSlots.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                Không có vé tác giả nào còn slot available
+                Không có chi phí cho tác giả nào còn khả dụng
               </div>
             ) : (
               <>

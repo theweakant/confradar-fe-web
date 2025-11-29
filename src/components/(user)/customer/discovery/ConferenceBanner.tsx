@@ -64,13 +64,13 @@ const ConferenceBanner: React.FC<BannerFilterProps> = ({
         {/* Main Title */}
         <div className="mb-8 lg:mb-12">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-4 leading-tight">
-            KHÁM PHÁ HỘI NGHỊ
+            KHÁM PHÁ CONFRADAR
           </h1>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-6 leading-tight">
             NÂNG TẦM KIẾN THỨC!
           </h2>
           <p className="text-lg sm:text-xl lg:text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed">
-            Tham gia các hội nghị hàng đầu để cập nhật xu hướng công nghệ và
+            Tham gia các hội thảo & hội nghị hàng đầu để cập nhật xu hướng công nghệ và
             nghiên cứu mới nhất
           </p>
         </div>
@@ -102,7 +102,7 @@ const ConferenceBanner: React.FC<BannerFilterProps> = ({
               }
             `}
           >
-            Hội nghị Công nghệ
+            Hội thảo Công nghệ
           </button>
 
           <button

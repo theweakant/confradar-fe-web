@@ -4,6 +4,14 @@ export function formatNumber(amount: number): string {
   return new Intl.NumberFormat("en-US").format(amount);
 }
 
+export const truncateText = (
+  text: string | null | undefined,
+  maxLength: number = 10
+): string => {
+  if (!text) return "—"; 
+  return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
+};
+
 //currency
 export function formatCurrency(amount: number | undefined): string {
   return new Intl.NumberFormat("vi-VN", {

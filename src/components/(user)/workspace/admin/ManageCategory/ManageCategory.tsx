@@ -144,7 +144,7 @@ export default function ManageCategory() {
             </Button>
           </div>
           <p className="text-gray-600 mt-2">
-            Quản lý các danh mục hội nghị trong hệ thống
+            Quản lý các danh mục trong hệ thống
           </p>
         </div>
 

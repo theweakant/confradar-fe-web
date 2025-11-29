@@ -282,8 +282,8 @@ const PartnerContractsView: React.FC<PartnerContractsProps> = ({ contracts = moc
             <div>
               <h4 className="font-semibold text-blue-900 mb-1">Lưu ý về hoa hồng</h4>
               <p className="text-sm text-blue-700">
-                Hoa hồng sẽ được tính dựa trên doanh thu thực tế từ các đăng ký tham gia hội nghị. 
-                Thanh toán được thực hiện vào cuối mỗi tháng cho các hợp đồng đang hoạt động.
+                Hoa hồng sẽ được tính dựa trên doanh thu thực tế từ các đăng ký tham gia hội thảo. 
+                Thanh toán được thực hiện vào ngày thanh toán cho các hợp đồng.
               </p>
             </div>
           </div>

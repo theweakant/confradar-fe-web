@@ -79,7 +79,7 @@ export const validateResearchTimeline = (
   const mainPhase = phases.find((p) => !p.isWaitlist);
 
   if (!mainPhase) {
-    return { isValid: false, error: "Thiếu timeline chính (main phase) cho hội thảo" };
+    return { isValid: false, error: "Thiếu timeline chính (main phase) cho hội nghị" };
   }
 
   const {
@@ -196,7 +196,7 @@ export const validateResearchTimeline = (
   if (camEnd >= saleStart) {
     return {
       isValid: false,
-      error: `Timeline research phải kết thúc trước khi bán vé! CameraReady phải kết thúc trước ${saleStart.toLocaleDateString("vi-VN")}`,
+      error: `Timeline research phải kết thúc trước khi bán! CameraReady phải kết thúc trước ${saleStart.toLocaleDateString("vi-VN")}`,
     };
   }
 

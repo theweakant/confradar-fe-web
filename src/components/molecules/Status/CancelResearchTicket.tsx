@@ -35,12 +35,12 @@ export const CancelResearchTicket: React.FC<CancelResearchTicketProps> = ({
 
     try {
       await cancelTicket({ ticketIds }).unwrap();
-      toast.success("Đã hủy vé nghiên cứu thành công!");
+      toast.success("Đã hủy chi phí nghiên cứu thành công!");
       setOpen(false);
       onSuccess?.();
     } catch (err) {
-      console.error("Lỗi khi hủy vé nghiên cứu:", err);
-      toast.error("Không thể hủy vé. Vui lòng thử lại.");
+      console.error("Lỗi khi hủy chi phí nghiên cứu:", err);
+      toast.error("Không thể hủy chi phí. Vui lòng thử lại.");
     }
   };
 
@@ -53,7 +53,7 @@ export const CancelResearchTicket: React.FC<CancelResearchTicketProps> = ({
       className="cursor-pointer flex items-center gap-2 text-red-600 focus:text-red-700 focus:bg-red-50"
     >
       <Ban className="w-4 h-4" />
-      Hủy vé nghiên cứu
+      Hủy chi phí nghiên cứu
     </DropdownMenuItem>
   ) : (
     <Button
@@ -62,7 +62,7 @@ export const CancelResearchTicket: React.FC<CancelResearchTicketProps> = ({
       onClick={() => setOpen(true)}
       disabled={ticketIds.length === 0}
     >
-      Hủy vé nghiên cứu
+      Hủy chi phí nghiên cứu
     </Button>
   );
 
@@ -73,9 +73,9 @@ export const CancelResearchTicket: React.FC<CancelResearchTicketProps> = ({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-md p-6">
           <DialogHeader>
-            <DialogTitle className="text-red-600">Xác nhận hủy vé nghiên cứu</DialogTitle>
+            <DialogTitle className="text-red-600">Xác nhận hủy chi phí nghiên cứu</DialogTitle>
             <DialogDescription>
-              Hành động này sẽ hủy {ticketIds.length} vé nghiên cứu đã chọn. Bạn có chắc chắn không?
+              Hành động này sẽ hủy {ticketIds.length} chi phí nghiên cứu đã chọn. Bạn có chắc chắn không?
             </DialogDescription>
           </DialogHeader>
 
@@ -83,7 +83,7 @@ export const CancelResearchTicket: React.FC<CancelResearchTicketProps> = ({
             <div className="flex items-start gap-2">
               <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
               <p className="text-sm text-red-700">
-                Vé đã hủy <strong>không thể khôi phục</strong>. Vui lòng xác nhận kỹ trước khi tiếp tục.
+                Chi phí tham dự đã hủy <strong>không thể khôi phục</strong>. Vui lòng xác nhận kỹ trước khi tiếp tục.
               </p>
             </div>
           </div>

@@ -486,7 +486,7 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
                       {sessionsInThisRoom.length > 0 && (
                         <LocalSessionList
                           sessions={sessionsInThisRoom}
-                          title="Phiên họp trong hội thảo"
+                          title="Session"
                           editable={true}
                           onEdit={handleEditSession}
                           onDelete={handleDeleteConfirm}

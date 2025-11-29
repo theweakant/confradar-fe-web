@@ -87,7 +87,6 @@ export function RegisteredUsersModal({
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-nowrap">
-                        {/* Tên + mã vé */}
                         <div className="flex items-baseline gap-2 min-w-0">
                           <p className="font-medium text-gray-900 truncate">
                             {user.userName}
@@ -100,7 +99,7 @@ export function RegisteredUsersModal({
                         {/* Trạng thái — nằm sát bên phải */}
                         {user.isRefunded ? (
                           <span className="inline-flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded-md bg-red-100 text-red-700 whitespace-nowrap shrink-0">
-                            Đã hoàn vé
+                            Đã hoàn tiền
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded-md bg-green-100 text-green-700 whitespace-nowrap shrink-0">

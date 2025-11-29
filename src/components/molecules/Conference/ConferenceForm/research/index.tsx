@@ -269,7 +269,7 @@ export default function ResearchConferenceStepForm({
       mode === "edit"
         ? (error) => {
             console.error("Failed to load research conference:", error);
-            toast.error("Không thể tải dữ liệu hội thảo!");
+            toast.error("Không thể tải dữ liệu hội nghị!");
           }
         : () => {},
   });
@@ -488,97 +488,7 @@ const isCurrentStepLast = useMemo(() => {
       handleNext();
     }
   };
-
-  // const handleTimelineSubmit = async () => {
-  // console.log('📤 handleTimelineSubmit - START');
-  // console.log('📊 Current researchPhases state:', {
-  //   phasesCount: researchPhases.length,
-  //   phases: researchPhases.map((p, i) => ({
-  //     index: i,
-  //     isWaitlist: p.isWaitlist,
-  //     isActive: p.isActive,
-  //     researchPhaseId: p.researchPhaseId,
-  //     registrationStartDate: p.registrationStartDate,
-  //     fullPaperStartDate: p.fullPaperStartDate,
-  //     reviewStartDate: p.reviewStartDate,
-  //     reviseStartDate: p.reviseStartDate,
-  //     cameraReadyStartDate: p.cameraReadyStartDate,
-  //     abstractDecideStatusStart: p.abstractDecideStatusStart,
-  //     fullPaperDecideStatusStart: p.fullPaperDecideStatusStart,
-  //     revisionPaperDecideStatusStart: p.revisionPaperDecideStatusStart,
-  //     cameraReadyDecideStatusStart: p.cameraReadyDecideStatusStart,
-  //   }))
-  // });
-
-  //   const mainPhase = researchPhases[0];
-  //   if (!mainPhase) {
-  //     toast.error("Main timeline là bắt buộc!");
-  //     return;
-  //   }
-  //   const waitlistPhase = researchPhases[1];
-  //   if (!waitlistPhase || !waitlistPhase.isWaitlist) {
-  //     toast.error("Bạn phải tạo Waitlist timeline trước khi tiếp tục!");
-  //     return;
-  //   }
-  //   if (!waitlistPhase.registrationStartDate) {
-  //     toast.error(
-  //       "Waitlist timeline chưa được điền — vui lòng điền đầy đủ timeline"
-  //     );
-  //     return;
-  //   }
-
-  //   const mainValidation = validateResearchTimeline(
-  //     mainPhase,
-  //     basicForm.ticketSaleStart
-  //   );
-  //   if (!mainValidation.isValid) {
-  //     toast.error(`Lỗi ở Main Timeline: ${mainValidation.error}`);
-  //     return;
-  //   }
-  //   if (mainValidation.warning) {
-  //     toast.warning(`Cảnh báo ở Main Timeline: ${mainValidation.warning}`);
-  //   }
-
-  //   const waitlistValidation = validateResearchTimeline(
-  //     waitlistPhase,
-  //     basicForm.ticketSaleStart
-  //   );
-  //   if (!waitlistValidation.isValid) {
-  //     toast.error(`Lỗi ở Waitlist Timeline: ${waitlistValidation.error}`);
-  //     return;
-  //   }
-  //   if (waitlistValidation.warning) {
-  //     toast.warning(
-  //       `Cảnh báo ở Waitlist Timeline: ${waitlistValidation.warning}`
-  //     );
-  //   }
-
-  //   if (mainPhase.cameraReadyEndDate && waitlistPhase.registrationStartDate) {
-  //     const mainEnd = new Date(mainPhase.cameraReadyEndDate);
-  //     const waitlistStart = new Date(waitlistPhase.registrationStartDate);
-  //     if (waitlistStart <= mainEnd) {
-  //       toast.error(
-  //         "Waitlist timeline phải bắt đầu sau khi Main timeline kết thúc!"
-  //       );
-  //       return;
-  //     }
-  //   }
-  // console.log('📤 Calling submitResearchPhase with:', {
-  //   phasesCount: researchPhases.length,
-  //   phasesToSubmit: researchPhases.map((p, i) => ({
-  //     index: i,
-  //     isWaitlist: p.isWaitlist,
-  //     registrationStart: p.registrationStartDate
-  //   }))
-  // });
-  //   const result = await submitResearchPhase(researchPhases);
-  //     console.log('📥 submitResearchPhase result:', result);
-
-  //   if (result.success) {
-  //     handleMarkHasData(3);
-  //     handleNext();
-  //   }
-  // };
+  
 const handleTimelineSubmit = async () => {
   console.log('📤 handleTimelineSubmit - START');
   
@@ -661,13 +571,13 @@ const handleTimelineSubmit = async () => {
 };
   const handlePriceSubmit = async () => {
     if (tickets.length === 0) {
-      toast.error("Vui lòng thêm ít nhất 1 loại vé!");
+      toast.error("Vui lòng thêm ít nhất 1 loại chi phí!");
       return;
     }
     const hasAuthorTicket = tickets.some((t) => t.isAuthor === true);
     if (!hasAuthorTicket) {
       toast.error(
-        "Hội nghị nghiên cứu cần có ít nhất một loại vé dành cho tác giả!"
+        "Hội nghị nghiên cứu cần có ít nhất một loại chi phí dành cho tác giả!"
       );
       return;
     }
@@ -841,13 +751,13 @@ const handleTimelineSubmit = async () => {
       }
       case 4: {
         if (tickets.length === 0) {
-          toast.error("Vui lòng thêm ít nhất 1 loại vé!");
+          toast.error("Vui lòng thêm ít nhất 1 loại chi phí!");
           return { success: false };
         }
         const hasAuthorTicket = tickets.some((t) => t.isAuthor === true);
         if (!hasAuthorTicket) {
           toast.error(
-            "Hội nghị nghiên cứu cần có ít nhất một loại vé dành cho tác giả!"
+            "Hội nghị nghiên cứu cần có ít nhất một loại chi phí dành cho tác giả!"
           );
           return { success: false };
         }
@@ -965,7 +875,7 @@ const handleTimelineSubmit = async () => {
     });
 
     if (result?.success) {
-      toast.success("Cập nhật toàn bộ hội thảo thành công!");
+      toast.success("Cập nhật toàn bộ hội nghị thành công!");
       realDeleteTracking.resetDeleteTracking();
 
       for (let i = 1; i <= RESEARCH_MAX_STEP; i++) {
@@ -1003,7 +913,7 @@ const handleTimelineSubmit = async () => {
       isRankingLoading);
 
   if (isLoading) {
-    return <LoadingOverlay message="Đang tải dữ liệu hội thảo..." />;
+    return <LoadingOverlay message="Đang tải dữ liệu hội nghị..." />;
   }
 
   return (
@@ -1016,8 +926,8 @@ const handleTimelineSubmit = async () => {
         }
         description={
           mode === "create"
-            ? "Điền đầy đủ thông tin để tạo hội thảo nghiên cứu"
-            : "Cập nhật thông tin hội thảo nghiên cứu"
+            ? "Điền đầy đủ thông tin để tạo hội nghị nghiên cứu"
+            : "Cập nhật thông tin hội nghị nghiên cứu"
         }
       />
 
@@ -1188,7 +1098,7 @@ const handleTimelineSubmit = async () => {
                 <div>
                   <h4 className="text-sm font-semibold text-red-900 mb-1">Thiếu thông tin ngày tổ chức</h4>
                   <p className="text-sm text-red-800">
-                    Vui lòng quay lại <strong>Bước 1</strong> để điền ngày bắt đầu và kết thúc hội thảo.
+                    Vui lòng quay lại <strong>Bước 1</strong> để điền ngày bắt đầu và kết thúc hội nghị.
                   </p>
                   <button
                     onClick={() => handleGoToStep(1)}
