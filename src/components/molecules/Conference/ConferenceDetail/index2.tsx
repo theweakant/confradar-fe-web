@@ -131,7 +131,7 @@ export default function ConferenceDetailPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
-          <span className="text-gray-600 font-medium">Đang tải thông tin hội thảo...</span>
+          <span className="text-gray-600 font-medium">Đang tải thông tin...</span>
         </div>
       </div>
     );
@@ -146,7 +146,6 @@ export default function ConferenceDetailPage() {
               <Info className="w-8 h-8 text-red-600" />
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">Không thể tải thông tin</h3>
-            <p className="text-gray-600 mb-6">Hội thảo không tồn tại hoặc đã bị xóa</p>
             <Button onClick={() => router.back()} className="w-full bg-blue-600 hover:bg-blue-700">
               Quay lại
             </Button>

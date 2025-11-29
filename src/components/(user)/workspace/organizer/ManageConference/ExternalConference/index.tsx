@@ -149,7 +149,7 @@ export default function ExternalConference() {
   }, [cities]);
 
   const collaboratorOptions = useMemo(() => {
-    const allOption = { value: "all", label: "Tất cả cộng tác viên" };
+    const allOption = { value: "all", label: "Tất cả đối tác" };
     const apiCollabs = collaboratorData?.data?.map((collab) => ({
       value: collab.userId,
       label: collab.fullName || collab.email,
@@ -285,7 +285,7 @@ export default function ExternalConference() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                Hội nghị của Đối tác
+                Hội thảo của Đối tác
               </h1>
               <p className="text-gray-600 mt-2">
                 Quản lý các hội thảo công nghệ do Đối Tác tổ chức
@@ -343,7 +343,7 @@ export default function ExternalConference() {
             <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t">
               {filterCollaborator !== "all" && (
                 <Badge variant="secondary" className="gap-1">
-                  Cộng tác viên: {collaboratorOptions.find(o => o.value === filterCollaborator)?.label}
+                  Đối tác: {collaboratorOptions.find(o => o.value === filterCollaborator)?.label}
                   <X
                     className="w-3 h-3 cursor-pointer"
                     onClick={() => setFilterCollaborator("all")}
@@ -401,14 +401,14 @@ export default function ExternalConference() {
               {/* Collaborator Filter */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
-                  Cộng tác viên
+                  Đối tác
                 </label>
                 <Select
                   value={tempFilterCollaborator}
                   onValueChange={setTempFilterCollaborator}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Chọn cộng tác viên" />
+                    <SelectValue placeholder="Chọn đối tác" />
                   </SelectTrigger>
                   <SelectContent>
                     {collaboratorOptions.map((option) => (
@@ -523,7 +523,7 @@ export default function ExternalConference() {
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <StatCard
-            title="Tổng hội nghị đối tác"
+            title="Tổng hội thảo đối tác"
             value={displayConferences.length}
             icon={<Cpu className="w-10 h-10" />}
             color="blue"
@@ -543,10 +543,10 @@ export default function ExternalConference() {
               <Cpu className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
               <div>
                 <h3 className="font-semibold text-blue-900 mb-1">
-                  Chưa có hội nghị đối tác
+                  Chưa có hội thảo đối tác
                 </h3>
                 <p className="text-sm text-blue-700">
-                  Các hội nghị công nghệ do đối tác tạo sẽ hiển thị ở đây. Bạn có thể xem chi tiết và theo dõi các hội nghị này.
+                  Các hội thảo công nghệ do đối tác tạo sẽ hiển thị ở đây. Bạn có thể xem chi tiết và theo dõi các hội thảo này.
                 </p>
               </div>
             </div>

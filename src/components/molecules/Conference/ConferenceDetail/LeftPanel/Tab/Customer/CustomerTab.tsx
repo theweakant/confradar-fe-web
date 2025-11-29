@@ -38,7 +38,7 @@ export function CustomerTab({ conferenceId, conferenceType }: CustomerTabProps) 
     return (
       <div className="py-12 text-center">
         <div className="inline-block w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-3" />
-        <p className="text-gray-600">Đang tải danh sách người mua vé...</p>
+        <p className="text-gray-600">Đang tải danh sách người mua...</p>
       </div>
     );
   }
@@ -50,7 +50,7 @@ export function CustomerTab({ conferenceId, conferenceType }: CustomerTabProps) 
           <Ticket className="w-8 h-8 text-red-500" />
         </div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">Lỗi khi tải dữ liệu</h3>
-        <p className="text-sm text-gray-500">Không thể lấy danh sách người mua vé. Vui lòng thử lại.</p>
+        <p className="text-sm text-gray-500">Không thể lấy danh sách người mua. Vui lòng thử lại.</p>
       </div>
     );
   }
@@ -62,8 +62,8 @@ export function CustomerTab({ conferenceId, conferenceType }: CustomerTabProps) 
         {/* Header with stats */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pb-4 border-b">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Người mua vé</h2>
-            <p className="text-sm text-gray-500 mt-0.5">{ticketHolders.length} vé đã bán</p>
+            <h2 className="text-xl font-bold text-gray-900">Người mua</h2>
+            <p className="text-sm text-gray-500 mt-0.5">{ticketHolders.length} đã bán</p>
           </div>
           {ticketHolders.length > 0 && (
             <div className="flex items-center gap-2 px-4 py-2 bg-green-50 rounded-lg border border-green-200">
@@ -83,7 +83,7 @@ export function CustomerTab({ conferenceId, conferenceType }: CustomerTabProps) 
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Ticket className="w-10 h-10 text-gray-400" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">Chưa có ai mua vé</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">Chưa có người mua</h3>
             <p className="text-sm text-gray-500">Chưa có giao dịch nào được ghi nhận</p>
           </div>
         ) : (

@@ -160,7 +160,7 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
   const performStatusUpdate = async () => {
     try {
       if (!conference?.conferenceId) {
-        toast.error("Không tìm thấy mã hội thảo.");
+        toast.error("Không tìm thấy ID!");
         return;
       }
 
@@ -238,7 +238,7 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
       <Dialog open={open} onOpenChange={onClose}>
         <DialogContent className="max-w-md p-6 max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Cập nhật trạng thái hội thảo</DialogTitle>
+            <DialogTitle>Cập nhật trạng thái</DialogTitle>
           </DialogHeader>
 
           {/* Hiển thị nội dung dựa trên trạng thái hiện tại */}
@@ -248,7 +248,7 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
                 Đã hoàn thành
               </div>
               <p className="text-sm text-gray-600">
-                Hội thảo đã hoàn thành. Không thể cập nhật trạng thái.
+                Sự kiện đã hoàn thành. Không thể cập nhật trạng thái.
               </p>
             </div>
           ) : (
@@ -295,7 +295,7 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
               {currentStatusName === "Ready" && (conference.startDate || conference.endDate) && (
                 <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
                   <p className="text-sm text-blue-800">
-                    Thời gian diễn ra hội nghị:{" "}
+                    Thời gian diễn ra sự kiện:{" "}
                     <span className="font-medium">
                       {conference.startDate
                         ? new Date(conference.startDate).toLocaleDateString("vi-VN")
@@ -360,7 +360,7 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
       <Dialog open={showEarlyCompleteConfirm} onOpenChange={setShowEarlyCompleteConfirm}>
         <DialogContent className="max-w-md p-6">
           <DialogHeader>
-            <DialogTitle>Xác nhận kết thúc hội thảo sớm</DialogTitle>
+            <DialogTitle>Xác nhận kết thúc sự kiện sớm</DialogTitle>
           </DialogHeader>
 
           <div className="text-sm text-gray-700 space-y-3">
@@ -370,11 +370,11 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
               const endDate = conference.endDate ? new Date(conference.endDate) : null;
 
               if (startDate && now < startDate) {
-                return "Hội thảo/ Hội nghị chưa diễn ra. Bạn có muốn kết thúc sớm?";
+                return "Sự kiện chưa diễn ra. Bạn có muốn kết thúc sớm?";
               } else if (endDate && now <= endDate) {
                 return "Vẫn còn đang trong thời gian diễn ra. Bạn có muốn kết thúc sớm?";
               }
-              return "Bạn có chắc muốn kết thúc hội thảo sớm?";
+              return "Bạn có chắc muốn kết thúc sớm?";
             })()}
 
             <p className="text-red-600 font-medium text-xs">

@@ -785,7 +785,7 @@ export function PriceForm({
             placeholder="500000"
           />
           <FormInput
-            label={`Tổng số lượng vé (Sức chứa: ${maxTotalSlot})`}
+            label={`Tổng số lượng vé (Số lượng tham dự: ${maxTotalSlot})`}
             type="number"
             value={newTicket.totalSlot}
             onChange={(val) => setNewTicket({ ...newTicket, totalSlot: Number(val) })}

@@ -54,7 +54,7 @@ export function HeaderSection({
                 {conference.conferenceName}
               </h1>
               <p className="text-sm text-gray-600 mb-3">
-                {conference.description || "Chi tiết hội nghị"}
+                {conference.description || "Mô tả"}
               </p>
               
               {/* Badges */}

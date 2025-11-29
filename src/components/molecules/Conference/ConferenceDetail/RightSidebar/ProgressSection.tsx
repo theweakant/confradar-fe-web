@@ -90,12 +90,12 @@ export function ProgressTimelineSection({
           month: "2-digit",
           year: "numeric",
         });
-        progressDescription = `Mở bán vé vào ${saleDateFormatted}`;
+        progressDescription = `Mở bán vào ${saleDateFormatted}`;
       } else {
-        progressDescription = "Đang mở bán vé";
+        progressDescription = "Đang mở bán";
       }
     } else {
-      progressDescription = "Hội nghị đã sẵn sàng (chưa có ngày bán vé)";
+      progressDescription = "Đã sẵn sàng (chưa có ngày bán)";
     }
   }
 

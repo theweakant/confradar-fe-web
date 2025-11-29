@@ -215,7 +215,7 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
             {conference.totalSlot && (
               <div className="flex items-center gap-2">
                 <span className="text-sm">
-                  Sức chứa: {conference.totalSlot} người
+                  Số lượng tham dự: {conference.totalSlot} người
                 </span>
               </div>
             )}

@@ -72,8 +72,8 @@ export default function PendingConference() {
 
       toast.success(
         isApproveAction
-          ? "Đã phê duyệt hội nghị thành công!"
-          : "Đã từ chối hội nghị!",
+          ? "Đã phê duyệt hội thảo thành công!"
+          : "Đã từ chối hội thảo!",
       );
 
       getPendingConferences({ page, pageSize });
@@ -102,10 +102,10 @@ export default function PendingConference() {
             </Button>
           </Link>
           <h1 className="text-3xl font-bold text-gray-900">
-            Hội nghị chờ duyệt
+            Hội thảo chờ duyệt
           </h1>
           <p className="text-gray-600 mt-2">
-            Danh sách các hội nghị đang chờ phê duyệt từ ban tổ chức
+            Danh sách các hội thảo đang chờ phê duyệt từ ban tổ chức
           </p>
         </div>
 
@@ -118,10 +118,10 @@ export default function PendingConference() {
           <div className="bg-white rounded-xl shadow-sm p-12 text-center">
             <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Không có hội nghị chờ duyệt
+              Không có hội thảo chờ duyệt
             </h3>
             <p className="text-gray-600">
-              Hiện tại không có hội nghị nào đang chờ phê duyệt
+              Hiện tại không có hội thảo nào đang chờ phê duyệt
             </p>
           </div>
         ) : (
@@ -189,7 +189,7 @@ export default function PendingConference() {
                     <div className="flex items-center text-sm text-gray-600">
                       <Users className="w-4 h-4 mr-2" />
                       <span>
-                        Sức chứa: {conference.totalSlot ?? "N/A"} người
+                        Số người tham dự: {conference.totalSlot ?? "N/A"} người
                         {conference.availableSlot != null && (
                           <span className="ml-2 text-xs text-gray-500">
                             (Còn: {conference.availableSlot})
@@ -275,12 +275,12 @@ export default function PendingConference() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {isApproveAction ? "Phê duyệt hội nghị" : "Từ chối hội nghị"}
+              {isApproveAction ? "Phê duyệt hội thảo" : "Từ chối hội thảo"}
             </DialogTitle>
             <DialogDescription>
               {isApproveAction
-                ? "Vui lòng nhập lý do phê duyệt hội nghị này."
-                : "Vui lòng nhập lý do từ chối hội nghị này."}
+                ? "Vui lòng nhập lý do phê duyệt hội thảo này."
+                : "Vui lòng nhập lý do từ chối hội thảo này."}
             </DialogDescription>
           </DialogHeader>
 

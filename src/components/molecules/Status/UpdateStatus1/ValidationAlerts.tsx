@@ -132,7 +132,7 @@ export const TimeValidationAlerts = ({
             </svg>
           </div>
           <p className="text-sm font-semibold text-green-800">
-            Thời gian hội thảo vẫn còn hợp lệ
+            Thời gian vẫn còn hợp lệ
           </p>
         </div>
       </div>

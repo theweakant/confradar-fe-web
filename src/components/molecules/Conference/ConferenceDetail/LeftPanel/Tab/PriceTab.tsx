@@ -15,7 +15,7 @@ export function PriceTab({ conference }: PriceTabProps) {
   return (
     <div className="space-y-6">
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-foreground">Giá Vé</h2>
+        <h2 className="text-3xl font-bold text-foreground">Chi phí tham dự</h2>
         <p className="text-sm text-muted-foreground mt-3">
           Thông tin chi tiết về chi phí
         </p>
@@ -128,7 +128,7 @@ export function PriceTab({ conference }: PriceTabProps) {
         </div>
       ) : (
         <div className="text-center py-12">
-          <p className="text-muted-foreground">Không có thông tin giá vé</p>
+          <p className="text-muted-foreground">Không có thông tin</p>
         </div>
       )}
     </div>

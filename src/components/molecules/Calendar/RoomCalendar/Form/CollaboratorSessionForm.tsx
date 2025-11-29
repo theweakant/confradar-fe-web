@@ -299,10 +299,10 @@ export function CollaboratorSessionForm({
       return;
     }
 
-    if (formData.speakers.length === 0) {
-      toast.error("Vui lòng thêm ít nhất 1 diễn giả!");
-      return;
-    }
+    // if (formData.speakers.length === 0) {
+    //   toast.error("Vui lòng thêm ít nhất 1 diễn giả!");
+    //   return;
+    // }
 
     if (formData.timeRange < 0.5) {
       toast.error("Thời lượng tối thiểu là 0.5 giờ (30 phút)!");

@@ -10,10 +10,10 @@ import type { ValidationResult } from "../basic"; // Đảm bảo ValidationResu
 
 export const validateConferenceName = (name: string): ValidationResult => {
   if (!name || name.trim().length === 0) {
-    return { isValid: false, error: "Tên hội thảo không được để trống" };
+    return { isValid: false, error: "Tên hội nghị không được để trống" };
   }
   if (name.trim().length < 10) {
-    return { isValid: false, error: "Tên hội thảo phải có ít nhất 10 ký tự" };
+    return { isValid: false, error: "Tên hội nghị phải có ít nhất 10 ký tự" };
   }
   return { isValid: true };
 };
@@ -30,7 +30,7 @@ export const validateDateRange = (dateRange: number): ValidationResult => {
 
 export const validateTotalSlot = (totalSlot: number): ValidationResult => {
   if (!totalSlot || totalSlot <= 0) {
-    return { isValid: false, error: "Sức chứa phải lớn hơn 0" };
+    return { isValid: false, error: "Số lượng tham dự phải lớn hơn 0" };
   }
   return { isValid: true };
 };
@@ -40,7 +40,7 @@ export const validateTicketSaleStart = (
   eventStartDate: string
 ): ValidationResult => {
   if (!ticketSaleStart) {
-    return { isValid: false, error: "Vui lòng chọn ngày bắt đầu bán vé" };
+    return { isValid: false, error: "Vui lòng chọn ngày bắt đầu bán" };
   }
   if (!eventStartDate) {
     return { isValid: true }; // Skip if event date not set
@@ -50,7 +50,7 @@ export const validateTicketSaleStart = (
   const eventStart = new Date(eventStartDate);
 
   if (saleStart >= eventStart) {
-    return { isValid: false, error: "Ngày bắt đầu bán vé phải trước ngày bắt đầu sự kiện" };
+    return { isValid: false, error: "Ngày bắt đầu bán phải trước ngày bắt đầu sự kiện" };
   }
 
   // Optional: add warning for short notice
@@ -60,7 +60,7 @@ export const validateTicketSaleStart = (
   if (daysDiff < 7) {
     return {
       isValid: true,
-      warning: "Khuyến nghị: Nên bán vé trước ít nhất 7 ngày",
+      warning: "Khuyến nghị: Nên bán trước ít nhất 7 ngày",
     };
   }
 
@@ -73,7 +73,7 @@ export const validateTicketSaleDuration = (
   eventStartDate: string
 ): ValidationResult => {
   if (!duration || duration <= 0) {
-    return { isValid: false, error: "Số ngày bán vé phải lớn hơn 0" };
+    return { isValid: false, error: "Số ngày bán phải lớn hơn 0" };
   }
   if (!ticketSaleStart || !eventStartDate) {
     return { isValid: true }; // Skip if dates not ready
@@ -86,7 +86,7 @@ export const validateTicketSaleDuration = (
   const eventStart = new Date(eventStartDate);
 
   if (saleEnd >= eventStart) {
-    return { isValid: false, error: "Ngày kết thúc bán vé phải trước ngày bắt đầu sự kiện" };
+    return { isValid: false, error: "Ngày kết thúc bán phải trước ngày bắt đầu sự kiện" };
   }
 
   return { isValid: true };
@@ -135,7 +135,7 @@ export const validateResearchBasicForm = (form: ConferenceBasicForm): { isValid:
 
   // 2. Description
   if (!form.description || form.description.trim().length === 0) {
-    toast.error("Vui lòng nhập mô tả hội thảo");
+    toast.error("Vui lòng nhập mô tả hội nghị");
     return { isValid: false, errors: { description: "Không được để trống" } };
   }
 
@@ -191,7 +191,7 @@ export const validateResearchBasicForm = (form: ConferenceBasicForm): { isValid:
 
   // 10. Category
   if (!form.conferenceCategoryId) {
-    toast.error("Vui lòng chọn danh mục hội thảo");
+    toast.error("Vui lòng chọn danh mục hội nghị");
     return { isValid: false, errors: { conferenceCategoryId: "Vui lòng chọn danh mục" } };
   }
 
@@ -208,12 +208,12 @@ export const validateResearchBasicForm = (form: ConferenceBasicForm): { isValid:
   const eventEnd = new Date(form.endDate);
 
   if (saleStart >= saleEnd) {
-    toast.error("Ngày bắt đầu bán vé phải trước ngày kết thúc bán vé");
+    toast.error("Ngày bắt đầu bán phải trước ngày kết thúc bán");
     return { isValid: false, errors: { ticketSaleStart: "Lỗi thứ tự ngày" } };
   }
 
   if (saleEnd >= eventStart) {
-    toast.error("Ngày kết thúc bán vé phải trước ngày bắt đầu sự kiện");
+    toast.error("Ngày kết thúc bán phải trước ngày bắt đầu sự kiện");
     return { isValid: false, errors: { ticketSaleEnd: "Lỗi thứ tự ngày" } };
   }
 

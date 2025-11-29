@@ -174,7 +174,7 @@ export default function ManageConference() {
         `/workspace/organizer/manage-conference/view-detail/${conference.conferenceId}`,
       );
     } else {
-      toast.error("Không tìm thấy ID hội thảo");
+      toast.error("Không tìm thấy ID");
     }
   };
 
@@ -185,7 +185,7 @@ export default function ManageConference() {
         : `/workspace/organizer/manage-conference/update-tech-conference/${conference.conferenceId}`;
       router.push(route);
     } else {
-      toast.error("Không tìm thấy ID hội thảo");
+      toast.error("Không tìm thấy ID");
     }
   };
 
@@ -227,7 +227,7 @@ export default function ManageConference() {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">Không thể tải dữ liệu hội thảo</p>
+          <p className="text-red-600 mb-4">Không thể tải dữ liệu</p>
           <Button onClick={() => refetch && refetch()}>
             Thử lại
           </Button>
@@ -242,18 +242,18 @@ export default function ManageConference() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold text-gray-900">
-              Quản lý Hội thảo - ConfRadar
+              Quản lý hội thảo & hội nghị - ConfRadar
             </h1>
             <Button
               onClick={handleCreate}
               className="flex items-center gap-2 whitespace-nowrap mt-6"
             >
               <Plus className="w-5 h-5" />
-              Thêm hội thảo
+              Thêm mới
             </Button>
           </div>
           <p className="text-gray-600 mt-2">
-            Quản lý các hội thảo do bạn tổ chức trên ConfRadar
+            Quản lý các hội thảo và hội nghị do bạn tổ chức trên ConfRadar
           </p>
         </div>
 
@@ -323,7 +323,7 @@ export default function ManageConference() {
           href="/workspace/organizer/manage-conference/pending-conference"
           className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
         >
-          Xem hội nghị đang chờ duyệt
+          Xem hội thảo đang chờ duyệt
         </Link>
       </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
@@ -378,12 +378,12 @@ export default function ManageConference() {
       <Modal
         isOpen={isSelectTypeModalOpen}
         onClose={() => setIsSelectTypeModalOpen(false)}
-        title="Chọn loại hội thảo"
+        title="Chọn loại"
         size="lg"
       >
         <div className="py-8">
           <h3 className="text-lg font-semibold text-gray-900 mb-6 text-center">
-            Chọn loại hội thảo bạn muốn tạo
+            Chọn loại hội thảo/ hội nghị bạn muốn tạo
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <button
@@ -418,7 +418,7 @@ export default function ManageConference() {
                     Research Conference
                   </h4>
                   <p className="text-sm text-gray-600">
-                    Hội thảo nghiên cứu khoa học, học thuật và đổi mới
+                    Hội nghị nghiên cứu khoa học, học thuật và đổi mới
                   </p>
                 </div>
               </div>

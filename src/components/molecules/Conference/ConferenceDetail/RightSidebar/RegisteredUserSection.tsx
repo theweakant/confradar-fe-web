@@ -113,7 +113,7 @@ export function RegisteredUserSection({
                 {user.isRefunded ? (
                   <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded-md bg-red-50 text-red-700 border border-red-100">
                     <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-                    Đã hoàn vé
+                    Đã hoàn tiền
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded-md bg-green-50 text-green-700 border border-green-100">

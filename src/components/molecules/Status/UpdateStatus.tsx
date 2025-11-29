@@ -132,7 +132,7 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
 
     try {
       if (!conference?.conferenceId) {
-        toast.error("Không tìm thấy mã hội thảo.");
+        toast.error("Không tìm thấy ID!");
         return;
       }
 
@@ -161,7 +161,7 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-md p-6">
         <DialogHeader>
-          <DialogTitle>Cập nhật trạng thái hội thảo</DialogTitle>
+          <DialogTitle>Cập nhật trạng thái</DialogTitle>
         </DialogHeader>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">

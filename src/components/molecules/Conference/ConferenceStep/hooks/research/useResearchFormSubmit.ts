@@ -194,7 +194,7 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
 
     const hasAuthorTicket = tickets.some((t) => t.isAuthor === true);
     if (mode !== "edit" && !hasAuthorTicket) {
-      toast.error("Hội nghị nghiên cứu cần có ít nhất một loại vé dành cho tác giả!");
+      toast.error("Hội nghị nghiên cứu cần có ít nhất một loại chi phí dành cho tác giả!");
       return { success: false };
     }
 
@@ -296,7 +296,7 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
       } else {
         // MODE CREATE
         if (tickets.length === 0) {
-          toast.error("Vui lòng thêm ít nhất 1 loại vé!");
+          toast.error("Vui lòng thêm ít nhất 1 loại chi phí!");
           return { success: false };
         }
 
@@ -304,12 +304,12 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
       }
 
       dispatch(markStepCompleted(4));
-      toast.success("Lưu giá vé thành công!");
+      toast.success("Lưu giá thành công!");
       return { success: true };
     } catch (error) {
       const apiError = error as { data?: ApiError };
       console.error("Price submit failed:", error);
-      toast.error(apiError?.data?.message || "Lưu giá vé thất bại!");
+      toast.error(apiError?.data?.message || "Lưu giá thất bại!");
       return { success: false, error };
     } finally {
       setIsSubmitting(false);
@@ -1039,14 +1039,14 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
       } else {
         if (sponsors.length === 0) {
           dispatch(markStepCompleted(9));
-          toast.success("Tạo hội thảo thành công!");
+          toast.success("Tạo hội nghị thành công!");
           dispatch(resetWizard());
           router.push(`/workspace/organizer/manage-conference`);
           return { success: true, skipped: true };
         }
         await createSponsors({ conferenceId, data: { sponsors } }).unwrap();
         dispatch(markStepCompleted(9));
-        toast.success("Tạo hội thảo thành công!");
+        toast.success("Tạo hội nghị thành công!");
         dispatch(resetWizard());
         router.push(`/workspace/organizer/manage-conference`);
         return { success: true };
@@ -1115,11 +1115,11 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
       }
     }
     if (stepsData.tickets.length === 0) {
-      errors.push(`Bước 4 - Giá vé: Vui lòng thêm ít nhất 1 loại vé!`);
+      errors.push(`Bước 4 - Chi phí: Vui lòng thêm ít nhất 1 loại chi phí!`);
     } else {
       const hasAuthorTicket = stepsData.tickets.some((t) => t.isAuthor === true);
       if (!hasAuthorTicket) {
-        errors.push(`Bước 4 - Giá vé: Hội nghị nghiên cứu cần có ít nhất một loại vé dành cho tác giả!`);
+        errors.push(`Bước 4 - Chi phí: Hội nghị nghiên cứu cần có ít nhất một loại chi phí dành cho tác giả!`);
       }
     }
     return { isValid: errors.length === 0, errors };
@@ -1162,7 +1162,7 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
       if (stepsData.mediaList.length > 0) await submitMedia(stepsData.mediaList);
       await submitSponsors(stepsData.sponsors);
       if (mode === "edit") {
-        toast.success("Cập nhật hội thảo nghiên cứu thành công!");
+        toast.success("Cập nhật hội nghị nghiên cứu thành công!");
         dispatch(resetWizard());
         router.push(`/workspace/organizer/manage-conference`);
       }

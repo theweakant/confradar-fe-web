@@ -177,11 +177,8 @@ export default function StatisticsDashboard() {
                 </div>
             </div>
 
-            {/* Main Content */}
             <div className="max-w-7xl mx-auto px-6 py-6">
-                {/* Top Metrics - 4 cards */}
                 <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                    {/* Card 1: Tổng vé đã bán */}
                     <div className="relative bg-blue-400 text-white rounded-xl p-6 flex-1 min-w-[200px] shadow-sm hover:shadow-md transition-shadow">
                         <div className="absolute top-5 right-5">
                             <Users className="w-5 h-5 opacity-70" />
@@ -190,7 +187,6 @@ export default function StatisticsDashboard() {
                         <div className="text-xs mt-1 opacity-80">Tổng vé đã bán</div>
                     </div>
 
-                    {/* Card 2: Bán thành công */}
                     <div className="relative bg-green-100 text-green-900 rounded-xl p-6 flex-1 min-w-[200px] shadow-sm hover:shadow-md transition-shadow">
                         <div className="absolute top-5 right-5">
                             <CheckCircle className="w-5 h-5 opacity-70" />
@@ -230,7 +226,7 @@ export default function StatisticsDashboard() {
                             <div className="flex justify-between items-center pb-4 border-b border-gray-200">
                                 <div>
                                     <p className="text-sm text-gray-600 font-medium">Tổng doanh thu</p>
-                                    <p className="text-xs text-gray-500 mt-0.5">Bao gồm cả vé đã hoàn</p>
+                                    <p className="text-xs text-gray-500 mt-0.5">Bao gồm cả vé đã hoàn tiền cho khác</p>
                                 </div>
                                 <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalRevenue)}</p>
                             </div>
@@ -239,7 +235,7 @@ export default function StatisticsDashboard() {
                             <div className="flex justify-between items-center">
                                 <div>
                                     <p className="text-sm text-red-700 font-medium">Đã hoàn trả</p>
-                                    <p className="text-xs text-gray-500 mt-0.5">Khách đã hủy vé</p>
+                                    <p className="text-xs text-gray-500 mt-0.5">Khách đã hủy</p>
                                 </div>
                                 <p className="text-xl font-bold text-red-700">- {formatCurrency(totalRefundedAmount)}</p>
                             </div>
@@ -399,7 +395,7 @@ export default function StatisticsDashboard() {
                                                         <div>
                                                             <p className="font-semibold text-gray-900">{ticket.ticketName}</p>
                                                             <p className="text-xs text-gray-500 mt-1">Giá gốc: {formatCurrency(ticket.ticketPrice)}</p>
-                                                            <p className="text-xs font-medium text-indigo-600 mt-1">Tổng: {ticket.soldSlot} vé</p>
+                                                            <p className="text-xs font-medium text-indigo-600 mt-1">Tổng: {ticket.soldSlot}</p>
                                                         </div>
                                                     </td>
                                                 )}

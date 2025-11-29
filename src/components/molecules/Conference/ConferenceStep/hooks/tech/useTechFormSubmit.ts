@@ -378,10 +378,9 @@ const submitPrice = async (tickets: Ticket[]) => {
         return { success: false };
       }
 
-      // 🔴 VALIDATION: Mỗi ticket phải có ít nhất 1 phase (theo yêu cầu của bạn)
       const ticketWithoutPhases = tickets.some(ticket => !ticket.phases || ticket.phases.length === 0);
       if (ticketWithoutPhases) {
-        toast.error("Mỗi loại vé phải có ít nhất 1 giai đoạn (phase)!");
+        toast.error("Mỗi loại vé phải có ít nhất 1 giai đoạn giá!");
         return { success: false };
       }
 
@@ -467,7 +466,7 @@ const submitSessions = async (
 
   if (sessions.length === 0) {
     dispatch(markStepCompleted(3));
-    toast.info("Đã lưu trạng thái không có phiên họp");
+    toast.info("Đã lưu trạng thái không có session");
     return { success: true, skipped: true };
   }
 
@@ -478,7 +477,7 @@ const submitSessions = async (
     const hasSessionOnEndDay = sessions.some((s) => s.date === eventEndDate);
     
     if (!hasSessionOnStartDay || !hasSessionOnEndDay) {
-      toast.error("Phải có ít nhất 1 phiên họp vào ngày bắt đầu và 1 phiên họp vào ngày kết thúc hội thảo!");
+      toast.error("Phải có ít nhất 1 session vào ngày bắt đầu và 1 session vào ngày kết thúc hội thảo!");
       return { success: false };
     }
   }
@@ -561,14 +560,14 @@ const submitSessions = async (
     }
     
     if (isSubmittingAll) {
-      toast.success("Lưu phiên họp thành công!");
+      toast.success("Lưu session thành công!");
     }
     
     return { success: true };
   } catch (error) {
     const apiError = error as { data?: ApiError };
     console.error("Sessions submit failed:", error);
-    toast.error(apiError?.data?.message || "Lưu phiên họp thất bại!");
+    toast.error(apiError?.data?.message || "Lưu session thất bại!");
     return { success: false, error };
   } finally {
     setIsSubmitting(false);
@@ -797,12 +796,12 @@ const submitSessions = async (
 
     if (stepsData.sessions.length > 0) {
       if (!stepsData.eventStartDate || !stepsData.eventEndDate) {
-        errors.push(`Bước 3 - Phiên họp: Thiếu ngày bắt đầu/kết thúc hội thảo!`);
+        errors.push(`Bước 3 - Session: Thiếu ngày bắt đầu/kết thúc hội thảo!`);
       } else {
         const hasStart = stepsData.sessions.some((s) => s.date === stepsData.eventStartDate);
         const hasEnd = stepsData.sessions.some((s) => s.date === stepsData.eventEndDate);
         if (!hasStart || !hasEnd) {
-          errors.push(`Bước 3 - Phiên họp: Phải có phiên họp vào ngày bắt đầu và kết thúc!`);
+          errors.push(`Bước 3 - Session: Phải có session vào ngày bắt đầu và kết thúc!`);
         }
       }
     }

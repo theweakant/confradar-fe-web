@@ -103,7 +103,7 @@ export const LocalSessionCard: React.FC<LocalSessionCardProps> = ({
     return `${hours}h${minutes > 0 ? ` ${minutes}p` : ""}`;
   };
 
-  const conferenceName = session.conferenceName || "Hội thảo của bạn";
+  const conferenceName = session.conferenceName || "N/A";
 
   // Close dropdown when clicking outside
   useEffect(() => {

@@ -40,7 +40,7 @@ const ConferenceCreationDialog: React.FC<ConferenceCreationDialogProps> = ({ isO
 
     const handleSubmit = async () => {
         if (!conferenceName.trim() || !collaboratorId) {
-            toast.error('Vui lòng nhập tên hội nghị và chọn tài khoản cộng tác viên');
+            toast.error('Vui lòng nhập tên hội nghị và chọn tài khoản đối tác');
             return;
         }
 

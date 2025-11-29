@@ -29,7 +29,7 @@ export default function AdminDashboard() {
       bgColor: "bg-purple-50",
     },
     {
-      title: "Hội thảo đang diễn ra",
+      title: "Hội thảo/ hội nghị đang diễn ra",
       value: "12",
       change: "+23.1%",
       icon: TrendingUp,

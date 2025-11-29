@@ -76,7 +76,7 @@ export function RefundRequestTab({ conferenceId, conferenceType }: RefundRequest
     return (
       <div className="flex flex-col items-center justify-center py-16">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-3" />
-        <p className="text-gray-600">Đang tải yêu cầu hoàn vé...</p>
+        <p className="text-gray-600">Đang tải yêu cầu hoàn tiền...</p>
       </div>
     );
   }
@@ -88,7 +88,7 @@ export function RefundRequestTab({ conferenceId, conferenceType }: RefundRequest
           <Info className="w-8 h-8 text-red-500" />
         </div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">Lỗi tải dữ liệu</h3>
-        <p className="text-sm text-gray-500">Không thể tải danh sách yêu cầu hoàn vé</p>
+        <p className="text-sm text-gray-500">Không thể tải danh sách yêu cầu hoàn tiền</p>
       </div>
     );
   }
@@ -99,11 +99,11 @@ export function RefundRequestTab({ conferenceId, conferenceType }: RefundRequest
         <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <FileText className="w-10 h-10 text-gray-400" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-1">Chưa có yêu cầu hoàn vé</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-1">Chưa có yêu cầu hoàn tiền</h3>
         <p className="text-sm text-gray-500">
           {conferenceType === "research"
-            ? "Chưa có tác giả hoặc người tham dự nào gửi yêu cầu hoàn vé"
-            : "Chưa có khách hàng nào gửi yêu cầu hoàn vé"}
+            ? "Chưa có tác giả hoặc người tham dự nào gửi yêu cầu hoàn tiền"
+            : "Chưa có khách hàng nào gửi yêu cầu hoàn tiền"}
         </p>
       </div>
     );
@@ -116,7 +116,7 @@ export function RefundRequestTab({ conferenceId, conferenceType }: RefundRequest
         <div>
           <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
             <FileText className="w-5 h-5 text-blue-600" />
-            Yêu cầu hoàn vé
+            Yêu cầu hoàn tiền
           </h2>
           <p className="text-sm text-gray-500 mt-1">{refundRequests.length} yêu cầu</p>
         </div>
@@ -167,7 +167,7 @@ export function RefundRequestTab({ conferenceId, conferenceType }: RefundRequest
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <InfoItem
                     icon={<Tag className="w-4 h-4" />}
-                    label="Mã vé"
+                    label="Mã ID"
                     value={req.ticketId}
                     mono
                   />

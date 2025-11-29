@@ -161,7 +161,7 @@ const TopConferences: React.FC<TopConferencesProps> = ({ conferences }) => {
   return (
     <div className="bg-white rounded-3xl p-6 shadow-md border border-gray-100">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">Top Hội Nghị</h3>
+        <h3 className="text-lg font-semibold text-gray-900">Hội nghị/ hội thảo được tham dự nhiều nhất</h3>
       </div>
       <div className="space-y-4">
         {conferences.map((conf) => (
@@ -190,7 +190,7 @@ const ConferenceProgress: React.FC<ProgressProps> = ({ completed, inProgress, pe
 
   return (
     <div className="bg-white rounded-3xl p-6 shadow-md border border-gray-100">
-      <h3 className="text-lg font-semibold mb-8 text-gray-900">Tiến Trình Hội Nghị</h3>
+      <h3 className="text-lg font-semibold mb-8 text-gray-900">Tiến Trình</h3>
       <div className="flex flex-col items-center">
         <div className="relative w-52 h-52 mb-8">
           <svg className="w-full h-full transform -rotate-90">
@@ -318,7 +318,7 @@ export default function ConferenceDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Dashboard Quản Lý Hội Nghị</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Dashboard Quản Lý Hội Nghị/ Hội Thảo</h1>
 
         <ConferenceStats
           total={total}
@@ -335,7 +335,7 @@ export default function ConferenceDashboard() {
             <UpcomingReminder conference={reminder} />
           ) : (
             <div className="bg-white rounded-3xl p-6 shadow-md border border-gray-100 flex items-center justify-center">
-              Không có hội nghị sắp tới
+              Không có hội nghị hay hội thảo sắp tới
             </div>
           )}
         </div>

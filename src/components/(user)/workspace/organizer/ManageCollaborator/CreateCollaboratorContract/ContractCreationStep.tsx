@@ -54,7 +54,7 @@ const ContractCreationStep: React.FC<ContractCreationStepProps> = ({
             {/* Header */}
             <div className="border-b pb-4">
                 <h3 className="text-2xl font-bold text-gray-900">Tạo hợp đồng đối tác</h3>
-                <p className="text-sm text-gray-600 mt-1">Điền đầy đủ thông tin để tạo hợp đồng cộng tác viên</p>
+                <p className="text-sm text-gray-600 mt-1">Điền đầy đủ thông tin để tạo hợp đồng đối tác</p>
             </div>
 
             {/* Thông tin cơ bản */}
@@ -77,7 +77,7 @@ const ContractCreationStep: React.FC<ContractCreationStepProps> = ({
                             }}
                         >
                             <SelectTrigger className="h-11">
-                                <SelectValue placeholder="Chọn cộng tác viên" />
+                                <SelectValue placeholder="Chọn đối tác" />
                             </SelectTrigger>
                             <SelectContent>
                                 {users.map((user) => (

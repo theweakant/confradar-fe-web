@@ -91,7 +91,7 @@ const UserSelectionStep: React.FC<UserSelectionStepProps> = ({
             {
                 !isLoading && users.length === 0 && (
                     <div className="text-center py-8">
-                        <p className="text-gray-500">Chưa có tài khoản cộng tác viên nào</p>
+                        <p className="text-gray-500">Chưa có tài khoản đối tác nào</p>
                         <Button variant="outline" className="mt-2" onClick={onCreateUser}>
                             Tạo tài khoản đầu tiên
                         </Button>

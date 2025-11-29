@@ -14,7 +14,7 @@ export const validationConfRules: FieldValidation = {
   conferenceName: [
     {
       validate: (value) => String(value).trim().length > 0,
-      message: "Tiêu đề hội thảo là bắt buộc",
+      message: "Tiêu đề là bắt buộc",
     },
     {
       validate: (value) => String(value).trim().length >= 5,

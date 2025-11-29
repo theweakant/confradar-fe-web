@@ -86,7 +86,7 @@ export function RequestTable({
     },
     {
       key: "conferenceName",
-      header: "Hội nghị",
+      header: "Tên",
       render: (request) => (
         <div className="max-w-xs">
           <p className="font-medium text-gray-900 truncate">

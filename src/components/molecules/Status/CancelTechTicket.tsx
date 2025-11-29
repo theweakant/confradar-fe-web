@@ -35,11 +35,11 @@ export const CancelTechTicket: React.FC<CancelTechTicketProps> = ({
 
     try {
       await cancelTicket({ ticketIds }).unwrap();
-      toast.success("Đã hủy vé kỹ thuật thành công!");
+      toast.success("Đã hủy vé thành công!");
       setOpen(false);
       onSuccess?.();
     } catch (err) {
-      console.error("Lỗi khi hủy vé kỹ thuật:", err);
+      console.error("Lỗi khi hủy vé:", err);
       toast.error("Không thể hủy vé. Vui lòng thử lại.");
     }
   };
@@ -53,7 +53,7 @@ export const CancelTechTicket: React.FC<CancelTechTicketProps> = ({
       className="cursor-pointer flex items-center gap-2 text-red-600 focus:text-red-700 focus:bg-red-50"
     >
       <Ban className="w-4 h-4" />
-      Hủy vé kỹ thuật
+      Hủy vé
     </DropdownMenuItem>
   ) : (
     <Button
@@ -62,7 +62,7 @@ export const CancelTechTicket: React.FC<CancelTechTicketProps> = ({
       onClick={() => setOpen(true)}
       disabled={ticketIds.length === 0}
     >
-      Hủy vé kỹ thuật
+      Hủy vé
     </Button>
   );
 
@@ -73,9 +73,9 @@ export const CancelTechTicket: React.FC<CancelTechTicketProps> = ({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-md p-6">
           <DialogHeader>
-            <DialogTitle className="text-red-600">Xác nhận hủy vé kỹ thuật</DialogTitle>
+            <DialogTitle className="text-red-600">Xác nhận hủy vé</DialogTitle>
             <DialogDescription>
-              Hành động này sẽ hủy {ticketIds.length} vé kỹ thuật đã chọn. Bạn có chắc chắn không?
+              Hành động này sẽ hủy {ticketIds.length} vé đã chọn. Bạn có chắc chắn không?
             </DialogDescription>
           </DialogHeader>
 

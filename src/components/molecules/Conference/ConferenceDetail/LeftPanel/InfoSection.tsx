@@ -228,7 +228,7 @@ return (
           {/* Ticket Sale - only show if upcoming */}
           {ticketSaleEndDays !== null && ticketSaleEndDays >= 0 && (
             <div className="flex items-start gap-3">
-              <span className="text-xs text-gray-500 w-28 flex-shrink-0">Bán vé</span>
+              <span className="text-xs text-gray-500 w-28 flex-shrink-0">Ngày bán</span>
               <div className="flex flex-col gap-1">
                 <span className="text-xs text-gray-900 font-medium whitespace-nowrap">
                   {formatDate(conference.ticketSaleStart)} → {formatDate(

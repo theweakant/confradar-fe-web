@@ -281,7 +281,7 @@ export const ChangeDateModal: React.FC<ChangeDateModalProps> = ({
                           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
                             <AlertCircle className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
                             <p className="text-sm text-yellow-700">
-                              Không có ngày khác trong khoảng thời gian hội thảo
+                              Không có ngày khác trong khoảng thời gian
                             </p>
                           </div>
                         ) : (
