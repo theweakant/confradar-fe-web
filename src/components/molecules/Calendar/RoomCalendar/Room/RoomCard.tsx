@@ -48,7 +48,7 @@ const RoomCard: React.FC<RoomCardProps> = ({
             <h3 className="font-semibold text-gray-900 text-sm truncate">
               {room.roomDisplayName || `Phòng ${room.roomNumber}`}
             </h3>
-            <p className="text-xs text-gray-500">Số: {room.roomNumber}</p>
+            <p className="text-xs text-gray-500">Phòng: {room.roomNumber}</p>
           </div>
         </div>
       </div>
@@ -59,12 +59,12 @@ const RoomCard: React.FC<RoomCardProps> = ({
           {room.isAvailableWholeday ? (
             <>
               <CheckCircle className="w-3.5 h-3.5 text-green-600" />
-              <span className="text-green-700 font-medium text-xs">Trống cả ngày</span>
+              <span className="text-green-700 font-medium text-xs">Cả ngày</span>
             </>
           ) : (
             <>
               <AlertCircle className="w-3.5 h-3.5 text-blue-600" />
-              <span className="text-blue-700 font-medium text-xs">Trống một phần</span>
+              <span className="text-blue-700 font-medium text-xs">Một phần</span>
             </>
           )}
         </div>

@@ -769,7 +769,7 @@ export const conferenceStepApi = createApi({
       invalidatesTags: ["ConferenceStep"],
     }),
 
-    updateResearchDetail: builder.mutation<
+    updateResearchDetail: builder.mutation< 
       ApiResponse<{ success: boolean }>,
       { conferenceId: string; data: ResearchDetail }
     >({

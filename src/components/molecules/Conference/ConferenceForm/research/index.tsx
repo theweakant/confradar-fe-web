@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { useEffect, useMemo, useCallback, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks/hooks";
 import { setMaxStep, setMode, setVisibleSteps  } from "@/redux/slices/conferenceStep.slice";
+import { Shield, Plus } from "lucide-react";
 
 // API Queries
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
@@ -56,7 +57,11 @@ import {
   RESEARCH_MAX_STEP,
 } from "@/components/molecules/Conference/ConferenceStep/constants";
 
+import { NoRoomResearchSessionForm } from "@/components/molecules/Calendar/RoomCalendar/Form/NoRoomResearchSessionForm";
 import RoomCalendar from "@/components/molecules/Calendar/RoomCalendar/RoomCalendar";
+import { UnassignedSessionsList } from "@/components/molecules/Calendar/RoomCalendar/Session/UnassignedSessionsList";
+import { AssignRoomModal } from "@/components/molecules/Calendar/RoomCalendar/Modal/AssignRoomModal";
+
 import { ResearchSession } from "@/types/conference.type";
 
 // DELETE TRACKING FOR CREATE MODE
@@ -91,26 +96,24 @@ export default function ResearchConferenceStepForm({
 }: ResearchConferenceStepFormProps) {
   const dispatch = useAppDispatch();
 
-  // ✅ LẤY CONFERENCE ID TỪ REDUX (GIỐNG TECH)
   const reduxConferenceId = useAppSelector((state) => state.conferenceStep.conferenceId);
   const actualConferenceId = mode === "create" ? reduxConferenceId : conferenceId;
 
-  // === DELETE TRACKING (REAL OR MOCK) ===
   const realDeleteTracking = useDeleteTracking();
   const mockDeleteTracking = useMockDeleteTracking();
   const deleteTracking =
     mode === "edit" ? realDeleteTracking : mockDeleteTracking;
 
-  // === API QUERIES ===
-  const { data: categoriesData, isLoading: isCategoriesLoading } =
-    useGetAllCategoriesQuery();
+  const { data: categoriesData, isLoading: isCategoriesLoading } = useGetAllCategoriesQuery();
   const { data: roomsData, isLoading: isRoomsLoading } = useGetAllRoomsQuery();
-  const { data: citiesData, isLoading: isCitiesLoading } =
-    useGetAllCitiesQuery();
-  const { data: rankingData, isLoading: isRankingLoading } =
-    useGetAllRankingCategoriesQuery();
+  const { data: citiesData, isLoading: isCitiesLoading } = useGetAllCitiesQuery();
+  const { data: rankingData, isLoading: isRankingLoading } = useGetAllRankingCategoriesQuery();
 
-  // === HOOKS ===
+  const [showNoRoomSessionForm, setShowNoRoomSessionForm] = useState(false);
+  const [assignRoomModalOpen, setAssignRoomModalOpen] = useState(false);
+  const [sessionToAssignRoom, setSessionToAssignRoom] = useState<ResearchSession | null>(null);
+  const [sessionToAssignRoomIndex, setSessionToAssignRoomIndex] = useState<number>(-1);
+
   const {
     currentStep,
     activeStep,
@@ -176,7 +179,6 @@ export default function ResearchConferenceStepForm({
   const visibleSteps = useMemo(() => {
     return Array.from({ length: RESEARCH_MAX_STEP }, (_, i) => i + 1);
   }, []);
-  // === LOAD EXISTING DATA ===
   const {
     isLoading: isConferenceLoading,
     isFetching,
@@ -344,14 +346,12 @@ export default function ResearchConferenceStepForm({
 
   const { validationErrors, validate, clearError } = useValidation();
 
-  // INIT MODE & MAX STEP
-useEffect(() => {
-  dispatch(setMode(mode));
-  dispatch(setMaxStep(RESEARCH_MAX_STEP));
-  dispatch(setVisibleSteps(visibleSteps));
-}, [dispatch, mode, visibleSteps]);
+  useEffect(() => {
+    dispatch(setMode(mode));
+    dispatch(setMaxStep(RESEARCH_MAX_STEP));
+    dispatch(setVisibleSteps(visibleSteps));
+  }, [dispatch, mode, visibleSteps]);
 
-  // CLEANUP KHI UNMOUNT
   useEffect(() => {
     return () => {
       handleReset();
@@ -372,7 +372,6 @@ useEffect(() => {
     }
   }, [mode, isConferenceLoading, handleGoToStep]);
 
-  // OPTIONS
   const categoryOptions = useMemo(
     () =>
       categoriesData?.data?.map((category) => ({
@@ -467,7 +466,6 @@ const isCurrentStepLast = useMemo(() => {
   return currentIndex === visibleSteps.length - 1;
 }, [currentStep, visibleSteps]);
 
-  // CREATE MODE: SUBMIT & NEXT HANDLERS
   const handleBasicSubmit = async () => {
     const basicValidation = validateBasicForm(basicForm);
     if (!basicValidation.isValid) {
@@ -489,86 +487,84 @@ const isCurrentStepLast = useMemo(() => {
     }
   };
   
-const handleTimelineSubmit = async () => {
-  console.log('📤 handleTimelineSubmit - START');
-  
-  const mainPhase = researchPhases[0];
-  if (!mainPhase) {
-    toast.error("Main timeline là bắt buộc!");
-    return;
-  }
+  const handleTimelineSubmit = async () => {
+    
+    const mainPhase = researchPhases[0];
+    if (!mainPhase) {
+      toast.error("Main timeline là bắt buộc!");
+      return;
+    }
 
-  // ✅ Validate Main phase đầy đủ
-  const mainValidation = validateResearchTimeline(
-    mainPhase,
-    basicForm.ticketSaleStart
-  );
-  if (!mainValidation.isValid) {
-    toast.error(`Lỗi ở Main Timeline: ${mainValidation.error}`);
-    return;
-  }
+    const mainValidation = validateResearchTimeline(
+      mainPhase,
+      basicForm.ticketSaleStart
+    );
+    if (!mainValidation.isValid) {
+      toast.error(`Lỗi ở Main Timeline: ${mainValidation.error}`);
+      return;
+    }
 
-  // ✅ CHECK Waitlist phase
-  const waitlistPhase = researchPhases[1];
-  
-  if (waitlistPhase && waitlistPhase.isWaitlist) {
-    // Nếu có bất kỳ date nào được điền → validate đầy đủ
-    const hasAnyWaitlistData = 
-      waitlistPhase.registrationStartDate ||
-      waitlistPhase.fullPaperStartDate ||
-      waitlistPhase.reviewStartDate ||
-      waitlistPhase.reviseStartDate ||
-      waitlistPhase.cameraReadyStartDate;
+    const waitlistPhase = researchPhases[1];
+    
+    if (waitlistPhase && waitlistPhase.isWaitlist) {
+      // Nếu có bất kỳ date nào được điền → validate đầy đủ
+      const hasAnyWaitlistData = 
+        waitlistPhase.registrationStartDate ||
+        waitlistPhase.fullPaperStartDate ||
+        waitlistPhase.reviewStartDate ||
+        waitlistPhase.reviseStartDate ||
+        waitlistPhase.cameraReadyStartDate;
 
-    if (hasAnyWaitlistData) {
-      // ✅ Validate waitlist nếu có data
-      const waitlistValidation = validateResearchTimeline(
-        waitlistPhase,
-        basicForm.ticketSaleStart
-      );
-      
-      if (!waitlistValidation.isValid) {
-        toast.error(`Lỗi ở Waitlist Timeline: ${waitlistValidation.error}`);
-        return;
-      }
-
-      // ✅ Check thứ tự thời gian Main → Waitlist
-      if (mainPhase.cameraReadyDecideStatusEnd && waitlistPhase.registrationStartDate) {
-        const mainEnd = new Date(mainPhase.cameraReadyDecideStatusEnd);
-        const waitlistStart = new Date(waitlistPhase.registrationStartDate);
+      if (hasAnyWaitlistData) {
+        // ✅ Validate waitlist nếu có data
+        const waitlistValidation = validateResearchTimeline(
+          waitlistPhase,
+          basicForm.ticketSaleStart
+        );
         
-        if (waitlistStart <= mainEnd) {
-          toast.error(
-            "Waitlist timeline phải bắt đầu sau khi Main timeline kết thúc!"
-          );
+        if (!waitlistValidation.isValid) {
+          toast.error(`Lỗi ở Waitlist Timeline: ${waitlistValidation.error}`);
           return;
+        }
+
+        // ✅ Check thứ tự thời gian Main → Waitlist
+        if (mainPhase.cameraReadyDecideStatusEnd && waitlistPhase.registrationStartDate) {
+          const mainEnd = new Date(mainPhase.cameraReadyDecideStatusEnd);
+          const waitlistStart = new Date(waitlistPhase.registrationStartDate);
+          
+          if (waitlistStart <= mainEnd) {
+            toast.error(
+              "Waitlist timeline phải bắt đầu sau khi Main timeline kết thúc!"
+            );
+            return;
+          }
         }
       }
     }
-  }
 
-  console.log('📤 Calling submitResearchPhase with:', {
-    phasesCount: researchPhases.length,
-    mainPhase: {
-      registrationStart: mainPhase.registrationStartDate,
-      fullPaperStart: mainPhase.fullPaperStartDate,
-      cameraReadyStart: mainPhase.cameraReadyStartDate,
-    },
-    waitlistPhase: waitlistPhase ? {
-      registrationStart: waitlistPhase.registrationStartDate,
-      fullPaperStart: waitlistPhase.fullPaperStartDate,
-      cameraReadyStart: waitlistPhase.cameraReadyStartDate,
-    } : null
-  });
+    console.log('📤 Calling submitResearchPhase with:', {
+      phasesCount: researchPhases.length,
+      mainPhase: {
+        registrationStart: mainPhase.registrationStartDate,
+        fullPaperStart: mainPhase.fullPaperStartDate,
+        cameraReadyStart: mainPhase.cameraReadyStartDate,
+      },
+      waitlistPhase: waitlistPhase ? {
+        registrationStart: waitlistPhase.registrationStartDate,
+        fullPaperStart: waitlistPhase.fullPaperStartDate,
+        cameraReadyStart: waitlistPhase.cameraReadyStartDate,
+      } : null
+    });
 
-  const result = await submitResearchPhase(researchPhases);
-  console.log('📥 submitResearchPhase result:', result);
+    const result = await submitResearchPhase(researchPhases);
+    console.log('📥 submitResearchPhase result:', result);
 
-  if (result.success) {
-    handleMarkHasData(3);
-    handleNext();
-  }
-};
+    if (result.success) {
+      handleMarkHasData(3);
+      handleNext();
+    }
+  };
+
   const handlePriceSubmit = async () => {
     if (tickets.length === 0) {
       toast.error("Vui lòng thêm ít nhất 1 loại chi phí!");
@@ -596,7 +592,6 @@ const handleTimelineSubmit = async () => {
     }
   };
 
-  // ✅ SESSION CALLBACKS - GIỐNG TECH
   const handleSessionCreatedFromCalendar = (session: ResearchSession) => {
     setSessions((prev) => [...prev, session]);
     handleMarkHasData(5);
@@ -632,6 +627,39 @@ const handleTimelineSubmit = async () => {
     setSessions((prev) => prev.filter((_, i) => i !== index));
     handleMarkDirty(5);
     toast.success("Đã xóa session thành công!");
+  };
+
+  const unassignedSessions = useMemo(() => {
+    return sessions.filter((session) => !session.roomId);
+  }, [sessions]);
+
+  // Thêm handler
+  const handleAssignRoom = (session: ResearchSession, index: number) => {
+    // Tìm index thực trong mảng sessions gốc
+    const actualIndex = sessions.findIndex(s => 
+      s.sessionId ? s.sessionId === session.sessionId : 
+      (s.title === session.title && s.date === session.date && s.startTime === session.startTime)
+    );
+    
+    setSessionToAssignRoom(session);
+    setSessionToAssignRoomIndex(actualIndex);
+    setAssignRoomModalOpen(true);
+  };
+
+  const handleAssignRoomConfirm = (updatedSession: ResearchSession) => {
+    if (sessionToAssignRoomIndex !== -1) {
+      setSessions((prev) => {
+        const newSessions = [...prev];
+        newSessions[sessionToAssignRoomIndex] = updatedSession;
+        return newSessions;
+      });
+      handleMarkHasData(5);
+      handleMarkDirty(5);
+      toast.success(`Đã gán phòng cho session "${updatedSession.title}"!`);
+    }
+    setAssignRoomModalOpen(false);
+    setSessionToAssignRoom(null);
+    setSessionToAssignRoomIndex(-1);
   };
 
   const handlePoliciesSubmit = async () => {
@@ -953,7 +981,6 @@ const handleTimelineSubmit = async () => {
         />
       )}
 
-      {/* STEP 1 */}
       {currentStep === 1 && (
         <StepContainer
           stepNumber={1}
@@ -984,7 +1011,6 @@ const handleTimelineSubmit = async () => {
         </StepContainer>
       )}
 
-      {/* STEP 2 */}
       {currentStep === 2 && (
         <StepContainer
           stepNumber={2}
@@ -1085,10 +1111,9 @@ const handleTimelineSubmit = async () => {
       {currentStep === 5 && (
         <StepContainer
           stepNumber={5}
-          title="Phiên họp (Tùy chọn)"
+          title="Session (Tùy chọn)"
           isCompleted={isStepCompleted(5)}
         >
-          {/* ⚠️ Cảnh báo nếu thiếu ngày */}
           {(!basicForm.startDate || !basicForm.endDate) && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
               <div className="flex items-start gap-3">
@@ -1111,7 +1136,6 @@ const handleTimelineSubmit = async () => {
             </div>
           )}
 
-          {/* ⚠️ Cảnh báo nếu chưa có Conference ID (CREATE MODE) */}
           {!actualConferenceId && mode === "create" && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
               <div className="flex items-start gap-3">
@@ -1135,11 +1159,10 @@ const handleTimelineSubmit = async () => {
             </div>
           )}
 
-          {/* Hướng dẫn & tóm tắt */}
           {(basicForm.startDate || basicForm.endDate) && (
             <div className="text-xs text-gray-500 space-y-1 mb-4">
               <p>
-                <strong>Khoảng thời gian:</strong>{" "}
+                <strong>Khoảng thời gian diễn ra:</strong>{" "}
                 {basicForm.startDate && (
                   <span className="font-mono">
                     {new Date(basicForm.startDate).toLocaleDateString("vi-VN")}
@@ -1153,13 +1176,38 @@ const handleTimelineSubmit = async () => {
                 )}
               </p>
               {sessions.length > 0 && (
-                <p>• Đã lên lịch <strong>{sessions.length}</strong> phiên họp</p>
+                <p>• Đã lên lịch <strong>{sessions.length}</strong> session</p>
               )}
-              <p>• Quản lý phiên họp trong chi tiết phòng trên lịch</p>
+              <p>• Quản lý session trong chi tiết phòng trên lịch</p>
             </div>
           )}
 
+          {unassignedSessions.length > 0 && (
+            <UnassignedSessionsList
+              sessions={unassignedSessions}
+              onAssignRoom={handleAssignRoom}
+            />
+          )}
+
           <div className="border rounded-lg overflow-hidden bg-white shadow-sm mb-4">
+            <div className="mt-4 mr-4 flex justify-end">
+            <button
+              onClick={() => setShowNoRoomSessionForm(true)}
+              className="
+                flex items-center gap-2
+                px-4 py-1.5 
+                bg-white border border-gray-300
+                rounded-full shadow-sm
+                text-brown-700 font-medium
+                hover:bg-gray-100 transition
+              "
+            >
+              <Plus size={16} strokeWidth={2} className="text-brown-500 hover:text-brown-700" />
+
+              <span className="text-sm text-brown-700">Thêm session (không xếp phòng)</span>
+
+            </button>
+            </div>
             <RoomCalendar
               conferenceId={actualConferenceId || undefined} 
               conferenceType="Research"
@@ -1170,8 +1218,37 @@ const handleTimelineSubmit = async () => {
               endDate={basicForm.endDate}
               existingSessions={sessions}
             />
+
           </div>
 
+          <AssignRoomModal
+            open={assignRoomModalOpen}
+            session={sessionToAssignRoom}
+            existingSessions={sessions}
+            onClose={() => {
+              setAssignRoomModalOpen(false);
+              setSessionToAssignRoom(null);
+              setSessionToAssignRoomIndex(-1);
+            }}
+            onConfirm={handleAssignRoomConfirm}
+          />
+
+          {showNoRoomSessionForm && actualConferenceId && basicForm.startDate && basicForm.endDate && (
+            <NoRoomResearchSessionForm
+              open={true}
+              conferenceId={actualConferenceId}
+              conferenceStartDate={basicForm.startDate}
+              conferenceEndDate={basicForm.endDate}
+              existingSessions={sessions}
+              onSave={(session) => {
+                setSessions([...sessions, session]);
+                handleMarkHasData(5);
+                handleMarkDirty(5);
+                setShowNoRoomSessionForm(false);
+              }}
+              onClose={() => setShowNoRoomSessionForm(false)}
+            />
+          )}
           <FlexibleNavigationButtons
             currentStep={5}
             maxStep={RESEARCH_MAX_STEP}

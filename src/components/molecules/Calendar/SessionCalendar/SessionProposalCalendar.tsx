@@ -10,7 +10,7 @@ import { useGetResearchSessionsQuery } from "@/redux/services/conferenceStep.ser
 import type { SessionDetailForScheduleResponse } from "@/types/conference.type";
 import type { Session } from "@/types/conference.type";
 import SessionDetailDialog from "@/components/molecules/Calendar/SessionCalendar/Modal/SessionDetail";
-import { CollaboratorSessionForm } from "@/components/molecules/Calendar/RoomCalendar/Form/CollaboratorSessionForm";
+import { CollaboratorSessionForm } from "@/components/molecules/Calendar/RoomCalendar/Form/NoRoomCollaboratorSessionForm";
 
 interface CalendarSession {
   id?: string;

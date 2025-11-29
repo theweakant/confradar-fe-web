@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useMemo, useEffect } from "react";
 import {
@@ -319,12 +318,6 @@ export default function ManageConference() {
           ]}
         />
       <div className="my-4 flex justify-end">
-        <Link
-          href="/workspace/organizer/manage-conference/pending-conference"
-          className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
-        >
-          Xem hội thảo đang chờ duyệt
-        </Link>
       </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <StatCard
@@ -399,7 +392,7 @@ export default function ManageConference() {
                     Tech Conference
                   </h4>
                   <p className="text-sm text-gray-600">
-                    Hội thảo về công nghệ, lập trình, AI, và các chủ đề kỹ thuật
+                    Hội thảo về công nghệ và các chủ đề kĩ thuật
                   </p>
                 </div>
               </div>

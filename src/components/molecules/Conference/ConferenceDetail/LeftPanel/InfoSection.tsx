@@ -8,6 +8,7 @@ import type {
   ResearchConferenceSessionResponse,
   TechnicalConferenceSessionResponse,
 } from "@/types/conference.type";
+import { PriceTimeline } from "./PriceTimeline";
 
 interface MetaInfoSectionProps {
   conference: CommonConference;
@@ -292,7 +293,7 @@ return (
           {nextPricePhase && (
             <div className="flex items-start gap-3">
               <span className="text-xs text-gray-500 w-28 flex-shrink-0">
-                Giai đoạn sắp tới
+                Giai đoạn
               </span>
               <div className="flex flex-col gap-0.5">
                 <span className="text-xs text-gray-900 font-medium">
@@ -309,7 +310,7 @@ return (
           {nextSession && (
             <div className="flex items-start gap-3">
               <span className="text-xs text-gray-500 w-28 flex-shrink-0">
-                Session sắp tới
+                Session
               </span>
               <div className="flex flex-col gap-1">
                 <div className="flex flex-col gap-0.5">
@@ -321,14 +322,10 @@ return (
                   </span>
                 </div>
                 <div className="flex items-center flex-wrap gap-2 text-[10px] text-gray-600">
-                  <span className="flex items-center gap-1 whitespace-nowrap">
+                  {/* <span className="flex items-center gap-1 whitespace-nowrap">
                     <Calendar className="w-3 h-3" />
                     {formatDate(nextSession.date || (isTechnicalSession(nextSession) ? nextSession.sessionDate : ""))}
-                  </span>
-                  <span className="flex items-center gap-1 whitespace-nowrap">
-                    <Clock className="w-3 h-3" />
-                    {nextSession.startTime}
-                  </span>
+                  </span> */}
                   {nextSession.room?.displayName && (
                     <span className="flex items-center gap-1">
                       <MapPin className="w-3 h-3" />
@@ -375,6 +372,8 @@ return (
           )}
         </div>
       </div>
+      <PriceTimeline conference={conference} />
+
     </div>
   );
 }
