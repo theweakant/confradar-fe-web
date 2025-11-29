@@ -328,7 +328,7 @@ export default function ConferenceManagementTabs() {
                 <span className="px-3 py-1 rounded-full text-lg font-bold text-blue-700">
                   {conferencesData?.data?.totalCount || 0}
                 </span>
-                <span>Tổng hội thảo </span>
+                <span>Đã gửi duyệt</span>
                 {activeTab === "conferences" && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
                 )}
@@ -352,8 +352,16 @@ export default function ConferenceManagementTabs() {
               </button>
             </div>
 
+            <div className="px-4 py-4">
+              <p className="text-gray-600 text-sm">
+                {activeTab === "conferences"
+                  ? "Danh sách hội thảo đã được duyệt. Hãy chuẩn bị những bước cuối cùng để đăng tải hội thảo."
+                  : "Danh sách hội thảo đang chờ ConfRadar duyệt."}
+              </p>
+            </div>
+
             {/* New Filters */}
-            <div className="p-6 border-b border-gray-200">
+            <div className="p-4 border-b border-gray-200">
               <div className="flex flex-wrap gap-3 items-end">
                 {/* Search */}
                 <div className="flex-1 min-w-[200px]">

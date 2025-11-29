@@ -100,7 +100,7 @@ export function ResearchBasicInfoForm({
       {/* Ticket Sale Period */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <DatePickerInput
-          label="Ngày bắt đầu chi phí"
+          label="Ngày bắt đầu đăng kí cho thính giả"
           sublabel={
             value.startDate
               ? `Trước ngày bắt đầu sự kiện ${formatDate(value.startDate)}`
@@ -129,7 +129,7 @@ export function ResearchBasicInfoForm({
 
         <div>
           <label className="block text-sm font-medium mb-2">
-            Ngày kết thúc chi phí
+            Ngày kết thúc đăng kí cho thính giả
           </label>
           <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
             {value.ticketSaleEnd ? (

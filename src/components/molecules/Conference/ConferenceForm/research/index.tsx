@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { useEffect, useMemo, useCallback, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks/hooks";
 import { setMaxStep, setMode, setVisibleSteps  } from "@/redux/slices/conferenceStep.slice";
+import { Shield, Plus } from "lucide-react";
 
 // API Queries
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
@@ -56,6 +57,7 @@ import {
   RESEARCH_MAX_STEP,
 } from "@/components/molecules/Conference/ConferenceStep/constants";
 
+import { NoRoomResearchSessionForm } from "@/components/molecules/Calendar/RoomCalendar/Form/NoRoomResearchSessionForm";
 import RoomCalendar from "@/components/molecules/Calendar/RoomCalendar/RoomCalendar";
 import { ResearchSession } from "@/types/conference.type";
 
@@ -91,26 +93,21 @@ export default function ResearchConferenceStepForm({
 }: ResearchConferenceStepFormProps) {
   const dispatch = useAppDispatch();
 
-  // ✅ LẤY CONFERENCE ID TỪ REDUX (GIỐNG TECH)
   const reduxConferenceId = useAppSelector((state) => state.conferenceStep.conferenceId);
   const actualConferenceId = mode === "create" ? reduxConferenceId : conferenceId;
 
-  // === DELETE TRACKING (REAL OR MOCK) ===
   const realDeleteTracking = useDeleteTracking();
   const mockDeleteTracking = useMockDeleteTracking();
   const deleteTracking =
     mode === "edit" ? realDeleteTracking : mockDeleteTracking;
 
-  // === API QUERIES ===
-  const { data: categoriesData, isLoading: isCategoriesLoading } =
-    useGetAllCategoriesQuery();
+  const { data: categoriesData, isLoading: isCategoriesLoading } = useGetAllCategoriesQuery();
   const { data: roomsData, isLoading: isRoomsLoading } = useGetAllRoomsQuery();
-  const { data: citiesData, isLoading: isCitiesLoading } =
-    useGetAllCitiesQuery();
-  const { data: rankingData, isLoading: isRankingLoading } =
-    useGetAllRankingCategoriesQuery();
+  const { data: citiesData, isLoading: isCitiesLoading } = useGetAllCitiesQuery();
+  const { data: rankingData, isLoading: isRankingLoading } = useGetAllRankingCategoriesQuery();
 
-  // === HOOKS ===
+  const [showNoRoomSessionForm, setShowNoRoomSessionForm] = useState(false);
+
   const {
     currentStep,
     activeStep,
@@ -176,7 +173,6 @@ export default function ResearchConferenceStepForm({
   const visibleSteps = useMemo(() => {
     return Array.from({ length: RESEARCH_MAX_STEP }, (_, i) => i + 1);
   }, []);
-  // === LOAD EXISTING DATA ===
   const {
     isLoading: isConferenceLoading,
     isFetching,
@@ -953,7 +949,6 @@ const handleTimelineSubmit = async () => {
         />
       )}
 
-      {/* STEP 1 */}
       {currentStep === 1 && (
         <StepContainer
           stepNumber={1}
@@ -984,7 +979,6 @@ const handleTimelineSubmit = async () => {
         </StepContainer>
       )}
 
-      {/* STEP 2 */}
       {currentStep === 2 && (
         <StepContainer
           stepNumber={2}
@@ -1088,7 +1082,6 @@ const handleTimelineSubmit = async () => {
           title="Phiên họp (Tùy chọn)"
           isCompleted={isStepCompleted(5)}
         >
-          {/* ⚠️ Cảnh báo nếu thiếu ngày */}
           {(!basicForm.startDate || !basicForm.endDate) && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
               <div className="flex items-start gap-3">
@@ -1111,7 +1104,6 @@ const handleTimelineSubmit = async () => {
             </div>
           )}
 
-          {/* ⚠️ Cảnh báo nếu chưa có Conference ID (CREATE MODE) */}
           {!actualConferenceId && mode === "create" && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
               <div className="flex items-start gap-3">
@@ -1160,6 +1152,24 @@ const handleTimelineSubmit = async () => {
           )}
 
           <div className="border rounded-lg overflow-hidden bg-white shadow-sm mb-4">
+            <div className="mt-4 mr-4 flex justify-end">
+            <button
+              onClick={() => setShowNoRoomSessionForm(true)}
+              className="
+                flex items-center gap-2
+                px-4 py-1.5 
+                bg-white border border-gray-300
+                rounded-full shadow-sm
+                text-brown-700 font-medium
+                hover:bg-gray-100 transition
+              "
+            >
+              <Plus size={16} strokeWidth={2} className="text-brown-500 hover:text-brown-700" />
+
+              <span className="text-sm text-brown-700">Thêm session (không xếp phòng)</span>
+
+            </button>
+            </div>
             <RoomCalendar
               conferenceId={actualConferenceId || undefined} 
               conferenceType="Research"
@@ -1170,8 +1180,24 @@ const handleTimelineSubmit = async () => {
               endDate={basicForm.endDate}
               existingSessions={sessions}
             />
-          </div>
 
+          </div>
+          {showNoRoomSessionForm && actualConferenceId && basicForm.startDate && basicForm.endDate && (
+            <NoRoomResearchSessionForm
+              open={true}
+              conferenceId={actualConferenceId}
+              conferenceStartDate={basicForm.startDate}
+              conferenceEndDate={basicForm.endDate}
+              existingSessions={sessions}
+              onSave={(session) => {
+                setSessions([...sessions, session]);
+                handleMarkHasData(5);
+                handleMarkDirty(5);
+                setShowNoRoomSessionForm(false);
+              }}
+              onClose={() => setShowNoRoomSessionForm(false)}
+            />
+          )}
           <FlexibleNavigationButtons
             currentStep={5}
             maxStep={RESEARCH_MAX_STEP}

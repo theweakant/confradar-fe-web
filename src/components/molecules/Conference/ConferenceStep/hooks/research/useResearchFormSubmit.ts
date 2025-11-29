@@ -40,6 +40,7 @@ import {
   useUpdateResearchRankingReferenceMutation,
   useUpdateConferenceMediaMutation,
   useUpdateConferenceSponsorMutation,
+
   // DELETE
   useDeleteConferencePriceMutation,
   useDeleteConferencePricePhaseMutation,
@@ -94,7 +95,6 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
   const conferenceId = useAppSelector((state) => state.conferenceStep.conferenceId);
   const mode = useAppSelector((state) => state.conferenceStep.mode);
 
-  // === CREATE MUTATIONS ===
   const [createBasicResearch] = useCreateBasicResearchConferenceMutation();
   const [createResearchDetail] = useCreateResearchDetailMutation();
   const [createResearchPhase] = useCreateResearchPhaseMutation();
@@ -110,7 +110,6 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
   const [createMedia] = useCreateConferenceMediaMutation();
   const [createSponsors] = useCreateConferenceSponsorsMutation();
 
-  // === UPDATE MUTATIONS ===
   const [updateBasicResearch] = useUpdateResearchBasicMutation();
   const [updateResearchDetail] = useUpdateResearchDetailMutation();
   const [updateResearchPhase] = useUpdateResearchPhaseMutation();
@@ -126,7 +125,6 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
   const [updateMedia] = useUpdateConferenceMediaMutation();
   const [updateSponsor] = useUpdateConferenceSponsorMutation();
 
-  // === DELETE MUTATIONS ===
   const [deletePrice] = useDeleteConferencePriceMutation();
   const [deletePricePhase] = useDeleteConferencePricePhaseMutation(); // ← Thêm
   const [deleteSession] = useDeleteConferenceSessionMutation();
@@ -185,7 +183,6 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
     })),
   });
 
-  // === STEP 4: PRICE ===
   const submitPrice = async (tickets: Ticket[]) => {
     if (!conferenceId) {
       toast.error("Không tìm thấy conference ID!");
@@ -243,7 +240,6 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
         for (const ticket of existingTickets) {
           if (!ticket.phases || ticket.phases.length === 0) continue;
 
-          // Cập nhật phase hiện có
           const existingPhases = ticket.phases.filter((p) => p.pricePhaseId);
           if (existingPhases.length > 0) {
             await Promise.all(
@@ -263,7 +259,6 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
             );
           }
 
-          // Tạo phase mới cho ticket đã tồn tại
           const newPhases = ticket.phases.filter((p) => !p.pricePhaseId);
           if (newPhases.length > 0) {
             await createPhaseForPrice({
@@ -294,7 +289,6 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
 
         await triggerRefetch();
       } else {
-        // MODE CREATE
         if (tickets.length === 0) {
           toast.error("Vui lòng thêm ít nhất 1 loại chi phí!");
           return { success: false };
@@ -316,7 +310,6 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
     }
   };
 
-  // === Các hàm submit khác (unchanged) ===
   const submitBasicInfo = async (formData: ConferenceBasicForm, autoNext: boolean = true) => {
     if (!formData) return { success: false };
     try {
@@ -358,24 +351,7 @@ const submitResearchDetail = async (detail: ResearchDetail) => {
     setIsSubmitting(true);
     let result;
     
-    // ✅ CHECK: Có researchDetailId hợp lệ không?
-    const hasValidId = !!(
-      detail.researchDetailId && 
-      detail.researchDetailId.trim() !== ''
-    );
-    
-    console.log('🔍 submitResearchDetail:', {
-      mode,
-      conferenceId,
-      hasValidId,
-      researchDetailId: detail.researchDetailId,
-      willUpdate: hasValidId,
-      willCreate: !hasValidId
-    });
-    
-    if (hasValidId) {
-      // ✅ CÓ ID → UPDATE (PUT)
-      console.log('➡️ UPDATE (PUT) with ID:', detail.researchDetailId);
+    if (mode === "edit") {
       result = await updateResearchDetail({ 
         conferenceId, 
         data: detail 
@@ -383,18 +359,11 @@ const submitResearchDetail = async (detail: ResearchDetail) => {
       toast.success("Cập nhật chi tiết nghiên cứu thành công!");
       await triggerRefetch();
     } else {
-      // ✅ KHÔNG CÓ ID → CREATE (POST)
-      console.log('➡️ CREATE (POST)');
       result = await createResearchDetail({ 
         conferenceId, 
         data: detail 
       }).unwrap();
       toast.success("Lưu chi tiết nghiên cứu thành công!");
-      
-      // Refetch để lấy ID mới trong edit mode
-      if (mode === "edit") {
-        await triggerRefetch();
-      }
     }
     
     dispatch(markStepCompleted(2));
@@ -402,7 +371,7 @@ const submitResearchDetail = async (detail: ResearchDetail) => {
     
   } catch (error) {
     const apiError = error as { data?: ApiError };
-    console.error("❌ Research detail submit failed:", error);
+    console.error("Research detail submit failed:", error);
     toast.error(apiError?.data?.message || "Lưu chi tiết nghiên cứu thất bại!");
     return { success: false, error };
   } finally {
@@ -418,25 +387,8 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
 
   try {
     setIsSubmitting(true);
-    
-    console.log('📤 submitResearchPhase - START:', {
-      conferenceId,
-      mode,
-      totalPhases: phases.length,
-      phasesRaw: phases.map((p, i) => ({
-        index: i,
-        isWaitlist: p.isWaitlist,
-        isActive: p.isActive,
-        researchPhaseId: p.researchPhaseId,
-        registrationStart: p.registrationStartDate,
-        fullPaperStart: p.fullPaperStartDate,
-        cameraReadyStart: p.cameraReadyStartDate,
-      }))
-    });
-    
-    // ✅ Filter riêng cho Main phase và Waitlist phase
-    const phasesToSubmit = phases.filter((phase) => {
-      // Main phase: bắt buộc phải có đủ 3 dates quan trọng
+
+      const phasesToSubmit = phases.filter((phase) => {
       if (!phase.isWaitlist) {
         return (
           phase.registrationStartDate && 
@@ -445,20 +397,7 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
         );
       }
       
-      // Waitlist phase: chỉ cần có registrationStartDate là đủ để submit
       return phase.registrationStartDate;
-    });
-
-    console.log('📤 submitResearchPhase - AFTER FILTER:', {
-      filteredCount: phasesToSubmit.length,
-      filtered: phasesToSubmit.map((p, i) => ({
-        index: i,
-        isWaitlist: p.isWaitlist,
-        researchPhaseId: p.researchPhaseId,
-        registrationStart: p.registrationStartDate,
-        fullPaperStart: p.fullPaperStartDate,
-        cameraReadyStart: p.cameraReadyStartDate,
-      }))
     });
 
     if (phasesToSubmit.length === 0) {
@@ -466,48 +405,23 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
       return { success: false };
     }
 
-    // ✅ Phân loại phases: CREATE vs UPDATE
     const phasesToCreate = phasesToSubmit.filter((p) => !p.researchPhaseId);
     const phasesToUpdate = phasesToSubmit.filter((p) => p.researchPhaseId);
 
-    console.log('📤 submitResearchPhase - SPLIT:', {
-      createCount: phasesToCreate.length,
-      updateCount: phasesToUpdate.length,
-      deletedPhaseIds: deletedPhaseIds.length,
-    });
-
     const results = [];
 
-    // ✅ 1. CREATE phases mới (nếu có)
     if (phasesToCreate.length > 0) {
-      console.log('➡️ CREATE (POST) phases:', phasesToCreate.length);
       
-      // ✅ FIX: data là array trực tiếp, không phải object
       const createPayload = {
         conferenceId,
-        data: phasesToCreate, // ← Truyền array trực tiếp
+        data: phasesToCreate, 
       };
-      
-      console.log('📦 CREATE Payload:', {
-        conferenceId: createPayload.conferenceId,
-        phasesCount: createPayload.data.length,
-        phases: createPayload.data.map((p, i) => ({
-          index: i,
-          isWaitlist: p.isWaitlist,
-          registrationStart: p.registrationStartDate,
-          fullPaperStart: p.fullPaperStartDate,
-          cameraReadyStart: p.cameraReadyStartDate,
-        })),
-      });
 
       const createResult = await createResearchPhase(createPayload).unwrap();
-      console.log('📥 CREATE Result:', createResult);
       results.push(createResult);
     }
 
-    // ✅ 2. UPDATE từng phase có ID (nếu có)
     if (phasesToUpdate.length > 0) {
-      console.log('➡️ UPDATE (PUT) phases:', phasesToUpdate.length);
       
       for (const phase of phasesToUpdate) {
         if (!phase.researchPhaseId) continue;
@@ -557,30 +471,20 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
           },
         };
 
-        console.log('📦 UPDATE Payload for phase:', {
-          researchPhaseId: updatePayload.researchPhaseId,
-          isWaitlist: phase.isWaitlist,
-          registrationStart: phase.registrationStartDate,
-        });
-
         try {
           const updateResult = await updateResearchPhase(updatePayload).unwrap();
-          console.log('📥 UPDATE Result for phase:', updateResult);
           results.push(updateResult);
         } catch (error) {
-          console.error('❌ Failed to update phase:', phase.researchPhaseId, error);
           throw error;
         }
       }
     }
 
-    // ✅ 3. Xử lý deletedPhaseIds bằng cách không submit chúng
-    // (Backend sẽ tự động xóa phases không còn trong danh sách submit)
+
     if (deletedPhaseIds.length > 0) {
       console.log('ℹ️ Deleted phases will be removed by backend:', deletedPhaseIds);
     }
 
-    // ✅ 4. Refetch để lấy dữ liệu mới nhất
     await triggerRefetch();
 
     toast.success("Lưu timeline thành công!");
@@ -590,12 +494,6 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
     
   } catch (error) {
     const apiError = error as { data?: ApiError };
-    console.error("❌ Research phase submit failed:", error);
-    console.error("❌ Error details:", {
-      message: apiError?.data?.message,
-      errors: apiError?.data?.errors,
-      fullError: apiError,
-    });
     
     toast.error(
       apiError?.data?.message || "Lưu timeline thất bại!"
@@ -621,18 +519,14 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
       setIsSubmitting(true);
       
       if (mode === "edit") {
-        // ✅ BƯỚC 1: XÓA sessions đã đánh dấu
         if (currentDeletedIds.length > 0) {
-          console.log("🗑️ Deleting sessions:", currentDeletedIds);
           await Promise.all(
             currentDeletedIds.map((id) => deleteSession(id).unwrap())
           );
         }
 
-        // ✅ BƯỚC 2: UPDATE sessions có sessionId
         const existingSessions = sessions.filter((s) => s.sessionId);
         if (existingSessions.length > 0) {
-          console.log("📝 Updating sessions:", existingSessions.map(s => s.sessionId));
           
           await Promise.all(
             existingSessions.map((session) => {
@@ -640,8 +534,6 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
                 throw new Error(`Session "${session.title}" không có ID`);
               }
 
-              // ✅ Research session payload - KHÔNG có speaker
-              // ✅ Type đã là ResearchSession nên không có speaker field
               return updateSession({
                 sessionId: session.sessionId,
                 data: {
@@ -657,12 +549,9 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
           );
         }
 
-        // ✅ BƯỚC 3: TẠO sessions mới (không có sessionId)
         const newSessions = sessions.filter((s) => !s.sessionId);
         if (newSessions.length > 0) {
-          console.log("➕ Creating new sessions:", newSessions.length);
           
-          // ✅ ResearchSession type không có speaker - GỬI TRỰC TIẾP
           await createSessions({ 
             conferenceId, 
             data: { sessions: newSessions } 
@@ -673,14 +562,12 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
         toast.success("Cập nhật phiên họp thành công!");
         
       } else {
-        // ✅ CREATE MODE
         if (sessions.length === 0) {
           dispatch(markStepCompleted(5));
           toast.info("Đã bỏ qua phần phiên họp");
           return { success: true, skipped: true };
         }
 
-        // ✅ ResearchSession type không có speaker - GỬI TRỰC TIẾP
         await createSessions({ 
           conferenceId, 
           data: { sessions } 

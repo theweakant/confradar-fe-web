@@ -23,8 +23,8 @@ import {
 } from "@/redux/services/room.service";
 import { SessionList } from "../Session/SessionList";
 import { LocalSessionList } from "../Session/Local/LocalSessionList";
-import { SingleSessionForm } from "../Form/SingleSessionForm";
-import { ResearchSingleSessionForm } from "../Form/ResearchSingleSessionForm";
+import { SingleSessionForm } from "../Form/TechSessionForm";
+import { ResearchSingleSessionForm } from "../Form/ResearchSessionForm";
 import type { Session, ResearchSession } from "@/types/conference.type";
 
 interface RoomDetailDialogProps {
