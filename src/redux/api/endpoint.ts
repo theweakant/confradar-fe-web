@@ -14,7 +14,7 @@ export const endpoint = {
     REVIEWERS_LIST: "/Auth/list-all-reviewers",
     CREATE_COLLABORATOR: "/Auth/create-collaborator-account",
     ORGANIZATION_LIST: "/auth/list-organization",
-    COLLABORATOR_LIST:"/auth/list-collaborator-accounts",
+    COLLABORATOR_LIST: "/auth/list-collaborator-accounts",
 
     UPDATE_PROFILE: "/Auth/update-profile",
     CHANGE_PASSWORD: "/Auth/change-password",
@@ -118,7 +118,8 @@ export const endpoint = {
 
     GET_OWN_CONFERENCES_FOR_SCHEDULE:
       "/Conference/own-conferences-for-schedule",
-    GET_CONFERENCES_HAS_ASSIGNED_PAPERS: "/Conference/get-conferences-assigned-papers-belong-to",
+    GET_CONFERENCES_HAS_ASSIGNED_PAPERS_FOR_LOCAL_REVIEWER: "/Conference/get-conferences-assigned-papers-belong-to",
+    GET_CONFERENCES_HAS_ASSIGNED_PAPERS_FOR_EXTERNAL_REVIEWER: "/contract/conferences-for-outsourced-reviewer",
 
     ACTIVATE_WAITLIST: "/conference/activate-waitlist",
     GET_SKELETON_TECH_CONF_FOR_COLLABORATOR: "/conference/get-skeleton-tech-conf-created-for-collaborator",

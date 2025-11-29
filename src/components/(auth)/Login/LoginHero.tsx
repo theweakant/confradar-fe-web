@@ -15,7 +15,7 @@ export const LoginHero = () => {
       <div className="relative z-10 text-center text-white px-8 max-w-2xl">
         <h1 className="text-5xl font-bold mb-6 tracking-tight">ConfRadar</h1>
         <p className="text-2xl font-light opacity-90 leading-relaxed">
-          Khám Phá Các Hội Thảo Và Hội Nghị Tuyệt Vời Trên Toàn Thế Giới
+          Khám Phá Các Hội thảo/Hội Nghị Tuyệt Vời Tại Việt Nam
         </p>
         <div className="mt-12 flex items-center justify-center gap-8 text-sm opacity-75">
           <div className="flex items-center gap-2">

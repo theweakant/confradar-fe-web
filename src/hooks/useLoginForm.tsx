@@ -50,9 +50,17 @@ export const useLoginForm = () => {
       router.push(redirectUrl);
     } else {
       toast.error("Đăng nhập thất bại!", {
-        description: message || "Email hoặc mật khẩu không đúng",
+        description: message || 'Vui lòng kiểm tra lại thông tin đăng nhập, hoặc xác nhận tài khoản qua email (nếu chưa)',
       });
-      setErrors({ email: message });
+
+      setErrors({
+        email: message,
+        // password: statusCode === 401 ? "Sai mật khẩu" : undefined,
+      });
+      // toast.error("Đăng nhập thất bại!", {
+      //   description: message || "Email hoặc mật khẩu không đúng",
+      // });
+      // setErrors({ email: message });
     }
   };
 
