@@ -50,6 +50,12 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
     const [isFavorite, setIsFavorite] = useState(false);
     const [paymentLoading, setPaymentLoading] = useState(false);
 
+    const showSubscribeCard =
+        conference.isResearchConference ||
+        (!conference.isResearchConference &&
+            !conference.isInternalHosted &&
+            conference.contract?.isTicketSelling);
+
     useEffect(() => {
         if (accessToken) {
             fetchFavouriteConferences();
@@ -135,21 +141,27 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
     return (
         <div className="relative max-w-6xl mx-auto px-4 py-8 md:py-16">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-32 md:mt-48">
-                <ConferenceTitleCard
-                    conference={conference}
-                    formatDate={formatDate}
-                    isFavorite={isFavorite}
-                    onFavoriteToggle={handleFavoriteToggle}
-                    isTogglingFavorite={addingToFavourite || deletingFromFavourite}
-                    accessToken={accessToken}
-                />
+                {/* <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-32 md:mt-48 items-stretch"> */}
+                <div className={showSubscribeCard ? "lg:col-span-2 h-full" : "lg:col-span-3 h-full"}>
+                    <ConferenceTitleCard
+                        conference={conference}
+                        formatDate={formatDate}
+                        isFavorite={isFavorite}
+                        onFavoriteToggle={handleFavoriteToggle}
+                        isTogglingFavorite={addingToFavourite || deletingFromFavourite}
+                        accessToken={accessToken}
+                        showSubscribeCard={showSubscribeCard}
+                    />
+                </div>
 
-                <ConferenceSubscribeCard
-                    conference={conference}
-                    formatDate={formatDate}
-                    onOpenDialog={() => setIsDialogOpen(true)}
-                    purchasedTicketInfo={getPurchasedTicketInfo()}
-                />
+                {showSubscribeCard && (
+                    <ConferenceSubscribeCard
+                        conference={conference}
+                        formatDate={formatDate}
+                        onOpenDialog={() => setIsDialogOpen(true)}
+                        purchasedTicketInfo={getPurchasedTicketInfo()}
+                    />
+                )}
             </div>
 
             <ConferenceDescriptionCard conference={conference} />

@@ -13,6 +13,7 @@ interface ConferenceTitleCardProps {
     onFavoriteToggle: () => void;
     isTogglingFavorite: boolean;
     accessToken: string | null;
+    showSubscribeCard?: boolean;
 }
 
 const ConferenceTitleCard: React.FC<ConferenceTitleCardProps> = ({
@@ -22,9 +23,10 @@ const ConferenceTitleCard: React.FC<ConferenceTitleCardProps> = ({
     onFavoriteToggle,
     isTogglingFavorite,
     accessToken,
+    showSubscribeCard,
 }) => {
     return (
-        <div className="lg:col-span-2 bg-gradient-to-br from-slate-800/90 via-gray-900/80 to-slate-900/70 backdrop-blur-md rounded-2xl shadow-lg p-6 md:p-8 text-white">
+        <div className="h-full bg-gradient-to-br from-slate-800/90 via-gray-900/80 to-slate-900/70 backdrop-blur-md rounded-2xl shadow-lg p-6 md:p-8 text-white">
             <div className="flex items-start gap-3 mb-4">
                 <h1 className="text-2xl md:text-3xl font-bold flex-1 bg-gradient-to-r from-sky-400 via-indigo-400 to-blue-300 bg-clip-text text-transparent drop-shadow-[0_2px_6px_rgba(56,189,248,0.4)]">
                     {conference.conferenceName}
@@ -64,6 +66,13 @@ const ConferenceTitleCard: React.FC<ConferenceTitleCardProps> = ({
                     </div>
                 )}
             </div>
+
+            {!showSubscribeCard && (
+                <div className="mt-4 p-4 bg-white/10 rounded-lg text-sm text-yellow-200">
+                    Đây là hội thảo của bên đối tác liên kết với Confradar nhưng không liên kết bạn vé.
+                    Bạn vui lòng xem thông tin về hội thảo, và liên hệ bên liên quan để mua vé nếu có nhu cầu.
+                </div>
+            )}
         </div>
     );
 };

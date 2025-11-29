@@ -7,8 +7,8 @@ import { Shield, DollarSign, FileText } from "lucide-react";
 
 interface PolicyTabProps {
   conference:
-    | TechnicalConferenceDetailResponse
-    | ResearchConferenceDetailResponse;
+  | TechnicalConferenceDetailResponse
+  | ResearchConferenceDetailResponse;
 }
 
 const PolicyTab: React.FC<PolicyTabProps> = ({ conference }) => {
@@ -19,7 +19,7 @@ const PolicyTab: React.FC<PolicyTabProps> = ({ conference }) => {
   return (
     <div>
       <h2 className="text-2xl font-bold text-white mb-6">
-        Chính sách & Hoàn tiền
+        Chính sách
       </h2>
 
       {/* Policies Section */}
@@ -65,7 +65,7 @@ const PolicyTab: React.FC<PolicyTabProps> = ({ conference }) => {
       </div>
 
       {/* Refund Policies Section */}
-      <div className="mb-8">
+      {/* <div className="mb-8">
         <div className="flex items-center gap-3 mb-4">
           <DollarSign className="w-6 h-6 text-green-400" />
           <h3 className="text-xl font-semibold text-white">
@@ -107,13 +107,13 @@ const PolicyTab: React.FC<PolicyTabProps> = ({ conference }) => {
                           </span>
                           {refund.refundDeadline
                             ? new Date(
-                                refund.refundDeadline,
-                              ).toLocaleDateString("vi-VN", {
-                                weekday: "long",
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              })
+                              refund.refundDeadline,
+                            ).toLocaleDateString("vi-VN", {
+                              weekday: "long",
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })
                             : "Chưa xác định"}
                         </p>
                       </div>
@@ -136,7 +136,7 @@ const PolicyTab: React.FC<PolicyTabProps> = ({ conference }) => {
             </p>
           </div>
         )}
-      </div>
+      </div> */}
 
       {/* Important Notice */}
       <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">

@@ -133,92 +133,6 @@ const ConferencePriceTab: React.FC<ConferencePriceTabProps> = ({
               </div>
 
               {/* Price Phases */}
-              {/* <div>
-                <h4 className="text-lg font-semibold text-white mb-4">
-                  Các giai đoạn giá vé
-                </h4>
-                {ticket.pricePhases && ticket.pricePhases.length > 0 ? (
-                  <div className="space-y-3">
-                    {ticket.pricePhases
-                      .sort((a, b) => {
-                        const startA = new Date(a.startDate || "").getTime();
-                        const startB = new Date(b.startDate || "").getTime();
-                        return startA - startB;
-                      })
-                      .map((phase, index) => {
-                        const status = getPhaseStatus(phase);
-                        const statusDisplay = getStatusDisplay(status);
-                        const actualPrice =
-                          ticket.ticketPrice && phase.applyPercent
-                            ? Math.round(
-                                ticket.ticketPrice * (phase.applyPercent / 100),
-                              )
-                            : ticket.ticketPrice;
-
-                        return (
-                          <div
-                            key={phase.pricePhaseId}
-                            className={`p-4 rounded-lg border transition-all ${statusDisplay.bgClass} ${
-                              status === "current"
-                                ? "transform scale-[1.02] shadow-lg"
-                                : ""
-                            }`}
-                          >
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-2">
-                                  <h5 className="font-semibold text-white">
-                                    {phase.phaseName ||
-                                      `Giai đoạn ${index + 1}`}
-                                  </h5>
-                                  <div
-                                    className={`flex items-center gap-2 ${statusDisplay.textClass}`}
-                                  >
-                                    {statusDisplay.icon}
-                                    <span className="text-sm font-medium">
-                                      {statusDisplay.text}
-                                    </span>
-                                  </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                  {phase.startDate && (
-                                    <div className="flex items-center gap-2 text-white/70">
-                                      <Calendar className="w-4 h-4" />
-                                      <span>
-                                        Bắt đầu: {formatDate(phase.startDate)}
-                                      </span>
-                                    </div>
-                                  )}
-                                  {phase.endDate && (
-                                    <div className="flex items-center gap-2 text-white/70">
-                                      <Calendar className="w-4 h-4" />
-                                      <span>
-                                        Kết thúc: {formatDate(phase.endDate)}
-                                      </span>
-                                    </div>
-                                  )}
-                                  {phase.startDate && phase.endDate && (
-                                    <div className="flex items-center gap-2 text-white/70">
-                                      <Clock className="w-4 h-4" />
-                                      <span>
-                                        {formatTime(phase.startDate)} -{" "}
-                                        {formatTime(phase.endDate)}
-                                      </span>
-                                    </div>
-                                  )}
-                                  <div className="text-white/70">
-                                    <span className="font-medium">
-                                      Vé còn lại:
-                                    </span>{" "}
-                                    {phase.availableSlot !== undefined
-                                      ? phase.availableSlot
-                                      : "Chưa xác định"}
-                                  </div>
-                                </div>
-                              </div> */}
-
-              {/* Price Phases */}
               <div>
                 <h4 className="text-lg font-semibold text-white mb-4">
                   {isResearch ? "Các giai đoạn phí đăng ký" : "Các giai đoạn giá vé"}
@@ -244,7 +158,7 @@ const ConferencePriceTab: React.FC<ConferencePriceTabProps> = ({
                             className={`p-4 rounded-lg border transition-all ${statusDisplay.bgClass} ${status === 'current' ? 'transform scale-[1.02] shadow-lg' : ''
                               }`}
                           >
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                               <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-2">
                                   <h5 className="font-semibold text-white">
@@ -285,13 +199,54 @@ const ConferencePriceTab: React.FC<ConferencePriceTabProps> = ({
                                 </div>
                               </div>
 
-                              <div className="text-right">
+                              <div className="text-right md:order-2">
                                 <div className="text-xl font-bold text-coral-400 mb-1">
                                   {actualPrice ? `${actualPrice.toLocaleString('vi-VN')}₫` : 'Giá chưa xác định'}
                                 </div>
                                 {phase.applyPercent && (
                                   <div className="text-sm text-white/70">
                                     Giảm {100 - phase.applyPercent}% ({phase.applyPercent}% giá gốc)
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Refund Policy */}
+                              <div className="w-full md:max-w-xs md:order-1 md:border-l md:border-white/20 md:pl-4">
+                                <h6 className="font-semibold text-white mb-2 text-sm flex items-center gap-1">
+                                  <Clock className="w-4 h-4 text-white/70" /> Chính sách hoàn vé
+                                </h6>
+
+                                {phase.refundPolicies?.length ? (
+                                  <div className="space-y-2">
+                                    {Array.from(phase.refundPolicies)
+                                      .sort((a, b) => {
+                                        const deadlineA = new Date(a.refundDeadline || '').getTime();
+                                        const deadlineB = new Date(b.refundDeadline || '').getTime();
+                                        return deadlineA - deadlineB;
+                                      })
+                                      .map((policy) => (
+                                        <div
+                                          key={policy.refundPolicyId}
+                                          className="flex gap-2 text-sm text-white/70 bg-white/5 p-2 rounded"
+                                        >
+                                          <CheckCircle className="w-4 h-4 text-green-400 mt-0.5" />
+                                          <span>
+                                            Hoàn <span className="font-semibold text-green-400">{policy.percentRefund}%</span> nếu hủy trước
+                                            <br />
+                                            {formatDate(policy.refundDeadline)} – {formatTime(policy.refundDeadline)}
+                                          </span>
+                                        </div>
+                                      ))}
+
+                                    <div className="text-xs text-yellow-400 bg-yellow-500/10 p-2 rounded flex gap-2">
+                                      <AlertCircle className="w-4 h-4 mt-0.5" />
+                                      <span>Vui lòng đọc kỹ chính sách trước khi mua vé.</span>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="flex gap-2 text-sm text-red-400 bg-red-500/10 p-3 rounded">
+                                    <XCircle className="w-4 h-4 mt-0.5" />
+                                    <span className="font-medium">Không hỗ trợ hoàn vé ở giai đoạn này</span>
                                   </div>
                                 )}
                               </div>
@@ -304,17 +259,6 @@ const ConferencePriceTab: React.FC<ConferencePriceTabProps> = ({
                   <div className="text-center text-white/70 py-6 bg-white/10 rounded-lg">
                     <p>{isResearch ? "Chưa có thông tin về các giai đoạn phí đăng ký" : "Chưa có thông tin về các giai đoạn giá vé"}</p>
                   </div>
-                  //                 )}
-                  //               </div>
-                  //             </div>
-                  //           </div>
-                  //         );
-                  //       })}
-                  //   </div>
-                  // ) : (
-                  //   <div className="text-center text-white/70 py-6 bg-white/10 rounded-lg">
-                  //     <p>Chưa có thông tin về các giai đoạn giá vé</p>
-                  //   </div>
                 )}
               </div>
             </div>
