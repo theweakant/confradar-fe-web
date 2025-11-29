@@ -34,9 +34,9 @@ export function PriceTab({ conference }: PriceTabProps) {
                     <h3 className="text-2xl font-bold text-foreground">
                       {price.ticketName}
                     </h3>
-                    <span className="text-sm text-muted-foreground">
+                    {/* <span className="text-sm text-muted-foreground">
                       #{price.conferencePriceId}
-                    </span>
+                    </span> */}
                     {price.isAuthor && (
                       <span className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 rounded-full text-xs font-semibold border border-yellow-200 dark:border-yellow-800">
                         AUTHOR
@@ -51,7 +51,7 @@ export function PriceTab({ conference }: PriceTabProps) {
                   <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">
                     Giá
                   </p>
-                  <p className="text-3xl font-bold text-primary">
+                  <p className="text-2xl font-semibold text-green-700">
                     {formatCurrency(price.ticketPrice)}
                   </p>
                 </div>
@@ -60,10 +60,10 @@ export function PriceTab({ conference }: PriceTabProps) {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <InfoField label="Tổng Slot" value={price.totalSlot} />
                 <InfoField label="Slot Còn Lại" value={price.availableSlot} />
-                <InfoField
+                {/* <InfoField
                   label="Dành cho Tác Giả"
                   value={price.isAuthor ? "Có" : "Không"}
-                />
+                /> */}
               </div>
 
               {price.pricePhases && price.pricePhases.length > 0 && (

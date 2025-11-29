@@ -356,7 +356,7 @@ export default function ConferenceManagementTabs() {
               <p className="text-gray-600 text-sm">
                 {activeTab === "conferences"
                   ? "Danh sách hội thảo đã được duyệt. Hãy chuẩn bị những bước cuối cùng để đăng tải hội thảo."
-                  : "Danh sách hội thảo đang chờ ConfRadar duyệt."}
+                  : "Danh sách hội thảo bản nháp."}
               </p>
             </div>
 

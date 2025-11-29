@@ -150,57 +150,70 @@ export function NoRoomResearchSessionForm({
     setFormData((prev) => ({ ...prev, sessionMedias }));
   };
 
-  const handleSubmit = () => {
-    if (!formData.title.trim()) {
-      toast.error("Vui lòng nhập tiêu đề phiên họp!");
-      return;
-    }
+const handleSubmit = () => {
+  if (!formData.title.trim()) {
+    toast.error("Vui lòng nhập tiêu đề phiên họp!");
+    return;
+  }
 
-    if (formData.timeRange < 0.5) {
-      toast.error("Thời lượng tối thiểu là 0.5 giờ (30 phút)!");
-      return;
-    }
+  if (formData.timeRange < 0.5) {
+    toast.error("Thời lượng tối thiểu là 0.5 giờ (30 phút)!");
+    return;
+  }
 
-    if (formData.timeRange > maxTimeRange) {
-      toast.error(`Thời lượng tối đa là ${maxTimeRange} giờ (theo giờ bắt đầu đã chọn)!`);
-      return;
-    }
+  if (formData.timeRange > maxTimeRange) {
+    toast.error(`Thời lượng tối đa là ${maxTimeRange} giờ (theo giờ bắt đầu đã chọn)!`);
+    return;
+  }
 
-    const startDate = new Date(formData.selectedStartTime);
-    const endDate = new Date(calculatedEndTime);
-    const startDay = startDate.toISOString().split("T")[0];
-    const endDay = endDate.toISOString().split("T")[0];
-    if (startDay !== endDay) {
-      toast.error("Phiên họp không được kéo dài qua ngày hôm sau. Vui lòng chọn thời gian kết thúc trước 23:59.");
-      return;
-    }
+  const startDate = new Date(formData.selectedStartTime);
+  const endDate = new Date(calculatedEndTime);
+  
+  const startDay = startDate.getDate();
+  const startMonth = startDate.getMonth();
+  const startYear = startDate.getFullYear();
+  
+  const endDay = endDate.getDate();
+  const endMonth = endDate.getMonth();
+  const endYear = endDate.getFullYear();
+  
+  const isSameDay = (
+    startDay === endDay && 
+    startMonth === endMonth && 
+    startYear === endYear
+  );
+  
+  if (!isSameDay) {
+    toast.error("Phiên họp không được kéo dài qua ngày hôm sau. Vui lòng chọn thời gian kết thúc trước 23:59.");
+    return;
+  }
 
-    if (selectedDate < conferenceStartDate || selectedDate > conferenceEndDate) {
-      toast.error(
-        `Ngày phải nằm trong khoảng từ ${formatDate(conferenceStartDate)} đến ${formatDate(conferenceEndDate)}`
-      );
-      return;
-    }
+  if (selectedDate < conferenceStartDate || selectedDate > conferenceEndDate) {
+    toast.error(
+      `Ngày phải nằm trong khoảng từ ${formatDate(conferenceStartDate)} đến ${formatDate(conferenceEndDate)}`
+    );
+    return;
+  }
 
-    const session: ResearchSession = {
-      sessionId: initialSession?.sessionId,
-      conferenceId,
-      title: formData.title,
-      description: formData.description,
-      date: selectedDate,
-      startTime: formData.selectedStartTime,
-      endTime: calculatedEndTime,
-      timeRange: formData.timeRange,
-      roomId: "", 
-      roomDisplayName: undefined,
-      roomNumber: undefined,
-      sessionMedias: formData.sessionMedias,
-    };
-
-    onSave(session);
-    toast.success(isEditMode ? "Đã cập nhật phiên họp thành công!" : "Đã tạo phiên họp thành công!");
-    onClose();
+  const session: ResearchSession = {
+    sessionId: initialSession?.sessionId,
+    conferenceId,
+    title: formData.title,
+    description: formData.description,
+    date: selectedDate,
+    startTime: formData.selectedStartTime,
+    endTime: calculatedEndTime,
+    timeRange: formData.timeRange,
+    roomId: "", 
+    roomDisplayName: undefined,
+    roomNumber: undefined,
+    sessionMedias: formData.sessionMedias,
   };
+
+  onSave(session);
+  toast.success(isEditMode ? "Đã cập nhật phiên họp thành công!" : "Đã tạo phiên họp thành công!");
+  onClose();
+};
 
   if (!open) return null;
 

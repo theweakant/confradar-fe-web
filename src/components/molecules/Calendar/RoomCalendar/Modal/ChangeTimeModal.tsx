@@ -387,10 +387,10 @@ export const ChangeTimeModal: React.FC<ChangeTimeModalProps> = ({
                                   }`}
                                 >
                                   {hasConflict
-                                    ? "⚠️ Trùng với session khác"
+                                    ? "Trùng với session khác"
                                     : isValidCustomTime
-                                    ? "✅ Khung giờ hợp lệ"
-                                    : "⚠️ Vượt quá khung giờ trống"}
+                                    ? "Khung giờ hợp lệ"
+                                    : "Vượt quá khung giờ trống"}
                                 </div>
                                 <div
                                   className={`text-sm ${

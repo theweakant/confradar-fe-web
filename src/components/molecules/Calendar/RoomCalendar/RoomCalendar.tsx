@@ -360,7 +360,7 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
         <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
           <h2 className="text-base font-semibold mb-3 flex items-center gap-2 text-gray-900">
             <DoorOpen className="w-4 h-4 text-green-600" />
-            Danh sách Phòng ({uniqueRooms.length})
+            Danh sách phòng ({uniqueRooms.length})
           </h2>
           <div
             ref={roomListRef}

@@ -58,24 +58,28 @@ export function CustomerTab({ conferenceId, conferenceType }: CustomerTabProps) 
 
   return (
     <>
-      <div className="space-y-4 p-6">
+      <div className="space-y-4 p-3">
         {/* Header with stats */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pb-4 border-b">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">Người mua</h2>
-            <p className="text-sm text-gray-500 mt-0.5">{ticketHolders.length} đã bán</p>
-          </div>
-          {ticketHolders.length > 0 && (
-            <div className="flex items-center gap-2 px-4 py-2 bg-green-50 rounded-lg border border-green-200">
-              <DollarSign className="w-5 h-5 text-green-600" />
-              <div>
-                <p className="text-xs text-green-700 font-medium">Tổng thu</p>
-                <p className="text-lg font-bold text-green-700">
-                  {formatCurrency(totalRevenue)}
-                </p>
-              </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                Người mua
+                <span className="text-sm font-normal text-gray-500">
+                  ({ticketHolders.length} đã bán)
+                </span>
+              </h2>
             </div>
-          )}
+            {/* {ticketHolders.length > 0 && (
+              <div className="flex items-center gap-2 px-4 py-2 bg-green-50 rounded-lg border border-green-200">
+                <DollarSign className="w-5 h-5 text-green-600" />
+                <div>
+                  <p className="text-xs text-green-700 font-medium">Tổng thu</p>
+                  <p className="text-lg font-bold text-green-700">
+                    {formatCurrency(totalRevenue)}
+                  </p>
+                </div>
+              </div>
+            )} */}
         </div>
 
         {ticketHolders.length === 0 ? (
@@ -97,7 +101,7 @@ export function CustomerTab({ conferenceId, conferenceType }: CustomerTabProps) 
                 {/* Customer name & status */}
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
                       <User className="w-5 h-5 text-blue-600" />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -111,14 +115,14 @@ export function CustomerTab({ conferenceId, conferenceType }: CustomerTabProps) 
 
                 {/* Key info */}
                 <div className="space-y-2 mb-3">
-                  <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center justify-between text-xs">
                     <span className="text-gray-600 flex items-center gap-1.5">
                       <Calendar className="w-3.5 h-3.5" />
                       {formatDate(holder.purchaseDate)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-blue-600">
+                    <span className="text-lg font-semibold text-blue-600">
                       {formatCurrency(holder.actualPrice)}
                     </span>
                     <span

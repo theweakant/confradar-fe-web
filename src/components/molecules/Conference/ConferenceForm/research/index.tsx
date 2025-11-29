@@ -59,6 +59,9 @@ import {
 
 import { NoRoomResearchSessionForm } from "@/components/molecules/Calendar/RoomCalendar/Form/NoRoomResearchSessionForm";
 import RoomCalendar from "@/components/molecules/Calendar/RoomCalendar/RoomCalendar";
+import { UnassignedSessionsList } from "@/components/molecules/Calendar/RoomCalendar/Session/UnassignedSessionsList";
+import { AssignRoomModal } from "@/components/molecules/Calendar/RoomCalendar/Modal/AssignRoomModal";
+
 import { ResearchSession } from "@/types/conference.type";
 
 // DELETE TRACKING FOR CREATE MODE
@@ -107,6 +110,9 @@ export default function ResearchConferenceStepForm({
   const { data: rankingData, isLoading: isRankingLoading } = useGetAllRankingCategoriesQuery();
 
   const [showNoRoomSessionForm, setShowNoRoomSessionForm] = useState(false);
+  const [assignRoomModalOpen, setAssignRoomModalOpen] = useState(false);
+  const [sessionToAssignRoom, setSessionToAssignRoom] = useState<ResearchSession | null>(null);
+  const [sessionToAssignRoomIndex, setSessionToAssignRoomIndex] = useState<number>(-1);
 
   const {
     currentStep,
@@ -340,14 +346,12 @@ export default function ResearchConferenceStepForm({
 
   const { validationErrors, validate, clearError } = useValidation();
 
-  // INIT MODE & MAX STEP
-useEffect(() => {
-  dispatch(setMode(mode));
-  dispatch(setMaxStep(RESEARCH_MAX_STEP));
-  dispatch(setVisibleSteps(visibleSteps));
-}, [dispatch, mode, visibleSteps]);
+  useEffect(() => {
+    dispatch(setMode(mode));
+    dispatch(setMaxStep(RESEARCH_MAX_STEP));
+    dispatch(setVisibleSteps(visibleSteps));
+  }, [dispatch, mode, visibleSteps]);
 
-  // CLEANUP KHI UNMOUNT
   useEffect(() => {
     return () => {
       handleReset();
@@ -368,7 +372,6 @@ useEffect(() => {
     }
   }, [mode, isConferenceLoading, handleGoToStep]);
 
-  // OPTIONS
   const categoryOptions = useMemo(
     () =>
       categoriesData?.data?.map((category) => ({
@@ -463,7 +466,6 @@ const isCurrentStepLast = useMemo(() => {
   return currentIndex === visibleSteps.length - 1;
 }, [currentStep, visibleSteps]);
 
-  // CREATE MODE: SUBMIT & NEXT HANDLERS
   const handleBasicSubmit = async () => {
     const basicValidation = validateBasicForm(basicForm);
     if (!basicValidation.isValid) {
@@ -485,86 +487,84 @@ const isCurrentStepLast = useMemo(() => {
     }
   };
   
-const handleTimelineSubmit = async () => {
-  console.log('📤 handleTimelineSubmit - START');
-  
-  const mainPhase = researchPhases[0];
-  if (!mainPhase) {
-    toast.error("Main timeline là bắt buộc!");
-    return;
-  }
+  const handleTimelineSubmit = async () => {
+    
+    const mainPhase = researchPhases[0];
+    if (!mainPhase) {
+      toast.error("Main timeline là bắt buộc!");
+      return;
+    }
 
-  // ✅ Validate Main phase đầy đủ
-  const mainValidation = validateResearchTimeline(
-    mainPhase,
-    basicForm.ticketSaleStart
-  );
-  if (!mainValidation.isValid) {
-    toast.error(`Lỗi ở Main Timeline: ${mainValidation.error}`);
-    return;
-  }
+    const mainValidation = validateResearchTimeline(
+      mainPhase,
+      basicForm.ticketSaleStart
+    );
+    if (!mainValidation.isValid) {
+      toast.error(`Lỗi ở Main Timeline: ${mainValidation.error}`);
+      return;
+    }
 
-  // ✅ CHECK Waitlist phase
-  const waitlistPhase = researchPhases[1];
-  
-  if (waitlistPhase && waitlistPhase.isWaitlist) {
-    // Nếu có bất kỳ date nào được điền → validate đầy đủ
-    const hasAnyWaitlistData = 
-      waitlistPhase.registrationStartDate ||
-      waitlistPhase.fullPaperStartDate ||
-      waitlistPhase.reviewStartDate ||
-      waitlistPhase.reviseStartDate ||
-      waitlistPhase.cameraReadyStartDate;
+    const waitlistPhase = researchPhases[1];
+    
+    if (waitlistPhase && waitlistPhase.isWaitlist) {
+      // Nếu có bất kỳ date nào được điền → validate đầy đủ
+      const hasAnyWaitlistData = 
+        waitlistPhase.registrationStartDate ||
+        waitlistPhase.fullPaperStartDate ||
+        waitlistPhase.reviewStartDate ||
+        waitlistPhase.reviseStartDate ||
+        waitlistPhase.cameraReadyStartDate;
 
-    if (hasAnyWaitlistData) {
-      // ✅ Validate waitlist nếu có data
-      const waitlistValidation = validateResearchTimeline(
-        waitlistPhase,
-        basicForm.ticketSaleStart
-      );
-      
-      if (!waitlistValidation.isValid) {
-        toast.error(`Lỗi ở Waitlist Timeline: ${waitlistValidation.error}`);
-        return;
-      }
-
-      // ✅ Check thứ tự thời gian Main → Waitlist
-      if (mainPhase.cameraReadyDecideStatusEnd && waitlistPhase.registrationStartDate) {
-        const mainEnd = new Date(mainPhase.cameraReadyDecideStatusEnd);
-        const waitlistStart = new Date(waitlistPhase.registrationStartDate);
+      if (hasAnyWaitlistData) {
+        // ✅ Validate waitlist nếu có data
+        const waitlistValidation = validateResearchTimeline(
+          waitlistPhase,
+          basicForm.ticketSaleStart
+        );
         
-        if (waitlistStart <= mainEnd) {
-          toast.error(
-            "Waitlist timeline phải bắt đầu sau khi Main timeline kết thúc!"
-          );
+        if (!waitlistValidation.isValid) {
+          toast.error(`Lỗi ở Waitlist Timeline: ${waitlistValidation.error}`);
           return;
+        }
+
+        // ✅ Check thứ tự thời gian Main → Waitlist
+        if (mainPhase.cameraReadyDecideStatusEnd && waitlistPhase.registrationStartDate) {
+          const mainEnd = new Date(mainPhase.cameraReadyDecideStatusEnd);
+          const waitlistStart = new Date(waitlistPhase.registrationStartDate);
+          
+          if (waitlistStart <= mainEnd) {
+            toast.error(
+              "Waitlist timeline phải bắt đầu sau khi Main timeline kết thúc!"
+            );
+            return;
+          }
         }
       }
     }
-  }
 
-  console.log('📤 Calling submitResearchPhase with:', {
-    phasesCount: researchPhases.length,
-    mainPhase: {
-      registrationStart: mainPhase.registrationStartDate,
-      fullPaperStart: mainPhase.fullPaperStartDate,
-      cameraReadyStart: mainPhase.cameraReadyStartDate,
-    },
-    waitlistPhase: waitlistPhase ? {
-      registrationStart: waitlistPhase.registrationStartDate,
-      fullPaperStart: waitlistPhase.fullPaperStartDate,
-      cameraReadyStart: waitlistPhase.cameraReadyStartDate,
-    } : null
-  });
+    console.log('📤 Calling submitResearchPhase with:', {
+      phasesCount: researchPhases.length,
+      mainPhase: {
+        registrationStart: mainPhase.registrationStartDate,
+        fullPaperStart: mainPhase.fullPaperStartDate,
+        cameraReadyStart: mainPhase.cameraReadyStartDate,
+      },
+      waitlistPhase: waitlistPhase ? {
+        registrationStart: waitlistPhase.registrationStartDate,
+        fullPaperStart: waitlistPhase.fullPaperStartDate,
+        cameraReadyStart: waitlistPhase.cameraReadyStartDate,
+      } : null
+    });
 
-  const result = await submitResearchPhase(researchPhases);
-  console.log('📥 submitResearchPhase result:', result);
+    const result = await submitResearchPhase(researchPhases);
+    console.log('📥 submitResearchPhase result:', result);
 
-  if (result.success) {
-    handleMarkHasData(3);
-    handleNext();
-  }
-};
+    if (result.success) {
+      handleMarkHasData(3);
+      handleNext();
+    }
+  };
+
   const handlePriceSubmit = async () => {
     if (tickets.length === 0) {
       toast.error("Vui lòng thêm ít nhất 1 loại chi phí!");
@@ -592,7 +592,6 @@ const handleTimelineSubmit = async () => {
     }
   };
 
-  // ✅ SESSION CALLBACKS - GIỐNG TECH
   const handleSessionCreatedFromCalendar = (session: ResearchSession) => {
     setSessions((prev) => [...prev, session]);
     handleMarkHasData(5);
@@ -628,6 +627,39 @@ const handleTimelineSubmit = async () => {
     setSessions((prev) => prev.filter((_, i) => i !== index));
     handleMarkDirty(5);
     toast.success("Đã xóa session thành công!");
+  };
+
+  const unassignedSessions = useMemo(() => {
+    return sessions.filter((session) => !session.roomId);
+  }, [sessions]);
+
+  // Thêm handler
+  const handleAssignRoom = (session: ResearchSession, index: number) => {
+    // Tìm index thực trong mảng sessions gốc
+    const actualIndex = sessions.findIndex(s => 
+      s.sessionId ? s.sessionId === session.sessionId : 
+      (s.title === session.title && s.date === session.date && s.startTime === session.startTime)
+    );
+    
+    setSessionToAssignRoom(session);
+    setSessionToAssignRoomIndex(actualIndex);
+    setAssignRoomModalOpen(true);
+  };
+
+  const handleAssignRoomConfirm = (updatedSession: ResearchSession) => {
+    if (sessionToAssignRoomIndex !== -1) {
+      setSessions((prev) => {
+        const newSessions = [...prev];
+        newSessions[sessionToAssignRoomIndex] = updatedSession;
+        return newSessions;
+      });
+      handleMarkHasData(5);
+      handleMarkDirty(5);
+      toast.success(`Đã gán phòng cho session "${updatedSession.title}"!`);
+    }
+    setAssignRoomModalOpen(false);
+    setSessionToAssignRoom(null);
+    setSessionToAssignRoomIndex(-1);
   };
 
   const handlePoliciesSubmit = async () => {
@@ -1079,7 +1111,7 @@ const handleTimelineSubmit = async () => {
       {currentStep === 5 && (
         <StepContainer
           stepNumber={5}
-          title="Phiên họp (Tùy chọn)"
+          title="Session (Tùy chọn)"
           isCompleted={isStepCompleted(5)}
         >
           {(!basicForm.startDate || !basicForm.endDate) && (
@@ -1127,11 +1159,10 @@ const handleTimelineSubmit = async () => {
             </div>
           )}
 
-          {/* Hướng dẫn & tóm tắt */}
           {(basicForm.startDate || basicForm.endDate) && (
             <div className="text-xs text-gray-500 space-y-1 mb-4">
               <p>
-                <strong>Khoảng thời gian:</strong>{" "}
+                <strong>Khoảng thời gian diễn ra:</strong>{" "}
                 {basicForm.startDate && (
                   <span className="font-mono">
                     {new Date(basicForm.startDate).toLocaleDateString("vi-VN")}
@@ -1145,10 +1176,17 @@ const handleTimelineSubmit = async () => {
                 )}
               </p>
               {sessions.length > 0 && (
-                <p>• Đã lên lịch <strong>{sessions.length}</strong> phiên họp</p>
+                <p>• Đã lên lịch <strong>{sessions.length}</strong> session</p>
               )}
-              <p>• Quản lý phiên họp trong chi tiết phòng trên lịch</p>
+              <p>• Quản lý session trong chi tiết phòng trên lịch</p>
             </div>
+          )}
+
+          {unassignedSessions.length > 0 && (
+            <UnassignedSessionsList
+              sessions={unassignedSessions}
+              onAssignRoom={handleAssignRoom}
+            />
           )}
 
           <div className="border rounded-lg overflow-hidden bg-white shadow-sm mb-4">
@@ -1182,6 +1220,19 @@ const handleTimelineSubmit = async () => {
             />
 
           </div>
+
+          <AssignRoomModal
+            open={assignRoomModalOpen}
+            session={sessionToAssignRoom}
+            existingSessions={sessions}
+            onClose={() => {
+              setAssignRoomModalOpen(false);
+              setSessionToAssignRoom(null);
+              setSessionToAssignRoomIndex(-1);
+            }}
+            onConfirm={handleAssignRoomConfirm}
+          />
+
           {showNoRoomSessionForm && actualConferenceId && basicForm.startDate && basicForm.endDate && (
             <NoRoomResearchSessionForm
               open={true}
