@@ -1,4 +1,3 @@
-// components/Session/ChangeTimeModal.tsx
 import React, { Fragment, useState, useEffect, useMemo } from "react";
 import {
   Dialog,
@@ -42,7 +41,6 @@ export const ChangeTimeModal: React.FC<ChangeTimeModalProps> = ({
   const [customStartTime, setCustomStartTime] = useState<string>("");
   const [customDuration, setCustomDuration] = useState<number>(1);
 
-  // Fetch available time spans
   const {
     data: timesData,
     isLoading,
@@ -59,13 +57,11 @@ export const ChangeTimeModal: React.FC<ChangeTimeModalProps> = ({
 
   const timeSpans = timesData?.data || [];
 
-  // Detect session time format
   const timeFormat = useMemo(() => {
     if (!session) return 'iso';
     return detectTimeFormat(session.startTime);
   }, [session]);
 
-  // Reset state khi mở modal
   useEffect(() => {
     if (open && session) {
       setSelectedTimeSpan(null);
@@ -76,7 +72,6 @@ export const ChangeTimeModal: React.FC<ChangeTimeModalProps> = ({
     }
   }, [open, session]);
 
-  // Tính toán thời gian kết thúc dự kiến
   const calculatedEndTime = useMemo(() => {
     if (!customStartTime || !session) return "";
 
@@ -87,7 +82,6 @@ export const ChangeTimeModal: React.FC<ChangeTimeModalProps> = ({
     return endDate.toISOString();
   }, [customStartTime, customDuration, session]);
 
-  // Kiểm tra conflict với sessions khác
   const hasConflict = useMemo(() => {
     if (!session || !customStartTime || !calculatedEndTime) return false;
 
@@ -100,7 +94,6 @@ export const ChangeTimeModal: React.FC<ChangeTimeModalProps> = ({
     return checkSessionConflict(testSession, existingSessions, session.sessionId);
   }, [session, customStartTime, calculatedEndTime, existingSessions]);
 
-  // Filter time spans có thể fit session duration
   const compatibleTimeSpans = useMemo(() => {
     if (!session) return [];
 
@@ -120,17 +113,14 @@ export const ChangeTimeModal: React.FC<ChangeTimeModalProps> = ({
     });
   }, [timeSpans, session]);
 
-  // Xử lý chọn time span
   const handleSelectTimeSpan = (span: TimeSpan) => {
     if (!session) return;
 
     setSelectedTimeSpan(span);
 
-    // Tạo ISO string từ date + time
     const startISO = `${session.date}T${span.startTime}`;
     setCustomStartTime(startISO);
 
-    // Tính max duration cho span này
     const maxDuration = calculateDurationMinutes(span.startTime, span.endTime, session.date) / 60;
     const currentDuration = calculateDurationMinutes(
       session.startTime,
@@ -141,13 +131,11 @@ export const ChangeTimeModal: React.FC<ChangeTimeModalProps> = ({
     setCustomDuration(Math.min(currentDuration, maxDuration));
   };
 
-  // Validate custom time
   const isValidCustomTime = useMemo(() => {
     if (!session || !customStartTime || !calculatedEndTime || !selectedTimeSpan) {
       return false;
     }
 
-    // Check nằm trong span
     const fitsInSpan = canFitInTimeSpan(
       customStartTime,
       calculatedEndTime,
@@ -159,7 +147,6 @@ export const ChangeTimeModal: React.FC<ChangeTimeModalProps> = ({
     return fitsInSpan && !hasConflict;
   }, [session, customStartTime, calculatedEndTime, selectedTimeSpan, hasConflict]);
 
-  // Xử lý xác nhận
   const handleConfirm = () => {
     if (!session || !customStartTime || !calculatedEndTime) {
       toast.error("Vui lòng chọn khung giờ mới!");
@@ -176,7 +163,6 @@ export const ChangeTimeModal: React.FC<ChangeTimeModalProps> = ({
       return;
     }
 
-    // Tạo updated session với format time phù hợp
     const updatedSession = {
       ...session,
       startTime: timeFormat === 'timeonly' 
@@ -229,7 +215,6 @@ export const ChangeTimeModal: React.FC<ChangeTimeModalProps> = ({
               leaveTo="opacity-0 scale-95"
             >
               <DialogPanel className="w-full max-w-2xl transform overflow-hidden rounded-lg bg-white shadow-xl transition-all">
-                {/* Header */}
                 <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -252,10 +237,8 @@ export const ChangeTimeModal: React.FC<ChangeTimeModalProps> = ({
                   </div>
                 </div>
 
-                {/* Body */}
                 <div className="p-6 max-h-[70vh] overflow-y-auto">
                   <div className="space-y-4">
-                    {/* Current session info */}
                     <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                       <h4 className="font-semibold text-gray-900 mb-2">{session.title}</h4>
                       <div className="text-sm text-gray-600">
@@ -269,14 +252,12 @@ export const ChangeTimeModal: React.FC<ChangeTimeModalProps> = ({
                       </div>
                     </div>
 
-                    {/* Loading state */}
                     {isLoading && (
                       <div className="flex items-center justify-center py-8">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                       </div>
                     )}
 
-                    {/* Error state */}
                     {error && (
                       <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
                         <AlertCircle className="w-8 h-8 text-red-600 mx-auto mb-2" />
@@ -284,7 +265,6 @@ export const ChangeTimeModal: React.FC<ChangeTimeModalProps> = ({
                       </div>
                     )}
 
-                    {/* Available time spans */}
                     {!isLoading && !error && (
                       <>
                         <div>
@@ -333,7 +313,6 @@ export const ChangeTimeModal: React.FC<ChangeTimeModalProps> = ({
                           )}
                         </div>
 
-                        {/* Custom time adjustment */}
                         {selectedTimeSpan && (
                           <div className="border-t pt-4">
                             <label className="text-sm font-semibold text-gray-700 mb-2 block">
@@ -357,7 +336,6 @@ export const ChangeTimeModal: React.FC<ChangeTimeModalProps> = ({
                           </div>
                         )}
 
-                        {/* Preview */}
                         {customStartTime && calculatedEndTime && (
                           <div
                             className={`rounded-lg p-4 ${
@@ -414,7 +392,6 @@ export const ChangeTimeModal: React.FC<ChangeTimeModalProps> = ({
                   </div>
                 </div>
 
-                {/* Footer */}
                 <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-2 bg-gray-50">
                   <button
                     type="button"

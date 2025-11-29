@@ -12,14 +12,12 @@ export const UnassignedSessionsList: React.FC<UnassignedSessionsListProps> = ({
   onAssignRoom,
 }) => {
   const formatTime = (timeStr: string) => {
-    // Nếu có timestamp đầy đủ (ISO format), parse thành Date
     if (timeStr.includes('T')) {
       const date = new Date(timeStr);
       const hours = date.getHours().toString().padStart(2, '0');
       const minutes = date.getMinutes().toString().padStart(2, '0');
       return `${hours}:${minutes}`;
     }
-    // Nếu chỉ có time string thuần
     return timeStr.slice(0, 5);
   };
 
@@ -34,12 +32,10 @@ export const UnassignedSessionsList: React.FC<UnassignedSessionsListProps> = ({
 
   const calculateDuration = (start: string, end: string) => {
     try {
-      // Trường hợp 1: ISO timestamp đầy đủ (2026-12-24T13:00:00.000Z)
       if (start.includes('T') && end.includes('T')) {
         const startDate = new Date(start);
         const endDate = new Date(end);
         
-        // Kiểm tra valid date
         if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
           console.error('Invalid date:', { start, end });
           return 'N/A';
@@ -58,11 +54,9 @@ export const UnassignedSessionsList: React.FC<UnassignedSessionsListProps> = ({
         return `${hours}h${minutes > 0 ? ` ${minutes}p` : ""}`;
       }
       
-      // Trường hợp 2: Chỉ có time string (08:00:00 hoặc 08:00)
       const startTime = start.includes('T') ? start.split('T')[1] : start;
       const endTime = end.includes('T') ? end.split('T')[1] : end;
       
-      // Parse giờ:phút (bỏ qua giây và milliseconds)
       const startParts = startTime.split(':');
       const endParts = endTime.split(':');
       

@@ -24,7 +24,6 @@ const RoomCard: React.FC<RoomCardProps> = ({
     });
   };
 
-  // Count availability stats
   const wholeDayCount = allRoomDates.filter(r => r.isAvailableWholeday).length;
   const partialDayCount = allRoomDates.filter(r => !r.isAvailableWholeday).length;
 
@@ -38,7 +37,6 @@ const RoomCard: React.FC<RoomCardProps> = ({
           : "border-gray-200"
       }`}
     >
-      {/* Room Header */}
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-2">
           <div className="mt-0.5">
@@ -53,7 +51,6 @@ const RoomCard: React.FC<RoomCardProps> = ({
         </div>
       </div>
 
-      {/* Availability Status */}
       <div className="space-y-2 text-sm mb-2">
         <div className="flex items-center gap-2">
           {room.isAvailableWholeday ? (
@@ -69,13 +66,11 @@ const RoomCard: React.FC<RoomCardProps> = ({
           )}
         </div>
 
-        {/* Current date info */}
         <div className="flex items-center gap-2 text-gray-600">
           <Calendar className="w-3.5 h-3.5 text-gray-400" />
           <span className="text-xs">{formatDate(room.date)}</span>
         </div>
 
-        {/* Time spans for partial availability */}
         {!room.isAvailableWholeday && room.availableTimeSpans.length > 0 && (
           <div className="mt-2 pl-5">
             <p className="text-xs text-gray-500 mb-1 font-medium">Khung giờ trống:</p>
@@ -93,7 +88,6 @@ const RoomCard: React.FC<RoomCardProps> = ({
         )}
       </div>
 
-      {/* Stats */}
       <div className="pt-2 border-t border-gray-200">
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div className="flex items-center gap-1.5">

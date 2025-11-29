@@ -37,85 +37,40 @@ export const AssignRoomModal: React.FC<AssignRoomModalProps> = ({
   const availableRooms = useMemo(() => {
     if (!session || !roomsData?.data) return [];
 
-    // Chuẩn hóa thời gian session (convert sang local time nếu cần)
-    const getTimeString = (timeStr: string): string => {
-      if (timeStr.includes('T')) {
-        const date = new Date(timeStr);
-        const hours = date.getHours().toString().padStart(2, '0');
-        const minutes = date.getMinutes().toString().padStart(2, '0');
-        const seconds = date.getSeconds().toString().padStart(2, '0');
-        return `${hours}:${minutes}:${seconds}`;
-      }
-      // Đảm bảo format HH:MM:SS
-      const parts = timeStr.split(':');
-      if (parts.length === 2) return `${timeStr}:00`;
-      return timeStr;
-    };
-
-    const sessionStartTime = getTimeString(session.startTime);
-    const sessionEndTime = getTimeString(session.endTime);
-
-    console.log('🔍 Filtering rooms for session:', {
-      title: session.title,
-      date: session.date,
-      startTime: sessionStartTime,
-      endTime: sessionEndTime
-    });
+    const sessionStartTime = session.startTime.includes('T') 
+      ? session.startTime.split('T')[1] 
+      : session.startTime;
+    const sessionEndTime = session.endTime.includes('T') 
+      ? session.endTime.split('T')[1] 
+      : session.endTime;
 
     return roomsData.data.filter((room) => {
-      // Check 1: Cùng ngày
-      if (room.date !== session.date) {
-        console.log(`❌ Room ${room.roomDisplayName}: Wrong date`);
-        return false;
-      }
+      if (room.date !== session.date) return false;
 
-      // Check 2: Kiểm tra xung đột với session đã có
+      // Kiểm tra xung đột với session khác
       const hasConflict = existingSessions.some((existingSession) => {
         if (existingSession.sessionId === session.sessionId) return false;
         if (existingSession.roomId !== room.roomId) return false;
         if (existingSession.date !== session.date) return false;
 
-        const existingStart = getTimeString(existingSession.startTime);
-        const existingEnd = getTimeString(existingSession.endTime);
+        const existingStart = existingSession.startTime.includes('T')
+          ? existingSession.startTime.split('T')[1]
+          : existingSession.startTime;
+        const existingEnd = existingSession.endTime.includes('T')
+          ? existingSession.endTime.split('T')[1]
+          : existingSession.endTime;
 
-        const isConflict = !(sessionEndTime <= existingStart || sessionStartTime >= existingEnd);
-        
-        if (isConflict) {
-          console.log(`❌ Room ${room.roomDisplayName}: Conflict with existing session`, {
-            existing: `${existingStart} - ${existingEnd}`,
-            new: `${sessionStartTime} - ${sessionEndTime}`
-          });
-        }
-        
-        return isConflict;
+        return !(sessionEndTime <= existingStart || sessionStartTime >= existingEnd);
       });
 
       if (hasConflict) return false;
 
-      // Check 3: Kiểm tra khung giờ trống
-      if (room.isAvailableWholeday) {
-        console.log(`✅ Room ${room.roomDisplayName}: Available whole day`);
-        return true;
-      }
+      // Kiểm tra khung giờ trống
+      if (room.isAvailableWholeday) return true;
 
-      // Kiểm tra session nằm HOÀN TOÀN trong ít nhất 1 khung giờ trống
-      const fitsInTimeSpan = room.availableTimeSpans.some((span) => {
-        const fits = sessionStartTime >= span.startTime && sessionEndTime <= span.endTime;
-        
-        if (!fits) {
-          console.log(`❌ Room ${room.roomDisplayName}: Session doesn't fit in span ${span.startTime}-${span.endTime}`);
-        }
-        
-        return fits;
+      return room.availableTimeSpans.some((span) => {
+        return sessionStartTime >= span.startTime && sessionEndTime <= span.endTime;
       });
-
-      if (fitsInTimeSpan) {
-        console.log(`✅ Room ${room.roomDisplayName}: Available`, {
-          spans: room.availableTimeSpans.map(s => `${s.startTime}-${s.endTime}`)
-        });
-      }
-
-      return fitsInTimeSpan;
     });
   }, [session, roomsData, existingSessions]);
 

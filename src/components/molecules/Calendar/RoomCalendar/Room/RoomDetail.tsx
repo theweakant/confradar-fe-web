@@ -132,13 +132,7 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
   };
 
   const handleTimeSlotSelect = (span: { startTime: string; endTime: string }) => {
-    console.log('🔍 handleTimeSlotSelect called');
-    console.log('📋 conferenceId:', conferenceId);
-    console.log('📅 date:', date);
-    console.log('⏰ span:', span);
-    
-    if (!conferenceId) {
-      console.error('❌ No conferenceId - cannot create session');
+     if (!conferenceId) {
       toast.error('Không thể tạo phiên họp: Thiếu Conference ID');
       return;
     }
@@ -259,7 +253,6 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
     setDeleteConfirmSession(null);
   };
 
-  // ✅ Wrapper functions để pass đúng actualIndex
   const handleChangeDateWrapper = (session: Session | ResearchSession, _filteredIndex: number) => {
     const actualIndex = findActualIndex(session);
     if (actualIndex !== -1 && onChangeDate) {

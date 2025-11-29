@@ -1,4 +1,3 @@
-// components/Session/LocalSessionCard.tsx
 import React, { useState, useRef, useEffect } from "react";
 import { Clock, Users, MoreVertical, CalendarDays, MapPin, Edit2, Trash2 } from "lucide-react";
 import type { Session, ResearchSession } from "@/types/conference.type";
@@ -25,15 +24,12 @@ export const LocalSessionCard: React.FC<LocalSessionCardProps> = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  /**
-   * Format thời gian an toàn — hỗ trợ cả ISO string và "HH:mm:ss"
-   */
+
   const formatTime = (timeString: string): string => {
     if (!timeString || typeof timeString !== 'string') {
       return "--:--";
     }
 
-    // Trường hợp 1: ISO Date hợp lệ → parse trực tiếp
     const dateFromISO = new Date(timeString);
     if (!isNaN(dateFromISO.getTime())) {
       return dateFromISO.toLocaleTimeString("vi-VN", {
@@ -43,7 +39,6 @@ export const LocalSessionCard: React.FC<LocalSessionCardProps> = ({
       });
     }
 
-    // Trường hợp 2: Chỉ có giờ "HH:mm:ss" → ghép với ngày hôm nay để hiển thị
     if (timeString.match(/^\d{2}:\d{2}:\d{2}$/)) {
       const now = new Date();
       const [hours, minutes, seconds] = timeString.split(':').map(Number);
@@ -62,14 +57,10 @@ export const LocalSessionCard: React.FC<LocalSessionCardProps> = ({
       });
     }
 
-    // Trường hợp 3: Không hợp lệ → fallback
     console.warn('Invalid time string in LocalSessionCard:', timeString);
     return "--:--";
   };
 
-  /**
-   * Tính thời lượng an toàn — hỗ trợ cả ISO và "HH:mm:ss"
-   */
   const calculateDuration = (start: string, end: string) => {
     const parseTime = (str: string): Date | null => {
       if (!str || typeof str !== 'string') return null;
@@ -105,7 +96,6 @@ export const LocalSessionCard: React.FC<LocalSessionCardProps> = ({
 
   const conferenceName = session.conferenceName || "N/A";
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -212,7 +202,6 @@ export const LocalSessionCard: React.FC<LocalSessionCardProps> = ({
         </div>
       </div>
 
-      {/* Hiển thị diễn giả chỉ khi session có speaker */}
       {'speaker' in session && session.speaker && session.speaker.length > 0 && (
         <div className="mt-2 pt-2 border-t border-gray-100">
           <div className="text-[10px] font-medium text-gray-600">

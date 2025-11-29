@@ -1,4 +1,3 @@
-// components/Session/ChangeDateModal.tsx
 import React, { Fragment, useState, useEffect, useMemo } from "react";
 import {
   Dialog,
@@ -45,7 +44,6 @@ export const ChangeDateModal: React.FC<ChangeDateModalProps> = ({
   const [showTimeModal, setShowTimeModal] = useState(false);
   const [tempSession, setTempSession] = useState<Session | ResearchSession | null>(null);
 
-  // Fetch available times for selected date
   const {
     data: timesData,
     isLoading,
@@ -62,13 +60,11 @@ export const ChangeDateModal: React.FC<ChangeDateModalProps> = ({
 
   const timeSpans = timesData?.data || [];
 
-  // Detect session time format
   const timeFormat = useMemo(() => {
     if (!session) return 'iso';
     return detectTimeFormat(session.startTime);
   }, [session]);
 
-  // Reset state khi mở modal
   useEffect(() => {
     if (open && session) {
       setSelectedDate("");
@@ -77,13 +73,11 @@ export const ChangeDateModal: React.FC<ChangeDateModalProps> = ({
     }
   }, [open, session]);
 
-  // Kiểm tra có thể giữ nguyên giờ không
   const canKeepSameTime = useMemo(() => {
     if (!session || !selectedDate || timeSpans.length === 0) {
       return { canKeep: false, reason: "" };
     }
 
-    // Tạo giờ bắt đầu/kết thúc với ngày mới
     const newStartTime = timeFormat === 'iso'
       ? createISOFromDateTime(selectedDate, session.startTime)
       : session.startTime;
@@ -92,7 +86,6 @@ export const ChangeDateModal: React.FC<ChangeDateModalProps> = ({
       ? createISOFromDateTime(selectedDate, session.endTime)
       : session.endTime;
 
-    // Check có time span nào fit không
     const hasFittingSpan = timeSpans.some((span) => {
       const spanStart = `${selectedDate}T${span.startTime}`;
       const spanEnd = `${selectedDate}T${span.endTime}`;
@@ -106,7 +99,6 @@ export const ChangeDateModal: React.FC<ChangeDateModalProps> = ({
       };
     }
 
-    // Check conflict với sessions khác
     const testSession = {
       ...session,
       date: selectedDate,
@@ -126,7 +118,6 @@ export const ChangeDateModal: React.FC<ChangeDateModalProps> = ({
     return { canKeep: true, reason: "" };
   }, [session, selectedDate, timeSpans, existingSessions, timeFormat]);
 
-  // Generate date options trong khoảng conference
   const dateOptions = useMemo(() => {
     if (!conferenceStartDate || !conferenceEndDate) return [];
 
@@ -138,7 +129,6 @@ export const ChangeDateModal: React.FC<ChangeDateModalProps> = ({
     while (current <= end) {
       const dateStr = current.toISOString().split('T')[0];
       
-      // Không cho chọn ngày hiện tại
       if (dateStr !== session?.date) {
         options.push({
           value: dateStr,
@@ -152,7 +142,6 @@ export const ChangeDateModal: React.FC<ChangeDateModalProps> = ({
     return options;
   }, [conferenceStartDate, conferenceEndDate, session?.date]);
 
-  // Xử lý xác nhận giữ nguyên giờ
   const handleKeepSameTime = () => {
     if (!session || !selectedDate || !canKeepSameTime.canKeep) return;
 
@@ -172,11 +161,9 @@ export const ChangeDateModal: React.FC<ChangeDateModalProps> = ({
     onClose();
   };
 
-  // Xử lý chọn giờ mới
   const handleChangeTime = () => {
     if (!session || !selectedDate) return;
 
-    // Tạo temp session với ngày mới để truyền vào ChangeTimeModal
     const temp = {
       ...session,
       date: selectedDate,
@@ -186,7 +173,6 @@ export const ChangeDateModal: React.FC<ChangeDateModalProps> = ({
     setShowTimeModal(true);
   };
 
-  // Xử lý confirm từ ChangeTimeModal
   const handleTimeModalConfirm = (updatedSession: Session | ResearchSession) => {
     onConfirm(updatedSession);
     setShowTimeModal(false);
@@ -246,10 +232,8 @@ export const ChangeDateModal: React.FC<ChangeDateModalProps> = ({
                     </div>
                   </div>
 
-                  {/* Body */}
                   <div className="p-6 max-h-[70vh] overflow-y-auto">
                     <div className="space-y-4">
-                      {/* Current session info */}
                       <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                         <h4 className="font-semibold text-gray-900 mb-2">{session.title}</h4>
                         <div className="grid grid-cols-2 gap-3 text-sm text-gray-600">
@@ -272,7 +256,6 @@ export const ChangeDateModal: React.FC<ChangeDateModalProps> = ({
                         </div>
                       </div>
 
-                      {/* Date selector */}
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
                           Chọn ngày mới <span className="text-red-500">*</span>
@@ -300,7 +283,6 @@ export const ChangeDateModal: React.FC<ChangeDateModalProps> = ({
                         )}
                       </div>
 
-                      {/* Availability check */}
                       {selectedDate && (
                         <div className="border-t pt-4">
                           {isLoading || isFetching ? (
@@ -327,14 +309,13 @@ export const ChangeDateModal: React.FC<ChangeDateModalProps> = ({
                             </div>
                           ) : (
                             <>
-                              {/* Keep same time option */}
                               {canKeepSameTime.canKeep ? (
                                 <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
                                   <div className="flex items-start gap-3">
                                     <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                                     <div className="flex-1">
                                       <div className="text-sm font-medium text-green-900 mb-1">
-                                        ✅ Có thể giữ nguyên giờ
+                                        Có thể giữ nguyên giờ
                                       </div>
                                       <div className="text-sm text-green-700 mb-3">
                                         Phòng trống vào khung giờ{" "}
@@ -366,7 +347,6 @@ export const ChangeDateModal: React.FC<ChangeDateModalProps> = ({
                                 </div>
                               )}
 
-                              {/* Change time option */}
                               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                                 <div className="flex items-start gap-3">
                                   <Clock className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
@@ -393,7 +373,6 @@ export const ChangeDateModal: React.FC<ChangeDateModalProps> = ({
                     </div>
                   </div>
 
-                  {/* Footer */}
                   <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-2 bg-gray-50">
                     <button
                       type="button"
@@ -410,7 +389,6 @@ export const ChangeDateModal: React.FC<ChangeDateModalProps> = ({
         </Dialog>
       </Transition>
 
-      {/* Time selection modal */}
       {tempSession && (
         <ChangeTimeModal
           open={showTimeModal}

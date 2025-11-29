@@ -1,4 +1,3 @@
-// components/Session/ChangeRoomModal.tsx
 import React, { Fragment, useState, useEffect, useMemo } from "react";
 import {
   Dialog,
@@ -46,7 +45,6 @@ export const ChangeRoomModal: React.FC<ChangeRoomModalProps> = ({
   const [showTimeModal, setShowTimeModal] = useState(false);
   const [tempSession, setTempSession] = useState<Session | ResearchSession | null>(null);
 
-  // Fetch available rooms on the same date
   const {
     data: roomsData,
     isLoading: loadingRooms,
@@ -60,7 +58,6 @@ export const ChangeRoomModal: React.FC<ChangeRoomModalProps> = ({
     }
   );
 
-  // Fetch available times for selected room
   const {
     data: timesData,
     isLoading: loadingTimes,
@@ -78,7 +75,6 @@ export const ChangeRoomModal: React.FC<ChangeRoomModalProps> = ({
   const availableRooms = useMemo(() => {
     if (!roomsData?.data || !session) return [];
     
-    // Filter rooms on the same date, exclude current room
     return roomsData.data.filter(
       (room) => room.date === session.date && room.roomId !== session.roomId
     );
@@ -86,13 +82,11 @@ export const ChangeRoomModal: React.FC<ChangeRoomModalProps> = ({
 
   const timeSpans = timesData?.data || [];
 
-  // Detect session time format
   const timeFormat = useMemo(() => {
     if (!session) return 'iso';
     return detectTimeFormat(session.startTime);
   }, [session]);
 
-  // Reset state khi mở modal
   useEffect(() => {
     if (open && session) {
       setSelectedRoomId("");
@@ -102,7 +96,6 @@ export const ChangeRoomModal: React.FC<ChangeRoomModalProps> = ({
     }
   }, [open, session]);
 
-  // Update selected room data khi chọn phòng
   useEffect(() => {
     if (selectedRoomId && availableRooms.length > 0) {
       const roomData = availableRooms.find((r) => r.roomId === selectedRoomId);
@@ -112,13 +105,11 @@ export const ChangeRoomModal: React.FC<ChangeRoomModalProps> = ({
     }
   }, [selectedRoomId, availableRooms]);
 
-  // Kiểm tra có thể giữ nguyên giờ không
   const canKeepSameTime = useMemo(() => {
     if (!session || !selectedRoomId || timeSpans.length === 0) {
       return { canKeep: false, reason: "" };
     }
 
-    // Check có time span nào fit không
     const hasFittingSpan = timeSpans.some((span) => {
       const spanStart = `${session.date}T${span.startTime}`;
       const spanEnd = `${session.date}T${span.endTime}`;
@@ -141,7 +132,6 @@ export const ChangeRoomModal: React.FC<ChangeRoomModalProps> = ({
       };
     }
 
-    // Check conflict với sessions khác trong phòng mới
     const testSession = {
       ...session,
       roomId: selectedRoomId,
@@ -161,7 +151,6 @@ export const ChangeRoomModal: React.FC<ChangeRoomModalProps> = ({
     return { canKeep: true, reason: "" };
   }, [session, selectedRoomId, timeSpans, existingSessions, selectedRoomData, timeFormat]);
 
-  // Categorize rooms
   const categorizedRooms = useMemo(() => {
     if (!session) return { compatible: [], incompatible: [] };
 
@@ -169,7 +158,6 @@ export const ChangeRoomModal: React.FC<ChangeRoomModalProps> = ({
     const incompatible: AvailableRoom[] = [];
 
     availableRooms.forEach((room) => {
-      // Check if room has any time span that fits the session
       const hasCompatibleSpan = room.availableTimeSpans.some((span) => {
         const spanStart = `${room.date}T${span.startTime}`;
         const spanEnd = `${room.date}T${span.endTime}`;
@@ -195,7 +183,6 @@ export const ChangeRoomModal: React.FC<ChangeRoomModalProps> = ({
     return { compatible, incompatible };
   }, [availableRooms, session, timeFormat]);
 
-  // Xử lý xác nhận giữ nguyên giờ
   const handleKeepSameTime = () => {
     if (!session || !selectedRoomId || !selectedRoomData || !canKeepSameTime.canKeep) return;
 
@@ -211,11 +198,9 @@ export const ChangeRoomModal: React.FC<ChangeRoomModalProps> = ({
     onClose();
   };
 
-  // Xử lý chọn giờ mới
   const handleChangeTime = () => {
     if (!session || !selectedRoomId || !selectedRoomData) return;
 
-    // Tạo temp session với phòng mới
     const temp = {
       ...session,
       roomId: selectedRoomId,
@@ -227,7 +212,6 @@ export const ChangeRoomModal: React.FC<ChangeRoomModalProps> = ({
     setShowTimeModal(true);
   };
 
-  // Xử lý confirm từ ChangeTimeModal
   const handleTimeModalConfirm = (updatedSession: Session | ResearchSession) => {
     onConfirm(updatedSession);
     setShowTimeModal(false);
@@ -267,7 +251,6 @@ export const ChangeRoomModal: React.FC<ChangeRoomModalProps> = ({
                 leaveTo="opacity-0 scale-95"
               >
                 <DialogPanel className="w-full max-w-3xl transform overflow-hidden rounded-lg bg-white shadow-xl transition-all">
-                  {/* Header */}
                   <div className="bg-gradient-to-r from-orange-600 to-orange-700 px-6 py-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -290,10 +273,8 @@ export const ChangeRoomModal: React.FC<ChangeRoomModalProps> = ({
                     </div>
                   </div>
 
-                  {/* Body */}
                   <div className="p-6 max-h-[70vh] overflow-y-auto">
                     <div className="space-y-4">
-                      {/* Current session info */}
                       <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                         <h4 className="font-semibold text-gray-900 mb-2">{session.title}</h4>
                         <div className="grid grid-cols-2 gap-3 text-sm text-gray-600">
@@ -316,7 +297,6 @@ export const ChangeRoomModal: React.FC<ChangeRoomModalProps> = ({
                         </div>
                       </div>
 
-                      {/* Room selector */}
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
                           Chọn phòng mới <span className="text-red-500">*</span>
@@ -338,7 +318,6 @@ export const ChangeRoomModal: React.FC<ChangeRoomModalProps> = ({
                           </div>
                         ) : (
                           <div className="space-y-3">
-                            {/* Compatible rooms */}
                             {categorizedRooms.compatible.length > 0 && (
                               <div>
                                 <div className="text-xs font-medium text-green-700 mb-2 flex items-center gap-1">
@@ -385,7 +364,6 @@ export const ChangeRoomModal: React.FC<ChangeRoomModalProps> = ({
                               </div>
                             )}
 
-                            {/* Incompatible rooms */}
                             {categorizedRooms.incompatible.length > 0 && (
                               <div>
                                 <div className="text-xs font-medium text-orange-700 mb-2 flex items-center gap-1">
@@ -433,7 +411,6 @@ export const ChangeRoomModal: React.FC<ChangeRoomModalProps> = ({
                         )}
                       </div>
 
-                      {/* Availability check */}
                       {selectedRoomId && (
                         <div className="border-t pt-4">
                           {loadingTimes || fetchingTimes ? (
@@ -459,14 +436,13 @@ export const ChangeRoomModal: React.FC<ChangeRoomModalProps> = ({
                             </div>
                           ) : (
                             <>
-                              {/* Keep same time option */}
                               {canKeepSameTime.canKeep ? (
                                 <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
                                   <div className="flex items-start gap-3">
                                     <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                                     <div className="flex-1">
                                       <div className="text-sm font-medium text-green-900 mb-1">
-                                        ✅ Có thể giữ nguyên giờ
+                                        Có thể giữ nguyên giờ
                                       </div>
                                       <div className="text-sm text-green-700 mb-3">
                                         Phòng trống vào khung giờ{" "}
@@ -498,7 +474,6 @@ export const ChangeRoomModal: React.FC<ChangeRoomModalProps> = ({
                                 </div>
                               )}
 
-                              {/* Change time option */}
                               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                                 <div className="flex items-start gap-3">
                                   <Clock className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
@@ -525,7 +500,6 @@ export const ChangeRoomModal: React.FC<ChangeRoomModalProps> = ({
                     </div>
                   </div>
 
-                  {/* Footer */}
                   <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-2 bg-gray-50">
                     <button
                       type="button"
