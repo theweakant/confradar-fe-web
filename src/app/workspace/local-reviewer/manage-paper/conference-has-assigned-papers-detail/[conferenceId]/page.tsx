@@ -1,10 +1,10 @@
 import ConferenceDetailPage from "@/components/(user)/workspace/reviewer/ConferenceDetailPage/ConferenceDetailPage";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     conferenceId: string;
     reviewerType: string;
-  };
+  }>;
 }
 
 export default async function ConferenceHasAssignedPapersDetailPage({ params }: PageProps) {

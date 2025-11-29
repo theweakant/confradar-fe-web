@@ -8,7 +8,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
 interface ResetPasswordProps {
-    mode: "reset" | "create"; // reset password hoặc đặt password lần đầu
+    mode: "reset" | "create";
 }
 
 export default function ResetPassword({ mode }: ResetPasswordProps) {

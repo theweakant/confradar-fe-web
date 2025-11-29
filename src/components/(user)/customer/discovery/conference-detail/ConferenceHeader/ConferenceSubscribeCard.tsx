@@ -1,6 +1,7 @@
 // ConferenceSubscribeCard.tsx
 import React from "react";
 import {
+    ConferencePricePhaseResponse,
     ConferencePriceResponse,
     ResearchConferenceDetailResponse,
     TechnicalConferenceDetailResponse,
@@ -8,7 +9,7 @@ import {
 
 interface PurchasedTicketInfo {
     ticket: ConferencePriceResponse;
-    phase?: any;
+    phase?: ConferencePricePhaseResponse;
 }
 
 interface ConferenceSubscribeCardProps {

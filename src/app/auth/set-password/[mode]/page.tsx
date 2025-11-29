@@ -2,11 +2,15 @@ import ForgotPassword from "@/components/(auth)/ForgotPassword/ForgotPassword";
 import ResetPassword from "@/components/(auth)/ResetPassword/ResetPassword";
 import Image from "next/image";
 
-interface ResetPasswordPageProps {
-  params: { mode: "reset" | "create" };
+interface PageProps {
+  params: Promise<{ mode: string }>;
 }
 
-export default function ResetPasswordPage({ params }: ResetPasswordPageProps) {
+export default async function ResetPasswordPage({ params }: PageProps) {
+  const { mode } = await params;
+
+  const normalizedMode = mode === "create" ? "create" : "reset";
+
   return (
     <div className="relative h-screen w-full overflow-hidden">
 
@@ -20,7 +24,7 @@ export default function ResetPasswordPage({ params }: ResetPasswordPageProps) {
 
       <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" />
       <div className="relative z-10">
-        <ResetPassword mode={params.mode} />
+        <ResetPassword mode={normalizedMode} />
       </div>
     </div>
   );

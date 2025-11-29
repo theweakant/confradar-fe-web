@@ -12,6 +12,7 @@ import TicketOption from "./TicketOption";
 import AuthorFormSection from "./AuthorFormSection";
 import PaymentMethodSelector from "./PaymentMethodSelector";
 import WaitlistSection from "./WaitlistSection";
+import { PaymentMethod } from "@/types/transaction.type";
 
 interface TicketSelectionDialogProps {
     isOpen: boolean;
@@ -28,7 +29,7 @@ interface TicketSelectionDialogProps {
     onSelectPaymentMethod: (id: string | null) => void;
     showPaymentMethods: boolean;
     onTogglePaymentMethods: (show: boolean) => void;
-    paymentMethods: any[];
+    paymentMethods: PaymentMethod[];
     paymentMethodsLoading: boolean;
     paymentLoading: boolean;
     onPurchase: () => void;
@@ -192,7 +193,7 @@ const TicketSelectionDialog: React.FC<TicketSelectionDialogProps> = ({
                                         Hội nghị này không cho phép người nghe tham dự
                                     </p>
                                     <p className="text-white/60 text-sm text-center">
-                                        Vui lòng chọn tab "Tác giả" để xem các gói phí tham dự
+                                        Vui lòng chọn tab &quot;Tác giả&quot; để xem các gói phí tham dự
                                     </p>
                                 </div>
                             ) : getFilteredTickets().length === 0 ? (

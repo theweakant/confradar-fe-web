@@ -367,9 +367,8 @@ const PaperTable = ({ papers, onView }: PaperTableProps) => {
     );
 };
 
-interface LoadingStateProps { }
 
-const LoadingState = ({ }: LoadingStateProps) => {
+const LoadingState = () => {
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
             <div className="text-center">
@@ -639,7 +638,9 @@ export default function ConferenceDetailPage({
                                 <SortAsc className="w-4 h-4 text-gray-400" />
                                 <select
                                     value={sortOption}
-                                    onChange={(e) => setSortOption(e.target.value as any)}
+                                    onChange={(e) =>
+                                        setSortOption(e.target.value as "date-asc" | "date-desc" | "name-asc" | "name-desc")
+                                    }
                                     className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                 >
                                     <option value="date-desc">Mới nhất</option>

@@ -1,11 +1,12 @@
 // PaymentMethodSelector.tsx
+import { PaymentMethod } from "@/types/transaction.type";
 import React from "react";
 
-interface PaymentMethod {
-    paymentMethodId: string;
-    methodName: string;
-    methodDescription?: string;
-}
+// interface PaymentMethod {
+//     paymentMethodId: string;
+//     methodName: string;
+//     methodDescription?: string;
+// }
 
 interface PaymentMethodSelectorProps {
     selectedPaymentMethod: string | null;
