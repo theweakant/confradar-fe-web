@@ -71,10 +71,15 @@ export function TabContent({
         ) : null;
       
       case "refund-requests":
+        const isTicketSelling = "contract" in conference && conference.contract 
+          ? conference.contract.isTicketSelling 
+          : true;
         return (
           <RefundRequestTab
             conferenceId={conference.conferenceId!}
             conferenceType={conferenceType}
+            isCollaborator={isCollaborator}
+            isTicketSelling={isTicketSelling}
           />
         );
       

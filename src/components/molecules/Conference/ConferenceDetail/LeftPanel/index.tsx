@@ -18,7 +18,7 @@ interface LeftPanelProps {
   getCityName: (id: string) => string;
 }
 
-export function LeftPanel({
+export function   LeftPanel({
   primaryTab,
   activeSubtab,
   onSubtabChange,
