@@ -30,12 +30,19 @@ const AuthorFormSection: React.FC<AuthorFormSectionProps> = ({
         <>
             <button
                 onClick={onOpenDialog}
-                className="w-full flex items-center justify-between p-3 rounded-lg 
-                   bg-gradient-to-r from-yellow-500/20 to-orange-500/20 
-                   border border-yellow-400/40 hover:border-yellow-400/60 transition-all"
+                className={`w-full flex items-center justify-between p-3 rounded-lg 
+        transition-all
+        ${isFormValid
+                        ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/40 hover:border-green-400/60'
+                        : 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-400/40 hover:border-yellow-400/60'
+                    }`}
+            // className="w-full flex items-center justify-between p-3 rounded-lg 
+            //    bg-gradient-to-r from-yellow-500/20 to-orange-500/20 
+            //    border border-yellow-400/40 hover:border-yellow-400/60 transition-all"
             >
                 <div className="flex items-center gap-2">
-                    <svg className="w-5 h-5 text-yellow-300" fill="currentColor" viewBox="0 0 20 20">
+                    {/* <svg className="w-5 h-5 text-yellow-300" fill="currentColor" viewBox="0 0 20 20"> */}
+                    <svg className={`w-5 h-5 ${isFormValid ? 'text-green-300' : 'text-yellow-300'}`} fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
                         <path
                             fillRule="evenodd"
@@ -43,12 +50,16 @@ const AuthorFormSection: React.FC<AuthorFormSectionProps> = ({
                             clipRule="evenodd"
                         />
                     </svg>
-                    <span className="text-sm font-medium text-yellow-300">
-                        Thông tin bài báo {isFormValid && "✓"}
+                    <span className={`text-sm font-medium ${isFormValid ? 'text-green-300' : 'text-yellow-300'}`}>
+                        Thông tin bài báo {isFormValid ? "✓" : "(Bắt buộc)"}
                     </span>
+                    {/* <span className="text-sm font-medium text-yellow-300">
+                        Thông tin bài báo {isFormValid && "✓"}
+                    </span> */}
                 </div>
                 <svg
-                    className="w-5 h-5 text-yellow-300"
+                    // className="w-5 h-5 text-yellow-300"
+                    className={`w-5 h-5 ${isFormValid ? 'text-green-300' : 'text-yellow-300'}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"

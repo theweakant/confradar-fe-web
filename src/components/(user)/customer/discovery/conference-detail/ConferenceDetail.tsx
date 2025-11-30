@@ -310,6 +310,12 @@ const ConferenceDetail = () => {
               handlePurchaseTicket={handlePurchaseTicket}
               accessToken={accessToken}
               formatDate={formatDate}
+              selectedTicket={selectedTicket}
+              onSelectTicket={setSelectedTicket}
+              authorInfo={authorInfo}
+              onAuthorInfoChange={setAuthorInfo}
+              selectedPaymentMethod={selectedPaymentMethod}
+              onSelectPaymentMethod={setSelectedPaymentMethod}
             // authorInfo={authorInfo}
             // setAuthorInfo={setAuthorInfo}
             // showAuthorForm={showAuthorForm}
