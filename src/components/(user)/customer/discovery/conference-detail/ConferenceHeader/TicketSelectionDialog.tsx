@@ -67,6 +67,15 @@ const TicketSelectionDialog: React.FC<TicketSelectionDialogProps> = ({
 
     const [isAuthorFormDialogOpen, setIsAuthorFormDialogOpen] = React.useState(false);
 
+    const isFormValid = React.useMemo(() => {
+        if (!selectedTicket) return false;
+        if (!selectedPaymentMethod) return false;
+        if (selectedTicket.isAuthor && (!authorInfo.title.trim() || !authorInfo.description.trim())) {
+            return false;
+        }
+        return true;
+    }, [selectedTicket, selectedPaymentMethod, authorInfo]);
+
     const getFilteredTickets = () => {
         if (!isResearch) {
             return conference.conferencePrices || [];
@@ -112,6 +121,15 @@ const TicketSelectionDialog: React.FC<TicketSelectionDialogProps> = ({
                 onToggleAuthorForm(false);
             }
         }
+    };
+
+    const getValidationMessage = () => {
+        if (!selectedTicket) return "Vui lòng chọn loại vé";
+        if (!selectedPaymentMethod) return "Vui lòng chọn phương thức thanh toán";
+        if (selectedTicket.isAuthor && (!authorInfo.title.trim() || !authorInfo.description.trim())) {
+            return "Vui lòng điền đầy đủ thông tin bài báo";
+        }
+        return "";
     };
 
     React.useEffect(() => {
@@ -315,51 +333,61 @@ const TicketSelectionDialog: React.FC<TicketSelectionDialogProps> = ({
                     )} */}
 
                     <div className="mt-4 flex justify-end gap-3 flex-shrink-0 pt-4 border-t border-white/10">
-                        <div className="w-full flex items-center justify-between gap-3">
-                            {selectedTicket && (
-                                <div className="w-1/2">
-                                    <PaymentMethodSelector
-                                        selectedPaymentMethod={selectedPaymentMethod}
-                                        onSelectPaymentMethod={onSelectPaymentMethod}
-                                        showPaymentMethods={showPaymentMethods}
-                                        onTogglePaymentMethods={onTogglePaymentMethods}
-                                        paymentMethods={paymentMethods}
-                                        paymentMethodsLoading={paymentMethodsLoading}
-                                        isAuthorTicket={selectedTicket.isAuthor}
-                                    />
+                        <div className="w-full flex flex-col gap-3">
+                            {!isFormValid && selectedTicket && (
+                                <div className="flex items-center gap-2 p-3 bg-yellow-500/20 border border-yellow-400/40 rounded-lg">
+                                    <svg className="w-5 h-5 text-yellow-300 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                    </svg>
+                                    <span className="text-sm text-yellow-200">{getValidationMessage()}</span>
                                 </div>
                             )}
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={onClose}
-                                    className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-500 transition text-sm font-medium"
-                                >
-                                    Hủy
-                                </button>
-                                <button
-                                    onClick={onPurchase}
-                                    disabled={
-                                        !selectedTicket ||
-                                        paymentLoading ||
-                                        !selectedPaymentMethod ||
-                                        (selectedTicket?.isAuthor && (!authorInfo.title.trim() || !authorInfo.description.trim()))
-                                    }
-                                    className="px-5 py-2 rounded-lg bg-coral-500 hover:bg-coral-600 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm font-medium"
-                                >
-                                    {paymentLoading ? (
-                                        <div className="flex items-center gap-2">
-                                            <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"></path>
-                                            </svg>
-                                            <span>Đang xử lý...</span>
-                                        </div>
-                                    ) : accessToken ? (
-                                        isResearch ? "Đăng ký" : "Thanh toán"
-                                    ) : (
-                                        "Đăng nhập"
-                                    )}
-                                </button>
+                            <div className="flex items-center justify-between gap-3">
+                                {selectedTicket && (
+                                    <div className="w-1/2">
+                                        <PaymentMethodSelector
+                                            selectedPaymentMethod={selectedPaymentMethod}
+                                            onSelectPaymentMethod={onSelectPaymentMethod}
+                                            showPaymentMethods={showPaymentMethods}
+                                            onTogglePaymentMethods={onTogglePaymentMethods}
+                                            paymentMethods={paymentMethods}
+                                            paymentMethodsLoading={paymentMethodsLoading}
+                                            isAuthorTicket={selectedTicket.isAuthor}
+                                        />
+                                    </div>
+                                )}
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={onClose}
+                                        className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-500 transition text-sm font-medium"
+                                    >
+                                        Hủy
+                                    </button>
+                                    <button
+                                        onClick={onPurchase}
+                                        disabled={
+                                            !selectedTicket ||
+                                            paymentLoading ||
+                                            !selectedPaymentMethod ||
+                                            (selectedTicket?.isAuthor && (!authorInfo.title.trim() || !authorInfo.description.trim()))
+                                        }
+                                        className="px-5 py-2 rounded-lg bg-coral-500 hover:bg-coral-600 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm font-medium"
+                                    >
+                                        {paymentLoading ? (
+                                            <div className="flex items-center gap-2">
+                                                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"></path>
+                                                </svg>
+                                                <span>Đang xử lý...</span>
+                                            </div>
+                                        ) : accessToken ? (
+                                            isResearch ? "Đăng ký" : "Thanh toán"
+                                        ) : (
+                                            "Đăng nhập"
+                                        )}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

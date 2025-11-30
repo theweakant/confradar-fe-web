@@ -20,19 +20,31 @@ interface ConferenceHeaderProps {
     accessToken: string | null;
     formatDate: (dateString?: string) => string;
     handlePurchaseTicket: () => void;
+    selectedTicket: ConferencePriceResponse | null;
+    onSelectTicket: (ticket: ConferencePriceResponse | null) => void;
+    authorInfo: { title: string; description: string };
+    onAuthorInfoChange: (info: { title: string; description: string }) => void;
+    selectedPaymentMethod: string | null;
+    onSelectPaymentMethod: (id: string | null) => void;
 }
 
 const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
     conference,
     accessToken,
     formatDate,
-    handlePurchaseTicket
+    handlePurchaseTicket,
+    selectedTicket,
+    onSelectTicket,
+    authorInfo,
+    onAuthorInfoChange,
+    selectedPaymentMethod,
+    onSelectPaymentMethod,
 }) => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [selectedTicket, setSelectedTicket] = useState<ConferencePriceResponse | null>(null);
-    const [authorInfo, setAuthorInfo] = useState({ title: "", description: "" });
+    // const [selectedTicket, setSelectedTicket] = useState<ConferencePriceResponse | null>(null);
+    // const [authorInfo, setAuthorInfo] = useState({ title: "", description: "" });
     const [showAuthorForm, setShowAuthorForm] = useState(false);
-    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
+    // const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
     const [showPaymentMethods, setShowPaymentMethods] = useState(false);
 
     const {
@@ -172,13 +184,13 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                 conference={conference}
                 formatDate={formatDate}
                 selectedTicket={selectedTicket}
-                onSelectTicket={setSelectedTicket}
+                onSelectTicket={onSelectTicket}
                 authorInfo={authorInfo}
-                onAuthorInfoChange={setAuthorInfo}
+                onAuthorInfoChange={onAuthorInfoChange}
                 showAuthorForm={showAuthorForm}
                 onToggleAuthorForm={setShowAuthorForm}
                 selectedPaymentMethod={selectedPaymentMethod}
-                onSelectPaymentMethod={setSelectedPaymentMethod}
+                onSelectPaymentMethod={onSelectPaymentMethod}
                 showPaymentMethods={showPaymentMethods}
                 onTogglePaymentMethods={setShowPaymentMethods}
                 paymentMethods={paymentMethods}
