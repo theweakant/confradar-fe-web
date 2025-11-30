@@ -1,4 +1,4 @@
-import React, { useEffect, } from 'react';
+import React, { useEffect, useState, } from 'react';
 import { AlertCircle, Info } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -30,6 +30,8 @@ const ContractCreationStep: React.FC<ContractCreationStepProps> = ({
     onUserSelectById,
     onConferenceSelectById,
 }) => {
+    const [paymentError, setPaymentError] = useState<string>('');
+
     useEffect(() => {
         if (contractData.isTicketSelling) {
             onDataChange({
@@ -49,6 +51,15 @@ const ContractCreationStep: React.FC<ContractCreationStepProps> = ({
         onDataChange({ [field]: checked });
     };
 
+    const handlePaymentDateChange = (value: string) => {
+        if (contractData.signDay && value && new Date(value) < new Date(contractData.signDay)) {
+            setPaymentError('Ngày thanh toán phải sau ngày ký hợp đồng');
+        } else {
+            setPaymentError('');
+            onDataChange({ finalizePaymentDate: value });
+        }
+    };
+
     return (
         <div className="max-w-6xl mx-auto space-y-8">
             {/* Header */}
@@ -65,6 +76,24 @@ const ContractCreationStep: React.FC<ContractCreationStepProps> = ({
                 </h4>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="md:col-span-2">
+                        <div className={`flex items-start space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${contractData.isTicketSelling
+                            ? 'bg-green-50 border-green-300'
+                            : 'bg-gray-50 border-gray-200 hover:border-gray-300'
+                            }`}>
+                            <input
+                                type="checkbox"
+                                id="isTicketSelling"
+                                className="mt-1 h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer"
+                                checked={contractData.isTicketSelling}
+                                onChange={(e) => handleCheckboxChange('isTicketSelling', e.target.checked)}
+                            />
+                            <label htmlFor="isTicketSelling" className="flex-1 cursor-pointer">
+                                <div className="font-medium text-gray-900">Có liên kết bán vé?</div>
+                                <div className="text-xs text-gray-600 mt-1">Bán vé qua hệ thống</div>
+                            </label>
+                        </div>
+                    </div>
                     <div className="space-y-2">
                         <Label htmlFor="userId" className="text-sm font-medium">
                             Đối tác <span className="text-red-500">*</span>
@@ -90,20 +119,23 @@ const ContractCreationStep: React.FC<ContractCreationStepProps> = ({
                                 ))}
                             </SelectContent>
                         </Select>
+
+                        <p className="text-xs text-gray-500">Thay đổi đối tác nếu cần</p>
                     </div>
 
                     <div className="space-y-2">
                         <Label htmlFor="conferenceId" className="text-sm font-medium">
-                            Hội nghị <span className="text-red-500">*</span>
+                            Hội thảo <span className="text-red-500">*</span>
                         </Label>
                         <Select
+                            value={selectedConference?.conferenceId?.toString() ?? ''}
                             onValueChange={(value) => {
                                 onConferenceSelectById(value);
                                 onDataChange({ conferenceId: value });
                             }}
                         >
                             <SelectTrigger className="h-11">
-                                <SelectValue placeholder="Chọn hội nghị" />
+                                <SelectValue placeholder="Chọn hội thảo" />
                             </SelectTrigger>
                             <SelectContent>
                                 {conferences.map((conference) => (
@@ -118,6 +150,9 @@ const ContractCreationStep: React.FC<ContractCreationStepProps> = ({
                                 ))}
                             </SelectContent>
                         </Select>
+
+                        <p className="text-xs text-gray-500">Thay đổi hội thảo nếu cần</p>
+
                     </div>
 
                     <div className="space-y-2">
@@ -139,7 +174,7 @@ const ContractCreationStep: React.FC<ContractCreationStepProps> = ({
                         <p className="text-xs text-gray-500">Định dạng: PDF, DOC, DOCX (Tối đa 10MB)</p>
                     </div>
 
-                    <div className="space-y-2">
+                    {/* <div className="space-y-2">
                         <Label htmlFor="commission" className="text-sm font-medium">
                             Hoa hồng (%) <span className="text-red-500">*</span>
                         </Label>
@@ -154,7 +189,7 @@ const ContractCreationStep: React.FC<ContractCreationStepProps> = ({
                             value={contractData.commission || ''}
                             onChange={(e) => onDataChange({ commission: parseFloat(e.target.value) })}
                         />
-                    </div>
+                    </div> */}
 
                     <div className="space-y-2">
                         <Label htmlFor="signDay" className="text-sm font-medium">
@@ -167,9 +202,55 @@ const ContractCreationStep: React.FC<ContractCreationStepProps> = ({
                             value={contractData.signDay}
                             onChange={(e) => onDataChange({ signDay: e.target.value })}
                         />
+                        <p className="text-xs text-gray-500">Chọn ngày ký hợp đồng với đối tác.</p>
                     </div>
 
-                    <div className="space-y-2">
+                    {contractData.isTicketSelling && (
+                        <>
+                            <div className="space-y-2">
+                                <Label htmlFor="commission" className="text-sm font-medium">
+                                    Hoa hồng (%)
+                                </Label>
+                                <Input
+                                    id="commission"
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    step="1"
+                                    className="h-11"
+                                    placeholder="Nhập % hoa hồng"
+                                    value={contractData.commission || ''}
+                                    onChange={(e) => onDataChange({ commission: parseFloat(e.target.value) })}
+                                />
+
+                                <p className="text-xs text-gray-500">Nhập phần trăm hoa hồng mà đối tác sẽ trả nếu liên kết bán vé</p>
+
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="finalizePaymentDate" className="text-sm font-medium">
+                                    Ngày thanh toán
+                                </Label>
+                                <Input
+                                    id="finalizePaymentDate"
+                                    type="date"
+                                    className="h-11"
+                                    value={contractData.finalizePaymentDate}
+                                    min={contractData.signDay || undefined}
+                                    // onChange={(e) => onDataChange({ finalizePaymentDate: e.target.value })}
+                                    onChange={(e) => handlePaymentDateChange(e.target.value)}
+                                />
+                                <p className="text-xs text-gray-500">Chọn ngày sẽ thanh toán khoản thu cho đối tác khi hội thảo kết thúc.</p>
+                                {paymentError && (
+                                    <p className="text-xs text-red-600 flex items-center gap-1">
+                                        <AlertCircle className="w-4 h-4" />
+                                        {paymentError}
+                                    </p>
+                                )}
+                            </div>
+                        </>
+                    )}
+
+                    {/* <div className="space-y-2">
                         <Label htmlFor="finalizePaymentDate" className="text-sm font-medium">
                             Ngày thanh toán <span className="text-red-500">*</span>
                         </Label>
@@ -180,7 +261,7 @@ const ContractCreationStep: React.FC<ContractCreationStepProps> = ({
                             value={contractData.finalizePaymentDate}
                             onChange={(e) => onDataChange({ finalizePaymentDate: e.target.value })}
                         />
-                    </div>
+                    </div> */}
                 </div>
             </div>
 
@@ -190,7 +271,7 @@ const ContractCreationStep: React.FC<ContractCreationStepProps> = ({
                     <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold text-sm">2</div>
                     Thông tin chia sẻ với Confradar
                 </h4>
-                <p className="text-sm text-gray-600 mb-4 ml-10">Chọn các thông tin sẽ được chia sẻ với nền tảng Confradar</p>
+                <p className="text-sm text-gray-600 mb-4 ml-10">Chọn các thông tin sẽ được chia sẻ với hệ thống Confradar</p>
 
                 <div className="ml-10 space-y-4">
                     {/* Ticket Selling Warning */}
@@ -198,7 +279,7 @@ const ContractCreationStep: React.FC<ContractCreationStepProps> = ({
                         <Alert className="bg-amber-50 border-amber-200">
                             <AlertCircle className="h-4 w-4 text-amber-600" />
                             <AlertDescription className="text-amber-800 text-sm">
-                                Hợp đồng này yêu cầu bán vé nên các bước thông tin sau: <strong>Price</strong> và <strong>Session</strong> không được để trống
+                                Hợp đồng này yêu cầu bán vé nên các bước thông tin sau: <strong>Giá vé</strong> và <strong>Thông tin Session</strong> không được để trống
                             </AlertDescription>
                         </Alert>
                     )}
@@ -297,7 +378,7 @@ const ContractCreationStep: React.FC<ContractCreationStepProps> = ({
                         </div>
 
                         {/* Ticket Selling */}
-                        <div className={`flex items-start space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${contractData.isTicketSelling
+                        {/* <div className={`flex items-start space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${contractData.isTicketSelling
                             ? 'bg-green-50 border-green-300'
                             : 'bg-gray-50 border-gray-200 hover:border-gray-300'
                             }`}>
@@ -312,7 +393,7 @@ const ContractCreationStep: React.FC<ContractCreationStepProps> = ({
                                 <div className="font-medium text-gray-900">Ticket Selling</div>
                                 <div className="text-xs text-gray-600 mt-1">Bán vé qua hệ thống</div>
                             </label>
-                        </div>
+                        </div> */}
 
                         {/* Sponsor */}
                         <div className={`flex items-start space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${contractData.isSponsorStep

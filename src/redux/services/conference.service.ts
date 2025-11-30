@@ -15,6 +15,7 @@ import type {
   FavouriteConferenceRequest,
   ConferenceDetailForScheduleResponse,
   SkeletonTechConference,
+  ConferenceForReviewerView,
 } from "@/types/conference.type";
 import type { ApiResponse, ApiResponsePagination } from "@/types/api.type";
 
@@ -493,11 +494,22 @@ export const conferenceApi = createApi({
     }),
 
     getConferencesHasAssignedPaperForLocalReviewer: builder.query<
-      ApiResponse<ConferenceResponse[]>,
+      ApiResponse<ConferenceForReviewerView[]>,
       void
     >({
       query: () => ({
-        url: endpoint.CONFERENCE.GET_CONFERENCES_HAS_ASSIGNED_PAPERS,
+        url: endpoint.CONFERENCE.GET_CONFERENCES_HAS_ASSIGNED_PAPERS_FOR_LOCAL_REVIEWER,
+        method: "GET",
+      }),
+      providesTags: ["Conference"],
+    }),
+
+    getConferencesHasAssignedPaperForExternalReviewer: builder.query<
+      ApiResponse<ConferenceForReviewerView[]>,
+      void
+    >({
+      query: () => ({
+        url: endpoint.CONFERENCE.GET_CONFERENCES_HAS_ASSIGNED_PAPERS_FOR_EXTERNAL_REVIEWER,
         method: "GET",
       }),
       providesTags: ["Conference"],
@@ -569,6 +581,9 @@ export const {
 
   useGetConferencesHasAssignedPaperForLocalReviewerQuery,
   useLazyGetConferencesHasAssignedPaperForLocalReviewerQuery,
+
+  useGetConferencesHasAssignedPaperForExternalReviewerQuery,
+  useLazyGetConferencesHasAssignedPaperForExternalReviewerQuery,
 
   useActivateWaitlistMutation,
 

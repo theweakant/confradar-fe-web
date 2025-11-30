@@ -21,9 +21,11 @@ import ResearchPaperInformationTab from "./ResearchPaperInformationTab";
 import ConferencePriceTab from "./ConferencePriceTab";
 import SponsorCarousel from "./SponsorCarousel";
 import PolicyTab from "./PolicyTab";
+import ResearchTimelineTab from "./ResearchTimelineTab";
+import ResearchDocumentsTab from "./ResearchDocumentsTab";
 
-interface ImageModalProps {
-  image: string;
+interface MediaModalProps {
+  url: string; // URL hình ảnh hoặc video
   onClose: () => void;
 }
 
@@ -168,31 +170,66 @@ const ConferenceDetail = () => {
   //   }
   // };
 
-  const ImageModal: React.FC<ImageModalProps> = ({ image, onClose }) => (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <button
-        onClick={onClose}
-        className="absolute top-4 right-4 text-white hover:text-gray-300"
-      >
-        <X className="w-8 h-8" />
-      </button>
+  const MediaModal: React.FC<MediaModalProps> = ({ url, onClose }) => {
+    const isVideo = url.endsWith(".mp4") || url.endsWith(".webm") || url.endsWith(".ogg");
+
+    return (
       <div
-        className="relative max-w-5xl max-h-[90vh]"
-        onClick={(e) => e.stopPropagation()}
+        className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+        onClick={onClose}
       >
-        <Image
-          src={image}
-          alt="Full size"
-          width={1200}
-          height={800}
-          className="object-contain max-h-[90vh]"
-        />
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-white hover:text-gray-300"
+        >
+          <X className="w-8 h-8" />
+        </button>
+
+        <div className="relative max-w-5xl max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+          {isVideo ? (
+            <video controls className="object-contain max-h-[90vh] w-full">
+              <source src={url} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          ) : (
+            <Image
+              src={url}
+              alt="Full size"
+              width={1200}
+              height={800}
+              className="object-contain max-h-[90vh]"
+            />
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
+
+  // const ImageModal: React.FC<ImageModalProps> = ({ image, onClose }) => (
+  //   <div
+  //     className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+  //     onClick={onClose}
+  //   >
+  //     <button
+  //       onClick={onClose}
+  //       className="absolute top-4 right-4 text-white hover:text-gray-300"
+  //     >
+  //       <X className="w-8 h-8" />
+  //     </button>
+  //     <div
+  //       className="relative max-w-5xl max-h-[90vh]"
+  //       onClick={(e) => e.stopPropagation()}
+  //     >
+  //       <Image
+  //         src={image}
+  //         alt="Full size"
+  //         width={1200}
+  //         height={800}
+  //         className="object-contain max-h-[90vh]"
+  //       />
+  //     </div>
+  //   </div>
+  // );
 
   // Loading state
   if (loading) {
@@ -241,10 +278,11 @@ const ConferenceDetail = () => {
 
   const formatTime = (timeString?: string) => {
     if (!timeString) return "";
-    return new Date(timeString).toLocaleTimeString("vi-VN", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+
+    const [hour, minute] = timeString.split(":");
+    if (!hour || !minute) return "";
+
+    return `${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`;
   };
 
   return (
@@ -264,22 +302,22 @@ const ConferenceDetail = () => {
           <div>
             <ConferenceHeader
               conference={conference}
-              isDialogOpen={isDialogOpen}
-              setIsDialogOpen={setIsDialogOpen}
-              selectedTicket={selectedTicket}
-              setSelectedTicket={setSelectedTicket}
-              paymentLoading={paymentLoading}
+              // isDialogOpen={isDialogOpen}
+              // setIsDialogOpen={setIsDialogOpen}
+              // selectedTicket={selectedTicket}
+              // setSelectedTicket={setSelectedTicket}
+              // paymentLoading={paymentLoading}
               handlePurchaseTicket={handlePurchaseTicket}
               accessToken={accessToken}
               formatDate={formatDate}
-              authorInfo={authorInfo}
-              setAuthorInfo={setAuthorInfo}
-              showAuthorForm={showAuthorForm}
-              setShowAuthorForm={setShowAuthorForm}
-              selectedPaymentMethod={selectedPaymentMethod}
-              setSelectedPaymentMethod={setSelectedPaymentMethod}
-              showPaymentMethods={showPaymentMethods}
-              setShowPaymentMethods={setShowPaymentMethods}
+            // authorInfo={authorInfo}
+            // setAuthorInfo={setAuthorInfo}
+            // showAuthorForm={showAuthorForm}
+            // setShowAuthorForm={setShowAuthorForm}
+            // selectedPaymentMethod={selectedPaymentMethod}
+            // setSelectedPaymentMethod={setSelectedPaymentMethod}
+            // showPaymentMethods={showPaymentMethods}
+            // setShowPaymentMethods={setShowPaymentMethods}
             />
           </div>
 
@@ -323,6 +361,28 @@ const ConferenceDetail = () => {
                   Các loại vé
                 </button>
                 {isResearch && (
+                  <>
+                    <button
+                      onClick={() => setActiveTab("research-timeline")}
+                      className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "research-timeline"
+                        ? "text-blue-500 border-b-2 border-coral-500"
+                        : "text-white/70 hover:text-white"
+                        }`}
+                    >
+                      Timeline nộp bài
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("research-documents")}
+                      className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "research-documents"
+                        ? "text-blue-500 border-b-2 border-coral-500"
+                        : "text-white/70 hover:text-white"
+                        }`}
+                    >
+                      Tài liệu & Hướng dẫn
+                    </button>
+                  </>
+                )}
+                {/* {isResearch && (
                   <button
                     onClick={() => setActiveTab("research")}
                     className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "research"
@@ -332,7 +392,7 @@ const ConferenceDetail = () => {
                   >
                     Research Paper Information
                   </button>
-                )}
+                )} */}
                 <button
                   onClick={() => setActiveTab("policy")}
                   className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "policy"
@@ -340,7 +400,7 @@ const ConferenceDetail = () => {
                     : "text-white/70 hover:text-white"
                     }`}
                 >
-                  Chính sách & Hoàn tiền
+                  Chính sách
                 </button>
                 <button
                   onClick={() => setActiveTab("feedback")}
@@ -368,6 +428,7 @@ const ConferenceDetail = () => {
                     conference={conference}
                     formatDate={formatDate}
                     formatTime={formatTime}
+                    setSelectedImage={setSelectedImage}
                   />
                 )}
 
@@ -378,9 +439,26 @@ const ConferenceDetail = () => {
                     formatTime={formatTime}
                   />
                 )}
+                {activeTab === "research-timeline" &&
+                  isResearch &&
+                  researchConference && (
+                    <ResearchTimelineTab
+                      conference={researchConference}
+                      formatDate={formatDate}
+                    />
+                  )}
+
+                {/* Research Documents Tab */}
+                {activeTab === "research-documents" &&
+                  isResearch &&
+                  researchConference && (
+                    <ResearchDocumentsTab
+                      conference={researchConference}
+                    />
+                  )}
 
                 {/* Research Paper Information Tab */}
-                {activeTab === "research" &&
+                {/* {activeTab === "research" &&
                   isResearch &&
                   researchConference && (
                     <ResearchPaperInformationTab
@@ -388,7 +466,7 @@ const ConferenceDetail = () => {
                       formatDate={formatDate}
                       formatTime={formatTime}
                     />
-                  )}
+                  )} */}
 
                 {/* Policy Tab */}
                 {activeTab === "policy" && (
@@ -413,8 +491,8 @@ const ConferenceDetail = () => {
 
       {/* Image Modal */}
       {selectedImage && (
-        <ImageModal
-          image={selectedImage}
+        <MediaModal
+          url={selectedImage}
           onClose={() => setSelectedImage(null)}
         />
       )}

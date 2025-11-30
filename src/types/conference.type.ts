@@ -528,7 +528,7 @@ export interface TechnicalConferenceDetailResponse {
   conferencePrices?: ConferencePriceResponse[];
   conferenceTimelines?: ConferenceTimelineResponse[];
   purchasedInfo?: PurchasedInfo;
-  contract:CollaboratorContract;
+  contract: CollaboratorContract;
 
 }
 
@@ -552,7 +552,7 @@ export interface ResearchConferenceDetailResponse {
   conferenceStatusId?: string;
 
   // Research Conference specific fields
-  researchDetailId?:string
+  researchDetailId?: string
   name?: string;
   paperFormat?: string;
   numberPaperAccept?: number;
@@ -572,7 +572,7 @@ export interface ResearchConferenceDetailResponse {
   researchPhase?: ResearchConferencePhaseResponse[];
   researchSessions?: ResearchConferenceSessionResponse[];
 
-  sessions?:ResearchConferenceSessionResponse[];
+  sessions?: ResearchConferenceSessionResponse[];
 
   // Shared data (same as technical conference)
   policies?: ConferencePolicyResponse[];
@@ -583,7 +583,7 @@ export interface ResearchConferenceDetailResponse {
   conferenceTimelines?: ConferenceTimelineResponse[];
   purchasedInfo?: PurchasedInfo;
 
-  contract?:CollaboratorContract;
+  contract?: CollaboratorContract;
 }
 
 export interface ConferencePolicyResponse {
@@ -822,7 +822,7 @@ export interface SessionDetailForScheduleResponse {
   startTime?: string;
   endTime?: string;
 
-  date?:string
+  date?: string
   sessionDate?: string;
 
   conferenceId?: string;
@@ -867,4 +867,50 @@ export interface SkeletonTechConference {
   conferenceId?: string | null;
   name?: string | null;
   createdAt?: string | null;
+}
+
+export interface ConferenceForReviewerView {
+  conferenceId: string | null;
+  conferenceName: string | null;
+  description: string | null;
+
+  startDate: string | null;
+  endDate: string | null;
+  ticketSaleStart: string | null;
+  ticketSaleEnd: string | null;
+
+  totalSlot: number | null;
+  availableSlot: number | null;
+  address: string | null;
+  bannerImageUrl: string | null;
+  createdAt: string | null;
+
+  isInternalHosted: boolean | null;
+  isResearchConference: boolean | null;
+
+  cityId: string | null;
+  conferenceCategoryId: string | null;
+  conferenceStatusId: string | null;
+
+  createdBy?: string | null;
+
+  cityName?: string | null;
+  conferenceCategoryName?: string | null;
+  conferenceStatusName?: string | null;
+
+  researchConferenceDetail?: {
+    conferenceId: string | null;
+    name: string | null;
+    paperFormat: string | null;
+    numberPaperAccept: number | null;
+    revisionAttemptAllowed: number | null;
+    rankingDescription: string | null;
+    allowListener: boolean | null;
+    rankValue: string | null;
+    rankYear: number | null;
+    reviewFee: number | null;
+    rankingCategoryId: string | null;
+    rankCategoryName: string | null;
+    rankCategoryDescription: string | null;
+  } | null;
 }

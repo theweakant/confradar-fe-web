@@ -37,6 +37,16 @@ const UserSelectionStep: React.FC<UserSelectionStepProps> = ({
 }) => {
     return (
         <div className="space-y-6">
+            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-md mb-4">
+                <div className="flex items-start gap-2">
+                    <Info className="w-5 h-5 text-blue-500 mt-1" />
+                    <p className="text-sm text-blue-700">
+                        Đây là danh sách các <span className="font-semibold">tài khoản đối tác hiện có trên hệ thống</span>.
+                        Tại bước này, bạn có thể chọn một tài khoản để tạo hợp đồng hội thảo mới.
+                        Nếu muốn thêm đối tác mới, bạn có thể sử dụng nút tạo mới.
+                    </p>
+                </div>
+            </div>
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Chọn tài khoản đối tác</h3>
                 <Button
@@ -93,7 +103,7 @@ const UserSelectionStep: React.FC<UserSelectionStepProps> = ({
                     <div className="text-center py-8">
                         <p className="text-gray-500">Chưa có tài khoản đối tác nào</p>
                         <Button variant="outline" className="mt-2" onClick={onCreateUser}>
-                            Tạo tài khoản đầu tiên
+                            Tạo tài khoản đối tác mới
                         </Button>
                     </div>
                 )

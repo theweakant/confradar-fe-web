@@ -2,12 +2,13 @@ import React, { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { X, Calendar, Clock, CheckCircle, AlertCircle, Users, FileText, Eye, LucideIcon } from 'lucide-react';
 import { CurrentResearchConferencePhaseForReviewer, ResearchPhaseDtoDetail, RevisionDeadlineDetail, RevisionRoundDeadlineForReviewer } from '@/types/paper.type';
+import { ResearchConferencePhaseResponse, RevisionRoundDeadlineResponse } from '@/types/conference.type';
 
 interface TimelineDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    phaseData?: ResearchPhaseDtoDetail | CurrentResearchConferencePhaseForReviewer | null;
-    revisionDeadlines?: RevisionDeadlineDetail[] | RevisionRoundDeadlineForReviewer[];
+    phaseData?: ResearchPhaseDtoDetail | CurrentResearchConferencePhaseForReviewer | ResearchConferencePhaseResponse | null;
+    revisionDeadlines?: RevisionDeadlineDetail[] | RevisionRoundDeadlineForReviewer[] | RevisionRoundDeadlineResponse[];
     variant?: 'reviewer' | 'submitted';
     theme?: 'light' | 'dark';
 }
@@ -50,10 +51,15 @@ const TimelineDialog: React.FC<TimelineDialogProps> = ({
 
     const StatusBadge = ({ status }: { status: string }) => {
         const styles = {
-            active: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-300 dark:border-green-700',
-            completed: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600',
-            upcoming: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-700',
-            pending: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-700'
+            // active: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-300 dark:border-green-700',
+            // completed: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600',
+            // upcoming: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-700',
+            // pending: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-700'
+
+            active: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-2 border-green-500 dark:border-green-400',
+            completed: 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border border-gray-300 dark:border-gray-600 opacity-60',
+            upcoming: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-300 dark:border-blue-700',
+            pending: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700'
         };
 
         const icons = {
@@ -65,7 +71,7 @@ const TimelineDialog: React.FC<TimelineDialogProps> = ({
 
         const labels = {
             active: 'Đang diễn ra',
-            completed: 'Đã hoàn thành',
+            completed: 'Đã kết thúc',
             upcoming: 'Sắp diễn ra',
             pending: 'Chờ xác định'
         };
@@ -121,7 +127,13 @@ const TimelineDialog: React.FC<TimelineDialogProps> = ({
                         const status = getPhaseStatus(item.start, item.end);
 
                         return (
-                            <div key={idx} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 space-y-2">
+                            // <div key={idx} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 space-y-2">
+                            <div key={idx} className={`rounded-lg p-3 space-y-2 transition-all
+    ${status === 'active' ? 'border-2 border-green-500 bg-green-50 dark:bg-green-900/20' : ''}
+    ${status === 'completed' ? 'border border-gray-300 dark:border-gray-700 opacity-60 bg-gray-50 dark:bg-gray-800' : ''}
+    ${status === 'upcoming' ? 'border border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20' : ''} 
+    ${status === 'pending' ? 'border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20' : ''}
+`}>
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="flex-1">
                                         <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.label}</p>
@@ -228,7 +240,7 @@ const TimelineDialog: React.FC<TimelineDialogProps> = ({
                                                         label: 'Thời gian đăng ký',
                                                         start: phaseData?.registrationStartDate,
                                                         end: phaseData?.registrationEndDate,
-                                                        note: 'Customer chỉ được mua vé và nộp bài báo trong khoảng này'
+                                                        note: 'Khách hàng chỉ được mua vé và nộp bài báo trong khoảng này'
                                                     },
                                                     {
                                                         label: 'Quyết định trạng thái Abstract',
@@ -249,25 +261,25 @@ const TimelineDialog: React.FC<TimelineDialogProps> = ({
                                                         label: 'Nộp Full Paper',
                                                         start: phaseData?.fullPaperStartDate,
                                                         end: phaseData?.fullPaperEndDate,
-                                                        note: 'Customer phải nộp Full Paper trong khoảng này'
+                                                        note: 'Khách hàng phải nộp Full Paper trong khoảng này'
                                                     },
                                                     {
                                                         label: 'Review Full Paper',
                                                         start: phaseData?.reviewStartDate,
                                                         end: phaseData?.reviewEndDate,
-                                                        note: 'Các reviewer phải nộp review trong khoảng này'
+                                                        note: 'Các reviewer phải nộp đánh giá trong khoảng này'
                                                     },
                                                     {
                                                         label: 'Quyết định trạng thái Full Paper',
                                                         start: phaseData?.fullPaperDecideStatusStart,
                                                         end: phaseData?.fullPaperDecideStatusEnd,
-                                                        note: 'Head reviewer phải decide status trong khoảng này'
+                                                        note: 'Head reviewer phải quyết định trạng thái Full Paper trong khoảng này'
                                                     }
                                                 ]}
                                             />
 
                                             {/* Revision Phase */}
-                                            {/* <PhaseSection
+                                            <PhaseSection
                                                 title="Giai đoạn Revision"
                                                 icon={Eye}
                                                 color="purple"
@@ -276,22 +288,22 @@ const TimelineDialog: React.FC<TimelineDialogProps> = ({
                                                         label: 'Thời gian Revise',
                                                         start: phaseData?.reviseStartDate,
                                                         end: phaseData?.reviseEndDate,
-                                                        note: 'Các revision round deadline vẫn nằm trong khoảng này'
+                                                        note: 'Các vòng chỉnh sửa bài báo diễn ra trong thời gian này'
                                                     },
-                                                    {
-                                                        label: 'Review Revision Paper',
-                                                        start: phaseData?.revisionPaperReviewStart,
-                                                        end: phaseData?.revisionPaperReviewEnd,
-                                                        note: 'Các reviewer phải nộp review trong khoảng này'
-                                                    },
+                                                    // {
+                                                    //     label: 'Review Revision Paper',
+                                                    //     start: phaseData?.revisionPaperReviewStart,
+                                                    //     end: phaseData?.revisionPaperReviewEnd,
+                                                    //     note: 'Các reviewer phải nộp review trong khoảng này'
+                                                    // },
                                                     {
                                                         label: 'Quyết định trạng thái Revision Paper',
                                                         start: phaseData?.revisionPaperDecideStatusStart,
                                                         end: phaseData?.revisionPaperDecideStatusEnd,
-                                                        note: 'Head reviewer phải decide status trong khoảng này'
+                                                        note: 'Head reviewer phải quyết định trạng thái Revision Paper trong khoảng này'
                                                     }
                                                 ]}
-                                            /> */}
+                                            />
 
                                             {/* Revision Rounds */}
                                             {revisionDeadlines && revisionDeadlines.length > 0 && (

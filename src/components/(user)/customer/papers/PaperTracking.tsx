@@ -180,8 +180,8 @@ const PaperTracking = () => {
               <h2 className="text-2xl font-bold mb-2">Theo dõi bài báo</h2>
               <p className="text-gray-400">
                 {paperId
-                  ? `Paper ID: ${paperId}`
-                  : "Theo dõi tiến độ bài báo của bạn. Nhấn nút Tiếp tục theo dõi để xem chi tiết hoặc sử dụng thanh tiến độ bên dưới."}
+                  ? `Mã bài báo của bạn: ${paperId}`
+                  : "Theo dõi tiến độ bài báo của bạn. Nhấn   nút Tiếp tục theo dõi để xem chi tiết hoặc sử dụng thanh tiến độ bên dưới."}
               </p>
               {paperDetail?.currentPhase && (
                 <p className="text-blue-400 text-sm mt-1">
@@ -274,10 +274,10 @@ const PaperTracking = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Left Column */}
                     <div className="space-y-4">
-                      <div className="bg-gray-700/50 rounded-lg p-4">
+                      {/* <div className="bg-gray-700/50 rounded-lg p-4">
                         <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Paper ID</p>
                         <p className="text-white font-mono text-lg">{paperDetail.paperId}</p>
-                      </div>
+                      </div> */}
 
                       {paperDetail.title && (
                         <div className="bg-gray-700/50 rounded-lg p-4">

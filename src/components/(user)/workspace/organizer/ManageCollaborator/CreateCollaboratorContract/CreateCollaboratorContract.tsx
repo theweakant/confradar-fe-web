@@ -351,7 +351,7 @@ const CreateCollaboratorContract: React.FC<CreateCollaboratorContractProps> = ({
   };
 
   const steps = [
-    { number: 1, title: 'Chọn tài khoản', description: 'Chọn đối tác' },
+    { number: 1, title: 'Chọn tài khoản', description: 'Chọn tài khoản đối tác' },
     { number: 2, title: 'Chọn hội nghị', description: 'Chọn hội nghị tham gia' },
     { number: 3, title: 'Tạo hợp đồng', description: 'Điền thông tin hợp đồng' }
   ];

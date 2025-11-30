@@ -456,7 +456,7 @@ export default function ReviewerManagePaperPage() {
         </div>
 
         {/* Statistics Cards */}
-        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+        {/* <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
           <div className="flex flex-row gap-4">
             <div className="flex-1 bg-white rounded-lg shadow-sm p-4 border-l-4 border-blue-500">
               <p className="text-sm text-gray-600">Tổng bài báo</p>
@@ -523,43 +523,8 @@ export default function ReviewerManagePaperPage() {
                   </div>
                 );
               })()}
-            {/* {expandedStats
-              ? phaseStats.map((stage) => (
-                <div
-                  key={stage.id}
-                  className={`rounded-lg border-l-4 p-4 ${stage.id === 1
-                    ? "border-gray-400"
-                    : stage.id === 2
-                      ? "border-yellow-500"
-                      : stage.id === 3
-                        ? "border-orange-500"
-                        : "border-green-600"
-                    } bg-gradient-to-br from-gray-50 to-white`}
-                >
-                  <p className="text-sm text-gray-600">{stage.label}</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{stage.count}</p>
-                </div>
-              ))
-              : (() => {
-                const currentStage = phaseStats.findLast(s => s.count > 0) || phaseStats[0];
-                return (
-                  <div
-                    className={`rounded-lg border-l-4 p-4 ${currentStage.id === 1
-                      ? "border-gray-400"
-                      : currentStage.id === 2
-                        ? "border-yellow-500"
-                        : currentStage.id === 3
-                          ? "border-orange-500"
-                          : "border-green-600"
-                      } bg-gradient-to-br from-gray-50 to-white`}
-                  >
-                    <p className="text-sm text-gray-600">{currentStage.label} (hiện tại)</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{currentStage.count}</p>
-                  </div>
-                );
-              })()} */}
           </div>
-        </div>
+        </div> */}
         {/* Statistics Cards */}
         {/* <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-blue-500">

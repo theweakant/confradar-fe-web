@@ -72,7 +72,6 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
     }
   }, [accessToken, fetchFavouriteConferences]);
 
-  // Check if current conference is in favorites - chỉ khi đã login
   useEffect(() => {
     if (accessToken && lazyFavouriteConferences && conference.conferenceId) {
       const isInFavorites = lazyFavouriteConferences.some(
@@ -83,20 +82,6 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
       setIsFavorite(false);
     }
   }, [accessToken, lazyFavouriteConferences, conference.conferenceId]);
-
-  // useEffect(() => {
-  //   fetchFavouriteConferences();
-  // }, [fetchFavouriteConferences]);
-
-  // // Check if current conference is in favorites
-  // useEffect(() => {
-  //   if (lazyFavouriteConferences && conference.conferenceId) {
-  //     const isInFavorites = lazyFavouriteConferences.some(
-  //       (fav) => fav.conferenceId === conference.conferenceId,
-  //     );
-  //     setIsFavorite(isInFavorites);
-  //   }
-  // }, [lazyFavouriteConferences, conference.conferenceId]);
 
   const getPurchasedTicketInfo = () => {
     if (!conference.purchasedInfo?.conferencePriceId) return null;
@@ -215,7 +200,7 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
             {conference.totalSlot && (
               <div className="flex items-center gap-2">
                 <span className="text-sm">
-                  Số lượng tham dự: {conference.totalSlot} người
+                  Số người tham dự tối đa: {conference.totalSlot} người
                 </span>
               </div>
             )}
@@ -345,54 +330,6 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                 {isResearch ? "Đăng ký tham dự" : "Mua vé"}
               </button>
             );
-
-            // const ticketSaleStart = conference.ticketSaleStart ? new Date(conference.ticketSaleStart) : null;
-            // const ticketSaleEnd = conference.ticketSaleEnd ? new Date(conference.ticketSaleEnd) : null;
-
-            // const isBeforeSale = ticketSaleStart && now < ticketSaleStart;
-            // const isAfterSale = ticketSaleEnd && now > ticketSaleEnd;
-
-            // if (isBeforeSale) {
-            //     return (
-            //         <div>
-            //             <button
-            //                 disabled
-            //                 className="w-full bg-gray-500/50 text-white/70 px-6 py-3 rounded-lg font-semibold
-            //                  cursor-not-allowed opacity-60"
-            //             >
-            //                 Chưa đến lúc mở bán vé
-            //             </button>
-            //             <p className="text-white/60 text-xs mt-2 text-center">
-            //                 Ngày bắt đầu bán vé: {formatDate(conference.ticketSaleStart)}
-            //             </p>
-            //         </div>
-            //     );
-            // }
-
-            // if (isAfterSale) {
-            //     return (
-            //         <button
-            //             disabled
-            //             className="w-full bg-red-500/50 text-white/70 px-6 py-3 rounded-lg font-semibold
-            //              cursor-not-allowed opacity-60"
-            //         >
-            //             Đã hết thời gian bán vé
-            //         </button>
-            //     );
-            // }
-
-            // return (
-            //     <button
-            //         onClick={() => setIsDialogOpen(true)}
-            //         className="w-full bg-gradient-to-r from-sky-500 via-indigo-500 to-violet-500 
-            //          hover:from-sky-400 hover:via-indigo-400 hover:to-violet-400
-            //          text-white px-6 py-3 rounded-lg font-semibold
-            //          shadow-lg shadow-indigo-500/30 transition-all duration-300
-            //          hover:scale-[1.02]"
-            //     >
-            //         Mở chọn vé
-            //     </button>
-            // );
           })()}
         </div>
 
@@ -613,124 +550,11 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                       )}
                     </label>
                   );
-                  // return (
-                  //     <label
-                  //         key={ticket.conferencePriceId}
-                  //         className={`block rounded-xl p-4 border transition-all ${isDisabled
-                  //             ? "bg-gray-500/20 border-gray-400/30 cursor-not-allowed opacity-60"
-                  //             : selectedTicket?.conferencePriceId === ticket.conferencePriceId
-                  //                 ? "bg-coral-500/30 border-coral-400 cursor-pointer"
-                  //                 : "bg-white/10 border-white/20 hover:bg-white/20 cursor-pointer"
-                  //             }`}
-                  //         onClick={() => {
-                  //             if (!isDisabled) {
-                  //                 setSelectedTicket(ticket);
-                  //                 if (ticket.isAuthor) {
-                  //                     setShowAuthorForm(true);
-                  //                 } else {
-                  //                     setShowAuthorForm(false);
-                  //                 }
-                  //             }
-                  //         }}
-                  //     >
-                  //         <input
-                  //             type="radio"
-                  //             name="ticket"
-                  //             value={ticket.conferencePriceId}
-                  //             className="hidden"
-                  //         // onChange={() => setSelectedTicket(ticket)}
-                  //         />
-
-                  //         <div className="flex justify-between items-start mb-1">
-                  //             <div className="flex flex-col">
-                  //                 <span className="font-semibold text-lg">{ticket.ticketName}</span>
-                  //                 {ticket.isAuthor && (
-                  //                     <span className="text-xs text-yellow-300 font-medium mt-0.5">
-                  //                         Vé dành cho tác giả
-                  //                     </span>
-                  //                 )}
-                  //             </div>
-
-                  //             <div className="text-right">
-                  //                 {hasDiscount && (
-                  //                     <span className="text-sm line-through text-white/60 block">
-                  //                         {(ticket.ticketPrice || 0).toLocaleString("vi-VN")}₫
-                  //                     </span>
-                  //                 )}
-                  //                 <span className="text-coral-300 font-bold text-lg">
-                  //                     {currentPrice.toLocaleString("vi-VN")}₫
-                  //                 </span>
-                  //             </div>
-                  //         </div>
-
-                  //         {ticket.ticketDescription && (
-                  //             <p className="text-sm text-white/70">{ticket.ticketDescription}</p>
-                  //         )}
-
-                  //         <div className="mt-2 text-sm space-y-1">
-                  //             {currentPhase && (
-                  //                 <p>
-                  //                     <span className="font-medium text-coral-200">Giai đoạn vé hiện tại:</span>{" "}
-                  //                     {currentPhase.phaseName || "Không xác định"}{" "}
-                  //                     {currentPhase.applyPercent !== undefined && (
-                  //                         <p
-                  //                             className={`text-sm font-medium ${currentPhase.applyPercent > 100 ? "text-red-500" : currentPhase.applyPercent < 100 ? "text-green-500" : "text-gray-400"
-                  //                                 }`}
-                  //                         >
-                  //                             {currentPhase.applyPercent > 100
-                  //                                 ? `+${currentPhase.applyPercent - 100}%`
-                  //                                 : currentPhase.applyPercent < 100
-                  //                                     ? `-${100 - currentPhase.applyPercent}%`
-                  //                                     : "±0%"}
-                  //                         </p>
-                  //                     )}
-                  //                     {/* {currentPhase.applyPercent && (
-                  //                             <span className="text-white/70">
-                  //                                 ({currentPhase.applyPercent}%)
-                  //                             </span>
-                  //                         )} */}
-                  //                 </p>
-                  //             )}
-
-                  //             <p>
-                  //                 <span className="font-medium text-coral-200">Số lượng:</span>{" "}
-                  //                 {currentPhase?.availableSlot} / {currentPhase?.totalSlot}
-                  //             </p>
-
-                  //             {currentPhase?.startDate && (
-                  //                 <p className="text-white/70">
-                  //                     <span className="font-medium">Hiệu lực:</span>{" "}
-                  //                     {formatDate(currentPhase.startDate)} →{" "}
-                  //                     {formatDate(currentPhase.endDate)}
-                  //                 </p>
-                  //             )}
-                  //         </div>
-
-                  //         {/* Status messages */}
-                  //         {currentPhaseSoldOut && !isLastPhase && nextPhase && (
-                  //             <div className="mt-3 p-2 bg-yellow-500/20 border border-yellow-400/40 rounded-lg">
-                  //                 <p className="text-xs text-yellow-200">
-                  //                     Giai đoạn hiện tại đã hết vé, vui lòng chờ giai đoạn tiếp theo từ{" "}
-                  //                     {formatDate(nextPhase.startDate)} - {formatDate(nextPhase.endDate)}
-                  //                 </p>
-                  //             </div>
-                  //         )}
-
-                  //         {isTicketSoldOut && isLastPhase && (
-                  //             <div className="mt-3 p-2 bg-red-500/20 border border-red-400/40 rounded-lg">
-                  //                 <p className="text-xs text-red-200">
-                  //                     Vé đã bán hết
-                  //                 </p>
-                  //             </div>
-                  //         )}
-                  //     </label>
-                  // );
                 })}
               </div>
 
               {/* Author ticket waitlist logic */}
               {(() => {
-                // Check if all author tickets are sold out with no future phases
                 const authorTickets = (
                   conference.conferencePrices || []
                 ).filter((ticket) => ticket.isAuthor);
@@ -1165,50 +989,6 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                   )}
                 </button>
               </div>
-
-              {/* <div className="mt-6 flex justify-end gap-3">
-                                    <button
-                                        onClick={() => setIsDialogOpen(false)}
-                                        className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-500 transition"
-                                    >
-                                        Hủy
-                                    </button>
-                                    <button
-                                        onClick={handlePurchaseTicket}
-                                        disabled={!selectedTicket || paymentLoading}
-                                        className="px-5 py-2 rounded-lg bg-coral-500 hover:bg-coral-600 disabled:opacity-50 transition"
-                                    >
-                                        {paymentLoading ? (
-                                            <div className="flex items-center gap-2">
-                                                <svg
-                                                    className="animate-spin h-5 w-5 text-white"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <circle
-                                                        className="opacity-25"
-                                                        cx="12"
-                                                        cy="12"
-                                                        r="10"
-                                                        stroke="currentColor"
-                                                        strokeWidth="4"
-                                                    ></circle>
-                                                    <path
-                                                        className="opacity-75"
-                                                        fill="currentColor"
-                                                        d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
-                                                    ></path>
-                                                </svg>
-                                                <span>Đang xử lý...</span>
-                                            </div>
-                                        ) : accessToken ? (
-                                            "Thanh toán"
-                                        ) : (
-                                            "Đăng nhập để thanh toán"
-                                        )}
-                                    </button>
-                                </div> */}
             </DialogPanel>
           </div>
         </Dialog>

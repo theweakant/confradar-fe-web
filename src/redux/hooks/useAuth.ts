@@ -15,6 +15,9 @@ import {
 } from "../utils/token";
 import { toast } from "sonner";
 import { ApiResponse } from "@/types/api.type";
+import { parseApiError } from "@/helper/api";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { SerializedError } from "@reduxjs/toolkit";
 
 type LoginResult = {
   success: boolean;
@@ -60,19 +63,26 @@ export const useAuth = () => {
         user: userInfo,
         message: "Đăng nhập thành công!",
       };
-    } catch (error: unknown) {
-      const err = error as ApiResponse | Error;
+    } catch (error) {
+      const parsedError = parseApiError<string>(error as FetchBaseQueryError | SerializedError);
 
-      const message =
-        err instanceof Error
-          ? err.message
-          : err?.message ||
-          err?.errors?.message ||
-          "Đăng nhập thất bại, vui lòng thử lại.";
+      return {
+        success: false,
+        user: null,
+        message: parsedError?.data?.message,
+      };
+      // const err = error as ApiResponse | Error;
 
-      console.error("Login failed:", error);
-      toast.error(message);
-      return { success: false, user: null, message };
+      // const message =
+      //   err instanceof Error
+      //     ? err.message
+      //     : err?.message ||
+      //     err?.errors?.message ||
+      //     "Đăng nhập thất bại, vui lòng thử lại.";
+
+      // console.error("Login failed:", error);
+      // toast.error(message);
+      // return { success: false, user: null, message };
     } finally {
       dispatch(stopLoading());
     }
