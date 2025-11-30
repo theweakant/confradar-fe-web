@@ -372,7 +372,7 @@ return (
           )}
         </div>
       </div>
-      <PriceTimeline conference={conference} />
+      {/* <PriceTimeline conference={conference} /> */}
 
     </div>
   );

@@ -29,5 +29,4 @@ export {
   validateResearchTimeline,
 } from './research/researchTimeline';
 
-// Re-export ValidationResult type for convenience
 export type { ValidationResult } from './basic';

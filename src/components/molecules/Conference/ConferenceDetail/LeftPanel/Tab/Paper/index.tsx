@@ -1,16 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { FileText, Calendar, Clock, CheckCircle } from "lucide-react";
+import { FileText, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,18 +23,14 @@ import {
 import { skipToken } from "@reduxjs/toolkit/query/react";
 import { toast } from "sonner";
 import { ApiError } from "@/types/api.type";
+
 import { PaperList } from "./List/PaperList";
 import { ReviewerList } from "./List/ReviewerList";
-import { AssignmentModal } from "./Modal/AssignmentModal";
+import { PaperDetailModal } from "./Modal/PaperDetailModal";
+import { AssignReviewerDialog } from "./Modal/AssignReviewerDialog";
+import { DecisionDialog } from "./Modal/DecisionDialog";
 import { DecisionType } from "@/types/paper.type";
 import { ResearchConferenceDetailResponse, ResearchConferencePhaseResponse } from "@/types/conference.type";
-
-// Temp type for internal use
-interface SelectedAbstractTemp {
-  paperId: string;
-  abstractId: string;
-  title: string;
-}
 
 interface PaperTabProps {
   conferenceId: string;
@@ -51,20 +39,20 @@ interface PaperTabProps {
 
 export function PaperTab({ conferenceId, conferenceData }: PaperTabProps) {
   const [selectedPaperId, setSelectedPaperId] = useState<string | null>(null);
+  
+  const [showAssignDialog, setShowAssignDialog] = useState(false);
   const [selectedReviewer, setSelectedReviewer] = useState<string>("");
   const [isHeadReviewer, setIsHeadReviewer] = useState(false);
 
-  // Decision states
-  const [selectedAbstract, setSelectedAbstract] = useState<SelectedAbstractTemp | null>(null);
   const [showDecisionDialog, setShowDecisionDialog] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingDecision, setPendingDecision] = useState<DecisionType | null>(null);
-  const [paperPendingDecision, setPaperPendingDecision] = useState<string | null>(null); // paperId
 
   const {
     data: papersData,
     isLoading: isLoadingPapers,
     isError: isErrorPapers,
+    refetch: refetchPapers,
   } = useGetSubmittedPapersQuery(conferenceId ? conferenceId : skipToken);
 
   const {
@@ -114,19 +102,25 @@ export function PaperTab({ conferenceId, conferenceData }: PaperTabProps) {
 
   const handlePaperClick = (paperId: string) => {
     setSelectedPaperId(paperId);
-    setSelectedReviewer("");
-    setIsHeadReviewer(false);
-    setPaperPendingDecision(null);
   };
 
-  const handleCloseAssignmentModal = () => {
+  const handleClosePaperDetail = () => {
     setSelectedPaperId(null);
-    setSelectedReviewer("");
-    setIsHeadReviewer(false);
-    setPaperPendingDecision(null);
   };
 
-  const handleAssign = async () => {
+  const handleOpenAssignDialog = () => {
+    setShowAssignDialog(true);
+    setSelectedReviewer("");
+    setIsHeadReviewer(false);
+  };
+
+  const handleCloseAssignDialog = () => {
+    setShowAssignDialog(false);
+    setSelectedReviewer("");
+    setIsHeadReviewer(false);
+  };
+
+  const handleAssignReviewer = async () => {
     if (!selectedReviewer) {
       toast.error("Vui lòng chọn reviewer!");
       return;
@@ -142,22 +136,8 @@ export function PaperTab({ conferenceId, conferenceData }: PaperTabProps) {
       }).unwrap();
 
       toast.success(res.message || "Giao reviewer thành công!");
-
-      if (paperPendingDecision === selectedPaperId) {
-        const paper = papersData?.data?.paperDetails.find(p => p.paperId === selectedPaperId);
-        const abstractId = paper?.abstractPhase?.id;
-        if (abstractId && paper?.abstractPhase?.status === "Pending") {
-          setSelectedAbstract({
-            paperId: selectedPaperId,
-            abstractId,
-            title: paper.abstractPhase.title || "Untitled",
-          });
-          setShowDecisionDialog(true);
-          setPaperPendingDecision(null);
-        }
-      }
-
-      handleCloseAssignmentModal();
+      handleCloseAssignDialog();
+      refetchPapers();
     } catch (error: unknown) {
       const err = error as ApiError;
       const errorMessage = err?.message || "Giao reviewer thất bại!";
@@ -165,43 +145,49 @@ export function PaperTab({ conferenceId, conferenceData }: PaperTabProps) {
     }
   };
 
-  const handleDecisionStart = (paperId: string) => {
-    const paper = papersData?.data?.paperDetails.find(p => p.paperId === paperId);
+  const handleOpenDecisionDialog = () => {
+    const paper = papersData?.data?.paperDetails.find(p => p.paperId === selectedPaperId);
     const hasReviewers = paper?.assignedReviewers && paper.assignedReviewers.length > 0;
-    const abstractId = paper?.abstractPhase?.id;
-    const isPending = paper?.abstractPhase?.status === "Pending";
 
     if (!hasReviewers) {
       toast.warning("Bài báo chưa có reviewer. Vui lòng gán ít nhất 1 reviewer trước khi duyệt.");
-      setPaperPendingDecision(paperId);
       return;
     }
 
-    if (!isPending) {
+    if (!paper?.abstractPhase || paper.abstractPhase.status !== "Pending") {
       toast.warning("Abstract này không ở trạng thái chờ duyệt.");
       return;
     }
 
+    const abstractId = paper.abstractPhase.id;
     if (!abstractId) {
-      toast.error("Không tìm thấy abstract để duyệt!");
+      toast.error("Không tìm thấy abstract ID!");
       return;
     }
 
-    setSelectedAbstract({
-      paperId,
-      abstractId,
-      title: paper.abstractPhase?.title || "Untitled",
-    });
     setShowDecisionDialog(true);
   };
 
+  const handleDecisionClick = (decision: DecisionType) => {
+    setPendingDecision(decision);
+    setShowDecisionDialog(false);
+    setShowConfirmDialog(true);
+  };
+
   const handleConfirmDecision = async () => {
-    if (!selectedAbstract || !pendingDecision) return;
+    const paper = papersData?.data?.paperDetails.find(p => p.paperId === selectedPaperId);
+    if (!paper || !pendingDecision) return;
+
+    const abstractId = paper.abstractPhase?.id;
+    if (!abstractId) {
+      toast.error("Không tìm thấy abstract ID!");
+      return;
+    }
 
     try {
       await decideAbstractStatus({
-        paperId: selectedAbstract.paperId,
-        abstractId: selectedAbstract.abstractId,
+        paperId: paper.paperId,
+        abstractId: abstractId,
         globalStatus: pendingDecision,
       }).unwrap();
 
@@ -212,14 +198,13 @@ export function PaperTab({ conferenceId, conferenceData }: PaperTabProps) {
       );
 
       setShowConfirmDialog(false);
-      setShowDecisionDialog(false);
-      setSelectedAbstract(null);
       setPendingDecision(null);
+      handleClosePaperDetail();
+      refetchPapers();
     } catch (error) {
       const apiError = error as { data?: ApiError };
       const message = apiError.data?.message || "Có lỗi xảy ra khi xử lý bài báo";
       toast.error(message);
-      console.error("Error processing abstract:", error);
     }
   };
 
@@ -257,6 +242,17 @@ export function PaperTab({ conferenceId, conferenceData }: PaperTabProps) {
   const selectedPaper = papers.find((p) => p.paperId === selectedPaperId);
   const canReviewAbstracts = isAbstractReviewPeriod();
 
+  const availableReviewers = reviewersList.filter((reviewer) => {
+    if (!selectedPaper) return true;
+    
+    const assignedReviewerIds = selectedPaper.assignedReviewers?.map((assignedStr) => {
+      const match = assignedStr.match(/\(([^)]+)\)/);
+      return match ? match[1] : null;
+    }).filter(Boolean) || [];
+    
+    return !assignedReviewerIds.includes(reviewer.userId);
+  });
+
   return (
     <>
       <div className="space-y-6">
@@ -293,60 +289,34 @@ export function PaperTab({ conferenceId, conferenceData }: PaperTabProps) {
         <ReviewerList reviewers={reviewers} />
       </div>
 
-      {/* Assignment & Decision Modal */}
-      {selectedPaperId && (
-        <AssignmentModal
+      {selectedPaperId && selectedPaper && (
+        <PaperDetailModal
           paper={selectedPaper}
-          selectedReviewer={selectedReviewer}
-          isHeadReviewer={isHeadReviewer}
-          reviewersList={reviewersList}
-          isLoadingReviewersList={isLoadingReviewersList}
-          isAssigning={isAssigning}
-          isDeciding={isDeciding}
-          onClose={handleCloseAssignmentModal}
-          onAssign={handleAssign}
-          onReviewerChange={setSelectedReviewer}
-          onHeadReviewerChange={setIsHeadReviewer}
-          onDecisionStart={handleDecisionStart}
+          onClose={handleClosePaperDetail}
+          onOpenAssignDialog={handleOpenAssignDialog}
+          onOpenDecisionDialog={handleOpenDecisionDialog}
         />
       )}
 
-      {/* Decision Dialog */}
-      <Dialog open={showDecisionDialog} onOpenChange={setShowDecisionDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Quyết định bài báo</DialogTitle>
-            <DialogDescription>
-              Vui lòng chọn quyết định cho bài báo này
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex gap-2 sm:gap-2">
-            <Button
-              variant="default"
-              className="bg-green-600 hover:bg-green-700"
-              onClick={() => {
-                setPendingDecision("Accepted");
-                setShowDecisionDialog(false);
-                setShowConfirmDialog(true);
-              }}
-            >
-              Chấp nhận
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => {
-                setPendingDecision("Rejected");
-                setShowDecisionDialog(false);
-                setShowConfirmDialog(true);
-              }}
-            >
-              Từ chối
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AssignReviewerDialog
+        open={showAssignDialog}
+        onClose={handleCloseAssignDialog}
+        selectedReviewer={selectedReviewer}
+        isHeadReviewer={isHeadReviewer}
+        reviewersList={availableReviewers}
+        isLoadingReviewersList={isLoadingReviewersList}
+        isAssigning={isAssigning}
+        onReviewerChange={setSelectedReviewer}
+        onHeadReviewerChange={setIsHeadReviewer}
+        onAssign={handleAssignReviewer}
+      />
 
-      {/* Confirm Dialog */}
+      <DecisionDialog
+        open={showDecisionDialog}
+        onClose={() => setShowDecisionDialog(false)}
+        onDecisionClick={handleDecisionClick}
+      />
+
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
