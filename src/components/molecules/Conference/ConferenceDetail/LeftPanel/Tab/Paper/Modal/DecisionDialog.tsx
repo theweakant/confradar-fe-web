@@ -49,20 +49,20 @@
 
           <DialogFooter className="flex gap-2 sm:gap-2">
             <Button
-              variant="default"
-              className="bg-green-600 hover:bg-green-700 flex-1"
-              onClick={() => onDecisionClick("Accepted")}
-            >
-              <CheckCircle className="w-4 h-4 mr-2" />
-              Chấp nhận
-            </Button>
-            <Button
               variant="destructive"
               className="flex-1"
               onClick={() => onDecisionClick("Rejected")}
             >
               <XCircle className="w-4 h-4 mr-2" />
               Từ chối
+            </Button>
+            <Button
+              variant="default"
+              className="bg-green-600 hover:bg-green-700 flex-1"
+              onClick={() => onDecisionClick("Accepted")}
+            >
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Chấp nhận
             </Button>
           </DialogFooter>
         </DialogContent>

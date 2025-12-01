@@ -120,30 +120,30 @@ export function PaperTab({ conferenceId, conferenceData }: PaperTabProps) {
     setIsHeadReviewer(false);
   };
 
-  const handleAssignReviewer = async () => {
-    if (!selectedReviewer) {
-      toast.error("Vui lòng chọn reviewer!");
-      return;
-    }
+const handleAssignReviewer = async () => {
+  if (!selectedReviewer) {
+    toast.error("Vui lòng chọn reviewer!");
+    return;
+  }
 
-    if (!selectedPaperId) return;
+  if (!selectedPaperId) return;
 
-    try {
-      const res = await assignPaper({
-        userId: selectedReviewer,
-        paperId: selectedPaperId,
-        isHeadReviewer,
-      }).unwrap();
+  try {
+    const res = await assignPaper({
+      userId: selectedReviewer,
+      paperId: selectedPaperId,
+      isHeadReviewer,
+    }).unwrap();
 
-      toast.success(res.message || "Giao reviewer thành công!");
-      handleCloseAssignDialog();
-      refetchPapers();
-    } catch (error: unknown) {
-      const err = error as ApiError;
-      const errorMessage = err?.message || "Giao reviewer thất bại!";
-      toast.error(errorMessage);
-    }
-  };
+    toast.success(res.message || "Giao reviewer thành công!");
+    handleCloseAssignDialog();
+    refetchPapers();
+  } catch (error: unknown) {
+    const err = error as { data?: ApiError };
+    const errorMessage = err?.data?.message || "Có lỗi xảy ra khi giao reviewer";
+    toast.error(errorMessage);
+  }
+};
 
   const handleOpenDecisionDialog = () => {
     const paper = papersData?.data?.paperDetails.find(p => p.paperId === selectedPaperId);
