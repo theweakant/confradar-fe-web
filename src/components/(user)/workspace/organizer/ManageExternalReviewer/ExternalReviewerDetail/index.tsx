@@ -39,7 +39,7 @@ export const ExternalReviewerDetail: React.FC<ExternalReviewerDetailProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b">
+      {/* <div className="flex items-center justify-between pb-4 border-b">
         <h2 className="text-xl font-semibold text-gray-900">
           Chi tiết người đánh giá theo hợp đồng
         </h2>
@@ -49,7 +49,7 @@ export const ExternalReviewerDetail: React.FC<ExternalReviewerDetailProps> = ({
         >
           <X className="w-5 h-5" />
         </button>
-      </div>
+      </div> */}
 
       {/* Profile Section */}
       <div className="flex items-start space-x-4">

@@ -557,13 +557,13 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
       icon: Edit3,
       color: "text-orange-600",
     },
-    {
-      title: "Phản biện bản chỉnh sửa",
-      start: phase.revisionPaperReviewStart,
-      end: phase.revisionPaperReviewEnd,
-      icon: MessageCircle,
-      color: "text-rose-600",
-    },
+    // {
+    //   title: "Phản biện bản chỉnh sửa",
+    //   start: phase.revisionPaperReviewStart,
+    //   end: phase.revisionPaperReviewEnd,
+    //   icon: MessageCircle,
+    //   color: "text-rose-600",
+    // },
     {
       title: "Quyết định Paper Revision",
       start: phase.revisionPaperDecideStatusStart,

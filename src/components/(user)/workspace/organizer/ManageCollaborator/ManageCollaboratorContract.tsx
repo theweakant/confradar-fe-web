@@ -3,6 +3,15 @@
 import { useState, useEffect, Fragment } from "react";
 import { Plus, Search, Filter, FileText } from "lucide-react";
 import { Dialog, Transition } from "@headlessui/react";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { DataTable, Column } from "@/components/molecules/DataTable";
 import { SearchBar } from "@/components/molecules/SearchBar";
 import { StatCard } from "@/components/molecules/StatCard";
@@ -26,6 +35,7 @@ import {
 import { toast } from "sonner";
 import { parseApiError } from "@/helper/api";
 import { useRouter } from "next/navigation";
+import { truncateText } from "@/helper/format";
 
 interface ContractFilters {
   userId?: string;
@@ -159,18 +169,9 @@ export default function ManageCollaboratorContract() {
   // Table columns
   const columns: Column<CollaboratorContractResponse>[] = [
     {
-      key: "organization",
-      header: "Tổ chức",
-      render: (contract) => (
-        <div className="max-w-xs">
-          <p className="font-medium text-gray-900 truncate">{contract.organizationName}</p>
-          <p className="text-sm text-gray-500 truncate">{contract.organizationDescription}</p>
-        </div>
-      ),
-    },
-    {
       key: "name",
       header: "Tên tài khoản",
+      className: "text-left",
       render: (contract) => (
         <div className="max-w-xs">
           <p className="font-medium text-gray-900 truncate">{contract.collaboratorContractFullName}</p>
@@ -179,11 +180,27 @@ export default function ManageCollaboratorContract() {
       ),
     },
     {
-      key: "conference",
-      header: "Hội nghị",
+      key: "organization",
+      header: "Tổ chức",
+      className: "text-left",
       render: (contract) => (
         <div className="max-w-xs">
-          <p className="font-medium text-gray-900 truncate">{contract.conferenceName}</p>
+          <p className="font-medium text-gray-900 truncate">{contract.organizationName}</p>
+          {/* <p className="text-sm text-gray-500 truncate">{contract.organizationDescription}</p> */}
+        </div>
+      ),
+    },
+
+    {
+      key: "conference",
+      header: "Hội nghị",
+      className: "text-left",
+      render: (contract) => (
+        <div className="max-w-xs">
+        <p 
+          className="font-medium text-gray-900"{...(contract.conferenceName && { title: contract.conferenceName })}>
+          {truncateText(contract.conferenceName, 10)}
+        </p>
           <p className="text-sm text-gray-500">
             {contract.conferenceStartDate && contract.conferenceEndDate && (
               `${new Date(contract.conferenceStartDate).toLocaleDateString()} - ${new Date(contract.conferenceEndDate).toLocaleDateString()}`
@@ -195,6 +212,7 @@ export default function ManageCollaboratorContract() {
     {
       key: "status",
       header: "Trạng thái",
+      className: "text-left",
       render: (contract) => (
         <StatusBadge
           status={contract.isClosed ? "Đã đóng" : "Đang mở"}
@@ -205,6 +223,7 @@ export default function ManageCollaboratorContract() {
     {
       key: "commission",
       header: "Hoa hồng",
+      className: "text-left",
       render: (contract) => (
         <span className="text-gray-900 font-medium">
           {contract.commission ? `${contract.commission}%` : "N/A"}
@@ -214,6 +233,7 @@ export default function ManageCollaboratorContract() {
     {
       key: "signDay",
       header: "Ngày ký",
+      className: "text-left",
       render: (contract) => (
         <span className="text-gray-900">
           {contract.signDay ? new Date(contract.signDay).toLocaleDateString() : "N/A"}
@@ -223,7 +243,7 @@ export default function ManageCollaboratorContract() {
     {
       key: "actions",
       header: "Thao tác",
-      className: "text-right",
+      className: "text-left",
       render: (contract) => (
         <button
           onClick={() => handleView(contract)}
@@ -353,34 +373,46 @@ export default function ManageCollaboratorContract() {
             </div>
 
             {/* User Filter */}
-            <select
-              value={filters.userId || ""}
-              onChange={(e) => handleFilterChange('userId', e.target.value)}
-              className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed"
+            <Select
+              value={filters.userId || "all"}
+              onValueChange={(value) => handleFilterChange('userId', value === "all" ? "" : value)}
               disabled={isLoadingCollaborators}
             >
-              <option value="">Tất cả CTV</option>
-              {collaborators.map((collaborator) => (
-                <option key={collaborator.userId} value={collaborator.userId}>
-                  {collaborator.fullName}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-[200px] h-9 text-sm">
+                <SelectValue placeholder="Tất cả đối tác" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="all">Tất cả đối tác</SelectItem>
+                  {collaborators.map((collaborator) => (
+                    <SelectItem key={collaborator.userId} value={collaborator.userId}>
+                      {collaborator.fullName}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
 
             {/* Organization Filter */}
-            <select
-              value={filters.organizationId || ""}
-              onChange={(e) => handleFilterChange('organizationId', e.target.value)}
-              className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed"
+            <Select
+              value={filters.organizationId || "all"}
+              onValueChange={(value) => handleFilterChange('organizationId', value === "all" ? "" : value)}
               disabled={isLoadingOrganizations}
             >
-              <option value="">Tất cả tổ chức</option>
-              {organizations.map((org) => (
-                <option key={org.organizationId} value={org.organizationId || ""}>
-                  {org.organizationName}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-[200px] h-9 text-sm">
+                <SelectValue placeholder="Tất cả tổ chức" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="all">Tất cả tổ chức</SelectItem>
+                  {organizations.map((org) => (
+                    <SelectItem key={org.organizationId} value={org.organizationId || ""}>
+                      {org.organizationName}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
 
             {/* Divider */}
             <div className="h-8 w-px bg-gray-200"></div>
@@ -388,16 +420,22 @@ export default function ManageCollaboratorContract() {
             {/* Page Size */}
             <div className="flex items-center gap-2">
               <span className="text-xs text-gray-600 whitespace-nowrap">Hiển thị:</span>
-              <select
-                value={filters.pageSize}
-                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                className="px-2 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              <Select
+                value={filters.pageSize.toString()}
+                onValueChange={(value) => handlePageSizeChange(Number(value))}
               >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-              </select>
+                <SelectTrigger className="w-[70px] h-9 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="5">5</SelectItem>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="20">20</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Page Input */}
