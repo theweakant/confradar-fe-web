@@ -2,7 +2,6 @@
 import React from "react";
 import {
   Pencil,
-  Trash2,
   Calendar,
   Users,
   Eye,
@@ -26,6 +25,7 @@ interface ConferenceTableProps {
   onEdit?: (conference: Conference) => void;
   onDelete?: (id: string) => void;
   statuses: { conferenceStatusId: string; conferenceStatusName: string }[];
+  showCreatorAndOrg?: boolean;
 }
 
 export function ConferenceTable({
@@ -34,11 +34,10 @@ export function ConferenceTable({
   onEdit,
   onDelete,
   statuses,
+  showCreatorAndOrg = false,
 }: ConferenceTableProps) {
   const { user } = useAuth();
   const currentUserId = user?.userId || null;
-  const userRoles = user?.role || [];
-  const isOrganizer = userRoles.includes("Conference Organizer");
 
   const getStatusClass = (statusName: string): string => {
     switch (statusName) {
@@ -95,30 +94,28 @@ export function ConferenceTable({
         </div>
       ),
     },
-    ...(isOrganizer
+    ...(showCreatorAndOrg
       ? [
           {
             key: "userNameCreator",
             header: "Người tạo",
             render: (conference: Conference) => (
-            <span className="text-sm text-gray-700">
-              {truncateText(conference.userNameCreator, 12)}
-            </span>
+              <span className="text-sm text-gray-700">
+                {truncateText(conference.userNameCreator, 12)}
+              </span>
             ),
           },
           {
             key: "organization",
             header: "Tổ chức",
             render: (conference: Conference) => (
-            <span className="text-sm text-gray-700">
-              {truncateText(conference.organization, 5)}
-            </span>
+              <span className="text-sm text-gray-700">
+                {truncateText(conference.organization, 5)}
+              </span>
             ),
           },
         ]
       : []),
-    // 👆 Kết thúc phần điều kiện
-
     {
       key: "startDate",
       header: "Bắt đầu sự kiện",
@@ -159,7 +156,7 @@ export function ConferenceTable({
       header: "Trạng thái",
       render: (conference) => {
         const status = statuses.find(
-          (s) => s.conferenceStatusId === conference.conferenceStatusId,
+          (s) => s.conferenceStatusId === conference.conferenceStatusId
         );
         const statusName = status?.conferenceStatusName || "Không xác định";
         const statusClass = getStatusClass(statusName);

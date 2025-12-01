@@ -60,22 +60,44 @@ import {
   useLazyListOrganizationsQuery,
 } from "@/redux/services/user.service";
 
+// ====== Định nghĩa sub-tab ======
+type MainTab = "approved" | "pending";
+type SubTab = "pending" | "ongoing" | "completed";
+
+const STATUS_GROUP_SETS = {
+  pending: new Set(["pending"]),
+  ongoing: new Set(["preparing", "ready", "onhold"]),
+  completed: new Set(["completed", "cancelled"]),
+} as const;
+
+const getSubTabGroup = (statusName: string): SubTab | null => {
+  const lower = statusName.toLowerCase();
+  if (STATUS_GROUP_SETS.pending.has(lower)) return "pending";
+  if (STATUS_GROUP_SETS.ongoing.has(lower)) return "ongoing";
+  if (STATUS_GROUP_SETS.completed.has(lower)) return "completed";
+  return null;
+};
+
+// ====== Component chính ======
 export default function ExternalConference() {
   const router = useRouter();
   const { user } = useAuth();
   const currentUserId = user?.userId || null;
 
-  const [activeTab, setActiveTab] = useState<"approved" | "pending">("approved");
+  const [mainTab, setMainTab] = useState<MainTab>("approved");
+  const [subTab, setSubTab] = useState<SubTab>("pending"); // chỉ dùng khi mainTab = "approved"
 
+  // === States cho tab approved ===
   const [pageApproved, setPageApproved] = useState(1);
   const [pageSizeApproved] = useState(12);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
-  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all"); // filter theo statusId (nếu cần)
   const [filterCity, setFilterCity] = useState("all");
   const [filterCollaborator, setFilterCollaborator] = useState("all");
   const [filterOrganization, setFilterOrganization] = useState("all");
 
+  // === States cho modal filter ===
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [tempFilterCategory, setTempFilterCategory] = useState("all");
   const [tempFilterStatus, setTempFilterStatus] = useState("all");
@@ -98,7 +120,7 @@ export default function ExternalConference() {
       ...(filterCollaborator !== "all" && { collaboratorId: filterCollaborator }),
       ...(filterOrganization !== "all" && { organizationName: filterOrganization }),
     },
-    { skip: activeTab !== "approved" }
+    { skip: mainTab !== "approved" }
   );
 
   const { data: categoriesData } = useGetAllCategoriesQuery();
@@ -107,6 +129,16 @@ export default function ExternalConference() {
   const [fetchOrganizations, { data: organizationData }] = useLazyListOrganizationsQuery();
   const [fetchCollaborators, { data: collaboratorData }] = useLazyGetCollaboratorAccountsQuery();
 
+  // === Build statusMap để tra cứu nhóm ===
+  const statusMap = useMemo(() => {
+    const map = new Map<string, string>();
+    (statusesData?.data || []).forEach((s) => {
+      map.set(s.conferenceStatusId, (s.conferenceStatusName || "").toLowerCase());
+    });
+    return map;
+  }, [statusesData]);
+
+  // === Lọc hội thảo không phải của mình ===
   const externalConferences = useMemo(() => {
     if (!currentUserId) return [];
     return (techConferencesData?.data?.items || []).filter(
@@ -114,16 +146,26 @@ export default function ExternalConference() {
     );
   }, [techConferencesData, currentUserId]);
 
+  // === Lọc theo sub-tab (chỉ áp dụng khi mainTab = "approved") ===
+  const conferencesBySubTab = useMemo(() => {
+    if (mainTab !== "approved") return [];
+    return externalConferences.filter((conf) => {
+      if (!conf.conferenceStatusId) return false;
+      const statusName = statusMap.get(conf.conferenceStatusId) || "";
+      const group = getSubTabGroup(statusName);
+      return group === subTab;
+    });
+  }, [externalConferences, mainTab, subTab, statusMap]);
+
+  // === Áp dụng filter category lên kết quả đã lọc sub-tab ===
   const displayConferences = useMemo(() => {
-    let result = [...externalConferences];
-    if (filterCategory !== "all") {
-      result = result.filter((conf) => conf.conferenceCategoryId === filterCategory);
-    }
-    return result;
-  }, [externalConferences, filterCategory]);
+    if (filterCategory === "all") return conferencesBySubTab;
+    return conferencesBySubTab.filter((conf) => conf.conferenceCategoryId === filterCategory);
+  }, [conferencesBySubTab, filterCategory]);
 
   const totalPagesApproved = techConferencesData?.data?.totalPages || 1;
 
+  // === Options cho filter ===
   const categoryOptions = useMemo(() => {
     const allOption = { value: "all", label: "Tất cả danh mục" };
     const apiCategories = (categoriesData?.data || []).map((category) => ({
@@ -179,26 +221,21 @@ export default function ExternalConference() {
     return count;
   }, [filterCategory, filterStatus, filterCity, filterCollaborator, filterOrganization]);
 
+  // === Tab pending ===
   const [pagePending, setPagePending] = useState(1);
   const [pageSizePending] = useState(10);
 
   const [getPendingConferences, { data: pendingData, isLoading: pendingLoading, isFetching: pendingFetching }] =
     useLazyGetPendingConferencesQuery();
 
-  const [selectedConference, setSelectedConference] = useState<string | null>(null);
-  const [isApproveAction, setIsApproveAction] = useState<boolean>(true);
-  const [reason, setReason] = useState("");
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [approveConference, { isLoading: isSubmitting }] = useApproveConferenceMutation();
-
   const pendingConferences = pendingData?.data?.items || [];
   const totalPagesPending = pendingData?.data?.totalPages || 1;
 
   useEffect(() => {
-    if (activeTab === "pending") {
+    if (mainTab === "pending") {
       getPendingConferences({ page: pagePending, pageSize: pageSizePending });
     }
-  }, [activeTab, pagePending, pageSizePending, getPendingConferences]);
+  }, [mainTab, pagePending, pageSizePending, getPendingConferences]);
 
   useEffect(() => {
     if (isFilterModalOpen && !collaboratorData) fetchCollaborators();
@@ -212,14 +249,27 @@ export default function ExternalConference() {
     return () => clearTimeout(timer);
   }, [searchQuery, filterCategory, filterStatus, filterCity, filterCollaborator, filterOrganization]);
 
-  const handleTabChange = (tab: "approved" | "pending") => {
-    setActiveTab(tab);
+  // === Handlers ===
+  const handleMainTabChange = (tab: MainTab) => {
+    setMainTab(tab);
     if (tab === "approved") {
       setPageApproved(1);
     } else {
       setPagePending(1);
     }
   };
+
+  const handleSubTabChange = (tab: SubTab) => {
+    setSubTab(tab);
+    setPageApproved(1);
+  };
+
+  const handleOpenDialog = (conferenceId: string, approve: boolean) => {
+  setSelectedConference(conferenceId);
+  setIsApproveAction(approve);
+  setReason("");
+  setDialogOpen(true);
+};
 
   const handleOpenFilterModal = () => {
     setTempFilterCategory(filterCategory);
@@ -273,12 +323,12 @@ export default function ExternalConference() {
     router.push(`/workspace/organizer/manage-conference/view-pending-detail/${conferenceId}`);
   };
 
-  const handleOpenDialog = (conferenceId: string, approve: boolean) => {
-    setSelectedConference(conferenceId);
-    setIsApproveAction(approve);
-    setReason("");
-    setDialogOpen(true);
-  };
+  // === Approval dialog states ===
+  const [selectedConference, setSelectedConference] = useState<string | null>(null);
+  const [isApproveAction, setIsApproveAction] = useState<boolean>(true);
+  const [reason, setReason] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [approveConference, { isLoading: isSubmitting }] = useApproveConferenceMutation();
 
   const handleSubmit = async () => {
     if (!selectedConference || !reason.trim()) {
@@ -312,7 +362,7 @@ export default function ExternalConference() {
     !statusesData ||
     (isFilterModalOpen && (!collaboratorData || !organizationData));
 
-  if (activeTab === "approved" && techError) {
+  if (mainTab === "approved" && techError) {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
         <div className="text-center">
@@ -323,6 +373,13 @@ export default function ExternalConference() {
     );
   }
 
+  // === Label cho sub-tab ===
+  const subTabLabels: Record<SubTab, string> = {
+    pending: "Chờ cập nhật",
+    ongoing: "Đang diễn ra",
+    completed: "Đã kết thúc",
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -331,12 +388,14 @@ export default function ExternalConference() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Hội thảo của Đối tác</h1>
               <p className="text-gray-600 mt-1">
-                {activeTab === "approved"
-                  ? "Những hội thảo đã được ConfRadar duyệt cho bên phía đối tác liên kết"
-                  : "Những hội thảo đang chờ ConfRadar duyệt"}
+                {mainTab === "approved" ? (
+                  `Hội thảo đã được ConfRadar duyệt — ${subTabLabels[subTab].toLowerCase()}`
+                ) : (
+                  "Những hội thảo đang chờ ConfRadar duyệt"
+                )}
               </p>
             </div>
-            {activeTab === "pending" && (
+            {mainTab === "pending" && (
               <Link href="/workspace/organizer/manage-conference" passHref>
                 <Button variant="ghost" className="mb-2">
                   <ArrowLeft className="w-4 h-4 mr-2" />
@@ -346,11 +405,12 @@ export default function ExternalConference() {
             )}
           </div>
 
+          {/* Main Tabs */}
           <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit mt-4">
             <button
-              onClick={() => handleTabChange("approved")}
+              onClick={() => handleMainTabChange("approved")}
               className={`px-6 py-2 text-sm font-medium rounded-md transition-colors ${
-                activeTab === "approved"
+                mainTab === "approved"
                   ? "bg-white text-blue-700 shadow-sm"
                   : "text-gray-600 hover:text-gray-900"
               }`}
@@ -358,9 +418,9 @@ export default function ExternalConference() {
               Đã được duyệt
             </button>
             <button
-              onClick={() => handleTabChange("pending")}
+              onClick={() => handleMainTabChange("pending")}
               className={`px-6 py-2 text-sm font-medium rounded-md transition-colors ${
-                activeTab === "pending"
+                mainTab === "pending"
                   ? "bg-white text-orange-600 shadow-sm"
                   : "text-gray-600 hover:text-gray-900"
               }`}
@@ -368,9 +428,28 @@ export default function ExternalConference() {
               Đang chờ duyệt
             </button>
           </div>
+
+          {/* Sub Tabs - chỉ hiển thị khi mainTab = "approved" */}
+          {mainTab === "approved" && (
+            <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit mt-3">
+              {(["pending", "ongoing", "completed"] as SubTab[]).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => handleSubTabChange(tab)}
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                    subTab === tab
+                      ? "bg-white text-blue-700 shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  {subTabLabels[tab]}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        {activeTab === "approved" ? (
+        {mainTab === "approved" ? (
           <>
             <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
               <div className="flex flex-col sm:flex-row gap-3">
@@ -537,7 +616,7 @@ export default function ExternalConference() {
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
               <StatCard
-                title="Tổng hội thảo đối tác"
+                title={subTabLabels[subTab]}
                 value={displayConferences.length}
                 icon={<Cpu className="w-10 h-10" />}
                 color="blue"
@@ -560,16 +639,24 @@ export default function ExternalConference() {
                 <div className="flex items-start gap-3">
                   <Cpu className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h3 className="font-semibold text-blue-900 mb-1">Chưa có hội thảo đối tác</h3>
+                    <h3 className="font-semibold text-blue-900 mb-1">
+                      Không có hội thảo nào trong mục này
+                    </h3>
                     <p className="text-sm text-blue-700">
-                      Các hội thảo công nghệ do đối tác tạo sẽ hiển thị ở đây.
+                      Thử thay đổi bộ lọc hoặc kiểm tra tab khác.
                     </p>
                   </div>
                 </div>
               </div>
             ) : (
               <>
-                <ConferenceTable conferences={displayConferences} onView={handleView} onEdit={handleEdit} statuses={statusesData?.data || []} />
+                <ConferenceTable
+                  conferences={displayConferences}
+                  onView={handleView}
+                  onEdit={handleEdit}
+                  statuses={statusesData?.data || []}
+                  showCreatorAndOrg={true}
+                />
                 {totalPagesApproved > 1 && (
                   <div className="mt-6 flex items-center justify-center gap-2">
                     <Button
@@ -595,6 +682,7 @@ export default function ExternalConference() {
             )}
           </>
         ) : (
+          // Tab "pending" - giữ nguyên
           <>
             {pendingLoading || pendingFetching ? (
               <div className="bg-white rounded-xl shadow-sm p-12 text-center">
@@ -734,6 +822,7 @@ export default function ExternalConference() {
           </>
         )}
 
+        {/* Approval Dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent>
             <DialogHeader>

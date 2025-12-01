@@ -84,6 +84,9 @@ export interface AbstractPhase {
   status:  string; 
   title: string;
   description: string;
+
+  abstractDecideStatusStart?: string;
+  abstractDecideStatusEnd?: string; 
 }
 
 export interface FullPaperPhase {
