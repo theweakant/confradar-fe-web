@@ -35,7 +35,7 @@ import type {
 import { LeaveWaitListRequest } from "@/types/waitlist.type";
 import { useCallback } from "react";
 
-export const usePaperCustomer = () => {
+export const usePaperCustomer = (conferenceId?: string) => {
   // const {
   //     data: submittedPapersData,
   //     isLoading: submittedPapersLoading,
@@ -70,7 +70,9 @@ export const usePaperCustomer = () => {
     data: availableCustomersData,
     isLoading: availableCustomersLoading,
     error: availableCustomersRawError,
-  } = useListAvailableCustomersQuery();
+  } = useListAvailableCustomersQuery(conferenceId!, {
+    skip: !conferenceId,
+  });
 
   const [
     getAvailableCustomers,
@@ -212,11 +214,15 @@ export const usePaperCustomer = () => {
   //     }
   // };
 
-  const fetchAvailableCustomers = async (): Promise<
-    ApiResponse<AvailableCustomerResponse[]>
-  > => {
+  const fetchAvailableCustomers = async (
+    conferenceId?: string
+  ): Promise<ApiResponse<AvailableCustomerResponse[]>> => {
     try {
-      const result = await getAvailableCustomers().unwrap();
+      if (!conferenceId) {
+        throw new Error("conferenceId is required");
+      }
+
+      const result = await getAvailableCustomers(conferenceId).unwrap();
       return result;
     } catch (error) {
       throw error;

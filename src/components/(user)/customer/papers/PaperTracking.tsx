@@ -250,87 +250,72 @@ const PaperTracking = () => {
             )}
 
             {/* Paper Overview */}
+            {/* Combined Overview Card */}
             {!paperPhasesLoading &&
               !isLoadingPaperDetail &&
               !paperPhasesError &&
               !paperDetailError &&
               paperDetail && (
-                <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-xl p-6 my-8 shadow-lg">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                      <span className="text-blue-400">📄</span>
-                      Thông tin bài báo
-                    </h2>
+                <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-xl p-5 my-6 shadow-lg">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-bold text-white">Thông tin tổng quan</h2>
                     {paperDetail.currentPhase && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-400 font-medium">Giai đoạn hiện tại:</span>
-                        <span className="px-3 py-1 bg-blue-600/20 border border-blue-500/30 rounded-full text-blue-400 text-sm font-medium">
-                          {paperDetail.currentPhase.phaseName || "Chưa xác định"}
-                        </span>
-                      </div>
+                      <span className="px-2.5 py-1 bg-blue-600/20 border border-blue-500/30 rounded-full text-blue-400 text-xs font-medium">
+                        {paperDetail.currentPhase.phaseName || "Chưa xác định"}
+                      </span>
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Left Column */}
-                    <div className="space-y-4">
-                      {/* <div className="bg-gray-700/50 rounded-lg p-4">
-                        <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Paper ID</p>
-                        <p className="text-white font-mono text-lg">{paperDetail.paperId}</p>
-                      </div> */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                    {/* Left: Paper Information */}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-700">
+                        <span className="text-blue-400">📄</span>
+                        <h3 className="text-sm font-semibold text-white">Thông tin bài báo</h3>
+                      </div>
 
                       {paperDetail.title && (
-                        <div className="bg-gray-700/50 rounded-lg p-4">
-                          <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Tiêu đề</p>
-                          <p className="text-white font-medium">{paperDetail.title}</p>
+                        <div className="bg-gray-700/30 rounded-lg p-3">
+                          <p className="text-gray-400 text-[10px] uppercase tracking-wider mb-1">Tiêu đề</p>
+                          <p className="text-white text-sm font-medium leading-snug">{paperDetail.title}</p>
                         </div>
                       )}
 
-                      {paperDetail.created && (
-                        <div className="bg-gray-700/50 rounded-lg p-4">
-                          <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Ngày tạo</p>
-                          <p className="text-white">
-                            {new Date(paperDetail.created).toLocaleDateString("vi-VN", {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            })}
-                          </p>
-                        </div>
-                      )}
-                    </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        {paperDetail.created && (
+                          <div className="bg-gray-700/30 rounded-lg p-3">
+                            <p className="text-gray-400 text-[10px] uppercase tracking-wider mb-1">Ngày tạo</p>
+                            <p className="text-white text-xs">
+                              {new Date(paperDetail.created).toLocaleDateString("vi-VN")}
+                            </p>
+                          </div>
+                        )}
 
-                    {/* Right Column */}
-                    <div className="space-y-4">
-                      {paperDetail.rootAuthor && (
-                        <div className="bg-gray-700/50 rounded-lg p-4">
-                          <p className="text-gray-400 text-xs uppercase tracking-wider mb-2">Tác giả chính</p>
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">
-                              {paperDetail.rootAuthor.fullName?.charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                              <p className="text-white font-medium">{paperDetail.rootAuthor.fullName}</p>
-                              {paperDetail.rootAuthor.userId && (
-                                <p className="text-gray-400 text-sm">Mã tài khoản: {paperDetail.rootAuthor.userId}</p>
-                              )}
+                        {paperDetail.rootAuthor && (
+                          <div className="bg-gray-700/30 rounded-lg p-3">
+                            <p className="text-gray-400 text-[10px] uppercase tracking-wider mb-1">Tác giả chính</p>
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-white text-[10px] font-semibold flex-shrink-0">
+                                {paperDetail.rootAuthor.fullName?.charAt(0).toUpperCase()}
+                              </div>
+                              <p className="text-white text-xs font-medium truncate">{paperDetail.rootAuthor.fullName}</p>
                             </div>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
 
                       {paperDetail.coAuthors && paperDetail.coAuthors.length > 0 && (
-                        <div className="bg-gray-700/50 rounded-lg p-4">
-                          <p className="text-gray-400 text-xs uppercase tracking-wider mb-2">
+                        <div className="bg-gray-700/30 rounded-lg p-3">
+                          <p className="text-gray-400 text-[10px] uppercase tracking-wider mb-2">
                             Đồng tác giả ({paperDetail.coAuthors.length})
                           </p>
-                          <div className="flex flex-wrap gap-2">
+                          <div className="flex flex-wrap gap-1.5">
                             {paperDetail.coAuthors.map((author) => (
                               <div
                                 key={author.userId}
-                                className="px-3 py-1 bg-gray-600/50 rounded-full text-sm text-gray-200 flex items-center gap-2"
+                                className="px-2 py-1 bg-gray-600/50 rounded-full text-[11px] text-gray-200 flex items-center gap-1.5"
                               >
-                                <span className="w-6 h-6 rounded-full bg-gray-500 flex items-center justify-center text-xs font-semibold">
+                                <span className="w-4 h-4 rounded-full bg-gray-500 flex items-center justify-center text-[9px] font-semibold">
                                   {author.fullName?.charAt(0).toUpperCase()}
                                 </span>
                                 {author.fullName}
@@ -339,17 +324,112 @@ const PaperTracking = () => {
                           </div>
                         </div>
                       )}
-                    </div>
-                  </div>
 
-                  {paperDetail.description && (
-                    <div className="mt-6 bg-gray-700/30 rounded-lg p-4 border-l-4 border-blue-500">
-                      <p className="text-gray-400 text-xs uppercase tracking-wider mb-2">Mô tả</p>
-                      <p className="text-gray-200 leading-relaxed">{paperDetail.description}</p>
+                      {paperDetail.description && (
+                        <div className="bg-gray-700/20 rounded-lg p-3 border-l-2 border-blue-500">
+                          <p className="text-gray-400 text-[10px] uppercase tracking-wider mb-1">Mô tả</p>
+                          <p className="text-gray-300 text-xs leading-relaxed line-clamp-3">{paperDetail.description}</p>
+                        </div>
+                      )}
                     </div>
-                  )}
+
+                    {/* Right: Conference Information */}
+                    {paperDetail.researchConferenceInfo && (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-700">
+                          <span className="text-green-400">🎓</span>
+                          <h3 className="text-sm font-semibold text-white">Thông tin hội nghị</h3>
+                        </div>
+
+                        <div className="bg-gray-700/50 rounded-lg p-4 flex items-center gap-4">
+                          {paperDetail.researchConferenceInfo.conferenceName && (
+                            // <div className="bg-gray-700/30 rounded-lg p-3 w-1/4">
+                            <div className="w-2/4">
+                              <p className="text-gray-400 text-[10px] uppercase tracking-wider mb-1">Tên hội nghị</p>
+                              <p className="text-white text-sm font-medium leading-snug">
+                                {paperDetail.researchConferenceInfo.conferenceName}
+                              </p>
+                            </div>
+                          )}
+                          {paperDetail.researchConferenceInfo.bannerImageFileUrl && (
+                            <div className="flex-1">
+                              <img
+                                src={paperDetail.researchConferenceInfo.bannerImageFileUrl}
+                                alt="Banner"
+                                className="w-full h-16 object-cover rounded-lg"
+                              />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          {paperDetail.researchConferenceInfo.startDate && (
+                            <div className="bg-gray-700/30 rounded-lg p-3">
+                              <p className="text-gray-400 text-[10px] uppercase tracking-wider mb-1">Bắt đầu</p>
+                              <p className="text-white text-xs">
+                                {new Date(paperDetail.researchConferenceInfo.startDate).toLocaleDateString("vi-VN")}
+                              </p>
+                            </div>
+                          )}
+
+                          {paperDetail.researchConferenceInfo.endDate && (
+                            <div className="bg-gray-700/30 rounded-lg p-3">
+                              <p className="text-gray-400 text-[10px] uppercase tracking-wider mb-1">Kết thúc</p>
+                              <p className="text-white text-xs">
+                                {new Date(paperDetail.researchConferenceInfo.endDate).toLocaleDateString("vi-VN")}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+
+                        {paperDetail.researchConferenceInfo.address && (
+                          <div className="bg-gray-700/30 rounded-lg p-3">
+                            <p className="text-gray-400 text-[10px] uppercase tracking-wider mb-1">Địa điểm</p>
+                            <p className="text-white text-xs leading-snug">
+                              {paperDetail.researchConferenceInfo.address}
+                            </p>
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-2 gap-3">
+                          {paperDetail.researchConferenceInfo.totalSlot !== null &&
+                            paperDetail.researchConferenceInfo.totalSlot !== undefined && (
+                              <div className="bg-gray-700/30 rounded-lg p-3">
+                                <p className="text-gray-400 text-[10px] uppercase tracking-wider mb-1">Slot khả dụng</p>
+                                <div className="flex items-baseline gap-1">
+                                  <p className="text-white text-lg font-bold">
+                                    {paperDetail.researchConferenceInfo.availableSlot}
+                                  </p>
+                                  <p className="text-gray-400 text-xs">
+                                    / {paperDetail.researchConferenceInfo.totalSlot}
+                                  </p>
+                                </div>
+                                <div className="mt-1.5 w-full bg-gray-600 rounded-full h-1.5">
+                                  <div
+                                    className="bg-green-500 h-1.5 rounded-full transition-all"
+                                    style={{
+                                      width: `${((paperDetail.researchConferenceInfo.availableSlot ?? 0) / paperDetail.researchConferenceInfo.totalSlot) * 100}%`
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                          {paperDetail.researchConferenceInfo.statusName && (
+                            <div className="bg-gray-700/30 rounded-lg p-3">
+                              <p className="text-gray-400 text-[10px] uppercase tracking-wider mb-1">Trạng thái</p>
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-500/20 text-green-400 border border-green-500/30">
+                                {paperDetail.researchConferenceInfo.statusName}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
+
 
             {!paperPhasesLoading &&
               !isLoadingPaperDetail &&
@@ -412,6 +492,7 @@ const PaperTracking = () => {
                       paperId={paperId}
                       abstract={paperDetail?.abstract || null}
                       researchPhase={paperDetail?.researchPhase}
+                      researchConferenceInfo={paperDetail?.researchConferenceInfo}
                       onSubmittedAbstract={loadPaperDetail}
                     />
                   )}

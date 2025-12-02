@@ -42,6 +42,7 @@ export default function ManageLocalReviewer() {
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
     const [viewingUserId, setViewingUserId] = useState<string | null>(null);
     const [suspendUserId, setSuspendUserId] = useState<string | null>(null);
+    const [suspendReason, setSuspendReason] = useState("");
     const [activateUserId, setActivateUserId] = useState<string | null>(null);
 
     const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
@@ -148,9 +149,13 @@ export default function ManageLocalReviewer() {
     const confirmSuspend = async () => {
         if (suspendUserId) {
             try {
-                const response = await suspendAccount(suspendUserId).unwrap();
+                const response = await suspendAccount({
+                    userId: suspendUserId,
+                    reason: suspendReason
+                }).unwrap();
                 toast.success(response.message || "Tạm ngưng tài khoản thành công!");
                 setSuspendUserId(null);
+                setSuspendReason("");
                 refetch();
             } catch (error: unknown) {
                 const err = error as ApiError;
@@ -339,8 +344,8 @@ export default function ManageLocalReviewer() {
                                             key={page}
                                             onClick={() => setCurrentPage(page)}
                                             className={`px-3 py-1 rounded-md text-sm font-medium ${currentPage === page
-                                                    ? 'bg-blue-600 text-white'
-                                                    : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                                                ? 'bg-blue-600 text-white'
+                                                : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
                                                 }`}
                                         >
                                             {page}
@@ -410,7 +415,10 @@ export default function ManageLocalReviewer() {
             {/* Suspend Confirmation Dialog */}
             <AlertDialog
                 open={!!suspendUserId}
-                onOpenChange={() => setSuspendUserId(null)}
+                onOpenChange={() => {
+                    setSuspendUserId(null);
+                    setSuspendReason("");
+                }}
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -420,12 +428,30 @@ export default function ManageLocalReviewer() {
                             Họ sẽ không thể đăng nhập cho đến khi được kích hoạt lại.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
+                    <div className="my-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Lý do tạm ngưng <span className="text-red-500">*</span>
+                        </label>
+                        <textarea
+                            value={suspendReason}
+                            onChange={(e) => setSuspendReason(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 min-h-[100px]"
+                            placeholder="Nhập lý do tạm ngưng tài khoản..."
+                            required
+                        />
+                        {suspendReason.trim().length === 0 && (
+                            <p className="text-xs text-red-500 mt-1">
+                                Vui lòng nhập lý do tạm ngưng
+                            </p>
+                        )}
+                    </div>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Hủy</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={confirmSuspend}
                             className="bg-orange-600 hover:bg-orange-700"
-                            disabled={isSuspending}
+                            disabled={isSuspending || suspendReason.trim().length === 0}
+
                         >
                             {isSuspending ? "Đang xử lý..." : "Tạm ngưng"}
                         </AlertDialogAction>
