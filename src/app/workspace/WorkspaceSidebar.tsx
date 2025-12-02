@@ -49,11 +49,11 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
   > = {
     [ROLES.ADMIN]: [
       { label: "Tổng quan", href: "/workspace/admin", icon: LayoutDashboard },
-      {
-        label: "Người dùng",
-        href: "/workspace/admin/manage-user",
-        icon: Users,
-      },
+      // {
+      //   label: "Người dùng",
+      //   href: "/workspace/admin/manage-user",
+      //   icon: Users,
+      // },
       {
         label: "Địa điểm",
         href: "/workspace/admin/manage-accommodation",
