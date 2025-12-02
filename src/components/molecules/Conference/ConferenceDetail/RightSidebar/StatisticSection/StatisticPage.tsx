@@ -237,7 +237,7 @@ export default function StatisticsDashboard() {
                                     <p className="text-sm text-red-700 font-medium">Đã hoàn trả</p>
                                     <p className="text-xs text-gray-500 mt-0.5">Khách đã hủy</p>
                                 </div>
-                                <p className="text-xl font-bold text-red-700">- {formatCurrency(totalRefundedAmount)}</p>
+                                <p className="text-xl font-bold text-red-700">{formatCurrency(totalRefundedAmount)}</p>
                             </div>
 
                             {/* Doanh thu thực tế (sau hoàn tiền) */}

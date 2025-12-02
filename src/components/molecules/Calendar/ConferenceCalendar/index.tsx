@@ -236,7 +236,7 @@ const ConferenceCalendar: React.FC<ConferenceCalendarProps> = ({
           </div>
         )}
         <div className="ml-auto text-gray-600">
-          Tổng: <span className="font-semibold">{allConferences.length}</span>S
+          Tổng: <span className="font-semibold">{allConferences.length}</span>
         </div>
       </div>
 

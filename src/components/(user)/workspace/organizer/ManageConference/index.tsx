@@ -343,6 +343,7 @@ export default function ManageConference() {
           onView={handleView}
           onEdit={handleEdit}
           statuses={statuses}
+          showCreatorAndOrg={false}
         />
 
         {totalPages > 1 && (

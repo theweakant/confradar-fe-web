@@ -122,55 +122,18 @@ export function useFormSubmit(props?: UseFormSubmitProps) {
     }
   };
 
-  // === STEP 1: BASIC INFO ===
-  // const submitBasicInfo = async (formData: ConferenceBasicForm, autoNext: boolean = true) => {
-  //   try {
-  //     setIsSubmitting(true);
-  //     let result;
-
-  //     if (mode === "edit" && conferenceId) {
-  //       result = await updateBasic({ conferenceId, data: formData }).unwrap();
-  //       toast.success("Cập nhật thông tin cơ bản thành công!");
-        
-  //       await triggerRefetch();
-  //     } else {
-  //       result = await createBasic(formData).unwrap();
-  //       const confId = result.data.conferenceId;
-  //       dispatch(setConferenceId(confId));
-  //       dispatch(setConferenceBasicData(result.data));
-  //       toast.success("Tạo thông tin cơ bản thành công!");
-  //     }
-
-  //     dispatch(markStepCompleted(1));
-  //     if (autoNext && mode === "create") {
-  //       dispatch(nextStep());
-  //     }
-  //     return { success: true, data: result.data };
-  //   } catch (error) {
-  //     const apiError = error as { data?: ApiError };
-  //     console.error("Basic submit failed:", error);
-  //     toast.error(apiError?.data?.message || "Cập nhật thông tin cơ bản thất bại!");
-  //     return { success: false, error };
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // };
-
 const submitBasicInfo = async (formData: ConferenceBasicForm, autoNext: boolean = true) => {
   try {
     setIsSubmitting(true);
     let result;
 
-    // ✅ Xác định nếu user là Collaborator
     const isCollaborator = roles?.some((role) => role.includes("Collaborator"));
 
-    // ✅ Nếu là edit mode HOẶC là Collaborator (dù mode=create), luôn dùng PUT
     if ((mode === "edit" && conferenceId) || (isCollaborator && conferenceId)) {
       result = await updateBasic({ conferenceId, data: formData }).unwrap();
       toast.success("Cập nhật thông tin cơ bản thành công!");
       await triggerRefetch();
     } else {
-      // Chỉ Conference Organizer trong mode=create mới dùng POST
       result = await createBasic(formData).unwrap();
       const confId = result.data.conferenceId;
       dispatch(setConferenceId(confId));
@@ -180,7 +143,6 @@ const submitBasicInfo = async (formData: ConferenceBasicForm, autoNext: boolean 
 
     dispatch(markStepCompleted(1));
 
-    // ✅ Chỉ auto next nếu là create mode AND không phải Collaborator
     if (autoNext && mode === "create" && !isCollaborator) {
       dispatch(nextStep());
     }

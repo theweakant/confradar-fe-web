@@ -10,6 +10,9 @@ interface PaperDetailModalProps {
   onClose: () => void;
   onOpenAssignDialog: () => void;
   onOpenDecisionDialog: () => void;
+  disableDecision?: boolean;
+  abstractDecideStart?: string;
+  abstractDecideEnd?: string;
 }
 
 const phaseStyles: Record<string, { bg: string; text: string }> = {
@@ -27,17 +30,32 @@ const statusStyles: Record<string, { icon: string; color: string }> = {
   Revise: { icon: "⚠", color: "text-orange-600" },
 };
 
+const formatDate = (dateString: string | undefined) => {
+  if (!dateString) return "—";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
 export function PaperDetailModal({
   paper,
   onClose,
   onOpenAssignDialog,
   onOpenDecisionDialog,
+  disableDecision = false,
+  abstractDecideStart,
+  abstractDecideEnd,
 }: PaperDetailModalProps) {
   const hasReviewers = paper.assignedReviewers && paper.assignedReviewers.length > 0;
-  
+
   const abstractNotSubmitted = !paper.abstractPhase;
   const abstractPending = paper.abstractPhase?.status === "Pending";
-  const abstractDecided = paper.abstractPhase && 
+  const abstractDecided =
+    paper.abstractPhase &&
     (paper.abstractPhase.status === "Accepted" || paper.abstractPhase.status === "Rejected");
 
   return (
@@ -45,10 +63,7 @@ export function PaperDetailModal({
       <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold text-gray-900">Chi tiết bài báo</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -77,118 +92,142 @@ export function PaperDetailModal({
             </div>
           </div>
 
-          <div className="bg-white rounded-lg p-5 border border-gray-200">
-            <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-blue-600" />
-              Timeline tiến độ
-            </h4>
-            <div className="relative">
-              <div className="flex items-center justify-between">
-                <div className="flex-1 text-center">
-                  <div
-                    className={`w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-lg ${
-                      paper.abstractPhase
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-200 text-gray-400"
-                    }`}
-                  >
-                    {paper.abstractPhase
-                      ? statusStyles[paper.abstractPhase.status]?.icon || "●"
-                      : "○"}
-                  </div>
-                  <div className="text-xs font-medium text-gray-700">Abstract</div>
-                  {paper.abstractPhase && (
-                    <div
-                      className={`text-xs ${
-                        statusStyles[paper.abstractPhase.status]?.color || "text-gray-500"
-                      }`}
-                    >
-                      {paper.abstractPhase.status}
-                    </div>
-                  )}
-                </div>
+          {/* Timeline tiến độ */}
+{/* Timeline tiến độ - STICKY */}
+<div className="bg-white rounded-lg p-5 border border-gray-200 sticky top-0 z-10 shadow-sm">
+  <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+    <Calendar className="w-5 h-5 text-blue-600" />
+    Timeline tiến độ
+  </h4>
+  <div className="relative">
+    {(() => {
+      const PHASE_ORDER = ["Abstract", "FullPaper", "Revision", "CameraReady"];
+      const currentPhaseIndex = PHASE_ORDER.indexOf(paper.paperPhase);
 
-                <div className="flex-1 h-1 bg-gray-200 mx-2">
-                  {paper.fullPaperPhase && (
-                    <div className="h-full bg-blue-500" style={{ width: "100%" }}></div>
-                  )}
-                </div>
+      const isActiveOrPassed = (phase: string) => {
+        const idx = PHASE_ORDER.indexOf(phase);
+        return idx <= currentPhaseIndex && idx !== -1;
+      };
 
-                <div className="flex-1 text-center">
-                  <div
-                    className={`w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-lg ${
-                      paper.fullPaperPhase
-                        ? "bg-emerald-500 text-white"
-                        : "bg-gray-200 text-gray-400"
-                    }`}
-                  >
-                    {paper.fullPaperPhase
-                      ? statusStyles[paper.fullPaperPhase.status]?.icon || "●"
-                      : "○"}
-                  </div>
-                  <div className="text-xs font-medium text-gray-700">Full Paper</div>
-                  {paper.fullPaperPhase && (
-                    <div
-                      className={`text-xs ${
-                        statusStyles[paper.fullPaperPhase.status]?.color || "text-gray-500"
-                      }`}
-                    >
-                      {paper.fullPaperPhase.status}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex-1 h-1 bg-gray-200 mx-2">
-                  {paper.revisionPhase && (
-                    <div className="h-full bg-blue-500" style={{ width: "100%" }}></div>
-                  )}
-                </div>
-
-                <div className="flex-1 text-center">
-                  <div
-                    className={`w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-lg ${
-                      paper.revisionPhase
-                        ? "bg-amber-500 text-white"
-                        : "bg-gray-200 text-gray-400"
-                    }`}
-                  >
-                    {paper.revisionPhase
-                      ? statusStyles[paper.revisionPhase.status]?.icon || "●"
-                      : "○"}
-                  </div>
-                  <div className="text-xs font-medium text-gray-700">Revision</div>
-                  {paper.revisionPhase && (
-                    <div
-                      className={`text-xs ${
-                        statusStyles[paper.revisionPhase.status]?.color || "text-gray-500"
-                      }`}
-                    >
-                      {paper.revisionPhase.status}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex-1 h-1 bg-gray-200 mx-2">
-                  {paper.cameraReadyPhase && (
-                    <div className="h-full bg-blue-500" style={{ width: "100%" }}></div>
-                  )}
-                </div>
-
-                <div className="flex-1 text-center">
-                  <div
-                    className={`w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-lg ${
-                      paper.cameraReadyPhase
-                        ? "bg-purple-500 text-white"
-                        : "bg-gray-200 text-gray-400"
-                    }`}
-                  >
-                    {paper.cameraReadyPhase ? "✓" : "○"}
-                  </div>
-                  <div className="text-xs font-medium text-gray-700">Camera Ready</div>
-                </div>
-              </div>
+      return (
+        <div className="flex items-center justify-between">
+          <div className="flex-1 text-center">
+            <div
+              className={`w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-lg ${
+                isActiveOrPassed("Abstract")
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-200 text-gray-400"
+              }`}
+            >
+              {isActiveOrPassed("Abstract")
+                ? paper.abstractPhase?.status
+                  ? statusStyles[paper.abstractPhase.status]?.icon || "●"
+                  : "●"
+                : "○"}
             </div>
+            <div className="text-xs font-medium text-gray-700">Abstract</div>
+            {paper.abstractPhase && (
+              <div
+                className={`text-xs ${
+                  statusStyles[paper.abstractPhase.status]?.color || "text-gray-500"
+                }`}
+              >
+                {paper.abstractPhase.status}
+              </div>
+            )}
           </div>
+
+          <div className="flex-1 h-1 bg-gray-200 mx-2">
+            {isActiveOrPassed("FullPaper") && <div className="h-full bg-blue-500 w-full"></div>}
+          </div>
+
+          <div className="flex-1 text-center">
+            <div
+              className={`w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-lg ${
+                isActiveOrPassed("FullPaper")
+                  ? "bg-emerald-500 text-white"
+                  : "bg-gray-200 text-gray-400"
+              }`}
+            >
+              {isActiveOrPassed("FullPaper")
+                ? paper.fullPaperPhase?.status
+                  ? statusStyles[paper.fullPaperPhase.status]?.icon || "●"
+                  : "●"
+                : "○"}
+            </div>
+            <div className="text-xs font-medium text-gray-700">Full Paper</div>
+            {paper.fullPaperPhase && (
+              <div
+                className={`text-xs ${
+                  statusStyles[paper.fullPaperPhase.status]?.color || "text-gray-500"
+                }`}
+              >
+                {paper.fullPaperPhase.status}
+              </div>
+            )}
+          </div>
+
+          <div className="flex-1 h-1 bg-gray-200 mx-2">
+            {isActiveOrPassed("Revision") && <div className="h-full bg-blue-500 w-full"></div>}
+          </div>
+
+          <div className="flex-1 text-center">
+            <div
+              className={`w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-lg ${
+                isActiveOrPassed("Revision")
+                  ? "bg-amber-500 text-white"
+                  : "bg-gray-200 text-gray-400"
+              }`}
+            >
+              {isActiveOrPassed("Revision")
+                ? paper.revisionPhase?.status
+                  ? statusStyles[paper.revisionPhase.status]?.icon || "●"
+                  : "●"
+                : "○"}
+            </div>
+            <div className="text-xs font-medium text-gray-700">Revision</div>
+            {paper.revisionPhase && (
+              <div
+                className={`text-xs ${
+                  statusStyles[paper.revisionPhase.status]?.color || "text-gray-500"
+                }`}
+              >
+                {paper.revisionPhase.status}
+              </div>
+            )}
+          </div>
+
+          <div className="flex-1 h-1 bg-gray-200 mx-2">
+            {isActiveOrPassed("CameraReady") && <div className="h-full bg-blue-500 w-full"></div>}
+          </div>
+
+          <div className="flex-1 text-center">
+            <div
+              className={`w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-lg ${
+                isActiveOrPassed("CameraReady")
+                  ? "bg-purple-500 text-white"
+                  : "bg-gray-200 text-gray-400"
+              }`}
+            >
+              {isActiveOrPassed("CameraReady") ? "✓" : "○"}
+            </div>
+            <div className="text-xs font-medium text-gray-700">Camera Ready</div>
+          </div>
+        </div>
+      );
+    })()}
+  </div>
+</div>
+
+          {/* Hiển thị thời gian duyệt abstract — luon hien thi neu co du lieu */}
+          {(abstractDecideStart || abstractDecideEnd) && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h5 className="font-semibold text-blue-900 mb-2">Thời gian duyệt Abstract</h5>
+              <p className="text-sm text-blue-800">
+                Từ {formatDate(abstractDecideStart)} → {formatDate(abstractDecideEnd)}
+              </p>
+            </div>
+          )}
 
           <div className="space-y-4">
             {paper.abstractPhase && (
@@ -226,6 +265,21 @@ export function PaperDetailModal({
                 <h5 className="font-semibold text-amber-900 mb-2">Revision Phase</h5>
                 <p className="text-sm text-amber-800">
                   <strong>Trạng thái:</strong> {paper.revisionPhase.status}
+                </p>
+              </div>
+            )}
+
+            {paper.cameraReadyPhase && (
+              <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                <h5 className="font-semibold text-purple-900 mb-2">Camera Ready Phase</h5>
+                <p className="text-sm text-purple-800 mb-1">
+                  <strong>Tiêu đề:</strong> {paper.cameraReadyPhase.title}
+                </p>
+                <p className="text-sm text-purple-800 mb-1">
+                  <strong>Mô tả:</strong> {paper.cameraReadyPhase.description}
+                </p>
+                <p className="text-sm text-purple-800">
+                  <strong>Trạng thái:</strong> {paper.cameraReadyPhase.status}
                 </p>
               </div>
             )}
@@ -268,7 +322,12 @@ export function PaperDetailModal({
               </Button>
               <Button
                 onClick={onOpenDecisionDialog}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                disabled={disableDecision}
+                className={`flex-1 text-white ${
+                  disableDecision
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700"
+                }`}
               >
                 <FileText className="w-4 h-4 mr-2" />
                 Step 2: Duyệt Abstract
@@ -289,28 +348,35 @@ export function PaperDetailModal({
           )}
 
           {abstractDecided && paper.abstractPhase && (
-            <div className={`border rounded-lg p-4 ${
-              paper.abstractPhase.status === "Accepted" 
-                ? "bg-green-50 border-green-200" 
-                : "bg-red-50 border-red-200"
-            }`}>
-              <p className={`text-sm flex items-center gap-2 ${
-                paper.abstractPhase.status === "Accepted" 
-                  ? "text-green-800" 
-                  : "text-red-800"
-              }`}>
+            <div
+              className={`border rounded-lg p-4 ${
+                paper.abstractPhase.status === "Accepted"
+                  ? "bg-green-50 border-green-200"
+                  : "bg-red-50 border-red-200"
+              }`}
+            >
+              <p
+                className={`text-sm flex items-center gap-2 ${
+                  paper.abstractPhase.status === "Accepted"
+                    ? "text-green-800"
+                    : "text-red-800"
+                }`}
+              >
                 <span className="text-lg">
                   {paper.abstractPhase.status === "Accepted" ? "✓" : "✗"}
                 </span>
                 <strong>
-                  Abstract đã được {paper.abstractPhase.status === "Accepted" ? "chấp nhận" : "từ chối"}.
+                  Abstract đã được{" "}
+                  {paper.abstractPhase.status === "Accepted" ? "chấp nhận" : "từ chối"}.
                 </strong>
               </p>
-              <p className={`text-xs mt-2 ${
-                paper.abstractPhase.status === "Accepted" 
-                  ? "text-green-700" 
-                  : "text-red-700"
-              }`}>
+              <p
+                className={`text-xs mt-2 ${
+                  paper.abstractPhase.status === "Accepted"
+                    ? "text-green-700"
+                    : "text-red-700"
+                }`}
+              >
                 Không thể thay đổi quyết định này.
               </p>
             </div>

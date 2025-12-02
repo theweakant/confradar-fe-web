@@ -39,11 +39,9 @@ interface PaperTabProps {
 
 export function PaperTab({ conferenceId, conferenceData }: PaperTabProps) {
   const [selectedPaperId, setSelectedPaperId] = useState<string | null>(null);
-  
   const [showAssignDialog, setShowAssignDialog] = useState(false);
   const [selectedReviewer, setSelectedReviewer] = useState<string>("");
   const [isHeadReviewer, setIsHeadReviewer] = useState(false);
-
   const [showDecisionDialog, setShowDecisionDialog] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingDecision, setPendingDecision] = useState<DecisionType | null>(null);
@@ -73,16 +71,18 @@ export function PaperTab({ conferenceId, conferenceData }: PaperTabProps) {
   const activePhase = conferenceData?.researchPhase?.find(
     (phase: ResearchConferencePhaseResponse) => phase.isActive
   );
+  const fallbackPhase = conferenceData?.researchPhase?.[0];
+  const effectivePhase = activePhase || fallbackPhase;
 
-  const isAbstractReviewPeriod = () => {
-    if (!activePhase) return false;
-    const startStr = activePhase.abstractDecideStatusStart;
-    const endStr = activePhase.abstractDecideStatusEnd;
-    if (!startStr || !endStr) return false;
+  const abstractDecideStart = effectivePhase?.abstractDecideStatusStart;
+  const abstractDecideEnd = effectivePhase?.abstractDecideStatusEnd;
+
+  const isWithinAbstractDecisionPeriod = () => {
+    if (!abstractDecideStart || !abstractDecideEnd) return false;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const startDate = new Date(startStr);
-    const endDate = new Date(endStr);
+    const startDate = new Date(abstractDecideStart);
+    const endDate = new Date(abstractDecideEnd);
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return false;
     startDate.setHours(0, 0, 0, 0);
     endDate.setHours(23, 59, 59, 999);
@@ -125,7 +125,6 @@ export function PaperTab({ conferenceId, conferenceData }: PaperTabProps) {
       toast.error("Vui lòng chọn reviewer!");
       return;
     }
-
     if (!selectedPaperId) return;
 
     try {
@@ -134,13 +133,12 @@ export function PaperTab({ conferenceId, conferenceData }: PaperTabProps) {
         paperId: selectedPaperId,
         isHeadReviewer,
       }).unwrap();
-
       toast.success(res.message || "Giao reviewer thành công!");
       handleCloseAssignDialog();
       refetchPapers();
     } catch (error: unknown) {
-      const err = error as ApiError;
-      const errorMessage = err?.message || "Giao reviewer thất bại!";
+      const err = error as { data?: ApiError };
+      const errorMessage = err?.data?.message || "Có lỗi xảy ra khi giao reviewer";
       toast.error(errorMessage);
     }
   };
@@ -240,29 +238,26 @@ export function PaperTab({ conferenceId, conferenceData }: PaperTabProps) {
   const reviewers = reviewersData?.data || [];
   const reviewersList = reviewersListData?.data ?? [];
   const selectedPaper = papers.find((p) => p.paperId === selectedPaperId);
-  const canReviewAbstracts = isAbstractReviewPeriod();
 
   const availableReviewers = reviewersList.filter((reviewer) => {
     if (!selectedPaper) return true;
-    
     const assignedReviewerIds = selectedPaper.assignedReviewers?.map((assignedStr) => {
       const match = assignedStr.match(/\(([^)]+)\)/);
       return match ? match[1] : null;
     }).filter(Boolean) || [];
-    
     return !assignedReviewerIds.includes(reviewer.userId);
   });
 
   return (
     <>
       <div className="space-y-6">
-        {activePhase && (
+        {abstractDecideStart && abstractDecideEnd ? (
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-3">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-blue-600" />
                 <h3 className="font-semibold text-gray-900">Thời gian duyệt Abstract</h3>
-                {canReviewAbstracts ? (
+                {isWithinAbstractDecisionPeriod() ? (
                   <span className="ml-2 px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
                     Đang trong thời gian duyệt
                   </span>
@@ -273,15 +268,15 @@ export function PaperTab({ conferenceId, conferenceData }: PaperTabProps) {
                 )}
               </div>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-gray-700">
-                {formatDate(activePhase.abstractDecideStatusStart)}
-              </span>
-              <span className="text-blue-600 font-medium">→</span>
-              <span className="text-gray-700">
-                {formatDate(activePhase.abstractDecideStatusEnd)}
-              </span>
+            <div className="text-sm text-gray-700">
+              Từ {formatDate(abstractDecideStart)} → {formatDate(abstractDecideEnd)}
             </div>
+          </div>
+        ) : (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+            <p className="text-sm text-amber-800">
+              Không tìm thấy thời gian duyệt abstract.
+            </p>
           </div>
         )}
 
@@ -295,6 +290,9 @@ export function PaperTab({ conferenceId, conferenceData }: PaperTabProps) {
           onClose={handleClosePaperDetail}
           onOpenAssignDialog={handleOpenAssignDialog}
           onOpenDecisionDialog={handleOpenDecisionDialog}
+          disableDecision={!isWithinAbstractDecisionPeriod()}
+          abstractDecideStart={abstractDecideStart}
+          abstractDecideEnd={abstractDecideEnd}
         />
       )}
 

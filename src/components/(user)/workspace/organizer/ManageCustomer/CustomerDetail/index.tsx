@@ -16,17 +16,17 @@ export const CustomerDetail: React.FC<CustomerDetailProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b">
-        <h2 className="text-xl font-semibold text-gray-900">
-          Chi tiết khách hàng
-        </h2>
-        <button
-          onClick={onClose}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
-      </div>
+        {/* <div className="flex items-center justify-between pb-4 border-b">
+          <h2 className="text-xl font-semibold text-gray-900">
+            Chi tiết khách hàng
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div> */}
 
       {/* Profile Section */}
       <div className="flex items-start space-x-4">

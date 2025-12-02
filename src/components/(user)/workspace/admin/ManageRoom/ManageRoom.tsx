@@ -315,21 +315,38 @@ export default function ManageRoom() {
                 ? "Tìm kiếm phòng..."
                 : "Tìm kiếm địa điểm..."
             }
+            // filters={
+            //   activeTab === "rooms"
+            //     ? [
+            //         {
+            //           value: filterStatus,
+            //           onValueChange: setFilterStatus,
+            //           options: statusOptions,
+            //         },
+            //       ]
+            //     : []
+            // }
             filters={
-              activeTab === "rooms"
-                ? [
-                    {
-                      value: filterStatus,
-                      onValueChange: setFilterStatus,
-                      options: statusOptions,
-                    },
-                  ]
-                : []
-            }
+            activeTab === "rooms"
+              ? [
+                  {
+                    value: selectedDestinationFilter,
+                    onValueChange: setSelectedDestinationFilter,
+                    options: [
+                      { value: "all", label: "Tất cả địa điểm" },
+                      ...destinations.map((d) => ({
+                        value: d.destinationId,
+                        label: d.name,
+                      })),
+                    ],
+                  },
+                ]
+              : []
+          }
           />
 
           {/* Additional filter for rooms */}
-          {activeTab === "rooms" && (
+          {/* {activeTab === "rooms" && (
             <div className="mt-4">
               <Select
                 value={selectedDestinationFilter}
@@ -351,7 +368,7 @@ export default function ManageRoom() {
                 </SelectContent>
               </Select>
             </div>
-          )}
+          )} */}
         </div>
 
         {/* Summary Cards */}

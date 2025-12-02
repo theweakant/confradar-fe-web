@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { endpoint } from "../api/endpoint";
-import { CollaboratorContractResponse, ContractDetailResponseForOrganizer, CreateCollaboratorContractRequest, CreateNewReviewerContractRequest, CreateReviewerContractRequest, GetUsersForReviewerContractRequest, GetUsersForReviewerContractResponse, OwnContractDetailResponse } from "@/types/contract.type";
+import { CollaboratorContractResponse, ContractDetailResponseForOrganizer, CreateCollaboratorContractRequest, CreateNewReviewerContractRequest, CreateReviewerContractRequest, GetUsersForReviewerContractRequest, GetUsersForReviewerContractResponse, OwnCollaboratorContractResponse, OwnContractDetailResponse } from "@/types/contract.type";
 import { apiClient } from "../api/apiClient";
 import { ApiResponse, ApiResponsePagination } from "@/types/api.type";
 
@@ -156,6 +156,17 @@ export const contractApi = createApi({
             }),
             providesTags: ["Contract"],
         }),
+
+        getOwnCollaboratorContracts: builder.query<
+        ApiResponse<OwnCollaboratorContractResponse[]>,
+        void
+        >({
+        query: () => ({
+            url: endpoint.CONTRACT.OWN_COLLABORATOR_CONTRACT,
+            method: "GET",
+        }),
+        providesTags: ["Contract"],
+        }),
     }),
 });
 
@@ -171,4 +182,7 @@ export const {
     useCreateCollaboratorContractMutation,
     useListCollaboratorContractsQuery,
     useLazyListCollaboratorContractsQuery,
+
+    useGetOwnCollaboratorContractsQuery,
+    useLazyGetOwnCollaboratorContractsQuery,
 } = contractApi;

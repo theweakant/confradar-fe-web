@@ -1,303 +1,407 @@
-import React from 'react';
+"use client";
 
-// ============= INTERFACES =============
-interface PartnerContract {
-  id: number;
-  contractCode: string;
-  conferenceName: string;
-  startDate: string;
-  endDate: string;
-  commissionRate: number;
-  totalRevenue: number;
-  commission: number;
-  status: 'Active' | 'Expired' | 'Pending';
-  paymentStatus: 'Paid' | 'Pending' | 'Overdue';
-}
+import { useState } from "react";
+import {
+  FileText,
+  DollarSign,
+  Search,
+  Filter,
+  Loader2,
+  AlertCircle,
+  CheckCircle2,
+  Download,
+  Info,
+} from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useGetOwnCollaboratorContractsQuery } from "@/redux/services/contract.service";
+import { useAuth } from "@/redux/hooks/useAuth";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-interface PartnerContractsProps {
-  contracts?: PartnerContract[];
-}
+function CustomAvatar({
+  src,
+  alt,
+  fallback,
+  size = "md",
+}: {
+  src?: string;
+  alt: string;
+  fallback: string;
+  size?: "sm" | "md" | "lg";
+}) {
+  const [imgError, setImgError] = useState(false);
 
-// ============= MOCK DATA =============
-const mockContracts: PartnerContract[] = [
-  { 
-    id: 1, 
-    contractCode: 'CT-2024-001',
-    conferenceName: 'AI & Machine Learning Conference',
-    startDate: '2024-01-15',
-    endDate: '2024-12-31',
-    commissionRate: 15,
-    totalRevenue: 450000000,
-    commission: 67500000,
-    status: 'Active',
-    paymentStatus: 'Paid'
-  },
-  { 
-    id: 2, 
-    contractCode: 'CT-2024-002',
-    conferenceName: 'Cloud Computing Summit',
-    startDate: '2024-03-01',
-    endDate: '2024-11-30',
-    commissionRate: 12,
-    totalRevenue: 320000000,
-    commission: 38400000,
-    status: 'Active',
-    paymentStatus: 'Pending'
-  },
-  { 
-    id: 3, 
-    contractCode: 'CT-2024-003',
-    conferenceName: 'DevOps Best Practices',
-    startDate: '2024-06-01',
-    endDate: '2025-05-31',
-    commissionRate: 18,
-    totalRevenue: 280000000,
-    commission: 50400000,
-    status: 'Active',
-    paymentStatus: 'Paid'
-  },
-  { 
-    id: 4, 
-    contractCode: 'CT-2023-015',
-    conferenceName: 'Blockchain Summit 2023',
-    startDate: '2023-09-01',
-    endDate: '2024-08-31',
-    commissionRate: 10,
-    totalRevenue: 150000000,
-    commission: 15000000,
-    status: 'Expired',
-    paymentStatus: 'Paid'
-  },
-  { 
-    id: 5, 
-    contractCode: 'CT-2024-004',
-    conferenceName: 'Cybersecurity & Privacy Conference',
-    startDate: '2024-08-01',
-    endDate: '2025-07-31',
-    commissionRate: 20,
-    totalRevenue: 550000000,
-    commission: 110000000,
-    status: 'Active',
-    paymentStatus: 'Pending'
-  },
-];
-
-// ============= INTERNAL COMPONENT =============
-const PartnerContractsView: React.FC<PartnerContractsProps> = ({ contracts = mockContracts }) => {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Active': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-      case 'Expired': return 'bg-gray-100 text-gray-700 border-gray-200';
-      case 'Pending': return 'bg-amber-100 text-amber-700 border-amber-200';
-      default: return 'bg-gray-100 text-gray-700 border-gray-200';
-    }
+  const sizeClasses = {
+    sm: "w-6 h-6 text-xs",
+    md: "w-12 h-12 text-base",
+    lg: "w-16 h-16 text-xl",
   };
-
-  const getPaymentStatusColor = (status: string) => {
-    switch (status) {
-      case 'Paid': return 'bg-blue-100 text-blue-700';
-      case 'Pending': return 'bg-orange-100 text-orange-700';
-      case 'Overdue': return 'bg-red-100 text-red-700';
-      default: return 'bg-gray-100 text-gray-700';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'Active': return 'Đang hoạt động';
-      case 'Expired': return 'Hết hạn';
-      case 'Pending': return 'Chờ duyệt';
-      default: return status;
-    }
-  };
-
-  const getPaymentStatusText = (status: string) => {
-    switch (status) {
-      case 'Paid': return 'Đã thanh toán';
-      case 'Pending': return 'Chờ thanh toán';
-      case 'Overdue': return 'Quá hạn';
-      default: return status;
-    }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(amount);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('vi-VN');
-  };
-
-  const totalCommission = contracts
-    .filter(c => c.status === 'Active')
-    .reduce((sum, c) => sum + c.commission, 0);
-
-  const activeContracts = contracts.filter(c => c.status === 'Active').length;
-  const pendingPayments = contracts.filter(c => c.paymentStatus === 'Pending').length;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <Avatar className={`${sizeClasses[size]} flex-shrink-0`}>
+      {src && !imgError ? (
+        <AvatarImage
+          src={src}
+          alt={alt}
+          onError={() => setImgError(true)}
+          className="object-cover"
+        />
+      ) : null}
+      <AvatarFallback
+        className={`bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold flex items-center justify-center ${sizeClasses[size]}`}
+      >
+        {fallback}
+      </AvatarFallback>
+    </Avatar>
+  );
+}
+
+export default function CollaboratorContractsList() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const { user } = useAuth();
+  const { data, isLoading, error } = useGetOwnCollaboratorContractsQuery();
+  const contracts = data?.data || [];
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
+  const getTicketSellingConfig = (isTicketSelling: boolean) => {
+    if (isTicketSelling) {
+      return {
+        label: "Liên kết bán vé",
+        color: "bg-green-100 text-green-700 border-green-300",
+        icon: CheckCircle2,
+      };
+    }
+    return {
+      label: "Không bán vé",
+      color: "bg-gray-100 text-gray-700 border-gray-300",
+      icon: AlertCircle,
+    };
+  };
+
+  const filteredContracts = contracts.filter((contract) => {
+    const matchesSearch = contract.conferenceName
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      filterStatus === "all" ||
+      (filterStatus === "selling" && contract.isTicketSelling) ||
+      (filterStatus === "not-selling" && !contract.isTicketSelling);
+    return matchesSearch && matchesStatus;
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Đang tải hợp đồng...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Info className="w-8 h-8 text-red-600" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">Không thể tải dữ liệu</h3>
+          <p className="text-gray-600">Vui lòng thử lại sau</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Hợp Đồng Đối Tác ConfRadar</h1>
-          <p className="text-gray-600">Quản lý hợp đồng hợp tác và hoa hồng của bạn</p>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-6 mb-8">
-          <div className="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-2xl p-6 text-white shadow-lg">
-            <div className="flex justify-between items-start mb-2">
-              <h3 className="text-sm font-medium opacity-90">Tổng Hoa Hồng</h3>
-              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                <span className="text-lg">💰</span>
-              </div>
-            </div>
-            <div className="text-3xl font-bold mb-1">{formatCurrency(totalCommission)}</div>
-            <div className="text-xs opacity-75">Từ {activeContracts} hợp đồng đang hoạt động</div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <div className="flex justify-between items-start mb-2">
-              <h3 className="text-sm font-medium text-gray-600">Hợp Đồng Hoạt Động</h3>
-              <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                <span className="text-lg">📋</span>
-              </div>
-            </div>
-            <div className="text-3xl font-bold mb-1 text-gray-900">{activeContracts}</div>
-            <div className="text-xs text-emerald-600">Đang hợp tác</div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <div className="flex justify-between items-start mb-2">
-              <h3 className="text-sm font-medium text-gray-600">Chờ Thanh Toán</h3>
-              <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                <span className="text-lg">⏳</span>
-              </div>
-            </div>
-            <div className="text-3xl font-bold mb-1 text-gray-900">{pendingPayments}</div>
-            <div className="text-xs text-orange-600">Cần xử lý</div>
-          </div>
-        </div>
-
-        {/* Contracts List */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center gap-4 mb-2">
             <div>
-              <h3 className="text-xl font-semibold text-gray-900">Danh Sách Hợp Đồng</h3>
-              <p className="text-sm text-gray-500 mt-1">Tổng cộng {contracts.length} hợp đồng</p>
+            <h1 className="text-2xl font-semibold text-gray-900">
+              Danh sách hợp đồng của đối tác{" "}
+              <span className="text-2xl font-normal text-yellow-900">
+                {user?.email || "Đang tải..."}
+              </span>
+            </h1>              
+            <p className="text-gray-600 mt-2">Các hợp đồng đã được kí kết với ConfRadar</p>
             </div>
-            <button className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-6 rounded-xl transition-colors flex items-center gap-2">
-              <span className="text-lg">+</span>
-              Tạo hợp đồng mới
-            </button>
           </div>
+        </div>
 
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Tìm kiếm..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent [&>span]:truncate">
+                  <SelectValue placeholder="Chọn trạng thái" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="all">Tất cả</SelectItem>
+                    <SelectItem value="selling">Bán vé</SelectItem>
+                    <SelectItem value="not-selling">Không bán vé</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
+          <StatCard
+            icon={<FileText className="w-5 h-5" />}
+            label="Tổng hợp đồng"
+            value={contracts.length}
+            color="text-blue-600"
+          />
+          <StatCard
+            icon={<CheckCircle2 className="w-5 h-5" />}
+            label="Liên kết bán vé"
+            value={contracts.filter((c) => c.isTicketSelling).length}
+            color=" text-green-600"
+          />
+          <StatCard
+            icon={<AlertCircle className="w-5 h-5" />}
+            label="Không bán vé"
+            value={contracts.filter((c) => !c.isTicketSelling).length}
+            color=" text-amber-600"
+          />
+          <StatCard
+            icon={<DollarSign className="w-5 h-5" />}
+            label="Hoa hồng trung bình"
+            value={
+              contracts.length > 0
+                ? `${Math.round(
+                    contracts.reduce((sum, c) => sum + c.commission, 0) /
+                      contracts.length
+                  )}%`
+                : "0%"
+            }
+            color=" text-purple-600"
+          />
+        </div>
+
+        {filteredContracts.length === 0 ? (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+            <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Không tìm thấy hợp đồng</h3>
+            <p className="text-gray-500">
+              {contracts.length === 0
+                ? "Bạn chưa có hợp đồng nào"
+                : "Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm"}
+            </p>
+          </div>
+        ) : (
           <div className="space-y-4">
-            {contracts.map((contract) => (
-              <div 
-                key={contract.id} 
-                className="border border-gray-200 rounded-xl p-5 hover:shadow-lg hover:border-emerald-200 transition-all"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h4 className="text-lg font-semibold text-gray-900">{contract.conferenceName}</h4>
-                      <span className={`text-xs px-3 py-1 rounded-full border ${getStatusColor(contract.status)}`}>
-                        {getStatusText(contract.status)}
-                      </span>
+            {filteredContracts.map((contract) => {
+              const ticketConfig = getTicketSellingConfig(contract.isTicketSelling);
+              const TicketIcon = ticketConfig.icon;
+
+              return (
+                <div
+                  key={contract.collaboratorContractId}
+                  className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow overflow-hidden"
+                >
+                  <div className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-2 flex-wrap">
+                          <h3 className="text-xl font-bold text-gray-900 truncate">
+                            {contract.conferenceName}
+                          </h3>
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium border ${ticketConfig.color} flex items-center gap-1`}
+                          >
+                            <TicketIcon className="w-3 h-3" />
+                            {ticketConfig.label}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 text-sm">
+                          <div className="flex items-center gap-2">
+                            <CustomAvatar
+                              src={contract.conferenceCreatedByAvatarUrl ?? undefined}                              
+                              alt={contract.conferenceCreatedByName}
+                              fallback={
+                                contract.conferenceCreatedByName?.charAt(0).toUpperCase() || "C"
+                              }
+                              size="sm"
+                            />
+                            <span className="text-gray-700 font-medium">
+                              {contract.conferenceCreatedByName}
+                            </span>
+                          </div>
+                          <span className="text-gray-400">•</span>
+                          <span className="text-gray-600">
+                            {contract.conferenceCreatedByEmail}
+                          </span>
+                        </div>
+                      </div>
+
+                      {contract.contractUrl && (
+                        <a
+                          href={contract.contractUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center w-10 h-10 text-gray-500 hover:text-blue-600 rounded-lg transition-colors duration-200"
+                          title="Tải hợp đồng"
+                        >
+                          <Download className="w-5 h-5" />
+                        </a>
+                      )}
                     </div>
-                    <p className="text-sm text-gray-500 flex items-center gap-2">
-                      <span>📄</span>
-                      Mã HĐ: <span className="font-mono font-medium">{contract.contractCode}</span>
-                    </p>
-                  </div>
-                  <span className={`text-sm px-4 py-2 rounded-full font-medium ${getPaymentStatusColor(contract.paymentStatus)}`}>
-                    {getPaymentStatusText(contract.paymentStatus)}
-                  </span>
-                </div>
 
-                <div className="grid grid-cols-4 gap-6 mb-4 bg-gray-50 rounded-lg p-4">
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
-                      <span>📅</span>
-                      Thời gian hợp đồng
-                    </p>
-                    <p className="text-sm font-medium text-gray-900">
-                      {formatDate(contract.startDate)}
-                    </p>
-                    <p className="text-xs text-gray-500">đến {formatDate(contract.endDate)}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
-                      <span>📊</span>
-                      Tỷ lệ hoa hồng
-                    </p>
-                    <p className="text-2xl font-bold text-emerald-600">{contract.commissionRate}%</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
-                      <span>💵</span>
-                      Doanh thu
-                    </p>
-                    <p className="text-sm font-medium text-gray-900">{formatCurrency(contract.totalRevenue)}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
-                      <span>💎</span>
-                      Hoa hồng
-                    </p>
-                    <p className="text-sm font-bold text-emerald-600">{formatCurrency(contract.commission)}</p>
-                  </div>
-                </div>
+                    <div className="w-64 h-32 bg-gray-100 flex-shrink-0 rounded-lg overflow-hidden">
+                      {contract.bannerImageUrl ? (
+                        <img
+                          src={contract.bannerImageUrl}
+                          alt={contract.conferenceName}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = "none";
+                            const parent = target.parentElement;
+                            if (parent) {
+                              parent.innerHTML = `<div class="w-full h-full flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text text-gray-300"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>`;
+                            }
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <FileText className="w-8 h-8 text-gray-300" />
+                        </div>
+                      )}
+                    </div>
 
-                <div className="flex gap-3">
-                  <button className="flex-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-sm font-medium py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
-                    <span>👁️</span>
-                    Xem chi tiết
-                  </button>
-                  {contract.paymentStatus === 'Pending' && (
-                    <button className="bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium py-2.5 px-4 rounded-lg transition-colors flex items-center gap-2">
-                      <span>💳</span>
-                      Yêu cầu thanh toán
-                    </button>
-                  )}
-                  <button className="bg-gray-50 hover:bg-gray-100 text-gray-700 text-sm font-medium py-2.5 px-4 rounded-lg transition-colors flex items-center gap-2">
-                    <span>📥</span>
-                    Tải xuống
-                  </button>
+                    <div className="flex gap-4 mt-4 mb-4 p-4 bg-gray-50 rounded-lg">
+                      <div className="flex-1 grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <DetailItem
+                          label="Hoa hồng"
+                          value={`${contract.commission}%`}
+                          highlight
+                        />
+                        <DetailItem
+                          label="Ngày kí hợp đồng"
+                          value={formatDate(contract.signDay)}
+                        />
+                        <DetailItem
+                          label="Ngày thanh toán hợp đồng"
+                          value={formatDate(contract.finalizePaymentDate)}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
+                      <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        Các thông tin được ConfRadar liên kết
+                      </h4>
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                        <StepStatus label="Nhà tài trợ" completed={contract.isSponsorStep} />
+                        <StepStatus label="Media" completed={contract.isMediaStep} />
+                        <StepStatus label="Chính sách" completed={contract.isPolicyStep} />
+                        <StepStatus label="Session" completed={contract.isSessionStep} />
+                        <StepStatus label="Giá vé" completed={contract.isPriceStep} />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
-        </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
-        {/* Footer Info */}
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-xl p-4">
-          <div className="flex items-start gap-3">
-            <span className="text-2xl">💡</span>
-            <div>
-              <h4 className="font-semibold text-blue-900 mb-1">Lưu ý về hoa hồng</h4>
-              <p className="text-sm text-blue-700">
-                Hoa hồng sẽ được tính dựa trên doanh thu thực tế từ các đăng ký tham gia hội thảo. 
-                Thanh toán được thực hiện vào ngày thanh toán cho các hợp đồng.
-              </p>
-            </div>
-          </div>
+function StatCard({
+  icon,
+  label,
+  value,
+  color,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string | number;
+  color: string;
+}) {
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      <div className="flex items-center gap-3">
+        <div className={`p-3 rounded-lg ${color}`}>{icon}</div>
+        <div>
+          <p className="text-sm text-gray-600">{label}</p>
+          <p className="text-2xl font-bold text-gray-900">{value}</p>
         </div>
       </div>
     </div>
   );
-};
-
-// ============= DEFAULT EXPORT =============
-export default function PartnerContracts() {
-  return <PartnerContractsView contracts={mockContracts} />;
 }
 
-// ============= NAMED EXPORTS FOR FLEXIBILITY =============
-export { PartnerContractsView };
-export type { PartnerContract, PartnerContractsProps };
+function DetailItem({
+  label,
+  value,
+  highlight = false,
+}: {
+  label: string;
+  value: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div>
+      <p className="text-xs text-gray-500 mb-1">{label}</p>
+      <p className={`text-sm font-semibold ${highlight ? "text-blue-600" : "text-gray-900"}`}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function StepStatus({ label, completed }: { label: string; completed: boolean }) {
+  return (
+    <div className="flex items-center gap-2">
+      <div
+        className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
+          completed ? "bg-green-500" : "bg-red-500"
+        }`}
+      >
+        {completed ? (
+          <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+        ) : (
+          <AlertCircle className="w-3.5 h-3.5 text-white" />
+        )}
+      </div>
+      <span className={`text-sm font-medium ${completed ? "text-green-700" : "text-red-700"}`}>
+        {label}
+      </span>
+    </div>
+  );
+}

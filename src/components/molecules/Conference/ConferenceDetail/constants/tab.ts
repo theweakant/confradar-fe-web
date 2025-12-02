@@ -13,7 +13,7 @@ import {
   MessageCircle,
   ClipboardList,
   Activity,
-  FileSignature, // 👈 Icon cho hợp đồng
+  FileSignature, 
 } from "lucide-react";
 
 // Giả sử TabId được export từ file khác (như bạn đã dùng)
@@ -32,7 +32,7 @@ export type TabId =
   | "other-requests"
   | "session"
   | "paper-assignment"
-  | "contract"; // 👈 ĐÃ THÊM
+  | "contract"; 
 
 type LucideIcon = React.ComponentType<React.SVGProps<SVGSVGElement>>;
 
@@ -41,7 +41,7 @@ export interface TabConfig {
   label: string;
   icon: LucideIcon;
   conferenceType?: "technical" | "research" | "all";
-  roles?: string[]; // 👈 thêm roles
+  roles?: string[]; 
 }
 
 export interface TabGroup {
@@ -99,7 +99,6 @@ export const TAB_GROUPS: TabGroup[] = [
         icon: Calendar,
         conferenceType: "all",
       },
-      // 👇 TAB HỢP ĐỒNG - CHỈ TECH & COLLABORATOR
       {
         id: "contract",
         label: "Hợp đồng",
@@ -128,7 +127,7 @@ export const TAB_GROUPS: TabGroup[] = [
       },
       {
         id: "paper-assignment",
-        label: "Xếp bài báo",
+        label: "Xếp lịch cho bài báo",
         icon: ClipboardList,
         conferenceType: "research",
       },
