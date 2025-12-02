@@ -94,7 +94,7 @@ export const ticketApi = createApi({
     }),
 
 
-  cancelResearchTicket: builder.mutation<ApiResponse<void>, CancelTicketRequest>({
+    cancelResearchTicket: builder.mutation<ApiResponse<void>, CancelTicketRequest>({
       query: (body) => ({
         url: "/ticket/cancel-research",
         method: "POST",

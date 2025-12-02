@@ -182,7 +182,8 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
       id: "report",
       label: "Báo cáo vấn đề",
       icon: Flag,
-      onClick: () => setIsReportDialogOpen(true),
+      // onClick: () => setIsReportDialogOpen(true),
+      href: "/customer/report-manage",
     },
   ];
 

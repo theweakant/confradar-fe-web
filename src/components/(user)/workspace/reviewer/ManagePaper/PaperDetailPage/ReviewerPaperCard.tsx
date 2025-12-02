@@ -281,10 +281,10 @@ const ReviewerPaperCard: React.FC<ReviewerPaperCardProps> = ({
                             <Eye className="w-4 h-4 text-gray-400" />
                             <p className="text-xs text-gray-500 font-medium">Xem trước tài liệu</p>
                         </div>
-                        <div className="max-h-[70vh] border border-gray-200 rounded-lg bg-gray-50">
+                        <div className="max-h-[600px] border border-gray-200 rounded-lg bg-gray-50">
                             <ReusableDocViewer
                                 fileUrl={paperInfo.fileUrl}
-                                minHeight="70vh"
+                                minHeight={600}
                                 checkUrlBeforeRender={true}
                             />
                         </div>

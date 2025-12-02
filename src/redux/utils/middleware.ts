@@ -17,6 +17,7 @@ import { presenterApi } from "../services/assigningpresentersession.service";
 import { statisticsApi } from "../services/statistics.service";
 import { reportApi } from "../services/report.service";
 import { dashboardApi } from "../services/dashboard.service";
+import { auditLogApi } from "../services/auditlog.service";
 
 export const apiMiddlewares: Middleware[] = [
   authApi.middleware,
@@ -37,4 +38,5 @@ export const apiMiddlewares: Middleware[] = [
   statisticsApi.middleware,
   reportApi.middleware,
   dashboardApi.middleware,
+  auditLogApi.middleware,
 ];

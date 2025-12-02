@@ -33,3 +33,15 @@ export interface ReportFeedbackResponse {
     adminId?: string;
     admin?: UserResponse;
 }
+
+export interface OwnReportResponse {
+    reportId: string;
+    reportSubject: string;
+    reason: string;
+    description: string;
+    hasResolve: boolean;
+    createdAt: string;
+    userId: string;
+    user: UserResponse;
+    reportFeedback?: ReportFeedbackResponse | null;
+}

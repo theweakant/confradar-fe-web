@@ -28,6 +28,7 @@ import { presenterApi } from "./services/assigningpresentersession.service";
 import { statisticsApi } from "./services/statistics.service";
 import { reportApi } from "./services/report.service";
 import { dashboardApi } from "./services/dashboard.service";
+import { auditLogApi } from "./services/auditlog.service";
 
 // Cấu hình persist
 const persistConfig = {
@@ -48,6 +49,7 @@ const persistConfig = {
     contractApi.reducerPath,
     statisticsApi.reducerPath,
     dashboardApi.reducerPath,
+    auditLogApi.reducerPath
   ],
 };
 
@@ -79,7 +81,7 @@ const appReducer = combineReducers({
   [statisticsApi.reducerPath]: statisticsApi.reducer,
   [reportApi.reducerPath]: reportApi.reducer,
   [dashboardApi.reducerPath]: dashboardApi.reducer,
-
+  [auditLogApi.reducerPath]: auditLogApi.reducer,
 });
 
 export type AppState = ReturnType<typeof appReducer>;

@@ -337,7 +337,7 @@ export const endpoint = {
     CREATE_COLLABORATOR_CONTRACT: "/contract/create-collaborator-contract",
     LIST_COLLABORATOR_CONTRACT: "/contract/list-collaborator-contract",
 
-    OWN_COLLABORATOR_CONTRACT:"/contract/own-collaborator-contract"
+    OWN_COLLABORATOR_CONTRACT: "/contract/own-collaborator-contract"
   },
 
   ASSIGNINGPRESENTERSESSION: {
@@ -364,6 +364,7 @@ export const endpoint = {
     GET_UNRESOLVED: "/report/unresolved",
     RESPONSE: (reportId: string) => `/report/${reportId}/response`,
     GET_RESPONSE: (reportId: string) => `/report/${reportId}/get-response`,
+    GET_OWN_REPORTS: "/report/get-own-reports",
   },
 
   DASHBOARD: {
@@ -371,6 +372,11 @@ export const endpoint = {
     UPCOMING_CONFERENCES: "/dashboard/upcoming-conferences",
     TOP_REGISTERED_CONFERENCES: "/dashboard/top-registered-conferences",
     REVENUE: "/dashboard/revenue",
+  },
+
+  AUDIT_LOG: {
+    LIST: "/auditlog/list-audit-log",
+    CATEGORIES: "/auditlog/list-audit-log-categories",
   },
 }
 

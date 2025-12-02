@@ -66,10 +66,15 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
       },
       { label: "Báo cáo", href: "/workspace/admin/report", icon: FileText },
       {
-        label: "Cài đặt",
-        href: "/workspace/admin/system-setting",
+        label: "Log hệ thống",
+        href: "/workspace/admin/system-logs",
         icon: Settings,
       },
+      // {
+      //   label: "Cài đặt",
+      //   href: "/workspace/admin/system-setting",
+      //   icon: Settings,
+      // },
     ],
     [ROLES.CONFERENCE_ORGANIZER]: [
       {
@@ -158,7 +163,8 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
       },
       {
         label: "Bài báo được giao",
-        href: "/workspace/local-reviewer/manage-paper",
+        // href: "/workspace/local-reviewer/manage-paper",
+        href: "/workspace/local-reviewer/manage-paper/conferences-has-assigned-papers",
         icon: FileText,
       },
       {
