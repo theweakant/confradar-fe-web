@@ -92,7 +92,7 @@ export function CollaboratorTable({
                                 <Eye className="w-4 h-4 mr-2" />
                                 Xem chi tiết
                             </DropdownMenuItem>
-                            {/* {collaborator.isActive ? (
+                            {collaborator.isActive ? (
                                 <DropdownMenuItem
                                     onClick={() => onSuspend(collaborator.userId)}
                                     className="cursor-pointer text-orange-600 focus:text-orange-600"
@@ -108,7 +108,7 @@ export function CollaboratorTable({
                                     <CheckCircle className="w-4 h-4 mr-2" />
                                     Kích hoạt
                                 </DropdownMenuItem>
-                            )} */}
+                            )}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
