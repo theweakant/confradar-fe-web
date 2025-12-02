@@ -41,7 +41,7 @@ export function ResearchInfoTab({ conference }: ResearchInfoTabProps) {
             value={conference.revisionAttemptAllowed}
           />
           <InfoField
-            label="Phí phản biện"
+            label="Phí đánh giá bài báo"
             value={`${(conference.reviewFee || 0).toLocaleString("vi-VN")}₫`}
           />
           <InfoField label="Xếp hạng" value={`${conference.rankValue} (${conference.rankYear})`} />

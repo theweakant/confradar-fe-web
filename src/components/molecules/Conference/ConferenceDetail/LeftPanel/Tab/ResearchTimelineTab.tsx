@@ -537,7 +537,7 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
       color: "text-emerald-600",
     },
     {
-      title: "Phản biện",
+      title: "Review",
       start: phase.reviewStartDate,
       end: phase.reviewEndDate,
       icon: MessageCircle,

@@ -294,7 +294,6 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
           </div>
         </div>
 
-        {/* 👇 CẢNH BÁO REJECTED — ĐẶT NGOÀI GRID, Ở DƯỚI */}
         {currentStatusName === "Rejected" && (
           <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-md">
             <p className="text-sm text-amber-800">
@@ -303,7 +302,6 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
           </div>
         )}
 
-        {/* Hiển thị thời gian nếu đang ở trạng thái Ready */}
         {currentStatusName === "Ready" && (conference.startDate || conference.endDate) && (
           <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
             <p className="text-sm text-blue-800">
