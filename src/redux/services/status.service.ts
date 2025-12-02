@@ -35,7 +35,7 @@ export const statusApi = createApi({
     >({
       query: ({ confid, newStatus, reason }) => ({
         url: endpoint.CONFERENCE.UPDATE_OWN_STATUS,
-        method: "POST",
+        method: "PUT",
         params: { confid, newStatus, reason },
       }),
       invalidatesTags: ["Status"],

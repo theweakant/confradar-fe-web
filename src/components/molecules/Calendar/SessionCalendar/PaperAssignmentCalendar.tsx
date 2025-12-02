@@ -63,14 +63,53 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
   const calendarEvents = sessions.map((session) => ({
     id: session.conferenceSessionId,
     title: session.title,
-    start: `${session.sessionDate}T${session.startTime}`,
-    end: `${session.sessionDate}T${session.endTime}`,
+    start: `${session.date}T${session.startTime}`,
+    end: `${session.date}T${session.endTime}`,
     backgroundColor: "#3b82f6",
     borderColor: "#2563eb",
     extendedProps: {
       session,
     },
   }));
+
+  // 🔹 Auto jump to first session date when component mounts or sessions load
+  useEffect(() => {
+    console.log('🔍 Debug Auto Jump:', {
+      hasCalendarRef: !!calendarRef.current,
+      sessionsLength: sessions.length,
+      sessions: sessions
+    });
+
+    if (calendarRef.current && sessions.length > 0) {
+      const calendarApi = calendarRef.current.getApi();
+      
+      // Filter sessions that have valid dates and sort by date to get the earliest one
+      const sortedSessions = [...sessions]
+        .filter((session) => session.date) // Remove sessions without date
+        .sort((a, b) => {
+          return new Date(a.date!).getTime() - new Date(b.date!).getTime();
+        });
+      
+      console.log('📅 Sorted Sessions:', sortedSessions);
+      
+      const firstSessionDate = sortedSessions[0]?.date;
+      
+      console.log('🎯 First Session Date:', firstSessionDate);
+      
+      if (firstSessionDate) {
+        calendarApi.gotoDate(firstSessionDate);
+        console.log('✅ Jumped to date:', firstSessionDate);
+      }
+    }
+  }, [sessions]); // Trigger when sessions are loaded
+
+  // 🔹 Handle manual startDate prop (if provided externally)
+  useEffect(() => {
+    if (calendarRef.current && startDate) {
+      const calendarApi = calendarRef.current.getApi();
+      calendarApi.gotoDate(startDate);
+    }
+  }, [startDate]);
 
   const handleEventClick = (info: EventClickArg) => {
     info.jsEvent.preventDefault();
@@ -79,13 +118,6 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
     onSessionSelected?.(session);
     setDialogOpen(true);
   };
-
-  useEffect(() => {
-    if (calendarRef.current && startDate) {
-      const calendarApi = calendarRef.current.getApi();
-      calendarApi.gotoDate(startDate);
-    }
-  }, [startDate]);
 
   const isLoading = isLoadingSessions || (externalAcceptedPapers === undefined && isLoadingPapers);
   const error = sessionsError || papersError;
