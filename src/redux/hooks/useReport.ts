@@ -6,6 +6,7 @@ import {
     useGetReportResponsesQuery,
     useLazyGetReportResponsesQuery,
     useLazyGetUnresolvedReportsQuery,
+    useLazyGetOwnReportsQuery,
 } from "@/redux/services/report.service";
 import { parseApiError } from "@/helper/api";
 import type {
@@ -69,6 +70,21 @@ export const useReport = (reportId?: string) => {
         },
     ] = useLazyGetReportResponsesQuery();
 
+    //     const {
+    //     data: ownReportsData,
+    //     isLoading: ownReportsLoading,
+    //     error: ownReportsRawError,
+    // } = useGetOwnReportsQuery();
+
+    const [
+        fetchOwnReports,
+        {
+            isLoading: lazyOwnReportsLoading,
+            data: lazyOwnReportsData,
+            error: lazyOwnReportsRawError,
+        }
+    ] = useLazyGetOwnReportsQuery();
+
     // -------------------- Error Parsing -------------------- //
     const submitError = parseApiError<string>(submitRawError);
     const unresolvedError = parseApiError<string>(
@@ -76,6 +92,9 @@ export const useReport = (reportId?: string) => {
     );
     const respondError = parseApiError<string>(respondRawError);
     const responseError = parseApiError<string>(responseRawError || lazyResponseRawError);
+    const ownReportsError = parseApiError<string>(
+        lazyOwnReportsRawError
+    );
 
     // -------------------- ACTIONS (async) -------------------- //
     const createReport = async (
@@ -128,6 +147,14 @@ export const useReport = (reportId?: string) => {
         [fetchReportResponses]
     );
 
+    const getOwnReportsLazy = useCallback(
+        async (): Promise<ApiResponse<UnresolvedReportResponse[]>> => {
+            const result = await fetchOwnReports().unwrap();
+            return result;
+        },
+        [fetchOwnReports]
+    );
+
     // -------------------- RETURN -------------------- //
     return {
         // ACTIONS
@@ -135,6 +162,7 @@ export const useReport = (reportId?: string) => {
         getUnresolvedReportsLazy,
         sendReportResponse,
         getSingleReportResponses,
+        getOwnReportsLazy,
 
         // LOADING
         loading:
@@ -143,13 +171,16 @@ export const useReport = (reportId?: string) => {
             lazyUnresolvedLoading ||
             respondLoading ||
             responseLoading ||
-            lazyResponseLoading,
+            lazyResponseLoading ||
+            // ownReportsLoading ||
+            lazyOwnReportsLoading,
 
         // ERRORS
         submitError,
         unresolvedError,
         respondError,
         responseError,
+        ownReportsError,
 
         // DATA
         submitReportResponse: submitData,
@@ -158,5 +189,8 @@ export const useReport = (reportId?: string) => {
         respondResponse: respondData,
         reportResponse:
             responseData?.data || lazyResponseData?.data || null,
+        ownReports:
+            // ownReportsData?.data || 
+            lazyOwnReportsData?.data || [],
     };
 };

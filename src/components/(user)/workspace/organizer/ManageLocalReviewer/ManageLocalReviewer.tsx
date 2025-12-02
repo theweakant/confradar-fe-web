@@ -44,6 +44,10 @@ export default function ManageLocalReviewer() {
     const [suspendUserId, setSuspendUserId] = useState<string | null>(null);
     const [activateUserId, setActivateUserId] = useState<string | null>(null);
 
+    const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
+
     // API hooks
     const {
         data: allUsers,
@@ -84,15 +88,37 @@ export default function ManageLocalReviewer() {
     );
 
     // Search functionality
-    const filteredLocalReviewers = localReviewers.filter(reviewer =>
-        reviewer.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        reviewer.email?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredLocalReviewers = localReviewers.filter(reviewer => {
+        const matchesSearch =
+            reviewer.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            reviewer.email?.toLowerCase().includes(searchTerm.toLowerCase());
+
+        const matchesStatus =
+            filterStatus === 'all' ? true :
+                filterStatus === 'active' ? reviewer.isActive === true :
+                    reviewer.isActive === false;
+
+        return matchesSearch && matchesStatus;
+    });
+
+    const totalPages = Math.ceil(filteredLocalReviewers.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedReviewers = filteredLocalReviewers.slice(startIndex, endIndex);
+
+    // const filteredLocalReviewers = localReviewers.filter(reviewer =>
+    //     reviewer.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    //     reviewer.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    // );
 
     // Show toast when create error occurs
     useEffect(() => {
         if (createError) toast.error(createError.data?.message);
     }, [createError]);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, filterStatus]);
 
     const handleCreate = () => {
         setIsFormModalOpen(true);
@@ -232,6 +258,37 @@ export default function ManageLocalReviewer() {
                     />
                 </div>
 
+                {/* Filter Tabs */}
+                <div className="flex gap-2 mb-6">
+                    <button
+                        onClick={() => setFilterStatus('all')}
+                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${filterStatus === 'all'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                            }`}
+                    >
+                        Tất cả ({localReviewers.length})
+                    </button>
+                    <button
+                        onClick={() => setFilterStatus('active')}
+                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${filterStatus === 'active'
+                            ? 'bg-green-600 text-white'
+                            : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                            }`}
+                    >
+                        Đang hoạt động ({localReviewers.filter(r => r.isActive === true).length})
+                    </button>
+                    <button
+                        onClick={() => setFilterStatus('inactive')}
+                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${filterStatus === 'inactive'
+                            ? 'bg-red-600 text-white'
+                            : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                            }`}
+                    >
+                        Tạm ngưng ({localReviewers.filter(r => r.isActive === false).length})
+                    </button>
+                </div>
+
                 {/* Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     {stats.map((stat, index) => (
@@ -248,12 +305,65 @@ export default function ManageLocalReviewer() {
                 {/* Table */}
                 <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                     <LocalReviewerTable
-                        reviewers={filteredLocalReviewers}
+                        reviewers={paginatedReviewers}
                         onView={handleView}
                         onSuspend={handleSuspend}
                         onActivate={handleActivate}
                     />
                 </div>
+
+                {totalPages > 1 && (
+                    <div className="bg-white px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                        <div className="text-sm text-gray-700">
+                            Hiển thị <span className="font-medium">{startIndex + 1}</span> đến{' '}
+                            <span className="font-medium">{Math.min(endIndex, filteredLocalReviewers.length)}</span> trong tổng số{' '}
+                            <span className="font-medium">{filteredLocalReviewers.length}</span> kết quả
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                disabled={currentPage === 1}
+                                className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Trước
+                            </button>
+                            {[...Array(totalPages)].map((_, index) => {
+                                const page = index + 1;
+                                if (
+                                    page === 1 ||
+                                    page === totalPages ||
+                                    (page >= currentPage - 1 && page <= currentPage + 1)
+                                ) {
+                                    return (
+                                        <button
+                                            key={page}
+                                            onClick={() => setCurrentPage(page)}
+                                            className={`px-3 py-1 rounded-md text-sm font-medium ${currentPage === page
+                                                    ? 'bg-blue-600 text-white'
+                                                    : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                                                }`}
+                                        >
+                                            {page}
+                                        </button>
+                                    );
+                                } else if (
+                                    page === currentPage - 2 ||
+                                    page === currentPage + 2
+                                ) {
+                                    return <span key={page} className="px-2 py-1">...</span>;
+                                }
+                                return null;
+                            })}
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                disabled={currentPage === totalPages}
+                                className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Sau
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Form Modal */}

@@ -2,7 +2,7 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import { apiClient } from "../api/apiClient";
 import { endpoint } from "../api/endpoint";
 import type { ApiResponse } from "@/types/api.type";
-import type { ReportFeedbackResponse, ReportRequest, ReportResponseRequest, UnresolvedReportResponse } from "@/types/report.type";
+import type { OwnReportResponse, ReportFeedbackResponse, ReportRequest, ReportResponseRequest, UnresolvedReportResponse } from "@/types/report.type";
 
 export const reportApi = createApi({
     reducerPath: "reportApi",
@@ -48,6 +48,17 @@ export const reportApi = createApi({
             }),
             providesTags: ["Report"],
         }),
+
+        getOwnReports: builder.query<
+            ApiResponse<OwnReportResponse[]>,
+            void
+        >({
+            query: () => ({
+                url: endpoint.REPORT.GET_OWN_REPORTS,
+                method: "GET",
+            }),
+            providesTags: ["Report"],
+        }),
     }),
 });
 
@@ -58,4 +69,6 @@ export const {
     useRespondToReportMutation,
     useGetReportResponsesQuery,
     useLazyGetReportResponsesQuery,
+    useGetOwnReportsQuery,
+    useLazyGetOwnReportsQuery,
 } = reportApi;
