@@ -777,14 +777,27 @@ export function PriceForm({
         />
 
         <div className="grid grid-cols-2 gap-3 mt-2">
-          <FormInput
+          {/* <FormInput
             label="Giá vé gốc (VND)"
             type="number"
             value={newTicket.ticketPrice}
             onChange={(val) => setNewTicket({ ...newTicket, ticketPrice: Number(val) })}
             placeholder="500000"
-          />
-          <FormInput
+          /> */}
+            <FormInput
+              label="Giá vé gốc (VND)"
+              type="text"
+              value={newTicket.ticketPrice ? newTicket.ticketPrice.toLocaleString("vi-VN") : ""}
+              onChange={(val) => {
+                const numeric = val.replace(/\D/g, "");
+                setNewTicket({
+                  ...newTicket,
+                  ticketPrice: numeric ? Number(numeric) : 0,
+                });
+              }}
+              placeholder="500.000"
+            />
+            <FormInput
             label={`Tổng số lượng vé (Số lượng tham dự: ${maxTotalSlot})`}
             type="number"
             value={newTicket.totalSlot}

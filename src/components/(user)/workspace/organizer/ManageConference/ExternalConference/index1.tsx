@@ -21,7 +21,6 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
-// UI Components
 import {
   Dialog,
   DialogContent,
@@ -60,44 +59,40 @@ import {
   useLazyListOrganizationsQuery,
 } from "@/redux/services/user.service";
 
-// ====== Định nghĩa sub-tab ======
 type MainTab = "approved" | "pending";
-type SubTab = "pending" | "ongoing" | "completed";
+type SubTab = "rejected" | "ongoing" | "completed";
 
 const STATUS_GROUP_SETS = {
-  pending: new Set(["pending"]),
+  pending: new Set(["rejected"]),
   ongoing: new Set(["preparing", "ready", "onhold"]),
   completed: new Set(["completed", "cancelled"]),
 } as const;
 
 const getSubTabGroup = (statusName: string): SubTab | null => {
   const lower = statusName.toLowerCase();
-  if (STATUS_GROUP_SETS.pending.has(lower)) return "pending";
+  if (STATUS_GROUP_SETS.pending.has(lower)) return "rejected";
   if (STATUS_GROUP_SETS.ongoing.has(lower)) return "ongoing";
   if (STATUS_GROUP_SETS.completed.has(lower)) return "completed";
   return null;
 };
 
-// ====== Component chính ======
 export default function ExternalConference() {
   const router = useRouter();
   const { user } = useAuth();
   const currentUserId = user?.userId || null;
 
   const [mainTab, setMainTab] = useState<MainTab>("approved");
-  const [subTab, setSubTab] = useState<SubTab>("pending"); // chỉ dùng khi mainTab = "approved"
+  const [subTab, setSubTab] = useState<SubTab>("ongoing");
 
-  // === States cho tab approved ===
   const [pageApproved, setPageApproved] = useState(1);
   const [pageSizeApproved] = useState(12);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
-  const [filterStatus, setFilterStatus] = useState("all"); // filter theo statusId (nếu cần)
+  const [filterStatus, setFilterStatus] = useState("all");
   const [filterCity, setFilterCity] = useState("all");
   const [filterCollaborator, setFilterCollaborator] = useState("all");
   const [filterOrganization, setFilterOrganization] = useState("all");
 
-  // === States cho modal filter ===
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [tempFilterCategory, setTempFilterCategory] = useState("all");
   const [tempFilterStatus, setTempFilterStatus] = useState("all");
@@ -106,7 +101,7 @@ export default function ExternalConference() {
   const [tempFilterOrganization, setTempFilterOrganization] = useState("all");
 
   const {
-     data: techConferencesData,
+    data: techConferencesData,
     isLoading: techLoading,
     isError: techError,
     refetch: refetchApproved,
@@ -129,7 +124,6 @@ export default function ExternalConference() {
   const [fetchOrganizations, { data: organizationData }] = useLazyListOrganizationsQuery();
   const [fetchCollaborators, { data: collaboratorData }] = useLazyGetCollaboratorAccountsQuery();
 
-  // === Build statusMap để tra cứu nhóm ===
   const statusMap = useMemo(() => {
     const map = new Map<string, string>();
     (statusesData?.data || []).forEach((s) => {
@@ -138,7 +132,6 @@ export default function ExternalConference() {
     return map;
   }, [statusesData]);
 
-  // === Lọc hội thảo không phải của mình ===
   const externalConferences = useMemo(() => {
     if (!currentUserId) return [];
     return (techConferencesData?.data?.items || []).filter(
@@ -146,7 +139,6 @@ export default function ExternalConference() {
     );
   }, [techConferencesData, currentUserId]);
 
-  // === Lọc theo sub-tab (chỉ áp dụng khi mainTab = "approved") ===
   const conferencesBySubTab = useMemo(() => {
     if (mainTab !== "approved") return [];
     return externalConferences.filter((conf) => {
@@ -157,7 +149,6 @@ export default function ExternalConference() {
     });
   }, [externalConferences, mainTab, subTab, statusMap]);
 
-  // === Áp dụng filter category lên kết quả đã lọc sub-tab ===
   const displayConferences = useMemo(() => {
     if (filterCategory === "all") return conferencesBySubTab;
     return conferencesBySubTab.filter((conf) => conf.conferenceCategoryId === filterCategory);
@@ -165,7 +156,6 @@ export default function ExternalConference() {
 
   const totalPagesApproved = techConferencesData?.data?.totalPages || 1;
 
-  // === Options cho filter ===
   const categoryOptions = useMemo(() => {
     const allOption = { value: "all", label: "Tất cả danh mục" };
     const apiCategories = (categoriesData?.data || []).map((category) => ({
@@ -221,7 +211,6 @@ export default function ExternalConference() {
     return count;
   }, [filterCategory, filterStatus, filterCity, filterCollaborator, filterOrganization]);
 
-  // === Tab pending ===
   const [pagePending, setPagePending] = useState(1);
   const [pageSizePending] = useState(10);
 
@@ -249,7 +238,6 @@ export default function ExternalConference() {
     return () => clearTimeout(timer);
   }, [searchQuery, filterCategory, filterStatus, filterCity, filterCollaborator, filterOrganization]);
 
-  // === Handlers ===
   const handleMainTabChange = (tab: MainTab) => {
     setMainTab(tab);
     if (tab === "approved") {
@@ -265,11 +253,11 @@ export default function ExternalConference() {
   };
 
   const handleOpenDialog = (conferenceId: string, approve: boolean) => {
-  setSelectedConference(conferenceId);
-  setIsApproveAction(approve);
-  setReason("");
-  setDialogOpen(true);
-};
+    setSelectedConference(conferenceId);
+    setIsApproveAction(approve);
+    setReason("");
+    setDialogOpen(true);
+  };
 
   const handleOpenFilterModal = () => {
     setTempFilterCategory(filterCategory);
@@ -323,7 +311,6 @@ export default function ExternalConference() {
     router.push(`/workspace/organizer/manage-conference/view-pending-detail/${conferenceId}`);
   };
 
-  // === Approval dialog states ===
   const [selectedConference, setSelectedConference] = useState<string | null>(null);
   const [isApproveAction, setIsApproveAction] = useState<boolean>(true);
   const [reason, setReason] = useState("");
@@ -373,9 +360,8 @@ export default function ExternalConference() {
     );
   }
 
-  // === Label cho sub-tab ===
   const subTabLabels: Record<SubTab, string> = {
-    pending: "Chờ cập nhật",
+    rejected: "Đã từ chối",
     ongoing: "Đang diễn ra",
     completed: "Đã kết thúc",
   };
@@ -388,11 +374,9 @@ export default function ExternalConference() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Hội thảo của Đối tác</h1>
               <p className="text-gray-600 mt-1">
-                {mainTab === "approved" ? (
-                  `Hội thảo đã được ConfRadar duyệt — ${subTabLabels[subTab].toLowerCase()}`
-                ) : (
-                  "Những hội thảo đang chờ ConfRadar duyệt"
-                )}
+                {mainTab === "approved"
+                  ? `Hội thảo đã được ConfRadar duyệt — ${subTabLabels[subTab].toLowerCase()}`
+                  : "Những hội thảo đang chờ ConfRadar duyệt"}
               </p>
             </div>
             {mainTab === "pending" && (
@@ -405,7 +389,6 @@ export default function ExternalConference() {
             )}
           </div>
 
-          {/* Main Tabs */}
           <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit mt-4">
             <button
               onClick={() => handleMainTabChange("approved")}
@@ -429,10 +412,9 @@ export default function ExternalConference() {
             </button>
           </div>
 
-          {/* Sub Tabs - chỉ hiển thị khi mainTab = "approved" */}
           {mainTab === "approved" && (
             <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit mt-3">
-              {(["pending", "ongoing", "completed"] as SubTab[]).map((tab) => (
+              {([ "ongoing", "completed", "rejected" ] as SubTab[]).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => handleSubTabChange(tab)}
@@ -522,15 +504,14 @@ export default function ExternalConference() {
               )}
             </div>
 
-            {/* Filter Modal */}
             <Dialog open={isFilterModalOpen} onOpenChange={setIsFilterModalOpen}>
               <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Bộ lọc tìm kiếm</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-4 py-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4">
                   <div>
-                    <label className="text-sm font-medium text-gray-700 mb-2 block">Đối tác</label>
+                    <Label className="text-sm font-medium text-gray-700 mb-2 block">Đối tác</Label>
                     <Select value={tempFilterCollaborator} onValueChange={setTempFilterCollaborator}>
                       <SelectTrigger>
                         <SelectValue placeholder="Chọn đối tác" />
@@ -544,8 +525,9 @@ export default function ExternalConference() {
                       </SelectContent>
                     </Select>
                   </div>
+
                   <div>
-                    <label className="text-sm font-medium text-gray-700 mb-2 block">Tổ chức</label>
+                    <Label className="text-sm font-medium text-gray-700 mb-2 block">Tổ chức</Label>
                     <Select value={tempFilterOrganization} onValueChange={setTempFilterOrganization}>
                       <SelectTrigger>
                         <SelectValue placeholder="Chọn tổ chức" />
@@ -559,8 +541,9 @@ export default function ExternalConference() {
                       </SelectContent>
                     </Select>
                   </div>
+
                   <div>
-                    <label className="text-sm font-medium text-gray-700 mb-2 block">Danh mục</label>
+                    <Label className="text-sm font-medium text-gray-700 mb-2 block">Danh mục</Label>
                     <Select value={tempFilterCategory} onValueChange={setTempFilterCategory}>
                       <SelectTrigger>
                         <SelectValue placeholder="Chọn danh mục" />
@@ -574,14 +557,15 @@ export default function ExternalConference() {
                       </SelectContent>
                     </Select>
                   </div>
+
                   <div>
-                    <label className="text-sm font-medium text-gray-700 mb-2 block">Trạng thái</label>
-                    <Select value={tempFilterStatus} onValueChange={setTempFilterStatus}>
+                    <Label className="text-sm font-medium text-gray-700 mb-2 block">Thành phố</Label>
+                    <Select value={tempFilterCity} onValueChange={setTempFilterCity}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Chọn trạng thái" />
+                        <SelectValue placeholder="Chọn thành phố" />
                       </SelectTrigger>
                       <SelectContent>
-                        {statusOptions.map((opt) => (
+                        {cityOptions.map((opt) => (
                           <SelectItem key={opt.value} value={opt.value}>
                             {opt.label}
                           </SelectItem>
@@ -589,14 +573,15 @@ export default function ExternalConference() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-2 block">Thành phố</label>
-                    <Select value={tempFilterCity} onValueChange={setTempFilterCity}>
+
+                  <div className="sm:col-span-2">
+                    <Label className="text-sm font-medium text-gray-700 mb-2 block">Trạng thái</Label>
+                    <Select value={tempFilterStatus} onValueChange={setTempFilterStatus}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Chọn thành phố" />
+                        <SelectValue placeholder="Chọn trạng thái" />
                       </SelectTrigger>
                       <SelectContent>
-                        {cityOptions.map((opt) => (
+                        {statusOptions.map((opt) => (
                           <SelectItem key={opt.value} value={opt.value}>
                             {opt.label}
                           </SelectItem>
@@ -682,7 +667,6 @@ export default function ExternalConference() {
             )}
           </>
         ) : (
-          // Tab "pending" - giữ nguyên
           <>
             {pendingLoading || pendingFetching ? (
               <div className="bg-white rounded-xl shadow-sm p-12 text-center">
@@ -822,7 +806,6 @@ export default function ExternalConference() {
           </>
         )}
 
-        {/* Approval Dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent>
             <DialogHeader>
