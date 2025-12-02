@@ -71,158 +71,166 @@ export function PaperDetailModal({
         <div className="p-6 space-y-6">
           <div className="bg-gray-50 rounded-lg p-5 border border-gray-200">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <FileText className="w-6 h-6 text-blue-600" />
-              </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 text-lg mb-2">{paper.title}</h3>
-                <div className="flex items-center gap-3 text-sm text-gray-600 mb-3">
-                  <span>ID: #{paper.paperId.substring(0, 8)}...</span>
-                  <span>•</span>
-                  <span>Tác giả: #{paper.submittingAuthorId.substring(0, 8)}...</span>
+                <div className="flex flex-wrap items-start justify-between gap-2 mb-3">
+                  <h3 className="font-semibold text-gray-900 text-lg">Tiêu đề: {paper.title}</h3>
+                  <span
+                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
+                      phaseStyles[paper.paperPhase]?.bg || phaseStyles.default.bg
+                    } ${phaseStyles[paper.paperPhase]?.text || phaseStyles.default.text}`}
+                  >
+                    {paper.paperPhase}
+                  </span>
                 </div>
-                <span
-                  className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
-                    phaseStyles[paper.paperPhase]?.bg || phaseStyles.default.bg
-                  } ${phaseStyles[paper.paperPhase]?.text || phaseStyles.default.text}`}
-                >
-                  Giai đoạn: {paper.paperPhase}
-                </span>
+                <div className="space-y-1 text-sm text-gray-600 mb-3">
+                  <div>
+                    <span className="font-medium">Mã bài báo:</span> {paper.paperId}
+                  </div>
+                  <div>
+                    <span className="font-medium">Người nộp:</span> #{paper.submittingAuthorId}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Timeline tiến độ */}
-{/* Timeline tiến độ - STICKY */}
-<div className="bg-white rounded-lg p-5 border border-gray-200 sticky top-0 z-10 shadow-sm">
-  <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-    <Calendar className="w-5 h-5 text-blue-600" />
-    Timeline tiến độ
-  </h4>
-  <div className="relative">
-    {(() => {
-      const PHASE_ORDER = ["Abstract", "FullPaper", "Revision", "CameraReady"];
-      const currentPhaseIndex = PHASE_ORDER.indexOf(paper.paperPhase);
+          <div className="bg-white rounded-lg p-5 border border-gray-200 sticky top-0 z-10 shadow-sm">
+            <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-blue-600" />
+              Tiến trình bài báo
+            </h4>
+            <div className="relative">
+              {(() => {
+                const PHASE_ORDER = ["Abstract", "FullPaper", "Revision", "CameraReady"];
+                const currentPhaseIndex = PHASE_ORDER.indexOf(paper.paperPhase);
 
-      const isActiveOrPassed = (phase: string) => {
-        const idx = PHASE_ORDER.indexOf(phase);
-        return idx <= currentPhaseIndex && idx !== -1;
-      };
+                const isActiveOrPassed = (phase: string) => {
+                  const idx = PHASE_ORDER.indexOf(phase);
+                  return idx <= currentPhaseIndex && idx !== -1;
+                };
 
-      return (
-        <div className="flex items-center justify-between">
-          <div className="flex-1 text-center">
-            <div
-              className={`w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-lg ${
-                isActiveOrPassed("Abstract")
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-400"
-              }`}
-            >
-              {isActiveOrPassed("Abstract")
-                ? paper.abstractPhase?.status
-                  ? statusStyles[paper.abstractPhase.status]?.icon || "●"
-                  : "●"
-                : "○"}
+                return (
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 text-center">
+                      <div
+                        className={`w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-lg ${
+                          isActiveOrPassed("Abstract")
+                            ? "bg-blue-500 text-white"
+                            : "bg-gray-200 text-gray-400"
+                        }`}
+                      >
+                        {isActiveOrPassed("Abstract")
+                          ? paper.abstractPhase?.status
+                            ? statusStyles[paper.abstractPhase.status]?.icon || "●"
+                            : "●"
+                          : "○"}
+                      </div>
+                      <div className="text-xs font-medium text-gray-700">Abstract</div>
+                      {paper.abstractPhase && (
+                        <div
+                          className={`text-xs ${
+                            statusStyles[paper.abstractPhase.status]?.color || "text-gray-500"
+                          }`}
+                        >
+                          {paper.abstractPhase.status}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex-1 h-1 bg-gray-200 mx-2">
+                      {isActiveOrPassed("FullPaper") && (
+                        <div className="h-full bg-blue-500 w-full"></div>
+                      )}
+                    </div>
+
+                    <div className="flex-1 text-center">
+                      <div
+                        className={`w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-lg ${
+                          isActiveOrPassed("FullPaper")
+                            ? "bg-emerald-500 text-white"
+                            : "bg-gray-200 text-gray-400"
+                        }`}
+                      >
+                        {isActiveOrPassed("FullPaper")
+                          ? paper.fullPaperPhase?.status
+                            ? statusStyles[paper.fullPaperPhase.status]?.icon || "●"
+                            : "●"
+                          : "○"}
+                      </div>
+                      <div className="text-xs font-medium text-gray-700">Full Paper</div>
+                      {paper.fullPaperPhase && (
+                        <div
+                          className={`text-xs ${
+                            statusStyles[paper.fullPaperPhase.status]?.color || "text-gray-500"
+                          }`}
+                        >
+                          {paper.fullPaperPhase.status}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex-1 h-1 bg-gray-200 mx-2">
+                      {isActiveOrPassed("Revision") && (
+                        <div className="h-full bg-blue-500 w-full"></div>
+                      )}
+                    </div>
+
+                    <div className="flex-1 text-center">
+                      <div
+                        className={`w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-lg ${
+                          isActiveOrPassed("Revision")
+                            ? "bg-amber-500 text-white"
+                            : "bg-gray-200 text-gray-400"
+                        }`}
+                      >
+                        {isActiveOrPassed("Revision")
+                          ? paper.revisionPhase?.status
+                            ? statusStyles[paper.revisionPhase.status]?.icon || "●"
+                            : "●"
+                          : "○"}
+                      </div>
+                      <div className="text-xs font-medium text-gray-700">Revision</div>
+                      {paper.revisionPhase && (
+                        <div
+                          className={`text-xs ${
+                            statusStyles[paper.revisionPhase.status]?.color || "text-gray-500"
+                          }`}
+                        >
+                          {paper.revisionPhase.status}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex-1 h-1 bg-gray-200 mx-2">
+                      {isActiveOrPassed("CameraReady") && (
+                        <div className="h-full bg-blue-500 w-full"></div>
+                      )}
+                    </div>
+
+                    <div className="flex-1 text-center">
+                      <div
+                        className={`w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-lg ${
+                          isActiveOrPassed("CameraReady")
+                            ? "bg-purple-500 text-white"
+                            : "bg-gray-200 text-gray-400"
+                        }`}
+                      >
+                        {isActiveOrPassed("CameraReady") ? "✓" : "○"}
+                      </div>
+                      <div className="text-xs font-medium text-gray-700">Camera Ready</div>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
-            <div className="text-xs font-medium text-gray-700">Abstract</div>
-            {paper.abstractPhase && (
-              <div
-                className={`text-xs ${
-                  statusStyles[paper.abstractPhase.status]?.color || "text-gray-500"
-                }`}
-              >
-                {paper.abstractPhase.status}
-              </div>
-            )}
           </div>
 
-          <div className="flex-1 h-1 bg-gray-200 mx-2">
-            {isActiveOrPassed("FullPaper") && <div className="h-full bg-blue-500 w-full"></div>}
-          </div>
-
-          <div className="flex-1 text-center">
-            <div
-              className={`w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-lg ${
-                isActiveOrPassed("FullPaper")
-                  ? "bg-emerald-500 text-white"
-                  : "bg-gray-200 text-gray-400"
-              }`}
-            >
-              {isActiveOrPassed("FullPaper")
-                ? paper.fullPaperPhase?.status
-                  ? statusStyles[paper.fullPaperPhase.status]?.icon || "●"
-                  : "●"
-                : "○"}
-            </div>
-            <div className="text-xs font-medium text-gray-700">Full Paper</div>
-            {paper.fullPaperPhase && (
-              <div
-                className={`text-xs ${
-                  statusStyles[paper.fullPaperPhase.status]?.color || "text-gray-500"
-                }`}
-              >
-                {paper.fullPaperPhase.status}
-              </div>
-            )}
-          </div>
-
-          <div className="flex-1 h-1 bg-gray-200 mx-2">
-            {isActiveOrPassed("Revision") && <div className="h-full bg-blue-500 w-full"></div>}
-          </div>
-
-          <div className="flex-1 text-center">
-            <div
-              className={`w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-lg ${
-                isActiveOrPassed("Revision")
-                  ? "bg-amber-500 text-white"
-                  : "bg-gray-200 text-gray-400"
-              }`}
-            >
-              {isActiveOrPassed("Revision")
-                ? paper.revisionPhase?.status
-                  ? statusStyles[paper.revisionPhase.status]?.icon || "●"
-                  : "●"
-                : "○"}
-            </div>
-            <div className="text-xs font-medium text-gray-700">Revision</div>
-            {paper.revisionPhase && (
-              <div
-                className={`text-xs ${
-                  statusStyles[paper.revisionPhase.status]?.color || "text-gray-500"
-                }`}
-              >
-                {paper.revisionPhase.status}
-              </div>
-            )}
-          </div>
-
-          <div className="flex-1 h-1 bg-gray-200 mx-2">
-            {isActiveOrPassed("CameraReady") && <div className="h-full bg-blue-500 w-full"></div>}
-          </div>
-
-          <div className="flex-1 text-center">
-            <div
-              className={`w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-lg ${
-                isActiveOrPassed("CameraReady")
-                  ? "bg-purple-500 text-white"
-                  : "bg-gray-200 text-gray-400"
-              }`}
-            >
-              {isActiveOrPassed("CameraReady") ? "✓" : "○"}
-            </div>
-            <div className="text-xs font-medium text-gray-700">Camera Ready</div>
-          </div>
-        </div>
-      );
-    })()}
-  </div>
-</div>
-
-          {/* Hiển thị thời gian duyệt abstract — luon hien thi neu co du lieu */}
           {(abstractDecideStart || abstractDecideEnd) && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h5 className="font-semibold text-blue-900 mb-2">Thời gian duyệt Abstract</h5>
+              <h5 className="font-semibold text-blue-900 mb-1">Thời gian duyệt Abstract</h5>
+              <p className="text-xs text-blue-700 mb-2">
+                Chỉ có thể duyệt abstract trong khoảng thời gian này
+              </p>
               <p className="text-sm text-blue-800">
                 Từ {formatDate(abstractDecideStart)} → {formatDate(abstractDecideEnd)}
               </p>
