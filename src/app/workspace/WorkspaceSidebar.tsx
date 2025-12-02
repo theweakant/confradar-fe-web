@@ -158,7 +158,8 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
       },
       {
         label: "Bài báo được giao",
-        href: "/workspace/local-reviewer/manage-paper",
+        // href: "/workspace/local-reviewer/manage-paper",
+        href: "/workspace/local-reviewer/manage-paper/conferences-has-assigned-papers",
         icon: FileText,
       },
       {
