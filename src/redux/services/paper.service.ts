@@ -297,10 +297,10 @@ export const paperApi = createApi({
 
     listAvailableCustomers: builder.query<
       ApiResponse<AvailableCustomerResponse[]>,
-      void
+      string
     >({
-      query: () => ({
-        url: endpoint.PAPER.LIST_AVAILABLE_CUSTOMERS,
+      query: (conferenceId) => ({
+        url: endpoint.PAPER.LIST_AVAILABLE_CUSTOMERS(conferenceId),
         method: "GET",
       }),
     }),

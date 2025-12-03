@@ -6,11 +6,13 @@ import { validateLoginForm } from "@/helper/validation";
 import { getRoleForRedirect, getRouteByRole } from "@/constants/roles";
 import type { LoginFormData, FormErrors } from "@/types/auth.type";
 import { toast } from "sonner";
+import { useFirebasePushWeb } from "./useFirebasePushWeb";
 
 export const useLoginForm = () => {
   const router = useRouter();
   const { login, loading } = useAuth();
   const { handleGoogleLogin } = useFirebaseLogin();
+  const { fcmToken } = useFirebasePushWeb();
 
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
@@ -33,10 +35,12 @@ export const useLoginForm = () => {
       setErrors(validationErrors);
       return;
     }
+    console.log("FCM TOKEN FRONTEND SEND:", fcmToken);
 
     const { success, user, message } = await login({
       email: formData.email,
       password: formData.password,
+      firebaseWebFcmToken: fcmToken
     });
 
     if (success && user) {
@@ -67,7 +71,7 @@ export const useLoginForm = () => {
   const handleSocialLogin = async (provider: "google" | "orcid") => {
     if (provider === "google") {
       try {
-        const { success, user } = await handleGoogleLogin();
+        const { success, user } = await handleGoogleLogin({ firebaseWebFcmToken: fcmToken });
 
         if (success && user) {
           const roleToUse = getRoleForRedirect(user.role);

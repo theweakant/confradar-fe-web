@@ -321,8 +321,6 @@ export default function RevisionPaperPhase({
         }
 
         if (!canSubmitRevisionFeedback(submission.revisionPaperSubmissionId)) {
-            console.log(Date.now)
-
             if (roundDeadline.startSubmissionDate && roundDeadline.endSubmissionDate) {
                 toast.error(
                     `Thời hạn nhập feedback cho Round ${roundDeadline.roundNumber} là từ ${formatDate(
@@ -370,7 +368,7 @@ export default function RevisionPaperPhase({
         } catch (error: unknown) {
             const err = error as ApiError;
             const errorMessage = err?.message || "Lỗi khi gửi revision feedback";
-            toast.error(errorMessage);
+            // toast.error(errorMessage);
         }
     };
 
@@ -400,7 +398,7 @@ export default function RevisionPaperPhase({
             setShowRevisionDecisionPopup(false);
         } catch (error: unknown) {
             const err = error as ApiError;
-            toast.error(err.message || "Lỗi khi cập nhật trạng thái revision");
+            // toast.error(err.message || "Lỗi khi cập nhật trạng thái revision");
         }
     };
 
@@ -500,19 +498,19 @@ export default function RevisionPaperPhase({
     useEffect(() => {
         if (submitRevisionFeedbackError) toast.error(parseApiError<string>(submitRevisionFeedbackError)?.data?.message)
         if (decideStatusError) toast.error(parseApiError<string>(decideStatusError)?.data?.message)
-    }, [submitRevisionFeedbackError, decideStatusError])
+        if (markCompleteReviseError) toast.error(parseApiError(markCompleteReviseError)?.data?.message)
+    }, [submitRevisionFeedbackError, decideStatusError, markCompleteReviseError])
 
     useEffect(() => {
-        // Auto-select first round with submission
         const firstSubmissionIndex = allRounds.findIndex(r => r.hasSubmission);
         if (firstSubmissionIndex !== -1) {
             setActiveRoundTab(firstSubmissionIndex);
         }
     }, [allRounds]);
 
-    useEffect(() => {
-        if (markCompleteReviseError) toast.error(parseApiError(markCompleteReviseError)?.data?.message);
-    }, [markCompleteReviseError])
+    // useEffect(() => {
+    //     if (markCompleteReviseError) toast.error(parseApiError(markCompleteReviseError)?.data?.message);
+    // }, [markCompleteReviseError])
 
     useEffect(() => {
         if (!paperDetail?.revisionPaper?.revisionPaperSubmissions) return;

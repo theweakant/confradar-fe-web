@@ -2,7 +2,7 @@ import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { Search } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { AvailableCustomerResponse, Abstract, ResearchPhaseDtoDetail } from "@/types/paper.type";
+import { AvailableCustomerResponse, Abstract, ResearchPhaseDtoDetail, ResearchConferenceInfo } from "@/types/paper.type";
 import { usePaperCustomer } from "@/redux/hooks/usePaper";
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 import "@cyntler/react-doc-viewer/dist/index.css";
@@ -16,11 +16,12 @@ interface AbstractPhaseProps {
   paperId?: string;
   abstract?: Abstract | null;
   researchPhase?: ResearchPhaseDtoDetail;
+  researchConferenceInfo?: ResearchConferenceInfo | null;
 
   onSubmittedAbstract?: () => void;
 }
 
-const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract, researchPhase, onSubmittedAbstract }) => {
+const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract, researchPhase, onSubmittedAbstract, researchConferenceInfo }) => {
   const isSubmitted = !!abstract;
 
   // Validate phase timing
@@ -68,7 +69,7 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract, resear
     setCustomersError(null);
 
     try {
-      const response = await fetchAvailableCustomers();
+      const response = await fetchAvailableCustomers(researchConferenceInfo?.conferenceId ?? undefined);
       setAvailableCustomers(response.data || []);
     } catch (error: unknown) {
       // if (error?.data?.Message) {

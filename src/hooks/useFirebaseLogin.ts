@@ -49,11 +49,16 @@ import {
   getRolesFromToken,
 } from "@/redux/utils/token";
 
+type FirebaseLoginPayload = {
+  firebaseWebFcmToken?: string | null;
+  firebaseMobileFcmToken?: string | null;
+};
+
 export const useFirebaseLogin = () => {
   const dispatch = useDispatch();
   const [firebaseLogin] = useFirebaseLoginMutation();
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = async (payload: FirebaseLoginPayload = {}) => {
     dispatch(startLoading());
     try {
       // 1️⃣ Login Google popup
@@ -61,7 +66,15 @@ export const useFirebaseLogin = () => {
       const firebaseToken = await result.user.getIdToken();
 
       // 2️⃣ Gọi BE để nhận accessToken, refreshToken
-      const res = await firebaseLogin(firebaseToken).unwrap();
+      const res = await firebaseLogin({
+        token: firebaseToken,
+        ...(payload.firebaseWebFcmToken && {
+          firebaseWebFcmToken: payload.firebaseWebFcmToken,
+        }),
+        ...(payload.firebaseMobileFcmToken && {
+          firebaseMobileFcmToken: payload.firebaseMobileFcmToken,
+        }),
+      }).unwrap();
       const { accessToken, refreshToken } = res.data || {};
 
       if (!accessToken) throw new Error("Access token missing");
