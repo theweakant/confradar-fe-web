@@ -41,7 +41,7 @@ interface UpdateConferenceStatusProps {
   onClose: () => void;
   conference: Conference;
   conferenceType: ConferenceType;
-  contract?: CollaboratorContract | null; // ← THÊM PROP NÀY
+  contract?: CollaboratorContract | null;
   onSuccess?: () => void;
 }
 
@@ -50,7 +50,7 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
   onClose,
   conference,
   conferenceType,
-  contract, // ← DÙNG Ở ĐÂY
+  contract,
   onSuccess,
 }) => {
   const { user } = useAuth();
@@ -67,7 +67,6 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
   const [reason, setReason] = useState<string>("");
   const [showEarlyCompleteConfirm, setShowEarlyCompleteConfirm] = useState<boolean>(false);
 
-  // === Map status ID → Name ===
   const statusIdToNameMap = useMemo<Record<string, string>>(() => {
     if (!statusData?.data) return {};
     return statusData.data.reduce((acc, s: ConferenceStatus) => {
@@ -79,7 +78,6 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
   const currentStatusName = statusIdToNameMap[conference?.conferenceStatusId || ""] || "N/A";
   const targetStatusName = selectedStatusId ? statusIdToNameMap[selectedStatusId] : "";
 
-  // === Validate dữ liệu hội thảo theo contract (Draft→Pending, Preparing→Ready) ===
   const { missingRequired, missingRecommended } = useMemo(() => {
     const needsValidation =
       (currentStatusName === "Draft" && targetStatusName === "Pending") ||
@@ -92,11 +90,10 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
     return validateConferenceForStatusChange({
       conference,
       conferenceType,
-      contract,   
+      contract,
     });
   }, [conference, conferenceType, currentStatusName, targetStatusName, contract]);
 
-  // === Validate thời gian (OnHold→Ready) ===
   const timeValidation = useMemo(() => {
     if (currentStatusName === "OnHold" && targetStatusName === "Ready") {
       return validateTimelineForOnHoldToReady(conference, conferenceType);
@@ -104,7 +101,6 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
     return { valid: true, expiredDates: [], message: undefined };
   }, [conference, conferenceType, currentStatusName, targetStatusName]);
 
-  // === Logic quyền & trạng thái hợp lệ ===
   const hasCollaboratorRole = roles.some(
     (r) => typeof r === "string" && r.toLowerCase().replace(/\s+/g, "").includes("collaborator")
   );
@@ -135,7 +131,7 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
         allowedNames = ["Ready", "Cancelled"];
         break;
       case "Rejected":
-        allowedNames = ["Draft"];
+        allowedNames = []; 
         break;
       default:
         if (hasOrganizerRole || hasCollaboratorRole) {
@@ -154,7 +150,6 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
       .filter((opt) => opt.id);
   }, [roles, currentStatusName, statusData, hasCollaboratorRole, hasOrganizerRole]);
 
-  // === Trạng thái nút submit ===
   const needsDataValidation =
     (currentStatusName === "Draft" && targetStatusName === "Pending") ||
     (currentStatusName === "Preparing" && targetStatusName === "Ready");
@@ -167,7 +162,6 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
     (!needsDataValidation || missingRequired.length === 0) &&
     (!needsTimeValidation || timeValidation.valid);
 
-  // === Gửi yêu cầu cập nhật trạng thái ===
   const performStatusUpdate = async () => {
     try {
       if (!conference?.conferenceId) {
@@ -196,7 +190,6 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
     }
   };
 
-  // === Xử lý submit chính ===
   const handleSubmit = async () => {
     if (!selectedStatusId) {
       return toast.error("Vui lòng chọn trạng thái mới");
@@ -215,13 +208,11 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
     await performStatusUpdate();
   };
 
-  // === Xử lý xác nhận kết thúc sớm ===
   const handleConfirmEarlyComplete = () => {
     setShowEarlyCompleteConfirm(false);
     performStatusUpdate();
   };
 
-  // === Màu sắc trạng thái ===
   const getStatusColor = (statusName: string): string => {
     switch (statusName) {
       case "Draft":
@@ -245,7 +236,6 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
 
   return (
     <>
-      {/* Modal chính */}
       <Dialog open={open} onOpenChange={onClose}>
         <DialogContent className="max-w-md p-6 max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -263,7 +253,6 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
             </div>
           ) : (
             <>
-              {/* Grid: Trạng thái hiện tại & mới */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <Label className="text-sm font-medium">Trạng thái hiện tại</Label>
@@ -302,14 +291,6 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
                 </div>
               </div>
 
-              {currentStatusName === "Rejected" && (
-                <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-md">
-                  <p className="text-sm text-amber-800">
-                    Cập nhật trạng thái thành &quot;Draft&quot; và tiếp tục chỉnh sửa để gửi lại hội thảo của bạn!
-                  </p>
-                </div>
-              )}
-
               {currentStatusName === "Ready" && (conference.startDate || conference.endDate) && (
                 <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
                   <p className="text-sm text-blue-800">
@@ -338,7 +319,6 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
                 />
               </div>
 
-              {/* Cảnh báo validate dữ liệu — GIỜ ĐÂY DỰA TRÊN CONTRACT */}
               {needsDataValidation && (
                 <div className="mb-4">
                   <ConferenceValidationAlerts
@@ -348,7 +328,6 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
                 </div>
               )}
 
-              {/* Cảnh báo validate thời gian */}
               {needsTimeValidation && (
                 <div className="mb-4">
                   <TimeValidationAlerts
@@ -373,7 +352,6 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
         </DialogContent>
       </Dialog>
 
-      {/* Dialog xác nhận kết thúc sớm */}
       <Dialog open={showEarlyCompleteConfirm} onOpenChange={setShowEarlyCompleteConfirm}>
         <DialogContent className="max-w-md p-6">
           <DialogHeader>

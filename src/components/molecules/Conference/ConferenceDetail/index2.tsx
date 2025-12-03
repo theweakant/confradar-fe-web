@@ -17,6 +17,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 import { useAuth } from "@/redux/hooks/useAuth";
 
 import { useGetTechnicalConferenceDetailInternalQuery } from "@/redux/services/conference.service";
@@ -25,6 +34,7 @@ import { useGetAllConferenceStatusesQuery } from "@/redux/services/status.servic
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 import { useViewRegisteredUsersForConferenceQuery } from "@/redux/services/conference.service";
+import { useUpdateOwnConferenceStatusMutation } from "@/redux/services/status.service";
 
 import { UpdateConferenceStatus } from "@/components/molecules/Status/UpdateStatus1/index";
 import { DeleteConferenceStatus } from "@/components/molecules/Status/DeleteStatus";
@@ -41,7 +51,8 @@ import type {
   ResearchConferenceDetailResponse,
 } from "@/types/conference.type";
 import type { TabId } from "./constants/tab";
- 
+import type { ApiResponse } from "@/types/api.type";
+
 export type CommonConference =
   | TechnicalConferenceDetailResponse
   | ResearchConferenceDetailResponse;
@@ -62,6 +73,7 @@ export default function ConferenceDetailPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isAttendeesModalOpen, setIsAttendeesModalOpen] = useState(false);
+  const [resumeEditingOpen, setResumeEditingOpen] = useState(false);
 
   const {
     data: techData,
@@ -82,6 +94,8 @@ export default function ConferenceDetailPage() {
   const { data: categoriesData } = useGetAllCategoriesQuery();
   const { data: statusesData } = useGetAllConferenceStatusesQuery();
   const { data: citiesData } = useGetAllCitiesQuery();
+
+  const [updateStatus] = useUpdateOwnConferenceStatusMutation();
 
   useEffect(() => {
     if (researchData?.data && !researchError && researchData.data.isResearchConference) {
@@ -212,7 +226,6 @@ export default function ConferenceDetailPage() {
                   </DropdownMenuItem>
                 )}
 
-              {/* ✅ Gửi yêu cầu duyệt — chỉ khi trạng thái là Draft */}
               {conference.conferenceStatusId &&
                 conference.conferenceId &&
                 conference.contract &&
@@ -227,7 +240,7 @@ export default function ConferenceDetailPage() {
                 )}
 
               {conference.conferenceStatusId &&
-                !["Draft", "Pending", "Deleted"].includes(getStatusName(conference.conferenceStatusId)) && (
+                !["Draft", "Pending", "Deleted", "Rejected"].includes(getStatusName(conference.conferenceStatusId)) && (
                   <DropdownMenuItem
                     onClick={() => setStatusDialogOpen(true)}
                     className="cursor-pointer flex items-center gap-2 text-purple-600"
@@ -237,16 +250,18 @@ export default function ConferenceDetailPage() {
                   </DropdownMenuItem>
                 )}
 
-              {/* {conference.conferenceStatusId &&
-                ["Draft", "Pending"].includes(getStatusName(conference.conferenceStatusId)) && (
+              {conferenceType === "technical" &&
+                isCollaborator &&
+                conference.conferenceStatusId &&
+                getStatusName(conference.conferenceStatusId) === "Rejected" && (
                   <DropdownMenuItem
-                    onClick={() => setDeleteDialogOpen(true)}
-                    className="cursor-pointer flex items-center gap-2 text-red-600"
+                    onClick={() => setResumeEditingOpen(true)}
+                    className="cursor-pointer flex items-center gap-2 text-blue-600"
                   >
-                    <Trash2 className="w-4 h-4" />
-                    Xóa hội thảo
+                    <Pencil className="w-4 h-4" />
+                    Tiếp tục chỉnh sửa
                   </DropdownMenuItem>
-                )} */}
+                )}
             </DropdownMenuContent>
           </DropdownMenu>
         }
@@ -284,6 +299,56 @@ export default function ConferenceDetailPage() {
         users={registeredUsersFull}
         conferenceName={conference.conferenceName!}
       />
+
+      <Dialog open={resumeEditingOpen} onOpenChange={setResumeEditingOpen}>
+        <DialogContent className="max-w-md p-6">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-amber-600">
+              <Info className="w-5 h-5" />
+              Tiếp tục chỉnh sửa
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-gray-700">
+              Hội thảo của bạn đã bị từ chối, chuyển sang trạng thái tiếp tục chỉnh sửa để gửi lại cho ConfRadar!
+            </p>
+          </div>
+          <DialogFooter className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setResumeEditingOpen(false)}>
+              Hủy
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!conference?.conferenceId) return;
+                const draftStatus = statuses.find((s) => s.conferenceStatusName === "Draft");
+                if (!draftStatus) {
+                  toast.error("Không tìm thấy trạng thái Draft");
+                  return;
+                }
+                try {
+                  const res: ApiResponse = await updateStatus({
+                    confid: conference.conferenceId,
+                    newStatus: draftStatus.conferenceStatusId,
+                    reason: "Chỉnh sửa sau khi bị từ chối",
+                  }).unwrap();
+                  if (res.success) {
+                    toast.success("Đã chuyển về trạng thái chỉnh sửa!");
+                    handleRefetch();
+                    setResumeEditingOpen(false);
+                  } else {
+                    toast.error(res.message || "Thất bại");
+                  }
+                } catch (err) {
+                  toast.error("Có lỗi xảy ra");
+                }
+              }}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Xác nhận
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="flex gap-6">

@@ -9,25 +9,24 @@ import type {
   TechnicalConferenceSessionResponse,
 } from "@/types/conference.type";
 import { PriceTimeline } from "./PriceTimeline";
+import { ResearchPhaseTimeline } from "./ResearchTimeline";
 
 interface MetaInfoSectionProps {
   conference: CommonConference;
   getCategoryName: (id: string) => string;
   getStatusName: (id: string) => string;
   getCityName: (id: string) => string;
+  isOrganizer: boolean;
 }
 
-// Union type cho session
 type ConferenceSession =
   | ResearchConferenceSessionResponse
   | TechnicalConferenceSessionResponse;
 
-// Mở rộng session với trường `days`
 type SessionWithDays = ConferenceSession & {
   days: number | null;
 };
 
-// Type guards
 function isResearchConference(
   conference: CommonConference
 ): conference is ResearchConferenceDetailResponse {
@@ -46,7 +45,6 @@ function isTechnicalSession(
   return 'sessionDate' in session;
 }
 
-// Helper functions
 function getDaysRemaining(targetDate: string | undefined | null) {
   if (!targetDate) return null;
   const now = new Date();
@@ -166,11 +164,18 @@ function getNextResearchDeadline(conference: CommonConference) {
   return nearest;
 }
 
+interface ResearchPhaseItem {
+  name: string;
+  startDate: string;
+  endDate: string;
+}
+
 export function MetaInfoSection({
   conference,
   getCategoryName,
   getStatusName,
   getCityName,
+  isOrganizer,
 }: MetaInfoSectionProps) {
   const isResearch = isResearchConference(conference);
   const nextPricePhase = getNextPricePhase(conference);
@@ -179,15 +184,37 @@ export function MetaInfoSection({
     ? getNextResearchDeadline(conference)
     : null;
 
+  const activePhase = isResearch
+    ? conference.researchPhase?.find((p) => p.isActive === true)
+    : null;
+
+  const researchPhases: ResearchPhaseItem[] = [];
+
+  if (activePhase) {
+    const phaseMap = [
+      { label: "Đăng ký", startDate: activePhase.registrationStartDate, endDate: activePhase.registrationEndDate },
+      { label: "Full Paper", startDate: activePhase.fullPaperStartDate, endDate: activePhase.fullPaperEndDate },
+      { label: "Review", startDate: activePhase.reviewStartDate, endDate: activePhase.reviewEndDate },
+      { label: "Revise", startDate: activePhase.reviseStartDate, endDate: activePhase.reviseEndDate },
+      { label: "Camera Ready", startDate: activePhase.cameraReadyStartDate, endDate: activePhase.cameraReadyEndDate },
+    ];
+
+    for (const { label, startDate, endDate } of phaseMap) {
+      if (startDate && endDate) {
+        researchPhases.push({ name: label, startDate, endDate });
+      }
+    }
+  }
+
   const startDateDays = getDaysRemaining(conference.startDate);
   const ticketSaleEndDays = getDaysRemaining(conference.ticketSaleEnd);
+  const safeBannerUrl = conference.bannerImageUrl?.trim() || "";
 
-return (
+  return (
     <div className="space-y-6">
-      {/* Conference Title & Description */}
       <div>
         <div className="flex items-baseline gap-3 mb-3">
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-medium text-gray-900">
             {conference.conferenceName}
           </h1>
           {conference.conferenceId && (
@@ -202,39 +229,30 @@ return (
         </p>
       </div>
 
-      {/* Grid Layout: Info on Left, Banner on Right */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Left Column - Meta Information */}
         <div className="space-y-3">
           <div className="flex items-start gap-3">
             <span className="text-xs text-gray-500 w-28 flex-shrink-0">Danh mục</span>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-blue-600 font-medium">
-                {getCategoryName(conference.conferenceCategoryId ?? "")}
-              </span>
-            </div>
+            <span className="text-xs text-blue-600 font-medium">
+              {getCategoryName(conference.conferenceCategoryId ?? "")}
+            </span>
           </div>
 
           {startDateDays !== null && startDateDays >= 0 && (
             <div className="flex items-start gap-3">
               <span className="text-xs text-gray-500 w-28 flex-shrink-0">Thời gian</span>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs text-gray-900 font-medium whitespace-nowrap">
-                  {formatDate(conference.startDate)} → {formatDate(conference.endDate)}
-                </span>
-              </div>
+              <span className="text-xs text-gray-900 font-medium whitespace-nowrap">
+                Bắt đầu từ {formatDate(conference.startDate)}
+              </span>
             </div>
           )}
 
-          {/* Ticket Sale - only show if upcoming */}
           {ticketSaleEndDays !== null && ticketSaleEndDays >= 0 && (
             <div className="flex items-start gap-3">
               <span className="text-xs text-gray-500 w-28 flex-shrink-0">Ngày bán</span>
               <div className="flex flex-col gap-1">
                 <span className="text-xs text-gray-900 font-medium whitespace-nowrap">
-                  {formatDate(conference.ticketSaleStart)} → {formatDate(
-                    conference.ticketSaleEnd
-                  )}
+                  {formatDate(conference.ticketSaleStart)} → {formatDate(conference.ticketSaleEnd)}
                 </span>
                 <span className="text-[10px] text-orange-600 font-medium">
                   ({formatCountdown(ticketSaleEndDays)})
@@ -243,7 +261,6 @@ return (
             </div>
           )}
 
-          {/* City */}
           <div className="flex items-start gap-3">
             <span className="text-xs text-gray-500 w-28 flex-shrink-0">Thành phố</span>
             <span className="text-xs text-gray-900 font-medium">
@@ -251,7 +268,6 @@ return (
             </span>
           </div>
 
-          {/* Capacity */}
           <div className="flex items-start gap-3">
             <span className="text-xs text-gray-500 w-28 flex-shrink-0">Số lượng tham dự</span>
             <div className="flex items-baseline gap-1">
@@ -264,7 +280,6 @@ return (
             </div>
           </div>
 
-          {/* Type Badges */}
           <div className="flex items-start gap-3">
             <span className="text-xs text-gray-500 w-28 flex-shrink-0">Loại hình</span>
             <div className="flex flex-wrap gap-2">
@@ -289,12 +304,9 @@ return (
             </div>
           </div>
 
-          {/* Next Price Phase */}
           {nextPricePhase && (
             <div className="flex items-start gap-3">
-              <span className="text-xs text-gray-500 w-28 flex-shrink-0">
-                Giai đoạn
-              </span>
+              <span className="text-xs text-gray-500 w-28 flex-shrink-0">Giai đoạn</span>
               <div className="flex flex-col gap-0.5">
                 <span className="text-xs text-gray-900 font-medium">
                   {nextPricePhase.phaseName}
@@ -306,12 +318,9 @@ return (
             </div>
           )}
 
-          {/* Next Session */}
           {nextSession && (
             <div className="flex items-start gap-3">
-              <span className="text-xs text-gray-500 w-28 flex-shrink-0">
-                Session
-              </span>
+              <span className="text-xs text-gray-500 w-28 flex-shrink-0">Session</span>
               <div className="flex flex-col gap-1">
                 <div className="flex flex-col gap-0.5">
                   <span className="text-xs text-gray-900 font-medium">
@@ -321,28 +330,19 @@ return (
                     ({formatCountdown(nextSession.days)})
                   </span>
                 </div>
-                <div className="flex items-center flex-wrap gap-2 text-[10px] text-gray-600">
-                  {/* <span className="flex items-center gap-1 whitespace-nowrap">
-                    <Calendar className="w-3 h-3" />
-                    {formatDate(nextSession.date || (isTechnicalSession(nextSession) ? nextSession.sessionDate : ""))}
-                  </span> */}
-                  {nextSession.room?.displayName && (
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />
-                      {nextSession.room.displayName}
-                    </span>
-                  )}
-                </div>
+                {nextSession.room?.displayName && (
+                  <span className="flex items-center gap-1 text-[10px] text-gray-600">
+                    <MapPin className="w-3 h-3" />
+                    {nextSession.room.displayName}
+                  </span>
+                )}
               </div>
             </div>
           )}
 
-          {/* Research Phase - only for research conferences */}
           {isResearch && nextResearchDeadline && (
             <div className="flex items-start gap-3">
-              <span className="text-xs text-gray-500 w-28 flex-shrink-0">
-                Research Phase
-              </span>
+              <span className="text-xs text-gray-500 w-28 flex-shrink-0">Research Phase</span>
               <div className="flex flex-col gap-0.5">
                 <span className="text-xs text-gray-900 font-medium">
                   {nextResearchDeadline.name}
@@ -355,14 +355,16 @@ return (
           )}
         </div>
 
-        {/* Right Column - Banner Image */}
         <div className="relative">
-          {conference.bannerImageUrl ? (
+          {safeBannerUrl ? (
             <div className="aspect-video rounded-lg overflow-hidden shadow-md">
               <img
-                src={conference.bannerImageUrl}
+                src={safeBannerUrl}
                 alt={`${conference.conferenceName} banner`}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "/placeholder-banner.png";
+                }}
               />
             </div>
           ) : (
@@ -372,8 +374,14 @@ return (
           )}
         </div>
       </div>
-      {/* <PriceTimeline conference={conference} /> */}
 
+      <PriceTimeline conference={conference} isResearch={isResearchConference(conference)} />
+
+      {isResearch && isOrganizer && researchPhases.length > 0 && (
+        <div className="border-t pt-6">
+          <ResearchPhaseTimeline phases={researchPhases} />
+        </div>
+      )}
     </div>
   );
 }

@@ -18,12 +18,12 @@ interface TicketTimeline {
 
 interface PriceTimelineProps {
   conference: CommonConference;
+  isResearch: boolean;
 }
 
-export function PriceTimeline({ conference }: PriceTimelineProps) {
+export function PriceTimeline({ conference, isResearch }: PriceTimelineProps) {
   if (!conference.conferencePrices) return null;
 
-  // NHÓM THEO ticket — đảm bảo tất cả field đều non-nullable
   const timelines: TicketTimeline[] = conference.conferencePrices
     .filter(price => price.ticketName != null)
     .map(price => ({
@@ -41,7 +41,6 @@ export function PriceTimeline({ conference }: PriceTimelineProps) {
           .filter(p => p.startDate && p.endDate) ?? [],
     }));
 
-  // TÁCH: author và normal
   const authorTicket = timelines.find(t => t.isAuthor);
   const normalTicket = timelines.find(t => !t.isAuthor);
 
@@ -49,156 +48,146 @@ export function PriceTimeline({ conference }: PriceTimelineProps) {
   if (normalTicket) finalTimelines.push(normalTicket);
   if (authorTicket) finalTimelines.push(authorTicket);
 
+  const getNearestPhase = (phases: PhaseItem[]) => {
+    if (phases.length === 0) return null;
+
+    const now = new Date();
+    const sortedPhases = [...phases].sort(
+      (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+    );
+
+    const ongoingPhase = sortedPhases.find(phase => {
+      const start = new Date(phase.startDate);
+      const end = new Date(phase.endDate);
+      return now >= start && now <= end;
+    });
+
+    if (ongoingPhase) return ongoingPhase;
+
+    const upcomingPhase = sortedPhases.find(phase => new Date(phase.startDate) > now);
+    return upcomingPhase || sortedPhases[sortedPhases.length - 1];
+  };
+
+  const calculateProgress = (phase: PhaseItem) => {
+    const now = new Date();
+    const start = new Date(phase.startDate);
+    const end = new Date(phase.endDate);
+
+    if (now < start) return 0;
+    if (now > end) return 100;
+
+    const totalTime = end.getTime() - start.getTime();
+    const elapsed = now.getTime() - start.getTime();
+
+    if (totalTime <= 0) return 100;
+
+    return Math.round(Math.max(0, Math.min(100, (elapsed / totalTime) * 100)));
+  };
+
+  const ticketData = finalTimelines
+    .map(ticket => ({
+      ...ticket,
+      nearestPhase: getNearestPhase(ticket.phases),
+    }))
+    .filter(t => t.nearestPhase !== null);
+
+  if (ticketData.length === 0) return null;
+
+  const hasMultipleTickets = ticketData.length > 1;
+  const now = new Date();
+
   return (
     <div className="border-t pt-6">
       <h3 className="text-sm font-semibold text-gray-900 mb-4">
-        Giai đoạn các loại chi phí
+        {isResearch
+          ? "Giai đoạn đăng ký cho thính giả & tác giả"
+          : "Giai đoạn mở bán vé"}
       </h3>
 
-      <div className="space-y-6">
-        {finalTimelines.map((ticket, idx) => {
-          if (ticket.phases.length === 0) return null;
+      <div className={hasMultipleTickets ? "grid grid-cols-2 gap-4" : ""}>
+        {ticketData.map((ticket, idx) => {
+          const phase = ticket.nearestPhase!;
+          const start = new Date(phase.startDate);
+          const end = new Date(phase.endDate);
+          const progress = calculateProgress(phase);
 
-          // Sắp xếp phase theo ngày bắt đầu
-          const sortedPhases = [...ticket.phases].sort(
-            (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
-          );
+          let statusText = "";
+          let statusColor = "text-gray-600";
 
-          // Tính tổng thời gian từ phase đầu đến cuối
-          const firstStart = new Date(sortedPhases[0].startDate);
-          const lastEnd = new Date(sortedPhases[sortedPhases.length - 1].endDate);
-          const totalTime = Math.max(1, lastEnd.getTime() - firstStart.getTime());
-
-          // Lấy thời điểm hiện tại
-          const now = new Date();
-
-          // Tính % hiện tại so với toàn bộ timeline
-          const currentProgress = Math.min(
-            100,
-            Math.max(0, ((now.getTime() - firstStart.getTime()) / totalTime) * 100)
-          );
-
-          // Tính vị trí % cho từng phase
-          const phasePositions = sortedPhases.map((phase, i) => {
-            const start = new Date(phase.startDate);
-            const end = new Date(phase.endDate);
-            const startPct = ((start.getTime() - firstStart.getTime()) / totalTime) * 100;
-            const endPct = ((end.getTime() - firstStart.getTime()) / totalTime) * 100;
-            return {
-              ...phase,
-              startPct,
-              endPct,
-            };
-          });
-
-          // Chọn màu cho từng phase (có thể tùy chỉnh theo ý bạn)
-          const phaseColors = [
-            "#E5F2FF", // A+
-            "#CCE5FF", // A
-            "#B3D9FF", // B
-            "#99CCFF", // C
-            "#80BFFF", // D
-            "#66B2FF", // F
-          ];
+          if (now < start) {
+            statusText = `Sẽ bắt đầu ${formatDate(phase.startDate)}`;
+            statusColor = "text-gray-600";
+          } else if (now > end) {
+            statusText = "Đã kết thúc";
+            statusColor = "text-red-600";
+          } else {
+            const remainingPercent = Math.round(100 - progress);
+            statusText = `Còn ${remainingPercent}% thời gian`;
+            statusColor = progress < 50 ? "text-emerald-600" :
+                         progress < 80 ? "text-blue-600" :
+                         "text-orange-600";
+          }
 
           return (
             <div key={idx} className="space-y-3">
-              {/* Ticket title */}
-              <div className="flex items-center gap-2">
-                <span
-                  className={`w-2 h-2 rounded-full ${
-                    ticket.isAuthor ? "bg-blue-500" : "bg-yellow-500"
-                  }`}
-                />
-                <span className="text-xs font-medium text-gray-900">
-                  {ticket.ticketName}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      ticket.isAuthor ? "bg-blue-500" : "bg-yellow-500"
+                    }`}
+                  />
+                  <span className="text-xs font-semibold text-gray-900">
+                    {ticket.ticketName}
+                  </span>
+                </div>
+                <span className="text-xs font-medium text-gray-600">
+                  {phase.phaseName}
                 </span>
               </div>
 
-              {/* PROGRESS BAR - TIMELINE DẠNG PHÂN ĐOẠN */}
-              <div className="relative h-8 flex items-center">
-                {/* Thanh nền */}
-                <div className="w-full h-2 bg-gray-200 rounded-full relative overflow-hidden">
-                  {/* Các đoạn phase */}
-                  {phasePositions.map((phase, i) => {
-                    const width = phase.endPct - phase.startPct;
-                    const left = phase.startPct;
-                    const color = phaseColors[i % phaseColors.length];
-
-                    return (
-                      <div
-                        key={i}
-                        className="absolute h-full rounded-full"
-                        style={{
-                          left: `${left}%`,
-                          width: `${width}%`,
-                          backgroundColor: color,
-                          transition: "all 0.3s ease",
-                        }}
-                      />
-                    );
-                  })}
-
-                  {/* Mũi tên chỉ thời điểm hiện tại */}
-                  <div
-                    className="absolute top-0 w-3 h-3 bg-black rounded-full border-2 border-white shadow-md transform -translate-y-0.5 z-10"
-                    style={{
-                      left: `${currentProgress}%`,
-                      marginLeft: "-6px",
-                    }}
-                  />
-
-                  {/* Đường kẻ đứt nét từ mũi tên xuống dưới (nếu cần) */}
-                  <div
-                    className="absolute top-4 w-[1px] h-4 bg-gray-400 dashed"
-                    style={{
-                      left: `${currentProgress}%`,
-                      marginLeft: "-0.5px",
-                    }}
-                  />
+              <div className="relative">
+                <div className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
+                  {now >= start && (
+                    <div
+                      className="h-full bg-emerald-600 rounded-full transition-all duration-500"
+                      style={{ width: `${Math.min(progress, 100)}%` }}
+                    />
+                  )}
+                  {now >= start && now <= end && progress < 100 && (
+                    <div
+                      className="absolute top-0 h-full bg-emerald-400 rounded-full"
+                      style={{
+                        left: `${Math.min(progress, 100)}%`,
+                        width: `${Math.min(10, 100 - progress)}%`,
+                        backgroundImage:
+                          'repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(255,255,255,0.3) 4px, rgba(255,255,255,0.3) 8px)',
+                      }}
+                    />
+                  )}
                 </div>
+
+                {now >= start && (
+                  <div
+                    className="absolute -top-1 w-4 h-4 bg-white border-2 border-gray-800 rounded-full shadow-md transform -translate-x-1/2"
+                    style={{ left: `${Math.min(progress, 100)}%` }}
+                  />
+                )}
               </div>
 
-              {/* Label mốc phase */}
-              <div className="flex justify-between text-[10px] text-gray-700 mt-1">
-                {phasePositions.map((phase, i) => {
-                  const labelPosition = phase.startPct + (phase.endPct - phase.startPct) / 2;
-                  return (
-                    <div
-                      key={i}
-                      className="absolute text-xs font-medium text-gray-900 whitespace-nowrap"
-                      style={{
-                        left: `${labelPosition}%`,
-                        transform: "translateX(-50%)",
-                        background: phaseColors[i % phaseColors.length],
-                        padding: "1px 4px",
-                        borderRadius: "4px",
-                        boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
-                      }}
-                    >
-                      {phase.phaseName}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Phần trăm ở dưới cùng */}
-              <div className="flex justify-between text-[10px] text-gray-500 mt-1">
-                {phasePositions.map((phase, i) => {
-                  return (
-                    <div
-                      key={i}
-                      className="absolute text-[10px] text-gray-500"
-                      style={{
-                        left: `${phase.endPct}%`,
-                        transform: "translateX(-50%)",
-                      }}
-                    >
-                      {Math.round(phase.endPct)}%
-                    </div>
-                  );
-                })}
-              </div>
+              <p className="text-xs text-gray-700">
+                <span className={`font-semibold ${statusColor}`}>
+                  {statusText}
+                </span>
+                {now >= start && now <= end && (
+                  <>
+                    {" "}và kết thúc vào{" "}
+                    <span className="font-semibold text-gray-900">
+                      {formatDate(phase.endDate)}
+                    </span>
+                  </>
+                )}
+              </p>
             </div>
           );
         })}

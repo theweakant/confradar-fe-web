@@ -18,7 +18,7 @@ interface LeftPanelProps {
   getCityName: (id: string) => string;
 }
 
-export function   LeftPanel({
+export function LeftPanel({
   primaryTab,
   activeSubtab,
   onSubtabChange,
@@ -32,6 +32,9 @@ export function   LeftPanel({
 }: LeftPanelProps) {
   const tabs = getFilteredTabs(primaryTab, conferenceType, userRoles);
 
+  // 👇 Xác định organizer dựa trên userRoles (điều chỉnh nếu logic khác)
+  const isOrganizer = userRoles.includes("Conference Organizer");
+
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
@@ -41,6 +44,7 @@ export function   LeftPanel({
             getCategoryName={getCategoryName}
             getStatusName={getStatusName}
             getCityName={getCityName}
+            isOrganizer={isOrganizer}
           />
         </div>
 
