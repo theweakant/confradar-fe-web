@@ -1,9 +1,11 @@
 import { Star } from "lucide-react";
-import { ConferenceResponse } from "@/types/conference.type";
+import { ConferenceResponse, ResearchConferenceDetailResponse, TechnicalConferenceDetailResponse } from "@/types/conference.type";
 
 // Feedback Tab Component
 interface FeedbackTabProps {
-  conference: ConferenceResponse;
+  conference:
+  | TechnicalConferenceDetailResponse
+  | ResearchConferenceDetailResponse;
   newFeedback: { name: string; rating: number; comment: string };
   setNewFeedback: (feedback: {
     name: string;

@@ -2,7 +2,7 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import { apiClient } from "../api/apiClient";
 import { endpoint } from "../api/endpoint";
 import type { ApiResponse } from "@/types/api.type";
-import type { OrcidStatusResponse } from "@/types/orcid.type";
+import type { OrcidBiography, OrcidEducation, OrcidStatusResponse, OrcidWorksResponse } from "@/types/orcid.type";
 
 export const orcidApi = createApi({
     reducerPath: "orcidApi",
@@ -23,28 +23,62 @@ export const orcidApi = createApi({
         //   }),
         // }),
 
-        getWorks: builder.query<ApiResponse<string>, void>({
-            query: () => ({
-                url: endpoint.ORCID.GET_WORKS,
-                method: "GET",
-            }),
-        }),
-
-        getBiography: builder.query<ApiResponse<string>, void>({
-            query: () => ({
-                url: endpoint.ORCID.GET_BIOGRAPHY,
-                method: "GET",
-            }),
-        }),
-
-        getEducations: builder.query<ApiResponse<string>, void>({
+        getEducations: builder.query<ApiResponse<OrcidEducation[]>, void>({
             query: () => ({
                 url: endpoint.ORCID.GET_EDUCATIONS,
                 method: "GET",
             }),
+            transformResponse: (response: ApiResponse<string>) => ({
+                ...response,
+                data: response.data ? JSON.parse(response.data) as OrcidEducation[] : [],
+            }),
         }),
 
-        getSectionByUserId: builder.query<ApiResponse<any>, { section: string }>({
+        getBiography: builder.query<ApiResponse<OrcidBiography | null>, void>({
+            query: () => ({
+                url: endpoint.ORCID.GET_BIOGRAPHY,
+                method: "GET",
+            }),
+            transformResponse: (response: ApiResponse<string>) => ({
+                ...response,
+                data: response.data ? JSON.parse(response.data) as OrcidBiography : null,
+            }),
+        }),
+
+        getWorks: builder.query<ApiResponse<OrcidWorksResponse | null>, void>({
+            query: () => ({
+                url: endpoint.ORCID.GET_WORKS,
+                method: "GET",
+            }),
+            transformResponse: (response: ApiResponse<string>) => ({
+                ...response,
+                data: response.data ? JSON.parse(response.data) as OrcidWorksResponse : null,
+            }),
+        }),
+
+
+        // getWorks: builder.query<ApiResponse<string>, void>({
+        //     query: () => ({
+        //         url: endpoint.ORCID.GET_WORKS,
+        //         method: "GET",
+        //     }),
+        // }),
+
+        // getBiography: builder.query<ApiResponse<string>, void>({
+        //     query: () => ({
+        //         url: endpoint.ORCID.GET_BIOGRAPHY,
+        //         method: "GET",
+        //     }),
+        // }),
+
+        // getEducations: builder.query<ApiResponse<string>, void>({
+        //     query: () => ({
+        //         url: endpoint.ORCID.GET_EDUCATIONS,
+        //         method: "GET",
+        //     }),
+        // }),
+
+        getSectionByUserId: builder.query<ApiResponse<string>, { section: string }>({
             query: ({ section }) => ({
                 url: `${endpoint.ORCID.GET_SECTION}?section=${section}`,
                 method: "GET",
