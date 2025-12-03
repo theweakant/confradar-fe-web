@@ -240,7 +240,7 @@ export const validateResearchTimeline = (
   const durationValidations = [
     { value: registrationDuration, name: "Thời gian đăng ký" },
     { value: fullPaperDuration, name: "Thời gian nộp Full Paper" },
-    { value: reviewDuration, name: "Thời gian phản biện" },
+    { value: reviewDuration, name: "Thời gian review" },
     { value: reviseDuration, name: "Thời gian chỉnh sửa" },
     { value: cameraReadyDuration, name: "Thời gian Camera Ready" },
   ];

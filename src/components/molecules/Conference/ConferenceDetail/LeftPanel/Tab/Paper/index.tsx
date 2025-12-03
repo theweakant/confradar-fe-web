@@ -229,7 +229,7 @@ export function PaperTab({ conferenceId, conferenceData }: PaperTabProps) {
           <FileText className="w-8 h-8 text-red-500" />
         </div>
         <h3 className="text-xl font-semibold text-gray-900 mb-2">Lỗi khi tải dữ liệu</h3>
-        <p className="text-gray-500">Không thể lấy danh sách bài báo hoặc phản biện.</p>
+        <p className="text-gray-500">Không thể lấy danh sách bài báo hoặc reviewer.</p>
       </div>
     );
   }

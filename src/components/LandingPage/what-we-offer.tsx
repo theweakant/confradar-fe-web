@@ -59,7 +59,7 @@ export default function WhatWeOffer() {
 
           {/* Phản biện */}
           <HoverRevealSquare
-            title="Phản biện"
+            title="Reviewer"
             hoverInfo={[
               "Đánh giá bài viết",
               "Đảm bảo chất lượng",

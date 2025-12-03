@@ -1,63 +1,87 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { EventClickArg } from "@fullcalendar/core"; 
-import { DoorOpen } from "lucide-react";
+import { EventClickArg } from "@fullcalendar/core";
+import { DoorOpen, Filter, X } from "lucide-react";
 import { useGetAvailableRoomsBetweenDatesQuery } from "@/redux/services/room.service";
+import { useGetAllDestinationsQuery } from "@/redux/services/destination.service";
+import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import type { AvailableRoom } from "@/types/room.type";
 import type { Session, ResearchSession } from "@/types/conference.type";
-import { DatesSetArg } from '@fullcalendar/core';
+import { DatesSetArg } from "@fullcalendar/core";
 import RoomCard from "./Room/RoomCard";
 import RoomDetailDialog from "./Room/RoomDetail";
 import { ChangeDateModal } from "@/components/molecules/Calendar/RoomCalendar/Modal/ChangeDateModal";
 import { ChangeRoomModal } from "@/components/molecules/Calendar/RoomCalendar/Modal/ChangeRoomModal";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 interface RoomCalendarProps {
   conferenceId?: string;
   conferenceType?: "Tech" | "Research";
   onSessionCreated?: (session: Session | ResearchSession) => void;
-  onSessionUpdated?: (session: Session | ResearchSession, index: number) => void; 
-  onSessionDeleted?: (index: number) => void; 
+  onSessionUpdated?: (session: Session | ResearchSession, index: number) => void;
+  onSessionDeleted?: (index: number) => void;
   startDate?: string;
   endDate?: string;
   existingSessions?: (Session | ResearchSession)[];
 }
 
-const RoomCalendar: React.FC<RoomCalendarProps> = ({ 
-  conferenceId, 
+const RoomCalendar: React.FC<RoomCalendarProps> = ({
+  conferenceId,
   conferenceType,
   onSessionCreated,
-  onSessionUpdated, 
-  onSessionDeleted, 
+  onSessionUpdated,
+  onSessionDeleted,
   startDate,
   endDate,
-  existingSessions = []
+  existingSessions = [],
 }) => {
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [roomDetailOpen, setRoomDetailOpen] = useState(false);
-  
-  // State cho Change Date/Room modals
+
+  const [filterCity, setFilterCity] = useState("all");
+  const [filterDestination, setFilterDestination] = useState("all");
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [tempFilterCity, setTempFilterCity] = useState("all");
+  const [tempFilterDestination, setTempFilterDestination] = useState("all");
+
   const [changeDateModalOpen, setChangeDateModalOpen] = useState(false);
   const [changeRoomModalOpen, setChangeRoomModalOpen] = useState(false);
   const [targetSession, setTargetSession] = useState<Session | ResearchSession | null>(null);
   const [targetSessionIndex, setTargetSessionIndex] = useState<number>(-1);
-  
+
   const [dateRange, setDateRange] = useState(() => {
-    const defaultStart = startDate || new Date().toISOString().split('T')[0];
-    const defaultEnd = new Date(new Date(defaultStart).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    
-    return {
-      start: defaultStart,
-      end: defaultEnd
-    };
+    const defaultStart = startDate || new Date().toISOString().split("T")[0];
+    const defaultEnd = new Date(
+      new Date(defaultStart).getTime() + 7 * 24 * 60 * 60 * 1000
+    )
+      .toISOString()
+      .split("T")[0];
+    return { start: defaultStart, end: defaultEnd };
   });
 
-  const calendarRef = useRef<FullCalendar | null>(null);
-  const roomListRef = useRef<HTMLDivElement | null>(null);
-  
+  const calendarRef = useRef<FullCalendar>(null);
+  const roomListRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (calendarRef.current && startDate) {
       const calendarApi = calendarRef.current.getApi();
@@ -68,72 +92,101 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
   useEffect(() => {
     if (startDate) {
       const start = startDate;
-      const end = new Date(new Date(start).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const end = new Date(new Date(start).getTime() + 7 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0];
       setDateRange({ start, end });
     }
   }, [startDate]);
+
+  const { data: destinationsData } = useGetAllDestinationsQuery();
+  const { data: citiesData } = useGetAllCitiesQuery();
+
+  const destinations = destinationsData?.data || [];
+  const cities = citiesData?.data || [];
 
   const {
     data: roomsData,
     isLoading: isLoadingRooms,
     error: roomsError,
-    refetch: refetchRooms
+    refetch: refetchRooms,
   } = useGetAvailableRoomsBetweenDatesQuery({
     startdate: dateRange.start,
-    endate: dateRange.end
+    endate: dateRange.end,
+    ...(filterCity !== "all" && { cityId: filterCity }),
+    ...(filterDestination !== "all" && { destinationId: filterDestination }),
   });
 
   const rooms = roomsData?.data || [];
 
-  const roomsByDate = rooms.reduce((acc, room) => {
-    if (!acc[room.date]) {
-      acc[room.date] = [];
-    }
-    acc[room.date].push(room);
-    return acc;
-  }, {} as Record<string, AvailableRoom[]>);
+  const cityOptions = useMemo(() => {
+    const allOption = { value: "all", label: "Tất cả thành phố" };
+    const apiCities = cities.map((city) => ({
+      value: city.cityId,
+      label: city.cityName || "N/A",
+    }));
+    return [allOption, ...apiCities];
+  }, [cities]);
+
+  const destinationOptions = useMemo(() => {
+    const allOption = { value: "all", label: "Tất cả điểm đến" };
+    const apiDests = destinations.map((dest) => ({
+      value: dest.destinationId,
+      label: dest.name || "N/A",
+    }));
+    return [allOption, ...apiDests];
+  }, [destinations]);
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filterCity !== "all") count++;
+    if (filterDestination !== "all") count++;
+    return count;
+  }, [filterCity, filterDestination]);
 
   const uniqueRooms = Array.from(
-    new Map(rooms.map(room => [room.roomId, room])).values()
+    new Map(rooms.map((room) => [room.roomId, room])).values()
   );
 
   const getRoomColor = (isAvailableWholeday: boolean): { bg: string; border: string } => {
     return isAvailableWholeday
-      ? { bg: "#10b981", border: "#059669" } 
-      : { bg: "#3b82f6", border: "#2563eb" }; 
+      ? { bg: "#10b981", border: "#059669" }
+      : { bg: "#3b82f6", border: "#2563eb" };
   };
 
-  const calendarEvents = rooms.map((room) => {
-    const colors = getRoomColor(room.isAvailableWholeday);
-    if (room.isAvailableWholeday) {
-      return {
-        id: `${room.roomId}-${room.date}`,
+  const calendarEvents = rooms
+    .map((room) => {
+      const colors = getRoomColor(room.isAvailableWholeday);
+      if (room.isAvailableWholeday) {
+        return {
+          id: `${room.roomId}-${room.date}`,
+          title: room.roomDisplayName || `Room ${room.roomNumber}`,
+          start: room.date,
+          end: room.date,
+          allDay: true,
+          backgroundColor: colors.bg,
+          borderColor: colors.border,
+          extendedProps: {
+            room,
+            isWholeDay: true,
+          },
+        };
+      }
+      return room.availableTimeSpans.map((span, index) => ({
+        id: `${room.roomId}-${room.date}-${index}`,
         title: room.roomDisplayName || `Room ${room.roomNumber}`,
-        start: room.date,
-        end: room.date,
-        allDay: true,
+        start: `${room.date}T${span.startTime}`,
+        end: `${room.date}T${span.endTime}`,
         backgroundColor: colors.bg,
         borderColor: colors.border,
         extendedProps: {
-          room: room,
-          isWholeDay: true
-        }
-      };
-    }
-    return room.availableTimeSpans.map((span, index) => ({
-      id: `${room.roomId}-${room.date}-${index}`,
-      title: room.roomDisplayName || `Room ${room.roomNumber}`,
-      start: `${room.date}T${span.startTime}`,
-      end: `${room.date}T${span.endTime}`,
-      backgroundColor: colors.bg,
-      borderColor: colors.border,
-      extendedProps: {
-        room: room,
-        timeSpan: span,
-        isWholeDay: false
-      }
-    }));
-  }).flat();
+          room,
+          timeSpan: span,
+          isWholeDay: false,
+        },
+      }));
+    })
+    .flat();
 
   const handleRoomClick = (room: AvailableRoom) => {
     setSelectedRoom(room.roomId);
@@ -151,23 +204,18 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
     setRoomDetailOpen(true);
   };
 
-  // ✅ Implement handleChangeDate
   const handleChangeDate = (session: Session | ResearchSession, index: number) => {
-    console.log('Đổi ngày cho session:', session.title, 'tại index:', index);
     setTargetSession(session);
     setTargetSessionIndex(index);
     setChangeDateModalOpen(true);
   };
 
-  // ✅ Implement handleChangeRoom
   const handleChangeRoom = (session: Session | ResearchSession, index: number) => {
-    console.log('Đổi phòng cho session:', session.title, 'tại index:', index);
     setTargetSession(session);
     setTargetSessionIndex(index);
     setChangeRoomModalOpen(true);
   };
 
-  // ✅ Handle confirm từ ChangeDateModal
   const handleChangeDateConfirm = (updatedSession: Session | ResearchSession) => {
     if (onSessionUpdated && targetSessionIndex !== -1) {
       onSessionUpdated(updatedSession, targetSessionIndex);
@@ -177,7 +225,6 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
     setTargetSessionIndex(-1);
   };
 
-  // ✅ Handle confirm từ ChangeRoomModal
   const handleChangeRoomConfirm = (updatedSession: Session | ResearchSession) => {
     if (onSessionUpdated && targetSessionIndex !== -1) {
       onSessionUpdated(updatedSession, targetSessionIndex);
@@ -186,17 +233,38 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
     setTargetSession(null);
     setTargetSessionIndex(-1);
   };
-  
-  const selectedRoomData = selectedRoom 
-    ? rooms.find(r => r.roomId === selectedRoom && r.date === selectedDate)
+
+  const handleOpenFilterModal = () => {
+    setTempFilterCity(filterCity);
+    setTempFilterDestination(filterDestination);
+    setIsFilterModalOpen(true);
+  };
+
+  const handleApplyFilters = () => {
+    setFilterCity(tempFilterCity);
+    setFilterDestination(tempFilterDestination);
+    setIsFilterModalOpen(false);
+  };
+
+  const handleResetFilters = () => {
+    setTempFilterCity("all");
+    setTempFilterDestination("all");
+  };
+
+  const handleClearAllFilters = () => {
+    setFilterCity("all");
+    setFilterDestination("all");
+  };
+
+  const selectedRoomData = selectedRoom
+    ? rooms.find((r) => r.roomId === selectedRoom && r.date === selectedDate)
     : null;
 
   const handleDatesSet = (dateInfo: DatesSetArg) => {
-    const start = dateInfo.start.toISOString().split('T')[0];
+    const start = dateInfo.start.toISOString().split("T")[0];
     const maxEndDate = new Date(dateInfo.start);
     maxEndDate.setDate(maxEndDate.getDate() + 7);
-    const end = maxEndDate.toISOString().split('T')[0];
-    
+    const end = maxEndDate.toISOString().split("T")[0];
     if (start !== dateRange.start || end !== dateRange.end) {
       setDateRange({ start, end });
     }
@@ -231,6 +299,99 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
 
   return (
     <div className="w-full">
+      <div className="mx-4 mb-6">
+        <div className="bg-white rounded-lg shadow-sm p-4">
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={handleOpenFilterModal} className="relative">
+              <Filter className="w-4 h-4 mr-2" />
+              Bộ lọc
+              {activeFilterCount > 0 && (
+                <Badge className="ml-2 bg-blue-600 text-white px-2 py-0.5 text-xs">
+                  {activeFilterCount}
+                </Badge>
+              )}
+            </Button>
+            {activeFilterCount > 0 && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleClearAllFilters}
+                title="Xóa tất cả bộ lọc"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+
+          {activeFilterCount > 0 && (
+            <div className="flex flex-wrap justify-end gap-2 mt-3 pt-3 border-t">
+              {filterCity !== "all" && (
+                <Badge variant="secondary" className="gap-1">
+                  Thành phố: {cityOptions.find((o) => o.value === filterCity)?.label}
+                  <X className="w-3 h-3 cursor-pointer" onClick={() => setFilterCity("all")} />
+                </Badge>
+              )}
+              {filterDestination !== "all" && (
+                <Badge variant="secondary" className="gap-1">
+                  Điểm đến: {destinationOptions.find((o) => o.value === filterDestination)?.label}
+                  <X
+                    className="w-3 h-3 cursor-pointer"
+                    onClick={() => setFilterDestination("all")}
+                  />
+                </Badge>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <Dialog open={isFilterModalOpen} onOpenChange={setIsFilterModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Bộ lọc tìm kiếm</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4">
+            <div>
+              <Label className="text-sm font-medium text-gray-700 mb-2 block">Thành phố</Label>
+              <Select value={tempFilterCity} onValueChange={setTempFilterCity}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn thành phố" />
+                </SelectTrigger>
+                <SelectContent>
+                  {cityOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="text-sm font-medium text-gray-700 mb-2 block">Điểm đến</Label>
+              <Select value={tempFilterDestination} onValueChange={setTempFilterDestination}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn điểm đến" />
+                </SelectTrigger>
+                <SelectContent>
+                  {destinationOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleResetFilters}>
+              Đặt lại
+            </Button>
+            <Button onClick={handleApplyFilters}>Áp dụng</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <div className="mx-4 my-6 flex gap-4 items-center text-sm px-1">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-green-600"></div>
@@ -303,7 +464,9 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
               firstDay={1}
               validRange={{
                 start: startDate || undefined,
-                end: endDate ? new Date(new Date(endDate).getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0] : undefined,
+                end: endDate
+                  ? new Date(new Date(endDate).getTime() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]
+                  : undefined,
               }}
               headerToolbar={{
                 left: "prev,next today",
@@ -324,7 +487,6 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
               eventContent={(arg) => {
                 const isWholeDay = arg.event.extendedProps.isWholeDay;
                 const timeSpan = arg.event.extendedProps.timeSpan;
-                
                 return (
                   <div className="flex flex-col overflow-hidden text-ellipsis p-1">
                     <span className="text-xs font-semibold text-white leading-snug truncate">
@@ -336,9 +498,7 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
                       </span>
                     )}
                     {isWholeDay && (
-                      <span className="text-[10px] text-white/90">
-                        Cả ngày
-                      </span>
+                      <span className="text-[10px] text-white/90">Cả ngày</span>
                     )}
                   </div>
                 );
@@ -366,20 +526,33 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
             ref={roomListRef}
             className="space-y-2 overflow-y-auto max-h-[500px] pr-1"
           >
-            {uniqueRooms.map((room) => (
-              <RoomCard
-                key={room.roomId}
-                room={room}
-                selectedRoom={selectedRoom}
-                onRoomClick={handleRoomClick}
-                allRoomDates={rooms.filter(r => r.roomId === room.roomId)}
-              />
-            ))}
+            {uniqueRooms.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <p className="text-sm">Không tìm thấy phòng nào</p>
+                {activeFilterCount > 0 && (
+                  <button
+                    onClick={handleClearAllFilters}
+                    className="mt-2 text-xs text-green-600 hover:text-green-700"
+                  >
+                    Xóa bộ lọc để xem tất cả
+                  </button>
+                )}
+              </div>
+            ) : (
+              uniqueRooms.map((room) => (
+                <RoomCard
+                  key={room.roomId}
+                  room={room}
+                  selectedRoom={selectedRoom}
+                  onRoomClick={handleRoomClick}
+                  allRoomDates={rooms.filter((r) => r.roomId === room.roomId)}
+                />
+              ))
+            )}
           </div>
         </div>
       </div>
 
-      {/* RoomDetailDialog với callbacks */}
       <RoomDetailDialog
         open={roomDetailOpen}
         roomId={selectedRoom}
@@ -395,13 +568,12 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
           setSelectedDate(null);
         }}
         onSessionCreated={onSessionCreated}
-        onSessionUpdated={onSessionUpdated} 
-        onSessionDeleted={onSessionDeleted} 
-        onChangeDate={handleChangeDate}  
-        onChangeRoom={handleChangeRoom}  
+        onSessionUpdated={onSessionUpdated}
+        onSessionDeleted={onSessionDeleted}
+        onChangeDate={handleChangeDate}
+        onChangeRoom={handleChangeRoom}
       />
 
-      {/* ChangeDateModal */}
       <ChangeDateModal
         open={changeDateModalOpen}
         session={targetSession}
@@ -416,7 +588,6 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
         onConfirm={handleChangeDateConfirm}
       />
 
-      {/* ChangeRoomModal */}
       <ChangeRoomModal
         open={changeRoomModalOpen}
         session={targetSession}

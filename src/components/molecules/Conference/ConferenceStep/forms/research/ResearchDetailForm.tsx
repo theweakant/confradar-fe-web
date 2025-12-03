@@ -208,11 +208,19 @@ export function ResearchDetailForm({
       <FormInput
         label="Phí review bài báo (VND)"
         name="reviewFee"
-        type="number"
-        value={formData.reviewFee}
-        onChange={(val) => handleChange("reviewFee", Number(val))}
+        type="text"
+        value={
+          formData.reviewFee > 0 
+            ? formData.reviewFee.toLocaleString("vi-VN") 
+            : ""
+        }
+        onChange={(val) => {
+          const rawValue = val.replace(/\D/g, "");
+          const numValue = rawValue === "" ? 0 : Number(rawValue);
+          handleChange("reviewFee", numValue);
+        }}
         error={validationErrors.reviewFee}
-        placeholder="VD: 500000"
+        placeholder="VD: 500.000"
       />
 
       <div className="flex items-center gap-2">

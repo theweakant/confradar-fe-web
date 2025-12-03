@@ -14,6 +14,7 @@ import {
   Clock,
   Play,
   CheckCircle2,
+  XCircle, // ← icon mới cho "rejected"
 } from "lucide-react";
 import NextImage from "next/image";
 import {
@@ -46,12 +47,14 @@ import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 
 import type { Conference } from "@/types/conference.type";
 
-type TabType = "pending" | "ongoing" | "completed" | "draft";
+// ← Thêm "rejected" vào kiểu
+type TabType = "pending" | "ongoing" | "completed" | "draft" | "rejected";
 
 const STATUS_GROUP_SETS = {
   pending: new Set(["pending"]),
   ongoing: new Set(["preparing", "ready", "onhold"]),
   completed: new Set(["completed", "cancelled"]),
+  rejected: new Set(["rejected"]), // ← nhóm trạng thái mới
 } as const;
 
 const getStatusGroup = (statusName: string): TabType | null => {
@@ -59,6 +62,7 @@ const getStatusGroup = (statusName: string): TabType | null => {
   if (STATUS_GROUP_SETS.pending.has(lower)) return "pending";
   if (STATUS_GROUP_SETS.ongoing.has(lower)) return "ongoing";
   if (STATUS_GROUP_SETS.completed.has(lower)) return "completed";
+  if (STATUS_GROUP_SETS.rejected.has(lower)) return "rejected"; // ← xử lý mới
   return null;
 };
 
@@ -221,6 +225,7 @@ export default function ConferenceManagementTabs() {
     if (lower === "completed") return "bg-green-600 text-white font-semibold";
     if (lower === "cancelled") return "bg-red-600 text-white font-semibold";
     if (lower === "draft") return "bg-orange-100 text-orange-700";
+    if (lower === "rejected") return "bg-red-100 text-red-800"; // ← style mới
     return "bg-gray-100 text-gray-700";
   };
 
@@ -229,6 +234,7 @@ export default function ConferenceManagementTabs() {
     ongoing: { label: "Đang diễn ra", icon: <Play className="w-5 h-5" /> },
     completed: { label: "Đã kết thúc", icon: <CheckCircle2 className="w-5 h-5" /> },
     draft: { label: "Bản nháp", icon: <FileText className="w-5 h-5" /> },
+    rejected: { label: "Bị từ chối", icon: <XCircle className="w-5 h-5" /> }, // ← tab mới
   };
 
   if (error) {
@@ -256,7 +262,8 @@ export default function ConferenceManagementTabs() {
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
           <div className="flex border-b border-gray-200">
-            {(["pending", "ongoing", "completed", "draft"] as const).map((tab) => {
+            {/* ← Thêm "rejected" vào danh sách tab */}
+            {(["pending", "ongoing", "completed", "rejected", "draft"] as const).map((tab) => {
               const isActive = activeTab === tab;
               const count = tab === "draft"
                 ? draftsData?.data?.totalCount || 0
@@ -294,6 +301,7 @@ export default function ConferenceManagementTabs() {
               {activeTab === "ongoing" && "Các hội thảo đang trong giai đoạn chuẩn bị hoặc diễn ra."}
               {activeTab === "completed" && "Các hội thảo đã hoàn thành hoặc bị huỷ."}
               {activeTab === "draft" && "Các bản nháp hội thảo chưa được gửi duyệt."}
+              {activeTab === "rejected" && "Các hội thảo đã bị Ban tổ chức từ chối."} {/* ← mô tả mới */}
             </p>
           </div>
 

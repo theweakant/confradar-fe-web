@@ -159,12 +159,22 @@ export const roomApi = createApi({
 
     getAvailableRoomsBetweenDates: builder.query<
       ApiResponse<AvailableRoom[]>,
-      { startdate: string; endate: string }
+      {
+        startdate: string;
+        endate: string;
+        cityId?: string;
+        destinationId?: string;
+      }
     >({
-      query: ({ startdate, endate }) => ({
+      query: ({ startdate, endate, cityId, destinationId }) => ({
         url: endpoint.ROOM.AVAILABLE_ROOM,
         method: "GET",
-        params: { startdate, endate },
+        params: {
+          startdate,
+          endate,
+          ...(cityId && { cityId }),
+          ...(destinationId && { destinationId }),
+        },
       }),
     }),
 

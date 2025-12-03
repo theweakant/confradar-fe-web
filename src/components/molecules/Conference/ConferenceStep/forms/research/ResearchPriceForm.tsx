@@ -955,18 +955,25 @@ if (!allowListener) {
         )}
 
         <div className="grid grid-cols-2 gap-3 mt-2">
-          <FormInput
-            label={
-              newTicket.isAuthor 
-                ? `Chi phí gốc (VND) - Tối thiểu: ${reviewFee.toLocaleString()}` 
-                : "Chi phí thính giả (VND)"
-            }
-            type="number"
-            value={newTicket.ticketPrice}
-            onChange={(val) => setNewTicket({ ...newTicket, ticketPrice: Number(val) })}
-            placeholder={newTicket.isAuthor ? reviewFee.toString() : "500000"}  
-            min={newTicket.isAuthor ? reviewFee : 0} 
-          />
+        <FormInput
+          label={
+            newTicket.isAuthor 
+              ? `Chi phí gốc (VND) - Tối thiểu: ${reviewFee.toLocaleString("vi-VN")}`
+              : "Chi phí thính giả (VND)"
+          }
+          type="text"
+          value={
+            newTicket.ticketPrice > 0 
+              ? newTicket.ticketPrice.toLocaleString("vi-VN") 
+              : ""
+          }
+          onChange={(val) => {
+            const rawValue = val.replace(/\D/g, "");
+            const numValue = rawValue === "" ? 0 : Number(rawValue);
+            setNewTicket({ ...newTicket, ticketPrice: numValue });
+          }}
+          placeholder={newTicket.isAuthor ? reviewFee.toLocaleString("vi-VN") : "500.000"}
+        />
           <FormInput
             label={
               newTicket.isAuthor
