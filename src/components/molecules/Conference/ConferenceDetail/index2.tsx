@@ -215,7 +215,7 @@ export default function ConferenceDetailPage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               {conference.conferenceStatusId &&
-                ["OnHold", "Draft", "Preparing", "Pending"].includes(getStatusName(conference.conferenceStatusId)) &&
+                ["OnHold", "Draft", "Preparing"].includes(getStatusName(conference.conferenceStatusId)) &&
                 updateRoute && (
                   <DropdownMenuItem
                     onClick={() => router.push(updateRoute)}
@@ -240,7 +240,7 @@ export default function ConferenceDetailPage() {
                 )}
 
               {conference.conferenceStatusId &&
-                !["Draft", "Pending", "Deleted", "Rejected"].includes(getStatusName(conference.conferenceStatusId)) && (
+                !["Draft", "Deleted", "Rejected"].includes(getStatusName(conference.conferenceStatusId)) && (
                   <DropdownMenuItem
                     onClick={() => setStatusDialogOpen(true)}
                     className="cursor-pointer flex items-center gap-2 text-purple-600"

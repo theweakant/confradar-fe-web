@@ -121,6 +121,9 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
       case "Draft":
         allowedNames = hasCollaboratorRole ? ["Pending"] : [];
         break;
+      case "Pending":
+        allowedNames = hasCollaboratorRole ? ["Draft"] : [];
+      break;
       case "Preparing":
         allowedNames = ["Ready"];
         break;

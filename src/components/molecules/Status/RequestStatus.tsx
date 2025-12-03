@@ -12,7 +12,7 @@ import {
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { AlertCircle, SendHorizonal } from "lucide-react";
+import { AlertCircle, SendHorizonal, AlertTriangle } from "lucide-react";
 import { useRequestConferenceApprovalMutation } from "@/redux/services/status.service";
 import { useGetAllConferenceStatusesQuery } from "@/redux/services/status.service";
 import { ConferenceMediaResponse, ConferencePolicyResponse, ConferencePrice, ConferencePriceResponse, Media, Policy, RefundPolicy, ResearchConferenceSessionResponse, Session, Sponsor, SponsorResponse, TechnicalConferenceSessionResponse } from "@/types/conference.type";
@@ -61,7 +61,6 @@ export const RequestConferenceApproval: React.FC<RequestConferenceApprovalProps>
   const { data: statusData } = useGetAllConferenceStatusesQuery();
   const [requestApproval, { isLoading }] = useRequestConferenceApprovalMutation();
 
-  // ✅ ĐÃ SỬA: Thêm guard cho conferenceData
   const shouldShowButton = useMemo(() => {
     if (!conferenceData || !conferenceData.conferenceStatusId || !statusData?.data) {
       return false;
@@ -74,7 +73,6 @@ export const RequestConferenceApproval: React.FC<RequestConferenceApprovalProps>
     return currentStatus?.conferenceStatusName?.toLowerCase() === "draft";
   }, [conferenceData, conferenceData?.conferenceStatusId, statusData?.data]);
 
-  // ✅ ĐÃ SỬA: Thêm guard cho conferenceData
   const currentStatusName = useMemo(() => {
     if (!conferenceData || !conferenceData.conferenceStatusId || !statusData?.data) {
       return "N/A";
@@ -87,7 +85,6 @@ export const RequestConferenceApproval: React.FC<RequestConferenceApprovalProps>
     return status?.conferenceStatusName || "N/A";
   }, [conferenceData, conferenceData?.conferenceStatusId, statusData?.data]);
 
-  // ✅ VALIDATION DỰA TRÊN CONTRACT
   useEffect(() => {
     if (!open) {
       setValidationErrors([]);
@@ -140,7 +137,6 @@ export const RequestConferenceApproval: React.FC<RequestConferenceApprovalProps>
 
   const canSubmit = validationErrors.length === 0;
 
-  // ❌ Không hiển thị nếu không ở trạng thái Draft hoặc dữ liệu chưa sẵn
   if (!shouldShowButton) {
     return null;
   }
@@ -196,6 +192,30 @@ export const RequestConferenceApproval: React.FC<RequestConferenceApprovalProps>
               </p>
             </div>
 
+            {/* WARNING SECTION - Hiển thị cả khi đã đủ điều kiện */}
+            <div className="bg-amber-50 border border-amber-300 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-amber-900 mb-2">
+                    Lưu ý quan trọng
+                  </p>
+                  <p className="text-sm text-amber-800 leading-relaxed">
+                    Sau khi gửi duyệt, bạn sẽ <span className="font-semibold">không thể cập nhật</span> các thông tin sau:
+                  </p>
+                  <ul className="list-disc list-inside space-y-1 mt-2 ml-2">
+                    <li className="text-sm text-amber-800">Thông tin cơ bản</li>
+                    <li className="text-sm text-amber-800">Giá vé</li>
+                    <li className="text-sm text-amber-800">Sessions</li>
+                  </ul>
+                  <p className="text-sm text-amber-900 font-semibold mt-3">
+                    Hãy chắc chắn với những thông tin bạn đã cung cấp!
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* VALIDATION ERRORS */}
             {validationErrors.length > 0 ? (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <div className="flex items-start gap-2">
