@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { ApiError } from "@/types/api.type";
 import { isWithinDateRange } from "@/helper/paper";
 import ReviewerPaperCard from "./ReviewerPaperCard";
+import { parseApiError } from "@/helper/api";
 
 interface CameraReadyPhaseProps {
     paperDetail: PaperDetailForReviewer;
@@ -35,8 +36,12 @@ export default function CameraReadyPhase({
     const [cameraReadyDecisionStatus, setCameraReadyDecisionStatus] =
         useState("Accepted");
 
-    const [decideCameraReadyStatus, { isLoading: isDecidingCameraReady }] =
+    const [decideCameraReadyStatus, { isLoading: isDecidingCameraReady, error: decideError }] =
         useDecideCameraReadyMutation();
+
+    useEffect(() => {
+        if (decideError) toast.error(parseApiError<string>(decideError)?.data?.message)
+    }, [decideError]);
 
     useEffect(() => {
         const url = paperDetail.cameraReady?.cameraReadyUrl;
@@ -85,7 +90,7 @@ export default function CameraReadyPhase({
             setShowCameraReadyDecisionPopup(false);
         } catch (error: unknown) {
             const err = error as ApiError;
-            toast.error(err?.message || "Có lỗi xảy ra");
+            // toast.error(err?.message || "Có lỗi xảy ra");
         }
     };
 

@@ -89,12 +89,15 @@ export const userApi = createApi({
       }),
     }),
 
-    suspendAccount: builder.mutation<ApiResponse<unknown>, string>({
-      query: (userId) => ({
-        url: endpoint.AUTH.SUSPEND(userId),
-        method: "PUT",
-      }),
-    }),
+    suspendAccount: builder.mutation<ApiResponse<unknown>, { userId: string; reason: string }>(
+      {
+        query: (body) => ({
+          url: endpoint.AUTH.SUSPEND,
+          method: "PUT",
+          body,
+        }),
+      }
+    ),
 
     activateAccount: builder.mutation<ApiResponse<unknown>, string>({
       query: (userId) => ({

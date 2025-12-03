@@ -19,7 +19,8 @@ export const endpoint = {
     UPDATE_PROFILE: "/Auth/update-profile",
     CHANGE_PASSWORD: "/Auth/change-password",
 
-    SUSPEND: (userId: string) => `/Auth/suspend-account?userId=${userId}`,
+    // SUSPEND: (userId: string) => `/Auth/suspend-account?userId=${userId}`,
+    SUSPEND: `/Auth/suspend-account`,
     ACTIVATE: (userId: string) => `/Auth/activate-account?userId=${userId}`,
 
     SUSPEND_EXTERNAL_REVIEWER: (userId: string) =>
@@ -291,7 +292,8 @@ export const endpoint = {
       "/Paper/get-all-submitted-papers-for-customer",
     GET_PAPER_DETAIL_CUSTOMER: "/Paper/get-paper-detail-customer",
     LIST_PAPER_PHASES: "/Paper/list-paper-phases",
-    LIST_AVAILABLE_CUSTOMERS: "/Paper/list-available-customers",
+    LIST_AVAILABLE_CUSTOMERS: (conferenceId: string) =>
+      `/paper/coauthors/available?conferenceId=${conferenceId}`,
 
     //WAITLIST
     ADD_TO_WAITLIST: "/Paper/add-waitlist",

@@ -56,12 +56,13 @@ export default function FullPaperPhase({
     const [submitReview, { isLoading: isSubmitting, error: submitReviewError }] =
         useSubmitFullPaperReviewMutation();
 
-    const [decideStatus, { isLoading: isDeciding }] =
+    const [decideStatus, { isLoading: isDeciding, error: decideError }] =
         useDecideFullPaperStatusMutation();
 
     useEffect(() => {
         if (submitReviewError) toast.error(parseApiError<string>(submitReviewError)?.data?.message)
-    }, [submitReviewError]);
+        if (decideError) toast.error(parseApiError<string>(decideError)?.data?.message)
+    }, [submitReviewError, decideError]);
 
 
     useEffect(() => {
@@ -139,7 +140,7 @@ export default function FullPaperPhase({
         } catch (error: unknown) {
             const err = error as ApiError;
             const errorMessage = err?.message || "Lỗi khi gửi đánh giá";
-            toast.error(errorMessage);
+            // toast.error(errorMessage);
         }
     };
 
@@ -162,7 +163,7 @@ export default function FullPaperPhase({
         } catch (error: unknown) {
             const apiError = error as ApiError;
             const errorMessage = apiError?.message || "Lỗi khi cập nhật trạng thái";
-            toast.error(errorMessage);
+            // toast.error(errorMessage);
         }
     };
 

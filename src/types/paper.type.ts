@@ -443,7 +443,32 @@ export interface PaperDetailResponse {
 
   researchPhase?: ResearchPhaseDtoDetail;
   revisionDeadline?: RevisionDeadlineDetail[];
+
+  researchConferenceInfo?: ResearchConferenceInfo | null;
 }
+
+export interface ResearchConferenceInfo {
+  conferenceId?: string | null;
+  conferenceName?: string | null;
+  description?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  totalSlot?: number | null;
+  availableSlot?: number | null;
+  address?: string | null;
+  bannerImageFileUrl?: string | null;
+  isInternalHosted?: boolean | null;
+  isResearchConference?: boolean | null;
+  conferenceCategoryId?: string | null;
+  cityId?: string | null;
+  createdAt?: string | null;
+  ticketSaleStart?: string | null;
+  ticketSaleEnd?: string | null;
+  createdby?: string | null;
+  creatorUserName?: string | null;
+  statusName?: string | null;
+}
+
 
 export type RevisionDeadlineDetail = {
   revisionRoundDeadlineId: string

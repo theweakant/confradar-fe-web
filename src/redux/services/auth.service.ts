@@ -13,11 +13,23 @@ export const authApi = createApi({
   reducerPath: "authApi",
   baseQuery: apiClient,
   endpoints: (builder) => ({
+    // login: builder.mutation({
+    //   query: (body) => ({
+    //     url: endpoint.AUTH.LOGIN,
+    //     method: "POST",
+    //     body,
+    //   }),
+    // }),
     login: builder.mutation({
-      query: (body) => ({
+      query: ({ email, password, firebaseWebFcmToken, firebaseMobileFcmToken }) => ({
         url: endpoint.AUTH.LOGIN,
         method: "POST",
-        body,
+        body: {
+          email,
+          password,
+          ...(firebaseWebFcmToken && { firebaseWebFcmToken }),
+          ...(firebaseMobileFcmToken && { firebaseMobileFcmToken }),
+        },
       }),
     }),
     register: builder.mutation({
@@ -28,12 +40,23 @@ export const authApi = createApi({
       }),
     }),
     firebaseLogin: builder.mutation({
-      query: (token) => ({
+      query: ({ token, firebaseWebFcmToken, firebaseMobileFcmToken }) => ({
         url: endpoint.AUTH.GOOGLE,
         method: "POST",
-        body: { token },
+        body: {
+          token,
+          ...(firebaseWebFcmToken && { firebaseWebFcmToken }),
+          ...(firebaseMobileFcmToken && { firebaseMobileFcmToken }),
+        },
       }),
     }),
+    // firebaseLogin: builder.mutation({
+    //   query: (token) => ({
+    //     url: endpoint.AUTH.GOOGLE,
+    //     method: "POST",
+    //     body: { token },
+    //   }),
+    // }),
     forgetPassword: builder.mutation<
       ApiResponse<ForgetPasswordResponse>,
       string
