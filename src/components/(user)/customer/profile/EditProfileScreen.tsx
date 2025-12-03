@@ -21,6 +21,7 @@ import {
 import { Edit, MapPin, X, Lock, CheckCircle, XCircle, Users, Calendar, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/redux/hooks/useAuth";
 import { useProfile } from "@/redux/hooks/useProfile";
+import { useGetOrcidStatusQuery, useLazyAuthorizeOrcidQuery, useLazyGetBiographyQuery, useLazyGetEducationsQuery, useLazyGetWorksQuery } from "@/redux/services/orcid.service";
 
 const EditProfileScreen: React.FC = () => {
   const { user } = useAuth();
@@ -38,6 +39,20 @@ const EditProfileScreen: React.FC = () => {
     isChanging,
     changePasswordError,
   } = useProfile();
+
+  const { data: orcidStatusData, isLoading: isLoadingOrcidStatus } = useGetOrcidStatusQuery();
+
+  const [triggerAuthorizeOrcid, { data: authorizeData, isFetching }] = useLazyAuthorizeOrcidQuery();
+
+  const [triggerGetWorks, { data: worksData, isLoading: isLoadingWorks }] =
+    useLazyGetWorksQuery();
+  const [triggerGetBiography, { data: biographyData, isLoading: isLoadingBio }] =
+    useLazyGetBiographyQuery();
+  const [triggerGetEducations, { data: educationsData, isLoading: isLoadingEdu }] =
+    useLazyGetEducationsQuery();
+
+  const orcidStatus = orcidStatusData?.data;
+  const isOrcidLinked = orcidStatus?.isLinked || false;
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isEditingLocation, setIsEditingLocation] = useState(false);
@@ -58,7 +73,7 @@ const EditProfileScreen: React.FC = () => {
   });
 
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [isOrcidLinked, setIsOrcidLinked] = useState(true);
+  // const [isOrcidLinked, setIsOrcidLinked] = useState(true);
   const [tempLocation, setTempLocation] = useState("");
   const [tempBio, setTempBio] = useState("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -123,6 +138,14 @@ const EditProfileScreen: React.FC = () => {
   };
 
   const completionPercentage = calculateCompletion();
+
+  useEffect(() => {
+    if (activeTab === "orcid" && isOrcidLinked) {
+      triggerGetWorks();
+      triggerGetBiography();
+      triggerGetEducations();
+    }
+  }, [activeTab, isOrcidLinked, triggerGetWorks, triggerGetBiography, triggerGetEducations]);
 
   useEffect(() => {
     if (profile) {
@@ -235,6 +258,24 @@ const EditProfileScreen: React.FC = () => {
     } catch (error: unknown) {
       const errorMessage = "Có lỗi xảy ra khi đổi mật khẩu";
       alert(errorMessage);
+    }
+  };
+
+
+  const handleOrcidLink = async () => {
+    try {
+      const response = await triggerAuthorizeOrcid().unwrap();
+
+      const link = response?.data;
+
+      if (link) {
+        window.location.href = link; // Redirect sang ORCID
+      } else {
+        alert("Không thể liên kết ORCID");
+      }
+    } catch (error) {
+      console.error("Error authorizing ORCID:", error);
+      alert("Có lỗi xảy ra khi liên kết ORCID");
     }
   };
 
@@ -522,7 +563,105 @@ const EditProfileScreen: React.FC = () => {
                     </div>
                   </div>
                   <div className="p-6 flex-1 overflow-y-auto">
-                    {/* ... existing ORCID content ... */}
+                    {isLoadingOrcidStatus ? (
+                      <div className="text-center py-12">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                        <p className="text-gray-400">Đang kiểm tra trạng thái ORCID...</p>
+                      </div>
+                    ) : !isOrcidLinked ? (
+                      <div className="text-center py-12">
+                        <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Users className="w-8 h-8 text-gray-500" />
+                        </div>
+                        <h4 className="text-lg font-medium mb-2">Chưa liên kết ORCID</h4>
+                        <p className="text-gray-400 mb-6 max-w-md mx-auto">
+                          Vui lòng liên kết tài khoản ORCID của bạn để đồng bộ thông tin học thuật,
+                          công trình nghiên cứu và quá trình học tập.
+                        </p>
+                        <Button
+                          onClick={handleOrcidLink}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          Liên kết ORCID ngay
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        {/* Biography Section */}
+                        <div className="bg-gray-800/50 rounded-lg p-5">
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="w-1 h-5 bg-purple-500 rounded-full"></div>
+                            <h4 className="text-base font-semibold">Tiểu sử</h4>
+                          </div>
+                          {isLoadingBio ? (
+                            <div className="flex items-center gap-2">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-500"></div>
+                              <p className="text-sm text-gray-400">Đang tải...</p>
+                            </div>
+                          ) : (
+                            <p className="text-sm text-gray-300 leading-relaxed">
+                              {biographyData?.data || mockOrcidData.biography}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Works Section */}
+                        <div>
+                          <div className="flex items-center gap-2 mb-4">
+                            <div className="w-1 h-5 bg-blue-500 rounded-full"></div>
+                            <h4 className="text-base font-semibold">
+                              Công trình nghiên cứu
+                              {!isLoadingWorks && worksData?.data && ` (${worksData.data.length || mockOrcidData.works.length})`}
+                            </h4>
+                          </div>
+                          {isLoadingWorks ? (
+                            <div className="flex items-center gap-2 bg-gray-800 rounded-lg p-4">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                              <p className="text-sm text-gray-400">Đang tải công trình...</p>
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              {/* Sử dụng worksData?.data hoặc mockOrcidData.works */}
+                              {/* {(worksData?.data || mockOrcidData.works).map((work: any) => (
+                                <article
+                                  key={work.id}
+                                  className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors border border-gray-700"
+                                >
+                                </article>
+                              ))} */}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Education Section */}
+                        <div>
+                          <div className="flex items-center gap-2 mb-4">
+                            <div className="w-1 h-5 bg-green-500 rounded-full"></div>
+                            <h4 className="text-base font-semibold">
+                              Quá trình học tập
+                              {!isLoadingEdu && educationsData?.data && ` (${educationsData.data.length || mockOrcidData.education.length})`}
+                            </h4>
+                          </div>
+                          {isLoadingEdu ? (
+                            <div className="flex items-center gap-2 bg-gray-800 rounded-lg p-4">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-500"></div>
+                              <p className="text-sm text-gray-400">Đang tải quá trình học tập...</p>
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              {/* Sử dụng educationsData?.data hoặc mockOrcidData.education */}
+                              {/* {(educationsData?.data || mockOrcidData.education).map((edu: any) => (
+                                <article
+                                  key={edu.id}
+                                  className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors border border-gray-700"
+                                >
+                                </article>
+                              ))} */}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </section>
