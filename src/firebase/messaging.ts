@@ -3,12 +3,13 @@ import { app } from "./config";
 
 export const messaging = getMessaging(app);
 
-export const requestFirebaseNotificationPermission = async (): Promise<string | null> => {
+export const requestFirebaseNotificationPermission = async (registration?: ServiceWorkerRegistration): Promise<string | null> => {
     try {
         const permission = await Notification.requestPermission();
         if (permission === "granted") {
             const token = await getToken(messaging, {
-                vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+                vapidKey: 'BItMdxLQxuoPrXOXdvIf98GiIXDmaU-GuRdpoCcN-dk5PPwyMrxaoFDaFizw14NQ5oWZSL7Msd0_PPcNKHK_eVE',
+                serviceWorkerRegistration: registration,
             });
             console.log("FCM Token:", token);
             return token;

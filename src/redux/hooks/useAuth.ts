@@ -19,6 +19,13 @@ import { parseApiError } from "@/helper/api";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { SerializedError } from "@reduxjs/toolkit";
 
+type LoginPayload = {
+  email: string;
+  password: string;
+  firebaseWebFcmToken?: string | null;
+  firebaseMobileFcmToken?: string | null;
+};
+
 type LoginResult = {
   success: boolean;
   user: { userId: string | null; email: string; role: string[] | null } | null;
@@ -32,13 +39,19 @@ export const useAuth = () => {
   );
   const [loginMutation] = useLoginMutation();
 
-  const login = async (credentials: {
-    email: string;
-    password: string;
-  }): Promise<LoginResult> => {
+  const login = async (credentials: LoginPayload): Promise<LoginResult> => {
     try {
       dispatch(startLoading());
-      const res = await loginMutation(credentials).unwrap();
+      const res = await loginMutation({
+        email: credentials.email,
+        password: credentials.password,
+        ...(credentials.firebaseWebFcmToken && {
+          firebaseWebFcmToken: credentials.firebaseWebFcmToken,
+        }),
+        ...(credentials.firebaseMobileFcmToken && {
+          firebaseMobileFcmToken: credentials.firebaseMobileFcmToken,
+        }),
+      }).unwrap();
       const { accessToken, refreshToken } = res?.data || {};
 
       if (!accessToken) throw new Error("Access token missing");

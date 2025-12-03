@@ -7,9 +7,28 @@ export const useFirebasePushWeb = () => {
 
     useEffect(() => {
         const initFCM = async () => {
-            const token = await requestFirebaseNotificationPermission();
-            setFcmToken(token);
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.register(
+                        '/firebase-messaging-sw.js'
+                    );
+                    console.log('Service Worker registered:', registration);
+
+                    const token = await requestFirebaseNotificationPermission(registration);
+                    console.log('FCM token:', token);
+                    setFcmToken(token);
+                } catch (err) {
+                    console.error('SW registration or FCM init failed:', err);
+                }
+            } else {
+                console.warn('Service Worker not supported in this browser.');
+            }
         };
+        // const initFCM = async () => {
+        //     const token = await requestFirebaseNotificationPermission();
+        //     console.log("REQUEST PERMISSION TOKEN:", token);
+        //     setFcmToken(token);
+        // };
 
         initFCM();
 
