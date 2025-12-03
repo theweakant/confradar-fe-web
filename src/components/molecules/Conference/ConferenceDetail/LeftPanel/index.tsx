@@ -32,8 +32,8 @@ export function LeftPanel({
 }: LeftPanelProps) {
   const tabs = getFilteredTabs(primaryTab, conferenceType, userRoles);
 
-  // 👇 Xác định organizer dựa trên userRoles (điều chỉnh nếu logic khác)
   const isOrganizer = userRoles.includes("Conference Organizer");
+  
 
   return (
     <div className="space-y-6">
@@ -45,6 +45,7 @@ export function LeftPanel({
             getStatusName={getStatusName}
             getCityName={getCityName}
             isOrganizer={isOrganizer}
+            isCollaborator={isCollaborator}
           />
         </div>
 

@@ -17,6 +17,7 @@ interface MetaInfoSectionProps {
   getStatusName: (id: string) => string;
   getCityName: (id: string) => string;
   isOrganizer: boolean;
+  isCollaborator: boolean;
 }
 
 type ConferenceSession =
@@ -176,6 +177,7 @@ export function MetaInfoSection({
   getStatusName,
   getCityName,
   isOrganizer,
+  isCollaborator,
 }: MetaInfoSectionProps) {
   const isResearch = isResearchConference(conference);
   const nextPricePhase = getNextPricePhase(conference);
@@ -375,8 +377,13 @@ export function MetaInfoSection({
         </div>
       </div>
 
-      <PriceTimeline conference={conference} isResearch={isResearchConference(conference)} />
-
+      {(isOrganizer || isCollaborator) && (
+        <PriceTimeline
+          conference={conference}
+          isResearch={isResearchConference(conference)}
+        />
+      )}
+      
       {isResearch && isOrganizer && researchPhases.length > 0 && (
         <div className="border-t pt-6">
           <ResearchPhaseTimeline phases={researchPhases} />
