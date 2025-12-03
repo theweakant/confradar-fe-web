@@ -257,6 +257,7 @@ export default function ConferenceDetailPage() {
         onClose={() => setStatusDialogOpen(false)}
         conference={conference}
         conferenceType={conferenceType || "technical"}
+        contract={conference.contract ?? null}
         onSuccess={handleRefetch}
       />
 

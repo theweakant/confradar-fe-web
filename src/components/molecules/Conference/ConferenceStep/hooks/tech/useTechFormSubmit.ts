@@ -143,9 +143,9 @@ const submitBasicInfo = async (formData: ConferenceBasicForm, autoNext: boolean 
 
     dispatch(markStepCompleted(1));
 
-    if (autoNext && mode === "create" && !isCollaborator) {
-      dispatch(nextStep());
-    }
+    // if (autoNext && mode === "create" && !isCollaborator) {
+    //   dispatch(nextStep());
+    // }
 
     return { success: true, data: result.data };
   } catch (error) {

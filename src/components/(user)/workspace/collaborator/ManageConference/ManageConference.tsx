@@ -299,9 +299,9 @@ export default function ConferenceManagementTabs() {
             <p className="text-gray-600 text-sm">
               {activeTab === "pending" && "Các hội thảo đang chờ Ban tổ chức duyệt."}
               {activeTab === "ongoing" && "Các hội thảo đang trong giai đoạn chuẩn bị hoặc diễn ra."}
-              {activeTab === "completed" && "Các hội thảo đã hoàn thành hoặc bị huỷ."}
+              {activeTab === "completed" && "Các hội thảo đã hoàn thành."}
               {activeTab === "draft" && "Các bản nháp hội thảo chưa được gửi duyệt."}
-              {activeTab === "rejected" && "Các hội thảo đã bị Ban tổ chức từ chối."} {/* ← mô tả mới */}
+              {activeTab === "rejected" && "Các hội thảo đã bị Ban tổ chức từ chối."}
             </p>
           </div>
 

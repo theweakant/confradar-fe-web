@@ -26,6 +26,7 @@ import {
 } from "@/redux/services/status.service";
 import { ApiResponse } from "@/types/api.type";
 import { ConferenceStatus } from "@/types/conference.type";
+import { CollaboratorContract } from "@/types/contract.type";
 
 import {
   Conference,
@@ -40,6 +41,7 @@ interface UpdateConferenceStatusProps {
   onClose: () => void;
   conference: Conference;
   conferenceType: ConferenceType;
+  contract?: CollaboratorContract | null; // ← THÊM PROP NÀY
   onSuccess?: () => void;
 }
 
@@ -48,6 +50,7 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
   onClose,
   conference,
   conferenceType,
+  contract, // ← DÙNG Ở ĐÂY
   onSuccess,
 }) => {
   const { user } = useAuth();
@@ -76,7 +79,7 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
   const currentStatusName = statusIdToNameMap[conference?.conferenceStatusId || ""] || "N/A";
   const targetStatusName = selectedStatusId ? statusIdToNameMap[selectedStatusId] : "";
 
-  // === Validate dữ liệu hội thảo (Draft→Pending, Preparing→Ready) ===
+  // === Validate dữ liệu hội thảo theo contract (Draft→Pending, Preparing→Ready) ===
   const { missingRequired, missingRecommended } = useMemo(() => {
     const needsValidation =
       (currentStatusName === "Draft" && targetStatusName === "Pending") ||
@@ -85,8 +88,13 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
     if (!needsValidation) {
       return { missingRequired: [], missingRecommended: [] };
     }
-    return validateConferenceForStatusChange(conference, conferenceType);
-  }, [conference, conferenceType, currentStatusName, targetStatusName]);
+
+    return validateConferenceForStatusChange({
+      conference,
+      conferenceType,
+      contract,   
+    });
+  }, [conference, conferenceType, currentStatusName, targetStatusName, contract]);
 
   // === Validate thời gian (OnHold→Ready) ===
   const timeValidation = useMemo(() => {
@@ -127,7 +135,7 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
         allowedNames = ["Ready", "Cancelled"];
         break;
       case "Rejected":
-          allowedNames = ["Draft"];
+        allowedNames = ["Draft"];
         break;
       default:
         if (hasOrganizerRole || hasCollaboratorRole) {
@@ -238,132 +246,132 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
   return (
     <>
       {/* Modal chính */}
-<Dialog open={open} onOpenChange={onClose}>
-  <DialogContent className="max-w-md p-6 max-h-[90vh] overflow-y-auto">
-    <DialogHeader>
-      <DialogTitle>Cập nhật trạng thái</DialogTitle>
-    </DialogHeader>
+      <Dialog open={open} onOpenChange={onClose}>
+        <DialogContent className="max-w-md p-6 max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Cập nhật trạng thái</DialogTitle>
+          </DialogHeader>
 
-    {currentStatusName === "Completed" ? (
-      <div className="py-4 text-center">
-        <div className="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-md text-sm font-medium mb-3">
-          Đã hoàn thành
-        </div>
-        <p className="text-sm text-gray-600">
-          Sự kiện đã hoàn thành. Không thể cập nhật trạng thái.
-        </p>
-      </div>
-    ) : (
-      <>
-        {/* 👇 BỌC HAI FIELD VÀO CÙNG 1 GRID CONTAINER */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <Label className="text-sm font-medium">Trạng thái hiện tại</Label>
-            <p
-              className={`text-sm font-semibold mt-1 px-2 py-1 rounded-md inline-block ${getStatusColor(
-                currentStatusName
-              )}`}
-            >
-              {currentStatusName}
-            </p>
-          </div>
-
-          <div>
-            <Label className="text-sm font-medium">Trạng thái mới</Label>
-            <Select
-              onValueChange={setSelectedStatusId}
-              value={selectedStatusId}
-              disabled={availableStatusOptions.length === 0}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Chọn trạng thái mới" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableStatusOptions.map((opt) => (
-                  <SelectItem key={opt.id} value={opt.id}>
-                    {opt.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {availableStatusOptions.length === 0 && (
-              <p className="text-xs text-gray-400 mt-1">
-                Không có trạng thái chuyển tiếp hợp lệ.
+          {currentStatusName === "Completed" ? (
+            <div className="py-4 text-center">
+              <div className="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-md text-sm font-medium mb-3">
+                Đã hoàn thành
+              </div>
+              <p className="text-sm text-gray-600">
+                Sự kiện đã hoàn thành. Không thể cập nhật trạng thái.
               </p>
+            </div>
+          ) : (
+            <>
+              {/* Grid: Trạng thái hiện tại & mới */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <Label className="text-sm font-medium">Trạng thái hiện tại</Label>
+                  <p
+                    className={`text-sm font-semibold mt-1 px-2 py-1 rounded-md inline-block ${getStatusColor(
+                      currentStatusName
+                    )}`}
+                  >
+                    {currentStatusName}
+                  </p>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium">Trạng thái mới</Label>
+                  <Select
+                    onValueChange={setSelectedStatusId}
+                    value={selectedStatusId}
+                    disabled={availableStatusOptions.length === 0}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Chọn trạng thái mới" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableStatusOptions.map((opt) => (
+                        <SelectItem key={opt.id} value={opt.id}>
+                          {opt.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {availableStatusOptions.length === 0 && (
+                    <p className="text-xs text-gray-400 mt-1">
+                      Không có trạng thái chuyển tiếp hợp lệ.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {currentStatusName === "Rejected" && (
+                <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-md">
+                  <p className="text-sm text-amber-800">
+                    Cập nhật trạng thái thành &quot;Draft&quot; và tiếp tục chỉnh sửa để gửi lại hội thảo của bạn!
+                  </p>
+                </div>
+              )}
+
+              {currentStatusName === "Ready" && (conference.startDate || conference.endDate) && (
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <p className="text-sm text-blue-800">
+                    Thời gian diễn ra sự kiện:{" "}
+                    <span className="font-medium">
+                      {conference.startDate
+                        ? new Date(conference.startDate).toLocaleDateString("vi-VN")
+                        : "chưa xác định"}{" "}
+                      →{" "}
+                      {conference.endDate
+                        ? new Date(conference.endDate).toLocaleDateString("vi-VN")
+                        : "chưa xác định"}
+                    </span>
+                  </p>
+                </div>
+              )}
+
+              <div className="mb-4">
+                <Label className="text-sm font-medium">Lý do (tùy chọn)</Label>
+                <Textarea
+                  placeholder="Nhập lý do (nếu có)"
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  className="mt-1"
+                  rows={3}
+                />
+              </div>
+
+              {/* Cảnh báo validate dữ liệu — GIỜ ĐÂY DỰA TRÊN CONTRACT */}
+              {needsDataValidation && (
+                <div className="mb-4">
+                  <ConferenceValidationAlerts
+                    missingRequired={missingRequired}
+                    missingRecommended={missingRecommended}
+                  />
+                </div>
+              )}
+
+              {/* Cảnh báo validate thời gian */}
+              {needsTimeValidation && (
+                <div className="mb-4">
+                  <TimeValidationAlerts
+                    expiredDates={timeValidation.expiredDates}
+                    message={timeValidation.message}
+                  />
+                </div>
+              )}
+            </>
+          )}
+
+          <DialogFooter className="flex justify-end gap-2">
+            <Button variant="outline" onClick={onClose}>
+              {currentStatusName === "Completed" ? "Đóng" : "Hủy"}
+            </Button>
+            {currentStatusName !== "Completed" && (
+              <Button onClick={handleSubmit} disabled={!canSubmit}>
+                {isLoading ? "Đang cập nhật..." : "Xác nhận"}
+              </Button>
             )}
-          </div>
-        </div>
-
-        {currentStatusName === "Rejected" && (
-          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-md">
-            <p className="text-sm text-amber-800">
-              Cập nhật trạng thái thành &quot;Draft&quot; và tiếp tục chỉnh sửa để gửi lại hội thảo của bạn!
-            </p>
-          </div>
-        )}
-
-        {currentStatusName === "Ready" && (conference.startDate || conference.endDate) && (
-          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-            <p className="text-sm text-blue-800">
-              Thời gian diễn ra sự kiện:{" "}
-              <span className="font-medium">
-                {conference.startDate
-                  ? new Date(conference.startDate).toLocaleDateString("vi-VN")
-                  : "chưa xác định"}{" "}
-                →{" "}
-                {conference.endDate
-                  ? new Date(conference.endDate).toLocaleDateString("vi-VN")
-                  : "chưa xác định"}
-              </span>
-            </p>
-          </div>
-        )}
-
-        <div className="mb-4">
-          <Label className="text-sm font-medium">Lý do (tùy chọn)</Label>
-          <Textarea
-            placeholder="Nhập lý do (nếu có)"
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            className="mt-1"
-            rows={3}
-          />
-        </div>
-
-        {/* Cảnh báo validate dữ liệu */}
-        {needsDataValidation && (
-          <div className="mb-4">
-            <ConferenceValidationAlerts
-              missingRequired={missingRequired}
-              missingRecommended={missingRecommended}
-            />
-          </div>
-        )}
-
-        {/* Cảnh báo validate thời gian */}
-        {needsTimeValidation && (
-          <div className="mb-4">
-            <TimeValidationAlerts
-              expiredDates={timeValidation.expiredDates}
-              message={timeValidation.message}
-            />
-          </div>
-        )}
-      </>
-    )}
-
-    <DialogFooter className="flex justify-end gap-2">
-      <Button variant="outline" onClick={onClose}>
-        {currentStatusName === "Completed" ? "Đóng" : "Hủy"}
-      </Button>
-      {currentStatusName !== "Completed" && (
-        <Button onClick={handleSubmit} disabled={!canSubmit}>
-          {isLoading ? "Đang cập nhật..." : "Xác nhận"}
-        </Button>
-      )}
-    </DialogFooter>
-  </DialogContent>
-</Dialog>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Dialog xác nhận kết thúc sớm */}
       <Dialog open={showEarlyCompleteConfirm} onOpenChange={setShowEarlyCompleteConfirm}>

@@ -4,6 +4,7 @@ import type {
   TechnicalConferenceDetailResponse,
   ResearchConferenceDetailResponse,
 } from "@/types/conference.type";
+import type { CollaboratorContract } from "@/types/contract.type";
 
 export type Conference = TechnicalConferenceDetailResponse | ResearchConferenceDetailResponse;
 export type ConferenceType = "technical" | "research";
@@ -20,37 +21,73 @@ export interface TimeValidationReport {
   message?: string;
 }
 
+export interface ValidationContext {
+  conference: Conference;
+  conferenceType: ConferenceType;
+  contract?: CollaboratorContract | null;
+}
+
 /**
  * Validate dữ liệu hội thảo trước khi chuyển trạng thái
  * Dùng cho: Draft → Pending, Preparing → Ready
+ * 
+ * Hành vi:
+ * - Nếu KHÔNG có contract → validate đầy đủ (6 bước)
+ * - Nếu có contract → chỉ validate các bước được bật trong contract
  */
-export const validateConferenceForStatusChange = (
-  conference: Conference,
-  conferenceType: ConferenceType
-): ValidationReport => {
+export const validateConferenceForStatusChange = ({
+  conference,
+  conferenceType,
+  contract,
+}: ValidationContext): ValidationReport => {
   const missingRequired: string[] = [];
   const missingRecommended: string[] = [];
 
+  // Luôn bắt buộc: ngày bắt đầu và kết thúc
   if (!conference.startDate) missingRequired.push("Ngày bắt đầu");
   if (!conference.endDate) missingRequired.push("Ngày kết thúc");
 
-  if ((conference.conferencePrices?.length || 0) === 0) missingRequired.push("Chi phí");
-  if ((conference.policies?.length || 0) === 0) missingRequired.push("Chính sách");
-  if ((conference.sponsors?.length || 0) === 0) missingRequired.push("Nhà tài trợ");
-  if ((conference.conferenceMedia?.length || 0) === 0) missingRequired.push("Hình ảnh/video");
+  // Xác định chế độ collaborator
+  const isCollaborator = !!contract;
 
+  // Xác định các bước được bật
+  const hasPriceStep = !isCollaborator || contract!.isPriceStep;
+  const hasSessionStep = !isCollaborator || contract!.isSessionStep;
+  const hasPolicyStep = !isCollaborator || contract!.isPolicyStep;
+  const hasMediaStep = !isCollaborator || contract!.isMediaStep;
+  const hasSponsorStep = !isCollaborator || contract!.isSponsorStep;
+
+  // Validate từng phần theo hợp đồng
+  if (hasPriceStep && (conference.conferencePrices?.length || 0) === 0) {
+    missingRequired.push("Chi phí");
+  }
+
+  if (hasPolicyStep && (conference.policies?.length || 0) === 0) {
+    missingRequired.push("Chính sách");
+  }
+
+  if (hasSponsorStep && (conference.sponsors?.length || 0) === 0) {
+    missingRequired.push("Nhà tài trợ");
+  }
+
+  if (hasMediaStep && (conference.conferenceMedia?.length || 0) === 0) {
+    missingRequired.push("Hình ảnh/video");
+  }
+
+  // Validate session & phase theo loại hội thảo
   if (conferenceType === "technical") {
-    const techConf = conference as TechnicalConferenceDetailResponse;
-    if ((techConf.sessions?.length || 0) === 0) {
+    if (hasSessionStep && (conference.sessions?.length || 0) === 0) {
       missingRequired.push("Session");
     }
   } else {
     const researchConf = conference as ResearchConferenceDetailResponse;
-    if ((researchConf.researchPhase?.length || 0) === 0) {
-      missingRequired.push("Giai đoạn");
-    }
-    if ((researchConf.researchSessions?.length || 0) === 0) {
-      missingRequired.push("Session");
+    if (hasSessionStep) {
+      if ((researchConf.researchSessions?.length || 0) === 0) {
+        missingRequired.push("Session");
+      }
+      if ((researchConf.researchPhase?.length || 0) === 0) {
+        missingRequired.push("Giai đoạn");
+      }
     }
 
     if ((researchConf.rankingReferenceUrls?.length || 0) === 0) {
@@ -68,6 +105,8 @@ export const validateConferenceForStatusChange = (
 /**
  * Validate thời gian khi chuyển từ OnHold → Ready
  * Kiểm tra xem có mốc thời gian nào đã qua so với ngày OnHold không
+ * 
+ * ⚠️ KHÔNG phụ thuộc vào contract — luôn kiểm tra toàn bộ timeline
  */
 export const validateTimelineForOnHoldToReady = (
   conference: Conference,
