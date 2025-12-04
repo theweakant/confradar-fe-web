@@ -532,6 +532,7 @@ export interface TechnicalConferenceDetailResponse {
   contract: CollaboratorContract;
 
   userNameCreator?:string;
+  createdBy?:string;
 }
 
 export interface ResearchConferenceDetailResponse {
@@ -586,6 +587,7 @@ export interface ResearchConferenceDetailResponse {
   purchasedInfo?: PurchasedInfo;
 
   contract?: CollaboratorContract;
+  createdBy?:string;
 }
 
 export interface ConferencePolicyResponse {

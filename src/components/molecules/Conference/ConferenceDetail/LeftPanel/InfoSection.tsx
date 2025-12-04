@@ -194,7 +194,7 @@ export function MetaInfoSection({
 
   if (activePhase) {
     const phaseMap = [
-      { label: "Đăng ký", startDate: activePhase.registrationStartDate, endDate: activePhase.registrationEndDate },
+      { label: "Đăng ký bài báo", startDate: activePhase.registrationStartDate, endDate: activePhase.registrationEndDate },
       { label: "Full Paper", startDate: activePhase.fullPaperStartDate, endDate: activePhase.fullPaperEndDate },
       { label: "Review", startDate: activePhase.reviewStartDate, endDate: activePhase.reviewEndDate },
       { label: "Revise", startDate: activePhase.reviseStartDate, endDate: activePhase.reviseEndDate },
