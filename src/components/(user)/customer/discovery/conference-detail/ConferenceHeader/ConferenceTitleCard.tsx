@@ -69,7 +69,7 @@ const ConferenceTitleCard: React.FC<ConferenceTitleCardProps> = ({
 
             {!showSubscribeCard && (
                 <div className="mt-4 p-4 bg-white/10 rounded-lg text-sm text-yellow-200">
-                    Đây là hội thảo của bên đối tác liên kết với Confradar nhưng không liên kết bạn vé.
+                    Đây là hội thảo của bên đối tác liên kết với Confradar nhưng không liên kết bán vé.
                     Bạn vui lòng xem thông tin về hội thảo, và liên hệ bên liên quan để mua vé nếu có nhu cầu.
                 </div>
             )}

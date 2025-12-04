@@ -1,11 +1,16 @@
 import Image from "next/image";
-import { MapPin, Clock, Calendar } from "lucide-react";
+import { MapPin, Clock, Calendar, MessageSquare } from "lucide-react";
 import {
   TechnicalConferenceDetailResponse,
   ResearchConferenceDetailResponse,
   TechnicalConferenceSessionResponse,
   ResearchConferenceSessionResponse,
 } from "@/types/conference.type";
+import { useState } from "react";
+import { useSubmitConferenceFeedbackMutation } from "@/redux/services/conference.service";
+import { toast } from "sonner";
+import SessionFeedbackDialog from "./SessionFeedbackDialog";
+import { formatTimeDate } from "@/helper/format";
 
 // Sessions Tab Component
 interface SessionsTabProps {
@@ -14,6 +19,7 @@ interface SessionsTabProps {
   | ResearchConferenceDetailResponse;
   formatDate: (dateString?: string) => string;
   formatTime: (timeString?: string) => string;
+  formatDateTime: (dateTimeString?: string) => string;
   setSelectedImage: (image: string | null) => void;
 }
 
@@ -21,12 +27,48 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
   conference,
   formatDate,
   formatTime,
+  formatDateTime,
   setSelectedImage
 }) => {
+  const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
+  const [selectedSession, setSelectedSession] = useState<TechnicalConferenceSessionResponse | ResearchConferenceSessionResponse | null>(null);
+
+  const [submitFeedback, { isLoading: isSubmittingFeedback }] =
+    useSubmitConferenceFeedbackMutation();
+
   const isResearch = conference.isResearchConference === true;
   const sessions = isResearch
     ? (conference as ResearchConferenceDetailResponse).researchSessions || []
     : (conference as TechnicalConferenceDetailResponse).sessions || [];
+
+  const isSessionEnded = (session: TechnicalConferenceSessionResponse | ResearchConferenceSessionResponse) => {
+    const endTimeString = session.endTime || session.date;
+    if (!endTimeString) return false;
+    const endTime = new Date(endTimeString);
+    return endTime <= new Date();
+  };
+
+  const handleOpenFeedbackDialog = (session: TechnicalConferenceSessionResponse | ResearchConferenceSessionResponse) => {
+    setSelectedSession(session);
+    setFeedbackDialogOpen(true);
+  };
+
+  const handleSubmitFeedback = async (rating: number, message: string) => {
+    if (!selectedSession) return;
+
+    try {
+      await submitFeedback({
+        conferenceSessionId: selectedSession.conferenceSessionId,
+        rating,
+        message,
+      }).unwrap();
+
+      toast.success("Đánh giá của bạn đã được gửi thành công!");
+      setFeedbackDialogOpen(false);
+    } catch (error: unknown) {
+      toast.error("Không thể gửi đánh giá. Vui lòng thử lại!");
+    }
+  };
 
   return (
     <div>
@@ -50,6 +92,9 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
               return timeA - timeB;
             })
             .map((session, index) => {
+              const sessionEnded = isSessionEnded(session);
+              const feedbackCount = session.feedback?.length || 0;
+
               if (isResearch) {
                 const s = session as ResearchConferenceSessionResponse;
                 return (
@@ -85,7 +130,7 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
                             <Clock className="w-4 h-4 text-white" />
                             <span className="text-sm text-white">
                               {s.startTime && s.endTime
-                                ? `${formatTime(s.startTime)} - ${formatTime(s.endTime)}`
+                                ? `${formatTimeDate(s.startTime)} - ${formatTimeDate(s.endTime)}`
                                 : "Thời gian chưa xác định"}
                             </span>
                           </div>
@@ -155,6 +200,19 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
                         </div>
                       </div>
                     )}
+
+                    <div className="mt-4 pt-4 border-t border-white/20">
+                      <button
+                        onClick={() => handleOpenFeedbackDialog(session)}
+                        className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors"
+                      >
+                        <MessageSquare className="w-5 h-5" />
+                        <span>
+                          {sessionEnded ? "Xem & Thêm đánh giá" : "Xem đánh giá"}
+                          {feedbackCount > 0 && ` (${feedbackCount})`}
+                        </span>
+                      </button>
+                    </div>
                   </div>
                 );
               }
@@ -192,8 +250,8 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
                             <div className="flex items-center gap-2">
                               <Clock className="w-4 h-4 text-white" />
                               <span className="text-sm text-white">
-                                {formatTime(s.startTime)} -{" "}
-                                {formatTime(s.endTime)}
+                                {formatTimeDate(s.startTime)} -{" "}
+                                {formatTimeDate(s.endTime)}
                               </span>
                             </div>
                           )}
@@ -313,6 +371,19 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
                         </div>
                       </div>
                     )}
+
+                    <div className="mt-4 pt-4 border-t border-white/20">
+                      <button
+                        onClick={() => handleOpenFeedbackDialog(session)}
+                        className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors"
+                      >
+                        <MessageSquare className="w-5 h-5" />
+                        <span>
+                          {sessionEnded ? "Xem & Thêm đánh giá" : "Xem đánh giá"}
+                          {feedbackCount > 0 && ` (${feedbackCount})`}
+                        </span>
+                      </button>
+                    </div>
                   </div>
                 );
               }
@@ -323,6 +394,19 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
           </div>
         )}
       </div>
+
+      {selectedSession && (
+        <SessionFeedbackDialog
+          isOpen={feedbackDialogOpen}
+          onClose={() => setFeedbackDialogOpen(false)}
+          sessionTitle={selectedSession.title || "Session"}
+          sessionId={selectedSession.conferenceSessionId}
+          feedbacks={selectedSession.feedback || []}
+          canSubmitFeedback={isSessionEnded(selectedSession)}
+          onSubmitFeedback={handleSubmitFeedback}
+          isSubmitting={isSubmittingFeedback}
+        />
+      )}
     </div>
   );
 };

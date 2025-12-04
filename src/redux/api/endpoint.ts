@@ -124,6 +124,8 @@ export const endpoint = {
 
     ACTIVATE_WAITLIST: "/conference/activate-waitlist",
     GET_SKELETON_TECH_CONF_FOR_COLLABORATOR: "/conference/get-skeleton-tech-conf-created-for-collaborator",
+
+    SUBMIT_FEEDBACK: "/conference/submit-conference-feedback",
   },
 
   CONFERENCE_STEP: {

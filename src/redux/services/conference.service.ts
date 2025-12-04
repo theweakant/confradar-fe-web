@@ -537,6 +537,18 @@ export const conferenceApi = createApi({
       }),
       providesTags: ["Conference"],
     }),
+
+    submitConferenceFeedback: builder.mutation<
+      ApiResponse<null>,
+      { conferenceSessionId: string; rating: number; message: string }
+    >({
+      query: (body) => ({
+        url: endpoint.CONFERENCE.SUBMIT_FEEDBACK,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Conference"],
+    }),
   }),
 });
 
@@ -589,4 +601,6 @@ export const {
 
   useGetSkeletonTechConferencesForCollaboratorQuery,
   useLazyGetSkeletonTechConferencesForCollaboratorQuery,
+
+  useSubmitConferenceFeedbackMutation,
 } = conferenceApi;
