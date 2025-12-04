@@ -18,6 +18,7 @@ import { statisticsApi } from "../services/statistics.service";
 import { reportApi } from "../services/report.service";
 import { dashboardApi } from "../services/dashboard.service";
 import { auditLogApi } from "../services/auditlog.service";
+import { orcidApi } from "../services/orcid.service";
 
 export const apiMiddlewares: Middleware[] = [
   authApi.middleware,
@@ -39,4 +40,5 @@ export const apiMiddlewares: Middleware[] = [
   reportApi.middleware,
   dashboardApi.middleware,
   auditLogApi.middleware,
+  orcidApi.middleware,
 ];

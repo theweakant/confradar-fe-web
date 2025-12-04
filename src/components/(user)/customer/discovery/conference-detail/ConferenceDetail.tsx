@@ -481,14 +481,14 @@ const ConferenceDetail = () => {
 
                 {/* Feedback Tab */}
                 {/* {activeTab === 'feedback' && (
-  <FeedbackTab
-    conference={conference}
-    newFeedback={newFeedback}
-    setNewFeedback={setNewFeedback}
-    feedbacks={feedbacks}
-    handleAddFeedback={handleAddFeedback}
-  />
-)} */}
+                  <FeedbackTab
+                    conference={conference}
+                    newFeedback={newFeedback}
+                    setNewFeedback={setNewFeedback}
+                    feedbacks={feedbacks}
+                    handleAddFeedback={handleAddFeedback}
+                  />
+                )} */}
               </div>
             </div>
           </div>
