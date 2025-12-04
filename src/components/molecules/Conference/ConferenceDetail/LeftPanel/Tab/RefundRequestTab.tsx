@@ -31,6 +31,8 @@ interface RefundRequestTabProps {
   conferenceType: "technical" | "research" | null;
   isCollaborator?: boolean;
   isTicketSelling?: boolean;
+  currentUserId?: string;       // 👈 thêm: ID người dùng đang đăng nhập
+  conferenceOwnerId?: string;   // 👈 thêm: ID người tạo hội thảo
 }
 
 export function RefundRequestTab({
@@ -38,6 +40,8 @@ export function RefundRequestTab({
   conferenceType,
   isCollaborator = false,
   isTicketSelling = true,
+  currentUserId,
+  conferenceOwnerId,
 }: RefundRequestTabProps) {
   const shouldSkip = isCollaborator && !isTicketSelling;
 
@@ -78,7 +82,10 @@ export function RefundRequestTab({
   };
 
   const renderTicketActions = (req: RefundRequest) => {
-    const canCancel = !req.ticket.isRefunded && conferenceType;
+    // ✅ Chỉ chủ sở hữu hội thảo mới được hủy vé
+    const isOwner = currentUserId && conferenceOwnerId && currentUserId === conferenceOwnerId;
+    const canCancel = isOwner && !req.ticket.isRefunded && conferenceType;
+
     if (!canCancel) return null;
 
     return (

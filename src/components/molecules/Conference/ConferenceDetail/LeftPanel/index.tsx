@@ -16,6 +16,7 @@ interface LeftPanelProps {
   getCategoryName: (id: string) => string;
   getStatusName: (id: string) => string;
   getCityName: (id: string) => string;
+  currentUserId?: string;
 }
 
 export function LeftPanel({
@@ -29,6 +30,7 @@ export function LeftPanel({
   getCategoryName,
   getStatusName,
   getCityName,
+  currentUserId
 }: LeftPanelProps) {
   const tabs = getFilteredTabs(primaryTab, conferenceType, userRoles);
 
@@ -79,6 +81,7 @@ export function LeftPanel({
             conference={conference}
             conferenceType={conferenceType}
             isCollaborator={isCollaborator}
+            currentUserId={currentUserId}
           />
         </div>
       </div>

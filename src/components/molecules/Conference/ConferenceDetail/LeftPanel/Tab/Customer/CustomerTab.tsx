@@ -12,9 +12,11 @@ import type { TicketHolder } from "@/types/statistics.type";
 interface CustomerTabProps {
   conferenceId: string;
   conferenceType: "technical" | "research" | null;
+  currentUserId?: string;
+  conferenceOwnerId?: string;
 }
 
-export function CustomerTab({ conferenceId, conferenceType }: CustomerTabProps) {
+export function CustomerTab({ conferenceId, conferenceType, currentUserId, conferenceOwnerId }: CustomerTabProps) {
   const { data, isLoading, isError } = useGetTicketHoldersQuery(
     conferenceId ? conferenceId : skipToken
   );
@@ -155,6 +157,8 @@ export function CustomerTab({ conferenceId, conferenceType }: CustomerTabProps) 
           onOpenChange={closeModal}
           ticket={selectedTicket}
           conferenceType={conferenceType}
+          currentUserId={currentUserId}
+          conferenceOwnerId={conferenceOwnerId}
         />
       )}
     </>

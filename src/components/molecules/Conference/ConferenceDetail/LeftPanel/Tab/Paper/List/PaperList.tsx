@@ -2,10 +2,10 @@
 
 import { FileText, Users } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Paper } from "@/types/paper.type";
+import { PaperDetail } from "@/types/statistics.type";
 
 interface PaperListProps {
-  papers: Paper[];
+  papers: PaperDetail[];
   onPaperClick: (paperId: string) => void;
 }
 
@@ -68,9 +68,9 @@ export function PaperList({ papers, onPaperClick }: PaperListProps) {
                       {paper.assignedReviewers && paper.assignedReviewers.length > 0 ? (
                         <>
                           {paper.assignedReviewers.slice(0, 3).map((reviewer, idx) => (
-                            <Avatar key={idx} className="w-8 h-8 ring-2 ring-white">
+                            <Avatar key={reviewer.userId} className="w-8 h-8 ring-2 ring-white">
                               <AvatarFallback className="bg-gradient-to-br from-purple-400 to-purple-600 text-white text-xs font-medium">
-                                {reviewer.charAt(0).toUpperCase()}
+                                {reviewer.name.charAt(0).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
                           ))}

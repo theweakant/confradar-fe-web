@@ -24,7 +24,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useAuth } from "@/redux/hooks/useAuth";
 
@@ -169,6 +168,8 @@ export default function ConferenceDetailPage() {
     );
   }
 
+  const isOwner = user?.userId === conference.createdBy;
+
   let updateRoute: string | null = null;
   if (conference.isResearchConference) {
     if (isOrganizer) {
@@ -177,7 +178,8 @@ export default function ConferenceDetailPage() {
   } else {
     if (isOrganizer) {
       updateRoute = `/workspace/organizer/manage-conference/update-tech-conference/${conference.conferenceId}`;
-    } else if (isCollaborator) {
+    } else if (isCollaborator && isOwner) {
+      // Collaborator chỉ có route nếu là owner
       updateRoute = `/workspace/collaborator/manage-conference/update-tech-conference/${conference.conferenceId}`;
     }
   }
@@ -199,14 +201,16 @@ export default function ConferenceDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <HeaderSection
-        conference={conference}
-        onBack={() => router.back()}
-        getCategoryName={getCategoryName}
-        getStatusName={getStatusName}
-        primaryTab={primaryTab}
-        onPrimaryTabChange={setPrimaryTab}
-        dropdownActions={
+<HeaderSection
+  conference={conference}
+  onBack={() => router.back()}
+  getCategoryName={getCategoryName}
+  getStatusName={getStatusName}
+  primaryTab={primaryTab}
+  onPrimaryTabChange={setPrimaryTab}
+  {...(isOwner
+    ? {
+        dropdownActions: (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="border border-gray-200">
@@ -240,7 +244,7 @@ export default function ConferenceDetailPage() {
                 )}
 
               {conference.conferenceStatusId &&
-                !["Draft", "Deleted", "Rejected"].includes(getStatusName(conference.conferenceStatusId)) && (
+                !["Draft", "Deleted", "Rejected", "Cancelled"].includes(getStatusName(conference.conferenceStatusId)) && (
                   <DropdownMenuItem
                     onClick={() => setStatusDialogOpen(true)}
                     className="cursor-pointer flex items-center gap-2 text-purple-600"
@@ -264,8 +268,10 @@ export default function ConferenceDetailPage() {
                 )}
             </DropdownMenuContent>
           </DropdownMenu>
-        }
-      />
+        ),
+      }
+    : {})}
+/>
 
       <UpdateConferenceStatus
         open={statusDialogOpen}
@@ -364,6 +370,7 @@ export default function ConferenceDetailPage() {
               getCategoryName={getCategoryName}
               getStatusName={getStatusName}
               getCityName={getCityName}
+              currentUserId={user?.userId}
             />
           </div>
 

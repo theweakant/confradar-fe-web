@@ -24,6 +24,7 @@ interface TabContentProps {
   conference: CommonConference;
   conferenceType: "technical" | "research" | null;
   isCollaborator: boolean; 
+  currentUserId?: string;
 }
 
 export function TabContent({
@@ -31,6 +32,7 @@ export function TabContent({
   conference,
   conferenceType,
   isCollaborator, 
+  currentUserId
 }: TabContentProps) {
   const renderTabContent = () => {
     switch (activeSubtab) {
@@ -44,8 +46,14 @@ export function TabContent({
         return <SessionTab conference={conference} conferenceId={conference.conferenceId!} conferenceType={conferenceType} />;
       
       case "customers":
-        return <CustomerTab conferenceId={conference.conferenceId!} conferenceType={conferenceType} />;
-
+        return (
+          <CustomerTab
+            conferenceId={conference.conferenceId!}
+            conferenceType={conferenceType}
+            currentUserId={currentUserId}
+            conferenceOwnerId={conference.createdBy}
+          />
+        );
       case "sponsors-media":
         return <SponsorsMediaTab conference={conference} />;
       
@@ -80,6 +88,8 @@ export function TabContent({
             conferenceType={conferenceType}
             isCollaborator={isCollaborator}
             isTicketSelling={isTicketSelling}
+            currentUserId={currentUserId} 
+            conferenceOwnerId={conference.createdBy}
           />
         );
       

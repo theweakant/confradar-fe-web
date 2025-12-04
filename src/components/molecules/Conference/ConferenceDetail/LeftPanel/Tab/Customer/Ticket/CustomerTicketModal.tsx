@@ -34,6 +34,8 @@ interface CustomerTicketModalProps {
   onOpenChange: (open: boolean) => void;
   ticket: TicketHolderExtended;
   conferenceType: "technical" | "research" | null;
+  currentUserId?: string;
+  conferenceOwnerId?: string;
 }
 
 export function CustomerTicketModal({
@@ -41,6 +43,8 @@ export function CustomerTicketModal({
   onOpenChange,
   ticket,
   conferenceType,
+  currentUserId,
+  conferenceOwnerId
 }: CustomerTicketModalProps) {
   const formatSessionDateTime = (startTime: string, endTime: string) => {
     const start = new Date(startTime);
@@ -202,9 +206,12 @@ export function CustomerTicketModal({
           )}
         </div>
 
-        <DialogFooter className="flex flex-row justify-end gap-2 pt-3 mt-4 border-t">
-          
-          {!ticket.isRefunded && ( 
+      <DialogFooter className="flex flex-row justify-end gap-2 pt-3 mt-4 border-t">
+        {!ticket.isRefunded && (
+          // ✅ CẬP NHẬT: chỉ render nếu là owner
+          currentUserId &&
+          conferenceOwnerId &&
+          currentUserId === conferenceOwnerId && (
             <>
               {conferenceType === "technical" ? (
                 <CancelTechTicket
@@ -223,15 +230,16 @@ export function CustomerTicketModal({
                 />
               )}
             </>
-          )}
-          <Button 
-            variant="outline" 
-            onClick={() => onOpenChange(false)}
-            className="px-4"
-          >
-            Đóng
-          </Button>
-        </DialogFooter>
+          )
+        )}
+        <Button 
+          variant="outline" 
+          onClick={() => onOpenChange(false)}
+          className="px-4"
+        >
+          Đóng
+        </Button>
+      </DialogFooter>
       </DialogContent>
     </Dialog>
   );

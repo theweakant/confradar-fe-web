@@ -15,6 +15,7 @@ export interface GroupedTicketPhase {
   totalRefunded: number;
   totalAmountNotRefunded: number;
   totalAmountRefunded: number;
+  isAuthor?: boolean; 
 }
 
 export interface GroupedTicket {
@@ -41,6 +42,7 @@ export interface TicketPhaseStatistic {
   commissionPercentage: number | null;
   amountToCollaborator: number | null;
   amountToConfRadar: number | null;
+  isAuthor?: boolean; 
 }
 
 export interface SoldTicketResponse {
@@ -109,13 +111,18 @@ export interface CameraReadyPhase {
   title: string;
   description: string;
 }
-
+export interface AssignedReviewer {
+  userId: string;
+  name: string;
+  isHeadReviewer: boolean;
+}
 export interface PaperDetail {
   paperId: string;
   title: string;
   submittingAuthorId: string;
+  submittingAuthorName: string;
   paperPhase: string; 
-  assignedReviewers: string[]; 
+  assignedReviewers: AssignedReviewer[]; 
 
   abstractPhase: AbstractPhase | null;
   fullPaperPhase: FullPaperPhase | null;

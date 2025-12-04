@@ -57,7 +57,6 @@ export function StatisticsSection({ conferenceId }: StatisticsSectionProps) {
     <div className="bg-white rounded-lg border border-gray-200 p-5">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold text-gray-900">Thống kê</h3>
-        {/* 💡 Chỉ hiển thị "Xem chi tiết" khi KHÔNG có lỗi */}
         {!isErrorStats && (
           <button
             onClick={handleNavigate}

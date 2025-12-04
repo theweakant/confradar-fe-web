@@ -87,7 +87,7 @@ export function PaperDetailModal({
                     <span className="font-medium">Mã bài báo:</span> {paper.paperId}
                   </div>
                   <div>
-                    <span className="font-medium">Người nộp:</span> #{paper.submittingAuthorId}
+                    <span className="font-medium">Người nộp:</span> {paper.submittingAuthorName}
                   </div>
                 </div>
               </div>
@@ -298,25 +298,30 @@ export function PaperDetailModal({
               <Users className="w-5 h-5 text-green-600" />
               Reviewer đã gán ({paper.assignedReviewers?.length || 0})
             </h4>
-            {hasReviewers ? (
-              <div className="flex flex-wrap gap-2">
-                {paper.assignedReviewers.map((reviewer, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center gap-2 bg-purple-50 px-3 py-2 rounded-lg border border-purple-200"
-                  >
-                    <Avatar className="w-6 h-6">
-                      <AvatarFallback className="bg-gradient-to-br from-purple-400 to-purple-600 text-white text-xs">
-                        {reviewer.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm text-gray-700">{reviewer}</span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-500">Chưa có reviewer nào được gán</p>
-            )}
+              {hasReviewers ? (
+                <div className="flex flex-wrap gap-2">
+                  {paper.assignedReviewers.map((reviewer) => (
+                    <div
+                      key={reviewer.userId}
+                      className="flex items-center gap-2 bg-purple-50 px-3 py-2 rounded-lg border border-purple-200"
+                    >
+                      <Avatar className="w-6 h-6">
+                        <AvatarFallback className="bg-gradient-to-br from-purple-400 to-purple-600 text-white text-xs">
+                          {reviewer.name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm text-gray-700">{reviewer.name}</span>
+                      {reviewer.isHeadReviewer && (
+                        <span className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-800 text-xs px-1.5 py-0.5 rounded-full font-medium">
+                          <span>★</span> Head
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500">Chưa có reviewer nào được gán</p>
+              )}
           </div>
 
           {abstractPending && (

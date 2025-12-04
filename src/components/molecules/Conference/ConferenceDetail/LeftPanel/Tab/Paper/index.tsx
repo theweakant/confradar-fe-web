@@ -239,14 +239,13 @@ export function PaperTab({ conferenceId, conferenceData }: PaperTabProps) {
   const reviewersList = reviewersListData?.data ?? [];
   const selectedPaper = papers.find((p) => p.paperId === selectedPaperId);
 
-  const availableReviewers = reviewersList.filter((reviewer) => {
-    if (!selectedPaper) return true;
-    const assignedReviewerIds = selectedPaper.assignedReviewers?.map((assignedStr) => {
-      const match = assignedStr.match(/\(([^)]+)\)/);
-      return match ? match[1] : null;
-    }).filter(Boolean) || [];
-    return !assignedReviewerIds.includes(reviewer.userId);
-  });
+const availableReviewers = reviewersList.filter((reviewer) => {
+  if (!selectedPaper) return true;
+  const assignedReviewerIds = new Set(
+    selectedPaper.assignedReviewers?.map((r) => r.userId) || []
+  );
+  return !assignedReviewerIds.has(reviewer.userId);
+});
 
   return (
     <>
