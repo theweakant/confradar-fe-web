@@ -15,6 +15,7 @@ export interface GroupedTicketPhase {
   totalRefunded: number;
   totalAmountNotRefunded: number;
   totalAmountRefunded: number;
+  isAuthor?: boolean; 
 }
 
 export interface GroupedTicket {

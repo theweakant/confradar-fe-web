@@ -386,10 +386,14 @@ export default function StatisticsDashboard() {
                                 {ticketList.map((ticket, idx) => (
                                     <Fragment key={`ticket-${idx}`}>
                                         {ticket.phases.map((phase, pIdx) => (
-                                            <tr
+                                                <tr
                                                 key={`${ticket.ticketName}-${phase.phaseName}-${pIdx}`}
-                                                className="hover:bg-gray-50 transition-colors"
-                                            >
+                                                className={`transition-colors ${
+                                                    phase.isAuthor 
+                                                    ? 'bg-blue-50' 
+                                                    : 'hover:bg-gray-50'
+                                                }`}
+                                                >
                                                 {pIdx === 0 && (
                                                     <td rowSpan={ticket.phases.length} className="px-6 py-4 border-r border-gray-200">
                                                         <div>
