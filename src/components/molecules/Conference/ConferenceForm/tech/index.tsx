@@ -570,10 +570,10 @@ function TechConferenceStepFormContent({
 
   const handleSessionCreatedFromCalendar = useCallback(
     (session: Session | ResearchSession) => {
-      if (!('speaker' in session)) {
-        toast.error("Phiên họp không hợp lệ cho hội thảo công nghệ.");
-        return;
-      }
+      // if (!('speaker' in session)) {
+      //   toast.error("Phiên họp không hợp lệ cho hội thảo công nghệ.");
+      //   return;
+      // }
       setSessions((prev) => [...prev, session as Session]);
       handleMarkHasData(3);
       handleMarkDirty(3);
@@ -584,10 +584,10 @@ function TechConferenceStepFormContent({
 
   const handleSessionUpdatedFromCalendar = useCallback(
     (updatedSession: Session | ResearchSession, index: number) => {
-      if (!('speaker' in updatedSession)) {
-        toast.error("Phiên họp không hợp lệ để cập nhật.");
-        return;
-      }
+      // if (!('speaker' in updatedSession)) {
+      //   toast.error("Phiên họp không hợp lệ để cập nhật.");
+      //   return;
+      // }
       setSessions((prev) => {
         const newSessions = [...prev];
         newSessions[index] = updatedSession as Session;

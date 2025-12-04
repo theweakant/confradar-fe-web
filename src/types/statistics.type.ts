@@ -42,6 +42,7 @@ export interface TicketPhaseStatistic {
   commissionPercentage: number | null;
   amountToCollaborator: number | null;
   amountToConfRadar: number | null;
+  isAuthor?: boolean; 
 }
 
 export interface SoldTicketResponse {

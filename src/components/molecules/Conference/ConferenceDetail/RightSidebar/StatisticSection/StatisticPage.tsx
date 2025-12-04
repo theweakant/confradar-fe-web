@@ -141,6 +141,7 @@ export default function StatisticsDashboard() {
             totalRefunded: phase.totalRefunded,
             totalAmountNotRefunded: phase.totalAmountNotRefunded,
             totalAmountRefunded: phase.totalAmountRefunded,
+            isAuthor: phase.isAuthor,
         });
         return acc;
     }, {} as Record<string, GroupedTicket>);

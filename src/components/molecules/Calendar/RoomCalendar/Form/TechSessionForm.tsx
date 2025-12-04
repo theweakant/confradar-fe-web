@@ -633,10 +633,12 @@ if (startDay !== endDay) {
         <div className="border-t pt-3">
           <div className="flex items-center justify-between mb-2">
             <label className="block text-sm font-medium text-gray-700">
-              Diễn giả <span className="text-red-500">*</span>
+              Diễn giả
             </label>
             <span className="text-xs text-gray-500">
-              {formData.speakers.length} diễn giả
+              {formData.speakers.length > 0
+                ? `${formData.speakers.length} diễn giả`
+                : "Không có diễn giả"}
             </span>
           </div>
 
