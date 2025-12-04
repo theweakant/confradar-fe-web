@@ -65,9 +65,6 @@ const ConferenceStats: React.FC<ConferenceStatsProps> = ({ total, ready, inProgr
           </div>
         </div>
         <div className="text-5xl font-bold mb-1">{total}</div>
-        <p className="text-xs opacity-75 flex items-center gap-1">
-          <TrendingUp size={12} /> Tăng từ tháng trước
-        </p>
       </div>
 
       <div className="bg-white rounded-3xl p-6 shadow-md border border-gray-100">
@@ -78,9 +75,6 @@ const ConferenceStats: React.FC<ConferenceStatsProps> = ({ total, ready, inProgr
           </div>
         </div>
         <div className="text-5xl font-bold mb-1 text-gray-900">{ready}</div>
-        <p className="text-xs text-gray-500 flex items-center gap-1">
-          <TrendingUp size={12} /> Tăng từ tháng trước
-        </p>
       </div>
 
       <div className="bg-white rounded-3xl p-6 shadow-md border border-gray-100">
@@ -91,9 +85,6 @@ const ConferenceStats: React.FC<ConferenceStatsProps> = ({ total, ready, inProgr
           </div>
         </div>
         <div className="text-5xl font-bold mb-1 text-gray-900">{inProgress}</div>
-        <p className="text-xs text-gray-500 flex items-center gap-1">
-          <TrendingUp size={12} /> Tăng từ tháng trước
-        </p>
       </div>
 
       <div className="bg-white rounded-3xl p-6 shadow-md border border-gray-100">
@@ -104,7 +95,6 @@ const ConferenceStats: React.FC<ConferenceStatsProps> = ({ total, ready, inProgr
           </div>
         </div>
         <div className="text-5xl font-bold mb-1 text-gray-900">{pending}</div>
-        <p className="text-xs text-gray-500">Đang thảo luận</p>
       </div>
     </div>
   );

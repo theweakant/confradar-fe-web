@@ -35,6 +35,7 @@ import {
   validateTimelineForOnHoldToReady,
 } from "./validateConferenceStatus";
 import { ConferenceValidationAlerts, TimeValidationAlerts } from "./ValidationAlerts";
+import { ApiError } from "@/types/api.type";
 
 interface UpdateConferenceStatusProps {
   open: boolean;
@@ -165,33 +166,39 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
     (!needsDataValidation || missingRequired.length === 0) &&
     (!needsTimeValidation || timeValidation.valid);
 
-  const performStatusUpdate = async () => {
-    try {
-      if (!conference?.conferenceId) {
-        toast.error("Không tìm thấy ID!");
-        return;
-      }
+    const performStatusUpdate = async () => {
+      try {
+        if (!conference?.conferenceId) {
+          toast.error("Không tìm thấy ID!");
+          return;
+        }
 
-      const res: ApiResponse = await updateStatus({
-        confid: conference.conferenceId,
-        newStatus: selectedStatusId,
-        reason,
-      }).unwrap();
+        const res: ApiResponse = await updateStatus({
+          confid: conference.conferenceId,
+          newStatus: selectedStatusId,
+          reason,
+        }).unwrap();
 
-      if (res.success) {
-        toast.success("Cập nhật trạng thái thành công!");
-        onSuccess?.();
-        setSelectedStatusId("");
-        setReason("");
-        onClose();
-      } else {
-        toast.error(res.message || "Cập nhật thất bại");
+        if (res.success) {
+          toast.success(res.message || "Cập nhật trạng thái thành công!");
+          onSuccess?.();
+          setSelectedStatusId("");
+          setReason("");
+          onClose();
+        } else {
+          toast.error(res.message || "Cập nhật thất bại");
+        }
+      } catch (err) {
+        console.error("Lỗi khi cập nhật trạng thái:", err);
+        
+        const apiError = err as { data?: ApiError };
+        if (apiError.data?.message) {
+          toast.error(apiError.data.message);
+        } else {
+          toast.error("Có lỗi xảy ra khi cập nhật");
+        }
       }
-    } catch (err) {
-      console.error("Lỗi khi cập nhật trạng thái:", err);
-      toast.error("Có lỗi xảy ra khi cập nhật");
-    }
-  };
+    };
 
   const handleSubmit = async () => {
     if (!selectedStatusId) {
