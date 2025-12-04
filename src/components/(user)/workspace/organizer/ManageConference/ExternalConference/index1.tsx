@@ -211,6 +211,14 @@ export default function ExternalConference() {
     return count;
   }, [filterCategory, filterStatus, filterCity, filterCollaborator, filterOrganization]);
 
+  const getCategoryName = useMemo(() => {
+    const map = new Map<string, string>();
+    (categoriesData?.data || []).forEach((cat) => {
+      map.set(cat.conferenceCategoryId, cat.conferenceCategoryName || "N/A");
+    });
+    return map;
+  }, [categoriesData]);
+
   const [pagePending, setPagePending] = useState(1);
   const [pageSizePending] = useState(10);
 
@@ -307,9 +315,9 @@ export default function ExternalConference() {
     }
   };
 
-  const handleConferenceClick = (conferenceId: string) => {
-    router.push(`/workspace/organizer/manage-conference/view-pending-detail/${conferenceId}`);
-  };
+const handlePendingConferenceDetail = (conferenceId: string) => {
+  router.push(`/workspace/organizer/manage-conference/external-conference/pending-detail/${conferenceId}`);
+};
 
   const [selectedConference, setSelectedConference] = useState<string | null>(null);
   const [isApproveAction, setIsApproveAction] = useState<boolean>(true);
@@ -686,7 +694,7 @@ export default function ExternalConference() {
                     <div
                       key={conference.conferenceId}
                       className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer"
-                      onClick={() => handleConferenceClick(conference.conferenceId)}
+                      onClick={() => handlePendingConferenceDetail(conference.conferenceId)}
                     >
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
@@ -711,8 +719,12 @@ export default function ExternalConference() {
                         </div>
                         <div className="flex items-center text-sm text-gray-600">
                           <Tag className="w-4 h-4 mr-2" />
-                          <span>Danh mục: {conference.conferenceCategoryId ?? "N/A"}</span>
-                        </div>
+                          <span>
+                            Danh mục: {conference.conferenceCategoryId 
+                              ? getCategoryName.get(conference.conferenceCategoryId) ?? "N/A" 
+                              : "N/A"}
+                          </span>                        
+                          </div>
                         <div className="flex items-center text-sm text-gray-600">
                           <MapPin className="w-4 h-4 mr-2" />
                           <span>{conference.address ?? "N/A"}</span>
@@ -733,9 +745,9 @@ export default function ExternalConference() {
                           <Users className="w-4 h-4 mr-2" />
                           <span>
                             Số người tham dự: {conference.totalSlot ?? "N/A"} người
-                            {conference.availableSlot != null && (
+                            {/* {conference.availableSlot != null && (
                               <span className="ml-2 text-xs text-gray-500">(Còn: {conference.availableSlot})</span>
-                            )}
+                            )} */}
                           </span>
                         </div>
                         {conference.createdAt && (

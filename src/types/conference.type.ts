@@ -499,6 +499,7 @@ export interface ConferenceResponse {
   conferencePrices?: ConferencePriceResponse[];
   // sessions?: ConferenceSessionResponse[];
   createdBy?: string | null | undefined;
+  userNameCreator?:string;
 }
 
 export interface TechnicalConferenceDetailResponse {
@@ -530,6 +531,7 @@ export interface TechnicalConferenceDetailResponse {
   purchasedInfo?: PurchasedInfo;
   contract: CollaboratorContract;
 
+  userNameCreator?:string;
 }
 
 export interface ResearchConferenceDetailResponse {
