@@ -380,5 +380,15 @@ export const endpoint = {
     LIST: "/auditlog/list-audit-log",
     CATEGORIES: "/auditlog/list-audit-log-categories",
   },
+
+  ORCID: {
+    AUTHORIZE: "/orcid/authorize-orcid",
+    CALLBACK: "/orcid/callback",
+    GET_WORKS: "/orcid/Get-works-from-orcid",
+    GET_BIOGRAPHY: "/orcid/Get-biography-from-orcid",
+    GET_EDUCATIONS: "/orcid/Get-Educations-from-orcid",
+    GET_SECTION: "/orcid/Get-section-from-db",
+    STATUS: "/orcid/status",
+  },
 }
 

@@ -21,6 +21,7 @@ import {
 import { Edit, MapPin, X, Lock, CheckCircle, XCircle, Users, Calendar, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/redux/hooks/useAuth";
 import { useProfile } from "@/redux/hooks/useProfile";
+import { useGetOrcidStatusQuery, useLazyAuthorizeOrcidQuery, useLazyGetBiographyQuery, useLazyGetEducationsQuery, useLazyGetWorksQuery } from "@/redux/services/orcid.service";
 
 const EditProfileScreen: React.FC = () => {
   const { user } = useAuth();
@@ -38,6 +39,20 @@ const EditProfileScreen: React.FC = () => {
     isChanging,
     changePasswordError,
   } = useProfile();
+
+  const { data: orcidStatusData, isLoading: isLoadingOrcidStatus } = useGetOrcidStatusQuery();
+
+  const [triggerAuthorizeOrcid, { data: authorizeData, isFetching }] = useLazyAuthorizeOrcidQuery();
+
+  const [triggerGetWorks, { data: worksData, isLoading: isLoadingWorks }] =
+    useLazyGetWorksQuery();
+  const [triggerGetBiography, { data: biographyData, isLoading: isLoadingBio }] =
+    useLazyGetBiographyQuery();
+  const [triggerGetEducations, { data: educationsData, isLoading: isLoadingEdu }] =
+    useLazyGetEducationsQuery();
+
+  const orcidStatus = orcidStatusData?.data;
+  const isOrcidLinked = orcidStatus?.isLinked || false;
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isEditingLocation, setIsEditingLocation] = useState(false);
@@ -58,50 +73,13 @@ const EditProfileScreen: React.FC = () => {
   });
 
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [isOrcidLinked, setIsOrcidLinked] = useState(true);
+  // const [isOrcidLinked, setIsOrcidLinked] = useState(true);
   const [tempLocation, setTempLocation] = useState("");
   const [tempBio, setTempBio] = useState("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
 
   const [activeTab, setActiveTab] = useState<"profile" | "orcid">("profile");
-
-  const mockOrcidData = {
-    works: [
-      {
-        id: 1,
-        title: "Machine Learning Applications in Medical Diagnosis",
-        type: "Journal Article",
-        date: "2024",
-        journal: "Journal of Medical AI",
-        doi: "10.1234/jmai.2024.001"
-      },
-      {
-        id: 2,
-        title: "Deep Learning for Image Recognition",
-        type: "Conference Paper",
-        date: "2023",
-        conference: "CVPR 2023"
-      }
-    ],
-    education: [
-      {
-        id: 1,
-        degree: "Ph.D. in Computer Science",
-        institution: "Stanford University",
-        startYear: "2018",
-        endYear: "2023"
-      },
-      {
-        id: 2,
-        degree: "M.Sc. in Artificial Intelligence",
-        institution: "MIT",
-        startYear: "2016",
-        endYear: "2018"
-      }
-    ],
-    biography: "Nhà nghiên cứu chuyên về Machine Learning và AI với hơn 5 năm kinh nghiệm trong lĩnh vực y tế số. Đã công bố hơn 20 bài báo khoa học trên các tạp chí uy tín quốc tế."
-  };
 
   const calculateCompletion = () => {
     const fields = [
@@ -123,6 +101,23 @@ const EditProfileScreen: React.FC = () => {
   };
 
   const completionPercentage = calculateCompletion();
+
+  const formatPublicationDate = (pubDate?: { year?: { value: string }, month?: { value: string }, day?: { value: string } }) => {
+    if (!pubDate) return null;
+    const parts = [];
+    if (pubDate.month?.value) parts.push(pubDate.month.value.padStart(2, '0'));
+    if (pubDate.day?.value) parts.push(pubDate.day.value.padStart(2, '0'));
+    if (pubDate.year?.value) parts.push(pubDate.year.value);
+    return parts.length > 0 ? parts.join('/') : null;
+  };
+
+  useEffect(() => {
+    if (activeTab === "orcid" && isOrcidLinked) {
+      triggerGetWorks();
+      triggerGetBiography();
+      triggerGetEducations();
+    }
+  }, [activeTab, isOrcidLinked, triggerGetWorks, triggerGetBiography, triggerGetEducations]);
 
   useEffect(() => {
     if (profile) {
@@ -235,6 +230,24 @@ const EditProfileScreen: React.FC = () => {
     } catch (error: unknown) {
       const errorMessage = "Có lỗi xảy ra khi đổi mật khẩu";
       alert(errorMessage);
+    }
+  };
+
+
+  const handleOrcidLink = async () => {
+    try {
+      const response = await triggerAuthorizeOrcid().unwrap();
+
+      const link = response?.data;
+
+      if (link) {
+        window.location.href = link; // Redirect sang ORCID
+      } else {
+        alert("Không thể liên kết ORCID");
+      }
+    } catch (error) {
+      console.error("Error authorizing ORCID:", error);
+      alert("Có lỗi xảy ra khi liên kết ORCID");
     }
   };
 
@@ -522,7 +535,603 @@ const EditProfileScreen: React.FC = () => {
                     </div>
                   </div>
                   <div className="p-6 flex-1 overflow-y-auto">
-                    {/* ... existing ORCID content ... */}
+                    {isLoadingOrcidStatus ? (
+                      <div className="text-center py-12">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                        <p className="text-gray-400">Đang kiểm tra trạng thái ORCID...</p>
+                      </div>
+                    ) : !isOrcidLinked ? (
+                      <div className="text-center py-12">
+                        <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Users className="w-8 h-8 text-gray-500" />
+                        </div>
+                        <h4 className="text-lg font-medium mb-2">Chưa liên kết ORCID</h4>
+                        <p className="text-gray-400 mb-6 max-w-md mx-auto">
+                          Vui lòng liên kết tài khoản ORCID của bạn để đồng bộ thông tin học thuật,
+                          công trình nghiên cứu và quá trình học tập.
+                        </p>
+                        <Button
+                          onClick={handleOrcidLink}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          Liên kết ORCID ngay
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        {/* Biography Section */}
+                        <div className="bg-gray-800/50 rounded-lg p-5">
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="w-1 h-5 bg-purple-500 rounded-full"></div>
+                            <h4 className="text-base font-semibold">Tiểu sử</h4>
+                          </div>
+                          {isLoadingBio ? (
+                            <div className="flex items-center gap-2">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-500"></div>
+                              <p className="text-sm text-gray-400">Đang tải...</p>
+                            </div>
+                          ) : biographyData?.data?.Content ? (
+                            <p className="text-sm text-gray-300 leading-relaxed">
+                              {biographyData.data.Content}
+                            </p>
+                          ) : (
+                            <div className="bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-3">
+                              <p className="text-sm text-yellow-300">
+                                Bạn chưa có thông tin tiểu sử trên ORCID. Vui lòng cập nhật tiểu sử trên hồ sơ ORCID của bạn để đồng bộ thông tin này.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Works Section */}
+                        <div>
+                          <div className="flex items-center gap-2 mb-4">
+                            <div className="w-1 h-5 bg-blue-500 rounded-full"></div>
+                            <h4 className="text-base font-semibold">
+                              Công trình nghiên cứu
+                              {!isLoadingWorks && worksData?.data?.group && ` (${worksData.data.group.length})`}
+                            </h4>
+                          </div>
+                          {isLoadingWorks ? (
+                            <div className="flex items-center gap-2 bg-gray-800 rounded-lg p-4">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                              <p className="text-sm text-gray-400">Đang tải công trình...</p>
+                            </div>
+                          ) : worksData?.data?.group?.length ? (
+                            <div className="relative -mx-6 px-6">
+                              <div
+                                className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-800/50"
+                                style={{
+                                  scrollbarWidth: 'thin',
+                                  scrollbarColor: '#374151 rgba(31, 41, 55, 0.5)'
+                                }}
+                              >
+                                {worksData.data.group.map((workGroup) => {
+                                  const work = workGroup['work-summary'][0];
+                                  const pubDate = formatPublicationDate(work['publication-date']);
+                                  const sourceName = work.source['source-name']?.value;
+
+                                  return (
+                                    <article
+                                      key={work['put-code']}
+                                      className="flex-shrink-0 w-80 bg-gray-800 rounded-xl p-5 hover:bg-gray-750 transition-all border border-gray-700 hover:border-blue-500/50 snap-start hover:shadow-lg hover:shadow-blue-500/10"
+                                    >
+                                      <div className="flex flex-col h-full space-y-3">
+                                        {/* Header with dot indicator */}
+                                        <div className="flex items-start gap-2">
+                                          <div className="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                                          <div className="flex-1 min-w-0">
+                                            <h5 className="text-sm font-semibold leading-snug text-white line-clamp-2 mb-2">
+                                              {work.title.title.value ||
+                                                <span className="text-gray-400 italic">Chưa có tiêu đề</span>
+                                              }
+                                            </h5>
+                                            {work.title.subtitle && (
+                                              <p className="text-xs text-gray-400 line-clamp-1">
+                                                {work.title.subtitle.value}
+                                              </p>
+                                            )}
+                                          </div>
+                                        </div>
+
+                                        {/* Metadata badges */}
+                                        <div className="flex flex-wrap items-center gap-2 text-xs">
+                                          {work.type && (
+                                            <span className="bg-blue-900/40 text-blue-300 px-2 py-1 rounded border border-blue-700 whitespace-nowrap">
+                                              {work.type}
+                                            </span>
+                                          )}
+                                          {pubDate && (
+                                            <span className="text-gray-400 whitespace-nowrap">{pubDate}</span>
+                                          )}
+                                        </div>
+
+                                        {/* Journal Title */}
+                                        {work['journal-title']?.value && (
+                                          <div className="text-xs">
+                                            <span className="text-gray-500 font-medium">Journal: </span>
+                                            <span className="text-gray-300 line-clamp-1">{work['journal-title'].value}</span>
+                                          </div>
+                                        )}
+
+                                        {/* Source */}
+                                        {sourceName && (
+                                          <div className="text-xs">
+                                            <span className="text-gray-500 font-medium">Source: </span>
+                                            <span className="text-gray-300 line-clamp-1">{sourceName}</span>
+                                          </div>
+                                        )}
+
+                                        {/* External IDs */}
+                                        {work['external-ids']?.['external-id']?.length > 0 && (
+                                          <div className="flex flex-wrap gap-1.5 text-xs">
+                                            {work['external-ids']['external-id'].slice(0, 2).map((id, idx) => (
+                                              <div key={idx} className="bg-gray-700/50 px-2 py-1 rounded border border-gray-600 truncate max-w-full">
+                                                <span className="text-gray-400">{id['external-id-type']}: </span>
+                                                <span className="text-gray-300">{id['external-id-value']}</span>
+                                              </div>
+                                            ))}
+                                            {work['external-ids']['external-id'].length > 2 && (
+                                              <span className="text-gray-500 px-2 py-1">
+                                                +{work['external-ids']['external-id'].length - 2} more
+                                              </span>
+                                            )}
+                                          </div>
+                                        )}
+
+                                        {/* Spacer */}
+                                        <div className="flex-1"></div>
+
+                                        {/* Footer section */}
+                                        <div className="space-y-2 pt-2 border-t border-gray-700">
+                                          {/* Visibility badge */}
+                                          <div className="flex items-center justify-between">
+                                            <span className={`text-xs px-2 py-1 rounded border ${work.visibility === 'PUBLIC'
+                                              ? 'bg-green-900/40 text-green-300 border-green-700'
+                                              : 'bg-gray-700 text-gray-300 border-gray-600'
+                                              }`}>
+                                              {work.visibility}
+                                            </span>
+
+                                            {/* URL Link */}
+                                            {work.url?.value && (
+                                              <a
+                                                href={work.url.value}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                                              >
+                                                <span>View</span>
+                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                </svg>
+                                              </a>
+                                            )}
+                                          </div>
+
+                                          {/* Last Modified */}
+                                          <div className="text-xs text-gray-500">
+                                            Modified: {new Date(work['last-modified-date'].value).toLocaleDateString('vi-VN')}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </article>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-4">
+                              <p className="text-sm text-yellow-300 text-center">
+                                Bạn chưa có công trình nghiên cứu nào trên ORCID. Vui lòng thêm công trình nghiên cứu trên hồ sơ ORCID của bạn để đồng bộ thông tin này.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 mb-4">
+                            <div className="w-1 h-5 bg-blue-500 rounded-full"></div>
+                            <h4 className="text-base font-semibold">
+                              Công trình nghiên cứu
+                              {!isLoadingWorks && worksData?.data?.group && ` (${worksData.data.group.length})`}
+                            </h4>
+                          </div>
+                          {isLoadingWorks ? (
+                            <div className="flex items-center gap-2 bg-gray-800 rounded-lg p-4">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                              <p className="text-sm text-gray-400">Đang tải công trình...</p>
+                            </div>
+                          ) : worksData?.data?.group?.length ? (
+                            <div className="space-y-3">
+                              {worksData.data.group.map((workGroup) => {
+                                const work = workGroup['work-summary'][0];
+                                const pubDate = formatPublicationDate(work['publication-date']);
+                                const sourceName = work.source['source-name']?.value;
+
+                                return (
+                                  <article
+                                    key={work['put-code']}
+                                    className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors border border-gray-700"
+                                  >
+                                    <div className="flex items-start gap-3">
+                                      <div className="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                                      <div className="min-w-0 flex-1 space-y-2">
+                                        {/* Title */}
+                                        <div>
+                                          <h5 className="text-sm font-medium leading-snug text-white">
+                                            {work.title.title.value ||
+                                              <span className="text-gray-400 italic">Chưa có tiêu đề</span>
+                                            }
+                                          </h5>
+                                          {work.title.subtitle && (
+                                            <p className="text-xs text-gray-400 mt-1">
+                                              {work.title.subtitle.value}
+                                            </p>
+                                          )}
+                                        </div>
+
+                                        {/* Metadata badges */}
+                                        <div className="flex flex-wrap items-center gap-2 text-xs">
+                                          {work.type ? (
+                                            <span className="bg-blue-900/40 text-blue-300 px-2 py-1 rounded border border-blue-700">
+                                              {work.type}
+                                            </span>
+                                          ) : null}
+
+                                          {pubDate ? (
+                                            <>
+                                              {work.type && <span className="text-gray-500">•</span>}
+                                              <span className="text-gray-400">{pubDate}</span>
+                                            </>
+                                          ) : null}
+
+                                          <span className={`px-2 py-1 rounded border ${work.visibility === 'PUBLIC'
+                                            ? 'bg-green-900/40 text-green-300 border-green-700'
+                                            : 'bg-gray-700 text-gray-300 border-gray-600'
+                                            }`}>
+                                            {work.visibility}
+                                          </span>
+                                        </div>
+
+                                        {/* Journal Title */}
+                                        {work['journal-title']?.value ? (
+                                          <div className="flex items-center gap-2 text-xs text-gray-400">
+                                            <span className="font-medium">Journal:</span>
+                                            <span>{work['journal-title'].value}</span>
+                                          </div>
+                                        ) : null}
+
+                                        {/* Source */}
+                                        {sourceName ? (
+                                          <div className="flex items-center gap-2 text-xs text-gray-400">
+                                            <span className="font-medium">Source:</span>
+                                            <span>{sourceName}</span>
+                                          </div>
+                                        ) : null}
+
+                                        {/* External IDs */}
+                                        {work['external-ids']?.['external-id']?.length > 0 && (
+                                          <div className="flex flex-wrap gap-2 text-xs">
+                                            {work['external-ids']['external-id'].map((id, idx) => (
+                                              <div key={idx} className="bg-gray-700/50 px-2 py-1 rounded border border-gray-600">
+                                                <span className="text-gray-400">{id['external-id-type']}:</span>
+                                                {' '}
+                                                <span className="text-gray-300">{id['external-id-value']}</span>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        )}
+
+                                        {/* URL Link */}
+                                        {work.url?.value && (
+                                          <a
+                                            href={work.url.value}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                                          >
+                                            <span>View Full Work</span>
+                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                            </svg>
+                                          </a>
+                                        )}
+
+                                        {/* Last Modified */}
+                                        <div className="text-xs text-gray-500 pt-2 border-t border-gray-700">
+                                          Last modified: {new Date(work['last-modified-date'].value).toLocaleDateString('vi-VN')}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </article>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <div className="bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-4">
+                              <p className="text-sm text-yellow-300 text-center">
+                                Bạn chưa có công trình nghiên cứu nào trên ORCID. Vui lòng thêm công trình nghiên cứu trên hồ sơ ORCID của bạn để đồng bộ thông tin này.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 mb-4">
+                            <div className="w-1 h-5 bg-blue-500 rounded-full"></div>
+                            <h4 className="text-base font-semibold">
+                              Công trình nghiên cứu
+                              {!isLoadingWorks && worksData?.data?.group && ` (${worksData.data.group.length})`}
+                            </h4>
+                          </div>
+                          {isLoadingWorks ? (
+                            <div className="flex items-center gap-2 bg-gray-800 rounded-lg p-4">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                              <p className="text-sm text-gray-400">Đang tải công trình...</p>
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              {worksData?.data?.group?.length ? (
+                                worksData.data.group.map((workGroup) => {
+                                  const work = workGroup['work-summary'][0]; // Lấy summary đầu tiên
+                                  // const doi = getDOI(work['external-ids']);
+                                  const pubDate = formatPublicationDate(work['publication-date']);
+                                  const sourceName = work.source['source-name']?.value;
+
+                                  return (
+                                    <article
+                                      key={work['put-code']}
+                                      className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors border border-gray-700"
+                                    >
+                                      <div className="flex items-start gap-3">
+                                        <div className="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                                        <div className="min-w-0 flex-1 space-y-2">
+                                          {/* Title */}
+                                          <div>
+                                            <h5 className="text-sm font-medium leading-snug text-white">
+                                              {work.title.title.value}
+                                            </h5>
+                                            {work.title.subtitle && (
+                                              <p className="text-xs text-gray-400 mt-1">
+                                                {work.title.subtitle.value}
+                                              </p>
+                                            )}
+                                          </div>
+
+                                          {/* Metadata badges */}
+                                          <div className="flex flex-wrap items-center gap-2 text-xs">
+                                            {/* Work Type */}
+                                            <span className="bg-blue-900/40 text-blue-300 px-2 py-1 rounded border border-blue-700">
+                                              {work.type}
+                                            </span>
+
+                                            {/* Publication Date */}
+                                            {pubDate && (
+                                              <>
+                                                <span className="text-gray-500">•</span>
+                                                <span className="text-gray-400">{pubDate}</span>
+                                              </>
+                                            )}
+
+                                            {/* Visibility */}
+                                            <span className={`px-2 py-1 rounded border ${work.visibility === 'PUBLIC'
+                                              ? 'bg-green-900/40 text-green-300 border-green-700'
+                                              : 'bg-gray-700 text-gray-300 border-gray-600'
+                                              }`}>
+                                              {work.visibility}
+                                            </span>
+                                          </div>
+
+                                          {/* Journal Title */}
+                                          {work['journal-title']?.value && (
+                                            <div className="flex items-center gap-2 text-xs text-gray-400">
+                                              <span className="font-medium">Journal:</span>
+                                              <span>{work['journal-title'].value}</span>
+                                            </div>
+                                          )}
+
+                                          {/* Source */}
+                                          {sourceName && (
+                                            <div className="flex items-center gap-2 text-xs text-gray-400">
+                                              <span className="font-medium">Source:</span>
+                                              <span>{sourceName}</span>
+                                            </div>
+                                          )}
+
+                                          {/* DOI */}
+                                          {/* {doi && (
+                                            <div className="flex items-start gap-2 text-xs">
+                                              <span className="text-gray-400 font-medium">DOI:</span>
+<a
+                                              href={`https://doi.org/${doi}`}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="text-blue-400 hover:text-blue-300 break-all"
+                      >
+                                              {doi}
+                                            </a>
+                    </div>
+                  )} */}
+
+                                          {/* External IDs (other than DOI) */}
+                                          {work['external-ids']?.['external-id']?.length > 0 && (
+                                            <div className="flex flex-wrap gap-2 text-xs">
+                                              {work['external-ids']['external-id']
+                                                .filter(id => id['external-id-type'].toLowerCase() !== 'doi')
+                                                .map((id, idx) => (
+                                                  <div key={idx} className="bg-gray-700/50 px-2 py-1 rounded border border-gray-600">
+                                                    <span className="text-gray-400">{id['external-id-type']}:</span>
+                                                    {' '}
+                                                    <span className="text-gray-300">{id['external-id-value']}</span>
+                                                  </div>
+                                                ))
+                                              }
+                                            </div>
+                                          )}
+
+                                          {/* URL Link */}
+                                          {work.url?.value && (
+                                            <a
+                                              href={work.url.value}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                                            >
+                                              <span>View Full Work</span>
+                                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                              </svg>
+                                            </a>
+                                          )}
+
+                                          {/* Last Modified */}
+                                          <div className="text-xs text-gray-500 pt-2 border-t border-gray-700">
+                                            Last modified: {new Date(work['last-modified-date'].value).toLocaleDateString('vi-VN')}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </article>
+                                  );
+                                })
+                              ) : (
+                                <p className="text-sm text-gray-400 text-center py-4">Chưa có công trình nghiên cứu</p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        {/* <div>
+                          <div className="flex items-center gap-2 mb-4">
+                            <div className="w-1 h-5 bg-blue-500 rounded-full"></div>
+                            <h4 className="text-base font-semibold">
+                              Công trình nghiên cứu
+                              {!isLoadingWorks && worksData?.data?.group && ` (${worksData.data.group.length})`}
+                            </h4>
+                          </div>
+                          {isLoadingWorks ? (
+                            <div className="flex items-center gap-2 bg-gray-800 rounded-lg p-4">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                              <p className="text-sm text-gray-400">Đang tải công trình...</p>
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              {worksData?.data?.group?.length ? (
+                                worksData.data.group.map((workGroup) => {
+                                  const work = workGroup['work-summary'][0];
+                                  return (
+                                    <article
+                                      key={work['put-code']}
+                                      className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors border border-gray-700"
+                                    >
+                                      <div className="flex items-start gap-3">
+                                        <div className="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                                        <div className="min-w-0 flex-1">
+                                          <h5 className="text-sm font-medium mb-2 leading-snug">
+                                            {work.title.title.value}
+                                          </h5>
+                                          <div className="flex flex-wrap items-center gap-2 text-xs text-gray-400">
+                                            <span className="bg-blue-900/40 text-blue-300 px-2 py-1 rounded">
+                                              {work.type}
+                                            </span>
+                                            {work['publication-date']?.year && (
+                                              <>
+                                                <span>•</span>
+                                                <span>{work['publication-date'].year.value}</span>
+                                              </>
+                                            )}
+                                            {work['journal-title'] && (
+                                              <>
+                                                <span>•</span>
+                                                <span>{work['journal-title'].value}</span>
+                                              </>
+                                            )}
+                                          </div>
+                                          {work.url?.value && (
+                                            <a
+                                              href={work.url.value}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="text-xs text-blue-400 hover:text-blue-300 mt-2 inline-block"
+                                            >
+                                              View Work →
+                                            </a>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </article>
+                                  );
+                                })
+                              ) : (
+                                <p className="text-sm text-gray-400 text-center py-4">Chưa có công trình nghiên cứu</p>
+                              )}
+                            </div>
+                          )}
+                        </div> */}
+
+                        {/* Education Section */}
+                        <div>
+                          <div className="flex items-center gap-2 mb-4">
+                            <div className="w-1 h-5 bg-green-500 rounded-full"></div>
+                            <h4 className="text-base font-semibold">
+                              Quá trình học tập
+                              {!isLoadingEdu && educationsData?.data && ` (${educationsData.data.length})`}
+                            </h4>
+                          </div>
+                          {isLoadingEdu ? (
+                            <div className="flex items-center gap-2 bg-gray-800 rounded-lg p-4">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-500"></div>
+                              <p className="text-sm text-gray-400">Đang tải quá trình học tập...</p>
+                            </div>
+                          ) : educationsData?.data?.length ? (
+                            <div className="space-y-3">
+                              {educationsData.data.map((edu, index) => (
+                                <article
+                                  key={edu.OrcidPutCode || index}
+                                  className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors border border-gray-700"
+                                >
+                                  <div className="flex items-start gap-3">
+                                    <div className="flex-shrink-0 w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                                    <div className="min-w-0 flex-1 space-y-2">
+                                      <h5 className="text-sm font-medium">
+                                        {edu.Degree ||
+                                          <span className="text-gray-400 italic">Chưa cập nhật bằng cấp</span>
+                                        }
+                                      </h5>
+                                      <p className="text-sm text-gray-400">
+                                        {edu.Institution ||
+                                          <span className="italic">Chưa cập nhật trường học</span>
+                                        }
+                                      </p>
+                                      {edu.Period ? (
+                                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                                          <Calendar className="w-3 h-3" />
+                                          <span>{edu.Period}</span>
+                                        </div>
+                                      ) : (
+                                        <div className="flex items-center gap-2 text-xs text-yellow-600">
+                                          <Calendar className="w-3 h-3" />
+                                          <span className="italic">Chưa cập nhật thời gian</span>
+                                        </div>
+                                      )}
+                                      {edu.Location && (
+                                        <p className="text-xs text-gray-500 flex items-center gap-1">
+                                          <MapPin className="w-3 h-3" />
+                                          {edu.Location}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                </article>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-4">
+                              <p className="text-sm text-yellow-300 text-center">
+                                Bạn chưa có thông tin học tập nào trên ORCID. Vui lòng thêm quá trình học tập trên hồ sơ ORCID của bạn để đồng bộ thông tin này.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </section>
@@ -970,7 +1579,7 @@ const EditProfileScreen: React.FC = () => {
             </div>
           </section>
         </main> */}
-      </div>
+      </div >
 
       <Dialog
         open={isEditDialogOpen}
@@ -1292,7 +1901,7 @@ const EditProfileScreen: React.FC = () => {
           </div>
         </div>
       </Dialog>
-    </div>
+    </div >
   );
 };
 
