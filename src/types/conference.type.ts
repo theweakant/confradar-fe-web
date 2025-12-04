@@ -499,7 +499,7 @@ export interface ConferenceResponse {
   conferencePrices?: ConferencePriceResponse[];
   // sessions?: ConferenceSessionResponse[];
   createdBy?: string | null | undefined;
-  userNameCreator?:string;
+  userNameCreator?: string;
 }
 
 export interface TechnicalConferenceDetailResponse {
@@ -530,9 +530,8 @@ export interface TechnicalConferenceDetailResponse {
   conferenceTimelines?: ConferenceTimelineResponse[];
   purchasedInfo?: PurchasedInfo;
   contract: CollaboratorContract;
-
-  userNameCreator?:string;
-  createdBy?:string;
+  userNameCreator?: string;
+  createdBy?: string;
 }
 
 export interface ResearchConferenceDetailResponse {
@@ -587,7 +586,7 @@ export interface ResearchConferenceDetailResponse {
   purchasedInfo?: PurchasedInfo;
 
   contract?: CollaboratorContract;
-  createdBy?:string;
+  createdBy?: string;
 }
 
 export interface ConferencePolicyResponse {
@@ -644,6 +643,8 @@ export interface TechnicalConferenceSessionResponse {
   room?: RoomInfoResponse;
   speakers?: SpeakerResponse[];
   sessionMedia?: ConferenceSessionMediaResponse[];
+
+  feedback?: SessionFeedback[];
 }
 
 export interface RoomInfoResponse {
@@ -733,6 +734,8 @@ export interface ResearchConferenceSessionResponse {
   roomId?: string;
   room?: RoomInfoResponse;
   sessionMedia?: ConferenceSessionMediaResponse[];
+
+  feedback?: SessionFeedback[];
 }
 
 export interface RefundPolicyResponse {
@@ -917,4 +920,15 @@ export interface ConferenceForReviewerView {
     rankCategoryName: string | null;
     rankCategoryDescription: string | null;
   } | null;
+}
+
+export interface SessionFeedback {
+  feedbackId: string;
+  conferenceSessionId: string;
+  userId: string;
+  userName?: string;
+  userAvatar?: string;
+  rating: number;
+  message: string;
+  createdAt: string;
 }

@@ -285,6 +285,28 @@ const ConferenceDetail = () => {
     return `${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`;
   };
 
+  const formatDateTime = (dateTimeString?: string) => {
+    if (!dateTimeString) return "";
+
+    const date = new Date(dateTimeString);
+    if (isNaN(date.getTime())) return "";
+
+    const datePart = date.toLocaleDateString("vi-VN", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    const timePart = date.toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+
+    return `${datePart} ${timePart}`;
+  };
+
   return (
     <div className="relative min-h-screen">
       <div className="absolute inset-0">
@@ -434,6 +456,7 @@ const ConferenceDetail = () => {
                     conference={conference}
                     formatDate={formatDate}
                     formatTime={formatTime}
+                    formatDateTime={formatDateTime}
                     setSelectedImage={setSelectedImage}
                   />
                 )}
