@@ -729,6 +729,7 @@ export interface ResearchConferenceSessionResponse {
   startTime?: string;
   endTime?: string;
   date?: string;
+  sessionDate?:string;
   conferenceId?: string;
   roomId?: string;
   room?: RoomInfoResponse;
