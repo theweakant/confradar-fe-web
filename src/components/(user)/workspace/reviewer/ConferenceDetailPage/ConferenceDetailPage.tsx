@@ -23,10 +23,11 @@ import {
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
+    useGetDetailAssignedListQuery,
     useListAssignedPapersQuery,
 } from "@/redux/services/paper.service";
 import { ResearchConferenceDetailResponse } from "@/types/conference.type";
-import { AssignedPaper, AssignedPaperGroup } from "@/types/paper.type";
+import { AssignedPaper, AssignedPaperDetail, AssignedPaperGroup } from "@/types/paper.type";
 import { steps } from "@/helper/paper";
 import { useGetResearchConferenceDetailQuery } from "@/redux/services/conference.service";
 import TimelineDialog from "@/components/molecules/TimelineDialog";
@@ -245,30 +246,11 @@ const ConferenceHeader = ({ conference }: ConferenceHeaderProps) => {
 };
 
 interface PaperTableProps {
-    papers: AssignedPaper[];
-    onView: (paper: AssignedPaper) => void;
+    papers: AssignedPaperDetail[]; // Thay đổi type
+    onView: (paper: AssignedPaperDetail) => void; // Thay đổi type
 }
 
 const PaperTable = ({ papers, onView }: PaperTableProps) => {
-    const getPaperStatus = (paper: AssignedPaper) => {
-        if (paper.cameraReadyId) return { label: "Camera Ready", color: "green" };
-        if (paper.revisionPaperId) return { label: "Revision", color: "orange" };
-        if (paper.fullPaperId) return { label: "Under Review", color: "yellow" };
-        return { label: "Abstract Only", color: "gray" };
-    };
-
-    const getPhaseInfo = (paper: AssignedPaper) => {
-        const currentStageIndex = steps
-            .map((s, idx) => (paper[s.key as keyof AssignedPaper] ? idx : null))
-            .filter((id) => id !== null)
-            .pop();
-
-        if (currentStageIndex !== undefined && currentStageIndex !== null) {
-            return steps[currentStageIndex];
-        }
-        return null;
-    };
-
     return (
         <div className="overflow-x-auto">
             <table className="w-full">
@@ -278,13 +260,22 @@ const PaperTable = ({ papers, onView }: PaperTableProps) => {
                             Tiêu đề
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Hội nghị
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             Giai đoạn
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Trạng thái
+                            Vai trò
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Ngày tạo
+                            Full Paper
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Revision
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Camera Ready
                         </th>
                         <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             Thao tác
@@ -292,80 +283,249 @@ const PaperTable = ({ papers, onView }: PaperTableProps) => {
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
-                    {papers.map((paper) => {
-                        const status = getPaperStatus(paper);
-                        const phase = getPhaseInfo(paper);
-                        return (
-                            <tr
-                                key={paper.paperId}
-                                className="hover:bg-gray-50 transition-colors"
-                            >
-                                <td className="px-4 py-4">
-                                    <div className="flex items-start gap-2">
-                                        <FileText className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                                        <div>
-                                            <p className="font-medium text-gray-900 line-clamp-2">
-                                                {paper.title || "Không có tiêu đề"}
-                                            </p>
-                                            <p className="text-xs text-gray-500 mt-1">
-                                                ID: {paper.paperId}
-                                            </p>
-                                        </div>
+                    {papers.map((paper) => (
+                        <tr
+                            key={paper.paperId}
+                            className="hover:bg-gray-50 transition-colors"
+                        >
+                            {/* Title */}
+                            <td className="px-4 py-4">
+                                <div className="flex items-start gap-2">
+                                    <FileText className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                                    <div>
+                                        <p className="font-medium text-gray-900 line-clamp-2">
+                                            {paper.title || "Không có tiêu đề"}
+                                        </p>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            ID: {paper.paperId}
+                                        </p>
                                     </div>
-                                </td>
-                                <td className="px-4 py-4">
-                                    {phase ? (
-                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
-                                            {phase.label}
+                                </div>
+                            </td>
+
+                            {/* Conference */}
+                            <td className="px-4 py-4">
+                                <p className="text-sm text-gray-900">
+                                    {paper.conferenceName || "N/A"}
+                                </p>
+                            </td>
+
+                            {/* Current Phase */}
+                            <td className="px-4 py-4">
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                                    {paper.currentPhaseName || "N/A"}
+                                </span>
+                            </td>
+
+                            {/* Role */}
+                            <td className="px-4 py-4">
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${paper.isHeadReviewer
+                                    ? 'bg-purple-100 text-purple-800'
+                                    : 'bg-gray-100 text-gray-700'
+                                    }`}>
+                                    {paper.isHeadReviewer ? "Head" : "Reviewer"}
+                                </span>
+                            </td>
+
+                            {/* Full Paper */}
+                            <td className="px-4 py-4">
+                                {paper.fullPaperWork?.fullPaperId ? (
+                                    <div className="space-y-1">
+                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${paper.fullPaperWork.statusName === 'Accepted'
+                                            ? 'bg-green-100 text-green-800'
+                                            : paper.fullPaperWork.statusName === 'Rejected'
+                                                ? 'bg-red-100 text-red-800'
+                                                : 'bg-yellow-100 text-yellow-800'
+                                            }`}>
+                                            {paper.fullPaperWork.statusName}
                                         </span>
-                                    ) : (
-                                        <span className="text-sm text-gray-400">-</span>
-                                    )}
-                                </td>
-                                <td className="px-4 py-4">
-                                    <span
-                                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
-                    ${status.color === "green"
-                                                ? "bg-green-50 text-green-700"
-                                                : status.color === "orange"
-                                                    ? "bg-orange-50 text-orange-700"
-                                                    : status.color === "yellow"
-                                                        ? "bg-yellow-50 text-yellow-700"
-                                                        : "bg-gray-50 text-gray-700"
-                                            }`}
-                                    >
-                                        {status.color === "green" && (
-                                            <CheckCircle className="w-3 h-3" />
-                                        )}
-                                        {status.color === "orange" && <Timer className="w-3 h-3" />}
-                                        {status.label}
+                                        <p className={`text-xs ${paper.fullPaperWork.isMyReviewSubmitted ? 'text-green-600' : 'text-orange-600'}`}>
+                                            {paper.fullPaperWork.isMyReviewSubmitted ? '✓ Đã review' : '○ Chưa review'}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <span className="text-xs text-gray-400">-</span>
+                                )}
+                            </td>
+
+                            {/* Revision */}
+                            <td className="px-4 py-4">
+                                {paper.revisionWork?.revisionPaperId ? (
+                                    <div className="space-y-1">
+                                        <p className="text-xs text-gray-600">Round {paper.revisionWork.revisionRound}</p>
+                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${paper.revisionWork.statusName === 'Accepted'
+                                            ? 'bg-green-100 text-green-800'
+                                            : paper.revisionWork.statusName === 'Rejected'
+                                                ? 'bg-red-100 text-red-800'
+                                                : 'bg-yellow-100 text-yellow-800'
+                                            }`}>
+                                            {paper.revisionWork.statusName}
+                                        </span>
+                                        <p className={`text-xs ${paper.revisionWork.isMyReviewSubmitted ? 'text-green-600' : 'text-orange-600'}`}>
+                                            {paper.revisionWork.isMyReviewSubmitted ? '✓ Đã review' : '○ Chưa review'}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <span className="text-xs text-gray-400">-</span>
+                                )}
+                            </td>
+
+                            {/* Camera Ready */}
+                            <td className="px-4 py-4">
+                                {paper.cameraReadyWork?.cameraReadyId ? (
+                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${paper.cameraReadyWork.statusName === 'Accepted'
+                                        ? 'bg-green-100 text-green-800'
+                                        : paper.cameraReadyWork.statusName === 'Rejected'
+                                            ? 'bg-red-100 text-red-800'
+                                            : 'bg-yellow-100 text-yellow-800'
+                                        }`}>
+                                        {paper.cameraReadyWork.statusName}
                                     </span>
-                                </td>
-                                <td className="px-4 py-4">
-                                    <p className="text-sm text-gray-600">
-                                        {new Date(paper.createdAt).toLocaleDateString("vi-VN")}
-                                    </p>
-                                    <p className="text-xs text-gray-500">
-                                        {new Date(paper.createdAt).toLocaleTimeString("vi-VN")}
-                                    </p>
-                                </td>
-                                <td className="px-4 py-4 text-right">
-                                    <button
-                                        onClick={() => onView(paper)}
-                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
-                                    >
-                                        <Eye className="w-4 h-4" />
-                                        Xem
-                                    </button>
-                                </td>
-                            </tr>
-                        );
-                    })}
+                                ) : (
+                                    <span className="text-xs text-gray-400">-</span>
+                                )}
+                            </td>
+
+                            {/* Actions */}
+                            <td className="px-4 py-4 text-right">
+                                <button
+                                    onClick={() => onView(paper)}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                                >
+                                    <Eye className="w-4 h-4" />
+                                    Xem
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
                 </tbody>
             </table>
         </div>
     );
 };
+
+// interface PaperTableProps {
+//     papers: AssignedPaper[];
+//     onView: (paper: AssignedPaper) => void;
+// }
+
+// const PaperTable = ({ papers, onView }: PaperTableProps) => {
+//     const getPaperStatus = (paper: AssignedPaper) => {
+//         if (paper.cameraReadyId) return { label: "Camera Ready", color: "green" };
+//         if (paper.revisionPaperId) return { label: "Revision", color: "orange" };
+//         if (paper.fullPaperId) return { label: "Under Review", color: "yellow" };
+//         return { label: "Abstract Only", color: "gray" };
+//     };
+
+//     const getPhaseInfo = (paper: AssignedPaper) => {
+//         const currentStageIndex = steps
+//             .map((s, idx) => (paper[s.key as keyof AssignedPaper] ? idx : null))
+//             .filter((id) => id !== null)
+//             .pop();
+
+//         if (currentStageIndex !== undefined && currentStageIndex !== null) {
+//             return steps[currentStageIndex];
+//         }
+//         return null;
+//     };
+
+//     return (
+//         <div className="overflow-x-auto">
+//             <table className="w-full">
+//                 <thead className="bg-gray-50 border-b border-gray-200">
+//                     <tr>
+//                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+//                             Tiêu đề
+//                         </th>
+//                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+//                             Giai đoạn
+//                         </th>
+//                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+//                             Trạng thái
+//                         </th>
+//                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+//                             Ngày tạo
+//                         </th>
+//                         <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+//                             Thao tác
+//                         </th>
+//                     </tr>
+//                 </thead>
+//                 <tbody className="divide-y divide-gray-200 bg-white">
+//                     {papers.map((paper) => {
+//                         const status = getPaperStatus(paper);
+//                         const phase = getPhaseInfo(paper);
+//                         return (
+//                             <tr
+//                                 key={paper.paperId}
+//                                 className="hover:bg-gray-50 transition-colors"
+//                             >
+//                                 <td className="px-4 py-4">
+//                                     <div className="flex items-start gap-2">
+//                                         <FileText className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+//                                         <div>
+//                                             <p className="font-medium text-gray-900 line-clamp-2">
+//                                                 {paper.title || "Không có tiêu đề"}
+//                                             </p>
+//                                             <p className="text-xs text-gray-500 mt-1">
+//                                                 ID: {paper.paperId}
+//                                             </p>
+//                                         </div>
+//                                     </div>
+//                                 </td>
+//                                 <td className="px-4 py-4">
+//                                     {phase ? (
+//                                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+//                                             {phase.label}
+//                                         </span>
+//                                     ) : (
+//                                         <span className="text-sm text-gray-400">-</span>
+//                                     )}
+//                                 </td>
+//                                 <td className="px-4 py-4">
+//                                     <span
+//                                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
+//                     ${status.color === "green"
+//                                                 ? "bg-green-50 text-green-700"
+//                                                 : status.color === "orange"
+//                                                     ? "bg-orange-50 text-orange-700"
+//                                                     : status.color === "yellow"
+//                                                         ? "bg-yellow-50 text-yellow-700"
+//                                                         : "bg-gray-50 text-gray-700"
+//                                             }`}
+//                                     >
+//                                         {status.color === "green" && (
+//                                             <CheckCircle className="w-3 h-3" />
+//                                         )}
+//                                         {status.color === "orange" && <Timer className="w-3 h-3" />}
+//                                         {status.label}
+//                                     </span>
+//                                 </td>
+//                                 <td className="px-4 py-4">
+//                                     <p className="text-sm text-gray-600">
+//                                         {new Date(paper.createdAt).toLocaleDateString("vi-VN")}
+//                                     </p>
+//                                     <p className="text-xs text-gray-500">
+//                                         {new Date(paper.createdAt).toLocaleTimeString("vi-VN")}
+//                                     </p>
+//                                 </td>
+//                                 <td className="px-4 py-4 text-right">
+//                                     <button
+//                                         onClick={() => onView(paper)}
+//                                         className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+//                                     >
+//                                         <Eye className="w-4 h-4" />
+//                                         Xem
+//                                     </button>
+//                                 </td>
+//                             </tr>
+//                         );
+//                     })}
+//                 </tbody>
+//             </table>
+//         </div>
+//     );
+// };
 
 
 const LoadingState = () => {
@@ -430,31 +590,68 @@ export default function ConferenceDetailPage({
         refetch: refetchConference,
     } = useGetResearchConferenceDetailQuery(conferenceId);
 
+    // const {
+    //     data: papersData,
+    //     isLoading: papersLoading,
+    //     error: papersError,
+    //     refetch: refetchPapers,
+    // } = useListAssignedPapersQuery({ confId: conferenceId });
+
     const {
         data: papersData,
         isLoading: papersLoading,
         error: papersError,
         refetch: refetchPapers,
-    } = useListAssignedPapersQuery({ confId: conferenceId });
+    } = useGetDetailAssignedListQuery();
 
     const conference = conferenceData?.data;
-    const paperGroups: AssignedPaperGroup[] = papersData?.data || [];
-    const papers: AssignedPaper[] =
-        paperGroups.length > 0 ? paperGroups[0].assignedPapers : [];
+
+    const allPapers: AssignedPaperDetail[] = papersData?.data || [];
+
+    const papers = useMemo(() => {
+        return allPapers.filter(paper =>
+            paper.conferenceName === conference?.conferenceName
+        );
+    }, [allPapers, conference]);
+    // const paperGroups: AssignedPaperGroup[] = papersData?.data || [];
+    // const papers: AssignedPaper[] =
+    //     paperGroups.length > 0 ? paperGroups[0].assignedPapers : [];
 
     // Phase Statistics
     const phaseStats = useMemo(() => {
-        return steps.map((stage, index) => {
-            const count = papers.filter((p) => {
-                const currentStageIndex = steps
-                    .map((s, idx) => (p[s.key as keyof AssignedPaper] ? idx : null))
-                    .filter((id) => id !== null)
-                    .pop();
-                return currentStageIndex === index;
-            }).length;
-            return { ...stage, count };
+        const stats = [
+            { label: "Abstract Only", count: 0, color: "gray" },
+            { label: "Full Paper", count: 0, color: "yellow" },
+            { label: "Revision", count: 0, color: "orange" },
+            { label: "Camera Ready", count: 0, color: "green" },
+        ];
+
+        papers.forEach(paper => {
+            if (paper.cameraReadyWork?.cameraReadyId) {
+                stats[3].count++;
+            } else if (paper.revisionWork?.revisionPaperId) {
+                stats[2].count++;
+            } else if (paper.fullPaperWork?.fullPaperId) {
+                stats[1].count++;
+            } else {
+                stats[0].count++;
+            }
         });
+
+        return stats;
     }, [papers]);
+    // const phaseStats = useMemo(() => {
+    //     return steps.map((stage, index) => {
+    //         const count = papers.filter((p) => {
+    //             const currentStageIndex = steps
+    //                 .map((s, idx) => (p[s.key as keyof AssignedPaper] ? idx : null))
+    //                 .filter((id) => id !== null)
+    //                 .pop();
+    //             return currentStageIndex === index;
+    //         }).length;
+    //         return { ...stage, count };
+    //     });
+    // }, [papers]);
 
     // Filter and Sort Logic
     const filteredAndSortedPapers = useMemo(() => {
@@ -471,44 +668,84 @@ export default function ConferenceDetailPage({
         // Phase filter
         if (selectedPhase) {
             result = result.filter((paper) => {
-                const currentStageIndex = steps
-                    .map((s, idx) => (paper[s.key as keyof AssignedPaper] ? idx : null))
-                    .filter((id) => id !== null)
-                    .pop();
-                const selectedStageIndex = steps.findIndex(
-                    (s) => s.label === selectedPhase
-                );
-                return currentStageIndex === selectedStageIndex;
+                if (selectedPhase === "Camera Ready") {
+                    return paper.cameraReadyWork?.cameraReadyId;
+                } else if (selectedPhase === "Revision") {
+                    return paper.revisionWork?.revisionPaperId;
+                } else if (selectedPhase === "Full Paper") {
+                    return paper.fullPaperWork?.fullPaperId;
+                } else if (selectedPhase === "Abstract Only") {
+                    return !paper.fullPaperWork?.fullPaperId;
+                }
+                return true;
             });
         }
 
-        // Sort
+        // Sort (giữ nguyên logic sort)
         switch (sortOption) {
-            case "date-asc":
-                result.sort(
-                    (a, b) =>
-                        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-                );
-                break;
-            case "date-desc":
-                result.sort(
-                    (a, b) =>
-                        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-                );
-                break;
             case "name-asc":
                 result.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
                 break;
             case "name-desc":
                 result.sort((a, b) => (b.title || "").localeCompare(a.title || ""));
                 break;
+            // date sort cần thêm createdAt vào type nếu cần
         }
 
         return result;
     }, [papers, searchQuery, selectedPhase, sortOption]);
+    // const filteredAndSortedPapers = useMemo(() => {
+    //     let result = [...papers];
+
+    //     // Search filter
+    //     if (searchQuery.trim()) {
+    //         const query = searchQuery.toLowerCase();
+    //         result = result.filter((paper) =>
+    //             paper.title?.toLowerCase().includes(query)
+    //         );
+    //     }
+
+    //     // Phase filter
+    //     if (selectedPhase) {
+    //         result = result.filter((paper) => {
+    //             const currentStageIndex = steps
+    //                 .map((s, idx) => (paper[s.key as keyof AssignedPaper] ? idx : null))
+    //                 .filter((id) => id !== null)
+    //                 .pop();
+    //             const selectedStageIndex = steps.findIndex(
+    //                 (s) => s.label === selectedPhase
+    //             );
+    //             return currentStageIndex === selectedStageIndex;
+    //         });
+    //     }
+
+    //     // Sort
+    //     switch (sortOption) {
+    //         case "date-asc":
+    //             result.sort(
+    //                 (a, b) =>
+    //                     new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    //             );
+    //             break;
+    //         case "date-desc":
+    //             result.sort(
+    //                 (a, b) =>
+    //                     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    //             );
+    //             break;
+    //         case "name-asc":
+    //             result.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+    //             break;
+    //         case "name-desc":
+    //             result.sort((a, b) => (b.title || "").localeCompare(a.title || ""));
+    //             break;
+    //     }
+
+    //     return result;
+    // }, [papers, searchQuery, selectedPhase, sortOption]);
 
     // Handlers
-    const handleViewPaper = (paper: AssignedPaper) => {
+    const handleViewPaper = (paper: AssignedPaperDetail) => {
         router.push(`/workspace/reviewer/manage-paper/${paper.paperId}`);
     };
 
@@ -558,6 +795,31 @@ export default function ConferenceDetailPage({
                         {phaseStats.map((stage, index) => (
                             <div
                                 key={index}
+                                className={`rounded-lg border-l-4 p-4 ${stage.color === "gray"
+                                    ? "border-gray-400 bg-gray-50"
+                                    : stage.color === "yellow"
+                                        ? "border-yellow-500 bg-yellow-50"
+                                        : stage.color === "orange"
+                                            ? "border-orange-500 bg-orange-50"
+                                            : "border-green-600 bg-green-50"
+                                    }`}
+                            >
+                                <p className="text-sm text-gray-600 mb-1">{stage.label}</p>
+                                <p className="text-3xl font-bold text-gray-900">
+                                    {stage.count}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                {/* <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-200">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                        Thống kê theo giai đoạn
+                    </h2>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        {phaseStats.map((stage, index) => (
+                            <div
+                                key={index}
                                 className={`rounded-lg border-l-4 p-4 ${index === 0
                                     ? "border-gray-400 bg-gray-50"
                                     : index === 1
@@ -574,7 +836,7 @@ export default function ConferenceDetailPage({
                             </div>
                         ))}
                     </div>
-                </div>
+                </div> */}
 
                 {/* Papers Section */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -617,12 +879,23 @@ export default function ConferenceDetailPage({
                                     className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-sm"
                                 >
                                     <option value="">Tất cả giai đoạn</option>
+                                    <option value="Abstract Only">Abstract Only</option>
+                                    <option value="Full Paper">Full Paper</option>
+                                    <option value="Revision">Revision</option>
+                                    <option value="Camera Ready">Camera Ready</option>
+                                </select>
+                                {/* <select
+                                    value={selectedPhase}
+                                    onChange={(e) => setSelectedPhase(e.target.value)}
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-sm"
+                                >
+                                    <option value="">Tất cả giai đoạn</option>
                                     {steps.map((stage, index) => (
                                         <option key={index} value={stage.label}>
                                             {stage.label}
                                         </option>
                                     ))}
-                                </select>
+                                </select> */}
                                 {selectedPhase && (
                                     <button
                                         onClick={() => setSelectedPhase("")}

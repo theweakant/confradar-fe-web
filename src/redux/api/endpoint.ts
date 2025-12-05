@@ -307,7 +307,9 @@ export const endpoint = {
     UPDATE_FULLPAPER: "/Paper/update-fullpaper",
     UPDATE_REVISION_SUBMISSION: "/Paper/update-revision-submission",
     UPDATE_CAMERA_READY: "/Paper/update-camera-ready",
-    MARK_COMPLETE_REVISE: "/paper/mark-complete-revise"
+    MARK_COMPLETE_REVISE: "/paper/mark-complete-revise",
+
+    GET_DETAIL_ASSIGNED_PAPERS: "/paper/get-detail-assigned-list"
   },
 
   FAVOURITE_CONFERENCE: {
