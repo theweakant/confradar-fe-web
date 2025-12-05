@@ -8,17 +8,26 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { EventClickArg } from "@fullcalendar/core";
 import { FileText } from "lucide-react";
-import { useGetResearchSessionsQuery } from "@/redux/services/conferenceStep.service";
+import { useGetPresentSessionQuery } from "@/redux/services/statistics.service";
 import { useListAcceptedPapersQuery } from "@/redux/services/paper.service";
-import type { SessionDetailForScheduleResponse } from "@/types/conference.type";
 import type { AcceptedPaper } from "@/types/paper.type";
 import PaperCard from "@/components/molecules/Calendar/SessionCalendar/Paper/PaperCard";
-import SessionDetailDialog from "@/components/molecules/Calendar/SessionCalendar/Modal/SessionDetail";
+import PresenterSessionDetailDialog from "@/components/molecules/Calendar/SessionCalendar/Modal/PresenterSessionDetail";
+
+interface PresentSessionData {
+  sessionId: string;
+  title: string;
+  onDate: string;
+  presenters: Array<{
+    presenterName: string;
+    paperTitle: string;
+  }>;
+}
 
 interface PaperAssignmentCalendarProps {
   conferenceId?: string;
   onPaperSelected?: (paperId: string) => void;
-  onSessionSelected?: (session: SessionDetailForScheduleResponse) => void;
+  selectedPaperId?: string | null; // ✅ Đã thêm prop này
   startDate?: string;
   acceptedPapers?: AcceptedPaper[];
 }
@@ -26,21 +35,21 @@ interface PaperAssignmentCalendarProps {
 const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
   conferenceId,
   onPaperSelected,
-  onSessionSelected,
+  selectedPaperId,
   startDate,
   acceptedPapers: externalAcceptedPapers,
 }) => {
-  const [selectedSession, setSelectedSession] = useState<SessionDetailForScheduleResponse | null>(null);
+  const [selectedSession, setSelectedSession] = useState<PresentSessionData | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const calendarRef = useRef<FullCalendar>(null);
 
-  // 🔹 Fetch sessions
+  // 🔹 Fetch sessions with presenters
   const {
     data: sessionsResponse,
     isLoading: isLoadingSessions,
     error: sessionsError,
     refetch: refetchSessions,
-  } = useGetResearchSessionsQuery(conferenceId!, {
+  } = useGetPresentSessionQuery(conferenceId!, {
     skip: !conferenceId,
   });
 
@@ -61,47 +70,36 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
     : internalAcceptedPapers;
 
   const calendarEvents = sessions.map((session) => ({
-    id: session.conferenceSessionId,
+    id: session.sessionId,
     title: session.title,
-    start: `${session.date}T${session.startTime}`,
-    end: `${session.date}T${session.endTime}`,
-    backgroundColor: "#3b82f6",
-    borderColor: "#2563eb",
+    start: session.onDate,
+    allDay: true,
+    backgroundColor: session.presenters.length > 0 ? "#3b82f6" : "#9ca3af",
+    borderColor: session.presenters.length > 0 ? "#2563eb" : "#6b7280",
     extendedProps: {
       session,
+      presenterCount: session.presenters.length,
     },
   }));
 
   // 🔹 Auto jump to first session date when component mounts or sessions load
   useEffect(() => {
-    console.log('🔍 Debug Auto Jump:', {
-      hasCalendarRef: !!calendarRef.current,
-      sessionsLength: sessions.length,
-      sessions: sessions
-    });
-
     if (calendarRef.current && sessions.length > 0) {
       const calendarApi = calendarRef.current.getApi();
       
-      // Filter sessions that have valid dates and sort by date to get the earliest one
       const sortedSessions = [...sessions]
-        .filter((session) => session.date) // Remove sessions without date
+        .filter((session) => session.onDate)
         .sort((a, b) => {
-          return new Date(a.date!).getTime() - new Date(b.date!).getTime();
+          return new Date(a.onDate).getTime() - new Date(b.onDate).getTime();
         });
       
-      console.log('📅 Sorted Sessions:', sortedSessions);
-      
-      const firstSessionDate = sortedSessions[0]?.date;
-      
-      console.log('🎯 First Session Date:', firstSessionDate);
+      const firstSessionDate = sortedSessions[0]?.onDate;
       
       if (firstSessionDate) {
         calendarApi.gotoDate(firstSessionDate);
-        console.log('✅ Jumped to date:', firstSessionDate);
       }
     }
-  }, [sessions]); // Trigger when sessions are loaded
+  }, [sessions]);
 
   // 🔹 Handle manual startDate prop (if provided externally)
   useEffect(() => {
@@ -113,10 +111,16 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
 
   const handleEventClick = (info: EventClickArg) => {
     info.jsEvent.preventDefault();
-    const session = info.event.extendedProps.session as SessionDetailForScheduleResponse;
+    const session = info.event.extendedProps.session as PresentSessionData;
     setSelectedSession(session);
-    onSessionSelected?.(session);
     setDialogOpen(true);
+  };
+
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+    setSelectedSession(null);
+    // Refetch sessions after closing dialog to get updated data
+    refetchSessions();
   };
 
   const isLoading = isLoadingSessions || (externalAcceptedPapers === undefined && isLoadingPapers);
@@ -155,7 +159,11 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
       <div className="mb-4 flex gap-4 items-center text-xs px-1">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-blue-600"></div>
-          <span className="text-gray-600">Đã lên lịch</span>
+          <span className="text-gray-600">Đã gán presenter</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded bg-gray-400"></div>
+          <span className="text-gray-600">Chưa gán presenter</span>
         </div>
       </div>
 
@@ -210,39 +218,27 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
           <FullCalendar
             ref={calendarRef}
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            initialView="dayGridWeek"
+            initialView="dayGridMonth"
             headerToolbar={{
               left: "prev,next today",
               center: "title",
-              right: "dayGridWeek,timeGridDay",
+              right: "dayGridWeek,dayGridMonth",
             }}
             events={calendarEvents}
             eventClick={handleEventClick}
             height="auto"
             eventDisplay="block"
-            displayEventTime={true}
-            eventTimeFormat={{
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: false,
-              meridiem: false,
-            }}
+            displayEventTime={false}
             eventContent={(arg) => {
-              const start = arg.event.start;
-              const end = arg.event.end;
-
-              const formatTime = (date: Date | null): string => {
-                if (!date) return "--:--";
-                return date.toTimeString().slice(0, 5);
-              };
+              const presenterCount = arg.event.extendedProps.presenterCount || 0;
 
               return (
                 <div className="flex flex-col overflow-hidden text-ellipsis p-1">
                   <span className="text-xs font-semibold text-white leading-snug truncate">
                     {arg.event.title}
                   </span>
-                  <span className="text-[10px] text-blue-100">
-                    {formatTime(start)} - {formatTime(end)}
+                  <span className="text-[10px] text-white/80">
+                    {presenterCount} presenter{presenterCount !== 1 ? 's' : ''}
                   </span>
                 </div>
               );
@@ -261,10 +257,9 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
         </div>
 
         {/* Paper List */}
-        <div className="bg-white border border-gray-200 rounded-lg p-2 shadow-sm">
+        <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm">
           <h2 className="text-base font-semibold mb-3 flex items-center gap-2 text-gray-900">
-            <FileText className="w-4 h-4 text-blue-600" />
-            Bài báo ({papersToDisplay.length})
+            Danh sách bài báo ({papersToDisplay.length})
           </h2>
           <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
             {papersToDisplay.length === 0 ? (
@@ -277,6 +272,7 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
                   key={paper.paperId}
                   paper={paper}
                   onClick={() => onPaperSelected?.(paper.paperId)}
+                  isSelected={selectedPaperId === paper.paperId}
                 />
               ))
             )}
@@ -284,14 +280,14 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
         </div>
       </div>
 
-      {/* Session Detail Dialog */}
-      <SessionDetailDialog
+      {/* Presenter Session Detail Dialog */}
+      <PresenterSessionDetailDialog
         open={dialogOpen}
         session={selectedSession}
-        onClose={() => {
-          setDialogOpen(false);
-          setSelectedSession(null);
-        }}
+        onClose={handleDialogClose}
+        onRefetch={refetchSessions}
+        selectedPaperId={selectedPaperId}
+        conferenceId={conferenceId}
       />
     </div>
   );
