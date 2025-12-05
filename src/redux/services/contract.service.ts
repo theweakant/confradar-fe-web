@@ -158,14 +158,26 @@ export const contractApi = createApi({
         }),
 
         getOwnCollaboratorContracts: builder.query<
-        ApiResponse<OwnCollaboratorContractResponse[]>,
-        void
+            ApiResponse<OwnCollaboratorContractResponse[]>,
+            void
         >({
-        query: () => ({
-            url: endpoint.CONTRACT.OWN_COLLABORATOR_CONTRACT,
-            method: "GET",
+            query: () => ({
+                url: endpoint.CONTRACT.OWN_COLLABORATOR_CONTRACT,
+                method: "GET",
+            }),
+            providesTags: ["Contract"],
         }),
-        providesTags: ["Contract"],
+
+        updateCollaboratorContractStatus: builder.mutation<
+            ApiResponse<boolean>,
+            { isClosed: boolean; collaboratorContractId: string }
+        >({
+            query: (data) => ({
+                url: endpoint.CONTRACT.UPDATE_COLLABORATOR_CONTRACT_STATUS,
+                method: "PUT",
+                body: data,
+            }),
+            invalidatesTags: ["Contract"],
         }),
     }),
 });
@@ -185,4 +197,6 @@ export const {
 
     useGetOwnCollaboratorContractsQuery,
     useLazyGetOwnCollaboratorContractsQuery,
+
+    useUpdateCollaboratorContractStatusMutation,
 } = contractApi;
