@@ -550,10 +550,11 @@ export const paperApi = createApi({
       invalidatesTags: ["Paper"],
     }),
 
-    getDetailAssignedList: builder.query<ApiResponse<AssignedPaperDetail[]>, void>({
-      query: () => ({
+    getDetailAssignedList: builder.query<ApiResponse<AssignedPaperDetail[]>, { confId: string }>({
+      query: ({ confId }) => ({
         url: endpoint.PAPER.GET_DETAIL_ASSIGNED_PAPERS,
         method: 'GET',
+        params: { confId },
       }),
       providesTags: ['Paper'],
     }),

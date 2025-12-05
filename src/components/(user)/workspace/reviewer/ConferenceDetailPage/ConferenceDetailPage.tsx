@@ -263,7 +263,7 @@ const PaperTable = ({ papers, onView }: PaperTableProps) => {
                             Hội nghị
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Giai đoạn
+                            Giai đoạn hiện tại
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             Vai trò
@@ -277,132 +277,374 @@ const PaperTable = ({ papers, onView }: PaperTableProps) => {
                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             Camera Ready
                         </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Đang trong giai đoạn?
+                        </th>
                         <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             Thao tác
                         </th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
-                    {papers.map((paper) => (
-                        <tr
-                            key={paper.paperId}
-                            className="hover:bg-gray-50 transition-colors"
-                        >
-                            {/* Title */}
-                            <td className="px-4 py-4">
-                                <div className="flex items-start gap-2">
-                                    <FileText className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                                    <div>
-                                        <p className="font-medium text-gray-900 line-clamp-2">
-                                            {paper.title || "Không có tiêu đề"}
-                                        </p>
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            ID: {paper.paperId}
-                                        </p>
+                    {papers.map((paper) => {
+                        const actionMessages: string[] = [];
+
+                        if (paper.isHeadReviewer) {
+                            // Head reviewer: check 3 phases
+                            const hasAction =
+                                paper.fullPaperWork?.canDecide ||
+                                paper.revisionWork?.canDecide ||
+                                paper.cameraReadyWork?.canDecide;
+
+                            if (paper.fullPaperWork?.canDecide) {
+                                actionMessages.push("Full Paper: Bạn có thể đưa ra quyết định");
+                            }
+
+                            if (paper.revisionWork?.canDecide) {
+                                actionMessages.push(
+                                    `Revision R${paper.revisionWork.revisionRound}: Bạn có thể đưa ra quyết định`
+                                );
+                            }
+
+                            if (paper.cameraReadyWork?.canDecide) {
+                                actionMessages.push("Camera Ready: Bạn có thể đưa ra quyết định");
+                            }
+
+                            // Fallback
+                            if (!hasAction) {
+                                actionMessages.push("Không có hành động nào cần thực hiện lúc này.");
+                            }
+
+                        } else {
+                            // Reviewer thường
+                            if (paper.fullPaperWork?.canReview) {
+                                actionMessages.push("Full Paper: Bạn có thể review");
+                            } else {
+                                // Fallback
+                                actionMessages.push("Không có hành động nào cần thực hiện lúc này.");
+                            }
+                        }
+
+                        return (
+                            <tr
+                                key={paper.paperId}
+                                className="hover:bg-gray-50 transition-colors"
+                            >
+                                {/* Title */}
+                                <td className="px-4 py-4">
+                                    <div className="flex items-start gap-2">
+                                        <FileText className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                                        <div>
+                                            <p className="font-medium text-gray-900 line-clamp-2">
+                                                {paper.title || "Không có tiêu đề"}
+                                            </p>
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                ID: {paper.paperId}
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
+                                </td>
 
-                            {/* Conference */}
-                            <td className="px-4 py-4">
-                                <p className="text-sm text-gray-900">
-                                    {paper.conferenceName || "N/A"}
-                                </p>
-                            </td>
+                                {/* Conference */}
+                                <td className="px-4 py-4">
+                                    <p className="text-sm text-gray-900">
+                                        {paper.conferenceName || "N/A"}
+                                    </p>
+                                </td>
 
-                            {/* Current Phase */}
-                            <td className="px-4 py-4">
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
-                                    {paper.currentPhaseName || "N/A"}
-                                </span>
-                            </td>
-
-                            {/* Role */}
-                            <td className="px-4 py-4">
-                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${paper.isHeadReviewer
-                                    ? 'bg-purple-100 text-purple-800'
-                                    : 'bg-gray-100 text-gray-700'
-                                    }`}>
-                                    {paper.isHeadReviewer ? "Head" : "Reviewer"}
-                                </span>
-                            </td>
-
-                            {/* Full Paper */}
-                            <td className="px-4 py-4">
-                                {paper.fullPaperWork?.fullPaperId ? (
-                                    <div className="space-y-1">
-                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${paper.fullPaperWork.statusName === 'Accepted'
-                                            ? 'bg-green-100 text-green-800'
-                                            : paper.fullPaperWork.statusName === 'Rejected'
-                                                ? 'bg-red-100 text-red-800'
-                                                : 'bg-yellow-100 text-yellow-800'
-                                            }`}>
-                                            {paper.fullPaperWork.statusName}
-                                        </span>
-                                        <p className={`text-xs ${paper.fullPaperWork.isMyReviewSubmitted ? 'text-green-600' : 'text-orange-600'}`}>
-                                            {paper.fullPaperWork.isMyReviewSubmitted ? '✓ Đã review' : '○ Chưa review'}
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <span className="text-xs text-gray-400">-</span>
-                                )}
-                            </td>
-
-                            {/* Revision */}
-                            <td className="px-4 py-4">
-                                {paper.revisionWork?.revisionPaperId ? (
-                                    <div className="space-y-1">
-                                        <p className="text-xs text-gray-600">Round {paper.revisionWork.revisionRound}</p>
-                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${paper.revisionWork.statusName === 'Accepted'
-                                            ? 'bg-green-100 text-green-800'
-                                            : paper.revisionWork.statusName === 'Rejected'
-                                                ? 'bg-red-100 text-red-800'
-                                                : 'bg-yellow-100 text-yellow-800'
-                                            }`}>
-                                            {paper.revisionWork.statusName}
-                                        </span>
-                                        <p className={`text-xs ${paper.revisionWork.isMyReviewSubmitted ? 'text-green-600' : 'text-orange-600'}`}>
-                                            {paper.revisionWork.isMyReviewSubmitted ? '✓ Đã review' : '○ Chưa review'}
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <span className="text-xs text-gray-400">-</span>
-                                )}
-                            </td>
-
-                            {/* Camera Ready */}
-                            <td className="px-4 py-4">
-                                {paper.cameraReadyWork?.cameraReadyId ? (
-                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${paper.cameraReadyWork.statusName === 'Accepted'
-                                        ? 'bg-green-100 text-green-800'
-                                        : paper.cameraReadyWork.statusName === 'Rejected'
-                                            ? 'bg-red-100 text-red-800'
-                                            : 'bg-yellow-100 text-yellow-800'
-                                        }`}>
-                                        {paper.cameraReadyWork.statusName}
+                                {/* Current Phase */}
+                                <td className="px-4 py-4">
+                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                                        {paper.currentPhaseName || "N/A"}
                                     </span>
-                                ) : (
-                                    <span className="text-xs text-gray-400">-</span>
-                                )}
-                            </td>
+                                </td>
 
-                            {/* Actions */}
-                            <td className="px-4 py-4 text-right">
-                                <button
-                                    onClick={() => onView(paper)}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
-                                >
-                                    <Eye className="w-4 h-4" />
-                                    Xem
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
+                                {/* Role */}
+                                <td className="px-4 py-4">
+                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${paper.isHeadReviewer
+                                        ? 'bg-purple-100 text-purple-800'
+                                        : 'bg-gray-100 text-gray-700'
+                                        }`}>
+                                        {paper.isHeadReviewer ? "Head" : "Reviewer"}
+                                    </span>
+                                </td>
+
+                                {/* Full Paper */}
+                                <td className="px-4 py-4">
+                                    {paper.fullPaperWork?.fullPaperId ? (
+                                        <div className="space-y-1">
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${paper.fullPaperWork.statusName === 'Accepted'
+                                                ? 'bg-green-100 text-green-800'
+                                                : paper.fullPaperWork.statusName === 'Rejected'
+                                                    ? 'bg-red-100 text-red-800'
+                                                    : paper.fullPaperWork.statusName === 'Pending'
+                                                        ? 'bg-yellow-100 text-yellow-800'
+                                                        : 'bg-gray-100 text-gray-800'
+                                                }`}>
+                                                {paper.fullPaperWork.statusName || "N/A"}
+                                            </span>
+                                            {paper.fullPaperWork.myReviewResult && (
+                                                <p className="text-xs text-gray-600">
+                                                    Kết quả: <span className="font-medium">{paper.fullPaperWork.myReviewResult}</span>
+                                                </p>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <span className="text-xs text-gray-400">-</span>
+                                    )}
+                                </td>
+
+                                {/* Revision */}
+                                <td className="px-4 py-4">
+                                    {paper.revisionWork?.revisionPaperId ? (
+                                        <div className="space-y-1">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs font-medium text-gray-700">
+                                                    Round {paper.revisionWork.revisionRound}
+                                                </span>
+                                            </div>
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${paper.revisionWork.statusName === 'Accepted'
+                                                ? 'bg-green-100 text-green-800'
+                                                : paper.revisionWork.statusName === 'Rejected'
+                                                    ? 'bg-red-100 text-red-800'
+                                                    : paper.revisionWork.statusName === 'Pending'
+                                                        ? 'bg-yellow-100 text-yellow-800'
+                                                        : 'bg-gray-100 text-gray-800'
+                                                }`}>
+                                                {paper.revisionWork.statusName || "N/A"}
+                                            </span>
+                                            {paper.revisionWork.isFeedbackSubmitted !== null && (
+                                                <p className={`text-xs ${paper.revisionWork.isFeedbackSubmitted ? 'text-green-600' : 'text-orange-600'}`}>
+                                                    {paper.revisionWork.isFeedbackSubmitted ? '✓ Đã feedback' : '○ Chưa feedback'}
+                                                </p>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <span className="text-xs text-gray-400">-</span>
+                                    )}
+                                </td>
+
+                                {/* Camera Ready */}
+                                <td className="px-4 py-4">
+                                    {paper.cameraReadyWork?.cameraReadyId ? (
+                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${paper.cameraReadyWork.statusName === 'Accepted'
+                                            ? 'bg-green-100 text-green-800'
+                                            : paper.cameraReadyWork.statusName === 'Rejected'
+                                                ? 'bg-red-100 text-red-800'
+                                                : paper.cameraReadyWork.statusName === 'Pending'
+                                                    ? 'bg-yellow-100 text-yellow-800'
+                                                    : 'bg-gray-100 text-gray-800'
+                                            }`}>
+                                            {paper.cameraReadyWork.statusName || "N/A"}
+                                        </span>
+                                    ) : (
+                                        <span className="text-xs text-gray-400">-</span>
+                                    )}
+                                </td>
+
+                                {/* Reviewed Phases */}
+                                <td className="px-4 py-4">
+                                    {actionMessages.map((msg, idx) => (
+                                        <div key={idx} className="flex items-center gap-1 text-xs text-blue-600 font-medium">
+                                            <CheckCircle className="w-3 h-3 text-blue-600" />
+                                            {msg}
+                                        </div>
+                                    ))}
+                                </td>
+                                {/* <td className="px-4 py-4">
+                                    {actionMessages.length > 0 ? (
+                                        <div className="space-y-1">
+                                            {actionMessages.map((action, idx) => (
+                                                <div key={idx} className="flex items-center gap-1">
+                                                    <CheckCircle className="w-3 h-3 text-green-600" />
+                                                    <span className="text-xs text-green-600 font-medium">
+                                                        {action}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center gap-1">
+                                            <XCircle className="w-3 h-3 text-gray-400" />
+                                            <span className="text-xs text-gray-500">
+                                                Chưa review
+                                            </span>
+                                        </div>
+                                    )}
+                                </td> */}
+
+                                {/* Actions */}
+                                <td className="px-4 py-4 text-right">
+                                    <button
+                                        onClick={() => onView(paper)}
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                                    >
+                                        <Eye className="w-4 h-4" />
+                                        Xem
+                                    </button>
+                                </td>
+                            </tr>
+                        );
+                    })}
                 </tbody>
             </table>
         </div>
     );
 };
+
+// const PaperTable = ({ papers, onView }: PaperTableProps) => {
+//     return (
+//         <div className="overflow-x-auto">
+//             <table className="w-full">
+//                 <thead className="bg-gray-50 border-b border-gray-200">
+//                     <tr>
+//                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+//                             Tiêu đề
+//                         </th>
+//                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+//                             Hội nghị
+//                         </th>
+//                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+//                             Giai đoạn
+//                         </th>
+//                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+//                             Vai trò
+//                         </th>
+//                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+//                             Full Paper
+//                         </th>
+//                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+//                             Revision
+//                         </th>
+//                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+//                             Camera Ready
+//                         </th>
+//                         <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+//                             Thao tác
+//                         </th>
+//                     </tr>
+//                 </thead>
+//                 <tbody className="divide-y divide-gray-200 bg-white">
+//                     {papers.map((paper) => (
+//                         <tr
+//                             key={paper.paperId}
+//                             className="hover:bg-gray-50 transition-colors"
+//                         >
+//                             {/* Title */}
+//                             <td className="px-4 py-4">
+//                                 <div className="flex items-start gap-2">
+//                                     <FileText className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+//                                     <div>
+//                                         <p className="font-medium text-gray-900 line-clamp-2">
+//                                             {paper.title || "Không có tiêu đề"}
+//                                         </p>
+//                                         <p className="text-xs text-gray-500 mt-1">
+//                                             ID: {paper.paperId}
+//                                         </p>
+//                                     </div>
+//                                 </div>
+//                             </td>
+
+//                             {/* Conference */}
+//                             <td className="px-4 py-4">
+//                                 <p className="text-sm text-gray-900">
+//                                     {paper.conferenceName || "N/A"}
+//                                 </p>
+//                             </td>
+
+//                             {/* Current Phase */}
+//                             <td className="px-4 py-4">
+//                                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+//                                     {paper.currentPhaseName || "N/A"}
+//                                 </span>
+//                             </td>
+
+//                             {/* Role */}
+//                             <td className="px-4 py-4">
+//                                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${paper.isHeadReviewer
+//                                     ? 'bg-purple-100 text-purple-800'
+//                                     : 'bg-gray-100 text-gray-700'
+//                                     }`}>
+//                                     {paper.isHeadReviewer ? "Head" : "Reviewer"}
+//                                 </span>
+//                             </td>
+
+//                             {/* Full Paper */}
+//                             <td className="px-4 py-4">
+//                                 {paper.fullPaperWork?.fullPaperId ? (
+//                                     <div className="space-y-1">
+//                                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${paper.fullPaperWork.statusName === 'Accepted'
+//                                             ? 'bg-green-100 text-green-800'
+//                                             : paper.fullPaperWork.statusName === 'Rejected'
+//                                                 ? 'bg-red-100 text-red-800'
+//                                                 : 'bg-yellow-100 text-yellow-800'
+//                                             }`}>
+//                                             {paper.fullPaperWork.statusName}
+//                                         </span>
+//                                         <p className={`text-xs ${paper.fullPaperWork.isMyReviewSubmitted ? 'text-green-600' : 'text-orange-600'}`}>
+//                                             {paper.fullPaperWork.isMyReviewSubmitted ? '✓ Đã review' : '○ Chưa review'}
+//                                         </p>
+//                                     </div>
+//                                 ) : (
+//                                     <span className="text-xs text-gray-400">-</span>
+//                                 )}
+//                             </td>
+
+//                             {/* Revision */}
+//                             <td className="px-4 py-4">
+//                                 {paper.revisionWork?.revisionPaperId ? (
+//                                     <div className="space-y-1">
+//                                         <p className="text-xs text-gray-600">Round {paper.revisionWork.revisionRound}</p>
+//                                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${paper.revisionWork.statusName === 'Accepted'
+//                                             ? 'bg-green-100 text-green-800'
+//                                             : paper.revisionWork.statusName === 'Rejected'
+//                                                 ? 'bg-red-100 text-red-800'
+//                                                 : 'bg-yellow-100 text-yellow-800'
+//                                             }`}>
+//                                             {paper.revisionWork.statusName}
+//                                         </span>
+//                                         <p className={`text-xs ${paper.revisionWork.isMyReviewSubmitted ? 'text-green-600' : 'text-orange-600'}`}>
+//                                             {paper.revisionWork.isMyReviewSubmitted ? '✓ Đã review' : '○ Chưa review'}
+//                                         </p>
+//                                     </div>
+//                                 ) : (
+//                                     <span className="text-xs text-gray-400">-</span>
+//                                 )}
+//                             </td>
+
+//                             {/* Camera Ready */}
+//                             <td className="px-4 py-4">
+//                                 {paper.cameraReadyWork?.cameraReadyId ? (
+//                                     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${paper.cameraReadyWork.statusName === 'Accepted'
+//                                         ? 'bg-green-100 text-green-800'
+//                                         : paper.cameraReadyWork.statusName === 'Rejected'
+//                                             ? 'bg-red-100 text-red-800'
+//                                             : 'bg-yellow-100 text-yellow-800'
+//                                         }`}>
+//                                         {paper.cameraReadyWork.statusName}
+//                                     </span>
+//                                 ) : (
+//                                     <span className="text-xs text-gray-400">-</span>
+//                                 )}
+//                             </td>
+
+//                             {/* Actions */}
+//                             <td className="px-4 py-4 text-right">
+//                                 <button
+//                                     onClick={() => onView(paper)}
+//                                     className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+//                                 >
+//                                     <Eye className="w-4 h-4" />
+//                                     Xem
+//                                 </button>
+//                             </td>
+//                         </tr>
+//                     ))}
+//                 </tbody>
+//             </table>
+//         </div>
+//     );
+// };
 
 // interface PaperTableProps {
 //     papers: AssignedPaper[];
@@ -602,7 +844,7 @@ export default function ConferenceDetailPage({
         isLoading: papersLoading,
         error: papersError,
         refetch: refetchPapers,
-    } = useGetDetailAssignedListQuery();
+    } = useGetDetailAssignedListQuery({ confId: conferenceId });
 
     const conference = conferenceData?.data;
 
