@@ -549,6 +549,17 @@ export const conferenceApi = createApi({
       }),
       invalidatesTags: ["Conference"],
     }),
+    addDaysSinceLastOnHold: builder.mutation<
+      ApiResponse<null>, // hoặc ApiResponse<void>
+      string // conferenceId
+    >({
+      query: (confId) => ({
+        url: endpoint.CONFERENCE.ADD_DAYS_SINCE_LAST_ONHOLD,
+        method: "PUT", 
+        params: { confId },
+      }),
+      invalidatesTags: ["Conference"], 
+    }),
   }),
 });
 
@@ -603,4 +614,5 @@ export const {
   useLazyGetSkeletonTechConferencesForCollaboratorQuery,
 
   useSubmitConferenceFeedbackMutation,
+  useAddDaysSinceLastOnHoldMutation
 } = conferenceApi;

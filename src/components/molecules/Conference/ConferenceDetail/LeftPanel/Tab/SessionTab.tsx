@@ -55,7 +55,6 @@ export function SessionTab({ conference, conferenceType, conferenceId }: Session
       });
     }
     
-    // Otherwise it's just time format "HH:MM:SS" (research conferences)
     return timeString.slice(0, 5);
   };
 
@@ -64,7 +63,7 @@ export function SessionTab({ conference, conferenceType, conferenceId }: Session
       <div className="flex items-center gap-2 mb-4">
         <Calendar className="w-5 h-5 text-blue-600" />
         <h2 className="text-lg font-bold text-gray-900">
-          Lịch Các Phiên Họp ({sessions?.length || 0})
+          Danh sách session ({sessions?.length || 0})
         </h2>
       </div>
 

@@ -44,8 +44,7 @@ export function ContractTab({ conferenceData }: ContractTabProps) {
     <div className="space-y-6">
       {/* Tiêu đề */}
       <div className="flex items-center gap-3">
-        <FileText className="w-6 h-6 text-blue-600" />
-        <h2 className="text-xl font-bold text-gray-900">Hợp đồng cộng tác</h2>
+        <h2 className="text-xl font-bold text-gray-900">Hợp đồng đối tác</h2>
       </div>
 
       {/* Link tải hợp đồng */}

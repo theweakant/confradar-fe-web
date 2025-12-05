@@ -11,7 +11,7 @@ import { useAuth } from '@/redux/hooks/useAuth';
 
 interface ConferenceStatsProps {
   total: number;
-  ready: number;
+  completed: number;
   inProgress: number;
   pending: number;
 }
@@ -54,7 +54,7 @@ interface ProgressProps {
 
 // ============= COMPONENTS =============
 
-const ConferenceStats: React.FC<ConferenceStatsProps> = ({ total, ready, inProgress, pending }) => {
+const ConferenceStats: React.FC<ConferenceStatsProps> = ({ total, completed, inProgress, pending }) => {
   return (
     <div className="grid grid-cols-4 gap-5 mb-6">
       <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-3xl p-6 text-white shadow-md">
@@ -74,7 +74,7 @@ const ConferenceStats: React.FC<ConferenceStatsProps> = ({ total, ready, inProgr
             <TrendingUp size={18} className="text-gray-600" />
           </div>
         </div>
-        <div className="text-5xl font-bold mb-1 text-gray-900">{ready}</div>
+        <div className="text-5xl font-bold mb-1 text-gray-900">{completed}</div>
       </div>
 
       <div className="bg-white rounded-3xl p-6 shadow-md border border-gray-100">
@@ -110,7 +110,8 @@ const RevenueChart: React.FC<RevenueChartProps> = ({ data }) => {
         {data.map((item, index) => {
           const height = maxRevenue > 0 ? (item.revenue / maxRevenue) * 100 : 0;
           return (
-              <div key={`revenue-bar-${index}`} className="flex-1 flex flex-col items-center gap-3">              <div className="w-full h-full flex items-end relative">
+            <div key={`revenue-bar-${index}`} className="flex-1 flex flex-col items-center gap-3">
+              <div className="w-full h-full flex items-end relative">
                 {index % 2 === 0 && (
                   <div className="absolute inset-0 bg-gray-100/50 rounded-t-2xl" style={{ height: '100%' }}></div>
                 )}
@@ -236,7 +237,6 @@ export default function ConferenceDashboard() {
   const { user } = useAuth();
   const userId = user?.userId || '';
 
-  // ✅ Gọi hook ở top-level với `skip` để tránh điều kiện
   const { data: groupByStatusData } = useGetConferencesGroupByStatusQuery(userId, {
     skip: !userId,
   });
@@ -256,7 +256,6 @@ export default function ConferenceDashboard() {
     { skip: !userId }
   );
 
-  // Hiển thị loading nếu chưa có userId
   if (!userId) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -265,24 +264,44 @@ export default function ConferenceDashboard() {
     );
   }
 
-  // --- Transform data ---
-  let total = 0;
-  let ready = 0; // Completed
-  let inProgress = 0; // Ready
-  let pending = 0; // Preparing
+  // --- Transform status logic ---
+  let completed = 0;      // "Completed"
+  let inProgress = 0;     // "Preparing", "Ready", "OnHold"
+  let pending = 0;        // "Pending"
+  // "Draft" → bỏ qua hoàn toàn
 
   const groupByStatus = groupByStatusData?.data?.groupByStatus || [];
-  total = groupByStatusData?.data?.total || 0;
 
   groupByStatus.forEach((group) => {
-    if (group.groupName === 'Completed') {
-      ready = group.count;
-    } else if (group.groupName === 'Ready') {
-      inProgress = group.count;
-    } else if (group.groupName === 'Preparing') {
-      pending = group.count;
+    const count = group.count;
+    const status = group.groupName;
+
+    // Bỏ qua "Draft"
+    if (status === 'Draft') {
+      return;
+    }
+
+    switch (status) {
+      case 'Completed':
+        completed = count;
+        break;
+      case 'Pending':
+        pending = count;
+        break;
+      case 'Preparing':
+      case 'Ready':
+      case 'OnHold':
+        inProgress += count;
+        break;
+      default:
+        // Các trạng thái khác (nếu có) → có thể gộp vào "Đang diễn ra" hoặc bỏ qua
+        // Ở đây, để an toàn, ta gộp vào "Đang diễn ra"
+        inProgress += count;
     }
   });
+
+  // Tổng = completed + inProgress + pending (không tính Draft)
+  const total = completed + inProgress + pending;
 
   const revenueChart = (revenueData?.data?.monthlyStats || []).map((item) => ({
     month: `T${new Date(item.month).getMonth() + 1}`,
@@ -312,7 +331,7 @@ export default function ConferenceDashboard() {
 
         <ConferenceStats
           total={total}
-          ready={ready}
+          completed={completed}
           inProgress={inProgress}
           pending={pending}
         />
@@ -333,10 +352,11 @@ export default function ConferenceDashboard() {
         <div className="grid grid-cols-3 gap-6">
           <TopConferences conferences={topConferences} />
           <ConferenceProgress
-            completed={ready}
+            completed={completed}
             inProgress={inProgress}
             pending={pending}
           />
+          {/* Cột thứ 3 để trống hoặc mở rộng sau */}
         </div>
       </div>
     </div>
