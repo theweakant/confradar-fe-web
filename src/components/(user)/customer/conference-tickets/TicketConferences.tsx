@@ -1394,7 +1394,7 @@ export default function TicketConferences() {
           );
         })()}
       </div>
-      {/* <Transition appear show={refundDialogOpen} as={Fragment}>
+      <Transition appear show={refundDialogOpen} as={Fragment}>
         <Dialog
           as="div"
           className="relative z-50"
@@ -1482,7 +1482,7 @@ export default function TicketConferences() {
             </div>
           </div>
         </Dialog>
-      </Transition> */}
+      </Transition>
     </div>
   );
 }

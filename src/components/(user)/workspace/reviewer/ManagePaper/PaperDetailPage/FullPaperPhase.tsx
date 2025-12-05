@@ -22,6 +22,8 @@ import { isValidUrl, isWithinDateRange } from "@/helper/paper";
 import ReusableDocViewer from "@/components/molecules/ReusableDocViewer ";
 import ReviewerPaperCard from "./ReviewerPaperCard";
 import { parseApiError } from "@/helper/api";
+import { useAppSelector } from "@/redux/hooks/hooks";
+import { RootState } from "@/redux/store";
 
 interface FullPaperPhaseProps {
     paperDetail: PaperDetailForReviewer;
@@ -38,6 +40,8 @@ export default function FullPaperPhase({
     getStatusColor,
     paperId,
 }: FullPaperPhaseProps) {
+    const currentUserId = useAppSelector((state: RootState) => state.auth.user?.userId);
+
     const [note, setNote] = useState<string>("");
     const [feedbackToAuthor, setFeedbackToAuthor] = useState<string>("");
     const [reviewStatus, setReviewStatus] = useState<string>("Accepted");
@@ -129,7 +133,7 @@ export default function FullPaperPhase({
             await submitReview({
                 fullPaperId: paperDetail.fullPaper.fullPaperId,
                 note,
-                feedbackToAuthor,
+                feedbackToAuthor: "",
                 reviewStatus,
                 feedbackMaterialFile: file!,
             }).unwrap();
@@ -184,6 +188,26 @@ export default function FullPaperPhase({
                         <FileText className="w-5 h-5 text-blue-600" />
                         Full Paper
                     </h3>
+
+                    {!paperDetail.isHeadReviewer && (
+
+                        <div className="mt-6">
+                            {canSubmitFullPaperReview() ? (
+                                <Button
+                                    className="bg-black hover:bg-gray-800"
+                                    onClick={() => setShowReviewDialog(true)}
+                                >
+                                    <FileText className="w-4 h-4 mr-2" />
+                                    Đánh giá Full Paper
+                                </Button>
+                            ) : (
+                                <p className="text-sm text-gray-500">
+                                    Hiện không trong thời gian đánh giá Full Paper
+                                </p>
+                            )}
+                        </div>
+
+                    )}
 
                     {paperDetail.isHeadReviewer && (
                         <div className="flex gap-3">
@@ -250,22 +274,6 @@ export default function FullPaperPhase({
                     getStatusColor={getStatusColor}
                 />
 
-                <div className="mt-6">
-                    {canSubmitFullPaperReview() ? (
-                        <Button
-                            className="bg-black hover:bg-gray-800"
-                            onClick={() => setShowReviewDialog(true)}
-                        >
-                            <FileText className="w-4 h-4 mr-2" />
-                            Đánh giá Full Paper
-                        </Button>
-                    ) : (
-                        <p className="text-sm text-gray-500">
-                            Hiện không trong thời gian đánh giá Full Paper
-                        </p>
-                    )}
-                </div>
-
                 {/* ========== FORM REVIEW ========== */}
                 {/* Dialog cho review */}
                 <Transition appear show={showReviewDialog} as={Fragment}>
@@ -314,7 +322,7 @@ export default function FullPaperPhase({
                                             </div>
 
                                             {/* Phản hồi tới tác giả */}
-                                            <div>
+                                            {/* <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">Phản hồi tới tác giả</label>
                                                 <textarea
                                                     placeholder="Nhập phản hồi cho tác giả..."
@@ -322,7 +330,7 @@ export default function FullPaperPhase({
                                                     value={feedbackToAuthor}
                                                     onChange={(e) => setFeedbackToAuthor(e.target.value)}
                                                 />
-                                            </div>
+                                            </div> */}
 
                                             {/* Trạng thái đánh giá */}
                                             <div>
@@ -466,6 +474,154 @@ export default function FullPaperPhase({
                                 leaveFrom="opacity-100 scale-100"
                                 leaveTo="opacity-0 scale-95"
                             >
+                                <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all">
+                                    {/* Header */}
+                                    <div className="sticky top-0 bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-4 z-10">
+                                        <Dialog.Title as="h3" className="text-lg font-semibold text-white flex items-center gap-2">
+                                            <FileText className="w-5 h-5" />
+                                            Đánh giá từ Reviewers ({paperDetail.fullPaper.fullPaperReviews?.length || 0})
+                                        </Dialog.Title>
+                                    </div>
+
+                                    {/* Content */}
+                                    <div className="overflow-y-auto max-h-[calc(85vh-140px)] px-6 py-4">
+                                        <div className="space-y-3">
+                                            {paperDetail.fullPaper.fullPaperReviews?.map((review: FullPaperReview) => {
+                                                const isCurrentUser = review.reviewerId === currentUserId;
+
+                                                return (
+                                                    <div
+                                                        key={review.fullPaperReviewId}
+                                                        className={`relative border rounded-xl p-4 transition-all ${isCurrentUser
+                                                            ? 'bg-gradient-to-br from-blue-50 to-purple-50 border-blue-300 shadow-md'
+                                                            : 'bg-gray-50 border-gray-200 hover:shadow-sm'
+                                                            }`}
+                                                    >
+                                                        {/* Badge "Đánh giá của bạn" */}
+                                                        {isCurrentUser && (
+                                                            <div className="absolute -top-2 -right-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-lg">
+                                                                ⭐ Đánh giá của bạn
+                                                            </div>
+                                                        )}
+
+                                                        {/* Header với avatar */}
+                                                        <div className="flex items-center gap-3 mb-3">
+                                                            {review.reviewerAvatarUrl ? (
+                                                                <img
+                                                                    src={review.reviewerAvatarUrl}
+                                                                    alt={review.reviewerName || "Reviewer"}
+                                                                    className={`w-11 h-11 rounded-full object-cover border-2 ${isCurrentUser ? 'border-blue-400' : 'border-gray-300'
+                                                                        }`}
+                                                                />
+                                                            ) : (
+                                                                <div className={`w-11 h-11 rounded-full flex items-center justify-center text-white font-semibold text-sm ${isCurrentUser
+                                                                    ? 'bg-gradient-to-br from-blue-500 to-purple-500'
+                                                                    : 'bg-gradient-to-br from-gray-400 to-gray-600'
+                                                                    }`}>
+                                                                    {review.reviewerName?.charAt(0).toUpperCase() || "R"}
+                                                                </div>
+                                                            )}
+
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex items-center gap-2 mb-1">
+                                                                    <p className={`font-semibold truncate ${isCurrentUser ? 'text-blue-900' : 'text-gray-900'
+                                                                        }`}>
+                                                                        {review.reviewerName || "N/A"}
+                                                                    </p>
+                                                                    <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(review.reviewStatusName)}`}>
+                                                                        {getStatusIcon(review.reviewStatusName)}
+                                                                        {review.reviewStatusName}
+                                                                    </span>
+                                                                </div>
+                                                                {review.createdAt && (
+                                                                    <p className="text-xs text-gray-500 flex items-center gap-1">
+                                                                        <Clock className="w-3 h-3" />
+                                                                        {formatDate(review.createdAt)}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Ghi chú nội bộ */}
+                                                        {review.note && (
+                                                            <div className="mb-2 bg-yellow-50 border-l-3 border-yellow-400 p-2.5 rounded-lg">
+                                                                <p className="font-semibold text-yellow-800 text-xs mb-1 flex items-center gap-1">
+                                                                    📝 Ghi chú nội bộ
+                                                                </p>
+                                                                <p className="text-gray-700 text-sm leading-relaxed">{review.note}</p>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Phản hồi tới tác giả */}
+                                                        {/* {review.feedbackToAuthor && (
+                                                            <div className="mb-2 bg-white border border-gray-200 p-2.5 rounded-lg">
+                                                                <p className="font-semibold text-gray-700 text-xs mb-1 flex items-center gap-1">
+                                                                    💬 Phản hồi tới tác giả
+                                                                </p>
+                                                                <p className="text-gray-600 text-sm leading-relaxed">{review.feedbackToAuthor}</p>
+                                                            </div>
+                                                        )} */}
+
+                                                        {/* Tài liệu đánh giá */}
+                                                        {review.feedbackMaterialUrl && (
+                                                            <a
+                                                                href={review.feedbackMaterialUrl}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 text-xs font-medium rounded-lg hover:bg-blue-200 transition-colors"
+                                                            >
+                                                                <Download className="w-3.5 h-3.5" />
+                                                                Tải tài liệu đánh giá
+                                                            </a>
+                                                        )
+                                                        }
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    {/* Footer */}
+                                    <div className="sticky bottom-0 bg-white border-t px-6 py-3">
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => setShowReviewsDialog(false)}
+                                            className="w-full"
+                                        >
+                                            Đóng
+                                        </Button>
+                                    </div>
+                                </Dialog.Panel>
+                            </Transition.Child>
+                        </div>
+                    </div>
+                </Dialog>
+            </Transition>
+            {/* <Transition appear show={showReviewsDialog} as={Fragment}>
+                <Dialog as="div" className="relative z-50" onClose={() => setShowReviewsDialog(false)}>
+                    <Transition.Child
+                        as={Fragment}
+                        enter="ease-out duration-300"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="ease-in duration-200"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                    >
+                        <div className="fixed inset-0 bg-black bg-opacity-50" />
+                    </Transition.Child>
+
+                    <div className="fixed inset-0 overflow-y-auto">
+                        <div className="flex min-h-full items-center justify-center p-4">
+                            <Transition.Child
+                                as={Fragment}
+                                enter="ease-out duration-300"
+                                enterFrom="opacity-0 scale-95"
+                                enterTo="opacity-100 scale-100"
+                                leave="ease-in duration-200"
+                                leaveFrom="opacity-100 scale-100"
+                                leaveTo="opacity-0 scale-95"
+                            >
                                 <Dialog.Panel className="w-full max-w-3xl transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all max-h-[85vh] flex flex-col">
                                     <div className="sticky top-0 bg-white border-b px-6 py-4 z-10">
                                         <Dialog.Title as="h3" className="text-lg font-semibold text-gray-900 flex items-center gap-2">
@@ -542,7 +698,7 @@ export default function FullPaperPhase({
                         </div>
                     </div>
                 </Dialog>
-            </Transition>
+            </Transition> */}
             {/* <div className="bg-white border rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                     <FileText className="w-5 h-5 text-purple-600" />

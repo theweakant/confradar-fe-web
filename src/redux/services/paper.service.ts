@@ -28,6 +28,7 @@ import {
   AssignPresenterRequest,
 
   PaperDetailWrapperForReviewer,
+  AssignedPaperDetail,
 } from "@/types/paper.type";
 
 import type { ApiResponse } from "@/types/api.type";
@@ -548,6 +549,14 @@ export const paperApi = createApi({
       }),
       invalidatesTags: ["Paper"],
     }),
+
+    getDetailAssignedList: builder.query<ApiResponse<AssignedPaperDetail[]>, void>({
+      query: () => ({
+        url: endpoint.PAPER.GET_DETAIL_ASSIGNED_PAPERS,
+        method: 'GET',
+      }),
+      providesTags: ['Paper'],
+    }),
   }),
 });
 
@@ -604,4 +613,6 @@ export const {
   useUpdateCameraReadyMutation,
 
   useMarkCompleteReviseMutation,
+
+  useGetDetailAssignedListQuery,
 } = paperApi;

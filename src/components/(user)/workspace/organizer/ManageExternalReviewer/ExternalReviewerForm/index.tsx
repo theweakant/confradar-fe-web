@@ -39,6 +39,9 @@ export const ExternalReviewerForm: React.FC<ExternalReviewerFormProps> = ({
     }
   }, [selectedConference]);
 
+  const formatVND = (value: number) =>
+    value.toLocaleString("vi-VN");
+
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -269,6 +272,18 @@ export const ExternalReviewerForm: React.FC<ExternalReviewerFormProps> = ({
                 Lương (VND) <span className="text-red-500">*</span>
               </label>
               <input
+                type="text"
+                value={formData.wage ? formatVND(formData.wage) : ""}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/[^\d]/g, "");
+                  const number = parseInt(raw || "0", 10);
+                  handleChange("wage", number);
+                }}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.wage ? "border-red-500" : "border-gray-300"
+                  }`}
+                placeholder="5.000.000"
+              />
+              {/* <input
                 type="number"
                 value={formData.wage || ''}
                 onChange={(e) => handleChange('wage', parseFloat(e.target.value) || 0)}
@@ -278,7 +293,7 @@ export const ExternalReviewerForm: React.FC<ExternalReviewerFormProps> = ({
                 disabled={isLoading}
                 min="0"
                 step="1000"
-              />
+              /> */}
               {errors.wage && (
                 <p className="mt-1 text-sm text-red-600">{errors.wage}</p>
               )}
