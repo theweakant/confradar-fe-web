@@ -344,7 +344,8 @@ export const endpoint = {
     CREATE_COLLABORATOR_CONTRACT: "/contract/create-collaborator-contract",
     LIST_COLLABORATOR_CONTRACT: "/contract/list-collaborator-contract",
 
-    OWN_COLLABORATOR_CONTRACT: "/contract/own-collaborator-contract"
+    OWN_COLLABORATOR_CONTRACT: "/contract/own-collaborator-contract",
+    UPDATE_COLLABORATOR_CONTRACT_STATUS: "/contract/collaborator-contract",
   },
 
   ASSIGNINGPRESENTERSESSION: {

@@ -18,7 +18,8 @@ import { StatCard } from "@/components/molecules/StatCard";
 import { StatusBadge } from "@/components/atoms/StatusBadge";
 import {
   useLazyListCollaboratorContractsQuery,
-  useCreateCollaboratorContractMutation
+  useCreateCollaboratorContractMutation,
+  useUpdateCollaboratorContractStatusMutation
 } from "@/redux/services/contract.service";
 import {
   useLazyGetCollaboratorAccountsQuery,
@@ -50,6 +51,7 @@ export default function ManageCollaboratorContract() {
 
   // State management
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState<'all' | 'open' | 'closed'>('all');
   const [filters, setFilters] = useState<ContractFilters>({
     page: 1,
     pageSize: 10
@@ -78,11 +80,22 @@ export default function ManageCollaboratorContract() {
   }] = useLazyListOrganizationsQuery();
 
   const [createContract, { isLoading: isCreating, error: createError }] = useCreateCollaboratorContractMutation();
+  const [updateContractStatus, { isLoading: isUpdatingStatus }] = useUpdateCollaboratorContractStatusMutation();
 
   // Data extraction
-  const contracts: CollaboratorContractResponse[] = contractsData?.data.items || [];
+  const allContracts: CollaboratorContractResponse[] = contractsData?.data.items || [];
   const collaborators: CollaboratorAccountResponse[] = collaboratorsData?.data || [];
   const organizations: Organization[] = organizationsData?.data || [];
+
+  // Filter contracts based on status
+  const contracts = allContracts.filter(contract => {
+    const matchesStatus = 
+      filterStatus === 'all' ? true :
+      filterStatus === 'open' ? contract.isClosed === false :
+      contract.isClosed === true;
+    
+    return matchesStatus;
+  });
 
   // Error handling
   const createErrorMessage = parseApiError<string>(createError);
@@ -166,6 +179,22 @@ export default function ManageCollaboratorContract() {
     }));
   };
 
+  const handleToggleContractStatus = async (contract: CollaboratorContractResponse) => {
+    if (!contract.collaboratorContractId) return;
+    
+    try {
+      await updateContractStatus({
+        collaboratorContractId: contract.collaboratorContractId,
+        isClosed: !contract.isClosed
+      }).unwrap();
+      
+      toast.success(`Hợp đồng đã được ${!contract.isClosed ? 'đóng' : 'mở'} thành công`);
+      loadContracts(); // Reload data
+    } catch (error) {
+      toast.error(`Có lỗi xảy ra khi ${!contract.isClosed ? 'đóng' : 'mở'} hợp đồng`);
+    }
+  };
+
   // Table columns
   const columns: Column<CollaboratorContractResponse>[] = [
     {
@@ -245,12 +274,25 @@ export default function ManageCollaboratorContract() {
       header: "Thao tác",
       className: "text-left",
       render: (contract) => (
-        <button
-          onClick={() => handleView(contract)}
-          className="px-3 py-1 text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-md transition-colors"
-        >
-          Xem chi tiết
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => handleView(contract)}
+            className="px-3 py-1 text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-md transition-colors"
+          >
+            Xem chi tiết
+          </button>
+          <button
+            onClick={() => handleToggleContractStatus(contract)}
+            disabled={isUpdatingStatus}
+            className={`px-3 py-1 text-sm rounded-md transition-colors disabled:opacity-50 ${
+              contract.isClosed 
+                ? "bg-green-50 text-green-600 hover:bg-green-100" 
+                : "bg-red-50 text-red-600 hover:bg-red-100"
+            }`}
+          >
+            {contract.isClosed ? "Mở" : "Đóng"}
+          </button>
+        </div>
       ),
     },
   ];
@@ -259,19 +301,19 @@ export default function ManageCollaboratorContract() {
   const stats = [
     {
       title: "Tổng hợp đồng",
-      value: contracts.length.toString(),
+      value: allContracts.length.toString(),
       icon: FileText,
       variant: "info" as const
     },
     {
       title: "Đang hoạt động",
-      value: contracts.filter(c => !c.isClosed).length.toString(),
+      value: allContracts.filter(c => !c.isClosed).length.toString(),
       icon: FileText,
       variant: "success" as const
     },
     {
       title: "Đã đóng",
-      value: contracts.filter(c => c.isClosed).length.toString(),
+      value: allContracts.filter(c => c.isClosed).length.toString(),
       icon: FileText,
       variant: "danger" as const
     }
@@ -318,7 +360,7 @@ export default function ManageCollaboratorContract() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-gray-500 font-medium">Tổng hợp đồng</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{contracts.length}</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">{allContracts.length}</p>
               </div>
               <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
                 <FileText className="w-5 h-5 text-blue-600" />
@@ -331,7 +373,7 @@ export default function ManageCollaboratorContract() {
               <div>
                 <p className="text-xs text-gray-500 font-medium">Đang hoạt động</p>
                 <p className="text-2xl font-bold text-green-600 mt-1">
-                  {contracts.filter(c => !c.isClosed).length}
+                  {allContracts.filter(c => !c.isClosed).length}
                 </p>
               </div>
               <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
@@ -345,7 +387,7 @@ export default function ManageCollaboratorContract() {
               <div>
                 <p className="text-xs text-gray-500 font-medium">Đã đóng</p>
                 <p className="text-2xl font-bold text-gray-600 mt-1">
-                  {contracts.filter(c => c.isClosed).length}
+                  {allContracts.filter(c => c.isClosed).length}
                 </p>
               </div>
               <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center">
@@ -353,6 +395,37 @@ export default function ManageCollaboratorContract() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Filter Tabs */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setFilterStatus('all')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${filterStatus === 'all'
+              ? 'bg-blue-600 text-white'
+              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+            }`}
+          >
+            Tất cả ({allContracts.length})
+          </button>
+          <button
+            onClick={() => setFilterStatus('open')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${filterStatus === 'open'
+              ? 'bg-green-600 text-white'
+              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+            }`}
+          >
+            Đang hoạt động ({allContracts.filter(c => !c.isClosed).length})
+          </button>
+          <button
+            onClick={() => setFilterStatus('closed')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${filterStatus === 'closed'
+              ? 'bg-red-600 text-white'
+              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+            }`}
+          >
+            Đã đóng ({allContracts.filter(c => c.isClosed).length})
+          </button>
         </div>
 
         {/* Filters & Controls - Compact */}
@@ -613,6 +686,8 @@ export default function ManageCollaboratorContract() {
           setSelectedContract(null);
         }}
         contract={selectedContract}
+        onToggleStatus={handleToggleContractStatus}
+        isUpdatingStatus={isUpdatingStatus}
       />
 
       {/* Create Contract Modal */}
@@ -634,9 +709,11 @@ interface ContractDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   contract: CollaboratorContractResponse | null;
+  onToggleStatus: (contract: CollaboratorContractResponse) => void;
+  isUpdatingStatus: boolean;
 }
 
-function ContractDetailModal({ isOpen, onClose, contract }: ContractDetailModalProps) {
+function ContractDetailModal({ isOpen, onClose, contract, onToggleStatus, isUpdatingStatus }: ContractDetailModalProps) {
   if (!contract) return null;
 
   const permissionFields: { label: string; key: keyof CollaboratorContractResponse }[] = [
@@ -783,7 +860,18 @@ function ContractDetailModal({ isOpen, onClose, contract }: ContractDetailModalP
                 )}
 
                 {/* FOOTER */}
-                <div className="flex justify-end pt-4">
+                <div className="flex justify-between pt-4">
+                  <button
+                    onClick={() => onToggleStatus(contract)}
+                    disabled={isUpdatingStatus}
+                    className={`px-4 py-2 rounded-md transition-colors disabled:opacity-50 ${
+                      contract.isClosed 
+                        ? "bg-green-600 text-white hover:bg-green-700" 
+                        : "bg-red-600 text-white hover:bg-red-700"
+                    }`}
+                  >
+                    {contract.isClosed ? "Mở hợp đồng" : "Đóng hợp đồng"}
+                  </button>
                   <button
                     onClick={onClose}
                     className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
