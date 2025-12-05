@@ -104,7 +104,12 @@ export const validateConferenceForStatusChange = ({
 
 /**
  * Validate thời gian khi chuyển từ OnHold → Ready
- * Kiểm tra xem có mốc thời gian nào đã qua so với ngày OnHold không
+ * 
+ * Logic: Chỉ validate các mốc thời gian nằm GIỮA onHoldDate và hiện tại
+ * - Các mốc TRƯỚC onHoldDate → bỏ qua (đã diễn ra trước khi onHold)
+ * - Các mốc SAU onHoldDate nhưng ĐÃ QUA hiện tại → cần cảnh báo
+ * 
+ * Điều kiện: onHoldDate < dateTime < now
  * 
  * KHÔNG phụ thuộc vào contract — luôn kiểm tra toàn bộ timeline
  */
@@ -130,24 +135,26 @@ export const validateTimelineForOnHoldToReady = (
 
   const onHoldDateTime = new Date(onHoldDate);
 
-  // const checkDate = (date: string | undefined, label: string) => {
-  //   if (date) {
-  //     const dateTime = new Date(date);
-  //     if (dateTime < onHoldDateTime && now > dateTime) {
-  //       expiredDates.push(label);
-  //     }
-  //   }
-  // };
-
-
+  /**
+   * Chỉ check các mốc thời gian SAU onHoldDate và ĐÃ QUA hiện tại
+   * 
+   * Ví dụ:
+   * - onHoldDate: 2026-03-20
+   * - now: 2026-06-20
+   * - ticket sale start: 2026-03-05 → FALSE (trước pivot, bỏ qua)
+   * - start day: 2026-05-10 → TRUE (sau pivot và đã qua now)
+   */
   const checkDate = (date: string | undefined, label: string) => {
-  if (date) {
-    const dateTime = new Date(date);
-    if (dateTime < now) {
-      expiredDates.push(label);
+    if (date) {
+      const dateTime = new Date(date);
+      
+      // Chỉ validate các mốc SAU onHoldDate VÀ trước hiện tại
+      if (dateTime > onHoldDateTime && dateTime < now) {
+        expiredDates.push(label);
+      }
     }
-  }
-};
+  };
+
   checkDate(conference.ticketSaleStart, "Ngày bắt đầu bán vé");
   checkDate(conference.ticketSaleEnd, "Ngày kết thúc bán vé");
   checkDate(conference.startDate, "Ngày bắt đầu");
