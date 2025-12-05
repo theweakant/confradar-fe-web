@@ -133,7 +133,7 @@ export default function FullPaperPhase({
             await submitReview({
                 fullPaperId: paperDetail.fullPaper.fullPaperId,
                 note,
-                feedbackToAuthor: "",
+                feedbackToAuthor,
                 reviewStatus,
                 feedbackMaterialFile: file!,
             }).unwrap();
@@ -553,14 +553,14 @@ export default function FullPaperPhase({
                                                         )}
 
                                                         {/* Phản hồi tới tác giả */}
-                                                        {/* {review.feedbackToAuthor && (
+                                                        {review.feedbackToAuthor && (
                                                             <div className="mb-2 bg-white border border-gray-200 p-2.5 rounded-lg">
                                                                 <p className="font-semibold text-gray-700 text-xs mb-1 flex items-center gap-1">
                                                                     💬 Phản hồi tới tác giả
                                                                 </p>
                                                                 <p className="text-gray-600 text-sm leading-relaxed">{review.feedbackToAuthor}</p>
                                                             </div>
-                                                        )} */}
+                                                        )}
 
                                                         {/* Tài liệu đánh giá */}
                                                         {review.feedbackMaterialUrl && (
