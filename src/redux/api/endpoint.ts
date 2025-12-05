@@ -126,6 +126,7 @@ export const endpoint = {
     GET_SKELETON_TECH_CONF_FOR_COLLABORATOR: "/conference/get-skeleton-tech-conf-created-for-collaborator",
 
     SUBMIT_FEEDBACK: "/conference/submit-conference-feedback",
+    ADD_DAYS_SINCE_LAST_ONHOLD: "/Conference/add-days-since-last-onhold"
   },
 
   CONFERENCE_STEP: {
