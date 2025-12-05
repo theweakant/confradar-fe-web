@@ -244,7 +244,7 @@ export function MetaInfoSection({
             <div className="flex items-start gap-3">
               <span className="text-xs text-gray-500 w-28 flex-shrink-0">Thời gian</span>
               <span className="text-xs text-gray-900 font-medium whitespace-nowrap">
-                Bắt đầu từ {formatDate(conference.startDate)}
+                {formatDate(conference.startDate)} → {formatDate(conference.endDate)}
               </span>
             </div>
           )}
