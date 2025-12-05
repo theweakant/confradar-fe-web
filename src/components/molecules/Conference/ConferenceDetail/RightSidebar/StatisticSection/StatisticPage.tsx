@@ -227,7 +227,7 @@ export default function StatisticsDashboard() {
                             <div className="flex justify-between items-center pb-4 border-b border-gray-200">
                                 <div>
                                     <p className="text-sm text-gray-600 font-medium">Tổng doanh thu</p>
-                                    <p className="text-xs text-gray-500 mt-0.5">Bao gồm cả vé đã hoàn tiền cho khác</p>
+                                    <p className="text-xs text-gray-500 mt-0.5">Bao gồm cả phần tiền hoàn lại cho khách</p>
                                 </div>
                                 <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalRevenue)}</p>
                             </div>
@@ -235,8 +235,8 @@ export default function StatisticsDashboard() {
                             {/* Đã hoàn trả */}
                             <div className="flex justify-between items-center">
                                 <div>
-                                    <p className="text-sm text-red-700 font-medium">Đã hoàn trả</p>
-                                    <p className="text-xs text-gray-500 mt-0.5">Khách đã hủy</p>
+                                    <p className="text-sm text-red-700 font-medium">Đã hoàn tiền</p>
+                                    <p className="text-xs text-gray-500 mt-0.5">Khách đã hủy & hoàn tiền lại cho khách hàng</p>
                                 </div>
                                 <p className="text-xl font-bold text-red-700">{formatCurrency(totalRefundedAmount)}</p>
                             </div>
@@ -258,15 +258,15 @@ export default function StatisticsDashboard() {
                                             <div className="flex justify-between items-center pt-4 border-t border-gray-200">
                                                 <div>
                                                     <p className="text-sm text-blue-700 font-medium">Thu nhập của bạn</p>
-                                                    <p className="text-xs text-gray-500 mt-0.5">Số tiền bạn nhận được</p>
+                                                    <p className="text-xs text-gray-500 mt-0.5">Số tiền bạn nhận được sau khi trừ hoa hồng</p>
                                                 </div>
                                                 <p className="text-2xl font-bold text-blue-700">{formatCurrency(totalCommission)}</p>
                                             </div>
 
                                             <div className="flex justify-between items-center pt-4">
                                                 <div>
-                                                    <p className="text-sm text-gray-600 font-medium">Phí nền tảng ConfRadar</p>
-                                                    <p className="text-xs text-gray-500 mt-0.5">Số tiền ConfRadar nhận</p>
+                                                    <p className="text-sm text-gray-600 font-medium">Phí liên kết bán vé ConfRadar</p>
+                                                    <p className="text-xs text-gray-500 mt-0.5">Số tiền ConfRadar nhận được</p>
                                                 </div>
                                                 <p className="text-xl font-bold text-gray-600">{formatCurrency(totalToConfRadar)}</p>
                                             </div>
@@ -428,7 +428,7 @@ export default function StatisticsDashboard() {
                                                 <td className="px-6 py-4 text-right">
                                                     <p className="font-semibold text-green-600">{formatCurrency(phase.revenue)}</p>
                                                     {isCollaborator && phase.commission != null && phase.commission > 0 && (
-                                                        <p className="text-xs text-blue-600 mt-1">Thu nhập: {formatCurrency(phase.commission)}</p>
+                                                        <p className="text-xs text-blue-600 mt-1">Nhận được: {formatCurrency(phase.commission)}</p>
                                                     )}
                                                     {isOrganizer && (phase.commission != null || phase.amountToConfRadar != null) && (
                                                         <div className="text-xs text-gray-500 mt-1 space-y-0.5">

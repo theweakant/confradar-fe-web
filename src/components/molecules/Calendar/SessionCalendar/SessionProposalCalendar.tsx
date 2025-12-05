@@ -64,6 +64,16 @@ const SessionProposalCalendar: React.FC<SessionProposalCalendarProps> = ({
     const startTime = s.startTime?.slice(0, 5) || "09:00";
     const endTime = s.endTime?.slice(0, 5) || "10:00";
 
+    // Log nếu thiếu endTime từ API
+    if (!s.endTime) {
+      console.warn("⚠️ API Session missing endTime:", {
+        title: s.title,
+        id: s.conferenceSessionId,
+        startTime: s.startTime,
+        endTime: s.endTime
+      });
+    }
+
     return {
       id: s.conferenceSessionId,
       title: s.title || "",
@@ -75,19 +85,47 @@ const SessionProposalCalendar: React.FC<SessionProposalCalendarProps> = ({
     };
   };
 
-  const normalizeCollaboratorSession = (s: Session): CalendarSession => ({
-    id: s.sessionId,
-    title: s.title,
-    date: s.date,
-    startTime: s.startTime,
-    endTime: s.endTime,
-    speaker: s.speaker?.map(sp => sp.name) || [],
-    original: s,
-  });
+  const normalizeCollaboratorSession = (s: Session): CalendarSession => {
+    // Xử lý format thời gian: có thể là "HH:mm" hoặc "YYYY-MM-DDTHH:mm:ss"
+    const normalizeTime = (timeStr: string): string => {
+      if (!timeStr) return "09:00";
+      // Nếu có dạng ISO datetime, lấy phần time
+      if (timeStr.includes("T")) {
+        return timeStr.split("T")[1].slice(0, 5);
+      }
+      // Nếu đã là dạng HH:mm hoặc HH:mm:ss
+      return timeStr.slice(0, 5);
+    };
+
+    return {
+      id: s.sessionId || `local-${s.title}-${s.date}-${s.startTime}`,
+      title: s.title,
+      date: s.date,
+      startTime: normalizeTime(s.startTime),
+      endTime: normalizeTime(s.endTime),
+      speaker: s.speaker?.map(sp => sp.name) || [],
+      original: s,
+    };
+  };
 
   const apiSessions: SessionDetailForScheduleResponse[] = sessionsResponse?.data || [];
   const normalizedApiSessions = apiSessions.map(normalizeApiSession);
-  const normalizedLocalSessions = existingSessions.map(normalizeCollaboratorSession);
+  
+  // Chỉ lấy sessions từ existingSessions (state local)
+  // Loại bỏ sessions đã có trong API để tránh duplicate
+  const normalizedLocalSessions = existingSessions
+    .filter(localSession => {
+      // Nếu có sessionId, kiểm tra xem đã tồn tại trong API chưa
+      if (localSession.sessionId) {
+        return !apiSessions.some(apiSession => 
+          apiSession.conferenceSessionId === localSession.sessionId
+        );
+      }
+      // Nếu chưa có sessionId (session mới tạo), luôn hiển thị
+      return true;
+    })
+    .map(normalizeCollaboratorSession);
+  
   const allNormalizedSessions = [...normalizedApiSessions, ...normalizedLocalSessions];
 
   const getInitialCalendarDate = (): string | undefined => {
@@ -105,8 +143,23 @@ const SessionProposalCalendar: React.FC<SessionProposalCalendarProps> = ({
   const initialCalendarDate = getInitialCalendarDate();
 
   const calendarEvents = allNormalizedSessions.map((session) => {
-    const isLocal = !session.id || !apiSessions.find(s => s.conferenceSessionId === session.id);
-    return {
+    // Kiểm tra session có phải từ local state không (chưa lưu vào BE)
+    const isLocal = !session.id || 
+                    session.id.startsWith('local-') || 
+                    !apiSessions.find(s => s.conferenceSessionId === session.id);
+    
+    // Validate startTime và endTime
+    if (!session.startTime || !session.endTime) {
+      console.error("❌ Session missing time:", {
+        title: session.title,
+        id: session.id,
+        startTime: session.startTime,
+        endTime: session.endTime,
+        original: session.original
+      });
+    }
+    
+    const event = {
       id: session.id || `temp-${session.title}-${session.date}-${session.startTime}`,
       title: session.title,
       start: `${session.date}T${session.startTime}`,
@@ -118,6 +171,8 @@ const SessionProposalCalendar: React.FC<SessionProposalCalendarProps> = ({
         isLocal,
       },
     };
+    
+    return event;
   });
 
   const handleEventClick = (info: EventClickArg) => {
@@ -183,6 +238,16 @@ const SessionProposalCalendar: React.FC<SessionProposalCalendarProps> = ({
       calendarApi.gotoDate(startDate);
     }
   }, [startDate]);
+
+  // Force calendar re-render khi existingSessions thay đổi
+  useEffect(() => {
+    if (calendarRef.current) {
+      const calendarApi = calendarRef.current.getApi();
+      // Remove all events và add lại để force refresh
+      calendarApi.removeAllEvents();
+      calendarApi.addEventSource(calendarEvents);
+    }
+  }, [existingSessions.length]); // Trigger khi số lượng sessions thay đổi
 
   const isLoading = isLoadingSessions;
   const error = sessionsError;
@@ -285,8 +350,15 @@ const SessionProposalCalendar: React.FC<SessionProposalCalendarProps> = ({
               align-items: center;
               justify-content: center;
             }
+            .fc .fc-event {
+              min-height: 48px !important;
+            }
+            .fc .fc-daygrid-event {
+              min-height: 48px !important;
+            }
           `}</style>
           <FullCalendar
+            key={calendarEvents.length} // Force re-render khi số lượng events thay đổi
             ref={calendarRef}
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             initialView="dayGridWeek"
@@ -300,13 +372,7 @@ const SessionProposalCalendar: React.FC<SessionProposalCalendarProps> = ({
             eventClick={handleEventClick}
             height="auto"
             eventDisplay="block"
-            displayEventTime={true}
-            eventTimeFormat={{
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: false,
-              meridiem: false,
-            }}
+            displayEventTime={false} // Tắt default time display, dùng custom content
             eventContent={(arg) => {
               const start = arg.event.start;
               const end = arg.event.end;
@@ -316,13 +382,21 @@ const SessionProposalCalendar: React.FC<SessionProposalCalendarProps> = ({
                 return date.toTimeString().slice(0, 5);
               };
 
+              const startTime = formatTime(start);
+              const endTime = formatTime(end);
+              
+              // Debug log - chỉ log khi end = null
+              if (!end) {
+                console.warn("⚠️ Event missing end time:", arg.event.title, "| ID:", arg.event.id);
+              }
+
               return (
-                <div className="flex flex-col overflow-hidden text-ellipsis p-1">
-                  <span className="text-xs font-semibold text-white leading-snug truncate">
+                <div className="flex flex-col overflow-hidden p-1.5 gap-0.5 h-full justify-center">
+                  <span className="text-xs font-semibold text-white leading-tight truncate">
                     {arg.event.title}
                   </span>
-                  <span className="text-[10px] text-blue-100">
-                    {formatTime(start)} - {formatTime(end)}
+                  <span className="text-[11px] text-white opacity-90 font-medium leading-tight">
+                    {startTime} - {endTime}
                   </span>
                 </div>
               );

@@ -2,16 +2,14 @@
 "use client";
 
 import {
-  ChevronDown,
   ChevronRight,
   Calendar,
-  Users,
+  Clock,
+  MapPin,
 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
-import { formatTimeDate } from "@/helper/format";
-import { useGetPresentSessionQuery } from "@/redux/services/statistics.service"; 
-import { skipToken } from "@reduxjs/toolkit/query/react";
+// Removed formatTimeDate import - using custom formatTime instead
 
 import type {
   CommonConference,
@@ -43,20 +41,36 @@ export function SessionTab({ conference, conferenceType, conferenceId }: Session
     setExpandedSessions(newExpanded);
   };
 
-  // === Gọi API chỉ khi là research ===
-  const shouldFetchPresentSessions = conferenceType === "research";
-  const { data: presentSessionData, isLoading: isLoadingPresent, isError: isErrorPresent } =
-    useGetPresentSessionQuery(shouldFetchPresentSessions ? conferenceId : skipToken);
-
-  const presentSessions = presentSessionData?.data || [];
+  // Format time - handles both "HH:MM:SS" (research) and "YYYY-MM-DDTHH:MM:SS" (technical)
+  const formatTime = (timeString: string | null | undefined): string => {
+    if (!timeString) return "--:--";
+    
+    // Check if it's ISO datetime format (technical conferences)
+    if (timeString.includes('T')) {
+      const date = new Date(timeString);
+      return date.toLocaleTimeString('vi-VN', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: false 
+      });
+    }
+    
+    // Otherwise it's just time format "HH:MM:SS" (research conferences)
+    return timeString.slice(0, 5);
+  };
 
   return (
     <div className="space-y-6 p-4">
-      {/* === Danh sách session gốc (từ conference detail) === */}
-      <div className="space-y-2">
-        <h2 className="text-lg font-bold text-gray-900">Lịch Các Phiên Họp</h2>
-        {sessions && sessions.length > 0 ? (
-          sessions.map((session, index) => {
+      <div className="flex items-center gap-2 mb-4">
+        <Calendar className="w-5 h-5 text-blue-600" />
+        <h2 className="text-lg font-bold text-gray-900">
+          Lịch Các Phiên Họp ({sessions?.length || 0})
+        </h2>
+      </div>
+
+      {sessions && sessions.length > 0 ? (
+        <div className="space-y-3">
+          {sessions.map((session, index) => {
             const sessionId = session.conferenceSessionId || index.toString();
             const isExpanded = expandedSessions.has(sessionId);
 
@@ -70,51 +84,93 @@ export function SessionTab({ conference, conferenceType, conferenceId }: Session
                   className="w-full text-left p-4 flex items-start justify-between group"
                 >
                   <div className="flex-1 pr-4">
-                    <h3 className="font-semibold text-gray-900 text-lg group-hover:text-blue-600">
+                    <h3 className="font-semibold text-gray-900 text-lg group-hover:text-blue-600 transition-colors">
                       {session.title}
                     </h3>
-                    <div className="text-sm text-gray-500 mt-1">
-                      {formatTimeDate(session.startTime)} – {formatTimeDate(session.endTime)}
-                    </div>
-                    <div className="text-xs text-gray-600 mt-1">
-                      {session.room?.displayName || session.room?.number || "Không xác định"}
+                    
+                    <div className="flex flex-wrap gap-4 mt-2 text-sm text-gray-600">
+                      {/* Time */}
+                      {(session.startTime || session.endTime) && (
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="w-4 h-4 text-gray-400" />
+                          <span>
+                            {formatTime(session.startTime)} – {formatTime(session.endTime)}
+                          </span>
+                        </div>
+                      )}
+                      
+                      {/* Date - for research conferences (date field) or technical (sessionDate field) */}
+                      {(session.date || session.sessionDate) && (
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="w-4 h-4 text-gray-400" />
+                          <span>
+                            {new Date(session.date || session.sessionDate!).toLocaleDateString('vi-VN')}
+                          </span>
+                        </div>
+                      )}
+                      
+                      {/* Room */}
+                      <div className="flex items-center gap-1.5">
+                        <MapPin className="w-4 h-4 text-gray-400" />
+                        <span>{session.room?.displayName || session.room?.number || "Chưa có phòng"}</span>
+                      </div>
                     </div>
                   </div>
+                  
                   <ChevronRight
-                    className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? "rotate-90" : ""
-                      }`}
+                    className={`w-5 h-5 text-gray-400 transition-transform flex-shrink-0 ${
+                      isExpanded ? "rotate-90" : ""
+                    }`}
                   />
                 </button>
 
                 {isExpanded && (
-                  <div className="border-t border-gray-200 p-4 bg-gray-50 space-y-3">
+                  <div className="border-t border-gray-200 p-4 bg-gray-50 space-y-4">
+                    {/* Description */}
                     {session.description && (
-                      <p className="text-sm text-gray-700 italic">{session.description}</p>
+                      <div>
+                        <h4 className="text-sm font-semibold text-gray-900 mb-2">Mô tả</h4>
+                        <p className="text-sm text-gray-700 leading-relaxed">{session.description}</p>
+                      </div>
                     )}
 
+                    {/* Room Info */}
                     {session.room && (
-                      <div className="pt-2 border-t border-gray-300">
-                        <h4 className="text-xs font-semibold text-gray-900 mb-2">
+                      <div>
+                        <h4 className="text-sm font-semibold text-gray-900 mb-2">
                           Thông Tin Phòng
                         </h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs bg-white p-2 rounded border border-gray-200">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white p-3 rounded-lg border border-gray-200">
                           <InfoField label="Mã phòng" value={session.roomId} />
-                          <InfoField label="Tên Phòng" value={session.room.displayName} />
-                          <InfoField label="Số Phòng" value={session.room.number} />
+                          <InfoField label="Tên phòng" value={session.room.displayName} />
+                          <InfoField label="Số phòng" value={session.room.number} />
                         </div>
                       </div>
                     )}
 
-                    {session.sessionMedia && session.sessionMedia.length > 0 && (
-                      <div className="pt-2 border-t border-gray-300">
-                        <h4 className="text-xs font-semibold text-gray-900 mb-2">
-                          Tài Liệu Phiên Họp
+                    {/* Room ID only (when room object is null) */}
+                    {!session.room && session.roomId && (
+                      <div>
+                        <h4 className="text-sm font-semibold text-gray-900 mb-2">
+                          Thông Tin Phòng
                         </h4>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        <div className="bg-white p-3 rounded-lg border border-gray-200">
+                          <InfoField label="Mã phòng" value={session.roomId} />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Session Media */}
+                    {session.sessionMedia && session.sessionMedia.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-semibold text-gray-900 mb-2">
+                          Tài Liệu Phiên Họp ({session.sessionMedia.length})
+                        </h4>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                           {session.sessionMedia.map((media, idx) => (
                             <div
                               key={idx}
-                              className="relative h-24 rounded overflow-hidden border border-gray-300"
+                              className="relative h-32 rounded-lg overflow-hidden border border-gray-300 group cursor-pointer"
                             >
                               <Image
                                 src={
@@ -124,8 +180,9 @@ export function SessionTab({ conference, conferenceType, conferenceId }: Session
                                 }
                                 alt={`Tài liệu ${idx + 1}`}
                                 fill
-                                className="object-cover"
+                                className="object-cover group-hover:scale-105 transition-transform"
                               />
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                             </div>
                           ))}
                         </div>
@@ -135,64 +192,12 @@ export function SessionTab({ conference, conferenceType, conferenceId }: Session
                 )}
               </div>
             );
-          })
-        ) : (
-          <p className="text-gray-500 text-center py-4 text-sm">Không có phiên họp nào</p>
-        )}
-      </div>
-
-      {/* === Danh sách Phiên có bài báo đã gán (chỉ research) === */}
-      {conferenceType === "research" && (
-        <div className="space-y-2 pt-6 border-t border-gray-200">
-          <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-blue-600" />
-            <h2 className="text-lg font-bold text-gray-900">
-              Phiên có bài báo đã gán ({presentSessions.length})
-            </h2>
-          </div>
-
-          {isLoadingPresent ? (
-            <p className="text-gray-500">Đang tải...</p>
-          ) : isErrorPresent ? (
-            <p className="text-red-500">Lỗi khi tải danh sách phiên có presenter.</p>
-          ) : presentSessions.length === 0 ? (
-            <p className="text-gray-500 italic">Chưa có bài báo nào được gán vào phiên.</p>
-          ) : (
-            <div className="grid grid-cols-1 gap-3">
-              {presentSessions.map((item) => (
-                <div
-                  key={item.sessionId}
-                  className="p-4 border border-gray-200 rounded-lg bg-white"
-                >
-                  <div className="flex justify-between">
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{item.title}</h3>
-                      <p className="text-sm text-gray-600 mt-1">
-                        Ngày: {new Date(item.onDate).toLocaleDateString("vi-VN")}
-                      </p>
-                    </div>
-                    <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                      {item.presenters.length} bài báo
-                    </span>
-                  </div>
-
-                  {item.presenters.length > 0 && (
-                    <div className="mt-3 space-y-2">
-                      <p className="text-xs font-medium text-gray-700">Bài báo đã gán:</p>
-                      <ul className="text-sm text-gray-600 list-disc pl-5 space-y-1">
-                        {item.presenters.map((presenter, idx) => (
-                          <li key={idx}>
-                            <span className="font-medium">{presenter.presenterName}</span>:{" "}
-                            {presenter.paperTitle}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
+          })}
+        </div>
+      ) : (
+        <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+          <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+          <p className="text-gray-500 text-sm">Chưa có phiên họp nào được tạo</p>
         </div>
       )}
     </div>

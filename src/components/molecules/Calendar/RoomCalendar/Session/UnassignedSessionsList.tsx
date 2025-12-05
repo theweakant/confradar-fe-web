@@ -1,5 +1,5 @@
 import React from "react";
-import { AlertCircle, MapPin, Clock, Calendar } from "lucide-react";
+import { AlertCircle} from "lucide-react";
 import type { Session, ResearchSession } from "@/types/conference.type";
 
 interface UnassignedSessionsListProps {

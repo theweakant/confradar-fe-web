@@ -21,9 +21,6 @@ interface SpeakerModalProps {
   onAdd: (speaker: Speaker) => void;
 }
 
-/**
- * Modal để thêm diễn giả mới với tên, mô tả và ảnh.
- */
 function SpeakerModal({ isOpen, onClose, onAdd }: SpeakerModalProps) {
   const [newSpeaker, setNewSpeaker] = useState<Omit<Speaker, "image"> & { image: File | null }>({
     name: "",
@@ -130,11 +127,6 @@ function SpeakerModal({ isOpen, onClose, onAdd }: SpeakerModalProps) {
   );
 }
 
-/**
- * Form tạo hoặc chỉnh sửa phiên họp Đối tác.
- * - Khi tạo mới: cho phép chọn ngày trong khoảng [conferenceStartDate, conferenceEndDate]
- * - Khi chỉnh sửa: ngày bị khóa, hiển thị chỉ đọc
- */
 export function CollaboratorSessionForm({
   conferenceId,
   conferenceStartDate,
@@ -173,7 +165,6 @@ export function CollaboratorSessionForm({
 
   const [isSpeakerModalOpen, setIsSpeakerModalOpen] = useState(false);
 
-  // Reset giờ bắt đầu và thời lượng khi thay đổi ngày (chỉ áp dụng khi tạo mới)
   useEffect(() => {
     if (!isEditMode) {
       const newStartTime = `${selectedDate}T06:00:00`;
@@ -205,7 +196,6 @@ export function CollaboratorSessionForm({
     });
   };
 
-  // Tạo danh sách giờ bắt đầu từ 06:00 đến 23:00 theo ngày đã chọn
   const startTimeOptions = useMemo(() => {
     const options: Array<{ value: string; label: string }> = [];
     for (let hour = 6; hour <= 23; hour++) {
@@ -228,7 +218,6 @@ export function CollaboratorSessionForm({
     return `${hours}h${minutes > 0 ? ` ${minutes}p` : ""}`;
   };
 
-  // Tính thời lượng tối đa dựa trên giờ bắt đầu (không vượt quá 23:59 cùng ngày)
   const maxTimeRange = useMemo(() => {
     const start = new Date(formData.selectedStartTime);
     const endOfDay = new Date(start);
@@ -238,7 +227,6 @@ export function CollaboratorSessionForm({
     return Math.max(0.5, Math.floor(hours * 2) / 2);
   }, [formData.selectedStartTime]);
 
-  // Tự động tính giờ kết thúc dựa trên giờ bắt đầu và thời lượng
   useEffect(() => {
     const start = new Date(formData.selectedStartTime);
     const proposedEnd = new Date(start.getTime() + formData.timeRange * 60 * 60 * 1000);
@@ -299,11 +287,6 @@ export function CollaboratorSessionForm({
       return;
     }
 
-    // if (formData.speakers.length === 0) {
-    //   toast.error("Vui lòng thêm ít nhất 1 diễn giả!");
-    //   return;
-    // }
-
     if (formData.timeRange < 0.5) {
       toast.error("Thời lượng tối thiểu là 0.5 giờ (30 phút)!");
       return;
@@ -314,21 +297,20 @@ export function CollaboratorSessionForm({
       return;
     }
 
-const startDate = new Date(formData.selectedStartTime);
-const endDate = new Date(calculatedEndTime);
+    const startDate = new Date(formData.selectedStartTime);
+    const endDate = new Date(calculatedEndTime);
 
-// Hàm helper để lấy ngày theo timezone địa phương
-const getLocalDateStr = (date: Date): string => {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-};
+    const getLocalDateStr = (date: Date): string => {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    };
 
-const startDayLocal = getLocalDateStr(startDate);
-const endDayLocal = getLocalDateStr(endDate);
+    const startDayLocal = getLocalDateStr(startDate);
+    const endDayLocal = getLocalDateStr(endDate);
 
-if (startDayLocal !== endDayLocal) {
-  toast.error("Phiên họp không được kéo dài qua ngày hôm sau. Vui lòng chọn thời gian kết thúc trước 23:59.");
-  return;
-}
+    if (startDayLocal !== endDayLocal) {
+      toast.error("Phiên họp không được kéo dài qua ngày hôm sau. Vui lòng chọn thời gian kết thúc trước 23:59.");
+      return;
+    }
 
     if (selectedDate < conferenceStartDate || selectedDate > conferenceEndDate) {
       toast.error(`Ngày phải nằm trong khoảng từ ${formatDate(conferenceStartDate)} đến ${formatDate(conferenceEndDate)}`);
@@ -389,16 +371,6 @@ if (startDayLocal !== endDayLocal) {
                 />
               </div>
             )}
-
-            {/* {isEditMode && (
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <CalendarIcon className="w-4 h-4 text-blue-600" />
-                  <div className="text-xs font-medium text-blue-900">Ngày</div>
-                </div>
-                <div className="text-sm font-semibold text-gray-900">{formatDate(selectedDate)}</div>
-              </div>
-            )} */}
 
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-3">
