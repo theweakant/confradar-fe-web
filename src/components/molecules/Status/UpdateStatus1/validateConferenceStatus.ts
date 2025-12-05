@@ -106,7 +106,7 @@ export const validateConferenceForStatusChange = ({
  * Validate thời gian khi chuyển từ OnHold → Ready
  * Kiểm tra xem có mốc thời gian nào đã qua so với ngày OnHold không
  * 
- * ⚠️ KHÔNG phụ thuộc vào contract — luôn kiểm tra toàn bộ timeline
+ * KHÔNG phụ thuộc vào contract — luôn kiểm tra toàn bộ timeline
  */
 export const validateTimelineForOnHoldToReady = (
   conference: Conference,
@@ -130,15 +130,24 @@ export const validateTimelineForOnHoldToReady = (
 
   const onHoldDateTime = new Date(onHoldDate);
 
-  const checkDate = (date: string | undefined, label: string) => {
-    if (date) {
-      const dateTime = new Date(date);
-      if (dateTime < onHoldDateTime && now > dateTime) {
-        expiredDates.push(label);
-      }
-    }
-  };
+  // const checkDate = (date: string | undefined, label: string) => {
+  //   if (date) {
+  //     const dateTime = new Date(date);
+  //     if (dateTime < onHoldDateTime && now > dateTime) {
+  //       expiredDates.push(label);
+  //     }
+  //   }
+  // };
 
+
+  const checkDate = (date: string | undefined, label: string) => {
+  if (date) {
+    const dateTime = new Date(date);
+    if (dateTime < now) {
+      expiredDates.push(label);
+    }
+  }
+};
   checkDate(conference.ticketSaleStart, "Ngày bắt đầu bán vé");
   checkDate(conference.ticketSaleEnd, "Ngày kết thúc bán vé");
   checkDate(conference.startDate, "Ngày bắt đầu");
