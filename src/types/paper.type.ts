@@ -678,3 +678,39 @@ export interface Reviewer {
   reviewerName: string;
   assignedPaperCount: number;
 }
+
+export interface AssignedPaperDetail {
+  paperId: string | null;
+  title: string | null;
+  conferenceName: string | null;
+  currentPhaseName: string | null;
+  isHeadReviewer: boolean | null;
+
+  fullPaperWork: {
+    fullPaperId: string | null;
+    fileUrl: string | null;
+    statusName: string | null;
+    isMyReviewSubmitted: boolean | null;
+    myReviewResult: string | null;
+    canReview: boolean | null;
+    canDecide: boolean | null;
+  } | null;
+
+  revisionWork: {
+    revisionPaperId: string | null;
+    revisionRound: number | null;
+    isFeedbackSubmitted: boolean | null;
+    latestFileUrl: string | null;
+    statusName: string | null;
+    isMyReviewSubmitted: boolean | null;
+    canGiveFeedback: boolean | null;
+    canDecide: boolean | null;
+  } | null;
+
+  cameraReadyWork: {
+    cameraReadyId: string | null;
+    fileUrl: string | null;
+    statusName: string | null;
+    canDecide: boolean | null;
+  } | null;
+}
