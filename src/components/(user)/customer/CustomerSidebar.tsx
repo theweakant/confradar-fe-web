@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { useTransaction } from "@/redux/hooks/useTransaction";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
+import Image from "next/image";
 
 interface SidebarProps {
   className?: string;
@@ -184,7 +185,15 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
     >
       {/* Header with Logo */}
       <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center space-x-3">
+        {/* <div className="flex items-center space-x-3"> */}
+        <div className={`flex items-center ${isCollapsed ? "justify-center" : "space-x-3"}`}>
+          <Image
+            src="/logo.png"
+            alt="ConfRadar Logo"
+            width={isCollapsed ? 28 : 36}
+            height={isCollapsed ? 28 : 36}
+            className="object-contain"
+          />
           {!isCollapsed && (
             <Link
               href="/"
