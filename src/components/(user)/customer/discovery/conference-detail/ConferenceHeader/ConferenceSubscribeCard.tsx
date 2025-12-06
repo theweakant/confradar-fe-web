@@ -6,6 +6,7 @@ import {
     ResearchConferenceDetailResponse,
     TechnicalConferenceDetailResponse,
 } from "@/types/conference.type";
+import { useGlobalTime } from "@/utils/TimeContext";
 
 interface PurchasedTicketInfo {
     ticket: ConferencePriceResponse;
@@ -25,6 +26,7 @@ const ConferenceSubscribeCard: React.FC<ConferenceSubscribeCardProps> = ({
     onOpenDialog,
     purchasedTicketInfo,
 }) => {
+    const { now, useFakeTime } = useGlobalTime();
     const isResearch = conference.isResearchConference;
 
     const renderSubscribeButton = () => {
@@ -60,7 +62,7 @@ const ConferenceSubscribeCard: React.FC<ConferenceSubscribeCardProps> = ({
             );
         }
 
-        const now = new Date();
+        // const now = new Date();
         const allPhases = (conference.conferencePrices || []).flatMap((ticket) => ticket.pricePhases || []);
 
         const currentPhase = allPhases.find((phase) => {

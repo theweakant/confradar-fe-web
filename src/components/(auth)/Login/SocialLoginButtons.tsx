@@ -24,7 +24,7 @@ export const SocialLoginButtons = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3">
         <Button
           type="button"
           variant="outline"
@@ -53,7 +53,7 @@ export const SocialLoginButtons = ({
           <span className="truncate">Google</span>
         </Button>
 
-        <Button
+        {/* <Button
           type="button"
           variant="outline"
           onClick={onOrcidLogin}
@@ -74,7 +74,7 @@ export const SocialLoginButtons = ({
             />
           </svg>
           <span className="truncate">ORCID</span>
-        </Button>
+        </Button> */}
       </div>
     </>
   );

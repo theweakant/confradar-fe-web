@@ -216,8 +216,8 @@ const ConferenceCalendar: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 p-6">
-      <div className="max-w-7xl mx-auto flex-1 flex flex-col">
+    <div className="h-screen bg-gray-50 text-gray-900 p-6">
+      <div className="max-w-7xl mx-auto flex-1 flex flex-col h-full">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Lịch Hội nghị & Hội thảo
@@ -322,7 +322,8 @@ const ConferenceCalendar: React.FC = () => {
           </div>
 
           {/* Conference List Section */}
-          <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200">
+          {/* <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200"> */}
+          <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200 flex flex-col h-full">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <Calendar className="w-5 h-5 text-blue-600" />
               Danh sách Hội nghị
@@ -365,7 +366,8 @@ const ConferenceCalendar: React.FC = () => {
             {/* Conference List */}
             <div
               ref={conferenceListRef}
-              className="space-y-4 overflow-y-auto max-h-[600px] pr-2 scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300"
+              // className="space-y-4 overflow-y-auto max-h-[600px] pr-2 scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300"
+              className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300"
               style={
                 {
                   scrollbarWidth: "thin",
@@ -384,7 +386,8 @@ const ConferenceCalendar: React.FC = () => {
                   />
                 ))
               ) : (
-                <div className="text-center py-8 text-gray-500">
+                // <div className="text-center py-8 text-gray-500">
+                <div className="flex items-center justify-center h-full text-gray-500">
                   <p>Không tìm thấy hội nghị nào</p>
                 </div>
               )}
