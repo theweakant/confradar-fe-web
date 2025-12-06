@@ -95,14 +95,14 @@ export default function OwnReports() {
     const getStatusBadge = (hasResolve: boolean) => {
         if (hasResolve) {
             return (
-                <Badge className="bg-green-800 text-green-200 border-green-600">
+                <Badge className="bg-green-100 text-green-800 border-green-300">
                     <CheckCircle2 className="h-3 w-3 mr-1" />
                     Đã xử lý
                 </Badge>
             );
         }
         return (
-            <Badge className="bg-yellow-800 text-yellow-200 border-yellow-600">
+            <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
                 <Clock className="h-3 w-3 mr-1" />
                 Chờ xử lý
             </Badge>
@@ -121,11 +121,11 @@ export default function OwnReports() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-900 p-4 sm:p-6 lg:p-8">
+            <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center py-16">
-                        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-400 mx-auto mb-4"></div>
-                        <p className="text-gray-400">Đang tải báo cáo của bạn...</p>
+                        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                        <p className="text-gray-600">Đang tải báo cáo của bạn...</p>
                     </div>
                 </div>
             </div>
@@ -134,16 +134,16 @@ export default function OwnReports() {
 
     if (ownReportsError) {
         return (
-            <div className="min-h-screen bg-gray-900 p-4 sm:p-6 lg:p-8">
+            <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center py-16">
-                        <div className="text-red-400 mb-4">
+                        <div className="text-red-600 mb-4">
                             Có lỗi xảy ra khi tải dữ liệu
                         </div>
-                        <p className="text-gray-400">{ownReportsError.data?.message}</p>
+                        <p className="text-gray-600">{ownReportsError.data?.message}</p>
                         <Button
                             onClick={fetchReports}
-                            className="mt-4 bg-purple-600 hover:bg-purple-700"
+                            className="mt-4 bg-purple-600 hover:bg-purple-700 text-white"
                         >
                             Thử lại
                         </Button>
@@ -154,24 +154,24 @@ export default function OwnReports() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-900 p-4 sm:p-6 lg:p-8">
+        <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
             <div className="max-w-7xl mx-auto">
                 {/* Page Header */}
                 <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <div className="flex items-center gap-3 mb-2">
-                            <Flag className="h-8 w-8 text-purple-400" />
-                            <h1 className="text-3xl sm:text-4xl font-bold text-white">
+                            <Flag className="h-8 w-8 text-purple-600" />
+                            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
                                 Báo cáo của tôi
                             </h1>
                         </div>
-                        <p className="text-gray-400 text-sm sm:text-base">
+                        <p className="text-gray-600 text-sm sm:text-base">
                             Quản lý và theo dõi các báo cáo vấn đề bạn đã gửi
                         </p>
                     </div>
                     <Button
                         onClick={() => setIsReportDialogOpen(true)}
-                        className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold shadow-lg"
+                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg"
                     >
                         <Plus className="h-5 w-5 mr-2" />
                         Báo cáo mới
@@ -187,8 +187,8 @@ export default function OwnReports() {
                                 onClick={() => handleFilterChange(option.id)}
                                 variant={selectedFilter === option.id ? "default" : "outline"}
                                 className={`whitespace-nowrap ${selectedFilter === option.id
-                                        ? "bg-purple-600 text-white hover:bg-purple-700 border-purple-600"
-                                        : "bg-gray-800 text-gray-300 hover:bg-gray-700 border-gray-600"
+                                    ? "bg-purple-600 text-white hover:bg-purple-700 border-purple-600"
+                                    : "bg-white text-gray-700 hover:bg-gray-100 border-gray-300"
                                     }`}
                             >
                                 {option.label}
@@ -202,7 +202,7 @@ export default function OwnReports() {
                     {filteredReports.map((report) => (
                         <Card
                             key={report.reportId}
-                            className="bg-gray-800 border-gray-700 hover:shadow-lg hover:shadow-purple-500/10 transition-shadow"
+                            className="bg-white border-gray-200 hover:shadow-lg hover:shadow-purple-100 transition-shadow"
                         >
                             <CardContent className="p-6">
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -210,12 +210,12 @@ export default function OwnReports() {
                                     <div className="space-y-4">
                                         <div className="flex items-start justify-between gap-4">
                                             <div className="flex items-start gap-3 flex-1">
-                                                <AlertCircle className="h-6 w-6 text-purple-400 flex-shrink-0 mt-1" />
+                                                <AlertCircle className="h-6 w-6 text-purple-600 flex-shrink-0 mt-1" />
                                                 <div className="flex-1 min-w-0">
-                                                    <h2 className="text-xl font-bold text-white leading-tight mb-1">
+                                                    <h2 className="text-xl font-bold text-gray-900 leading-tight mb-1">
                                                         {report.reportSubject}
                                                     </h2>
-                                                    <div className="flex items-center gap-2 text-sm text-gray-400">
+                                                    <div className="flex items-center gap-2 text-sm text-gray-600">
                                                         <Calendar className="h-4 w-4" />
                                                         {formatDateTime(report.createdAt)}
                                                     </div>
@@ -225,22 +225,22 @@ export default function OwnReports() {
                                         </div>
 
                                         {/* Reason */}
-                                        <div className="bg-gray-700/50 border border-gray-600 p-3 rounded-lg">
-                                            <div className="text-xs text-gray-400 mb-1">Lý do</div>
-                                            <div className="text-sm text-white">{report.reason}</div>
+                                        <div className="bg-gray-50 border border-gray-200 p-3 rounded-lg">
+                                            <div className="text-xs text-gray-500 mb-1">Lý do</div>
+                                            <div className="text-sm text-gray-900">{report.reason}</div>
                                         </div>
 
                                         {/* Description */}
-                                        <div className="bg-gray-700/50 border border-gray-600 p-3 rounded-lg">
-                                            <div className="text-xs text-gray-400 mb-1">Mô tả</div>
-                                            <div className="text-sm text-gray-300 whitespace-pre-wrap">
+                                        <div className="bg-gray-50 border border-gray-200 p-3 rounded-lg">
+                                            <div className="text-xs text-gray-500 mb-1">Mô tả</div>
+                                            <div className="text-sm text-gray-700 whitespace-pre-wrap">
                                                 {report.description}
                                             </div>
                                         </div>
 
                                         {/* User Info */}
                                         {report.user && (
-                                            <div className="flex items-center gap-2 text-sm text-gray-400">
+                                            <div className="flex items-center gap-2 text-sm text-gray-600">
                                                 <User className="h-4 w-4" />
                                                 <span>Người gửi: {report.user.fullName || report.user.userName || report.user.email}</span>
                                             </div>
@@ -249,9 +249,9 @@ export default function OwnReports() {
 
                                     {/* Right Section - Feedback */}
                                     <div className="flex flex-col">
-                                        <div className="bg-gray-700/30 border border-gray-600 rounded-lg p-4 flex-1">
-                                            <h3 className="text-lg font-semibold text-white flex items-center gap-2 mb-4">
-                                                <MessageSquare className="h-5 w-5 text-green-400" />
+                                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 flex-1">
+                                            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                                                <MessageSquare className="h-5 w-5 text-green-600" />
                                                 Phản hồi
                                             </h3>
 
@@ -259,10 +259,10 @@ export default function OwnReports() {
                                                 <div className="space-y-3">
                                                     {/* Admin Info */}
                                                     {report.reportFeedback.admin && (
-                                                        <div className="bg-gray-800/50 p-3 rounded border border-gray-600">
-                                                            <div className="text-xs text-gray-400 mb-1">Quản trị viên</div>
-                                                            <div className="text-sm text-white flex items-center gap-2">
-                                                                <User className="h-4 w-4 text-purple-400" />
+                                                        <div className="bg-white p-3 rounded border border-gray-200">
+                                                            <div className="text-xs text-gray-500 mb-1">Quản trị viên</div>
+                                                            <div className="text-sm text-gray-900 flex items-center gap-2">
+                                                                <User className="h-4 w-4 text-purple-600" />
                                                                 {report.reportFeedback.admin.fullName ||
                                                                     report.reportFeedback.admin.userName ||
                                                                     report.reportFeedback.admin.email}
@@ -272,9 +272,9 @@ export default function OwnReports() {
 
                                                     {/* Feedback Subject */}
                                                     {report.reportFeedback.reportSubject && (
-                                                        <div className="bg-green-900/20 border border-green-600/50 p-3 rounded">
-                                                            <div className="text-xs text-gray-400 mb-1">Tiêu đề phản hồi</div>
-                                                            <div className="text-sm text-white font-medium">
+                                                        <div className="bg-green-50 border border-green-200 p-3 rounded">
+                                                            <div className="text-xs text-gray-500 mb-1">Tiêu đề phản hồi</div>
+                                                            <div className="text-sm text-gray-900 font-medium">
                                                                 {report.reportFeedback.reportSubject}
                                                             </div>
                                                         </div>
@@ -282,23 +282,23 @@ export default function OwnReports() {
 
                                                     {/* Feedback Reason */}
                                                     {report.reportFeedback.reason && (
-                                                        <div className="bg-green-900/20 border border-green-600/50 p-3 rounded">
-                                                            <div className="text-xs text-gray-400 mb-1">Nội dung phản hồi</div>
-                                                            <div className="text-sm text-gray-200 whitespace-pre-wrap">
+                                                        <div className="bg-green-50 border border-green-200 p-3 rounded">
+                                                            <div className="text-xs text-gray-500 mb-1">Nội dung phản hồi</div>
+                                                            <div className="text-sm text-gray-800 whitespace-pre-wrap">
                                                                 {report.reportFeedback.reason}
                                                             </div>
                                                         </div>
                                                     )}
 
-                                                    <div className="flex items-center gap-2 text-sm text-green-400 pt-2">
+                                                    <div className="flex items-center gap-2 text-sm text-green-600 pt-2">
                                                         <CheckCircle2 className="h-4 w-4" />
                                                         <span>Đã được xử lý</span>
                                                     </div>
                                                 </div>
                                             ) : (
                                                 <div className="flex flex-col items-center justify-center h-full py-8 text-center">
-                                                    <Clock className="h-12 w-12 text-gray-600 mb-3" />
-                                                    <p className="text-gray-400 text-sm">
+                                                    <Clock className="h-12 w-12 text-gray-300 mb-3" />
+                                                    <p className="text-gray-600 text-sm">
                                                         Chưa có phản hồi từ quản trị viên
                                                     </p>
                                                     <p className="text-gray-500 text-xs mt-1">
@@ -317,8 +317,8 @@ export default function OwnReports() {
                 {/* Empty State */}
                 {filteredReports.length === 0 && (
                     <div className="text-center py-16">
-                        <Flag className="h-16 w-16 text-gray-600 mx-auto mb-4" />
-                        <h3 className="text-xl font-semibold text-gray-400 mb-2">
+                        <Flag className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold text-gray-600 mb-2">
                             Chưa có báo cáo nào
                         </h3>
                         <p className="text-gray-500 mb-4">
@@ -330,7 +330,7 @@ export default function OwnReports() {
                         </p>
                         <Button
                             onClick={() => setIsReportDialogOpen(true)}
-                            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
                         >
                             <Plus className="h-5 w-5 mr-2" />
                             Tạo báo cáo mới
@@ -351,7 +351,7 @@ export default function OwnReports() {
                         leaveFrom="opacity-100"
                         leaveTo="opacity-0"
                     >
-                        <div className="fixed inset-0 bg-black bg-opacity-75" />
+                        <div className="fixed inset-0 bg-black bg-opacity-50" />
                     </Transition.Child>
 
                     <div className="fixed inset-0 overflow-y-auto">
@@ -365,14 +365,14 @@ export default function OwnReports() {
                                 leaveFrom="opacity-100 scale-100"
                                 leaveTo="opacity-0 scale-95"
                             >
-                                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-gray-900 p-6 text-left align-middle shadow-xl transition-all border border-gray-700">
+                                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all border border-gray-200">
                                     <div className="flex justify-between items-center mb-4">
-                                        <Dialog.Title as="h3" className="text-lg font-medium text-white">
+                                        <Dialog.Title as="h3" className="text-lg font-medium text-gray-900">
                                             Báo cáo vấn đề
                                         </Dialog.Title>
                                         <button
                                             onClick={() => setIsReportDialogOpen(false)}
-                                            className="text-gray-400 hover:text-white transition-colors"
+                                            className="text-gray-400 hover:text-gray-600 transition-colors"
                                         >
                                             <X size={20} />
                                         </button>
@@ -380,40 +380,40 @@ export default function OwnReports() {
 
                                     <div className="space-y-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
                                                 Tiêu đề <span className="text-red-500">*</span>
                                             </label>
                                             <input
                                                 type="text"
                                                 value={reportForm.reportSubject}
                                                 onChange={(e) => setReportForm({ ...reportForm, reportSubject: e.target.value })}
-                                                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
                                                 placeholder="Nhập tiêu đề báo cáo"
                                             />
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
                                                 Lý do <span className="text-red-500">*</span>
                                             </label>
                                             <input
                                                 type="text"
                                                 value={reportForm.reason}
                                                 onChange={(e) => setReportForm({ ...reportForm, reason: e.target.value })}
-                                                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
                                                 placeholder="Nhập lý do báo cáo"
                                             />
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
                                                 Mô tả chi tiết <span className="text-red-500">*</span>
                                             </label>
                                             <textarea
                                                 rows={4}
                                                 value={reportForm.description}
                                                 onChange={(e) => setReportForm({ ...reportForm, description: e.target.value })}
-                                                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500 resize-none"
+                                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 resize-none"
                                                 placeholder="Mô tả chi tiết vấn đề của bạn"
                                             />
                                         </div>
@@ -422,7 +422,7 @@ export default function OwnReports() {
                                             <button
                                                 type="button"
                                                 onClick={() => setIsReportDialogOpen(false)}
-                                                className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                                                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
                                             >
                                                 Hủy
                                             </button>
@@ -430,7 +430,7 @@ export default function OwnReports() {
                                                 type="button"
                                                 onClick={handleSubmitReport}
                                                 disabled={submitLoading}
-                                                className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                                className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
                                                 {submitLoading ? 'Đang gửi...' : 'Gửi báo cáo'}
                                             </button>
@@ -445,7 +445,6 @@ export default function OwnReports() {
         </div>
     );
 }
-
 
 // "use client";
 
@@ -480,9 +479,6 @@ export default function OwnReports() {
 //     } = useReport();
 
 //     const [selectedFilter, setSelectedFilter] = useState<string>("all");
-//     const [expandedReportId, setExpandedReportId] = useState<string | null>(null);
-//     const [selectedReport, setSelectedReport] = useState<OwnReportResponse | null>(null);
-//     const [detailDialogOpen, setDetailDialogOpen] = useState(false);
 //     const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
 //     const [reportForm, setReportForm] = useState({
 //         reportSubject: '',
@@ -571,15 +567,6 @@ export default function OwnReports() {
 //         }).format(new Date(dateString));
 //     };
 
-//     const handleViewDetail = (report: OwnReportResponse) => {
-//         setSelectedReport(report);
-//         setDetailDialogOpen(true);
-//     };
-
-//     const toggleExpand = (reportId: string) => {
-//         setExpandedReportId(expandedReportId === reportId ? null : reportId);
-//     };
-
 //     if (loading) {
 //         return (
 //             <div className="min-h-screen bg-gray-900 p-4 sm:p-6 lg:p-8">
@@ -666,13 +653,13 @@ export default function OwnReports() {
 //                             className="bg-gray-800 border-gray-700 hover:shadow-lg hover:shadow-purple-500/10 transition-shadow"
 //                         >
 //                             <CardContent className="p-6">
-//                                 <div className="space-y-4">
-//                                     {/* Header */}
-//                                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-//                                         <div className="flex-1">
-//                                             <div className="flex items-start gap-3 mb-2">
+//                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+//                                     {/* Left Section - Report Info */}
+//                                     <div className="space-y-4">
+//                                         <div className="flex items-start justify-between gap-4">
+//                                             <div className="flex items-start gap-3 flex-1">
 //                                                 <AlertCircle className="h-6 w-6 text-purple-400 flex-shrink-0 mt-1" />
-//                                                 <div className="flex-1">
+//                                                 <div className="flex-1 min-w-0">
 //                                                     <h2 className="text-xl font-bold text-white leading-tight mb-1">
 //                                                         {report.reportSubject}
 //                                                     </h2>
@@ -682,109 +669,93 @@ export default function OwnReports() {
 //                                                     </div>
 //                                                 </div>
 //                                             </div>
-//                                         </div>
-//                                         <div className="flex items-center gap-2">
 //                                             {getStatusBadge(report.hasResolve)}
 //                                         </div>
-//                                     </div>
 
-//                                     {/* Reason */}
-//                                     <div className="bg-gray-700/50 border border-gray-600 p-3 rounded-lg">
-//                                         <div className="text-xs text-gray-400 mb-1">Lý do</div>
-//                                         <div className="text-sm text-white">{report.reason}</div>
-//                                     </div>
-
-//                                     {/* Description Preview */}
-//                                     <div className="bg-gray-700/50 border border-gray-600 p-3 rounded-lg">
-//                                         <div className="text-xs text-gray-400 mb-1">Mô tả</div>
-//                                         <div className="text-sm text-gray-300 line-clamp-2">
-//                                             {report.description}
+//                                         {/* Reason */}
+//                                         <div className="bg-gray-700/50 border border-gray-600 p-3 rounded-lg">
+//                                             <div className="text-xs text-gray-400 mb-1">Lý do</div>
+//                                             <div className="text-sm text-white">{report.reason}</div>
 //                                         </div>
-//                                     </div>
 
-//                                     {/* User Info */}
-//                                     {report.user && (
-//                                         <div className="flex items-center gap-2 text-sm text-gray-400">
-//                                             <User className="h-4 w-4" />
-//                                             <span>Người gửi: {report.user.fullName || report.user.userName || report.user.email}</span>
-//                                         </div>
-//                                     )}
-
-//                                     {/* Feedback Preview */}
-//                                     {report.reportFeedback && (
-//                                         <div className="bg-green-900/20 border border-green-600/50 p-3 rounded-lg">
-//                                             <div className="flex items-center gap-2 mb-2">
-//                                                 <MessageSquare className="h-4 w-4 text-green-400" />
-//                                                 <span className="text-sm font-semibold text-green-400">
-//                                                     Phản hồi từ quản trị viên
-//                                                 </span>
-//                                             </div>
-//                                             {report.reportFeedback.admin && (
-//                                                 <div className="text-xs text-gray-400 mb-1">
-//                                                     {report.reportFeedback.admin.fullName || report.reportFeedback.admin.userName}
-//                                                 </div>
-//                                             )}
-//                                             <div className="text-sm text-gray-300 line-clamp-2">
-//                                                 {report.reportFeedback.reportSubject}
+//                                         {/* Description */}
+//                                         <div className="bg-gray-700/50 border border-gray-600 p-3 rounded-lg">
+//                                             <div className="text-xs text-gray-400 mb-1">Mô tả</div>
+//                                             <div className="text-sm text-gray-300 whitespace-pre-wrap">
+//                                                 {report.description}
 //                                             </div>
 //                                         </div>
-//                                     )}
 
-//                                     {/* Actions */}
-//                                     <div className="flex gap-3 pt-2">
-//                                         <Button
-//                                             variant="outline"
-//                                             size="sm"
-//                                             onClick={() => handleViewDetail(report)}
-//                                             className="flex items-center gap-2 text-gray-300 border-gray-600 hover:bg-gray-700 bg-gray-800"
-//                                         >
-//                                             Chi tiết
-//                                         </Button>
-//                                         <Button
-//                                             variant="outline"
-//                                             size="sm"
-//                                             onClick={() => toggleExpand(report.reportId)}
-//                                             className="flex items-center gap-2 text-gray-300 border-gray-600 hover:bg-gray-700 bg-gray-800"
-//                                         >
-//                                             {expandedReportId === report.reportId ? "Thu gọn" : "Mở rộng"}
-//                                         </Button>
+//                                         {/* User Info */}
+//                                         {report.user && (
+//                                             <div className="flex items-center gap-2 text-sm text-gray-400">
+//                                                 <User className="h-4 w-4" />
+//                                                 <span>Người gửi: {report.user.fullName || report.user.userName || report.user.email}</span>
+//                                             </div>
+//                                         )}
 //                                     </div>
 
-//                                     {/* Expanded Content */}
-//                                     {expandedReportId === report.reportId && (
-//                                         <div className="border-t border-gray-600 pt-4 space-y-3">
-//                                             <div className="bg-gray-700/50 rounded-lg p-4">
-//                                                 <h3 className="text-sm font-semibold text-white mb-2">
-//                                                     Mô tả chi tiết
-//                                                 </h3>
-//                                                 <p className="text-sm text-gray-300 whitespace-pre-wrap">
-//                                                     {report.description}
-//                                                 </p>
-//                                             </div>
+//                                     {/* Right Section - Feedback */}
+//                                     <div className="flex flex-col">
+//                                         <div className="bg-gray-700/30 border border-gray-600 rounded-lg p-4 flex-1">
+//                                             <h3 className="text-lg font-semibold text-white flex items-center gap-2 mb-4">
+//                                                 <MessageSquare className="h-5 w-5 text-green-400" />
+//                                                 Phản hồi
+//                                             </h3>
 
-//                                             {report.reportFeedback && (
-//                                                 <div className="bg-gray-700/50 rounded-lg p-4">
-//                                                     <h3 className="text-sm font-semibold text-white mb-2">
-//                                                         Phản hồi đầy đủ
-//                                                     </h3>
-//                                                     <div className="space-y-2">
-//                                                         <div>
-//                                                             <div className="text-xs text-gray-400">Tiêu đề phản hồi</div>
-//                                                             <div className="text-sm text-white">
+//                                             {report.reportFeedback ? (
+//                                                 <div className="space-y-3">
+//                                                     {/* Admin Info */}
+//                                                     {report.reportFeedback.admin && (
+//                                                         <div className="bg-gray-800/50 p-3 rounded border border-gray-600">
+//                                                             <div className="text-xs text-gray-400 mb-1">Quản trị viên</div>
+//                                                             <div className="text-sm text-white flex items-center gap-2">
+//                                                                 <User className="h-4 w-4 text-purple-400" />
+//                                                                 {report.reportFeedback.admin.fullName ||
+//                                                                     report.reportFeedback.admin.userName ||
+//                                                                     report.reportFeedback.admin.email}
+//                                                             </div>
+//                                                         </div>
+//                                                     )}
+
+//                                                     {/* Feedback Subject */}
+//                                                     {report.reportFeedback.reportSubject && (
+//                                                         <div className="bg-green-900/20 border border-green-600/50 p-3 rounded">
+//                                                             <div className="text-xs text-gray-400 mb-1">Tiêu đề phản hồi</div>
+//                                                             <div className="text-sm text-white font-medium">
 //                                                                 {report.reportFeedback.reportSubject}
 //                                                             </div>
 //                                                         </div>
-//                                                         <div>
-//                                                             <div className="text-xs text-gray-400">Lý do</div>
-//                                                             <div className="text-sm text-white">
+//                                                     )}
+
+//                                                     {/* Feedback Reason */}
+//                                                     {report.reportFeedback.reason && (
+//                                                         <div className="bg-green-900/20 border border-green-600/50 p-3 rounded">
+//                                                             <div className="text-xs text-gray-400 mb-1">Nội dung phản hồi</div>
+//                                                             <div className="text-sm text-gray-200 whitespace-pre-wrap">
 //                                                                 {report.reportFeedback.reason}
 //                                                             </div>
 //                                                         </div>
+//                                                     )}
+
+//                                                     <div className="flex items-center gap-2 text-sm text-green-400 pt-2">
+//                                                         <CheckCircle2 className="h-4 w-4" />
+//                                                         <span>Đã được xử lý</span>
 //                                                     </div>
+//                                                 </div>
+//                                             ) : (
+//                                                 <div className="flex flex-col items-center justify-center h-full py-8 text-center">
+//                                                     <Clock className="h-12 w-12 text-gray-600 mb-3" />
+//                                                     <p className="text-gray-400 text-sm">
+//                                                         Chưa có phản hồi từ quản trị viên
+//                                                     </p>
+//                                                     <p className="text-gray-500 text-xs mt-1">
+//                                                         Báo cáo của bạn đang được xem xét
+//                                                     </p>
 //                                                 </div>
 //                                             )}
 //                                         </div>
-//                                     )}
+//                                     </div>
 //                                 </div>
 //                             </CardContent>
 //                         </Card>
@@ -815,143 +786,6 @@ export default function OwnReports() {
 //                     </div>
 //                 )}
 //             </div>
-
-//             {/* Detail Dialog */}
-//             <Transition appear show={detailDialogOpen} as={Fragment}>
-//                 <Dialog
-//                     as="div"
-//                     className="relative z-50"
-//                     onClose={() => setDetailDialogOpen(false)}
-//                 >
-//                     <Transition.Child
-//                         as={Fragment}
-//                         enter="ease-out duration-300"
-//                         enterFrom="opacity-0"
-//                         enterTo="opacity-100"
-//                         leave="ease-in duration-200"
-//                         leaveFrom="opacity-100"
-//                         leaveTo="opacity-0"
-//                     >
-//                         <div className="fixed inset-0 bg-black bg-opacity-75" />
-//                     </Transition.Child>
-
-//                     <div className="fixed inset-0 overflow-y-auto">
-//                         <div className="flex min-h-full items-center justify-center p-4">
-//                             <Transition.Child
-//                                 as={Fragment}
-//                                 enter="ease-out duration-300"
-//                                 enterFrom="opacity-0 scale-95"
-//                                 enterTo="opacity-100 scale-100"
-//                                 leave="ease-in duration-200"
-//                                 leaveFrom="opacity-100 scale-100"
-//                                 leaveTo="opacity-0 scale-95"
-//                             >
-//                                 <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-gray-900 p-6 text-left align-middle shadow-xl transition-all border border-gray-700">
-//                                     <div className="flex justify-between items-center mb-6">
-//                                         <Dialog.Title as="h3" className="text-xl font-medium text-white flex items-center gap-2">
-//                                             <Flag className="h-6 w-6 text-purple-400" />
-//                                             Chi tiết báo cáo
-//                                         </Dialog.Title>
-//                                         <button
-//                                             onClick={() => setDetailDialogOpen(false)}
-//                                             className="text-gray-400 hover:text-white transition-colors"
-//                                         >
-//                                             <X size={20} />
-//                                         </button>
-//                                     </div>
-
-//                                     {selectedReport && (
-//                                         <div className="space-y-4">
-//                                             {/* Status */}
-//                                             <div className="flex justify-between items-center">
-//                                                 <span className="text-sm text-gray-400">Trạng thái</span>
-//                                                 {getStatusBadge(selectedReport.hasResolve)}
-//                                             </div>
-
-//                                             {/* Subject */}
-//                                             <div>
-//                                                 <div className="text-sm text-gray-400 mb-1">Tiêu đề</div>
-//                                                 <div className="text-white font-semibold">
-//                                                     {selectedReport.reportSubject}
-//                                                 </div>
-//                                             </div>
-
-//                                             {/* Reason */}
-//                                             <div>
-//                                                 <div className="text-sm text-gray-400 mb-1">Lý do</div>
-//                                                 <div className="text-white">{selectedReport.reason}</div>
-//                                             </div>
-
-//                                             {/* Description */}
-//                                             <div>
-//                                                 <div className="text-sm text-gray-400 mb-1">Mô tả chi tiết</div>
-//                                                 <div className="text-white bg-gray-800 p-3 rounded-lg whitespace-pre-wrap">
-//                                                     {selectedReport.description}
-//                                                 </div>
-//                                             </div>
-
-//                                             {/* Created At */}
-//                                             <div>
-//                                                 <div className="text-sm text-gray-400 mb-1">Thời gian tạo</div>
-//                                                 <div className="text-white flex items-center gap-2">
-//                                                     <Calendar className="h-4 w-4" />
-//                                                     {formatDateTime(selectedReport.createdAt)}
-//                                                 </div>
-//                                             </div>
-
-//                                             {/* User Info */}
-//                                             {selectedReport.user && (
-//                                                 <div>
-//                                                     <div className="text-sm text-gray-400 mb-1">Người gửi</div>
-//                                                     <div className="text-white flex items-center gap-2">
-//                                                         <User className="h-4 w-4" />
-//                                                         {selectedReport.user.fullName || selectedReport.user.userName || selectedReport.user.email}
-//                                                     </div>
-//                                                 </div>
-//                                             )}
-
-//                                             {/* Feedback */}
-//                                             {selectedReport.reportFeedback && (
-//                                                 <div className="bg-green-900/20 border border-green-600/50 p-4 rounded-lg">
-//                                                     <h4 className="text-green-400 font-semibold mb-3 flex items-center gap-2">
-//                                                         <MessageSquare className="h-5 w-5" />
-//                                                         Phản hồi từ quản trị viên
-//                                                     </h4>
-
-//                                                     {selectedReport.reportFeedback.admin && (
-//                                                         <div className="mb-3">
-//                                                             <div className="text-sm text-gray-400 mb-1">Quản trị viên</div>
-//                                                             <div className="text-white">
-//                                                                 {selectedReport.reportFeedback.admin.fullName ||
-//                                                                     selectedReport.reportFeedback.admin.userName ||
-//                                                                     selectedReport.reportFeedback.admin.email}
-//                                                             </div>
-//                                                         </div>
-//                                                     )}
-
-//                                                     <div className="mb-3">
-//                                                         <div className="text-sm text-gray-400 mb-1">Tiêu đề phản hồi</div>
-//                                                         <div className="text-white">
-//                                                             {selectedReport.reportFeedback.reportSubject}
-//                                                         </div>
-//                                                     </div>
-
-//                                                     <div>
-//                                                         <div className="text-sm text-gray-400 mb-1">Nội dung</div>
-//                                                         <div className="text-white">
-//                                                             {selectedReport.reportFeedback.reason}
-//                                                         </div>
-//                                                     </div>
-//                                                 </div>
-//                                             )}
-//                                         </div>
-//                                     )}
-//                                 </Dialog.Panel>
-//                             </Transition.Child>
-//                         </div>
-//                     </div>
-//                 </Dialog>
-//             </Transition>
 
 //             {/* Create Report Dialog */}
 //             <Transition appear show={isReportDialogOpen} as={Fragment}>
