@@ -5,6 +5,7 @@ import { StoreProvider } from "@/providers/StoreProvider";
 
 import { Toaster } from "sonner";
 import { FirebasePushClient } from "@/components/utility/FirebasePushClient";
+import { TimeProvider } from "@/utils/TimeContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,9 +36,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <StoreProvider>
-          <FirebasePushClient />
-          {children}
-          <Toaster position="top-right" richColors />
+          <TimeProvider>
+            <FirebasePushClient />
+            {children}
+            <Toaster position="top-right" richColors />
+          </TimeProvider>
         </StoreProvider>
       </body>
     </html>

@@ -63,10 +63,16 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
     const [paymentLoading, setPaymentLoading] = useState(false);
 
     const showSubscribeCard =
-        conference.isResearchConference ||
-        (!conference.isResearchConference &&
-            !conference.isInternalHosted &&
-            conference.contract?.isTicketSelling);
+        !conference.isResearchConference && (
+            conference.isInternalHosted ||
+            (!!conference.contract?.isTicketSelling)
+        );
+
+    // const showSubscribeCard =
+    //     conference.isResearchConference ||
+    //     (!conference.isResearchConference &&
+    //         !conference.isInternalHosted &&
+    //         conference.contract?.isTicketSelling);
 
     useEffect(() => {
         if (accessToken) {
