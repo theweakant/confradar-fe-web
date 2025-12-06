@@ -188,7 +188,7 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
         {/* <div className="flex items-center space-x-3"> */}
         <div className={`flex items-center ${isCollapsed ? "justify-center" : "space-x-3"}`}>
           <Image
-            src="/logo.png"
+            src="/ConfradarLogo_Light.png"
             alt="ConfRadar Logo"
             width={isCollapsed ? 28 : 36}
             height={isCollapsed ? 28 : 36}
