@@ -78,6 +78,21 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
     error: citiesError,
   } = useGetAllCitiesQuery();
 
+  const getBackgroundColor = () => {
+    switch (bannerFilter) {
+      case "technical":
+        // giữ tông blue cũ, tương tự sky-50/light blue
+        return "bg-gradient-to-br from-sky-100 via-sky-200 to-sky-50 text-gray-900";
+      case "research":
+        // academic, nhẹ nhàng, khác hoàn toàn technical
+        return "bg-gradient-to-br from-green-100 via-green-200 to-green-50 text-gray-900";
+      case "all":
+      default:
+        // neutral, mix cả hai
+        return "bg-gradient-to-br from-gray-100 via-gray-200 to-gray-50 text-gray-900";
+    }
+  };
+
   const getCurrentConferences = (): ConferenceResponse[] => {
     if (selectedStatus !== "all") {
       return statusConferences?.items || [];
@@ -468,8 +483,10 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
   // );
 
   return (
-    <div className="text-white p-4 pb-12">
-      <div className="max-w-6xl mx-auto bg-gray-900/90 backdrop-blur-sm border border-gray-600/50 rounded-2xl p-6 mt-8 shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
+    // <div className="text-white p-4 pb-12">
+    // <div className="max-w-6xl mx-auto bg-gray-900/90 backdrop-blur-sm border border-gray-600/50 rounded-2xl p-6 mt-8 shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
+    <div className="text-gray-900 p-4 pb-12"> {/* Đổi từ text-white thành text-gray-900 */}
+      <div className={`max-w-6xl mx-auto ${getBackgroundColor()} backdrop-blur-sm border border-gray-300 rounded-2xl p-6 mt-8 shadow-lg`}>
         <SearchFilter
           searchQuery={searchInput}
           setSearchQuery={setSearchInput}
@@ -518,7 +535,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
             Kết quả hội nghị {bannerFilter === 'technical' ? 'Kỹ thuật' : 'Nghiên cứu'} ({totalCount} hội nghị)
           </h2> */}
 
-          <h2 className="text-xl font-semibold text-white">
+          <h2 className="text-xl font-semibold text-gray-900">
             Kết quả hội nghị{" "}
             {bannerFilter === "technical"
               ? "Kỹ thuật"
@@ -530,9 +547,9 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
           {(defaultLoading ||
             lazyWithPricesLoading ||
             statusConferencesLoading) && (
-              <div className="text-sm text-blue-400">Đang tải...</div>
+              <div className="text-sm text-blue-600">Đang tải...</div>
             )}
-          <div className="text-sm text-gray-400">
+          <div className="text-sm text-gray-600">
             Trang {currentPage} / {totalPages} (Hiển thị{" "}
             {paginatedConferences.length} / {totalCount})
           </div>
@@ -548,7 +565,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
 
         {(defaultError || lazyWithPricesError || statusConferencesError) && (
           <div className="flex justify-center items-center py-12">
-            <div className="text-red-400 text-center">
+            <div className="text-red-600 text-center">
               {/* <p>Có lỗi xảy ra khi tải dữ liệu hội nghị {bannerFilter === 'technical' ? 'kỹ thuật' : 'nghiên cứu'}</p> */}
               <p>
                 Có lỗi xảy ra khi tải dữ liệu hội nghị
@@ -575,7 +592,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
           !statusConferencesError &&
           totalCount === 0 && (
             <div className="flex justify-center items-center py-12">
-              <div className="text-gray-400 text-center">
+              <div className="text-gray-600 text-center">
                 <p>
                   Không tìm thấy hội nghị{" "}
                   {bannerFilter === "all"

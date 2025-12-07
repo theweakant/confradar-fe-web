@@ -359,7 +359,7 @@ export interface ResearchPhase {
   revisionPaperReviewDuration?: number;
   revisionPaperDecideStatusDuration?: number;
   cameraReadyDecideStatusDuration?: number;
-  authorPaymentDuration?:number
+  authorPaymentDuration?: number
 
 
   revisionRoundDeadlines: RevisionRoundDeadline[];
@@ -671,7 +671,7 @@ export interface ResearchConferencePhaseResponse {
   reviseEndDate?: string;
   cameraReadyStartDate?: string;
   cameraReadyEndDate?: string;
-  isWaitlist?: boolean;
+  phaseOrder?: number;
   isActive?: boolean;
   revisionRoundDeadlines?: RevisionRoundDeadlineResponse[];
 
@@ -687,8 +687,8 @@ export interface ResearchConferencePhaseResponse {
   revisionPaperDecideStatusEnd?: string;
   cameraReadyDecideStatusStart?: string;
   cameraReadyDecideStatusEnd?: string;
-  authorPaymentStart?:string;
-  authorPaymentEnd?:string;
+  authorPaymentStart?: string;
+  authorPaymentEnd?: string;
 }
 
 export interface RevisionRoundDeadlineResponse {
@@ -706,7 +706,7 @@ export interface ResearchConferenceSessionResponse {
   startTime?: string;
   endTime?: string;
   date?: string;
-  sessionDate?:string;
+  sessionDate?: string;
   conferenceId?: string;
   roomId?: string;
   room?: RoomInfoResponse;

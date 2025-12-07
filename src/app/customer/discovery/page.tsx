@@ -13,7 +13,7 @@ export default function DiscoveryPage() {
     // <div>
     //     <h1 className="text-2xl font-bold">DiscoveryPage</h1>
     // </div>
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-rose-50 to-amber-50">
       <ConferenceBanner onFilterChange={setBannerFilter} />
       <ConferenceBrowser bannerFilter={bannerFilter} />
     </div>

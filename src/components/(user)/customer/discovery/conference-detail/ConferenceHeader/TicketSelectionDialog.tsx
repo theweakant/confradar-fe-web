@@ -13,6 +13,7 @@ import AuthorFormSection from "./AuthorFormSection";
 import PaymentMethodSelector from "./PaymentMethodSelector";
 import WaitlistSection from "./WaitlistSection";
 import { PaymentMethod } from "@/types/transaction.type";
+import { useGlobalTime } from "@/utils/TimeContext";
 
 interface TicketSelectionDialogProps {
     isOpen: boolean;
@@ -61,6 +62,8 @@ const TicketSelectionDialog: React.FC<TicketSelectionDialogProps> = ({
     addingToWaitListLoading,
     accessToken,
 }) => {
+    const { now, useFakeTime } = useGlobalTime();
+
     const isResearch = conference.isResearchConference;
 
     const [activeTab, setActiveTab] = React.useState<'author' | 'listener'>('author');
@@ -92,7 +95,7 @@ const TicketSelectionDialog: React.FC<TicketSelectionDialogProps> = ({
         return (
             authorTickets.length > 0 &&
             authorTickets.every((ticket) => {
-                const now = new Date();
+                // const now = new Date();
                 const currentPhase = ticket.pricePhases?.find((phase) => {
                     const startDate = new Date(phase.startDate || "");
                     const endDate = new Date(phase.endDate || "");

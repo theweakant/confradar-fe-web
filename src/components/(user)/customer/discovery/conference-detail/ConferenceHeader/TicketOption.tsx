@@ -6,6 +6,7 @@ import {
     TechnicalConferenceDetailResponse,
 } from "@/types/conference.type";
 import { getCurrentPrice } from "@/helper/conference";
+import { useGlobalTime } from "@/utils/TimeContext";
 
 interface TicketOptionProps {
     ticket: ConferencePriceResponse;
@@ -24,9 +25,11 @@ const TicketOption: React.FC<TicketOptionProps> = ({
     onSelect,
     isResearch,
 }) => {
+    const { now, useFakeTime } = useGlobalTime();
+
     const currentPrice = getCurrentPrice(ticket);
 
-    const now = new Date();
+    // const now = new Date();
     const currentPhase = ticket.pricePhases?.find((phase) => {
         const startDate = new Date(phase.startDate || "");
         const endDate = new Date(phase.endDate || "");
