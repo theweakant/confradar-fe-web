@@ -18,7 +18,6 @@ import ConferenceHeader from "./ConferenceHeader";
 import InformationTab from "./InformationTab";
 import SessionsTab from "./SessionsTab";
 import FeedbackTab from "./FeedbackTab";
-import ResearchPaperInformationTab from "./ResearchPaperInformationTab";
 import ConferencePriceTab from "./ConferencePriceTab";
 import SponsorCarousel from "./SponsorCarousel";
 import PolicyTab from "./PolicyTab";
@@ -273,8 +272,8 @@ const ConferenceDetail = () => {
   if (!conference) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${isResearch
-          ? 'bg-gray-50'
-          : 'bg-gradient-to-br from-sky-800 via-indigo-700 to-cyan-600'
+        ? 'bg-gray-50'
+        : 'bg-gradient-to-br from-sky-800 via-indigo-700 to-cyan-600'
         }`}>
         <div className="text-center">
           <p className={isResearch ? 'text-gray-700' : 'text-white'}>
