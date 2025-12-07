@@ -4,40 +4,39 @@ import type { ValidationResult } from "../basic";
 // Validate author ticket phase (must be within registration period)
 export const validateAuthorTicketPhase = (
   phase: Phase,
-  registrationStart: string,
-  registrationEnd: string
+  authorPaymentStart: string, // ✅ Đổi từ registrationStart
+  authorPaymentEnd: string     // ✅ Đổi từ registrationEnd
 ): ValidationResult => {
-  if (!registrationStart || !registrationEnd) {
+  if (!authorPaymentStart || !authorPaymentEnd) {
     return {
       isValid: false,
-      error: "Không tìm thấy thông tin thời gian đăng ký (Registration)",
+      error: "Không tìm thấy thông tin thời gian thanh toán tác giả (Author Payment)",
     };
   }
 
   const phaseStart = new Date(phase.startDate);
   const phaseEnd = new Date(phase.endDate);
-  const regStart = new Date(registrationStart);
-  const regEnd = new Date(registrationEnd);
+  const paymentStart = new Date(authorPaymentStart);
+  const paymentEnd = new Date(authorPaymentEnd);
 
-  // Phase must start within registration period
-  if (phaseStart < regStart || phaseStart > regEnd) {
+  // Phase must start within author payment period
+  if (phaseStart < paymentStart || phaseStart > paymentEnd) {
     return {
       isValid: false,
-      error: `Chi phí cho tác giả: Giai đoạn "${phase.phaseName}" phải bắt đầu trong thời gian đăng ký (${regStart.toLocaleDateString("vi-VN")} - ${regEnd.toLocaleDateString("vi-VN")})`,
+      error: `Chi phí cho tác giả: Giai đoạn "${phase.phaseName}" phải bắt đầu trong thời gian thanh toán tác giả (${paymentStart.toLocaleDateString("vi-VN")} - ${paymentEnd.toLocaleDateString("vi-VN")})`,
     };
   }
 
-  // Phase must end before or on registration end date
-  if (phaseEnd > regEnd) {
+  // Phase must end before or on author payment end date
+  if (phaseEnd > paymentEnd) {
     return {
       isValid: false,
-      error: `Chi phí cho tác giả: Giai đoạn "${phase.phaseName}" phải kết thúc trước ${regEnd.toLocaleDateString("vi-VN")}`,
+      error: `Chi phí cho tác giả: Giai đoạn "${phase.phaseName}" phải kết thúc trước ${paymentEnd.toLocaleDateString("vi-VN")}`,
     };
   }
 
   return { isValid: true };
 };
-
 // Validate listener ticket phase (must be within ticket sale period)
 export const validateListenerTicketPhase = (
   phase: Phase,
@@ -99,14 +98,16 @@ export const validateResearchTicket = (
     return { isValid: false, error: "Chi phí tham dự phải có ít nhất 1 giai đoạn giá" };
   }
 
-  const mainPhase = researchPhases.find((p) => !p.isWaitlist);
+  // ✅ Lấy phase đầu tiên thay vì tìm !isWaitlist
+  const mainPhase = researchPhases[0];
 
   // Author ticket validation
   if (ticket.isAuthor) {
-    if (!mainPhase?.registrationStartDate || !mainPhase?.registrationEndDate) {
+    // ✅ Đổi sang authorPaymentStart/End
+    if (!mainPhase?.authorPaymentStart || !mainPhase?.authorPaymentEnd) {
       return {
         isValid: false,
-        error: "Vui lòng điền thông tin Timeline (Registration) trước khi thêm chi phí tác giả",
+        error: "Vui lòng điền thông tin Timeline (Author Payment) trước khi thêm chi phí tác giả",
       };
     }
 
@@ -114,8 +115,8 @@ export const validateResearchTicket = (
     for (const phase of ticket.phases) {
       const result = validateAuthorTicketPhase(
         phase,
-        mainPhase.registrationStartDate,
-        mainPhase.registrationEndDate
+        mainPhase.authorPaymentStart,  // ✅ Đổi từ registrationStartDate
+        mainPhase.authorPaymentEnd     // ✅ Đổi từ registrationEndDate
       );
       if (!result.isValid) {
         return result;
@@ -127,7 +128,7 @@ export const validateResearchTicket = (
     if (!ticketSaleStart || !ticketSaleEnd) {
       return {
         isValid: false,
-        error: "Không tìm thấy thông tin thời gian bán",
+        error: "Không tìm thấy thông tin thời gian bán vé",
       };
     }
 
