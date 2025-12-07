@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useEffect, useMemo, useCallback, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks/hooks";
@@ -95,7 +96,8 @@ export default function ResearchConferenceStepForm({
   conferenceId,
 }: ResearchConferenceStepFormProps) {
   const dispatch = useAppDispatch();
-
+  
+  const router = useRouter();
   const reduxConferenceId = useAppSelector((state) => state.conferenceStep.conferenceId);
   const actualConferenceId = mode === "create" ? reduxConferenceId : conferenceId;
 
@@ -460,6 +462,11 @@ const handlePreviousStep = useCallback(() => {
     handleGoToStep(visibleSteps[currentIndex - 1]);
   }
 }, [currentStep, visibleSteps, handleGoToStep]);
+
+  const handleComplete = useCallback(() => {
+  toast.success("Trở về trang quản lí!");
+  router.push("/workspace/organizer/manage-conference");
+}, [router]);
 
 const isCurrentStepLast = useMemo(() => {
   const currentIndex = visibleSteps.indexOf(currentStep);
@@ -1301,7 +1308,7 @@ const handleTimelineSubmit = async () => {
             onNext={handleNextStep}
             onSubmit={handleSponsorsSubmit}
             onUpdate={handleUpdateCurrentStep}
-            onUpdateAll={mode === "edit" ? handleUpdateAll : undefined}
+            onComplete={mode === "edit" ? handleComplete : undefined}
           />
         </StepContainer>
       )}

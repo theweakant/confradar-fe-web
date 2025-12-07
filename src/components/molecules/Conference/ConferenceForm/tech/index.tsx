@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useCallback, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks/hooks";
 import { setMaxStep, setMode, setVisibleSteps } from "@/redux/slices/conferenceStep.slice";
@@ -118,6 +119,7 @@ function TechConferenceStepFormContent({
   mode,
   conferenceId,
 }: TechConferenceStepFormProps) {
+  const router = useRouter();
   const dispatch = useAppDispatch();
   const userRole = useAppSelector((state) => state.auth.user?.role);
   const isCollaborator = Boolean(userRole?.includes("Collaborator"));
@@ -372,14 +374,22 @@ function TechConferenceStepFormContent({
     }
   }, [currentStep, visibleSteps, handleGoToStep]);
 
-  const lastVisibleStep = useMemo(() => {
-    return visibleSteps[visibleSteps.length - 1] || 1;
-  }, [visibleSteps]);
 
   const isCurrentStepLast = useMemo(() => {
     const currentIndex = visibleSteps.indexOf(currentStep);
     return currentIndex === visibleSteps.length - 1;
   }, [currentStep, visibleSteps]);
+
+  const handleComplete = useCallback(() => {
+    if (mode !== "edit") return;
+    
+    const targetPath = isCollaborator 
+      ? "/workspace/collaborator/manage-conference"
+      : "/workspace/organizer/manage-conference";
+    
+    toast.success("Trở về trang quản lí!");
+    router.push(targetPath);
+  }, [mode, isCollaborator, router]);
 
   const handleBasicSubmit = useCallback(async () => {
     const basicValidation = validateBasicForm(basicForm);
@@ -761,59 +771,6 @@ function TechConferenceStepFormContent({
     realDeleteTracking.deletedSessionIds,
   ]);
 
-  const handleUpdateAll = useCallback(async () => {
-    if (mode !== "edit") return { success: false };
-    isSubmittingRef.current = true;
-    const filteredData = {
-      basicForm,
-      tickets: visibleSteps.includes(2) ? tickets : [],
-      sessions: visibleSteps.includes(3) ? sessions : [],
-      policies: visibleSteps.includes(4) ? policies : [],
-      mediaList: visibleSteps.includes(5) ? mediaList : [],
-      sponsors: visibleSteps.includes(6) ? sponsors : [],
-      refundPolicies,
-    };
-    const result = await submitAll(filteredData);
-    if (result?.success) {
-      toast.success("Cập nhật toàn bộ hội thảo thành công!");
-      realDeleteTracking.resetDeleteTracking();
-      visibleSteps.forEach((step) => handleClearDirty(step));
-      lastSubmitTimeRef.current = Date.now();
-      initialDataRef.current = {
-        basicForm: { ...basicForm },
-        tickets: [...tickets],
-        sessions: [...sessions],
-        policies: [...policies],
-        refundPolicies: [...refundPolicies],
-        mediaList: [...mediaList],
-        sponsors: [...sponsors],
-      };
-    } else {
-      const errorMsg = result?.errors?.join("; ") || "Lưu toàn bộ thất bại";
-      toast.error(errorMsg);
-    }
-    isSubmittingRef.current = false;
-    return result || { success: false };
-  }, [
-    mode,
-    basicForm,
-    tickets,
-    sessions,
-    policies,
-    mediaList,
-    sponsors,
-    refundPolicies,
-    visibleSteps,
-    submitAll,
-    realDeleteTracking,
-    handleClearDirty,
-  ]);
-
-  const handleApprovalSuccess = useCallback(() => {
-    if (refetch) refetch();
-    toast.success("Đã gửi yêu cầu duyệt thành công!");
-  }, [refetch]);
-
   const filteredStepLabels = useMemo(() => {
     return visibleSteps.map((step) => {
       if (step < 1 || step > TECH_STEP_LABELS.length) {
@@ -1152,7 +1109,7 @@ function TechConferenceStepFormContent({
             onNext={handleNext}
             onSubmit={handleSponsorsSubmit}
             onUpdate={handleUpdateCurrentStep}
-            onUpdateAll={mode === "edit" ? handleUpdateAll : undefined}
+            onComplete={mode === "edit" ? handleComplete : undefined}
           />
         </StepContainer>
       )}
