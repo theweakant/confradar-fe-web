@@ -782,10 +782,10 @@ export const conferenceStepApi = createApi({
 
     updateResearchPhase: builder.mutation<
       ApiResponse<{ success: boolean }>,
-      { researchPhaseId: string; data: ResearchPhase } 
+      { researchPhaseId: string; data: ResearchPhase }
     >({
       query: ({ researchPhaseId, data }) => ({
-        url: `/research-phases/${researchPhaseId}`,
+        url: endpoint.CONFERENCE_STEP.UPDATE_RESEARCH_PHASE(researchPhaseId),
         method: "PUT",
         body: data,
       }),

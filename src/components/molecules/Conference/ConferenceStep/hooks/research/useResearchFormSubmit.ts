@@ -185,132 +185,89 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
     })),
   });
 
-  const submitPrice = async (tickets: Ticket[]) => {
-    if (!conferenceId) {
-      toast.error("Không tìm thấy conference ID!");
-      return { success: false };
-    }
+const submitPrice = async (tickets: Ticket[]) => {
+  if (!conferenceId) {
+    toast.error("Không tìm thấy conference ID!");
+    return { success: false };
+  }
 
-    const hasAuthorTicket = tickets.some((t) => t.isAuthor === true);
-    if (mode !== "edit" && !hasAuthorTicket) {
-      toast.error("Hội nghị nghiên cứu cần có ít nhất một loại chi phí dành cho tác giả!");
-      return { success: false };
-    }
+  try {
+    setIsSubmitting(true);
 
-    try {
-      setIsSubmitting(true);
-
-      if (mode === "edit") {
-        // BƯỚC 0: Xóa refund policies bị đánh dấu
-        if (deletedRefundPolicyIds.length > 0) {
-          await Promise.allSettled(
-            deletedRefundPolicyIds.map((id) => deleteRefundPolicy(id).unwrap())
-          );
-        }
-
-        // BƯỚC 1: Xóa phases bị đánh dấu
-        if (deletedPhaseIds.length > 0) {
-          await Promise.allSettled(
-            deletedPhaseIds.map((id) => deletePricePhase(id).unwrap())
-          );
-        }
-
-        // BƯỚC 2: Xóa tickets bị đánh dấu
-        if (deletedTicketIds.length > 0) {
-          await Promise.all(deletedTicketIds.map((id) => deletePrice(id).unwrap()));
-        }
-
-        // BƯỚC 3: Cập nhật ticket hiện có
-        const existingTickets = tickets.filter((t) => t.priceId);
-        if (existingTickets.length > 0) {
-          await Promise.all(
-            existingTickets.map((ticket) =>
-              updatePrice({
-                priceId: ticket.priceId!,
-                data: {
-                  ticketPrice: parseFloat(ticket.ticketPrice.toFixed(2)),
-                  ticketName: ticket.ticketName,
-                  ticketDescription: ticket.ticketDescription,
-                  totalSlot: ticket.totalSlot,
-                },
-              }).unwrap()
-            )
-          );
-        }
-
-        // BƯỚC 4: Xử lý phases của ticket hiện có
-        for (const ticket of existingTickets) {
-          if (!ticket.phases || ticket.phases.length === 0) continue;
-
-          const existingPhases = ticket.phases.filter((p) => p.pricePhaseId);
-          if (existingPhases.length > 0) {
-            await Promise.all(
-              existingPhases.map((phase) =>
-                updatePricePhase({
-                  pricePhaseId: phase.pricePhaseId!,
-                  data: {
-                    phaseName: phase.phaseName,
-                    applyPercent: parseFloat(phase.applyPercent.toFixed(2)),
-                    startDate: phase.startDate,
-                    endDate: phase.endDate,
-                    totalSlot: phase.totalslot,
-                    forWaitlist: phase.forWaitlist ?? false,
-                  },
-                }).unwrap()
-              )
-            );
-          }
-
-          const newPhases = ticket.phases.filter((p) => !p.pricePhaseId);
-          if (newPhases.length > 0) {
-            await createPhaseForPrice({
-              conferencePriceId: ticket.priceId!,
-              data: {
-                pricePhases: newPhases.map((phase) => ({
-                  phaseName: phase.phaseName,
-                  applyPercent: parseFloat(phase.applyPercent.toFixed(2)),
-                  startDate: phase.startDate,
-                  endDate: phase.endDate,
-                  totalslot: phase.totalslot,
-                  forWaitlist: phase.forWaitlist ?? false,
-                  refundInPhase: phase.refundInPhase?.map((rp) => ({
-                    percentRefund: rp.percentRefund,
-                    refundDeadline: rp.refundDeadline,
-                  })) || [],
-                })),
-              },
-            }).unwrap();
-          }
-        }
-
-        // BƯỚC 5: Tạo ticket mới
-        const newTickets = tickets.filter((t) => !t.priceId);
-        if (newTickets.length > 0) {
-          await createPrice({ conferenceId, data: formatTicketData(newTickets) }).unwrap();
-        }
-
-        await triggerRefetch();
-      } else {
-        if (tickets.length === 0) {
-          toast.error("Vui lòng thêm ít nhất 1 loại chi phí!");
-          return { success: false };
-        }
-
-        await createPrice({ conferenceId, data: formatTicketData(tickets) }).unwrap();
+    if (mode === "edit") {
+      if (deletedTicketIds.length > 0) {
+        await Promise.all(
+          deletedTicketIds.map((id) => deletePrice(id).unwrap())
+        );
       }
 
-      dispatch(markStepCompleted(4));
+      // ✅ BƯỚC 2: Update tickets hiện có
+      // → CHỈ cập nhật thông tin cơ bản, KHÔNG đụng phases
+      const existingTickets = tickets.filter((t) => t.priceId);
+      if (existingTickets.length > 0) {
+        await Promise.all(
+          existingTickets.map((ticket) =>
+            updatePrice({
+              priceId: ticket.priceId!,
+              data: {
+                ticketPrice: parseFloat(ticket.ticketPrice.toFixed(2)),
+                ticketName: ticket.ticketName,
+                ticketDescription: ticket.ticketDescription,
+                totalSlot: ticket.totalSlot,
+              },
+            }).unwrap()
+          )
+        );
+      }
+
+      // ✅ BƯỚC 3: Tạo tickets mới
+      // → Phases sẽ được tạo tự động cùng ticket (theo formatTicketData)
+      const newTickets = tickets.filter((t) => !t.priceId);
+      if (newTickets.length > 0) {
+        await createPrice({
+          conferenceId,
+          data: formatTicketData(newTickets),
+        }).unwrap();
+      }
+
+      // ✅ BƯỚC 4: Refetch để đồng bộ IDs từ DB
+      await triggerRefetch();
+      toast.success("Cập nhật giá thành công!");
+
+    } else {
+      // CREATE MODE
+      if (tickets.length === 0) {
+        toast.error("Vui lòng thêm ít nhất 1 loại chi phí!");
+        return { success: false };
+      }
+
+      const hasAuthorTicket = tickets.some((t) => t.isAuthor === true);
+      if (!hasAuthorTicket) {
+        toast.error("Hội nghị nghiên cứu cần có ít nhất một loại chi phí dành cho tác giả!");
+        return { success: false };
+      }
+
+      // ✅ Tạo mới: Phases được tạo tự động trong formatTicketData
+      await createPrice({
+        conferenceId,
+        data: formatTicketData(tickets),
+      }).unwrap();
+
       toast.success("Lưu giá thành công!");
-      return { success: true };
-    } catch (error) {
-      const apiError = error as { data?: ApiError };
-      console.error("Price submit failed:", error);
-      toast.error(apiError?.data?.message || "Lưu giá thất bại!");
-      return { success: false, error };
-    } finally {
-      setIsSubmitting(false);
     }
-  };
+
+    dispatch(markStepCompleted(4));
+    return { success: true };
+
+  } catch (error) {
+    const apiError = error as { data?: ApiError };
+    console.error("Price submit failed:", error);
+    toast.error(apiError?.data?.message || "Lưu giá thất bại!");
+    return { success: false, error };
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const submitBasicInfo = async (formData: ConferenceBasicForm, autoNext: boolean = true) => {
     if (!formData) return { success: false };
