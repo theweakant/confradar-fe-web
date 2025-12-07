@@ -1,4 +1,4 @@
-// ConferenceSubscribeCard.tsx
+
 import React from "react";
 import {
     ConferencePricePhaseResponse,
@@ -32,32 +32,26 @@ const ConferenceSubscribeCard: React.FC<ConferenceSubscribeCardProps> = ({
 
     const baseClasses = isResearch
         ? "bg-white rounded-xl shadow-md p-6"
-        : "bg-gradient-to-br from-slate-800/90 via-gray-900/80 to-slate-900/70 backdrop-blur-md rounded-2xl shadow-lg p-6";
+        : "bg-white rounded-xl shadow-md p-6";
 
     const titleClasses = isResearch
         ? "text-xl font-bold mb-3 text-blue-600"
-        : "text-xl font-bold mb-3 bg-gradient-to-r from-sky-400 via-indigo-400 to-blue-300 bg-clip-text text-transparent drop-shadow-[0_2px_6px_rgba(56,189,248,0.4)]";
+        : "text-xl font-bold mb-3 text-blue-600";
 
-    const textColor = isResearch ? "text-gray-700" : "text-white";
+    const textColor = isResearch ? "text-gray-700" : "text-gray-700";
 
     const renderSubscribeButton = () => {
         if (purchasedTicketInfo) {
             return (
                 <div className="space-y-3">
-                    <div className={`p-4 rounded-lg ${isResearch
-                            ? "bg-green-50 border border-green-200"
-                            : "bg-green-500/20 border border-green-400/40"
-                        }`}>
+                    <div className="p-4 rounded-lg bg-green-50 border border-green-200">
                         <div className="flex items-start gap-3">
-                            <svg className={`w-6 h-6 flex-shrink-0 mt-0.5 ${isResearch ? "text-green-600" : "text-green-400"
-                                }`} fill="currentColor" viewBox="0 0 20 20">
+                            <svg className="w-6 h-6 flex-shrink-0 mt-0.5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                             </svg>
                             <div className="flex-1">
-                                <p className={`font-semibold mb-1 ${isResearch ? "text-green-800" : "text-green-300"
-                                    }`}>Bạn đã mua vé thành công!</p>
-                                <div className={`text-sm space-y-1 ${isResearch ? "text-green-700" : "text-green-200/80"
-                                    }`}>
+                                <p className="font-semibold mb-1 text-green-800">Bạn đã mua vé thành công!</p>
+                                <div className="text-sm space-y-1 text-green-700">
                                     <p><span className="font-medium">Loại vé:</span> {purchasedTicketInfo.ticket.ticketName}</p>
                                     {purchasedTicketInfo.phase && (
                                         <p><span className="font-medium">Giai đoạn:</span> {purchasedTicketInfo.phase.phaseName}</p>
@@ -68,15 +62,11 @@ const ConferenceSubscribeCard: React.FC<ConferenceSubscribeCardProps> = ({
                         </div>
                     </div>
 
-                    <button disabled className={`w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 ${isResearch
-                            ? "bg-gray-300 text-gray-500"
-                            : "bg-gray-500/50 text-white/70"
-                        }`}>
+                    <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-gray-300 text-gray-500">
                         Đã sở hữu vé
                     </button>
 
-                    <p className={`text-xs text-center ${isResearch ? "text-gray-500" : "text-white/60"
-                        }`}>
+                    <p className="text-xs text-center text-gray-500">
                         Bạn có thể xem chi tiết vé trong phần &quot;Vé của tôi&quot;
                     </p>
                 </div>
@@ -98,14 +88,10 @@ const ConferenceSubscribeCard: React.FC<ConferenceSubscribeCardProps> = ({
         if (!currentPhase && nextPhaseStart) {
             return (
                 <div>
-                    <button disabled className={`w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 ${isResearch
-                            ? "bg-gray-300 text-gray-500"
-                            : "bg-gray-500/50 text-white/70"
-                        }`}>
+                    <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-gray-300 text-gray-500">
                         Chưa đến lúc mở bán vé
                     </button>
-                    <p className={`text-xs mt-2 text-center ${isResearch ? "text-gray-500" : "text-white/60"
-                        }`}>
+                    <p className="text-xs mt-2 text-center text-gray-500">
                         Ngày bắt đầu bán vé: {formatDate(nextPhaseStart.toISOString())}
                     </p>
                 </div>
@@ -114,10 +100,7 @@ const ConferenceSubscribeCard: React.FC<ConferenceSubscribeCardProps> = ({
 
         if (!currentPhase && !nextPhaseStart) {
             return (
-                <button disabled className={`w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 ${isResearch
-                        ? "bg-red-300 text-red-700"
-                        : "bg-red-500/50 text-white/70"
-                    }`}>
+                <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-red-300 text-red-700">
                     Đã hết thời gian bán vé
                 </button>
             );
@@ -126,10 +109,7 @@ const ConferenceSubscribeCard: React.FC<ConferenceSubscribeCardProps> = ({
         return (
             <button
                 onClick={onOpenDialog}
-                className={`w-full px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${isResearch
-                        ? "bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg"
-                        : "bg-gradient-to-r from-sky-500 via-indigo-500 to-violet-500 hover:from-sky-400 hover:via-indigo-400 hover:to-violet-400 text-white shadow-lg shadow-indigo-500/30 hover:scale-[1.02]"
-                    }`}
+                className="w-full px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg"
             >
                 {conference.isResearchConference ? "Đăng ký tham dự" : "Mua vé"}
             </button>

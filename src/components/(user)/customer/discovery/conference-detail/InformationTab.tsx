@@ -320,7 +320,7 @@ const InformationTab: React.FC<InformationTabProps> = ({
       </div>
 
       {/* Sponsors */}
-      <div className="mb-8">
+      {/* <div className="mb-8">
         <h3 className="text-xl font-semibold text-gray-900 mb-4">Nhà tài trợ</h3>
         {sponsorsList.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -351,7 +351,7 @@ const InformationTab: React.FC<InformationTabProps> = ({
             <p>Chưa có thông tin về nhà tài trợ</p>
           </div>
         )}
-      </div>
+      </div> */}
     </div>
   );
 };

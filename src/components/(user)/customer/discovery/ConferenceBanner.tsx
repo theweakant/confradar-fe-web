@@ -34,8 +34,13 @@ const ConferenceBanner: React.FC<BannerFilterProps> = ({
               rgba(0,0,0,0.4) 50%,
               rgba(128,128,128,0.2) 100%
             ),
-         url('/images/customer_route/confbannerbg1.jpg')
-       `,
+         url('${activeFilter === "all"
+              ? "/images/customer_route/all_filter.jpg"
+              : activeFilter === "technical"
+                ? "/images/customer_route/technical_filter.jpg"
+                : "/images/customer_route/research_filter.jpg"
+            }')
+   `,
           backgroundSize: "cover, cover, contain",
           backgroundPosition: "center, center, center",
           backgroundRepeat: "no-repeat",
@@ -81,11 +86,10 @@ const ConferenceBanner: React.FC<BannerFilterProps> = ({
             onClick={() => handleFilterClick("all")}
             className={`
       px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105
-      ${
-        activeFilter === "all"
-          ? "bg-white text-gray-900 shadow-xl"
-          : "bg-gray-900/80 text-white border-2 border-white/30 hover:bg-white hover:text-gray-900"
-      }
+      ${activeFilter === "all"
+                ? "bg-white text-gray-900 shadow-xl"
+                : "bg-gray-900/80 text-white border-2 border-white/30 hover:bg-white hover:text-gray-900"
+              }
     `}
           >
             Tất cả
@@ -95,10 +99,9 @@ const ConferenceBanner: React.FC<BannerFilterProps> = ({
             onClick={() => handleFilterClick("technical")}
             className={`
               px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105
-              ${
-                activeFilter === "technical"
-                  ? "bg-white text-gray-900 shadow-xl"
-                  : "bg-gray-900/80 text-white border-2 border-white/30 hover:bg-white hover:text-gray-900"
+              ${activeFilter === "technical"
+                ? "bg-white text-gray-900 shadow-xl"
+                : "bg-gray-900/80 text-white border-2 border-white/30 hover:bg-white hover:text-gray-900"
               }
             `}
           >
@@ -109,10 +112,9 @@ const ConferenceBanner: React.FC<BannerFilterProps> = ({
             onClick={() => handleFilterClick("research")}
             className={`
               px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105
-              ${
-                activeFilter === "research"
-                  ? "bg-white text-gray-900 shadow-xl"
-                  : "bg-gray-900/80 text-white border-2 border-white/30 hover:bg-white hover:text-gray-900"
+              ${activeFilter === "research"
+                ? "bg-white text-gray-900 shadow-xl"
+                : "bg-gray-900/80 text-white border-2 border-white/30 hover:bg-white hover:text-gray-900"
               }
             `}
           >

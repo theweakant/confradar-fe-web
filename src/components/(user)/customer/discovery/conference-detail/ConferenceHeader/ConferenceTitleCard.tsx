@@ -28,17 +28,17 @@ const ConferenceTitleCard: React.FC<ConferenceTitleCardProps> = ({
 }) => {
     const baseClasses = isResearch
         ? "bg-white rounded-xl shadow-md p-6"
-        : "h-full bg-gradient-to-br from-slate-800/90 via-gray-900/80 to-slate-900/70 backdrop-blur-md rounded-2xl shadow-lg p-6 md:p-8";
+        : "h-full bg-white rounded-xl shadow-md p-6 md:p-8";
 
-    const textColor = isResearch ? "text-gray-900" : "text-white";
-    const titleGradient = isResearch
+    const textColor = isResearch ? "text-gray-900" : "text-gray-800";
+    const titleColor = isResearch
         ? "text-gray-900"
-        : "bg-gradient-to-r from-sky-400 via-indigo-400 to-blue-300 bg-clip-text text-transparent drop-shadow-[0_2px_6px_rgba(56,189,248,0.4)]";
+        : "text-blue-600";
 
     return (
         <div className={baseClasses}>
             <div className="flex items-start gap-3 mb-4">
-                <h1 className={`text-2xl md:text-3xl font-bold flex-1 ${titleGradient}`}>
+                <h1 className={`text-2xl md:text-3xl font-bold flex-1 ${titleColor}`}>
                     {conference.conferenceName}
                 </h1>
 
@@ -47,13 +47,13 @@ const ConferenceTitleCard: React.FC<ConferenceTitleCardProps> = ({
                         onClick={onFavoriteToggle}
                         disabled={isTogglingFavorite}
                         className={`p-2 rounded-full transition disabled:opacity-50 disabled:cursor-not-allowed ${isResearch
-                            ? "bg-gray-100 hover:bg-gray-200"
-                            : "bg-white/20 hover:bg-white/30"
+                                ? "bg-gray-100 hover:bg-gray-200"
+                                : "bg-gray-100 hover:bg-gray-200"
                             }`}
                         title={isFavorite ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
                     >
                         <Star
-                            className={`w-6 h-6 transition-colors ${isFavorite ? "fill-yellow-400 text-yellow-400" : isResearch ? "text-gray-600" : "text-white"
+                            className={`w-6 h-6 transition-colors ${isFavorite ? "fill-yellow-400 text-yellow-400" : "text-gray-600"
                                 } ${isTogglingFavorite ? "animate-pulse" : ""}`}
                         />
                     </button>
@@ -66,11 +66,11 @@ const ConferenceTitleCard: React.FC<ConferenceTitleCardProps> = ({
 
             <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${textColor}`}>
                 <div className="flex items-center gap-2">
-                    <Calendar className={`w-5 h-5 ${isResearch ? "text-gray-600" : "text-white"}`} />
+                    <Calendar className="w-5 h-5 text-gray-600" />
                     <span>{formatDate(conference.startDate)}</span>
                 </div>
                 <div className="flex items-start gap-2 md:col-span-2">
-                    <MapPin className={`w-5 h-5 ${isResearch ? "text-gray-600" : "text-white"}`} />
+                    <MapPin className="w-5 h-5 text-gray-600" />
                     <span>{conference.address}</span>
                 </div>
                 {conference.totalSlot && (
@@ -81,10 +81,7 @@ const ConferenceTitleCard: React.FC<ConferenceTitleCardProps> = ({
             </div>
 
             {!showSubscribeCard && (
-                <div className={`mt-4 p-4 rounded-lg text-sm ${isResearch
-                    ? "bg-yellow-50 text-yellow-800 border border-yellow-200"
-                    : "bg-white/10 text-yellow-200"
-                    }`}>
+                <div className="mt-4 p-4 bg-yellow-50 text-yellow-800 border border-yellow-200 rounded-lg text-sm">
                     Đây là hội thảo của bên đối tác liên kết với Confradar nhưng không liên kết bán vé.
                     Bạn vui lòng xem thông tin về hội thảo, và liên hệ bên liên quan để mua vé nếu có nhu cầu.
                 </div>

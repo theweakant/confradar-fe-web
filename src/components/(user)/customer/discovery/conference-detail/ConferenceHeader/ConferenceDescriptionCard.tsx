@@ -15,9 +15,9 @@ const ConferenceDescriptionCard: React.FC<ConferenceDescriptionCardProps> = ({
 }) => {
     const baseClasses = isResearch
         ? "bg-white rounded-xl shadow-md p-6"
-        : "mt-4 bg-gradient-to-br from-slate-800/90 via-gray-900/80 to-slate-900/70 backdrop-blur-md rounded-2xl shadow-lg p-6 md:p-8";
+        : "mt-4 bg-white rounded-xl shadow-md p-6 md:p-8";
 
-    const textColor = isResearch ? "text-gray-700" : "text-white";
+    const textColor = isResearch ? "text-gray-700" : "text-gray-800";
 
     return (
         <div className={baseClasses}>
