@@ -308,215 +308,293 @@ const ConferenceDetail = () => {
   };
 
   return (
-    <div className="relative min-h-screen">
-      <div className="absolute inset-0">
-        <div
-          className="h-[50vh] bg-cover bg-center"
-          style={{
-            backgroundImage: `url(${conference.bannerImageUrl || "/images/customer_route/confbannerbg1.jpg"})`,
-          }}
-        />
-        <div className="h-[calc(100vh-15rem)] bg-gradient-to-br from-gray-900 via-blue-900 to-black overflow-hidden" />
-      </div>
+    <div className={`h-screen ${isResearch ? 'bg-gray-50' : 'relative'}`}>
+      {/* Background cho tech conference (giữ nguyên) */}
+      {!isResearch && (
+        <div className="absolute inset-0">
+          <div
+            className="h-[50vh] bg-cover bg-center"
+            style={{
+              backgroundImage: `url(${conference.bannerImageUrl || "/images/customer_route/confbannerbg1.jpg"})`,
+            }}
+          />
+          <div className="h-[calc(100vh-15rem)] bg-gradient-to-br from-gray-900 via-blue-900 to-black overflow-hidden" />
+        </div>
+      )}
 
-      <div className="relative z-10 h-screen overflow-auto">
-        <div className="max-w-6xl mx-auto px-4">
-          <div>
-            <ConferenceHeader
-              conference={conference}
-              // isDialogOpen={isDialogOpen}
-              // setIsDialogOpen={setIsDialogOpen}
-              // selectedTicket={selectedTicket}
-              // setSelectedTicket={setSelectedTicket}
-              // paymentLoading={paymentLoading}
-              handlePurchaseTicket={handlePurchaseTicket}
-              accessToken={accessToken}
-              formatDate={formatDate}
-              selectedTicket={selectedTicket}
-              onSelectTicket={setSelectedTicket}
-              authorInfo={authorInfo}
-              onAuthorInfoChange={setAuthorInfo}
-              selectedPaymentMethod={selectedPaymentMethod}
-              onSelectPaymentMethod={setSelectedPaymentMethod}
-            // authorInfo={authorInfo}
-            // setAuthorInfo={setAuthorInfo}
-            // showAuthorForm={showAuthorForm}
-            // setShowAuthorForm={setShowAuthorForm}
-            // selectedPaymentMethod={selectedPaymentMethod}
-            // setSelectedPaymentMethod={setSelectedPaymentMethod}
-            // showPaymentMethods={showPaymentMethods}
-            // setShowPaymentMethods={setShowPaymentMethods}
-            />
-          </div>
+      {/* Layout cho Research Conference */}
+      {isResearch ? (
+        <div>
+          {/* Banner Image */}
+          {conference.bannerImageUrl && (
+            <div className="w-full aspect-[3/1] relative overflow-hidden rounded-xl">
+              <Image
+                src={conference.bannerImageUrl}
+                alt="banner"
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
 
-          <div className="max-w-6xl mx-auto px-4 py-8">
-            <SponsorCarousel sponsors={conference.sponsors ?? []} />
-          </div>
+            // <div className="w-full aspect-[30 /9] relative">
+            //   <Image
+            //     src={conference.bannerImageUrl}
+            //     alt="Conference Banner"
+            //     fill
+            //     className="object-cover"
+            //     priority
+            //   />
+            // </div>
+          )}
 
-          <div className="max-w-6xl mx-auto px-4 py-8">
-            <div className="bg-black rounded-2xl shadow-lg overflow-hidden">
-              {" "}
-              {/* Container tabs background đen */}
-              {/* Tab Headers */}
-              <div className="flex border-b border-gray-700 overflow-x-auto">
-                {" "}
-                {/* border hơi nhạt trên bg đen */}
-                <button
-                  onClick={() => setActiveTab("info")}
-                  className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "info"
-                    ? "text-blue-500 border-b-2 border-coral-500"
-                    : "text-white/70 hover:text-white"
-                    }`}
-                >
-                  Thông tin & Hình ảnh
-                </button>
-                <button
-                  onClick={() => setActiveTab("sessions")}
-                  className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "sessions"
-                    ? "text-blue-500 border-b-2 border-coral-500"
-                    : "text-white/70 hover:text-white"
-                    }`}
-                >
-                  Lịch trình Sessions
-                </button>
-                <button
-                  onClick={() => setActiveTab("prices")}
-                  className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "prices"
-                    ? "text-blue-500 border-b-2 border-coral-400"
-                    : "text-white/70 hover:text-white"
-                    }`}
-                >
-                  Các loại vé
-                </button>
-                {isResearch && (
-                  <>
+          {/* Container chính */}
+          <div className="mx-auto px-4 py-8">
+            {/* flex row trên lg, stack column trên sm */}
+            <div className="flex flex-col lg:flex-row gap-8">
+
+              {/* Conference Header - trái (chiếm ~1/3 trên lg) */}
+              <div className="w-full lg:w-1/3 h-auto lg:h-full flex flex-col">
+                <div className="flex-1 overflow-y-auto">
+                  <ConferenceHeader
+                    conference={conference}
+                    handlePurchaseTicket={handlePurchaseTicket}
+                    accessToken={accessToken}
+                    formatDate={formatDate}
+                    selectedTicket={selectedTicket}
+                    onSelectTicket={setSelectedTicket}
+                    authorInfo={authorInfo}
+                    onAuthorInfoChange={setAuthorInfo}
+                    selectedPaymentMethod={selectedPaymentMethod}
+                    onSelectPaymentMethod={setSelectedPaymentMethod}
+                  />
+                </div>
+              </div>
+
+              {/* Tabs Content - phải (chiếm phần còn lại) */}
+              <div className="w-full lg:w-2/3 h-auto lg:h-full flex flex-col">
+                <div className="bg-white rounded-2xl shadow-lg flex flex-col flex-1 overflow-hidden">
+                  {/* Tab Headers */}
+                  <div className="flex border-b border-gray-200 overflow-x-auto shrink-0">
+                    <button
+                      onClick={() => setActiveTab("info")}
+                      className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "info"
+                        ? "text-blue-600 border-b-2 border-blue-600"
+                        : "text-gray-600 hover:text-gray-900"
+                        }`}
+                    >
+                      Thông tin & Hình ảnh
+                    </button>
+
+                    <button
+                      onClick={() => setActiveTab("sessions")}
+                      className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "sessions"
+                        ? "text-blue-600 border-b-2 border-blue-600"
+                        : "text-gray-600 hover:text-gray-900"
+                        }`}
+                    >
+                      Lịch trình Sessions
+                    </button>
+
+                    <button
+                      onClick={() => setActiveTab("prices")}
+                      className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "prices"
+                        ? "text-blue-600 border-b-2 border-blue-600"
+                        : "text-gray-600 hover:text-gray-900"
+                        }`}
+                    >
+                      Các loại vé
+                    </button>
+
                     <button
                       onClick={() => setActiveTab("research-timeline")}
                       className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "research-timeline"
-                        ? "text-blue-500 border-b-2 border-coral-500"
-                        : "text-white/70 hover:text-white"
+                        ? "text-blue-600 border-b-2 border-blue-600"
+                        : "text-gray-600 hover:text-gray-900"
                         }`}
                     >
                       Timeline nộp bài
                     </button>
+
                     <button
                       onClick={() => setActiveTab("research-documents")}
                       className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "research-documents"
-                        ? "text-blue-500 border-b-2 border-coral-500"
-                        : "text-white/70 hover:text-white"
+                        ? "text-blue-600 border-b-2 border-blue-600"
+                        : "text-gray-600 hover:text-gray-900"
                         }`}
                     >
                       Tài liệu & Hướng dẫn
                     </button>
-                  </>
-                )}
-                {/* {isResearch && (
+
+                    <button
+                      onClick={() => setActiveTab("policy")}
+                      className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "policy"
+                        ? "text-blue-600 border-b-2 border-blue-600"
+                        : "text-gray-600 hover:text-gray-900"
+                        }`}
+                    >
+                      Chính sách
+                    </button>
+
+                    <button
+                      onClick={() => setActiveTab("feedback")}
+                      className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "feedback"
+                        ? "text-blue-600 border-b-2 border-blue-600"
+                        : "text-gray-600 hover:text-gray-900"
+                        }`}
+                    >
+                      Đánh giá
+                    </button>
+                  </div>
+
+                  {/* Tab Content */}
+                  <div className="flex-1 overflow-y-auto p-6 md:p-8 text-gray-900">
+                    {activeTab === "info" && (
+                      <InformationTab
+                        conference={conference}
+                        setSelectedImage={setSelectedImage}
+                      />
+                    )}
+                    {activeTab === "sessions" && (
+                      <SessionsTab
+                        conference={conference}
+                        formatDate={formatDate}
+                        formatTime={formatTime}
+                        formatDateTime={formatDateTime}
+                        setSelectedImage={setSelectedImage}
+                      />
+                    )}
+                    {activeTab === "prices" && (
+                      <ConferencePriceTab
+                        conference={conference}
+                        formatDate={formatDate}
+                        formatTime={formatTime}
+                      />
+                    )}
+                    {activeTab === "research-timeline" && researchConference && (
+                      <ResearchTimelineTab conference={researchConference} formatDate={formatDate} />
+                    )}
+                    {activeTab === "research-documents" && researchConference && (
+                      <ResearchDocumentsTab conference={researchConference} />
+                    )}
+                    {activeTab === "policy" && <PolicyTab conference={conference} />}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Sponsors */}
+          <div className="mx-auto px-4 py-8">
+            <SponsorCarousel sponsors={conference.sponsors ?? []} />
+          </div>
+        </div>
+      ) : (
+
+        // Layout cũ cho Technical Conference (giữ nguyên)
+        <div className="relative z-10 h-screen overflow-auto">
+          <div className="max-w-6xl mx-auto px-4">
+            <div>
+              <ConferenceHeader
+                conference={conference}
+                handlePurchaseTicket={handlePurchaseTicket}
+                accessToken={accessToken}
+                formatDate={formatDate}
+                selectedTicket={selectedTicket}
+                onSelectTicket={setSelectedTicket}
+                authorInfo={authorInfo}
+                onAuthorInfoChange={setAuthorInfo}
+                selectedPaymentMethod={selectedPaymentMethod}
+                onSelectPaymentMethod={setSelectedPaymentMethod}
+              />
+            </div>
+
+            <div className="max-w-6xl mx-auto px-4 py-8">
+              <SponsorCarousel sponsors={conference.sponsors ?? []} />
+            </div>
+
+            <div className="max-w-6xl mx-auto px-4 py-8">
+              <div className="bg-black rounded-2xl shadow-lg overflow-hidden">
+                <div className="flex border-b border-gray-700 overflow-x-auto">
                   <button
-                    onClick={() => setActiveTab("research")}
-                    className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "research"
+                    onClick={() => setActiveTab("info")}
+                    className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "info"
                       ? "text-blue-500 border-b-2 border-coral-500"
                       : "text-white/70 hover:text-white"
                       }`}
                   >
-                    Research Paper Information
+                    Thông tin & Hình ảnh
                   </button>
-                )} */}
-                <button
-                  onClick={() => setActiveTab("policy")}
-                  className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "policy"
-                    ? "text-blue-500 border-b-2 border-coral-500"
-                    : "text-white/70 hover:text-white"
-                    }`}
-                >
-                  Chính sách
-                </button>
-                <button
-                  onClick={() => setActiveTab("feedback")}
-                  className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "feedback"
-                    ? "text-blue-500 border-b-2 border-coral-500"
-                    : "text-white/70 hover:text-white"
-                    }`}
-                >
-                  Đánh giá
-                </button>
-              </div>
-              {/* Tab Content */}
-              <div className="p-6 md:p-8">
-                {/* Info Tab */}
-                {activeTab === "info" && (
-                  <InformationTab
-                    conference={conference}
-                    setSelectedImage={setSelectedImage}
-                  />
-                )}
+                  <button
+                    onClick={() => setActiveTab("sessions")}
+                    className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "sessions"
+                      ? "text-blue-500 border-b-2 border-coral-500"
+                      : "text-white/70 hover:text-white"
+                      }`}
+                  >
+                    Lịch trình Sessions
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("prices")}
+                    className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "prices"
+                      ? "text-blue-500 border-b-2 border-coral-400"
+                      : "text-white/70 hover:text-white"
+                      }`}
+                  >
+                    Các loại vé
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("policy")}
+                    className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "policy"
+                      ? "text-blue-500 border-b-2 border-coral-500"
+                      : "text-white/70 hover:text-white"
+                      }`}
+                  >
+                    Chính sách
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("feedback")}
+                    className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "feedback"
+                      ? "text-blue-500 border-b-2 border-coral-500"
+                      : "text-white/70 hover:text-white"
+                      }`}
+                  >
+                    Đánh giá
+                  </button>
+                </div>
 
-                {/* Sessions Tab */}
-                {activeTab === "sessions" && (
-                  <SessionsTab
-                    conference={conference}
-                    formatDate={formatDate}
-                    formatTime={formatTime}
-                    formatDateTime={formatDateTime}
-                    setSelectedImage={setSelectedImage}
-                  />
-                )}
-
-                {activeTab === "prices" && (
-                  <ConferencePriceTab
-                    conference={conference}
-                    formatDate={formatDate}
-                    formatTime={formatTime}
-                  />
-                )}
-                {activeTab === "research-timeline" &&
-                  isResearch &&
-                  researchConference && (
-                    <ResearchTimelineTab
-                      conference={researchConference}
+                <div className="p-6 md:p-8">
+                  {activeTab === "info" && (
+                    <InformationTab
+                      conference={conference}
+                      setSelectedImage={setSelectedImage}
+                    />
+                  )}
+                  {activeTab === "sessions" && (
+                    <SessionsTab
+                      conference={conference}
                       formatDate={formatDate}
+                      formatTime={formatTime}
+                      formatDateTime={formatDateTime}
+                      setSelectedImage={setSelectedImage}
                     />
                   )}
-
-                {/* Research Documents Tab */}
-                {activeTab === "research-documents" &&
-                  isResearch &&
-                  researchConference && (
-                    <ResearchDocumentsTab
-                      conference={researchConference}
-                    />
-                  )}
-
-                {/* Research Paper Information Tab */}
-                {/* {activeTab === "research" &&
-                  isResearch &&
-                  researchConference && (
-                    <ResearchPaperInformationTab
-                      conference={researchConference}
+                  {activeTab === "prices" && (
+                    <ConferencePriceTab
+                      conference={conference}
                       formatDate={formatDate}
                       formatTime={formatTime}
                     />
-                  )} */}
-
-                {/* Policy Tab */}
-                {activeTab === "policy" && (
-                  <PolicyTab conference={conference} />
-                )}
-
-                {/* Feedback Tab */}
-                {/* {activeTab === 'feedback' && (
-                  <FeedbackTab
-                    conference={conference}
-                    newFeedback={newFeedback}
-                    setNewFeedback={setNewFeedback}
-                    feedbacks={feedbacks}
-                    handleAddFeedback={handleAddFeedback}
-                  />
-                )} */}
+                  )}
+                  {activeTab === "policy" && (
+                    <PolicyTab conference={conference} />
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Image Modal */}
       {selectedImage && (
@@ -527,6 +605,227 @@ const ConferenceDetail = () => {
       )}
     </div>
   );
+
+  // return (
+  //   <div className="relative min-h-screen">
+  //     <div className="absolute inset-0">
+  //       <div
+  //         className="h-[50vh] bg-cover bg-center"
+  //         style={{
+  //           backgroundImage: `url(${conference.bannerImageUrl || "/images/customer_route/confbannerbg1.jpg"})`,
+  //         }}
+  //       />
+  //       <div className="h-[calc(100vh-15rem)] bg-gradient-to-br from-gray-900 via-blue-900 to-black overflow-hidden" />
+  //     </div>
+
+  //     <div className="relative z-10 h-screen overflow-auto">
+  //       <div className="max-w-6xl mx-auto px-4">
+  //         <div>
+  //           <ConferenceHeader
+  //             conference={conference}
+  //             // isDialogOpen={isDialogOpen}
+  //             // setIsDialogOpen={setIsDialogOpen}
+  //             // selectedTicket={selectedTicket}
+  //             // setSelectedTicket={setSelectedTicket}
+  //             // paymentLoading={paymentLoading}
+  //             handlePurchaseTicket={handlePurchaseTicket}
+  //             accessToken={accessToken}
+  //             formatDate={formatDate}
+  //             selectedTicket={selectedTicket}
+  //             onSelectTicket={setSelectedTicket}
+  //             authorInfo={authorInfo}
+  //             onAuthorInfoChange={setAuthorInfo}
+  //             selectedPaymentMethod={selectedPaymentMethod}
+  //             onSelectPaymentMethod={setSelectedPaymentMethod}
+  //           // authorInfo={authorInfo}
+  //           // setAuthorInfo={setAuthorInfo}
+  //           // showAuthorForm={showAuthorForm}
+  //           // setShowAuthorForm={setShowAuthorForm}
+  //           // selectedPaymentMethod={selectedPaymentMethod}
+  //           // setSelectedPaymentMethod={setSelectedPaymentMethod}
+  //           // showPaymentMethods={showPaymentMethods}
+  //           // setShowPaymentMethods={setShowPaymentMethods}
+  //           />
+  //         </div>
+
+  //         <div className="max-w-6xl mx-auto px-4 py-8">
+  //           <SponsorCarousel sponsors={conference.sponsors ?? []} />
+  //         </div>
+
+  //         <div className="max-w-6xl mx-auto px-4 py-8">
+  //           <div className="bg-black rounded-2xl shadow-lg overflow-hidden">
+  //             {" "}
+  //             {/* Container tabs background đen */}
+  //             {/* Tab Headers */}
+  //             <div className="flex border-b border-gray-700 overflow-x-auto">
+  //               {" "}
+  //               {/* border hơi nhạt trên bg đen */}
+  //               <button
+  //                 onClick={() => setActiveTab("info")}
+  //                 className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "info"
+  //                   ? "text-blue-500 border-b-2 border-coral-500"
+  //                   : "text-white/70 hover:text-white"
+  //                   }`}
+  //               >
+  //                 Thông tin & Hình ảnh
+  //               </button>
+  //               <button
+  //                 onClick={() => setActiveTab("sessions")}
+  //                 className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "sessions"
+  //                   ? "text-blue-500 border-b-2 border-coral-500"
+  //                   : "text-white/70 hover:text-white"
+  //                   }`}
+  //               >
+  //                 Lịch trình Sessions
+  //               </button>
+  //               <button
+  //                 onClick={() => setActiveTab("prices")}
+  //                 className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "prices"
+  //                   ? "text-blue-500 border-b-2 border-coral-400"
+  //                   : "text-white/70 hover:text-white"
+  //                   }`}
+  //               >
+  //                 Các loại vé
+  //               </button>
+  //               {isResearch && (
+  //                 <>
+  //                   <button
+  //                     onClick={() => setActiveTab("research-timeline")}
+  //                     className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "research-timeline"
+  //                       ? "text-blue-500 border-b-2 border-coral-500"
+  //                       : "text-white/70 hover:text-white"
+  //                       }`}
+  //                   >
+  //                     Timeline nộp bài
+  //                   </button>
+  //                   <button
+  //                     onClick={() => setActiveTab("research-documents")}
+  //                     className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "research-documents"
+  //                       ? "text-blue-500 border-b-2 border-coral-500"
+  //                       : "text-white/70 hover:text-white"
+  //                       }`}
+  //                   >
+  //                     Tài liệu & Hướng dẫn
+  //                   </button>
+  //                 </>
+  //               )}
+  //               {/* {isResearch && (
+  //                 <button
+  //                   onClick={() => setActiveTab("research")}
+  //                   className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "research"
+  //                     ? "text-blue-500 border-b-2 border-coral-500"
+  //                     : "text-white/70 hover:text-white"
+  //                     }`}
+  //                 >
+  //                   Research Paper Information
+  //                 </button>
+  //               )} */}
+  //               <button
+  //                 onClick={() => setActiveTab("policy")}
+  //                 className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "policy"
+  //                   ? "text-blue-500 border-b-2 border-coral-500"
+  //                   : "text-white/70 hover:text-white"
+  //                   }`}
+  //               >
+  //                 Chính sách
+  //               </button>
+  //               <button
+  //                 onClick={() => setActiveTab("feedback")}
+  //                 className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "feedback"
+  //                   ? "text-blue-500 border-b-2 border-coral-500"
+  //                   : "text-white/70 hover:text-white"
+  //                   }`}
+  //               >
+  //                 Đánh giá
+  //               </button>
+  //             </div>
+  //             {/* Tab Content */}
+  //             <div className="p-6 md:p-8">
+  //               {/* Info Tab */}
+  //               {activeTab === "info" && (
+  //                 <InformationTab
+  //                   conference={conference}
+  //                   setSelectedImage={setSelectedImage}
+  //                 />
+  //               )}
+
+  //               {/* Sessions Tab */}
+  //               {activeTab === "sessions" && (
+  //                 <SessionsTab
+  //                   conference={conference}
+  //                   formatDate={formatDate}
+  //                   formatTime={formatTime}
+  //                   formatDateTime={formatDateTime}
+  //                   setSelectedImage={setSelectedImage}
+  //                 />
+  //               )}
+
+  //               {activeTab === "prices" && (
+  //                 <ConferencePriceTab
+  //                   conference={conference}
+  //                   formatDate={formatDate}
+  //                   formatTime={formatTime}
+  //                 />
+  //               )}
+  //               {activeTab === "research-timeline" &&
+  //                 isResearch &&
+  //                 researchConference && (
+  //                   <ResearchTimelineTab
+  //                     conference={researchConference}
+  //                     formatDate={formatDate}
+  //                   />
+  //                 )}
+
+  //               {/* Research Documents Tab */}
+  //               {activeTab === "research-documents" &&
+  //                 isResearch &&
+  //                 researchConference && (
+  //                   <ResearchDocumentsTab
+  //                     conference={researchConference}
+  //                   />
+  //                 )}
+
+  //               {/* Research Paper Information Tab */}
+  //               {/* {activeTab === "research" &&
+  //                 isResearch &&
+  //                 researchConference && (
+  //                   <ResearchPaperInformationTab
+  //                     conference={researchConference}
+  //                     formatDate={formatDate}
+  //                     formatTime={formatTime}
+  //                   />
+  //                 )} */}
+
+  //               {/* Policy Tab */}
+  //               {activeTab === "policy" && (
+  //                 <PolicyTab conference={conference} />
+  //               )}
+
+  //               {/* Feedback Tab */}
+  //               {/* {activeTab === 'feedback' && (
+  //                 <FeedbackTab
+  //                   conference={conference}
+  //                   newFeedback={newFeedback}
+  //                   setNewFeedback={setNewFeedback}
+  //                   feedbacks={feedbacks}
+  //                   handleAddFeedback={handleAddFeedback}
+  //                 />
+  //               )} */}
+  //             </div>
+  //           </div>
+  //         </div>
+  //       </div>
+  //     </div>
+
+  //     {/* Image Modal */}
+  //     {selectedImage && (
+  //       <MediaModal
+  //         url={selectedImage}
+  //         onClose={() => setSelectedImage(null)}
+  //       />
+  //     )}
+  //   </div>
+  // );
 };
 
 export default ConferenceDetail;
