@@ -236,7 +236,8 @@ export default function ResearchConferenceStepForm({
             }
             if (
               loadedResearchDetail &&
-              Object.keys(loadedResearchDetail).length > 0
+              loadedResearchDetail.rankingCategoryId != null &&
+              loadedResearchDetail.rankingCategoryId !== ""
             ) {
               handleMarkHasData(2);
             }
@@ -333,6 +334,7 @@ export default function ResearchConferenceStepForm({
         setHasLoadedData(false);
       }
     },
+    stepsWithData: new Set(stepsWithData),
     deletedTicketIds: realDeleteTracking.deletedTicketIds,
     deletedPhaseIds: realDeleteTracking.deletedPhaseIds,
     deletedSessionIds: realDeleteTracking.deletedSessionIds,

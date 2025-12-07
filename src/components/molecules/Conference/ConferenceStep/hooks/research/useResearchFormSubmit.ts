@@ -75,8 +75,9 @@ import { validateBasicForm, validateAllResearchPhases } from "../../validations"
 
 interface UseResearchFormSubmitProps {
   onRefetchNeeded?: () => Promise<void>;
+  stepsWithData?: Set<number>;
   deletedTicketIds?: string[];
-  deletedPhaseIds?: string[]; // ← Thêm
+  deletedPhaseIds?: string[];
   deletedSessionIds?: string[];
   deletedPolicyIds?: string[];
   deletedRefundPolicyIds?: string[];
@@ -138,6 +139,7 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
   const [deleteRevisionDeadline] = useDeleteRevisionRoundDeadlineMutation();
 
   const {
+    stepsWithData = new Set(), 
     deletedTicketIds = [],
     deletedPhaseIds = [], 
     deletedSessionIds = [],
@@ -351,7 +353,26 @@ const submitResearchDetail = async (detail: ResearchDetail) => {
     setIsSubmitting(true);
     let result;
     
-    if (mode === "edit") {
+    // ✅ THÊM DEBUG LOG
+    console.log('🔍 DEBUG submitResearchDetail:', {
+      conferenceId,
+      mode,
+      stepsWithData: Array.from(stepsWithData),
+      hasStep2: stepsWithData.has(2),
+      detail: {
+        rankingCategoryId: detail.rankingCategoryId,
+        paperFormat: detail.paperFormat,
+        allowListener: detail.allowListener
+      }
+    });
+    
+    const hasExistingDetail = stepsWithData.has(2);
+    
+    console.log('🎯 Decision:', hasExistingDetail ? 'PUT (Update)' : 'POST (Create)');
+    
+    if (hasExistingDetail) {
+      // PUT - Research detail đã tồn tại trong DB
+      console.log('📤 Calling updateResearchDetail (PUT)');
       result = await updateResearchDetail({ 
         conferenceId, 
         data: detail 
@@ -359,11 +380,17 @@ const submitResearchDetail = async (detail: ResearchDetail) => {
       toast.success("Cập nhật chi tiết nghiên cứu thành công!");
       await triggerRefetch();
     } else {
+      // POST - Research detail chưa tồn tại
+      console.log('📤 Calling createResearchDetail (POST)');
       result = await createResearchDetail({ 
         conferenceId, 
         data: detail 
       }).unwrap();
       toast.success("Lưu chi tiết nghiên cứu thành công!");
+      
+      if (mode === "edit") {
+        await triggerRefetch();
+      }
     }
     
     dispatch(markStepCompleted(2));

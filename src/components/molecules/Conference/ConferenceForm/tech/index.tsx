@@ -1110,6 +1110,7 @@ function TechConferenceStepFormContent({
             onSubmit={handleSponsorsSubmit}
             onUpdate={handleUpdateCurrentStep}
             onComplete={mode === "edit" ? handleComplete : undefined}
+            
           />
         </StepContainer>
       )}
