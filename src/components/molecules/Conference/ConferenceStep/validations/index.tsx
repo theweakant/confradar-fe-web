@@ -6,7 +6,7 @@ export * from './policy';
 export * from './media';
 export * from './sponsor';
 
-//research
+// Research validations
 export {
   validateConferenceName,
   validateDateRange,
@@ -15,18 +15,21 @@ export {
   validateTicketSaleDuration,
   validateResearchTimingConstraint,
   validateResearchBasicForm,
-} from './research/researchBasic'
-export * from './research/materials'
-export * from './research/researchDetail'
-export * as ResearchPhaseValidation from './research/researchPhase';
-export * from './research/researchPrice'
+} from './research/researchBasic';
+
+export * from './research/materials';
+export * from './research/researchDetail';
+export * from './research/researchPrice';
+
 export {
   validateTimelineDate,
   validateTimelineDuration,
+  validateDateRange as validatePhaseDateRange, 
   validatePhaseSequence,
-  validateTimelineBeforeTicketSale,
+  validateTimelineBeforeConferenceStart,
   validateRevisionRounds,
-  validateResearchTimeline,
+  validateSingleResearchPhase,
+  validateAllResearchPhases,
 } from './research/researchTimeline';
 
 export type { ValidationResult } from './basic';

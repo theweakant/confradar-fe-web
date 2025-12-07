@@ -326,9 +326,6 @@ export interface RevisionRoundDeadline {
 
 export interface ResearchPhase {
   researchPhaseId?: string;
-  isWaitlist: boolean;
-  isActive: boolean;
-  revisionRoundDeadlines: RevisionRoundDeadline[];
 
   registrationStartDate: string;
   registrationEndDate: string;
@@ -340,6 +337,8 @@ export interface ResearchPhase {
   reviseEndDate: string;
   cameraReadyStartDate: string;
   cameraReadyEndDate: string;
+  authorPaymentStart: string;
+  authorPaymentEnd: string;
 
   abstractDecideStatusStart: string;
   abstractDecideStatusEnd: string;
@@ -360,37 +359,13 @@ export interface ResearchPhase {
   revisionPaperReviewDuration?: number;
   revisionPaperDecideStatusDuration?: number;
   cameraReadyDecideStatusDuration?: number;
+  authorPaymentDuration?:number
+
+
+  revisionRoundDeadlines: RevisionRoundDeadline[];
+
 }
-export type UpdateResearchPhaseRequest = {
-  registrationStartDate: string;
-  registrationEndDate: string;
-  fullPaperStartDate: string;
-  fullPaperEndDate: string;
-  reviewStartDate: string;
-  reviewEndDate: string;
-  reviseStartDate: string;
-  reviseEndDate: string;
-  cameraReadyStartDate: string;
-  cameraReadyEndDate: string;
 
-  abstractDecideStatusStart: string;
-  abstractDecideStatusEnd: string;
-  fullPaperDecideStatusStart: string;
-  fullPaperDecideStatusEnd: string;
-  revisionPaperDecideStatusStart: string;
-  revisionPaperDecideStatusEnd: string;
-  cameraReadyDecideStatusStart: string;
-  cameraReadyDecideStatusEnd: string;
-
-  registrationDuration?: number;
-  fullPaperDuration?: number;
-  reviewDuration?: number;
-  reviseDuration?: number;
-  cameraReadyDuration?: number;
-
-  isWaitlist: boolean;
-  isActive: boolean;
-};
 export interface ConferenceResearchPhaseData {
   researchPhase: ResearchPhase;
 }
@@ -712,7 +687,8 @@ export interface ResearchConferencePhaseResponse {
   revisionPaperDecideStatusEnd?: string;
   cameraReadyDecideStatusStart?: string;
   cameraReadyDecideStatusEnd?: string;
-
+  authorPaymentStart?:string;
+  authorPaymentEnd?:string;
 }
 
 export interface RevisionRoundDeadlineResponse {

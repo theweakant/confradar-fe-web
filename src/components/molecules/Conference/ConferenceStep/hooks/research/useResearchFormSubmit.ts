@@ -71,7 +71,7 @@ import type {
   ConferencePriceData,
   RevisionRoundDeadline,
 } from "@/types/conference.type";
-import { validateBasicForm, validateResearchTimeline } from "../../validations";
+import { validateBasicForm, validateAllResearchPhases } from "../../validations";
 
 interface UseResearchFormSubmitProps {
   onRefetchNeeded?: () => Promise<void>;
@@ -388,116 +388,76 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
   try {
     setIsSubmitting(true);
 
-      const phasesToSubmit = phases.filter((phase) => {
-      if (!phase.isWaitlist) {
-        return (
-          phase.registrationStartDate && 
-          phase.fullPaperStartDate && 
-          phase.cameraReadyStartDate
-        );
-      }
-      
-      return phase.registrationStartDate;
-    });
+    // ✅ Danh sách các trường ngày BẮT BUỘC (theo spec mới)
+    const requiredFields: (keyof ResearchPhase)[] = [
+      "registrationStartDate",
+      "registrationEndDate",
+      "abstractDecideStatusStart",
+      "abstractDecideStatusEnd",
+      "fullPaperStartDate",
+      "fullPaperEndDate",
+      "reviewStartDate",
+      "reviewEndDate",
+      "fullPaperDecideStatusStart",
+      "fullPaperDecideStatusEnd",
+      "reviseStartDate",
+      "reviseEndDate",
+      "revisionPaperDecideStatusStart",
+      "revisionPaperDecideStatusEnd",
+      "cameraReadyStartDate",
+      "cameraReadyEndDate",
+      "cameraReadyDecideStatusStart",
+      "cameraReadyDecideStatusEnd",
+      "authorPaymentStart",
+      "authorPaymentEnd",
+    ];
 
-    if (phasesToSubmit.length === 0) {
+    // ✅ Lọc phases có đủ dữ liệu bắt buộc
+    const validPhases = phases.filter((phase) =>
+      requiredFields.every((field) => !!phase[field])
+    );
+
+    if (validPhases.length === 0) {
       toast.error("Không có giai đoạn hợp lệ để gửi!");
       return { success: false };
     }
 
-    const phasesToCreate = phasesToSubmit.filter((p) => !p.researchPhaseId);
-    const phasesToUpdate = phasesToSubmit.filter((p) => p.researchPhaseId);
+    const phasesToCreate = validPhases.filter((p) => !p.researchPhaseId);
+    const phasesToUpdate = validPhases.filter((p) => p.researchPhaseId);
 
-    const results = [];
-
+    // ✅ Tạo mới: gửi mảng phases không có ID
     if (phasesToCreate.length > 0) {
-      
-      const createPayload = {
+      // ❌ Không gửi isWaitlist, isActive → đã xóa trong interface, nên không cần destructuring
+      await createResearchPhase({
         conferenceId,
-        data: phasesToCreate, 
-      };
-
-      const createResult = await createResearchPhase(createPayload).unwrap();
-      results.push(createResult);
+        data: phasesToCreate,
+      }).unwrap();
     }
 
+    // ✅ Cập nhật: gọi updateResearchPhase cho từng phase có ID
     if (phasesToUpdate.length > 0) {
-      
-      for (const phase of phasesToUpdate) {
-        if (!phase.researchPhaseId) continue;
+      await Promise.all(
+        phasesToUpdate.map(async (phase) => {
+          if (!phase.researchPhaseId) return;
 
-        const updatePayload = {
-          researchPhaseId: phase.researchPhaseId,
-          data: {
-            registrationStartDate: phase.registrationStartDate,
-            registrationEndDate: phase.registrationEndDate,
-            registrationDuration: phase.registrationDuration,
-            
-            fullPaperStartDate: phase.fullPaperStartDate,
-            fullPaperEndDate: phase.fullPaperEndDate,
-            fullPaperDuration: phase.fullPaperDuration,
-            
-            reviewStartDate: phase.reviewStartDate,
-            reviewEndDate: phase.reviewEndDate,
-            reviewDuration: phase.reviewDuration,
-            
-            reviseStartDate: phase.reviseStartDate,
-            reviseEndDate: phase.reviseEndDate,
-            reviseDuration: phase.reviseDuration,
-            
-            cameraReadyStartDate: phase.cameraReadyStartDate,
-            cameraReadyEndDate: phase.cameraReadyEndDate,
-            cameraReadyDuration: phase.cameraReadyDuration,
-            
-            abstractDecideStatusStart: phase.abstractDecideStatusStart,
-            abstractDecideStatusEnd: phase.abstractDecideStatusEnd,
-            abstractDecideStatusDuration: phase.abstractDecideStatusDuration,
-            
-            fullPaperDecideStatusStart: phase.fullPaperDecideStatusStart,
-            fullPaperDecideStatusEnd: phase.fullPaperDecideStatusEnd,
-            fullPaperDecideStatusDuration: phase.fullPaperDecideStatusDuration,
-            
-            revisionPaperDecideStatusStart: phase.revisionPaperDecideStatusStart,
-            revisionPaperDecideStatusEnd: phase.revisionPaperDecideStatusEnd,
-            revisionPaperDecideStatusDuration: phase.revisionPaperDecideStatusDuration,
-            
-            cameraReadyDecideStatusStart: phase.cameraReadyDecideStatusStart,
-            cameraReadyDecideStatusEnd: phase.cameraReadyDecideStatusEnd,
-            cameraReadyDecideStatusDuration: phase.cameraReadyDecideStatusDuration,
-            
-            isWaitlist: phase.isWaitlist,
-            isActive: phase.isActive,
-            revisionRoundDeadlines: phase.revisionRoundDeadlines || [],
-          },
-        };
-
-        try {
-          const updateResult = await updateResearchPhase(updatePayload).unwrap();
-          results.push(updateResult);
-        } catch (error) {
-          throw error;
-        }
-      }
-    }
-
-
-    if (deletedPhaseIds.length > 0) {
-      console.log('ℹ️ Deleted phases will be removed by backend:', deletedPhaseIds);
+          // 🔥 Gửi trực tiếp object phase (đã không còn isWaitlist/isActive)
+          // → BE nhận đúng interface ResearchPhase
+          await updateResearchPhase({
+            researchPhaseId: phase.researchPhaseId!,
+            data: phase, // ✅ ĐÚNG NHƯ YÊU CẦU: GỬI TOÀN BỘ ResearchPhase
+          }).unwrap();
+        })
+      );
     }
 
     await triggerRefetch();
-
     toast.success("Lưu timeline thành công!");
     dispatch(markStepCompleted(3));
-    
-    return { success: true, results };
-    
+
+    return { success: true };
   } catch (error) {
     const apiError = error as { data?: ApiError };
-    
-    toast.error(
-      apiError?.data?.message || "Lưu timeline thất bại!"
-    );
+    toast.error(apiError?.data?.message || "Lưu timeline thất bại!");
     return { success: false, error };
   } finally {
     setIsSubmitting(false);
@@ -948,69 +908,54 @@ const submitResearchPhase = async (phases: ResearchPhase[]) => {
     }
   };
 
-  const validateAllSteps = (stepsData: {
-    basicForm: ConferenceBasicForm;
-    researchDetail: ResearchDetail;
-    researchPhases: ResearchPhase[];
-    tickets: Ticket[];
-    sessions: ResearchSession[];
-    policies: Policy[];
-    refundPolicies: RefundPolicy[];
-    researchMaterials: ResearchMaterial[];
-    rankingFiles: ResearchRankingFile[];
-    rankingReferences: ResearchRankingReference[];
-    mediaList: Media[];
-    sponsors: Sponsor[];
-  }) => {
-    const errors: string[] = [];
-    const basicValidation = validateBasicForm(stepsData.basicForm);
-    if (!basicValidation.isValid) {
-      errors.push(`Bước 1 - Thông tin cơ bản: ${basicValidation.error}`);
+const validateAllSteps = (stepsData: {
+  basicForm: ConferenceBasicForm;
+  researchDetail: ResearchDetail;
+  researchPhases: ResearchPhase[];
+  tickets: Ticket[];
+  sessions: ResearchSession[];
+  policies: Policy[];
+  refundPolicies: RefundPolicy[];
+  researchMaterials: ResearchMaterial[];
+  rankingFiles: ResearchRankingFile[];
+  rankingReferences: ResearchRankingReference[];
+  mediaList: Media[];
+  sponsors: Sponsor[];
+}) => {
+  const errors: string[] = [];
+
+  // Bước 1: Basic form
+  const basicValidation = validateBasicForm(stepsData.basicForm);
+  if (!basicValidation.isValid) {
+    errors.push(`Bước 1 - Thông tin cơ bản: ${basicValidation.error}`);
+  }
+
+  // Bước 2: Research detail
+  if (!stepsData.researchDetail.rankingCategoryId) {
+    errors.push(`Bước 2 - Chi tiết nghiên cứu: Vui lòng chọn loại xếp hạng!`);
+  }
+
+  // ✅ Bước 3: Timeline — DÙNG validateAllResearchPhases cho N phases
+  const timelineValidation = validateAllResearchPhases(
+    stepsData.researchPhases,
+    stepsData.basicForm.startDate // conference start date
+  );
+  if (!timelineValidation.isValid) {
+    errors.push(`Bước 3 - Timeline: ${timelineValidation.error}`);
+  }
+
+  // Bước 4: Price
+  if (stepsData.tickets.length === 0) {
+    errors.push(`Bước 4 - Chi phí: Vui lòng thêm ít nhất 1 loại chi phí!`);
+  } else {
+    const hasAuthorTicket = stepsData.tickets.some((t) => t.isAuthor === true);
+    if (!hasAuthorTicket) {
+      errors.push(`Bước 4 - Chi phí: Hội nghị nghiên cứu cần có ít nhất một loại chi phí dành cho tác giả!`);
     }
-    if (!stepsData.researchDetail.rankingCategoryId) {
-      errors.push(`Bước 2 - Chi tiết nghiên cứu: Vui lòng chọn loại xếp hạng!`);
-    }
-    const mainPhase = stepsData.researchPhases[0];
-    if (!mainPhase) {
-      errors.push(`Bước 3 - Timeline: Main timeline là bắt buộc!`);
-    } else {
-      const mainValidation = validateResearchTimeline(mainPhase, stepsData.basicForm.ticketSaleStart);
-      if (!mainValidation.isValid) {
-        errors.push(`Bước 3 - Main Timeline: ${mainValidation.error}`);
-      }
-    }
-    const waitlistPhase = stepsData.researchPhases[1];
-    if (waitlistPhase) {
-      const hasWaitlistData =
-        waitlistPhase.registrationStartDate ||
-        waitlistPhase.fullPaperStartDate ||
-        waitlistPhase.reviewStartDate ||
-        waitlistPhase.reviseStartDate ||
-        waitlistPhase.cameraReadyStartDate;
-      if (hasWaitlistData) {
-        const waitlistValidation = validateResearchTimeline(waitlistPhase, stepsData.basicForm.ticketSaleStart);
-        if (!waitlistValidation.isValid) {
-          errors.push(`Bước 3 - Waitlist Timeline: ${waitlistValidation.error}`);
-        }
-        if (mainPhase && mainPhase.cameraReadyEndDate && waitlistPhase.registrationStartDate) {
-          const mainEnd = new Date(mainPhase.cameraReadyEndDate);
-          const waitlistStart = new Date(waitlistPhase.registrationStartDate);
-          if (waitlistStart <= mainEnd) {
-            errors.push(`Bước 3 - Waitlist timeline phải bắt đầu sau khi Main timeline kết thúc!`);
-          }
-        }
-      }
-    }
-    if (stepsData.tickets.length === 0) {
-      errors.push(`Bước 4 - Chi phí: Vui lòng thêm ít nhất 1 loại chi phí!`);
-    } else {
-      const hasAuthorTicket = stepsData.tickets.some((t) => t.isAuthor === true);
-      if (!hasAuthorTicket) {
-        errors.push(`Bước 4 - Chi phí: Hội nghị nghiên cứu cần có ít nhất một loại chi phí dành cho tác giả!`);
-      }
-    }
-    return { isValid: errors.length === 0, errors };
-  };
+  }
+
+  return { isValid: errors.length === 0, errors };
+};
 
   const submitAll = async (stepsData: {
     basicForm: ConferenceBasicForm;

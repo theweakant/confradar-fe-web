@@ -65,6 +65,13 @@ export function useResearchConferenceData({
     hasDispatchedRef.current = false;
   }, [conferenceId]);
 
+  // Helper: Tính duration từ startDate → endDate (số ngày thực tế + 1)
+  const calcDuration = (start: string, end: string): number => {
+    if (!start || !end) return 1;
+    const diffTime = new Date(end).getTime() - new Date(start).getTime();
+    return Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1);
+  };
+
   useEffect(() => {
     if (isError) {
       stableOnError(error);
@@ -106,167 +113,83 @@ export function useResearchConferenceData({
         rankingCategoryId: data.rankingCategoryId ?? "",
       };
 
-      // === Map Research Phases ===
-      const researchPhases: ResearchPhase[] = [];
-      
-      // Helper function to calculate duration
-      const calcDuration = (start: string, end: string): number => {
-        if (!start || !end) return 1;
-        const diffTime = new Date(end).getTime() - new Date(start).getTime();
-        return Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1);
-      };
-      
-      if (data.researchPhase && Array.isArray(data.researchPhase)) {
-        // Tách main phase và waitlist phase từ array
-        const mainPhaseData = data.researchPhase.find((p) => p.isWaitlist === false);
-        const waitlistPhaseData = data.researchPhase.find((p) => p.isWaitlist === true);
+      // ✅ MAP N PHASES TRỰC TIẾP — KHÔNG CÒN MAIN/WAITLIST
+      const researchPhases: ResearchPhase[] = (
+        data.researchPhase && Array.isArray(data.researchPhase)
+          ? data.researchPhase
+          : []
+      ).map((phaseData) => ({
+        researchPhaseId: phaseData.researchConferencePhaseId ?? "",
+        registrationStartDate: phaseData.registrationStartDate ?? "",
+        registrationEndDate: phaseData.registrationEndDate ?? "",
+        registrationDuration: calcDuration(
+          phaseData.registrationStartDate ?? "",
+          phaseData.registrationEndDate ?? ""
+        ),
+        fullPaperStartDate: phaseData.fullPaperStartDate ?? "",
+        fullPaperEndDate: phaseData.fullPaperEndDate ?? "",
+        fullPaperDuration: calcDuration(
+          phaseData.fullPaperStartDate ?? "",
+          phaseData.fullPaperEndDate ?? ""
+        ),
+        reviewStartDate: phaseData.reviewStartDate ?? "",
+        reviewEndDate: phaseData.reviewEndDate ?? "",
+        reviewDuration: calcDuration(
+          phaseData.reviewStartDate ?? "",
+          phaseData.reviewEndDate ?? ""
+        ),
+        reviseStartDate: phaseData.reviseStartDate ?? "",
+        reviseEndDate: phaseData.reviseEndDate ?? "",
+        reviseDuration: calcDuration(
+          phaseData.reviseStartDate ?? "",
+          phaseData.reviseEndDate ?? ""
+        ),
+        cameraReadyStartDate: phaseData.cameraReadyStartDate ?? "",
+        cameraReadyEndDate: phaseData.cameraReadyEndDate ?? "",
+        cameraReadyDuration: calcDuration(
+          phaseData.cameraReadyStartDate ?? "",
+          phaseData.cameraReadyEndDate ?? ""
+        ),
+        abstractDecideStatusStart: phaseData.abstractDecideStatusStart ?? "",
+        abstractDecideStatusEnd: phaseData.abstractDecideStatusEnd ?? "",
+        abstractDecideStatusDuration: calcDuration(
+          phaseData.abstractDecideStatusStart ?? "",
+          phaseData.abstractDecideStatusEnd ?? ""
+        ),
+        fullPaperDecideStatusStart: phaseData.fullPaperDecideStatusStart ?? "",
+        fullPaperDecideStatusEnd: phaseData.fullPaperDecideStatusEnd ?? "",
+        fullPaperDecideStatusDuration: calcDuration(
+          phaseData.fullPaperDecideStatusStart ?? "",
+          phaseData.fullPaperDecideStatusEnd ?? ""
+        ),
+        revisionPaperDecideStatusStart: phaseData.revisionPaperDecideStatusStart ?? "",
+        revisionPaperDecideStatusEnd: phaseData.revisionPaperDecideStatusEnd ?? "",
+        revisionPaperDecideStatusDuration: calcDuration(
+          phaseData.revisionPaperDecideStatusStart ?? "",
+          phaseData.revisionPaperDecideStatusEnd ?? ""
+        ),
+        cameraReadyDecideStatusStart: phaseData.cameraReadyDecideStatusStart ?? "",
+        cameraReadyDecideStatusEnd: phaseData.cameraReadyDecideStatusEnd ?? "",
+        cameraReadyDecideStatusDuration: calcDuration(
+          phaseData.cameraReadyDecideStatusStart ?? "",
+          phaseData.cameraReadyDecideStatusEnd ?? ""
+        ),
+        authorPaymentStart: phaseData.authorPaymentStart ?? "",
+        authorPaymentEnd: phaseData.authorPaymentEnd ?? "",
+        authorPaymentDuration: calcDuration(
+          phaseData.authorPaymentStart ?? "",
+          phaseData.authorPaymentEnd ?? ""
+        ),
+        revisionRoundDeadlines: (phaseData.revisionRoundDeadlines || []).map((rd) => ({
+          revisionRoundDeadlineId: rd.revisionRoundDeadlineId ?? "",
+          startSubmissionDate: rd.startSubmissionDate ?? "",
+          endSubmissionDate: rd.endSubmissionDate ?? "",
+          roundNumber: rd.roundNumber ?? 1,
+          researchConferencePhaseId: rd.researchConferencePhaseId ?? "",
+        })),
+        // ❌ KHÔNG CÒN isWaitlist, isActive
+      }));
 
-        // Map Main Phase (phải có)
-        if (mainPhaseData) {
-          researchPhases.push({
-            researchPhaseId: mainPhaseData.researchConferencePhaseId ?? "main",
-            registrationStartDate: mainPhaseData.registrationStartDate ?? "",
-            registrationEndDate: mainPhaseData.registrationEndDate ?? "",
-            registrationDuration: calcDuration(
-              mainPhaseData.registrationStartDate ?? "",
-              mainPhaseData.registrationEndDate ?? ""
-            ),
-            fullPaperStartDate: mainPhaseData.fullPaperStartDate ?? "",
-            fullPaperEndDate: mainPhaseData.fullPaperEndDate ?? "",
-            fullPaperDuration: calcDuration(
-              mainPhaseData.fullPaperStartDate ?? "",
-              mainPhaseData.fullPaperEndDate ?? ""
-            ),
-            reviewStartDate: mainPhaseData.reviewStartDate ?? "",
-            reviewEndDate: mainPhaseData.reviewEndDate ?? "",
-            reviewDuration: calcDuration(
-              mainPhaseData.reviewStartDate ?? "",
-              mainPhaseData.reviewEndDate ?? ""
-            ),
-            reviseStartDate: mainPhaseData.reviseStartDate ?? "",
-            reviseEndDate: mainPhaseData.reviseEndDate ?? "",
-            reviseDuration: calcDuration(
-              mainPhaseData.reviseStartDate ?? "",
-              mainPhaseData.reviseEndDate ?? ""
-            ),
-            cameraReadyStartDate: mainPhaseData.cameraReadyStartDate ?? "",
-            cameraReadyEndDate: mainPhaseData.cameraReadyEndDate ?? "",
-            cameraReadyDuration: calcDuration(
-              mainPhaseData.cameraReadyStartDate ?? "",
-              mainPhaseData.cameraReadyEndDate ?? ""
-            ),
-
-            // === Decision phases (ĐÃ XÓA revisionPaperReviewStart/End/Duration) ===
-            abstractDecideStatusStart: mainPhaseData.abstractDecideStatusStart ?? "",
-            abstractDecideStatusEnd: mainPhaseData.abstractDecideStatusEnd ?? "",
-            abstractDecideStatusDuration: calcDuration(
-              mainPhaseData.abstractDecideStatusStart ?? "",
-              mainPhaseData.abstractDecideStatusEnd ?? ""
-            ),
-            fullPaperDecideStatusStart: mainPhaseData.fullPaperDecideStatusStart ?? "",
-            fullPaperDecideStatusEnd: mainPhaseData.fullPaperDecideStatusEnd ?? "",
-            fullPaperDecideStatusDuration: calcDuration(
-              mainPhaseData.fullPaperDecideStatusStart ?? "",
-              mainPhaseData.fullPaperDecideStatusEnd ?? ""
-            ),
-            revisionPaperDecideStatusStart: mainPhaseData.revisionPaperDecideStatusStart ?? "",
-            revisionPaperDecideStatusEnd: mainPhaseData.revisionPaperDecideStatusEnd ?? "",
-            revisionPaperDecideStatusDuration: calcDuration(
-              mainPhaseData.revisionPaperDecideStatusStart ?? "",
-              mainPhaseData.revisionPaperDecideStatusEnd ?? ""
-            ),
-            cameraReadyDecideStatusStart: mainPhaseData.cameraReadyDecideStatusStart ?? "",
-            cameraReadyDecideStatusEnd: mainPhaseData.cameraReadyDecideStatusEnd ?? "",
-            cameraReadyDecideStatusDuration: calcDuration(
-              mainPhaseData.cameraReadyDecideStatusStart ?? "",
-              mainPhaseData.cameraReadyDecideStatusEnd ?? ""
-            ),
-
-            isWaitlist: false,
-            isActive: mainPhaseData.isActive ?? true,
-            revisionRoundDeadlines: (mainPhaseData.revisionRoundDeadlines || []).map((rd) => ({
-              revisionRoundDeadlineId: rd.revisionRoundDeadlineId ?? "",
-              startSubmissionDate: rd.startSubmissionDate ?? "",
-              endSubmissionDate: rd.endSubmissionDate ?? "",
-              roundNumber: rd.roundNumber ?? 1,
-            })),
-          });
-        }
-
-        // Map Waitlist Phase (optional)
-        if (waitlistPhaseData) {
-          researchPhases.push({
-            researchPhaseId: waitlistPhaseData.researchConferencePhaseId ?? "waitlist",
-            registrationStartDate: waitlistPhaseData.registrationStartDate ?? "",
-            registrationEndDate: waitlistPhaseData.registrationEndDate ?? "",
-            registrationDuration: calcDuration(
-              waitlistPhaseData.registrationStartDate ?? "",
-              waitlistPhaseData.registrationEndDate ?? ""
-            ),
-            fullPaperStartDate: waitlistPhaseData.fullPaperStartDate ?? "",
-            fullPaperEndDate: waitlistPhaseData.fullPaperEndDate ?? "",
-            fullPaperDuration: calcDuration(
-              waitlistPhaseData.fullPaperStartDate ?? "",
-              waitlistPhaseData.fullPaperEndDate ?? ""
-            ),
-            reviewStartDate: waitlistPhaseData.reviewStartDate ?? "",
-            reviewEndDate: waitlistPhaseData.reviewEndDate ?? "",
-            reviewDuration: calcDuration(
-              waitlistPhaseData.reviewStartDate ?? "",
-              waitlistPhaseData.reviewEndDate ?? ""
-            ),
-            reviseStartDate: waitlistPhaseData.reviseStartDate ?? "",
-            reviseEndDate: waitlistPhaseData.reviseEndDate ?? "",
-            reviseDuration: calcDuration(
-              waitlistPhaseData.reviseStartDate ?? "",
-              waitlistPhaseData.reviseEndDate ?? ""
-            ),
-            cameraReadyStartDate: waitlistPhaseData.cameraReadyStartDate ?? "",
-            cameraReadyEndDate: waitlistPhaseData.cameraReadyEndDate ?? "",
-            cameraReadyDuration: calcDuration(
-              waitlistPhaseData.cameraReadyStartDate ?? "",
-              waitlistPhaseData.cameraReadyEndDate ?? ""
-            ),
-
-            // === Decision phases (ĐÃ XÓA revisionPaperReviewStart/End/Duration) ===
-            abstractDecideStatusStart: waitlistPhaseData.abstractDecideStatusStart ?? "",
-            abstractDecideStatusEnd: waitlistPhaseData.abstractDecideStatusEnd ?? "",
-            abstractDecideStatusDuration: calcDuration(
-              waitlistPhaseData.abstractDecideStatusStart ?? "",
-              waitlistPhaseData.abstractDecideStatusEnd ?? ""
-            ),
-            fullPaperDecideStatusStart: waitlistPhaseData.fullPaperDecideStatusStart ?? "",
-            fullPaperDecideStatusEnd: waitlistPhaseData.fullPaperDecideStatusEnd ?? "",
-            fullPaperDecideStatusDuration: calcDuration(
-              waitlistPhaseData.fullPaperDecideStatusStart ?? "",
-              waitlistPhaseData.fullPaperDecideStatusEnd ?? ""
-            ),
-            revisionPaperDecideStatusStart: waitlistPhaseData.revisionPaperDecideStatusStart ?? "",
-            revisionPaperDecideStatusEnd: waitlistPhaseData.revisionPaperDecideStatusEnd ?? "",
-            revisionPaperDecideStatusDuration: calcDuration(
-              waitlistPhaseData.revisionPaperDecideStatusStart ?? "",
-              waitlistPhaseData.revisionPaperDecideStatusEnd ?? ""
-            ),
-            cameraReadyDecideStatusStart: waitlistPhaseData.cameraReadyDecideStatusStart ?? "",
-            cameraReadyDecideStatusEnd: waitlistPhaseData.cameraReadyDecideStatusEnd ?? "",
-            cameraReadyDecideStatusDuration: calcDuration(
-              waitlistPhaseData.cameraReadyDecideStatusStart ?? "",
-              waitlistPhaseData.cameraReadyDecideStatusEnd ?? ""
-            ),
-
-            isWaitlist: true,
-            isActive: waitlistPhaseData.isActive ?? false,
-            revisionRoundDeadlines: (waitlistPhaseData.revisionRoundDeadlines || []).map((rd) => ({
-              revisionRoundDeadlineId: rd.revisionRoundDeadlineId ?? "",
-              startSubmissionDate: rd.startSubmissionDate ?? "",
-              endSubmissionDate: rd.endSubmissionDate ?? "",
-              roundNumber: rd.roundNumber ?? 1,
-              researchConferencePhaseId: rd.researchConferencePhaseId ?? "",
-            })),
-          });
-        }
-      }
-     
       // === Map Tickets ===
       const tickets: Ticket[] = (data.conferencePrices || []).map((p) => ({
         priceId: p.conferencePriceId,
@@ -283,7 +206,6 @@ export function useResearchConferenceData({
           applyPercent: ph.applyPercent ?? 0,
           totalslot: ph.totalSlot ?? 0,
           refundInPhase: (ph.refundPolicies || []).map((rp: RefundPolicyResponse) => ({
-            ...rp,
             refundPolicyId: rp.refundPolicyId ?? "",
             refundOrder: rp.refundOrder ?? 0,
             percentRefund: rp.percentRefund ?? 0,
@@ -316,7 +238,6 @@ export function useResearchConferenceData({
         description: p.description ?? "",
       }));
 
-      // === Map Refund Policies ===
       const refundPolicies: RefundPolicy[] = (data.refundPolicies || []).map((rp: RefundPolicyResponse) => ({
         refundPolicyId: rp.refundPolicyId ?? "",
         percentRefund: rp.percentRefund ?? 0,
@@ -324,7 +245,6 @@ export function useResearchConferenceData({
         refundOrder: rp.refundOrder ?? 0,
       }));
 
-      // === Map Research Materials ===
       const researchMaterials: ResearchMaterial[] = (data.materialDownloads || []).map((m) => ({
         materialId: m.materialDownloadId,
         fileName: m.fileName ?? "Tài liệu",

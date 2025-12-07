@@ -27,7 +27,6 @@ import type {
   ResearchDetail,
   ResearchPhase,
   ConferenceRefundPolicyData,
-  UpdateResearchPhaseRequest,
   ConferencePriceResponse,
   ResearchSession,
 
@@ -783,10 +782,10 @@ export const conferenceStepApi = createApi({
 
     updateResearchPhase: builder.mutation<
       ApiResponse<{ success: boolean }>,
-      { researchPhaseId: string; data: UpdateResearchPhaseRequest }
+      { researchPhaseId: string; data: ResearchPhase } 
     >({
       query: ({ researchPhaseId, data }) => ({
-        url: endpoint.CONFERENCE_STEP.UPDATE_RESEARCH_PHASE(researchPhaseId),
+        url: `/research-phases/${researchPhaseId}`,
         method: "PUT",
         body: data,
       }),

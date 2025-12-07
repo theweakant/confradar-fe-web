@@ -257,8 +257,8 @@ export default function StatisticsDashboard() {
                                         <>
                                             <div className="flex justify-between items-center pt-4 border-t border-gray-200">
                                                 <div>
-                                                    <p className="text-sm text-blue-700 font-medium">Thu nhập của bạn</p>
-                                                    <p className="text-xs text-gray-500 mt-0.5">Số tiền bạn nhận được sau khi trừ hoa hồng</p>
+                                                    <p className="text-sm text-blue-700 font-medium">Số tiền đối tác nhận được</p>
+                                                    <p className="text-xs text-gray-500 mt-0.5">Số tiền nhận được sau khi trừ phí hoa hồng</p>
                                                 </div>
                                                 <p className="text-2xl font-bold text-blue-700">{formatCurrency(totalCommission)}</p>
                                             </div>

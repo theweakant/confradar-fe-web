@@ -49,7 +49,7 @@ import {
   validateTicketSaleStart,
   validateTicketSaleDuration,
   validateBasicForm,
-  validateResearchTimeline,
+  validateAllResearchPhases,
 } from "@/components/molecules/Conference/ConferenceStep/validations";
 
 import {
@@ -487,83 +487,40 @@ const isCurrentStepLast = useMemo(() => {
     }
   };
   
-  const handleTimelineSubmit = async () => {
-    
-    const mainPhase = researchPhases[0];
-    if (!mainPhase) {
-      toast.error("Main timeline là bắt buộc!");
-      return;
-    }
+const handleTimelineSubmit = async () => {
+  if (researchPhases.length === 0) {
+    toast.error("Phải có ít nhất 1 timeline!");
+    return;
+  }
 
-    const mainValidation = validateResearchTimeline(
-      mainPhase,
-      basicForm.ticketSaleStart
-    );
-    if (!mainValidation.isValid) {
-      toast.error(`Lỗi ở Main Timeline: ${mainValidation.error}`);
-      return;
-    }
+  // ✅ Validate toàn bộ mảng phases (theo spec mới)
+  const fullValidation = validateAllResearchPhases(
+    researchPhases,
+    basicForm.startDate // conference start date
+  );
 
-    const waitlistPhase = researchPhases[1];
-    
-    if (waitlistPhase && waitlistPhase.isWaitlist) {
-      // Nếu có bất kỳ date nào được điền → validate đầy đủ
-      const hasAnyWaitlistData = 
-        waitlistPhase.registrationStartDate ||
-        waitlistPhase.fullPaperStartDate ||
-        waitlistPhase.reviewStartDate ||
-        waitlistPhase.reviseStartDate ||
-        waitlistPhase.cameraReadyStartDate;
+  if (!fullValidation.isValid) {
+    toast.error(`Lỗi timeline: ${fullValidation.error}`);
+    return;
+  }
 
-      if (hasAnyWaitlistData) {
-        // ✅ Validate waitlist nếu có data
-        const waitlistValidation = validateResearchTimeline(
-          waitlistPhase,
-          basicForm.ticketSaleStart
-        );
-        
-        if (!waitlistValidation.isValid) {
-          toast.error(`Lỗi ở Waitlist Timeline: ${waitlistValidation.error}`);
-          return;
-        }
+  console.log('📤 Calling submitResearchPhase with:', {
+    phasesCount: researchPhases.length,
+    phases: researchPhases.map((p, i) => ({
+      index: i + 1,
+      registrationStart: p.registrationStartDate,
+      authorPaymentEnd: p.authorPaymentEnd,
+    })),
+  });
 
-        // ✅ Check thứ tự thời gian Main → Waitlist
-        if (mainPhase.cameraReadyDecideStatusEnd && waitlistPhase.registrationStartDate) {
-          const mainEnd = new Date(mainPhase.cameraReadyDecideStatusEnd);
-          const waitlistStart = new Date(waitlistPhase.registrationStartDate);
-          
-          if (waitlistStart <= mainEnd) {
-            toast.error(
-              "Waitlist timeline phải bắt đầu sau khi Main timeline kết thúc!"
-            );
-            return;
-          }
-        }
-      }
-    }
+  const result = await submitResearchPhase(researchPhases);
+  console.log('📥 submitResearchPhase result:', result);
 
-    console.log('📤 Calling submitResearchPhase with:', {
-      phasesCount: researchPhases.length,
-      mainPhase: {
-        registrationStart: mainPhase.registrationStartDate,
-        fullPaperStart: mainPhase.fullPaperStartDate,
-        cameraReadyStart: mainPhase.cameraReadyStartDate,
-      },
-      waitlistPhase: waitlistPhase ? {
-        registrationStart: waitlistPhase.registrationStartDate,
-        fullPaperStart: waitlistPhase.fullPaperStartDate,
-        cameraReadyStart: waitlistPhase.cameraReadyStartDate,
-      } : null
-    });
-
-    const result = await submitResearchPhase(researchPhases);
-    console.log('📥 submitResearchPhase result:', result);
-
-    if (result.success) {
-      handleMarkHasData(3);
-      handleNext();
-    }
-  };
+  if (result.success) {
+    handleMarkHasData(3);
+    handleNext();
+  }
+};
 
   const handlePriceSubmit = async () => {
     if (tickets.length === 0) {
@@ -724,55 +681,10 @@ const isCurrentStepLast = useMemo(() => {
         break;
       }
       case 3: {
-        const mainPhase = researchPhases[0];
-        if (!mainPhase) {
-          toast.error("Main timeline là bắt buộc!");
+        const fullValidation = validateAllResearchPhases(researchPhases, basicForm.startDate);
+        if (!fullValidation.isValid) {
+          toast.error(`Lỗi timeline: ${fullValidation.error}`);
           return { success: false };
-        }
-        const mainValidation = validateResearchTimeline(
-          mainPhase,
-          basicForm.ticketSaleStart
-        );
-        if (!mainValidation.isValid) {
-          const errorMsg = mainValidation.error || "Lỗi timeline";
-          toast.error(`Lỗi ở Main Timeline: ${errorMsg}`);
-          return { success: false };
-        }
-
-        const waitlistPhase = researchPhases[1];
-        if (waitlistPhase) {
-          const hasWaitlistData =
-            waitlistPhase.registrationStartDate ||
-            waitlistPhase.fullPaperStartDate ||
-            waitlistPhase.reviewStartDate ||
-            waitlistPhase.reviseStartDate ||
-            waitlistPhase.cameraReadyStartDate;
-          if (hasWaitlistData) {
-            const waitlistValidation = validateResearchTimeline(
-              waitlistPhase,
-              basicForm.ticketSaleStart
-            );
-            if (!waitlistValidation.isValid) {
-              const errorMsg = waitlistValidation.error || "Lỗi timeline";
-              toast.error(`Lỗi ở Waitlist Timeline: ${errorMsg}`);
-              return { success: false };
-            }
-            if (
-              mainPhase.cameraReadyEndDate &&
-              waitlistPhase.registrationStartDate
-            ) {
-              const mainEnd = new Date(mainPhase.cameraReadyEndDate);
-              const waitlistStart = new Date(
-                waitlistPhase.registrationStartDate
-              );
-              if (waitlistStart <= mainEnd) {
-                toast.error(
-                  "Waitlist timeline phải bắt đầu sau khi Main timeline kết thúc!"
-                );
-                return { success: false };
-              }
-            }
-          }
         }
         result = await submitResearchPhase(researchPhases);
         break;
@@ -1082,8 +994,6 @@ const isCurrentStepLast = useMemo(() => {
             tickets={tickets}
             onTicketsChange={setTickets}
             onRemoveTicket={deleteTracking.trackDeletedTicket}
-            onRemovePhase={deleteTracking.trackDeletedPhase}
-            onRemoveRefundPolicy={deleteTracking.trackDeletedRefundPolicy}
             ticketSaleStart={basicForm.ticketSaleStart}
             ticketSaleEnd={basicForm.ticketSaleEnd}
             researchPhases={researchPhases}

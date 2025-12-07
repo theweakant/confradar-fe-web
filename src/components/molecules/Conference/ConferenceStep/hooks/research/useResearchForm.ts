@@ -4,7 +4,7 @@ import type {
   ResearchDetail,
   ResearchPhase,
   Ticket,
-  Session,
+  ResearchSession,
   Policy,
   RefundPolicy,
   ResearchMaterial,
@@ -12,7 +12,7 @@ import type {
   ResearchRankingReference,
   Media,
   Sponsor,
-  ResearchSession,
+  RevisionRoundDeadline,
 } from "@/types/conference.type";
 
 const INITIAL_BASIC_FORM: ConferenceBasicForm = {
@@ -46,83 +46,53 @@ const INITIAL_RESEARCH_DETAIL: ResearchDetail = {
   rankingCategoryId: "",
 };
 
-const INITIAL_RESEARCH_PHASES: ResearchPhase[] = [
-  {
-    // Main phase
-    registrationStartDate: "",
-    registrationEndDate: "",
-    registrationDuration: 1,
-    fullPaperStartDate: "",
-    fullPaperEndDate: "",
-    fullPaperDuration: 1,
-    reviewStartDate: "",
-    reviewEndDate: "",
-    reviewDuration: 1,
-    reviseStartDate: "",
-    reviseEndDate: "",
-    reviseDuration: 1,
-    cameraReadyStartDate: "",
-    cameraReadyEndDate: "",
-    cameraReadyDuration: 1,
+// ✅ Tạo phase trống mới (không còn isWaitlist/isActive)
+const getEmptyPhase = (): ResearchPhase => ({
+  registrationStartDate: "",
+  registrationEndDate: "",
+  registrationDuration: 1,
 
-    abstractDecideStatusStart: "",
-    abstractDecideStatusEnd: "",
-    abstractDecideStatusDuration: 1,
+  fullPaperStartDate: "",
+  fullPaperEndDate: "",
+  fullPaperDuration: 1,
 
-    fullPaperDecideStatusStart: "",
-    fullPaperDecideStatusEnd: "",
-    fullPaperDecideStatusDuration: 1,
+  reviewStartDate: "",
+  reviewEndDate: "",
+  reviewDuration: 1,
 
-    revisionPaperDecideStatusStart: "",
-    revisionPaperDecideStatusEnd: "",
-    revisionPaperDecideStatusDuration: 1,
+  reviseStartDate: "",
+  reviseEndDate: "",
+  reviseDuration: 1,
 
-    cameraReadyDecideStatusStart: "",
-    cameraReadyDecideStatusEnd: "",
-    cameraReadyDecideStatusDuration: 1,
+  cameraReadyStartDate: "",
+  cameraReadyEndDate: "",
+  cameraReadyDuration: 1,
 
-    isWaitlist: false,
-    isActive: true,
-    revisionRoundDeadlines: [],
-  },
-  {
-    registrationStartDate: "",
-    registrationEndDate: "",
-    registrationDuration: 1,
-    fullPaperStartDate: "",
-    fullPaperEndDate: "",
-    fullPaperDuration: 1,
-    reviewStartDate: "",
-    reviewEndDate: "",
-    reviewDuration: 1,
-    reviseStartDate: "",
-    reviseEndDate: "",
-    reviseDuration: 1,
-    cameraReadyStartDate: "",
-    cameraReadyEndDate: "",
-    cameraReadyDuration: 1,
+  abstractDecideStatusStart: "",
+  abstractDecideStatusEnd: "",
+  abstractDecideStatusDuration: 1,
 
-    abstractDecideStatusStart: "",
-    abstractDecideStatusEnd: "",
-    abstractDecideStatusDuration: 1,
+  fullPaperDecideStatusStart: "",
+  fullPaperDecideStatusEnd: "",
+  fullPaperDecideStatusDuration: 1,
 
-    fullPaperDecideStatusStart: "",
-    fullPaperDecideStatusEnd: "",
-    fullPaperDecideStatusDuration: 1,
+  revisionPaperDecideStatusStart: "",
+  revisionPaperDecideStatusEnd: "",
+  revisionPaperDecideStatusDuration: 1,
 
-    revisionPaperDecideStatusStart: "",
-    revisionPaperDecideStatusEnd: "",
-    revisionPaperDecideStatusDuration: 1,
+  cameraReadyDecideStatusStart: "",
+  cameraReadyDecideStatusEnd: "",
+  cameraReadyDecideStatusDuration: 1,
 
-    cameraReadyDecideStatusStart: "",
-    cameraReadyDecideStatusEnd: "",
-    cameraReadyDecideStatusDuration: 1,
+  authorPaymentStart: "",
+  authorPaymentEnd: "",
+  authorPaymentDuration: 1,
 
-    isWaitlist: true,
-    isActive: false,
-    revisionRoundDeadlines: [],
-  },
-];
+  revisionRoundDeadlines: [],
+});
+
+// ✅ Bắt đầu với 1 phase duy nhất (không còn 2 phases)
+const INITIAL_RESEARCH_PHASES: ResearchPhase[] = [getEmptyPhase()];
 
 export function useResearchForm() {
   // Step 1: Basic Info
@@ -131,7 +101,7 @@ export function useResearchForm() {
   // Step 2: Research Detail
   const [researchDetail, setResearchDetail] = useState<ResearchDetail>(INITIAL_RESEARCH_DETAIL);
 
-  // Step 3: Research Phases
+  // Step 3: Research Phases (N phases)
   const [researchPhases, setResearchPhases] = useState<ResearchPhase[]>(INITIAL_RESEARCH_PHASES);
 
   // Step 4: Price
@@ -181,67 +151,6 @@ export function useResearchForm() {
     }
   }, [basicForm.ticketSaleStart, basicForm.ticketSaleDuration]);
 
-  // Auto-calculate research phase end dates
-  const updatePhaseEndDate = (
-    index: number,
-    startDateKey: keyof ResearchPhase,
-    durationKey: keyof ResearchPhase,
-    endDateKey: keyof ResearchPhase
-  ) => {
-    setResearchPhases((prev) => {
-      const phase = prev[index];
-      if (
-        !phase ||
-        !phase[startDateKey] ||
-        !phase[durationKey] ||
-        (phase[durationKey] as number) <= 0
-      ) {
-        return prev;
-      }
-
-      const start = new Date(phase[startDateKey] as string);
-      const end = new Date(start);
-      end.setDate(start.getDate() + (phase[durationKey] as number) - 1);
-      const newEndDate = end.toISOString().split("T")[0];
-
-      const updated = [...prev];
-      updated[index] = { ...updated[index], [endDateKey]: newEndDate };
-      return updated;
-    });
-  };
-
-  // Auto-calculate main phase dates
-  const mainPhaseIndex = researchPhases.findIndex((p) => !p.isWaitlist);
-
-  useEffect(() => {
-    if (mainPhaseIndex !== -1) {
-      updatePhaseEndDate(mainPhaseIndex, "registrationStartDate", "registrationDuration", "registrationEndDate");
-    }
-  }, [researchPhases[mainPhaseIndex]?.registrationStartDate, researchPhases[mainPhaseIndex]?.registrationDuration]);
-
-  useEffect(() => {
-    if (mainPhaseIndex !== -1) {
-      updatePhaseEndDate(mainPhaseIndex, "fullPaperStartDate", "fullPaperDuration", "fullPaperEndDate");
-    }
-  }, [researchPhases[mainPhaseIndex]?.fullPaperStartDate, researchPhases[mainPhaseIndex]?.fullPaperDuration]);
-
-  useEffect(() => {
-    if (mainPhaseIndex !== -1) {
-      updatePhaseEndDate(mainPhaseIndex, "reviewStartDate", "reviewDuration", "reviewEndDate");
-    }
-  }, [researchPhases[mainPhaseIndex]?.reviewStartDate, researchPhases[mainPhaseIndex]?.reviewDuration]);
-
-  useEffect(() => {
-    if (mainPhaseIndex !== -1) {
-      updatePhaseEndDate(mainPhaseIndex, "reviseStartDate", "reviseDuration", "reviseEndDate");
-    }
-  }, [researchPhases[mainPhaseIndex]?.reviseStartDate, researchPhases[mainPhaseIndex]?.reviseDuration]);
-
-  useEffect(() => {
-    if (mainPhaseIndex !== -1) {
-      updatePhaseEndDate(mainPhaseIndex, "cameraReadyStartDate", "cameraReadyDuration", "cameraReadyEndDate");
-    }
-  }, [researchPhases[mainPhaseIndex]?.cameraReadyStartDate, researchPhases[mainPhaseIndex]?.cameraReadyDuration]);
 
   const resetAllForms = () => {
     setBasicForm(INITIAL_BASIC_FORM);
@@ -259,49 +168,30 @@ export function useResearchForm() {
   };
 
   return {
-    // Basic form
     basicForm,
     setBasicForm,
-
-    // Research detail
     researchDetail,
     setResearchDetail,
-
-    // Research phases
     researchPhases,
     setResearchPhases,
-
-    // Tickets
     tickets,
     setTickets,
-
-    // Sessions
     sessions,
     setSessions,
-
-    // Policies
     policies,
     setPolicies,
     refundPolicies,
     setRefundPolicies,
-
-    // Materials & Rankings
     researchMaterials,
     setResearchMaterials,
     rankingFiles,
     setRankingFiles,
     rankingReferences,
     setRankingReferences,
-
-    // Media
     mediaList,
     setMediaList,
-
-    // Sponsors
     sponsors,
     setSponsors,
-
-    // Reset
     resetAllForms,
   };
 }
