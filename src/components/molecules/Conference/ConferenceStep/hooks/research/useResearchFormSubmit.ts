@@ -15,7 +15,6 @@ import {
   useCreateResearchDetailMutation,
   useCreateResearchPhaseMutation,
   useCreateConferencePriceMutation,
-  useCreatePhaseForPriceMutation,
   useCreateResearchSessionsMutation,
   useCreateConferencePoliciesMutation,
   useCreateRefundPoliciesMutation,
@@ -31,7 +30,6 @@ import {
   useUpdateResearchPhaseMutation,
   useUpdateRevisionRoundDeadlineMutation,
   useUpdateConferencePriceMutation,
-  useUpdateConferencePricePhaseMutation, 
   useUpdateResearchSessionMutation,
   useUpdateConferencePolicyMutation,
   useUpdateConferenceRefundPolicyMutation,
@@ -99,9 +97,7 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
   const [createBasicResearch] = useCreateBasicResearchConferenceMutation();
   const [createResearchDetail] = useCreateResearchDetailMutation();
   const [createResearchPhase] = useCreateResearchPhaseMutation();
-  const [createRevisionDeadline] = useCreateRevisionRoundDeadlineMutation();
   const [createPrice] = useCreateConferencePriceMutation();
-  const [createPhaseForPrice] = useCreatePhaseForPriceMutation();
   const [createSessions] = useCreateResearchSessionsMutation();
   const [createPolicies] = useCreateConferencePoliciesMutation();
   const [createRefundPolicies] = useCreateRefundPoliciesMutation();
@@ -116,7 +112,6 @@ export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
   const [updateResearchPhase] = useUpdateResearchPhaseMutation();
   const [updateRevisionDeadline] = useUpdateRevisionRoundDeadlineMutation();
   const [updatePrice] = useUpdateConferencePriceMutation();
-  const [updatePricePhase] = useUpdateConferencePricePhaseMutation();
   const [updateSession] = useUpdateResearchSessionMutation();
   const [updatePolicy] = useUpdateConferencePolicyMutation();
   const [updateRefundPolicy] = useUpdateConferenceRefundPolicyMutation();
