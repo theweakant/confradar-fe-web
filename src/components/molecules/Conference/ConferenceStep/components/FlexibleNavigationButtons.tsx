@@ -15,7 +15,7 @@ interface FlexibleNavigationButtonsProps {
   onNext?: () => void;
   onSubmit?: () => Promise<void>;
   onUpdate?: () => Promise<{ success: boolean }>;
-  onUpdateAll?: () => Promise<{ success: boolean; errors?: string[] }>;
+  onComplete?: () => void; // ✅ Thêm callback cho nút "Hoàn tất"
 }
 
 export function FlexibleNavigationButtons({
@@ -31,7 +31,7 @@ export function FlexibleNavigationButtons({
   onNext,
   onSubmit,
   onUpdate,
-  onUpdateAll,
+  onComplete, // ✅ Nhận callback
 }: FlexibleNavigationButtonsProps) {
   const currentStepCompleted = isStepCompleted?.(currentStep) ?? false;
 
@@ -144,14 +144,14 @@ export function FlexibleNavigationButtons({
         </Button>
       )}
 
-      {/* Nút Cập nhật tổng (chỉ ở bước cuối) */}
-      {isLastStep && onUpdateAll && (
+      {/* ✅ Nút "Hoàn tất" thay cho "Cập nhật toàn bộ" ở bước cuối */}
+      {isLastStep && onComplete && (
         <Button
-          onClick={onUpdateAll}
+          onClick={onComplete}
           disabled={isSubmitting}
           className="flex-1 min-w-[180px] bg-green-600 text-white hover:bg-green-700"
         >
-          {isSubmitting ? "Đang cập nhật..." : "Cập nhật toàn bộ"}
+          Hoàn tất
         </Button>
       )}
 
