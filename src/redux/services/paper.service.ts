@@ -94,7 +94,7 @@ export const paperApi = createApi({
 
     decideAbstractStatus: builder.mutation<
       ApiResponse<unknown>,
-      { paperId: string; abstractId: string; globalStatus: string }
+      { paperId: string; abstractId: string; globalStatus: string; reason: string}
     >({
       query: (body) => ({
         url: endpoint.PAPER.DECIDE_ABSTRACT,
@@ -118,7 +118,13 @@ export const paperApi = createApi({
 
     assignPaperToReviewer: builder.mutation<
       ApiResponse<unknown>,
-      { userId: string; paperId: string; isHeadReviewer: boolean }
+      {
+        paperId: string;
+        reviewers: {
+          userId: string;
+          isHeadReviewer: boolean;
+        }[];
+      }
     >({
       query: (body) => ({
         url: endpoint.PAPER.ASSIGN_PAPER_TO_REVIEWER,

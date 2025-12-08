@@ -40,11 +40,13 @@ interface PaperTabProps {
 export function PaperTab({ conferenceId, conferenceData }: PaperTabProps) {
   const [selectedPaperId, setSelectedPaperId] = useState<string | null>(null);
   const [showAssignDialog, setShowAssignDialog] = useState(false);
-  const [selectedReviewer, setSelectedReviewer] = useState<string>("");
-  const [isHeadReviewer, setIsHeadReviewer] = useState(false);
+  const [selectedReviewers, setSelectedReviewers] = useState<
+    { userId: string; isHeadReviewer: boolean }[]
+  >([]);
   const [showDecisionDialog, setShowDecisionDialog] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingDecision, setPendingDecision] = useState<DecisionType | null>(null);
+  const [decisionReason, setDecisionReason] = useState<string>("");
 
   const {
     data: papersData,
@@ -110,29 +112,27 @@ export function PaperTab({ conferenceId, conferenceData }: PaperTabProps) {
 
   const handleOpenAssignDialog = () => {
     setShowAssignDialog(true);
-    setSelectedReviewer("");
-    setIsHeadReviewer(false);
+    setSelectedReviewers([]);
   };
 
   const handleCloseAssignDialog = () => {
     setShowAssignDialog(false);
-    setSelectedReviewer("");
-    setIsHeadReviewer(false);
+    setSelectedReviewers([]);
   };
 
   const handleAssignReviewer = async () => {
-    if (!selectedReviewer) {
-      toast.error("Vui lòng chọn reviewer!");
+    if (selectedReviewers.length === 0) {
+      toast.error("Vui lòng chọn ít nhất 1 reviewer!");
       return;
     }
     if (!selectedPaperId) return;
 
     try {
       const res = await assignPaper({
-        userId: selectedReviewer,
         paperId: selectedPaperId,
-        isHeadReviewer,
+        reviewers: selectedReviewers,
       }).unwrap();
+
       toast.success(res.message || "Giao reviewer thành công!");
       handleCloseAssignDialog();
       refetchPapers();
@@ -166,12 +166,6 @@ export function PaperTab({ conferenceId, conferenceData }: PaperTabProps) {
     setShowDecisionDialog(true);
   };
 
-  const handleDecisionClick = (decision: DecisionType) => {
-    setPendingDecision(decision);
-    setShowDecisionDialog(false);
-    setShowConfirmDialog(true);
-  };
-
   const handleConfirmDecision = async () => {
     const paper = papersData?.data?.paperDetails.find(p => p.paperId === selectedPaperId);
     if (!paper || !pendingDecision) return;
@@ -187,6 +181,7 @@ export function PaperTab({ conferenceId, conferenceData }: PaperTabProps) {
         paperId: paper.paperId,
         abstractId: abstractId,
         globalStatus: pendingDecision,
+        reason: decisionReason.trim(),
       }).unwrap();
 
       toast.success(
@@ -197,6 +192,7 @@ export function PaperTab({ conferenceId, conferenceData }: PaperTabProps) {
 
       setShowConfirmDialog(false);
       setPendingDecision(null);
+      setDecisionReason("");
       handleClosePaperDetail();
       refetchPapers();
     } catch (error) {
@@ -239,13 +235,13 @@ export function PaperTab({ conferenceId, conferenceData }: PaperTabProps) {
   const reviewersList = reviewersListData?.data ?? [];
   const selectedPaper = papers.find((p) => p.paperId === selectedPaperId);
 
-const availableReviewers = reviewersList.filter((reviewer) => {
-  if (!selectedPaper) return true;
-  const assignedReviewerIds = new Set(
-    selectedPaper.assignedReviewers?.map((r) => r.userId) || []
-  );
-  return !assignedReviewerIds.has(reviewer.userId);
-});
+  const availableReviewers = reviewersList.filter((reviewer) => {
+    if (!selectedPaper) return true;
+    const assignedReviewerIds = new Set(
+      selectedPaper.assignedReviewers?.map((r) => r.userId) || []
+    );
+    return !assignedReviewerIds.has(reviewer.userId);
+  });
 
   return (
     <>
@@ -298,20 +294,23 @@ const availableReviewers = reviewersList.filter((reviewer) => {
       <AssignReviewerDialog
         open={showAssignDialog}
         onClose={handleCloseAssignDialog}
-        selectedReviewer={selectedReviewer}
-        isHeadReviewer={isHeadReviewer}
+        selectedReviewers={selectedReviewers}
         reviewersList={availableReviewers}
         isLoadingReviewersList={isLoadingReviewersList}
         isAssigning={isAssigning}
-        onReviewerChange={setSelectedReviewer}
-        onHeadReviewerChange={setIsHeadReviewer}
+        onReviewersChange={setSelectedReviewers}
         onAssign={handleAssignReviewer}
       />
 
       <DecisionDialog
         open={showDecisionDialog}
         onClose={() => setShowDecisionDialog(false)}
-        onDecisionClick={handleDecisionClick}
+        onDecisionClick={(decision, reason) => {
+          setPendingDecision(decision);
+          setDecisionReason(reason);
+          setShowDecisionDialog(false);
+          setShowConfirmDialog(true);
+        }}
       />
 
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
@@ -321,6 +320,11 @@ const availableReviewers = reviewersList.filter((reviewer) => {
             <AlertDialogDescription>
               Thao tác này sẽ không thể hoàn tác. Bạn có chắc chắn muốn{" "}
               {pendingDecision === "Accepted" ? "chấp nhận" : "từ chối"} bài báo này?
+              {decisionReason && (
+                <div className="mt-2 text-sm">
+                  <strong>Lý do:</strong> {decisionReason}
+                </div>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
