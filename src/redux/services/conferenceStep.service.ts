@@ -768,7 +768,7 @@ export const conferenceStepApi = createApi({
       invalidatesTags: ["ConferenceStep"],
     }),
 
-    updateResearchDetail: builder.mutation< 
+    updateResearchDetail: builder.mutation<
       ApiResponse<{ success: boolean }>,
       { conferenceId: string; data: ResearchDetail }
     >({
@@ -988,6 +988,17 @@ export const conferenceStepApi = createApi({
       }),
       invalidatesTags: ["ConferenceStep"],
     }),
+
+    getConferenceStepPrices: builder.query<
+      ApiResponse<ConferencePriceResponse>,
+      string
+    >({
+      query: (conferenceStepId) => ({
+        url: endpoint.CONFERENCE_STEP.GET_PRICES(conferenceStepId),
+        method: "GET",
+      }),
+      providesTags: ["ConferenceStep"],
+    }),
   }),
 });
 
@@ -1056,4 +1067,6 @@ export const {
 
   useAddPricePhaseForWaitlistMutation,
   useCreateSkeletonNameForConferenceInContractMutation,
+
+  useGetConferenceStepPricesQuery,
 } = conferenceStepApi;

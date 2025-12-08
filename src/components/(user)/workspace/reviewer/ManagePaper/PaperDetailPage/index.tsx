@@ -45,7 +45,11 @@ export default function ReviewPaperPage() {
 
   const [isTimelineOpen, setIsTimelineOpen] = useState(false);
 
-  const reviewerStages = steps.filter(s => s.label.toLowerCase() !== "abstract");
+  // const reviewerStages = steps.filter(s => s.label.toLowerCase() !== "abstract");
+
+  const reviewerStages = steps.filter(
+    s => !["abstract", "payment"].includes(s.label.toLowerCase())
+  );
 
   const fetchPaperDetail = useCallback(
     async (paperId: string): Promise<ApiResponse<PaperDetailWrapperForReviewer>> => {

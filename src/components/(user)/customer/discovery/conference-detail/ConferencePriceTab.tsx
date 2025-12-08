@@ -172,7 +172,28 @@ const ConferencePriceTab: React.FC<ConferencePriceTabProps> = ({
                                   </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div className="flex flex-wrap gap-2 text-gray-600 text-sm">
+                                  {phase.startDate && (
+                                    <div className="flex-1 min-w-[140px] break-words">
+                                      <span className="font-medium">Bắt đầu:</span> {formatDate(phase.startDate)}
+                                    </div>
+                                  )}
+                                  {phase.endDate && (
+                                    <div className="flex-1 min-w-[140px] break-words">
+                                      <span className="font-medium">Kết thúc:</span> {formatDate(phase.endDate)}
+                                    </div>
+                                  )}
+                                  <div className="flex-1 min-w-[140px] break-words">
+                                    <span className="font-medium">{isResearch ? "Chỗ còn lại:" : "Vé còn lại:"}</span>{" "}
+                                    {phase.availableSlot ?? "Chưa xác định"}
+                                  </div>
+                                  <div className="flex-1 min-w-[140px] break-words">
+                                    <span className="font-medium">{isResearch ? "Tổng số lượt đăng ký:" : "Tổng số vé bán ra:"}</span>{" "}
+                                    {phase.totalSlot ?? "Chưa xác định"}
+                                  </div>
+                                </div>
+
+                                {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                   {phase.startDate && (
                                     <div className="flex items-center gap-2 text-gray-600">
                                       <Calendar className="w-4 h-4" />
@@ -185,18 +206,20 @@ const ConferencePriceTab: React.FC<ConferencePriceTabProps> = ({
                                       <span>Kết thúc: {formatDate(phase.endDate)}</span>
                                     </div>
                                   )}
-                                  {phase.startDate && phase.endDate && (
-                                    <div className="flex items-center gap-2 text-gray-600">
-                                      <Clock className="w-4 h-4" />
-                                      <span>
-                                        {formatTime(phase.startDate)} - {formatTime(phase.endDate)}
-                                      </span>
-                                    </div>
-                                  )}
                                   <div className="text-gray-600">
-                                    <span className="font-medium">Vé còn lại:</span> {phase.availableSlot !== undefined ? phase.availableSlot : 'Chưa xác định'}
+                                    <span className="font-medium">
+                                      {isResearch ? "Chỗ còn lại:" : "Vé còn lại:"}
+                                    </span>{" "}
+                                    {phase.availableSlot !== undefined ? phase.availableSlot : "Chưa xác định"}
                                   </div>
-                                </div>
+
+                                  <div className="text-gray-600">
+                                    <span className="font-medium">
+                                      {isResearch ? "Tổng số lượt đăng ký:" : "Tổng số vé bán ra:"}
+                                    </span>{" "}
+                                    {phase.totalSlot !== undefined ? phase.totalSlot : "Chưa xác định"}
+                                  </div>
+                                </div> */}
                               </div>
 
                               <div className="text-right md:order-2">
@@ -205,7 +228,13 @@ const ConferencePriceTab: React.FC<ConferencePriceTabProps> = ({
                                 </div>
                                 {phase.applyPercent && (
                                   <div className="text-sm text-gray-600">
-                                    Giảm {100 - phase.applyPercent}% ({phase.applyPercent}% giá gốc)
+                                    {phase.applyPercent < 100 ? (
+                                      <>Giảm {100 - phase.applyPercent}% ({phase.applyPercent}% giá gốc)</>
+                                    ) : phase.applyPercent > 100 ? (
+                                      <>Tăng {phase.applyPercent - 100}% ({phase.applyPercent}% giá gốc)</>
+                                    ) : (
+                                      <>Giá giữ nguyên (100% giá gốc)</>
+                                    )}
                                   </div>
                                 )}
                               </div>

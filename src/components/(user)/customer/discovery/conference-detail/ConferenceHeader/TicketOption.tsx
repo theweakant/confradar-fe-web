@@ -3,6 +3,7 @@ import React from "react";
 import {
     ConferencePriceResponse,
     ResearchConferenceDetailResponse,
+    ResearchConferencePhaseResponse,
     TechnicalConferenceDetailResponse,
 } from "@/types/conference.type";
 import { getCurrentPrice } from "@/helper/conference";
@@ -15,6 +16,10 @@ interface TicketOptionProps {
     isSelected: boolean;
     onSelect: (ticket: ConferencePriceResponse, isDisabled: boolean) => void;
     isResearch?: boolean;
+    nextPhaseInfo?: {
+        phase: ResearchConferencePhaseResponse;
+        hasAvailableSlots: boolean;
+    } | null;
 }
 
 const TicketOption: React.FC<TicketOptionProps> = ({
@@ -24,29 +29,65 @@ const TicketOption: React.FC<TicketOptionProps> = ({
     isSelected,
     onSelect,
     isResearch,
+    nextPhaseInfo,
 }) => {
     const { now, useFakeTime } = useGlobalTime();
 
+    // const currentPrice = getCurrentPrice(ticket);
+    // const currentPhase = ticket.pricePhases?.find((phase) => {
+    //     const startDate = new Date(phase.startDate || "");
+    //     const endDate = new Date(phase.endDate || "");
+    //     return now >= startDate && now <= endDate;
+    // });
+
+    // const futurePhases = ticket.pricePhases
+    //     ?.filter((phase) => {
+    //         const startDate = new Date(phase.startDate || "");
+    //         return startDate > now;
+    //     })
+    //     .sort((a, b) => new Date(a.startDate || "").getTime() - new Date(b.startDate || "").getTime());
+
+    // const nextPhase = futurePhases && futurePhases.length > 0 ? futurePhases[0] : null;
+    // const isBeforeSale = !currentPhase && nextPhase !== null;
+
     const currentPrice = getCurrentPrice(ticket);
 
-    // const now = new Date();
-    const currentPhase = ticket.pricePhases?.find((phase) => {
-        const startDate = new Date(phase.startDate || "");
-        const endDate = new Date(phase.endDate || "");
-        return now >= startDate && now <= endDate;
-    });
+    let currentPhase;
+    let futurePhases;
+    let nextPhase;
+    let isBeforeSale;
 
-    const futurePhases = ticket.pricePhases
-        ?.filter((phase) => {
+    // Nếu next phase available, chỉ quan tâm slot, bỏ qua thời gian
+    if (nextPhaseInfo?.hasAvailableSlots) {
+        currentPhase = ticket.pricePhases?.find((phase) => {
+            return (phase.availableSlot ?? 0) > 0;
+        });
+
+        futurePhases = ticket.pricePhases?.filter((phase) => {
+            return (phase.availableSlot ?? 0) > 0;
+        });
+
+        nextPhase = futurePhases && futurePhases.length > 0 ? futurePhases[0] : null;
+        isBeforeSale = false; // Không có trạng thái "before sale" khi next phase available
+    } else {
+        // Logic cũ: check cả thời gian
+        currentPhase = ticket.pricePhases?.find((phase) => {
             const startDate = new Date(phase.startDate || "");
-            return startDate > now;
-        })
-        .sort((a, b) => new Date(a.startDate || "").getTime() - new Date(b.startDate || "").getTime());
+            const endDate = new Date(phase.endDate || "");
+            return now >= startDate && now <= endDate;
+        });
 
-    const nextPhase = futurePhases && futurePhases.length > 0 ? futurePhases[0] : null;
+        futurePhases = ticket.pricePhases
+            ?.filter((phase) => {
+                const startDate = new Date(phase.startDate || "");
+                return startDate > now;
+            })
+            .sort((a, b) => new Date(a.startDate || "").getTime() - new Date(b.startDate || "").getTime());
 
-    // const isBeforeSale = !currentPhase && nextPhase;
-    const isBeforeSale = !currentPhase && nextPhase !== null;
+        nextPhase = futurePhases && futurePhases.length > 0 ? futurePhases[0] : null;
+        isBeforeSale = !currentPhase && nextPhase !== null;
+    }
+
     const currentPhaseSoldOut = currentPhase && currentPhase.availableSlot === 0;
     const isLastPhase = !nextPhase;
     const isTicketSoldOut =
@@ -135,12 +176,19 @@ const TicketOption: React.FC<TicketOptionProps> = ({
                             {currentPhase?.availableSlot} / {currentPhase?.totalSlot}
                         </p>
 
-                        {currentPhase?.startDate && (
+                        {!(nextPhaseInfo?.hasAvailableSlots) && currentPhase?.startDate && (
                             <p className="text-white/70">
                                 <span className="font-medium">Hiệu lực:</span> {formatDate(currentPhase.startDate)} →{" "}
                                 {formatDate(currentPhase.endDate)}
                             </p>
                         )}
+
+                        {/* {currentPhase?.startDate && (
+                            <p className="text-white/70">
+                                <span className="font-medium">Hiệu lực:</span> {formatDate(currentPhase.startDate)} →{" "}
+                                {formatDate(currentPhase.endDate)}
+                            </p>
+                        )} */}
                     </div>
                 )}
             </div>

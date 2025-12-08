@@ -25,6 +25,7 @@ export default function CameraReadyList() {
         cameraReadyId,
         globalStatus: "Accepted",
         paperid: rootPaperId,
+        reason: ""
       }).unwrap();
 
       toast.success("Đã chấp nhận thành công!");

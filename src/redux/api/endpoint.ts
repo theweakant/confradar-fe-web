@@ -227,7 +227,9 @@ export const endpoint = {
 
     ADD_PRICE_PHASE_WAITLIST: '/conferencestep/add-pricephase-for-waitlist',
 
-    CREATE_SKELETON_NAME_FOR_CONTRACT: "/conferencestep/create-skeleton-name-for-conference-in-contract-with-collaborator"
+    CREATE_SKELETON_NAME_FOR_CONTRACT: "/conferencestep/create-skeleton-name-for-conference-in-contract-with-collaborator",
+
+    GET_PRICES: (conferenceStepId: string) => `/conferencestep/${conferenceStepId}/prices`,
   },
 
   CITY: {

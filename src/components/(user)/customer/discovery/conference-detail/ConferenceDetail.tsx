@@ -83,6 +83,9 @@ const ConferenceDetail = () => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
     string | null
   >(null);
+  const [selectedPaperId, setSelectedPaperId] = useState<
+    string | null
+  >(null);
   const [showPaymentMethods, setShowPaymentMethods] = useState(false);
 
   // const [conference, setConference] = useState<TechnicalConferenceDetailResponse | null>(null);
@@ -113,22 +116,25 @@ const ConferenceDetail = () => {
       return;
     }
 
-    if (
-      selectedTicket.isAuthor &&
-      (!authorInfo.title.trim() || !authorInfo.description.trim())
-    ) {
-      toast.error("Vui lòng nhập tiêu đề và mô tả bài báo!");
-      return;
-    }
+    // if (
+    //   selectedTicket.isAuthor &&
+    //   (!authorInfo.title.trim() || !authorInfo.description.trim())
+    // ) {
+    //   toast.error("Vui lòng nhập tiêu đề và mô tả bài báo!");
+    //   return;
+    // }
 
     try {
       let response;
 
       if (selectedTicket.isAuthor) {
+        if (!selectedPaperId) return;
+
         response = await purchaseResearchPaper({
           conferencePriceId: selectedTicket.conferencePriceId,
-          title: authorInfo.title,
-          description: authorInfo.description,
+          paperId: selectedPaperId,
+          // title: authorInfo.title,
+          // description: authorInfo.description,
           paymentMethodId: selectedPaymentMethod,
         });
       } else if (isResearch) {
@@ -479,6 +485,7 @@ const ConferenceDetail = () => {
                 onAuthorInfoChange={setAuthorInfo}
                 selectedPaymentMethod={selectedPaymentMethod}
                 onSelectPaymentMethod={setSelectedPaymentMethod}
+                onSelectPaper={setSelectedPaperId}
               />
             </div>
           </div>
@@ -495,10 +502,15 @@ const ConferenceDetail = () => {
                 </h3>
                 <div className="col-span-full my-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border-l-4 border-blue-500 shadow-sm">
                   <p className="text-gray-700 text-sm">
+                    💡 <b>Lưu ý:</b> Bài báo của bạn sẽ được đánh giá qua <b>4 giai đoạn</b> của timeline đánh giá. Bạn sẽ chỉ thanh toán <b>phí đăng ký tham dự</b> khi bài báo được chấp nhận ở vòng cuối cùng. Nếu bài báo bị từ chối, bạn sẽ không phải trả phí đăng ký.
+                  </p>
+                </div>
+                {/* <div className="col-span-full my-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border-l-4 border-blue-500 shadow-sm">
+                  <p className="text-gray-700 text-sm">
                     💡 <b>Lưu ý:</b> Khi nộp bài báo (với tư cách tác giả), bạn sẽ thanh toán toàn bộ phí đăng ký ngay tại thời điểm nộp.
                     Nếu bài báo bị từ chối, hệ thống sẽ hoàn lại <b>số tiền đã thanh toán, nhưng đã trừ đi khoản phí đánh giá bài báo</b> tương ứng với hội nghị này.
                   </p>
-                </div>
+                </div> */}
                 <div className="bg-white border-2 border-gray-200 rounded-xl p-6 shadow-lg grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="p-3 bg-gradient-to-br from-blue-50 to-white rounded-lg border border-blue-100">
                     <span className="text-gray-600 text-sm font-medium block mb-1">Định dạng bài báo chấp nhận:</span>

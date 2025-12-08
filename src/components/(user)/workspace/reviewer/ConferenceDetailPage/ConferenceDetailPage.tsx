@@ -814,8 +814,8 @@ export default function ConferenceDetailPage({
     conferenceId,
 }: ConferenceDetailPageProps) {
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const reviewerType = searchParams.get("type") || "local";
+    // const searchParams = useSearchParams();
+    // const reviewerType = searchParams.get("type") || "local";
 
     // State
     const [searchQuery, setSearchQuery] = useState("");

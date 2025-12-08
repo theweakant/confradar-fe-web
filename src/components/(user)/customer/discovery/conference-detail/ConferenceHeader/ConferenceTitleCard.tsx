@@ -27,7 +27,7 @@ const ConferenceTitleCard: React.FC<ConferenceTitleCardProps> = ({
     isResearch = false,
 }) => {
     const baseClasses = isResearch
-        ? "bg-white rounded-xl shadow-md p-6"
+        ? "h-full bg-white rounded-xl shadow-md p-6"
         : "h-full bg-white rounded-xl shadow-md p-6 md:p-8";
 
     const textColor = isResearch ? "text-gray-900" : "text-gray-800";
@@ -47,8 +47,8 @@ const ConferenceTitleCard: React.FC<ConferenceTitleCardProps> = ({
                         onClick={onFavoriteToggle}
                         disabled={isTogglingFavorite}
                         className={`p-2 rounded-full transition disabled:opacity-50 disabled:cursor-not-allowed ${isResearch
-                                ? "bg-gray-100 hover:bg-gray-200"
-                                : "bg-gray-100 hover:bg-gray-200"
+                            ? "bg-gray-100 hover:bg-gray-200"
+                            : "bg-gray-100 hover:bg-gray-200"
                             }`}
                         title={isFavorite ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
                     >

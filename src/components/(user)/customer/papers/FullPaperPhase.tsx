@@ -8,6 +8,7 @@ import SubmittedPaperCard from "./SubmittedPaperCard";
 import { toast } from "sonner";
 import SubmissionFormDialog from "./SubmissionFormDialog";
 import { parseApiError } from "@/helper/api";
+import { useGlobalTime } from "@/utils/TimeContext";
 
 interface FullPaperPhaseProps {
   paperId?: string;
@@ -20,10 +21,13 @@ interface FullPaperPhaseProps {
 const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper, researchPhase, onSubmittedFullPaper }) => {
   const isSubmitted = !!fullPaper;
 
+  const { now } = useGlobalTime();
+
   // Validate phase timing
   const phaseValidation = validatePhaseTime(
     researchPhase?.fullPaperStartDate,
-    researchPhase?.fullPaperEndDate
+    researchPhase?.fullPaperEndDate,
+    now
   );
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);

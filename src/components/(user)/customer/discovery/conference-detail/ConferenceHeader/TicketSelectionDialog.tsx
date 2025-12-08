@@ -4,6 +4,7 @@ import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import {
     ConferencePriceResponse,
     ResearchConferenceDetailResponse,
+    ResearchConferencePhaseResponse,
     TechnicalConferenceDetailResponse,
 } from "@/types/conference.type";
 import { getCurrentPrice } from "@/helper/conference";
@@ -37,6 +38,11 @@ interface TicketSelectionDialogProps {
     onAddToWaitlist: (conferenceId?: string) => void;
     addingToWaitListLoading: boolean;
     accessToken: string | null;
+    userType?: 'author' | 'listener';
+    nextPhaseInfo?: {
+        phase: ResearchConferencePhaseResponse;
+        hasAvailableSlots: boolean;
+    } | null;
 }
 
 const TicketSelectionDialog: React.FC<TicketSelectionDialogProps> = ({
@@ -61,12 +67,14 @@ const TicketSelectionDialog: React.FC<TicketSelectionDialogProps> = ({
     onAddToWaitlist,
     addingToWaitListLoading,
     accessToken,
+    userType = 'listener',
+    nextPhaseInfo
 }) => {
     const { now, useFakeTime } = useGlobalTime();
 
     const isResearch = conference.isResearchConference;
 
-    const [activeTab, setActiveTab] = React.useState<'author' | 'listener'>('author');
+    // const [activeTab, setActiveTab] = React.useState<'author' | 'listener'>('author');
 
     const [isAuthorFormDialogOpen, setIsAuthorFormDialogOpen] = React.useState(false);
 
@@ -84,18 +92,39 @@ const TicketSelectionDialog: React.FC<TicketSelectionDialogProps> = ({
             return conference.conferencePrices || [];
         }
 
-        return (conference.conferencePrices || []).filter(ticket =>
-            activeTab === 'author' ? ticket.isAuthor : !ticket.isAuthor
-        );
+        return (conference.conferencePrices || []).filter(ticket => {
+            return userType === 'author' ? ticket.isAuthor : !ticket.isAuthor;
+        });
     };
+
+    // const getFilteredTickets = () => {
+    //     if (!isResearch) {
+    //         return conference.conferencePrices || [];
+    //     }
+
+    //     return (conference.conferencePrices || []).filter(ticket =>
+    //         activeTab === 'author' ? ticket.isAuthor : !ticket.isAuthor
+    //     );
+    // };
 
 
     const checkAllAuthorTicketsSoldOut = () => {
         const authorTickets = (conference.conferencePrices || []).filter((ticket) => ticket.isAuthor);
+        if (nextPhaseInfo?.hasAvailableSlots) {
+            return (
+                authorTickets.length > 0 &&
+                authorTickets.every((ticket) => {
+                    const hasAnyAvailableSlot = ticket.pricePhases?.some((phase) => {
+                        return (phase.availableSlot ?? 0) > 0;
+                    });
+
+                    return !hasAnyAvailableSlot;
+                })
+            );
+        }
         return (
             authorTickets.length > 0 &&
             authorTickets.every((ticket) => {
-                // const now = new Date();
                 const currentPhase = ticket.pricePhases?.find((phase) => {
                     const startDate = new Date(phase.startDate || "");
                     const endDate = new Date(phase.endDate || "");
@@ -129,24 +158,24 @@ const TicketSelectionDialog: React.FC<TicketSelectionDialogProps> = ({
     const getValidationMessage = () => {
         if (!selectedTicket) return "Vui lòng chọn loại vé";
         if (!selectedPaymentMethod) return "Vui lòng chọn phương thức thanh toán";
-        if (selectedTicket.isAuthor && (!authorInfo.title.trim() || !authorInfo.description.trim())) {
-            return "Vui lòng điền đầy đủ thông tin bài báo";
-        }
+        // if (selectedTicket.isAuthor && (!authorInfo.title.trim() || !authorInfo.description.trim())) {
+        //     return "Vui lòng điền đầy đủ thông tin bài báo";
+        // }
         return "";
     };
 
-    React.useEffect(() => {
-        if (isResearch && selectedTicket) {
-            const isCurrentTicketInTab = activeTab === 'author'
-                ? selectedTicket.isAuthor
-                : !selectedTicket.isAuthor;
+    // React.useEffect(() => {
+    //     if (isResearch && selectedTicket) {
+    //         const isCurrentTicketInTab = activeTab === 'author'
+    //             ? selectedTicket.isAuthor
+    //             : !selectedTicket.isAuthor;
 
-            if (!isCurrentTicketInTab) {
-                onSelectTicket(null);
-                onToggleAuthorForm(false);
-            }
-        }
-    }, [activeTab, isResearch]);
+    //         if (!isCurrentTicketInTab) {
+    //             onSelectTicket(null);
+    //             onToggleAuthorForm(false);
+    //         }
+    //     }
+    // }, [activeTab, isResearch]);
 
     return (
         <Dialog open={isOpen} as="div" className="relative z-50 focus:outline-none" onClose={onClose}>
@@ -157,12 +186,16 @@ const TicketSelectionDialog: React.FC<TicketSelectionDialogProps> = ({
                     className="w-full max-w-xl rounded-2xl bg-white/10 backdrop-blur-2xl p-6 text-white duration-300 ease-out data-[closed]:opacity-0 data-[closed]:scale-95 max-h-[95vh] flex flex-col"
                 >
                     <DialogTitle as="h3" className="text-lg font-semibold mb-4">
-                        {isResearch ? "Chọn hình thức tham dự" : "Chọn loại vé"}
+                        {/* {isResearch ? "Chọn hình thức tham dự" : "Chọn loại vé"} */}
+                        {isResearch
+                            ? (userType === 'author' ? "Đăng ký cho tác giả" : "Đăng ký cho thính giả")
+                            : "Chọn loại vé"
+                        }
                     </DialogTitle>
 
                     <>
                         {/* Tab Headers - chỉ hiển thị khi là Research Conference */}
-                        {isResearch && (
+                        {/* {isResearch && (
                             <div className="flex gap-2 mb-4 p-1 bg-white/5 rounded-lg">
                                 <button
                                     onClick={() => setActiveTab('author')}
@@ -183,13 +216,13 @@ const TicketSelectionDialog: React.FC<TicketSelectionDialogProps> = ({
                                     Thính giả
                                 </button>
                             </div>
-                        )}
+                        )} */}
 
-                        {isResearch && activeTab === 'author' && (
+                        {isResearch && userType === 'author' && (
                             <div className="col-span-full my-2 bg-white/10 rounded-lg p-3 border border-white/20">
                                 <p className="text-white/80 text-sm italic">
-                                    💡 <b>Lưu ý:</b> Khi nộp bài báo (với tư cách tác giả), bạn sẽ thanh toán toàn bộ phí đăng ký ngay tại thời điểm nộp.
-                                    Nếu bài báo bị từ chối, hệ thống sẽ hoàn lại <b>số tiền đã thanh toán, nhưng đã trừ đi khoản phí đánh giá bài báo</b> tương ứng với hội nghị này.
+                                    💡 <b>Lưu ý:</b> Tác giả chỉ cần thanh toán phí đăng ký <b>sau khi bài Camera Ready đã được chấp nhận</b>.
+                                    Vui lòng hoàn tất thanh toán trong thời hạn quy định để bảo đảm bài báo được đưa vào chương trình hội nghị.
                                 </p>
                             </div>
                         )}
@@ -203,7 +236,7 @@ const TicketSelectionDialog: React.FC<TicketSelectionDialogProps> = ({
                                 scrollBehavior: "smooth",
                             }}
                         >
-                            {isResearch && activeTab === 'listener' && !(conference as ResearchConferenceDetailResponse).allowListener ? (
+                            {isResearch && userType === 'listener' && !(conference as ResearchConferenceDetailResponse).allowListener ? (
                                 <div className="flex flex-col items-center justify-center py-12 px-4">
                                     <div className="w-16 h-16 mb-4 rounded-full bg-orange-500/20 flex items-center justify-center">
                                         <svg className="w-8 h-8 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -229,7 +262,7 @@ const TicketSelectionDialog: React.FC<TicketSelectionDialogProps> = ({
                                     </p>
                                     <p className="text-white/60 text-sm text-center">
                                         {isResearch
-                                            ? `Chưa có gói phí cho ${activeTab === 'author' ? 'tác giả' : 'thính giả'}`
+                                            ? `Chưa có gói phí cho ${userType === 'author' ? 'tác giả' : 'thính giả'}`
                                             : 'Chưa có loại vé nào được mở bán'
                                         }
                                     </p>
@@ -244,45 +277,28 @@ const TicketSelectionDialog: React.FC<TicketSelectionDialogProps> = ({
                                         isSelected={selectedTicket?.conferencePriceId === ticket.conferencePriceId}
                                         onSelect={handleTicketSelect}
                                         isResearch={isResearch}
+                                        nextPhaseInfo={nextPhaseInfo}
                                     />
                                 ))
                             )}
                         </div>
                     </>
 
-                    {/* <div
-                        className="space-y-3 max-h-[70vh] overflow-y-auto pr-1"
-                        style={{
-                            scrollbarWidth: "thin",
-                            scrollbarColor: "rgba(255,255,255,0.2) transparent",
-                            scrollBehavior: "smooth",
-                        }}
-                    >
-                        {(conference.conferencePrices || []).map((ticket) => (
-                            <TicketOption
-                                key={ticket.conferencePriceId}
-                                ticket={ticket}
-                                conference={conference}
-                                formatDate={formatDate}
-                                isSelected={selectedTicket?.conferencePriceId === ticket.conferencePriceId}
-                                onSelect={handleTicketSelect}
-                                isResearch={isResearch}
-                            />
-                        ))}
-                    </div> */}
+                    {userType === 'author' && (
+                        <WaitlistSection
+                            allAuthorTicketsSoldOut={checkAllAuthorTicketsSoldOut()}
+                            conferenceId={conference.conferenceId}
+                            onAddToWaitlist={onAddToWaitlist}
+                            loading={addingToWaitListLoading}
+                        />
+                    )}
 
-                    <WaitlistSection
-                        allAuthorTicketsSoldOut={checkAllAuthorTicketsSoldOut()}
-                        conferenceId={conference.conferenceId}
-                        onAddToWaitlist={onAddToWaitlist}
-                        loading={addingToWaitListLoading}
-                    />
 
                     {selectedTicket && (
                         <div className="mt-4 flex-shrink-0 space-y-4">
 
                             {/* Author form luôn full width */}
-                            <div className="w-full">
+                            {/* <div className="w-full">
                                 <AuthorFormSection
                                     isAuthorTicket={selectedTicket.isAuthor}
                                     showForm={showAuthorForm}
@@ -293,7 +309,7 @@ const TicketSelectionDialog: React.FC<TicketSelectionDialogProps> = ({
                                     onOpenDialog={() => setIsAuthorFormDialogOpen(true)}
                                     onCloseDialog={() => setIsAuthorFormDialogOpen(false)}
                                 />
-                            </div>
+                            </div> */}
 
                             {/* Payment section để riêng bên dưới hoặc bên phải nếu desktop */}
                             {/* <div className="w-full md:w-auto">
@@ -371,8 +387,9 @@ const TicketSelectionDialog: React.FC<TicketSelectionDialogProps> = ({
                                         disabled={
                                             !selectedTicket ||
                                             paymentLoading ||
-                                            !selectedPaymentMethod ||
-                                            (selectedTicket?.isAuthor && (!authorInfo.title.trim() || !authorInfo.description.trim()))
+                                            !selectedPaymentMethod
+                                            // ||
+                                            // (selectedTicket?.isAuthor && (!authorInfo.title.trim() || !authorInfo.description.trim()))
                                         }
                                         className="px-5 py-2 rounded-lg bg-coral-500 hover:bg-coral-600 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm font-medium"
                                     >

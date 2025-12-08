@@ -12,12 +12,13 @@ import 'swiper/css/pagination';
 import { toast } from 'sonner';
 import { Dialog, Transition } from "@headlessui/react";
 import { Info, X } from "lucide-react";
-import { validatePhaseTime, PhaseValidationResult } from '@/helper/timeValidation';
+import { validatePhaseTime, PhaseValidationResult, parseStartOfDay, parseEndOfDay } from '@/helper/timeValidation';
 import { cn } from '@/utils/utils';
 import EmblaCarousel from '@/components/molecules/EmblaCarousel';
 import SubmittedPaperCard from './SubmittedPaperCard';
 import SubmissionFormDialog from './SubmissionFormDialog';
 import { parseApiError } from '@/helper/api';
+import { useGlobalTime } from '@/utils/TimeContext';
 
 interface RevisionPhaseProps {
   paperId: string;
@@ -29,6 +30,8 @@ interface RevisionPhaseProps {
 }
 
 const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, researchPhase, revisionDeadline, onSubmittedRevision }) => {
+  const { now } = useGlobalTime();
+
   const {
     handleSubmitPaperRevision,
     handleSubmitPaperRevisionResponse,
@@ -61,6 +64,8 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
   } | null>(null);
 
   const [activeRoundTab, setActiveRoundTab] = useState<number>(0);
+
+  // Trong component RevisionPhase, sửa lại phần revisionValidation:
 
   const revisionValidation: PhaseValidationResult = useMemo(() => {
     if (!revisionDeadline || revisionDeadline.length === 0) {
@@ -96,11 +101,109 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
       };
     }
 
+    // ✅ THÊM LOGIC MỚI: Kiểm tra round trước
+    if (nextRoundIndex > 0) {
+      const previousSubmission = revisionPaper?.submissions?.[nextRoundIndex - 1];
+
+      // Nếu có round trước nhưng chưa có submission
+      if (!previousSubmission) {
+        return {
+          isAvailable: false,
+          isExpired: false,
+          isPending: true,
+          message: `Cần hoàn thành submission Round ${nextRoundIndex} trước`
+        };
+      }
+
+      // Nếu có submission nhưng chưa có feedback nào
+      if (!previousSubmission.feedbacks || previousSubmission.feedbacks.length === 0) {
+        return {
+          isAvailable: false,
+          isExpired: false,
+          isPending: true,
+          message: `Chờ feedback từ reviewer cho Round ${nextRoundIndex}`
+        };
+      }
+
+      // ✅ Đã có submission và có ít nhất 1 feedback -> cho phép nộp round tiếp
+      // Bỏ qua kiểm tra startDate, chỉ kiểm tra endDate
+      const end = nextDeadline.endSubmissionDate ? parseEndOfDay(nextDeadline.endSubmissionDate) : undefined;
+
+      if (!end) {
+        return {
+          isAvailable: false,
+          isExpired: false,
+          isPending: true,
+          message: `Deadline cho Round ${nextRoundIndex + 1} chưa được cập nhật`
+        };
+      }
+
+      if (now > end) {
+        return {
+          isAvailable: false,
+          isExpired: true,
+          isPending: false,
+          message: "Bạn đã hết hạn thao tác cho round này."
+        };
+      }
+
+      const daysRemaining = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      return {
+        isAvailable: true,
+        isExpired: false,
+        isPending: false,
+        daysRemaining,
+        message: `Bạn còn ${daysRemaining} ngày để nộp Round ${nextRoundIndex + 1}.`
+      };
+    }
+
+    // Round đầu tiên - giữ nguyên logic cũ
     return validatePhaseTime(
       nextDeadline.startSubmissionDate,
-      nextDeadline.endSubmissionDate
+      nextDeadline.endSubmissionDate,
+      now
     );
-  }, [revisionDeadline, revisionPaper?.submissions?.length]);
+  }, [revisionDeadline, revisionPaper?.submissions, now]);
+
+  // const revisionValidation: PhaseValidationResult = useMemo(() => {
+  //   if (!revisionDeadline || revisionDeadline.length === 0) {
+  //     return {
+  //       isAvailable: false,
+  //       isExpired: false,
+  //       isPending: true,
+  //       message: "Thông tin deadline revision chưa được cập nhật"
+  //     };
+  //   }
+
+  //   const currentSubmissionCount = revisionPaper?.submissions?.length || 0;
+
+  //   const sortedDeadlines = [...revisionDeadline].sort((a, b) => {
+  //     if (a.roundNumber !== b.roundNumber) {
+  //       return (a.roundNumber || 0) - (b.roundNumber || 0);
+  //     }
+  //     if (a.startSubmissionDate && b.startSubmissionDate) {
+  //       return new Date(a.startSubmissionDate).getTime() - new Date(b.startSubmissionDate).getTime();
+  //     }
+  //     return 0;
+  //   });
+
+  //   const nextRoundIndex = currentSubmissionCount;
+  //   const nextDeadline = sortedDeadlines[nextRoundIndex];
+
+  //   if (!nextDeadline) {
+  //     return {
+  //       isAvailable: false,
+  //       isExpired: true,
+  //       isPending: false,
+  //       message: "Đã hết round deadline để nộp revision submission"
+  //     };
+  //   }
+
+  //   return validatePhaseTime(
+  //     nextDeadline.startSubmissionDate,
+  //     nextDeadline.endSubmissionDate
+  //   );
+  // }, [revisionDeadline, revisionPaper?.submissions?.length]);
 
   const responseValidation: PhaseValidationResult = useMemo(() => {
     if (!revisionDeadline || revisionDeadline.length === 0) {
@@ -108,7 +211,7 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
         isAvailable: false,
         isExpired: false,
         isPending: true,
-        message: "Thông tin deadline revision chưa được cập nhật"
+        message: "Thông tin deadline revision chưa được cập nhật",
       };
     }
 
@@ -119,7 +222,7 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
         isAvailable: false,
         isExpired: false,
         isPending: true,
-        message: "Chưa có submission nào để response"
+        message: "Chưa có submission nào để response",
       };
     }
 
@@ -141,16 +244,103 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
         isAvailable: false,
         isExpired: true,
         isPending: false,
-        message: "Không tìm thấy deadline cho round hiện tại"
+        message: "Không tìm thấy deadline cho round hiện tại",
       };
     }
 
-    return validatePhaseTime(
-      currentDeadline.startSubmissionDate,
-      currentDeadline.endSubmissionDate
-    );
-  }, [revisionDeadline, revisionPaper?.submissions?.length]);
+    const previousSubmission = revisionPaper?.submissions?.[currentRoundIndex];
 
+    // Nếu chưa có feedback thì chưa cho response
+    if (!previousSubmission || !previousSubmission.feedbacks || previousSubmission.feedbacks.length === 0) {
+      return {
+        isAvailable: false,
+        isExpired: false,
+        isPending: true,
+        message: `Chờ feedback từ reviewer cho Round ${currentRoundIndex + 1}`,
+      };
+    }
+
+    // Chỉ kiểm tra endDate
+    const end = currentDeadline.endSubmissionDate ? parseEndOfDay(currentDeadline.endSubmissionDate) : undefined;
+
+    if (!end) {
+      return {
+        isAvailable: false,
+        isExpired: false,
+        isPending: true,
+        message: `Deadline cho Round ${currentRoundIndex + 1} chưa được cập nhật`,
+      };
+    }
+
+    if (now > end) {
+      return {
+        isAvailable: false,
+        isExpired: true,
+        isPending: false,
+        message: "Bạn đã hết hạn thao tác cho round này.",
+      };
+    }
+
+    const daysRemaining = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+    return {
+      isAvailable: true,
+      isExpired: false,
+      isPending: false,
+      daysRemaining,
+      message: `Bạn còn ${daysRemaining} ngày để response Round ${currentRoundIndex + 1}.`,
+    };
+  }, [revisionDeadline, revisionPaper?.submissions, now]);
+
+
+  // const responseValidation: PhaseValidationResult = useMemo(() => {
+  //   if (!revisionDeadline || revisionDeadline.length === 0) {
+  //     return {
+  //       isAvailable: false,
+  //       isExpired: false,
+  //       isPending: true,
+  //       message: "Thông tin deadline revision chưa được cập nhật"
+  //     };
+  //   }
+
+  //   const currentSubmissionCount = revisionPaper?.submissions?.length || 0;
+
+  //   if (currentSubmissionCount === 0) {
+  //     return {
+  //       isAvailable: false,
+  //       isExpired: false,
+  //       isPending: true,
+  //       message: "Chưa có submission nào để response"
+  //     };
+  //   }
+
+  //   const sortedDeadlines = [...revisionDeadline].sort((a, b) => {
+  //     if (a.roundNumber !== b.roundNumber) {
+  //       return (a.roundNumber || 0) - (b.roundNumber || 0);
+  //     }
+  //     if (a.startSubmissionDate && b.startSubmissionDate) {
+  //       return new Date(a.startSubmissionDate).getTime() - new Date(b.startSubmissionDate).getTime();
+  //     }
+  //     return 0;
+  //   });
+
+  //   const currentRoundIndex = currentSubmissionCount - 1;
+  //   const currentDeadline = sortedDeadlines[currentRoundIndex];
+
+  //   if (!currentDeadline) {
+  //     return {
+  //       isAvailable: false,
+  //       isExpired: true,
+  //       isPending: false,
+  //       message: "Không tìm thấy deadline cho round hiện tại"
+  //     };
+  //   }
+
+  //   return validatePhaseTime(
+  //     currentDeadline.startSubmissionDate,
+  //     currentDeadline.endSubmissionDate
+  //   );
+  // }, [revisionDeadline, revisionPaper?.submissions?.length]);
 
   const allRounds = useMemo(() => {
     if (!revisionDeadline || revisionDeadline.length === 0) return [];
@@ -165,15 +355,83 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
       return 0;
     });
 
-    return sortedDeadlines.map((deadline) => {
+    return sortedDeadlines.map((deadline, index) => {
       const existingSubmission = revisionPaper?.submissions?.find(
         sub => sub.revisionRoundId === deadline.revisionRoundDeadlineId
       );
 
-      const validation = validatePhaseTime(
-        deadline.startSubmissionDate,
-        deadline.endSubmissionDate
-      );
+      let validation: PhaseValidationResult;
+
+      // ✅ LOGIC MỚI: Kiểm tra round trước
+      if (index > 0) {
+        const previousSubmission = revisionPaper?.submissions?.[index - 1];
+
+        // Nếu chưa có submission ở round trước
+        if (!previousSubmission) {
+          validation = {
+            isAvailable: false,
+            isExpired: false,
+            isPending: true,
+            message: `Cần hoàn thành submission Round ${index} trước`
+          };
+        }
+        // Nếu có submission nhưng chưa có feedback
+        else if (!previousSubmission.feedbacks || previousSubmission.feedbacks.length === 0) {
+          validation = {
+            isAvailable: false,
+            isExpired: false,
+            isPending: true,
+            message: `Chờ feedback từ reviewer cho Round ${index}`
+          };
+        }
+        // ✅ Đã có submission và có feedback -> chỉ kiểm tra endDate
+        else {
+          // const { now } = useGlobalTime();
+          // const end = new Date(deadline.endSubmissionDate);
+          // const start = new Date(deadline.startSubmissionDate);
+          const start = deadline.startSubmissionDate ? parseStartOfDay(deadline.startSubmissionDate) : undefined;
+          const end = deadline.endSubmissionDate ? parseEndOfDay(deadline.endSubmissionDate) : undefined;
+
+          if (!start || !end) {
+            validation = {
+              isAvailable: false,
+              isExpired: false,
+              isPending: true,
+              message: "Thông tin ngày submission chưa được cập nhật",
+            };
+          } else {
+
+            const formattedPeriod = `${start.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })} - ${end.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}`;
+
+            if (now > end) {
+              validation = {
+                isAvailable: false,
+                isExpired: true,
+                isPending: false,
+                formattedPeriod,
+                message: "Bạn đã hết hạn thao tác cho round này."
+              };
+            } else {
+              const daysRemaining = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+              validation = {
+                isAvailable: true,
+                isExpired: false,
+                isPending: false,
+                daysRemaining,
+                formattedPeriod,
+                message: `Bạn còn ${daysRemaining} ngày để nộp Round ${index + 1}.`
+              };
+            }
+          }
+        }
+      } else {
+        // Round đầu tiên - giữ nguyên logic cũ
+        validation = validatePhaseTime(
+          deadline.startSubmissionDate,
+          deadline.endSubmissionDate,
+          now
+        );
+      }
 
       return {
         roundNumber: deadline.roundNumber || 0,
@@ -183,7 +441,41 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
         hasSubmission: !!existingSubmission
       };
     });
-  }, [revisionDeadline, revisionPaper?.submissions]);
+  }, [revisionDeadline, revisionPaper?.submissions, now]);
+
+
+  // const allRounds = useMemo(() => {
+  //   if (!revisionDeadline || revisionDeadline.length === 0) return [];
+
+  //   const sortedDeadlines = [...revisionDeadline].sort((a, b) => {
+  //     if (a.roundNumber !== b.roundNumber) {
+  //       return (a.roundNumber || 0) - (b.roundNumber || 0);
+  //     }
+  //     if (a.startSubmissionDate && b.startSubmissionDate) {
+  //       return new Date(a.startSubmissionDate).getTime() - new Date(b.startSubmissionDate).getTime();
+  //     }
+  //     return 0;
+  //   });
+
+  //   return sortedDeadlines.map((deadline) => {
+  //     const existingSubmission = revisionPaper?.submissions?.find(
+  //       sub => sub.revisionRoundId === deadline.revisionRoundDeadlineId
+  //     );
+
+  //     const validation = validatePhaseTime(
+  //       deadline.startSubmissionDate,
+  //       deadline.endSubmissionDate
+  //     );
+
+  //     return {
+  //       roundNumber: deadline.roundNumber || 0,
+  //       deadline,
+  //       validation,
+  //       submission: existingSubmission || null,
+  //       hasSubmission: !!existingSubmission
+  //     };
+  //   });
+  // }, [revisionDeadline, revisionPaper?.submissions]);
 
   const isRevisionCompleted = useMemo(() => {
     return revisionPaper?.revisionRoundDeadlineId != null;

@@ -5,8 +5,9 @@ export interface CreateTechPaymentRequest {
 
 export interface CreatePaperPaymentRequest {
   conferencePriceId: string;
-  title: string;
-  description?: string;
+  paperId: string;
+  // title: string;
+  // description?: string;
   paymentMethodId: string;
 }
 
