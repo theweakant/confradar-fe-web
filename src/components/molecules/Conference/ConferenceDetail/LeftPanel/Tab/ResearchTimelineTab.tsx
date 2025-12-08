@@ -35,7 +35,7 @@ interface ResearchTimelineTabProps {
 export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) {
   const { data, isLoading, error } = useGetResearchConferenceDetailInternalQuery(conferenceId);
   const researchPrice = data?.data?.conferencePrices as ConferencePriceResponse[] || [];
-  const researchPhases = (data?.data?.researchPhase as ResearchConferencePhaseResponse[] || [])
+  const researchPhases = [...(data?.data?.researchPhase || [])]
     .sort((a, b) => (a.phaseOrder || 0) - (b.phaseOrder || 0));
 
   const [isActivateModalOpen, setIsActivateModalOpen] = useState(false);
@@ -465,8 +465,8 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
             <div className="flex items-center gap-2">
               <span
                 className={`px-2 py-1 rounded-full text-xs font-medium ${phase.isActive
-                    ? "bg-emerald-100 text-emerald-800"
-                    : "bg-amber-100 text-amber-800"
+                  ? "bg-emerald-100 text-emerald-800"
+                  : "bg-amber-100 text-amber-800"
                   }`}
               >
                 {phase.isActive ? "Đang hoạt động" : "Dừng hoạt động"}
