@@ -3,6 +3,7 @@ import { ProgressTimelineSection } from "./ProgressSection";
 import { StatisticsSection } from "./StatisticSection";
 import { RegisteredUserSection } from "./RegisteredUserSection";
 import type { CommonConference } from "@/types/conference.type";
+import { useGlobalTime } from "@/utils/TimeContext"; // ✅ Import hook
 
 interface RightSidebarProps {
   conference: CommonConference;
@@ -24,13 +25,15 @@ export function RightSidebar({
   onOpenTimeline,
   onOpenFullAttendees
 }: RightSidebarProps) {
+  const { now } = useGlobalTime(); 
+
   return (
     <div className="w-80 flex-shrink-0 space-y-4 sticky top-6 self-start">
-      {/* Progress Timeline */}
       <ProgressTimelineSection
         conference={conference}
         getStatusName={getStatusName}
-        onOpenTimeline={onOpenTimeline} 
+        onOpenTimeline={onOpenTimeline}
+        now={now} 
       />
 
       {/* Statistics */}

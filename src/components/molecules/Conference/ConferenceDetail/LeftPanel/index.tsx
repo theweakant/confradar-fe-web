@@ -4,6 +4,7 @@ import { getFilteredTabs, type TabId } from "../constants/tab";
 import type { CommonConference } from "@/types/conference.type";
 import { TabContent } from "./TabContent";
 import { MetaInfoSection } from "./InfoSection";
+import { useGlobalTime } from "@/utils/TimeContext"; // ✅ Import hook
 
 interface LeftPanelProps {
   primaryTab: "detail" | "action";
@@ -32,10 +33,10 @@ export function LeftPanel({
   getCityName,
   currentUserId
 }: LeftPanelProps) {
-  const tabs = getFilteredTabs(primaryTab, conferenceType, userRoles);
+  const { now } = useGlobalTime(); 
 
   const isOrganizer = userRoles.includes("Conference Organizer");
-  
+  const tabs = getFilteredTabs(primaryTab, conferenceType, userRoles);
 
   return (
     <div className="space-y-6">
@@ -48,6 +49,7 @@ export function LeftPanel({
             getCityName={getCityName}
             isOrganizer={isOrganizer}
             isCollaborator={isCollaborator}
+            now={now} 
           />
         </div>
 

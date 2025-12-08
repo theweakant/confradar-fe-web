@@ -17,7 +17,6 @@ interface ResearchPhaseFormProps {
   revisionAttemptAllowed: number;
 }
 
-// Helper: add days to a date string (ISO format)
 const addDays = (dateStr: string | undefined, days: number = 1): string | undefined => {
   if (!dateStr) return undefined;
   const date = new Date(dateStr);
@@ -26,7 +25,6 @@ const addDays = (dateStr: string | undefined, days: number = 1): string | undefi
   return date.toISOString().split("T")[0];
 };
 
-// Helper: calculate end date from start + duration
 const calculateEndDate = (startDate: string, duration: number): string => {
   if (!startDate || duration <= 0) return "";
   const start = new Date(startDate);
@@ -36,7 +34,6 @@ const calculateEndDate = (startDate: string, duration: number): string => {
   return end.toISOString().split("T")[0];
 };
 
-// Helper: tạo phase trống mới
 const getEmptyPhase = (): ResearchPhase => ({
   registrationStartDate: "",
   registrationEndDate: "",
@@ -83,7 +80,7 @@ export function ResearchPhaseForm({
   const [activePhaseIndex, setActivePhaseIndex] = useState(0);
   const [newRevisionRound, setNewRevisionRound] = useState({
     roundNumber: 1,
-    startDate: "", // ← vẫn giữ để hỗ trợ round ≥2
+    startDate: "", 
     durationInDays: 3,
   });
 
@@ -101,7 +98,6 @@ export function ResearchPhaseForm({
     onPhasesChange(newPhases);
   };
 
-  // ✅ FIX: Xử lý đúng cả field có "Date" và không có "Date"
   const getFieldNames = (fieldPrefix: string) => {
     const specialFields = [
       "abstractDecideStatus",
@@ -240,7 +236,7 @@ export function ResearchPhaseForm({
   const handleAddRevisionRound = () => {
     const isRoundOne = activePhase.revisionRoundDeadlines.length === 0;
 
-    let startSubmissionDate = isRoundOne
+    const startSubmissionDate = isRoundOne
       ? activePhase.reviseStartDate
       : newRevisionRound.startDate;
 
@@ -489,9 +485,7 @@ export function ResearchPhaseForm({
                 disabled
               />
 
-              {/* XỬ LÝ START DATE: ROUND 1 → disable, ROUND ≥2 → cho chọn */}
               {activePhase.revisionRoundDeadlines.length === 0 ? (
-                // Round 1: auto = reviseStartDate, không cho chỉnh
                 <div>
                   <label className="block text-sm font-medium mb-2">Ngày bắt đầu</label>
                   <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
@@ -503,7 +497,6 @@ export function ResearchPhaseForm({
                   </div>
                 </div>
               ) : (
-                // Round ≥2: cho chọn ngày bắt đầu
                 <DatePickerInput
                   label="Ngày bắt đầu"
                   value={newRevisionRound.startDate}

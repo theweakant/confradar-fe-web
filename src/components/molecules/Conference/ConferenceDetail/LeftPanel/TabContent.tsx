@@ -18,6 +18,7 @@ import { CustomerTab } from "@/components/molecules/Conference/ConferenceDetail/
 import { ContractTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/ContractTab";
 
 import { TechnicalConferenceDetailResponse } from "@/types/conference.type";
+import { useGlobalTime } from "@/utils/TimeContext"; // ✅ Import hook
 
 interface TabContentProps {
   activeSubtab: TabId;
@@ -34,10 +35,12 @@ export function TabContent({
   isCollaborator, 
   currentUserId
 }: TabContentProps) {
+  const { now } = useGlobalTime(); 
+
   const renderTabContent = () => {
     switch (activeSubtab) {
       case "price":
-        return <PriceTab conference={conference} />;
+        return <PriceTab conference={conference} now={now} />; 
       
       case "refund-policy":
         return <RefundPolicyTab conference={conference} />;

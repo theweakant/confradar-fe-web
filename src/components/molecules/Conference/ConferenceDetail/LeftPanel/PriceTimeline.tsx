@@ -19,9 +19,10 @@ interface TicketTimeline {
 interface PriceTimelineProps {
   conference: CommonConference;
   isResearch: boolean;
+  now: Date; // ✅ Nhận thời gian từ props (hỗ trợ fake time)
 }
 
-export function PriceTimeline({ conference, isResearch }: PriceTimelineProps) {
+export function PriceTimeline({ conference, isResearch, now }: PriceTimelineProps) {
   if (!conference.conferencePrices) return null;
 
   const timelines: TicketTimeline[] = conference.conferencePrices
@@ -48,10 +49,9 @@ export function PriceTimeline({ conference, isResearch }: PriceTimelineProps) {
   if (normalTicket) finalTimelines.push(normalTicket);
   if (authorTicket) finalTimelines.push(authorTicket);
 
-  const getNearestPhase = (phases: PhaseItem[]) => {
+  const getNearestPhase = (phases: PhaseItem[], now: Date) => {
     if (phases.length === 0) return null;
 
-    const now = new Date();
     const sortedPhases = [...phases].sort(
       (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
     );
@@ -68,8 +68,7 @@ export function PriceTimeline({ conference, isResearch }: PriceTimelineProps) {
     return upcomingPhase || sortedPhases[sortedPhases.length - 1];
   };
 
-  const calculateProgress = (phase: PhaseItem) => {
-    const now = new Date();
+  const calculateProgress = (phase: PhaseItem, now: Date) => {
     const start = new Date(phase.startDate);
     const end = new Date(phase.endDate);
 
@@ -87,14 +86,13 @@ export function PriceTimeline({ conference, isResearch }: PriceTimelineProps) {
   const ticketData = finalTimelines
     .map(ticket => ({
       ...ticket,
-      nearestPhase: getNearestPhase(ticket.phases),
+      nearestPhase: getNearestPhase(ticket.phases, now), // ✅ Truyền `now`
     }))
     .filter(t => t.nearestPhase !== null);
 
   if (ticketData.length === 0) return null;
 
   const hasMultipleTickets = ticketData.length > 1;
-  const now = new Date();
 
   return (
     <div className="border-t pt-6">
@@ -109,7 +107,7 @@ export function PriceTimeline({ conference, isResearch }: PriceTimelineProps) {
           const phase = ticket.nearestPhase!;
           const start = new Date(phase.startDate);
           const end = new Date(phase.endDate);
-          const progress = calculateProgress(phase);
+          const progress = calculateProgress(phase, now); // ✅ Truyền `now`
 
           let statusText = "";
           let statusColor = "text-gray-600";
