@@ -18,6 +18,7 @@ interface MetaInfoSectionProps {
   getCityName: (id: string) => string;
   isOrganizer: boolean;
   isCollaborator: boolean;
+  now: Date; // ✅ Nhận thời gian hiện tại từ props
 }
 
 type ConferenceSession =
@@ -46,9 +47,9 @@ function isTechnicalSession(
   return 'sessionDate' in session;
 }
 
-function getDaysRemaining(targetDate: string | undefined | null) {
+// ✅ Nhận `now` từ ngoài
+function getDaysRemaining(targetDate: string | undefined | null, now: Date) {
   if (!targetDate) return null;
-  const now = new Date();
   const target = new Date(targetDate);
   const diffTime = target.getTime() - now.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -63,10 +64,10 @@ function formatCountdown(days: number | null) {
   return `Còn ${days} ngày`;
 }
 
-function getNextPricePhase(conference: CommonConference) {
+// ✅ Nhận `now` từ ngoài
+function getNextPricePhase(conference: CommonConference, now: Date) {
   if (!conference.conferencePrices) return null;
 
-  const now = new Date();
   let nearestPhase = null;
   let nearestDays = Infinity;
 
@@ -76,7 +77,7 @@ function getNextPricePhase(conference: CommonConference) {
         if (phase.endDate) {
           const endDate = new Date(phase.endDate);
           if (endDate >= now) {
-            const days = getDaysRemaining(phase.endDate);
+            const days = getDaysRemaining(phase.endDate, now);
             if (days !== null && days < nearestDays) {
               nearestDays = days;
               nearestPhase = {
@@ -94,7 +95,8 @@ function getNextPricePhase(conference: CommonConference) {
   return nearestPhase;
 }
 
-function getNextSession(conference: CommonConference): SessionWithDays | null {
+// ✅ Nhận `now` từ ngoài
+function getNextSession(conference: CommonConference, now: Date): SessionWithDays | null {
   let sessions: ConferenceSession[] | undefined;
 
   if (isResearchConference(conference)) {
@@ -105,7 +107,6 @@ function getNextSession(conference: CommonConference): SessionWithDays | null {
 
   if (!sessions?.length) return null;
 
-  const now = new Date();
   let nearestSession: SessionWithDays | null = null;
   let nearestTime = Infinity;
 
@@ -121,7 +122,7 @@ function getNextSession(conference: CommonConference): SessionWithDays | null {
           nearestTime = diff;
           nearestSession = {
             ...session,
-            days: getDaysRemaining(`${sessionDate} ${startTime}`),
+            days: getDaysRemaining(`${sessionDate} ${startTime}`, now),
           };
         }
       }
@@ -131,7 +132,8 @@ function getNextSession(conference: CommonConference): SessionWithDays | null {
   return nearestSession;
 }
 
-function getNextResearchDeadline(conference: CommonConference) {
+// ✅ Nhận `now` từ ngoài
+function getNextResearchDeadline(conference: CommonConference, now: Date) {
   if (!isResearchConference(conference) || !conference.researchPhase) {
     return null;
   }
@@ -139,7 +141,6 @@ function getNextResearchDeadline(conference: CommonConference) {
   const activePhase = conference.researchPhase.find(phase => phase.isActive);
   if (!activePhase) return null;
 
-  const now = new Date();
   const deadlines = [
     { name: "Đăng ký", end: activePhase.registrationEndDate },
     { name: "Full Paper", end: activePhase.fullPaperEndDate },
@@ -154,7 +155,7 @@ function getNextResearchDeadline(conference: CommonConference) {
     if (deadline.end) {
       const endDate = new Date(deadline.end);
       if (endDate >= now) {
-        const days = getDaysRemaining(deadline.end);
+        const days = getDaysRemaining(deadline.end, now);
         if (days !== null && (!nearest || days < nearest.days)) {
           nearest = { name: deadline.name, date: deadline.end, days };
         }
@@ -178,12 +179,13 @@ export function MetaInfoSection({
   getCityName,
   isOrganizer,
   isCollaborator,
+  now, // ✅ Destructure `now` từ props
 }: MetaInfoSectionProps) {
   const isResearch = isResearchConference(conference);
-  const nextPricePhase = getNextPricePhase(conference);
-  const nextSession = getNextSession(conference);
+  const nextPricePhase = getNextPricePhase(conference, now);
+  const nextSession = getNextSession(conference, now);
   const nextResearchDeadline = isResearch
-    ? getNextResearchDeadline(conference)
+    ? getNextResearchDeadline(conference, now)
     : null;
 
   const activePhase = isResearch
@@ -208,8 +210,8 @@ export function MetaInfoSection({
     }
   }
 
-  const startDateDays = getDaysRemaining(conference.startDate);
-  const ticketSaleEndDays = getDaysRemaining(conference.ticketSaleEnd);
+  const startDateDays = getDaysRemaining(conference.startDate, now);
+  const ticketSaleEndDays = getDaysRemaining(conference.ticketSaleEnd, now);
   const safeBannerUrl = conference.bannerImageUrl?.trim() || "";
 
   return (
@@ -381,12 +383,13 @@ export function MetaInfoSection({
         <PriceTimeline
           conference={conference}
           isResearch={isResearchConference(conference)}
+          now={now} // ✅ Truyền `now` xuống
         />
       )}
       
       {isResearch && isOrganizer && researchPhases.length > 0 && (
         <div className="border-t pt-6">
-          <ResearchPhaseTimeline phases={researchPhases} />
+          <ResearchPhaseTimeline phases={researchPhases} now={now} /> 
         </div>
       )}
     </div>

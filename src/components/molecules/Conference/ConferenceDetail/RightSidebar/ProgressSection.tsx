@@ -6,12 +6,14 @@ interface ProgressTimelineSectionProps {
   conference: CommonConference;
   getStatusName: (id: string) => string;
   onOpenTimeline?: () => void;
+  now: Date; // ✅ Nhận thời gian hiện tại từ props (hỗ trợ fake time)
 }
 
 export function ProgressTimelineSection({
   conference,
   getStatusName,
   onOpenTimeline,
+  now, // ✅ Destructure `now` từ props
 }: ProgressTimelineSectionProps) {
   const statusName = getStatusName(conference.conferenceStatusId ?? "");
 
@@ -45,29 +47,28 @@ export function ProgressTimelineSection({
     Canceled: "text-red-700",
   };
 
-  const calculateDaysUntilStart = () => {
+  const calculateDaysUntilStart = (now: Date) => {
     if (!conference.startDate) return null;
-    const now = new Date();
     const start = new Date(conference.startDate);
     const diffTime = start.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   };
 
-  const daysUntilStart = calculateDaysUntilStart();
+  const daysUntilStart = calculateDaysUntilStart(now);
 
-  const getTimeLabel = () => {
+  const getTimeLabel = (daysUntilStart: number | null, now: Date) => {
     if (daysUntilStart === null) return "Chưa xác định";
     if (daysUntilStart > 0) return `${daysUntilStart} ngày`;
     if (conference.endDate) {
-      const now = new Date();
       const end = new Date(conference.endDate);
       if (now > end) return "Đã kết thúc";
     }
     return "Đang diễn ra";
   };
 
-  const now = new Date();
+  const timeLabel = getTimeLabel(daysUntilStart, now);
+
   const saleStart = conference.ticketSaleStart ? new Date(conference.ticketSaleStart) : null;
 
   const baseStatusDescriptions: Record<string, string> = {
@@ -129,7 +130,7 @@ export function ProgressTimelineSection({
             <span className="text-sm">Đến ngày khai mạc</span>
           </div>
           <span className="text-sm font-semibold text-gray-900">
-            {getTimeLabel()}
+            {timeLabel}
           </span>
         </div>
 

@@ -10,12 +10,11 @@ interface ResearchPhaseItem {
 
 interface ResearchPhaseTimelineProps {
   phases: ResearchPhaseItem[];
+  now: Date; 
 }
 
-export function ResearchPhaseTimeline({ phases }: ResearchPhaseTimelineProps) {
+export function ResearchPhaseTimeline({ phases, now }: ResearchPhaseTimelineProps) {
   if (phases.length === 0) return null;
-
-  const now = new Date();
 
   const phaseStatuses = phases.map((phase, index) => {
     const start = new Date(phase.startDate);

@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { useGetOwnNotificationsQuery } from '@/redux/services/user.service';
 import { Notification } from '@/types/notification.type';
 import { Bell, User, Sun, Moon } from 'lucide-react';
+import { useGlobalTime } from "@/utils/TimeContext";
 
-const formatDate = (dateString: string) => {
+const formatDate = (dateString: string, now: Date) => {
   const date = new Date(dateString);
-  const now = new Date();
   const diff = now.getTime() - date.getTime();
   const minutes = Math.floor(diff / (1000 * 60));
 
@@ -23,6 +23,7 @@ interface NotificationSystemProps {
 }
 
 const NotificationSystem: React.FC<NotificationSystemProps> = ({ mode: initialMode = 'light' }) => {
+  const { now } = useGlobalTime();
   const { data, isLoading, isError } = useGetOwnNotificationsQuery();
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const [mode, setMode] = useState<'light' | 'dark'>(initialMode);
@@ -156,7 +157,7 @@ const NotificationSystem: React.FC<NotificationSystemProps> = ({ mode: initialMo
                         {notif.title}
                       </span>
                       <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
-                        {formatDate(notif.createdAt)}
+                        {formatDate(notif.createdAt, now)}                      
                       </span>
                     </div>
                     

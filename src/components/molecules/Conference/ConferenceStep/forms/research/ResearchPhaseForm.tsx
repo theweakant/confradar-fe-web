@@ -17,7 +17,6 @@ interface ResearchPhaseFormProps {
   revisionAttemptAllowed: number;
 }
 
-// Helper: add days to a date string (ISO format)
 const addDays = (dateStr: string | undefined, days: number = 1): string | undefined => {
   if (!dateStr) return undefined;
   const date = new Date(dateStr);
@@ -26,7 +25,6 @@ const addDays = (dateStr: string | undefined, days: number = 1): string | undefi
   return date.toISOString().split("T")[0];
 };
 
-// Helper: calculate end date from start + duration
 const calculateEndDate = (startDate: string, duration: number): string => {
   if (!startDate || duration <= 0) return "";
   const start = new Date(startDate);
@@ -36,7 +34,6 @@ const calculateEndDate = (startDate: string, duration: number): string => {
   return end.toISOString().split("T")[0];
 };
 
-// Helper: tạo phase trống mới
 const getEmptyPhase = (): ResearchPhase => ({
   registrationStartDate: "",
   registrationEndDate: "",
@@ -83,7 +80,7 @@ export function ResearchPhaseForm({
   const [activePhaseIndex, setActivePhaseIndex] = useState(0);
   const [newRevisionRound, setNewRevisionRound] = useState({
     roundNumber: 1,
-    startDate: "",
+    startDate: "", 
     durationInDays: 3,
   });
 
@@ -101,9 +98,7 @@ export function ResearchPhaseForm({
     onPhasesChange(newPhases);
   };
 
-  // ✅ FIX: Xử lý đúng cả field có "Date" và không có "Date"
   const getFieldNames = (fieldPrefix: string) => {
-    // Các field đặc biệt không có "Date" ở cuối startDate/endDate
     const specialFields = [
       "abstractDecideStatus",
       "fullPaperDecideStatus", 
@@ -111,9 +106,7 @@ export function ResearchPhaseForm({
       "cameraReadyDecideStatus",
       "authorPayment"
     ];
-
     const isSpecial = specialFields.includes(fieldPrefix);
-    
     return {
       startKey: isSpecial ? `${fieldPrefix}Start` : `${fieldPrefix}StartDate`,
       endKey: isSpecial ? `${fieldPrefix}End` : `${fieldPrefix}EndDate`,
@@ -122,200 +115,177 @@ export function ResearchPhaseForm({
   };
 
   const updatePhaseStartDate = (fieldPrefix: string, newStartDate: string) => {
-    console.log("🎯 updatePhaseStartDate called for", fieldPrefix, "with", newStartDate);
-
     const { startKey, endKey, durationKey } = getFieldNames(fieldPrefix);
     const currentDuration = (activePhase[durationKey as keyof ResearchPhase] as number) || 1;
-
     let updates: Partial<ResearchPhase> = { [startKey]: newStartDate };
-
     if (newStartDate && currentDuration > 0) {
       const endDate = calculateEndDate(newStartDate, currentDuration);
       updates = { ...updates, [endKey]: endDate };
-      console.log(`✅ Auto-calculated ${endKey}:`, endDate);
     }
-
     updateActivePhase(updates);
   };
 
   const updatePhaseDuration = (fieldPrefix: string, newDuration: number) => {
     const { startKey, endKey, durationKey } = getFieldNames(fieldPrefix);
     const startDate = activePhase[startKey as keyof ResearchPhase] as string | undefined;
-    
     let updates: Partial<ResearchPhase> = { [durationKey]: newDuration };
-
     if (startDate && newDuration > 0) {
       const endDate = calculateEndDate(startDate, newDuration);
       updates = { ...updates, [endKey]: endDate };
-      console.log(`✅ Auto-calculated ${endKey} from duration:`, endDate);
     }
-
     updateActivePhase(updates);
   };
 
-const handleAddNewPhase = () => {
-  if (phases.length === 0) {
-    onPhasesChange([getEmptyPhase()]);
-    setActivePhaseIndex(0);
-    return;
-  }
-
-  const lastPhase = phases[phases.length - 1];
-  if (!lastPhase.authorPaymentEnd) {
-    toast.error("Vui lòng hoàn thành phase trước khi tạo phase mới!");
-    return;
-  }
-
-  // ✅ Tạo helper để tính toán start date dựa trên phase trước
-  let currentStart = addDays(lastPhase.authorPaymentEnd);
-  if (!currentStart) return;
-
-  const createSegmentWithChaining = (duration: number): [string, string, string] => {
-    const start = currentStart!;
-    const end = calculateEndDate(start, duration);
-    const nextStart = addDays(end)!;
-    currentStart = nextStart;
-    return [start, end, nextStart];
-  };
-
-  // ✅ Mỗi segment sẽ có start date riêng, kế tiếp end date của segment trước
-  const [regStart, regEnd] = createSegmentWithChaining(lastPhase.registrationDuration || 1);
-  const [absStart, absEnd] = createSegmentWithChaining(lastPhase.abstractDecideStatusDuration || 1);
-  const [fpStart, fpEnd] = createSegmentWithChaining(lastPhase.fullPaperDuration || 1);
-  const [revStart, revEnd] = createSegmentWithChaining(lastPhase.reviewDuration || 1);
-  const [fpdStart, fpdEnd] = createSegmentWithChaining(lastPhase.fullPaperDecideStatusDuration || 1);
-  const [rvStart, rvEnd] = createSegmentWithChaining(lastPhase.reviseDuration || 1);
-  const [rpdStart, rpdEnd] = createSegmentWithChaining(lastPhase.revisionPaperDecideStatusDuration || 1);
-  const [crStart, crEnd] = createSegmentWithChaining(lastPhase.cameraReadyDuration || 1);
-  const [crdStart, crdEnd] = createSegmentWithChaining(lastPhase.cameraReadyDecideStatusDuration || 1);
-  const [apStart, apEnd] = createSegmentWithChaining(lastPhase.authorPaymentDuration || 1);
-
-  // ✅ Tạo revision rounds tự động dựa trên phase trước
-  const newRevisionRounds: RevisionRoundDeadline[] = [];
-  if (lastPhase.revisionRoundDeadlines.length > 0 && revisionAttemptAllowed > 0) {
-    const totalReviseDays = Math.floor(
-      (new Date(rvEnd).getTime() - new Date(rvStart).getTime()) / 86400000
-    ) + 1;
-    
-    // Số vòng = số vòng của phase trước hoặc revisionAttemptAllowed (lấy nhỏ hơn)
-    const numRounds = Math.min(lastPhase.revisionRoundDeadlines.length, revisionAttemptAllowed);
-    
-    // Chia đều thời gian cho các vòng
-    const daysPerRound = Math.floor(totalReviseDays / numRounds);
-    
-    let roundStart = rvStart;
-    for (let i = 0; i < numRounds; i++) {
-      const isLastRound = i === numRounds - 1;
-      const roundEnd = isLastRound 
-        ? rvEnd // Vòng cuối dùng đúng ngày kết thúc revise
-        : calculateEndDate(roundStart, daysPerRound);
-      
-      newRevisionRounds.push({
-        roundNumber: i + 1,
-        startSubmissionDate: roundStart,
-        endSubmissionDate: roundEnd,
-      });
-      
-      if (!isLastRound) {
-        roundStart = addDays(roundEnd) || roundStart;
-      }
-    }
-  }
-
-  const newPhase: ResearchPhase = {
-    registrationStartDate: regStart,
-    registrationEndDate: regEnd,
-    registrationDuration: lastPhase.registrationDuration || 1,
-
-    abstractDecideStatusStart: absStart,
-    abstractDecideStatusEnd: absEnd,
-    abstractDecideStatusDuration: lastPhase.abstractDecideStatusDuration || 1,
-
-    fullPaperStartDate: fpStart,
-    fullPaperEndDate: fpEnd,
-    fullPaperDuration: lastPhase.fullPaperDuration || 1,
-
-    reviewStartDate: revStart,
-    reviewEndDate: revEnd,
-    reviewDuration: lastPhase.reviewDuration || 1,
-
-    fullPaperDecideStatusStart: fpdStart,
-    fullPaperDecideStatusEnd: fpdEnd,
-    fullPaperDecideStatusDuration: lastPhase.fullPaperDecideStatusDuration || 1,
-
-    reviseStartDate: rvStart,
-    reviseEndDate: rvEnd,
-    reviseDuration: lastPhase.reviseDuration || 1,
-
-    revisionPaperDecideStatusStart: rpdStart,
-    revisionPaperDecideStatusEnd: rpdEnd,
-    revisionPaperDecideStatusDuration: lastPhase.revisionPaperDecideStatusDuration || 1,
-
-    cameraReadyStartDate: crStart,
-    cameraReadyEndDate: crEnd,
-    cameraReadyDuration: lastPhase.cameraReadyDuration || 1,
-
-    cameraReadyDecideStatusStart: crdStart,
-    cameraReadyDecideStatusEnd: crdEnd,
-    cameraReadyDecideStatusDuration: lastPhase.cameraReadyDecideStatusDuration || 1,
-
-    authorPaymentStart: apStart,
-    authorPaymentEnd: apEnd,
-    authorPaymentDuration: lastPhase.authorPaymentDuration || 1,
-
-    revisionRoundDeadlines: newRevisionRounds, 
-  };
-
-  onPhasesChange([...phases, newPhase]);
-  setActivePhaseIndex(phases.length);
-  toast.success(`Đã thêm phase mới với ${newRevisionRounds.length} vòng chỉnh sửa!`);
-};
-
-  const handleAddRevisionRound = () => {
-    if (activePhase.revisionRoundDeadlines.length >= revisionAttemptAllowed) {
-      toast.error(`Số lượng vòng chỉnh sửa tối đa là ${revisionAttemptAllowed}!`);
+  const handleAddNewPhase = () => {
+    if (phases.length === 0) {
+      onPhasesChange([getEmptyPhase()]);
+      setActivePhaseIndex(0);
       return;
     }
-    if (!newRevisionRound.startDate) {
+
+    const lastPhase = phases[phases.length - 1];
+    if (!lastPhase.authorPaymentEnd) {
+      toast.error("Vui lòng hoàn thành phase trước khi tạo phase mới!");
+      return;
+    }
+
+    let currentStart = addDays(lastPhase.authorPaymentEnd);
+    if (!currentStart) return;
+
+    const createSegmentWithChaining = (duration: number): [string, string] => {
+      const start = currentStart!;
+      const end = calculateEndDate(start, duration);
+      currentStart = addDays(end)!;
+      return [start, end];
+    };
+
+    const [regStart, regEnd] = createSegmentWithChaining(lastPhase.registrationDuration || 1);
+    const [absStart, absEnd] = createSegmentWithChaining(lastPhase.abstractDecideStatusDuration || 1);
+    const [fpStart, fpEnd] = createSegmentWithChaining(lastPhase.fullPaperDuration || 1);
+    const [revStart, revEnd] = createSegmentWithChaining(lastPhase.reviewDuration || 1);
+    const [fpdStart, fpdEnd] = createSegmentWithChaining(lastPhase.fullPaperDecideStatusDuration || 1);
+    const [rvStart, rvEnd] = createSegmentWithChaining(lastPhase.reviseDuration || 1);
+    const [rpdStart, rpdEnd] = createSegmentWithChaining(lastPhase.revisionPaperDecideStatusDuration || 1);
+    const [crStart, crEnd] = createSegmentWithChaining(lastPhase.cameraReadyDuration || 1);
+    const [crdStart, crdEnd] = createSegmentWithChaining(lastPhase.cameraReadyDecideStatusDuration || 1);
+    const [apStart, apEnd] = createSegmentWithChaining(lastPhase.authorPaymentDuration || 1);
+
+    const newRevisionRounds: RevisionRoundDeadline[] = [];
+    if (lastPhase.revisionRoundDeadlines.length > 0 && revisionAttemptAllowed > 0) {
+      const totalReviseDays = Math.floor(
+        (new Date(rvEnd).getTime() - new Date(rvStart).getTime()) / 86400000
+      ) + 1;
+      const numRounds = Math.min(lastPhase.revisionRoundDeadlines.length, revisionAttemptAllowed);
+      const daysPerRound = Math.floor(totalReviseDays / numRounds);
+      let roundStart = rvStart;
+      for (let i = 0; i < numRounds; i++) {
+        const isLastRound = i === numRounds - 1;
+        const roundEnd = isLastRound 
+          ? rvEnd
+          : calculateEndDate(roundStart, daysPerRound);
+        newRevisionRounds.push({
+          roundNumber: i + 1,
+          startSubmissionDate: roundStart,
+          endSubmissionDate: roundEnd,
+        });
+        if (!isLastRound) {
+          roundStart = addDays(roundEnd) || roundStart;
+        }
+      }
+    }
+
+    const newPhase: ResearchPhase = {
+      registrationStartDate: regStart,
+      registrationEndDate: regEnd,
+      registrationDuration: lastPhase.registrationDuration || 1,
+      abstractDecideStatusStart: absStart,
+      abstractDecideStatusEnd: absEnd,
+      abstractDecideStatusDuration: lastPhase.abstractDecideStatusDuration || 1,
+      fullPaperStartDate: fpStart,
+      fullPaperEndDate: fpEnd,
+      fullPaperDuration: lastPhase.fullPaperDuration || 1,
+      reviewStartDate: revStart,
+      reviewEndDate: revEnd,
+      reviewDuration: lastPhase.reviewDuration || 1,
+      fullPaperDecideStatusStart: fpdStart,
+      fullPaperDecideStatusEnd: fpdEnd,
+      fullPaperDecideStatusDuration: lastPhase.fullPaperDecideStatusDuration || 1,
+      reviseStartDate: rvStart,
+      reviseEndDate: rvEnd,
+      reviseDuration: lastPhase.reviseDuration || 1,
+      revisionPaperDecideStatusStart: rpdStart,
+      revisionPaperDecideStatusEnd: rpdEnd,
+      revisionPaperDecideStatusDuration: lastPhase.revisionPaperDecideStatusDuration || 1,
+      cameraReadyStartDate: crStart,
+      cameraReadyEndDate: crEnd,
+      cameraReadyDuration: lastPhase.cameraReadyDuration || 1,
+      cameraReadyDecideStatusStart: crdStart,
+      cameraReadyDecideStatusEnd: crdEnd,
+      cameraReadyDecideStatusDuration: lastPhase.cameraReadyDecideStatusDuration || 1,
+      authorPaymentStart: apStart,
+      authorPaymentEnd: apEnd,
+      authorPaymentDuration: lastPhase.authorPaymentDuration || 1,
+      revisionRoundDeadlines: newRevisionRounds, 
+    };
+
+    onPhasesChange([...phases, newPhase]);
+    setActivePhaseIndex(phases.length);
+    toast.success(`Đã thêm phase mới với ${newRevisionRounds.length} vòng chỉnh sửa!`);
+  };
+
+  const handleAddRevisionRound = () => {
+    const isRoundOne = activePhase.revisionRoundDeadlines.length === 0;
+
+    const startSubmissionDate = isRoundOne
+      ? activePhase.reviseStartDate
+      : newRevisionRound.startDate;
+
+    if (!startSubmissionDate) {
       toast.error("Vui lòng chọn ngày bắt đầu vòng chỉnh sửa!");
       return;
     }
+
     if (newRevisionRound.durationInDays <= 0) {
       toast.error("Số ngày phải lớn hơn 0!");
       return;
     }
 
-    const endDate = calculateEndDate(newRevisionRound.startDate, newRevisionRound.durationInDays);
-    if (activePhase.reviseEndDate && new Date(endDate) > new Date(activePhase.reviseEndDate)) {
+    const endSubmissionDate = calculateEndDate(startSubmissionDate, newRevisionRound.durationInDays);
+
+    if (activePhase.reviseEndDate && new Date(endSubmissionDate) > new Date(activePhase.reviseEndDate)) {
       toast.error("Ngày kết thúc vòng chỉnh sửa vượt quá thời gian chỉnh sửa cho phép!");
       return;
     }
 
-    const isOverlapping = activePhase.revisionRoundDeadlines.some((round) => {
-      const existingStart = new Date(round.startSubmissionDate);
-      const existingEnd = new Date(round.endSubmissionDate);
-      const newStart = new Date(newRevisionRound.startDate);
-      const newEnd = new Date(endDate);
-      return newStart <= existingEnd && newEnd >= existingStart;
-    });
+    // Validate overlap (chỉ áp dụng cho round ≥2)
+    if (!isRoundOne) {
+      const isOverlapping = activePhase.revisionRoundDeadlines.some((round) => {
+        const existingStart = new Date(round.startSubmissionDate);
+        const existingEnd = new Date(round.endSubmissionDate);
+        const newStart = new Date(startSubmissionDate);
+        const newEnd = new Date(endSubmissionDate);
+        return newStart <= existingEnd && newEnd >= existingStart;
+      });
 
-    if (isOverlapping) {
-      toast.error("Vòng chỉnh sửa này bị trùng thời gian với vòng khác!");
-      return;
+      if (isOverlapping) {
+        toast.error("Vòng chỉnh sửa này bị trùng thời gian với vòng khác!");
+        return;
+      }
     }
 
     const nextRoundNumber = activePhase.revisionRoundDeadlines.length + 1;
     const newRound: RevisionRoundDeadline = {
       roundNumber: nextRoundNumber,
-      startSubmissionDate: newRevisionRound.startDate,
-      endSubmissionDate: endDate,
+      startSubmissionDate,
+      endSubmissionDate,
     };
 
     updateActivePhase({ revisionRoundDeadlines: [...activePhase.revisionRoundDeadlines, newRound] });
 
+    // Reset form cho vòng tiếp theo
     setNewRevisionRound({
       roundNumber: nextRoundNumber + 1,
-      startDate: "",
+      startDate: "", // cho round ≥2, người dùng sẽ chọn lại
       durationInDays: 3,
     });
 
@@ -501,6 +471,8 @@ const handleAddNewPhase = () => {
                 ))}
               </div>
             )}
+
+            {/* Form thêm vòng mới */}
             <div className="grid grid-cols-4 gap-2">
               <FormInput
                 label="Vòng thứ"
@@ -512,43 +484,68 @@ const handleAddNewPhase = () => {
                 }
                 disabled
               />
-              <DatePickerInput
-                label="Ngày bắt đầu"
-                value={newRevisionRound.startDate}
-                onChange={(val) => setNewRevisionRound({ ...newRevisionRound, startDate: val })}
-                minDate={
-                  activePhase.revisionRoundDeadlines.length > 0
-                    ? addDays(activePhase.revisionRoundDeadlines[activePhase.revisionRoundDeadlines.length - 1].endSubmissionDate)
-                    : activePhase.reviseStartDate || undefined
-                }
-                maxDate={activePhase.reviseEndDate || undefined}
-              />
+
+              {activePhase.revisionRoundDeadlines.length === 0 ? (
+                <div>
+                  <label className="block text-sm font-medium mb-2">Ngày bắt đầu</label>
+                  <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
+                    {activePhase.reviseStartDate ? (
+                      <span className="text-gray-900">{formatDate(activePhase.reviseStartDate)}</span>
+                    ) : (
+                      <span className="text-gray-400">--/--/----</span>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <DatePickerInput
+                  label="Ngày bắt đầu"
+                  value={newRevisionRound.startDate}
+                  onChange={(val) =>
+                    setNewRevisionRound({ ...newRevisionRound, startDate: val })
+                  }
+                  minDate={
+                    activePhase.revisionRoundDeadlines.length > 0
+                      ? addDays(
+                          activePhase.revisionRoundDeadlines[
+                            activePhase.revisionRoundDeadlines.length - 1
+                          ].endSubmissionDate
+                        )
+                      : activePhase.reviseStartDate || undefined
+                  }
+                  maxDate={activePhase.reviseEndDate || undefined}
+                />
+              )}
+
               <FormInput
                 label="Số ngày"
                 type="number"
                 min="1"
-                max={
-                  newRevisionRound.startDate && activePhase.reviseEndDate
-                    ? Math.max(1, Math.floor((new Date(activePhase.reviseEndDate).getTime() - new Date(newRevisionRound.startDate).getTime()) / 86400000) + 1)
-                    : undefined
-                }
                 value={newRevisionRound.durationInDays}
                 onChange={(val) =>
                   setNewRevisionRound({ ...newRevisionRound, durationInDays: Number(val) })
                 }
               />
+
               <div>
                 <label className="block text-sm font-medium mb-2">Ngày kết thúc</label>
                 <div className="w-full px-3 py-2 border rounded-lg bg-gray-50 flex items-center h-[42px]">
-                  {newRevisionRound.startDate && newRevisionRound.durationInDays > 0 ? (
-                    <span className="text-gray-900">
-                      {formatDate(calculateEndDate(newRevisionRound.startDate, newRevisionRound.durationInDays))}
-                    </span>
-                  ) : (
-                    <span className="text-gray-400">--/--/----</span>
-                  )}
+                  {(() => {
+                    const start =
+                      activePhase.revisionRoundDeadlines.length === 0
+                        ? activePhase.reviseStartDate
+                        : newRevisionRound.startDate;
+                    if (start && newRevisionRound.durationInDays > 0) {
+                      return (
+                        <span className="text-gray-900">
+                          {formatDate(calculateEndDate(start, newRevisionRound.durationInDays))}
+                        </span>
+                      );
+                    }
+                    return <span className="text-gray-400">--/--/----</span>;
+                  })()}
                 </div>
               </div>
+
               <Button
                 onClick={handleAddRevisionRound}
                 className="mt-6"

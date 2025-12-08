@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useEffect, useMemo, useCallback, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks/hooks";
 import { setMaxStep, setMode, setVisibleSteps  } from "@/redux/slices/conferenceStep.slice";
-import { Shield, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 
 // API Queries
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";

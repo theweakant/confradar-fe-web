@@ -785,7 +785,7 @@ export const conferenceStepApi = createApi({
       { researchPhaseId: string; data: ResearchPhase }
     >({
       query: ({ researchPhaseId, data }) => ({
-        url: `/research-phases/${researchPhaseId}`,
+        url: endpoint.CONFERENCE_STEP.UPDATE_RESEARCH_PHASE(researchPhaseId),
         method: "PUT",
         body: data,
       }),

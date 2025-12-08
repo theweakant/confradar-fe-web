@@ -115,9 +115,10 @@ export const validateConferenceForStatusChange = ({
  */
 export const validateTimelineForOnHoldToReady = (
   conference: Conference,
-  conferenceType: ConferenceType
+  conferenceType: ConferenceType,
+  now: Date
 ): TimeValidationReport => {
-  const now = new Date();
+  
   const expiredDates: string[] = [];
 
   const onHoldDate = conference.conferenceTimelines
@@ -178,9 +179,12 @@ export const validateTimelineForOnHoldToReady = (
   } else {
     const researchConf = conference as ResearchConferenceDetailResponse;
 
-    researchConf.researchPhase?.forEach((phase, idx) => {
-      const phaseLabel = phase.isWaitlist ? "Giai đoạn Waitlist" : `Phase ${idx + 1}`;
+    // Validate tất cả các phase
+    researchConf.researchPhase?.forEach((phase) => {
+      // Tạo label dựa trên phaseOrder
+      const phaseLabel = `Phase ${phase.phaseOrder}`;
       
+      // Validate các mốc thời gian chính của phase
       checkDate(phase.registrationStartDate, `${phaseLabel} - Đăng ký (bắt đầu)`);
       checkDate(phase.registrationEndDate, `${phaseLabel} - Đăng ký (kết thúc)`);
       checkDate(phase.fullPaperStartDate, `${phaseLabel} - Full Paper (bắt đầu)`);
@@ -192,6 +196,21 @@ export const validateTimelineForOnHoldToReady = (
       checkDate(phase.cameraReadyStartDate, `${phaseLabel} - Camera Ready (bắt đầu)`);
       checkDate(phase.cameraReadyEndDate, `${phaseLabel} - Camera Ready (kết thúc)`);
 
+      // Validate các mốc thời gian mới
+      checkDate(phase.abstractDecideStatusStart, `${phaseLabel} - Abstract Decide Status (bắt đầu)`);
+      checkDate(phase.abstractDecideStatusEnd, `${phaseLabel} - Abstract Decide Status (kết thúc)`);
+      checkDate(phase.fullPaperDecideStatusStart, `${phaseLabel} - Full Paper Decide Status (bắt đầu)`);
+      checkDate(phase.fullPaperDecideStatusEnd, `${phaseLabel} - Full Paper Decide Status (kết thúc)`);
+      checkDate(phase.revisionPaperReviewStart, `${phaseLabel} - Revision Paper Review (bắt đầu)`);
+      checkDate(phase.revisionPaperReviewEnd, `${phaseLabel} - Revision Paper Review (kết thúc)`);
+      checkDate(phase.revisionPaperDecideStatusStart, `${phaseLabel} - Revision Paper Decide Status (bắt đầu)`);
+      checkDate(phase.revisionPaperDecideStatusEnd, `${phaseLabel} - Revision Paper Decide Status (kết thúc)`);
+      checkDate(phase.cameraReadyDecideStatusStart, `${phaseLabel} - Camera Ready Decide Status (bắt đầu)`);
+      checkDate(phase.cameraReadyDecideStatusEnd, `${phaseLabel} - Camera Ready Decide Status (kết thúc)`);
+      checkDate(phase.authorPaymentStart, `${phaseLabel} - Author Payment (bắt đầu)`);
+      checkDate(phase.authorPaymentEnd, `${phaseLabel} - Author Payment (kết thúc)`);
+
+      // Validate revision rounds
       phase.revisionRoundDeadlines?.forEach((round) => {
         checkDate(
           round.startSubmissionDate,
