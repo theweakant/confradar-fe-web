@@ -27,6 +27,14 @@ const PaperStepIndicator: React.FC<StepIndicatorProps> = ({
     completedStepIndexes = [],
     failedStepIndexes = [],
 }) => {
+    const stepLabelMap: Record<string, string> = {
+        Abstract: "Tóm tắt (Abstract)",
+        FullPaper: "Bài báo đầy đủ (Full Paper)",
+        Revise: "Vòng chỉnh sửa (Revision Paper)",
+        CameraReady: "Bản cuối cùng (Camera Ready)",
+        Payment: "Thanh toán",
+    };
+
     const visibleSteps = hiddenStepIndexes && hiddenStepIndexes.length > 0
         ? steps.map((step, idx) => ({ step, index: idx })).filter(({ index }) => !hiddenStepIndexes.includes(index))
         : steps.map((step, idx) => ({ step, index: idx }));
@@ -103,7 +111,8 @@ const PaperStepIndicator: React.FC<StepIndicatorProps> = ({
                                     )}
                                     onClick={() => !isDisabled && handleClick(index)}
                                 >
-                                    {step.label}
+                                    {/* {step.label} */}
+                                    {stepLabelMap[step.label] || step.label}
                                 </span>
 
                                 <span

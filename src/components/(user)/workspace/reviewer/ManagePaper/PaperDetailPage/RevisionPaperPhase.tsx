@@ -29,12 +29,13 @@ import {
 import { toast } from "sonner";
 import { ApiError } from "@/types/api.type";
 import { CurrentPaperPhaseForReviewer, CurrentResearchConferencePhaseForReviewer, PaperDetailForReviewer, RevisionPaperSubmissionForReviewer, RevisionSubmissionFeedbackForReviewer } from "@/types/paper.type";
-import { isValidUrl } from "@/helper/paper";
+import { isValidUrl, isWithinDateRange } from "@/helper/paper";
 import ReusableDocViewer from "@/components/molecules/ReusableDocViewer ";
 import ReviewerPaperCard from "./ReviewerPaperCard";
 import RevisionReviewsList from "./RevisionReviewsList";
 import { parseApiError } from "@/helper/api";
 import { cn } from "@/utils/utils";
+import { useGlobalTime } from "@/utils/TimeContext";
 
 interface RevisionPaperPhaseProps {
     paperDetail: PaperDetailForReviewer;
@@ -51,6 +52,8 @@ export default function RevisionPaperPhase({
     getStatusIcon,
     getStatusColor,
 }: RevisionPaperPhaseProps) {
+    const { now } = useGlobalTime();
+
     // Revision Paper Review Form states - keyed by submission ID
     const [revisionReview, setRevisionReview] = useState<{
         note: string;
@@ -95,16 +98,14 @@ export default function RevisionPaperPhase({
         useState("Pending");
 
 
-    const [docAvailability, setDocAvailability] = useState<{
-        [key: string]: boolean | null;
-    }>({});
-
     const [markingComplete, setMarkingComplete] = useState<{
         [key: string]: boolean;
     }>({});
 
     const [activeRoundTab, setActiveRoundTab] = useState<number>(0);
     const [showReviewsDialog, setShowReviewsDialog] = useState(false);
+
+    const [revisionDecisionReason, setRevisionDecisionReason] = useState("");
 
     const { data: revisionReviews, isLoading } = useListRevisionPaperReviewsQuery(
         { revisionPaperId: paperDetail?.revisionPaper?.revisionPaperId || "", paperId },
@@ -120,13 +121,6 @@ export default function RevisionPaperPhase({
 
     const [markCompleteRevise, { isLoading: isMarkingComplete, error: markCompleteReviseError }] =
         useMarkCompleteReviseMutation();
-
-    const isWithinDateRange = (startDate: string, endDate: string): boolean => {
-        const now = new Date();
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        return now >= start && now <= end;
-    };
 
     // const canSubmitRevisionReview = (): boolean => {
     //     if (!currentPhase?.revisionPaperReviewStart || !currentPhase?.revisionPaperReviewEnd) {
@@ -182,15 +176,24 @@ export default function RevisionPaperPhase({
         return sortedSubmissions[0].revisionPaperSubmissionId === submissionId;
     };
 
-    const canDecideRevisionStatus = (): boolean => {
-        if (!currentPhase?.revisionPaperDecideStatusStart || !currentPhase?.revisionPaperDecideStatusEnd) {
-            return false;
-        }
-        return isWithinDateRange(
+    const canDecideRevisionStatus = currentPhase &&
+        currentPhase.revisionPaperDecideStatusStart &&
+        currentPhase.revisionPaperDecideStatusEnd
+        ? isWithinDateRange(
             currentPhase.revisionPaperDecideStatusStart,
             currentPhase.revisionPaperDecideStatusEnd
-        );
-    };
+        )
+        : false;
+
+    // const canDecideRevisionStatus = (): boolean => {
+    //     if (!currentPhase?.revisionPaperDecideStatusStart || !currentPhase?.revisionPaperDecideStatusEnd) {
+    //         return false;
+    //     }
+    //     return isWithinDateRange(
+    //         currentPhase.revisionPaperDecideStatusStart,
+    //         currentPhase.revisionPaperDecideStatusEnd
+    //     );
+    // };
 
     const canSubmitRevisionFeedback = (submissionId: string): boolean => {
         if (!paperDetail?.revisionPaper) return false;
@@ -209,10 +212,15 @@ export default function RevisionPaperPhase({
             return false;
         }
 
-        return isWithinDateRange(
-            roundDetail.startSubmissionDate,
-            roundDetail.endSubmissionDate
-        );
+        // const now = new Date();
+        const endDate = new Date(roundDetail.endSubmissionDate);
+
+        return now <= endDate;
+
+        // return isWithinDateRange(
+        //     roundDetail.startSubmissionDate,
+        //     roundDetail.endSubmissionDate
+        // );
     };
 
     // const isNotAllSubmittedRevision =
@@ -220,7 +228,7 @@ export default function RevisionPaperPhase({
     // const hasAtLeastOneReview =
     //     revisionReviews?.data &&
     //     revisionReviews?.data.length > 0;
-    const isOutOfRevisionDecisionTime = !canDecideRevisionStatus();
+    const isOutOfRevisionDecisionTime = !canDecideRevisionStatus;
 
     const toggleReviewsExpansion = () => {
         setExpandedReviewsSubmissions((prev) => !prev);
@@ -381,7 +389,7 @@ export default function RevisionPaperPhase({
 
     const handleDecideRevisionStatus = async () => {
         if (!paperDetail?.revisionPaper) return;
-        if (!canDecideRevisionStatus()) {
+        if (!canDecideRevisionStatus) {
             toast.error(
                 `Chỉ có thể quyết định Revision trong khoảng ${formatDate(currentPhase!.revisionPaperDecideStatusStart)} - ${formatDate(currentPhase!.revisionPaperDecideStatusEnd)}`,
             );
@@ -393,6 +401,7 @@ export default function RevisionPaperPhase({
                 revisionPaperId: paperDetail.revisionPaper.revisionPaperId,
                 paperId,
                 globalStatus: revisionDecisionStatus,
+                reason: revisionDecisionReason
             }).unwrap();
             toast.success("Cập nhật trạng thái revision thành công");
             setShowRevisionDecisionPopup(false);
@@ -512,29 +521,6 @@ export default function RevisionPaperPhase({
     //     if (markCompleteReviseError) toast.error(parseApiError(markCompleteReviseError)?.data?.message);
     // }, [markCompleteReviseError])
 
-    useEffect(() => {
-        if (!paperDetail?.revisionPaper?.revisionPaperSubmissions) return;
-
-        paperDetail.revisionPaper.revisionPaperSubmissions.forEach((submission) => {
-            const url = submission.revisionPaperUrl;
-
-            if (!url || !isValidUrl(url)) {
-                setDocAvailability(prev => ({ ...prev, [submission.revisionPaperSubmissionId]: false }));
-                return;
-            }
-
-            fetch(url, { method: "HEAD" })
-                .then((res) => setDocAvailability(prev => ({
-                    ...prev,
-                    [submission.revisionPaperSubmissionId]: res.ok
-                })))
-                .catch(() => setDocAvailability(prev => ({
-                    ...prev,
-                    [submission.revisionPaperSubmissionId]: false
-                })));
-        });
-    }, [paperDetail?.revisionPaper?.revisionPaperSubmissions]);
-
     if (!paperDetail.revisionPaper) {
         return (
             <div className="text-center py-12 bg-gray-50 rounded-lg">
@@ -590,41 +576,48 @@ export default function RevisionPaperPhase({
                                 onClick={() => setShowRevisionDecisionPopup(true)}
                                 className="bg-orange-600 hover:bg-orange-700"
                                 size="lg"
+                                disabled={
+                                    isOutOfRevisionDecisionTime ||
+                                    paperDetail.revisionPaper?.globalStatusName !== "Pending"
+                                }
+                            >
+                                <Gavel className="w-4 h-4 mr-2" />
+                                {paperDetail.revisionPaper?.globalStatusName !== "Pending"
+                                    ? "Đã quyết định trạng thái, không thể lặp lại hành động này"
+                                    : isOutOfRevisionDecisionTime
+                                        ? "Ngoài thời gian quyết định"
+                                        : "Quyết định cuối cùng"}
+                            </Button>
+                        </div>
+                    )}
+                    {/* {paperDetail.isHeadReviewer && (
+                        <div className="flex gap-3">
+                            {revisionReviews?.data && revisionReviews.data.length > 0 && (
+                                <Button
+                                    onClick={() => setShowReviewsDialog(true)}
+                                    variant="outline"
+                                    size="lg"
+                                    className="border-orange-600 text-orange-600 hover:bg-orange-50"
+                                >
+                                    <FileText className="w-4 h-4 mr-2" />
+                                    {revisionReviews.data.length} lượt đánh giá
+                                </Button>
+                            )}
+
+                            <Button
+                                onClick={() => setShowRevisionDecisionPopup(true)}
+                                className="bg-orange-600 hover:bg-orange-700"
+                                size="lg"
                                 disabled={isOutOfRevisionDecisionTime}
                             >
                                 <Gavel className="w-4 h-4 mr-2" />
-                                {/* {isNotAllSubmittedRevision && !isOutOfRevisionDecisionTime &&
-                                "Chưa thể quyết định, còn reviewer chưa nộp"}
-                            {!isNotAllSubmittedRevision && isOutOfRevisionDecisionTime &&
-                                "Chưa thể quyết định, ngoài khoảng thời gian"}
-                            {isNotAllSubmittedRevision && isOutOfRevisionDecisionTime &&
-                                "Chưa thể quyết định, reviewer chưa nộp & ngoài thời gian"}
-                            {!isNotAllSubmittedRevision && !isOutOfRevisionDecisionTime &&
-                                "Quyết định cuối cùng"} */}
 
                                 {isOutOfRevisionDecisionTime
                                     ? "Ngoài thời gian quyết định"
                                     : "Quyết định cuối cùng"}
-                                {/* 
-                                {!hasAtLeastOneReview && !isOutOfRevisionDecisionTime && "Chưa thể quyết định, chưa có review nào"}
-                                {hasAtLeastOneReview && isOutOfRevisionDecisionTime && "Ngoài thời gian quyết định"}
-                                {!hasAtLeastOneReview && isOutOfRevisionDecisionTime && "Chưa có review & ngoài thời gian"}
-                                {hasAtLeastOneReview && !isOutOfRevisionDecisionTime && "Quyết định cuối cùng"} */}
-
                             </Button>
                         </div>
-                        // <Button
-                        //     onClick={() => setShowRevisionDecisionPopup(true)}
-                        //     className="bg-orange-600 hover:bg-orange-700"
-                        //     size="lg"
-                        //     disabled={!paperDetail.revisionPaper.isAllSubmittedRevisionPaperReview}
-                        // >
-                        //     <Gavel className="w-4 h-4 mr-2" />
-                        //     {paperDetail.revisionPaper.isAllSubmittedRevisionPaperReview
-                        //         ? "Quyết định cuối cùng"
-                        //         : "Chưa thể quyết định, còn reviewer chưa nộp"}
-                        // </Button>
-                    )}
+                    )} */}
                 </div>
 
                 <ReviewerPaperCard
@@ -1586,6 +1579,24 @@ export default function RevisionPaperPhase({
                                     </select>
                                 </div>
 
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Lý do quyết định <span className="text-red-500">*</span>
+                                    </label>
+                                    <textarea
+                                        className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-green-500"
+                                        placeholder="Nhập lý do quyết định..."
+                                        value={revisionDecisionReason}
+                                        onChange={(e) => setRevisionDecisionReason(e.target.value)}
+                                        rows={4}
+                                    />
+                                    {!revisionDecisionReason.trim() && (
+                                        <p className="text-xs text-red-500 mt-1">
+                                            Lý do quyết định là bắt buộc
+                                        </p>
+                                    )}
+                                </div>
+
                                 <div className="flex gap-3">
                                     <Button
                                         variant="outline"
@@ -1597,7 +1608,11 @@ export default function RevisionPaperPhase({
                                     </Button>
                                     <Button
                                         onClick={handleDecideRevisionStatus}
-                                        disabled={isDecidingRevision}
+                                        disabled={
+                                            isDecidingRevision ||
+                                            !revisionDecisionReason.trim() ||
+                                            revisionDecisionStatus === "Pending"
+                                        }
                                         className="flex-1 bg-orange-600 hover:bg-orange-700"
                                     >
                                         {isDecidingRevision ? "Đang xử lý..." : "Xác nhận"}

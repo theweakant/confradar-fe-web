@@ -167,11 +167,11 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
         href: "/workspace/local-reviewer/manage-paper/conferences-has-assigned-papers",
         icon: FileText,
       },
-      {
-        label: "Đã hoàn thành",
-        href: "/workspace/local-reviewer/completed",
-        icon: FileText,
-      },
+      // {
+      //   label: "Đã hoàn thành",
+      //   href: "/workspace/local-reviewer/completed",
+      //   icon: FileText,
+      // },
     ],
     [ROLES.EXTERNAL_REVIEWER]: [
       {
@@ -181,7 +181,7 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
       },
       {
         label: "Bài cần đánh giá",
-        href: "/workspace/external-reviewer/manage-paper",
+        href: "/workspace/external-reviewer/manage-paper/conferences-has-assigned-papers",
         icon: FileText,
       },
       {

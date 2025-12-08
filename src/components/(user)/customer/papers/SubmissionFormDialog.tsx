@@ -231,7 +231,7 @@ const SubmissionFormDialog: React.FC<SubmissionFormDialogProps> = ({
                                             </div>
 
                                             {/* Co-authors section */}
-                                            {includeCoauthors && (
+                                            {/* {includeCoauthors && (
                                                 <div>
                                                     <div className="flex items-center justify-between mb-2">
                                                         <label className="block text-sm font-medium text-gray-700">
@@ -277,7 +277,7 @@ const SubmissionFormDialog: React.FC<SubmissionFormDialogProps> = ({
                                                         <p className="text-xs text-gray-500">Chưa có đồng tác giả</p>
                                                     )}
                                                 </div>
-                                            )}
+                                            )} */}
                                         </div>
 
                                         {/* Right Column - File Upload */}
@@ -343,6 +343,33 @@ const SubmissionFormDialog: React.FC<SubmissionFormDialogProps> = ({
 
                                                         {/* File Preview */}
                                                         {filePreviewUrl && (
+                                                            <div className="border border-gray-300 rounded-lg overflow-auto max-h-[40vh] p-2">
+                                                                {formData.file?.type === "application/pdf" ? (
+                                                                    // Preview PDF trực tiếp
+                                                                    <iframe
+                                                                        src={filePreviewUrl}
+                                                                        className="w-full h-[40vh]"
+                                                                        title={formData.file.name}
+                                                                    />
+                                                                ) : (
+                                                                    // DOC/DOCX: chỉ hiện tên file + nút tải về
+                                                                    <div className="p-4 bg-gray-50 rounded-lg text-center">
+                                                                        <p className="text-sm font-medium text-gray-900">{formData.file.name}</p>
+                                                                        <p className="text-xs text-gray-500">
+                                                                            {(formData.file.size / 1024 / 1024).toFixed(2)} MB
+                                                                        </p>
+                                                                        <a
+                                                                            href={filePreviewUrl}
+                                                                            download={formData.file.name}
+                                                                            className="mt-2 inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                                                                        >
+                                                                            Tải về
+                                                                        </a>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                        {/* {filePreviewUrl && (
                                                             <div className="border border-gray-300 rounded-lg overflow-auto max-h-[40vh]">
                                                                 <ReusableDocViewer
                                                                     fileUrl={filePreviewUrl}
@@ -350,7 +377,7 @@ const SubmissionFormDialog: React.FC<SubmissionFormDialogProps> = ({
                                                                     checkUrlBeforeRender={false}
                                                                 />
                                                             </div>
-                                                        )}
+                                                        )} */}
                                                     </div>
                                                 )}
                                             </div>

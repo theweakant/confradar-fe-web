@@ -599,10 +599,10 @@ export interface CameraReady {
 
 export interface CreateAbstractRequest {
   abstractFile: File;
-  paperId: string;
+  conferenceId: string;
   title: string;
   description: string;
-  coAuthorId: string[];
+  // coAuthorId: string[];
 }
 
 export interface AvailableCustomerResponse {

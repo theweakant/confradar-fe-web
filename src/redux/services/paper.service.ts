@@ -106,7 +106,7 @@ export const paperApi = createApi({
 
     decideCameraReady: builder.mutation<
       ApiResponse<unknown>,
-      { cameraReadyId: string; globalStatus: string; paperid: string }
+      { cameraReadyId: string; globalStatus: string; paperid: string; reason: string; }
     >({
       query: (body) => ({
         url: endpoint.PAPER.DECIDE_CAMERA_READY,
@@ -147,7 +147,7 @@ export const paperApi = createApi({
         const formData = new FormData();
         formData.append("fullPaperId", body.fullPaperId);
         formData.append("note", body.note);
-        formData.append("feedbackToAuthor", body.feedbackToAuthor);
+        formData.append("feedbackToAuthor", body.note);
         formData.append("reviewStatus", body.reviewStatus);
 
         if (body.feedbackMaterialFile) {
@@ -173,7 +173,7 @@ export const paperApi = createApi({
 
     decideFullPaperStatus: builder.mutation<
       ApiResponse<unknown>,
-      { paperId: string; fullPaperId: string; reviewStatus: string }
+      { paperId: string; fullPaperId: string; reviewStatus: string; reason: string; }
     >({
       query: (body) => ({
         url: endpoint.PAPER.DECIDE_FULLPAPER_STATUS,
@@ -221,7 +221,7 @@ export const paperApi = createApi({
 
     decideRevisionStatus: builder.mutation<
       ApiResponse<unknown>,
-      { revisionPaperId: string; paperId: string; globalStatus: string }
+      { revisionPaperId: string; paperId: string; globalStatus: string; reason: string; }
     >({
       query: (body) => ({
         url: endpoint.PAPER.DECIDE_REVISION_STATUS,
@@ -280,12 +280,12 @@ export const paperApi = createApi({
       query: (body) => {
         const formData = new FormData();
         formData.append("abstractFile", body.abstractFile);
-        formData.append("paperId", body.paperId);
+        formData.append("conferenceId", body.conferenceId);
         formData.append("title", body.title);
         formData.append("description", body.description);
-        body.coAuthorId.forEach((id) => {
-          formData.append("coAuthorId", id);
-        });
+        // body.coAuthorId.forEach((id) => {
+        //   formData.append("coAuthorId", id);
+        // });
 
         return {
           url: endpoint.PAPER.SUBMIT_ABSTRACT,

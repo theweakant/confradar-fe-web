@@ -14,6 +14,7 @@ import { steps } from "@/helper/paper";
 import PaperStepIndicator from "@/components/molecules/PaperStepIndicator";
 import { Calendar } from "lucide-react";
 import TimelineDialog from "@/components/molecules/TimelineDialog";
+import PaymentPhase from "./PaymentPhase";
 
 const PaperTracking = () => {
   const [currentStage, setCurrentStage] = useState<number>(1);
@@ -125,6 +126,7 @@ const PaperTracking = () => {
 
     if (paperDetail.cameraReady?.status?.toLowerCase() === 'accepted') {
       completed.push(3);
+      completed.push(4);
     } else if (paperDetail.cameraReady?.status?.toLowerCase() === 'rejected') {
       failed.push(3);
     }
@@ -132,7 +134,24 @@ const PaperTracking = () => {
     return { completedStepIndexes: completed, failedStepIndexes: failed };
   }, [paperDetail]);
 
-  const maxStageAllowed = failedStepIndexes.length > 0 ? failedStepIndexes[0] + 1 : 4;
+  let maxStageAllowed = 4;
+  if (failedStepIndexes.length > 0) {
+    maxStageAllowed = failedStepIndexes[0];
+  }
+
+  useEffect(() => {
+    if (!paperDetail) return;
+
+    const cameraReadyAccepted =
+      paperDetail.cameraReady?.status?.toLowerCase() === "accepted";
+
+    if (cameraReadyAccepted) {
+      setCurrentStage(4);
+      setMaxReachedStage(4);
+    }
+  }, [paperDetail]);
+
+  // const maxStageAllowed = failedStepIndexes.length > 0 ? failedStepIndexes[0] + 1 : 4;
 
   // const stages = [
   //   { id: 1, label: "Abstract" },
@@ -521,97 +540,17 @@ const PaperTracking = () => {
                       onSubmittedCameraReady={loadPaperDetail}
                     />
                   )}
-                  {/* {currentStage === 1 && currentStage <= maxStageAllowed && (
-                    <AbstractPhase
-                      paperId={paperId}
-                      abstract={paperDetail?.abstract || null}
-                      researchPhase={paperDetail?.researchPhase}
-                    />
-                  )}
-                  {currentStage === 2 && currentStage <= maxStageAllowed && (
-                    <FullPaperPhase
-                      paperId={paperId}
-                      fullPaper={paperDetail?.fullPaper || null}
-                      researchPhase={paperDetail?.researchPhase}
-                    />
-                  )}
-                  {currentStage === 3 && currentStage <= maxStageAllowed && (
-                    <RevisionPhase
-                      paperId={paperId}
-                      revisionPaper={paperDetail?.revisionPaper || null}
-                      researchPhase={paperDetail?.researchPhase}
-                      revisionDeadline={paperDetail?.revisionDeadline}
-                    />
-                  )}
+
                   {currentStage === 4 && currentStage <= maxStageAllowed && (
-                    <CameraReadyPhase
+                    <PaymentPhase
                       paperId={paperId}
-                      cameraReady={paperDetail?.cameraReady || null}
+                      conferenceId={paperDetail?.researchConferenceInfo?.conferenceId ?? undefined}
                       researchPhase={paperDetail?.researchPhase}
+                      onPaymentSuccess={loadPaperDetail}
                     />
-                  )} */}
+                  )}
                 </div>
               )}
-
-            {/* {!paperPhasesLoading &&
-              !isLoadingPaperDetail &&
-              !paperPhasesError &&
-              !paperDetailError &&
-              paperPhases.length > 0 && (
-                <div className="bg-white rounded-xl p-6 border border-gray-200 mt-8 shadow-sm">
-                  {currentStage === 1 && (
-                    <AbstractPhase
-                      paperId={paperId}
-                      abstract={paperDetail?.abstract || null}
-                      researchPhase={paperDetail?.researchPhase}
-                    />
-                  )}
-                  {currentStage === 2 && (
-                    <FullPaperPhase
-                      paperId={paperId}
-                      fullPaper={paperDetail?.fullPaper || null}
-                      researchPhase={paperDetail?.researchPhase}
-                    />
-                  )}
-                  {currentStage === 3 && (
-                    <RevisionPhase
-                      paperId={paperId}
-                      revisionPaper={paperDetail?.revisionPaper || null}
-                      researchPhase={paperDetail?.researchPhase}
-                      revisionDeadline={paperDetail?.revisionDeadline}
-                    />
-                  )}
-                  {currentStage === 4 && (
-                    <CameraReadyPhase
-                      paperId={paperId}
-                      cameraReady={paperDetail?.cameraReady || null}
-                      researchPhase={paperDetail?.researchPhase}
-                    />
-                  )}
-
-                  {currentStage > 4 && (
-                    <div className="text-center py-8">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        {stages4Step.find((s) => s.id === currentStage)?.label}
-                      </h3>
-                      <p className="text-gray-600">
-                        Giai đoạn này chưa có component hiển thị cụ thể.
-                      </p>
-                      {paperDetail?.currentPhase && (
-                        <div className="mt-4 text-sm text-gray-500">
-                          <p>
-                            Phase ID: {paperDetail.currentPhase.paperPhaseId}
-                          </p>
-                          <p>
-                            Phase Name:{" "}
-                            {paperDetail.currentPhase.phaseName || "N/A"}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )} */}
           </div>
         </main>
       </div>

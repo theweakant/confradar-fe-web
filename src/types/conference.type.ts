@@ -562,6 +562,8 @@ export interface ResearchConferenceDetailResponse {
 
   contract?: CollaboratorContract;
   createdBy?: string;
+
+  submittedPaper: SubmittedPaper;
 }
 
 export interface ConferencePolicyResponse {
@@ -908,4 +910,14 @@ export interface SessionFeedback {
   rating: number;
   message: string;
   createdAt: string;
+}
+
+export interface SubmittedPaper {
+  paperId: string | null;
+  title: string | null;
+  description: string | null;
+  abstractStatus: string | null;
+  fullpaperStatus: string | null;
+  revisionStatus: string | null;
+  cameraReadyStatus: string | null;
 }

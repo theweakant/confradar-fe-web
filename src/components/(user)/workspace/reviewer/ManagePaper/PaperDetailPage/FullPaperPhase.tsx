@@ -52,10 +52,9 @@ export default function FullPaperPhase({
 
     const [showReviewDialog, setShowReviewDialog] = useState(false);
 
-    const [docAvailable, setDocAvailable] = useState<boolean | null>(null);
-    const [docViewerError, setDocViewerError] = useState<boolean>(false);
-
     const [showReviewsDialog, setShowReviewsDialog] = useState(false);
+
+    const [decisionReason, setDecisionReason] = useState<string>("");
 
     const [submitReview, { isLoading: isSubmitting, error: submitReviewError }] =
         useSubmitFullPaperReviewMutation();
@@ -68,62 +67,61 @@ export default function FullPaperPhase({
         if (decideError) toast.error(parseApiError<string>(decideError)?.data?.message)
     }, [submitReviewError, decideError]);
 
-
-    useEffect(() => {
-        const url = paperDetail.fullPaper?.fullPaperUrl;
-
-        if (!url) {  // url null/undefined
-            setDocAvailable(false);
-            return;
-        }
-
-        if (!isValidUrl(url)) {
-            setDocAvailable(false);
-            return;
-        }
-
-        fetch(url, { method: "HEAD" })
-            .then((res) => setDocAvailable(res.ok))
-            .catch(() => setDocAvailable(false));
-    }, [paperDetail.fullPaper?.fullPaperUrl]);
-
-    const canSubmitFullPaperReview = (): boolean => {
-        if (
-            !currentPhase ||
-            !currentPhase.reviewStartDate ||
-            !currentPhase.reviewEndDate
-        ) {
-            return false;
-        }
-        return isWithinDateRange(
+    const canSubmitFullPaperReview = currentPhase &&
+        currentPhase.reviewStartDate &&
+        currentPhase.reviewEndDate
+        ? isWithinDateRange(
             currentPhase.reviewStartDate,
-            currentPhase.reviewEndDate,
-        );
-    };
+            currentPhase.reviewEndDate
+        )
+        : false;
 
-    const canDecideFullPaperStatus = (): boolean => {
-        if (
-            !currentPhase ||
-            !currentPhase.fullPaperDecideStatusStart ||
-            !currentPhase.fullPaperDecideStatusEnd
-        ) {
-            return false;
-        }
-        return isWithinDateRange(
+    // const canSubmitFullPaperReview = (): boolean => {
+    //     if (
+    //         !currentPhase ||
+    //         !currentPhase.reviewStartDate ||
+    //         !currentPhase.reviewEndDate
+    //     ) {
+    //         return false;
+    //     }
+    //     return isWithinDateRange(
+    //         currentPhase.reviewStartDate,
+    //         currentPhase.reviewEndDate,
+    //     );
+    // };
+
+    const canDecideFullPaperStatus = currentPhase &&
+        currentPhase.fullPaperDecideStatusStart &&
+        currentPhase.fullPaperDecideStatusEnd
+        ? isWithinDateRange(
             currentPhase.fullPaperDecideStatusStart,
-            currentPhase.fullPaperDecideStatusEnd,
-        );
-    };
+            currentPhase.fullPaperDecideStatusEnd
+        )
+        : false;
+
+    // const canDecideFullPaperStatus = (): boolean => {
+    //     if (
+    //         !currentPhase ||
+    //         !currentPhase.fullPaperDecideStatusStart ||
+    //         !currentPhase.fullPaperDecideStatusEnd
+    //     ) {
+    //         return false;
+    //     }
+    //     return isWithinDateRange(
+    //         currentPhase.fullPaperDecideStatusStart,
+    //         currentPhase.fullPaperDecideStatusEnd,
+    //     );
+    // };
 
     // const isNotAllSubmitted = !paperDetail.fullPaper?.isAllSubmittedFullPaperReview;
     const hasAtLeastOneReview =
         paperDetail?.fullPaper?.fullPaperReviews &&
         paperDetail?.fullPaper?.fullPaperReviews.length > 0;
-    const isOutOfDecisionTime = !canDecideFullPaperStatus();
+    const isOutOfDecisionTime = !canDecideFullPaperStatus;
 
     const handleSubmitReview = async () => {
         if (!paperDetail?.fullPaper) return;
-        if (!canSubmitFullPaperReview()) {
+        if (!canSubmitFullPaperReview) {
             toast.error(
                 `Thời hạn nộp đánh giá Full Paper là từ ${formatDate(currentPhase!.reviewStartDate)} đến ${formatDate(currentPhase!.reviewEndDate)}`,
             );
@@ -150,7 +148,7 @@ export default function FullPaperPhase({
 
     const handleDecideStatus = async () => {
         if (!paperDetail?.fullPaper) return;
-        if (!canDecideFullPaperStatus()) {
+        if (!canDecideFullPaperStatus) {
             toast.error(
                 `Thời hạn quyết định Full Paper là từ ${formatDate(currentPhase!.fullPaperDecideStatusStart)} đến ${formatDate(currentPhase!.fullPaperDecideStatusEnd)}`,
             );
@@ -161,6 +159,7 @@ export default function FullPaperPhase({
                 paperId,
                 fullPaperId: paperDetail.fullPaper.fullPaperId,
                 reviewStatus: decisionStatus,
+                reason: decisionReason,
             }).unwrap();
             toast.success("Cập nhật trạng thái thành công");
             setShowDecisionPopup(false);
@@ -192,7 +191,7 @@ export default function FullPaperPhase({
                     {!paperDetail.isHeadReviewer && (
 
                         <div className="mt-6">
-                            {canSubmitFullPaperReview() ? (
+                            {canSubmitFullPaperReview ? (
                                 <Button
                                     className="bg-black hover:bg-gray-800"
                                     onClick={() => setShowReviewDialog(true)}
@@ -227,13 +226,47 @@ export default function FullPaperPhase({
                                 onClick={() => setShowDecisionPopup(true)}
                                 className="bg-purple-600 hover:bg-purple-700"
                                 size="lg"
+                                disabled={
+                                    !hasAtLeastOneReview ||
+                                    isOutOfDecisionTime ||
+                                    paperDetail.fullPaper.reviewStatusName !== "Pending"
+                                }
+                            >
+                                <Gavel className="w-4 h-4 mr-2" />
+                                {paperDetail.fullPaper.reviewStatusName !== "Pending"
+                                    ? "Đã quyết định trạng thái, không thể lặp lại hành động này"
+                                    : !hasAtLeastOneReview && !isOutOfDecisionTime
+                                        ? "Chưa thể quyết định, chưa có review nào"
+                                        : hasAtLeastOneReview && isOutOfDecisionTime
+                                            ? "Ngoài thời gian quyết định"
+                                            : !hasAtLeastOneReview && isOutOfDecisionTime
+                                                ? "Chưa có review & ngoài thời gian"
+                                                : "Quyết định cuối cùng"}
+                            </Button>
+                        </div>
+                    )}
+
+                    {/* {paperDetail.isHeadReviewer && (
+                        <div className="flex gap-3">
+                            {paperDetail.fullPaper.fullPaperReviews?.length > 0 && (
+                                <Button
+                                    onClick={() => setShowReviewsDialog(true)}
+                                    variant="outline"
+                                    size="lg"
+                                    className="border-purple-600 text-purple-600 hover:bg-purple-50"
+                                >
+                                    <FileText className="w-4 h-4 mr-2" />
+                                    {paperDetail.fullPaper.fullPaperReviews.length} lượt đánh giá
+                                </Button>
+                            )}
+
+                            <Button
+                                onClick={() => setShowDecisionPopup(true)}
+                                className="bg-purple-600 hover:bg-purple-700"
+                                size="lg"
                                 disabled={!hasAtLeastOneReview || isOutOfDecisionTime}
                             >
                                 <Gavel className="w-4 h-4 mr-2" />
-                                {/* {isNotAllSubmitted && !isOutOfDecisionTime && "Chưa thể quyết định, còn reviewer chưa nộp"}
-                            {!isNotAllSubmitted && isOutOfDecisionTime && "Chưa thể quyết định, ngoài khoảng thời gian"}
-                            {isNotAllSubmitted && isOutOfDecisionTime && "Chưa thể quyết định, reviewer chưa nộp & ngoài thời gian"}
-                            {!isNotAllSubmitted && !isOutOfDecisionTime && "Quyết định cuối cùng"} */}
 
                                 {!hasAtLeastOneReview && !isOutOfDecisionTime && "Chưa thể quyết định, chưa có review nào"}
                                 {hasAtLeastOneReview && isOutOfDecisionTime && "Ngoài thời gian quyết định"}
@@ -242,18 +275,7 @@ export default function FullPaperPhase({
 
                             </Button>
                         </div>
-                        // <Button
-                        //     onClick={() => setShowDecisionPopup(true)}
-                        //     className="bg-purple-600 hover:bg-purple-700"
-                        //     size="lg"
-                        //     disabled={!paperDetail.fullPaper.isAllSubmittedFullPaperReview}
-                        // >
-                        //     <Gavel className="w-4 h-4 mr-2" />
-                        //     {paperDetail.fullPaper.isAllSubmittedFullPaperReview
-                        //         ? "Quyết định cuối cùng"
-                        //         : "Chưa thể quyết định, còn reviewer chưa nộp"}
-                        // </Button>
-                    )}
+                    )} */}
                 </div>
 
                 {/* ========== THÔNG TIN CƠ BẢN ========== */}
@@ -819,6 +841,30 @@ export default function FullPaperPhase({
                                     </select>
                                 </div>
 
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Lý do quyết định <span className="text-red-500">*</span>
+                                    </label>
+                                    <textarea
+                                        className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-purple-500"
+                                        placeholder="Nhập lý do quyết định..."
+                                        value={decisionReason}
+                                        onChange={(e) => setDecisionReason(e.target.value)}
+                                        rows={4}
+                                    />
+                                    {!decisionReason.trim() && (
+                                        <p className="text-xs text-red-500 mt-1">
+                                            Lý do quyết định là bắt buộc
+                                        </p>
+                                    )}
+                                    {decisionStatus === "Pending" && (
+                                        <p className="text-xs text-red-500 mt-1">
+                                            Vui lòng chọn trạng thái khác Pending
+                                        </p>
+                                    )}
+                                </div>
+
+
                                 <div className="flex gap-3">
                                     <Button
                                         variant="outline"
@@ -830,7 +876,9 @@ export default function FullPaperPhase({
                                     </Button>
                                     <Button
                                         onClick={handleDecideStatus}
-                                        disabled={isDeciding}
+                                        disabled={
+                                            isDeciding || !decisionReason.trim() || decisionStatus === "Pending"
+                                        }
                                         className="flex-1 bg-purple-600 hover:bg-purple-700"
                                     >
                                         {isDeciding ? "Đang xử lý..." : "Xác nhận"}

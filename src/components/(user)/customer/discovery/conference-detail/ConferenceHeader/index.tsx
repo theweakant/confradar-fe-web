@@ -12,6 +12,8 @@ import ConferenceTitleCard from "./ConferenceTitleCard";
 import ConferenceSubscribeCard from "./ConferenceSubscribeCard";
 import ConferenceDescriptionCard from "./ConferenceDescriptionCard";
 import TicketSelectionDialog from "./TicketSelectionDialog";
+import SubmissionFormDialog from "../../../papers/SubmissionFormDialog";
+import { parseApiError } from "@/helper/api";
 
 interface ConferenceHeaderProps {
     conference: TechnicalConferenceDetailResponse | ResearchConferenceDetailResponse;
@@ -24,6 +26,7 @@ interface ConferenceHeaderProps {
     onAuthorInfoChange: (info: { title: string; description: string }) => void;
     selectedPaymentMethod: string | null;
     onSelectPaymentMethod: (id: string | null) => void;
+    onSelectPaper?: (paperId: string | null) => void;
 }
 
 const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
@@ -37,10 +40,16 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
     onAuthorInfoChange,
     selectedPaymentMethod,
     onSelectPaymentMethod,
+    onSelectPaper
 }) => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [userType, setUserType] = useState<'author' | 'listener'>('listener');
     const [showAuthorForm, setShowAuthorForm] = useState(false);
     const [showPaymentMethods, setShowPaymentMethods] = useState(false);
+    const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
 
     const {
         lazyFavouriteConferences,
@@ -50,6 +59,15 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
         deletingFromFavourite,
         fetchFavouriteConferences,
     } = useConference();
+
+    const {
+        fetchAvailableCustomers,
+        handleSubmitAbstract,
+        handleUpdateAbstract,
+        submitAbstractError,
+        updateAbstractError,
+        loading: submitLoading
+    } = usePaperCustomer();
 
     const { paymentMethods, loading: paymentMethodsLoading, fetchAllPaymentMethods } = useTransaction();
     const { handleAddToWaitList, addingToWaitListLoading } = usePaperCustomer();
@@ -63,6 +81,17 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
         conference.isResearchConference ||
         conference.isInternalHosted ||
         !!conference.contract?.isTicketSelling;
+
+
+    const submittedPaper = isResearch ? (conference as ResearchConferenceDetailResponse).submittedPaper : null;
+    const hasSubmittedPaper = submittedPaper?.paperId != null;
+
+
+    useEffect(() => {
+        if (submitAbstractError) toast.error(parseApiError<string>(submitAbstractError)?.data?.message)
+        if (updateAbstractError) toast.error(parseApiError<string>(updateAbstractError)?.data?.message)
+    }, [submitAbstractError, updateAbstractError]);
+
 
     useEffect(() => {
         if (accessToken) {
@@ -86,6 +115,11 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
             fetchAllPaymentMethods();
         }
     }, [isDialogOpen]);
+
+    const handleOpenDialog = (type: 'author' | 'listener') => {
+        setUserType(type);
+        setIsDialogOpen(true);
+    };
 
     const handleFavoriteToggle = async () => {
         if (!conference.conferenceId || !accessToken) {
@@ -162,9 +196,13 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                         <ConferenceSubscribeCard
                             conference={conference}
                             formatDate={formatDate}
-                            onOpenDialog={() => setIsDialogOpen(true)}
+                            onOpenDialog={handleOpenDialog}
                             purchasedTicketInfo={getPurchasedTicketInfo()}
                             isResearch={isResearch}
+                            onOpenAbstractDialog={() => setIsSubmitDialogOpen(true)}
+                            hasSubmittedPaper={hasSubmittedPaper}
+                            submittedPaper={submittedPaper}
+                            onSelectPaper={onSelectPaper}
                         />
                     )}
                 </div>
@@ -198,6 +236,62 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                     onAddToWaitlist={handleAddToWaitlist}
                     addingToWaitListLoading={addingToWaitListLoading}
                     accessToken={accessToken}
+                    userType={userType}
+                />
+
+
+                <SubmissionFormDialog
+                    isOpen={isSubmitDialogOpen}
+                    onClose={() => setIsSubmitDialogOpen(false)}
+                    onSubmit={async (data) => {
+                        try {
+                            // if (abstract) {
+                            //     const result = await handleUpdateAbstract(paperId!, {
+                            //         title: data.title,
+                            //         description: data.description,
+                            //         abstractFile: data.file,
+                            //         coAuthorId: data.coAuthorIds || []
+                            //     });
+
+                            //     if (result.success) {
+                            //         toast.success("Cập nhật abstract thành công!");
+                            //         onSubmittedAbstract?.();
+                            //         return { success: true };
+                            //     }
+                            // } else {
+                            const result = await handleSubmitAbstract({
+                                abstractFile: data.file!,
+                                conferenceId: conference.conferenceId!,
+                                title: data.title,
+                                description: data.description,
+                                // coAuthorId: data.coAuthorIds || []
+                            });
+
+                            if (result.success) {
+                                toast.success("Nộp abstract thành công!");
+                                // onSubmittedAbstract?.();
+                                return { success: true };
+                            }
+                            // }
+                            return { success: false };
+                        } catch (error) {
+                            return { success: false };
+                        }
+                    }}
+                    title={"Nộp Abstract"}
+                    loading={submitLoading}
+                    includeCoauthors={true}
+                    // availableCustomers={availableCustomers}
+                    // isLoadingCustomers={isLoadingCustomers}
+                    // onLoadCustomers={loadAvailableCustomers}
+                    // isEditMode={!!abstract}
+                    // initialData={abstract ? {
+                    //     title: abstract.title || "",
+                    //     description: abstract.description || "",
+                    //     file: null,
+                    //     coAuthorIds: []
+                    // } : undefined}
+                    shouldCloseOnSuccess={false}
                 />
             </div>
         );

@@ -16,6 +16,7 @@ import {
   GeneralPaymentResultResponse,
   PaymentMethod,
 } from "@/types/transaction.type";
+import { useCallback } from "react";
 
 export const useTransaction = () => {
   const [
@@ -119,14 +120,14 @@ export const useTransaction = () => {
     }
   };
 
-  const fetchAllPaymentMethods = async (): Promise<PaymentMethod[]> => {
+  const fetchAllPaymentMethods = useCallback(async () => {
     try {
       const result = await fetchPaymentMethods().unwrap();
       return result.data || [];
     } catch (err) {
       throw err;
     }
-  };
+  }, [fetchPaymentMethods]);
 
   const fetchOwnWallet = async () => {
     try {

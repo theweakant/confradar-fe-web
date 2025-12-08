@@ -99,50 +99,50 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract, resear
     }
   };
 
-  const handleSubmitAbstractForm = async () => {
-    if (!selectedFile || !paperId || !title.trim() || !description.trim()) {
-      alert("Vui lòng chọn file abstract, nhập title, description và đảm bảo có Paper ID");
-      return;
-    }
+  // const handleSubmitAbstractForm = async () => {
+  //   if (!selectedFile || !paperId || !title.trim() || !description.trim()) {
+  //     alert("Vui lòng chọn file abstract, nhập title, description và đảm bảo có Paper ID");
+  //     return;
+  //   }
 
-    try {
-      const coAuthorIds = selectedCoauthors.map(c => c.userId);
-      if (isEditing) {
-        // Update mode
-        await handleUpdateAbstract(paperId, {
-          title: title.trim(),
-          description: description.trim(),
-          abstractFile: selectedFile,
-          coAuthorId: coAuthorIds
-        });
+  //   try {
+  //     const coAuthorIds = selectedCoauthors.map(c => c.userId);
+  //     if (isEditing) {
+  //       // Update mode
+  //       await handleUpdateAbstract(paperId, {
+  //         title: title.trim(),
+  //         description: description.trim(),
+  //         abstractFile: selectedFile,
+  //         coAuthorId: coAuthorIds
+  //       });
 
-        toast.success("Cập nhật abstract thành công!");
-        setIsEditing(false);
-      } else {
-        // Create mode
-        await handleSubmitAbstract({
-          abstractFile: selectedFile!,
-          paperId,
-          title: title.trim(),
-          description: description.trim(),
-          coAuthorId: coAuthorIds
-        });
-        toast.success("Nộp abstract thành công!");
-      }
+  //       toast.success("Cập nhật abstract thành công!");
+  //       setIsEditing(false);
+  //     } else {
+  //       // Create mode
+  //       await handleSubmitAbstract({
+  //         abstractFile: selectedFile!,
+  //         paperId,
+  //         title: title.trim(),
+  //         description: description.trim(),
+  //         coAuthorId: coAuthorIds
+  //       });
+  //       toast.success("Nộp abstract thành công!");
+  //     }
 
-      toast.success("Nộp abstract thành công!");
-      // Reset form
-      setSelectedFile(null);
-      setTitle("");
-      setDescription("");
-      setSelectedCoauthors([]);
+  //     toast.success("Nộp abstract thành công!");
+  //     // Reset form
+  //     setSelectedFile(null);
+  //     setTitle("");
+  //     setDescription("");
+  //     setSelectedCoauthors([]);
 
-      onSubmittedAbstract?.();
-    } catch (error: unknown) {
-      // const errorMessage = "Có lỗi xảy ra khi nộp abstract";
-      // toast.error(errorMessage);
-    }
-  };
+  //     onSubmittedAbstract?.();
+  //   } catch (error: unknown) {
+  //     // const errorMessage = "Có lỗi xảy ra khi nộp abstract";
+  //     // toast.error(errorMessage);
+  //   }
+  // };
 
   const handleOpenDialog = () => {
     setIsDialogOpen(true);
@@ -251,20 +251,20 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract, resear
                 onSubmittedAbstract?.();
                 return { success: true };
               }
-            } else {
-              const result = await handleSubmitAbstract({
-                abstractFile: data.file!,
-                paperId: paperId!,
-                title: data.title,
-                description: data.description,
-                coAuthorId: data.coAuthorIds || []
-              });
+              // } else {
+              //   const result = await handleSubmitAbstract({
+              //     abstractFile: data.file!,
+              //     paperId: paperId!,
+              //     title: data.title,
+              //     description: data.description,
+              //     coAuthorId: data.coAuthorIds || []
+              //   });
 
-              if (result.success) {
-                toast.success("Nộp abstract thành công!");
-                onSubmittedAbstract?.();
-                return { success: true };
-              }
+              //   if (result.success) {
+              //     toast.success("Nộp abstract thành công!");
+              //     onSubmittedAbstract?.();
+              //     return { success: true };
+              //   }
             }
             return { success: false };
           } catch (error) {

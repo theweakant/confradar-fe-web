@@ -1,3 +1,5 @@
+import { useGlobalTime } from "@/utils/TimeContext"
+
 export type FileType =
     | "pdf"
     | "word"
@@ -36,7 +38,7 @@ export const isValidUrl = (url: string | undefined): boolean => {
 };
 
 export const isWithinDateRange = (startDate: string, endDate: string): boolean => {
-    const now = new Date();
+    const { now } = useGlobalTime();
     const start = new Date(startDate);
     const end = new Date(endDate);
     return now >= start && now <= end;
@@ -47,4 +49,5 @@ export const steps = [
     { key: "fullPaperId", label: "FullPaper" },
     { key: "revisionPaperId", label: "Revise" },
     { key: "cameraReadyId", label: "CameraReady" },
+    { key: "paymentId", label: "Payment" },
 ];

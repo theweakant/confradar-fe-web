@@ -28,13 +28,12 @@ export default function CameraReadyPhase({
     getStatusColor,
     paperId,
 }: CameraReadyPhaseProps) {
-    const [docAvailable, setDocAvailable] = useState<boolean | null>(null);
-    const [docViewerError, setDocViewerError] = useState<boolean>(false);
-
     const [showCameraReadyDecisionPopup, setShowCameraReadyDecisionPopup] =
         useState(false);
     const [cameraReadyDecisionStatus, setCameraReadyDecisionStatus] =
         useState("Accepted");
+
+    const [cameraReadyDecisionReason, setCameraReadyDecisionReason] = useState("");
 
     const [decideCameraReadyStatus, { isLoading: isDecidingCameraReady, error: decideError }] =
         useDecideCameraReadyMutation();
@@ -43,38 +42,28 @@ export default function CameraReadyPhase({
         if (decideError) toast.error(parseApiError<string>(decideError)?.data?.message)
     }, [decideError]);
 
-    useEffect(() => {
-        const url = paperDetail.cameraReady?.cameraReadyUrl;
-
-        if (!url) {
-            setDocAvailable(false);
-            return;
-        }
-
-        if (!isValidUrl(url)) {
-            setDocAvailable(false);
-            return;
-        }
-
-        fetch(url, { method: "HEAD" })
-            .then((res) => setDocAvailable(res.ok))
-            .catch(() => setDocAvailable(false));
-    }, [paperDetail.cameraReady?.cameraReadyUrl]);
-
-    const canDecideCameraReadyStatus = (): boolean => {
-        if (
-            !currentPhase ||
-            !currentPhase.cameraReadyDecideStatusStart ||
-            !currentPhase.cameraReadyDecideStatusEnd
-        ) {
-            return false;
-        }
-        return isWithinDateRange(currentPhase.cameraReadyDecideStatusStart, currentPhase.cameraReadyDecideStatusEnd);
-    };
+    const canDecideCameraReadyStatus = currentPhase &&
+        currentPhase.cameraReadyDecideStatusStart &&
+        currentPhase.cameraReadyDecideStatusEnd
+        ? isWithinDateRange(
+            currentPhase.cameraReadyDecideStatusStart,
+            currentPhase.cameraReadyDecideStatusEnd
+        )
+        : false;
+    // const canDecideCameraReadyStatus = (): boolean => {
+    //     if (
+    //         !currentPhase ||
+    //         !currentPhase.cameraReadyDecideStatusStart ||
+    //         !currentPhase.cameraReadyDecideStatusEnd
+    //     ) {
+    //         return false;
+    //     }
+    //     return isWithinDateRange(currentPhase.cameraReadyDecideStatusStart, currentPhase.cameraReadyDecideStatusEnd);
+    // };
 
     const handleDecideCameraReadyStatus = async () => {
         if (!paperDetail?.cameraReady) return;
-        if (!canDecideCameraReadyStatus()) {
+        if (!canDecideCameraReadyStatus) {
             toast.error(
                 `Chỉ có thể quyết định Camera Ready trong khoảng ${formatDate(currentPhase!.cameraReadyDecideStatusStart)} - ${formatDate(currentPhase!.cameraReadyDecideStatusEnd)}`,
             );
@@ -85,6 +74,7 @@ export default function CameraReadyPhase({
                 cameraReadyId: paperDetail.cameraReady.cameraReadyId,
                 globalStatus: cameraReadyDecisionStatus,
                 paperid: paperId,
+                reason: cameraReadyDecisionReason,
             }).unwrap();
             toast.success("Cập nhật trạng thái camera ready thành công");
             setShowCameraReadyDecisionPopup(false);
@@ -118,12 +108,17 @@ export default function CameraReadyPhase({
                             onClick={() => setShowCameraReadyDecisionPopup(true)}
                             className="bg-green-600 hover:bg-green-700"
                             size="lg"
-                            disabled={!canDecideCameraReadyStatus()}
+                            disabled={
+                                !canDecideCameraReadyStatus ||
+                                paperDetail.cameraReady.globalStatusName !== "Pending"
+                            }
                         >
                             <Gavel className="w-4 h-4 mr-2" />
-                            {canDecideCameraReadyStatus()
-                                ? "Quyết định cuối cùng"
-                                : "Chưa đến lúc quyết định"}
+                            {paperDetail.cameraReady.globalStatusName === "Pending"
+                                ? canDecideCameraReadyStatus
+                                    ? "Quyết định cuối cùng"
+                                    : "Chưa đến lúc quyết định"
+                                : "Đã quyết định trạng thái, không thể lặp lại hành động này"}
                         </Button>
                     )}
                 </div>
@@ -237,6 +232,24 @@ export default function CameraReadyPhase({
                                 </select>
                             </div>
 
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Lý do quyết định <span className="text-red-500">*</span>
+                                </label>
+                                <textarea
+                                    className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-green-500"
+                                    placeholder="Nhập lý do quyết định..."
+                                    value={cameraReadyDecisionReason}
+                                    onChange={(e) => setCameraReadyDecisionReason(e.target.value)}
+                                    rows={4}
+                                />
+                                {!cameraReadyDecisionReason.trim() && (
+                                    <p className="text-xs text-red-500 mt-1">
+                                        Lý do quyết định là bắt buộc
+                                    </p>
+                                )}
+                            </div>
+
                             <div className="flex gap-3">
                                 <Button
                                     variant="outline"
@@ -248,7 +261,11 @@ export default function CameraReadyPhase({
                                 </Button>
                                 <Button
                                     onClick={handleDecideCameraReadyStatus}
-                                    disabled={isDecidingCameraReady}
+                                    disabled={
+                                        isDecidingCameraReady ||
+                                        !cameraReadyDecisionReason.trim() ||
+                                        cameraReadyDecisionStatus === "Pending"
+                                    }
                                     className="flex-1 bg-green-600 hover:bg-green-700"
                                 >
                                     {isDecidingCameraReady ? "Đang xử lý..." : "Xác nhận"}

@@ -4,9 +4,11 @@ import {
     ConferencePricePhaseResponse,
     ConferencePriceResponse,
     ResearchConferenceDetailResponse,
+    SubmittedPaper,
     TechnicalConferenceDetailResponse,
 } from "@/types/conference.type";
 import { useGlobalTime } from "@/utils/TimeContext";
+import Link from "next/link";
 
 interface PurchasedTicketInfo {
     ticket: ConferencePriceResponse;
@@ -16,17 +18,27 @@ interface PurchasedTicketInfo {
 interface ConferenceSubscribeCardProps {
     conference: TechnicalConferenceDetailResponse | ResearchConferenceDetailResponse;
     formatDate: (dateString?: string) => string;
-    onOpenDialog: () => void;
+    onOpenDialog: (type: 'author' | 'listener') => void;
+    onSubmitPaper?: () => void;
     purchasedTicketInfo: PurchasedTicketInfo | null;
     isResearch?: boolean;
+    hasSubmittedPaper?: boolean;
+    submittedPaper?: SubmittedPaper | null;
+    onOpenAbstractDialog?: () => void;
+    onSelectPaper?: (paperId: string | null) => void;
 }
 
 const ConferenceSubscribeCard: React.FC<ConferenceSubscribeCardProps> = ({
     conference,
     formatDate,
     onOpenDialog,
+    onSubmitPaper,
     purchasedTicketInfo,
     isResearch = false,
+    hasSubmittedPaper,
+    submittedPaper,
+    onOpenAbstractDialog,
+    onSelectPaper
 }) => {
     const { now } = useGlobalTime();
 
@@ -39,6 +51,87 @@ const ConferenceSubscribeCard: React.FC<ConferenceSubscribeCardProps> = ({
         : "text-xl font-bold mb-3 text-blue-600";
 
     const textColor = isResearch ? "text-gray-700" : "text-gray-700";
+
+    const phaseStatusVN: Record<string, string> = {
+        Pending: "Đang xử lý",
+        Accepted: "Chấp nhận",
+        Rejected: "Bị từ chối",
+        Revise: "Cần chỉnh sửa",
+    };
+
+    const getPaperPhaseStatus = (paper: SubmittedPaper | null) => {
+        if (!paper) return null;
+
+        // Kiểm tra giai đoạn bị reject
+        let rejectedPhase: string | null = null;
+        let currentPhase: string = "Abstract";
+        let canRegisterAsAuthor = false;
+
+        if (paper.abstractStatus === "Rejected") {
+            rejectedPhase = "Abstract";
+        } else if (paper.fullpaperStatus === "Rejected") {
+            rejectedPhase = "Full Paper";
+        } else if (paper.revisionStatus === "Rejected") {
+            rejectedPhase = "Revision";
+        }
+
+        // Check xem có skip Revision không
+        const isRevisionSkipped = paper.fullpaperStatus === "Accepted";
+
+        // Xác định current phase và cho phép đăng ký
+        if (paper.cameraReadyStatus === "Accepted") {
+            currentPhase = "Camera Ready";
+            canRegisterAsAuthor = true;
+        } else if (paper.revisionStatus === "Accepted") {
+            currentPhase = "Revision";
+        } else if (paper.fullpaperStatus === "Accepted" && isRevisionSkipped) {
+            currentPhase = "Full Paper";
+        } else if (paper.fullpaperStatus) {
+            currentPhase = "Full Paper";
+        } else if (paper.abstractStatus) {
+            currentPhase = "Abstract";
+        }
+
+        const phases = [
+            {
+                name: "Abstract",
+                status: paper.abstractStatus,
+                icon: paper.abstractStatus === "Accepted" ? "✓" :
+                    paper.abstractStatus === "Rejected" ? "✗" :
+                        paper.abstractStatus === "Pending" ? "⏳" : "○"
+            },
+            {
+                name: "Full Paper",
+                status: paper.fullpaperStatus,
+                icon: paper.fullpaperStatus === "Accepted" ? "✓" :
+                    paper.fullpaperStatus === "Rejected" ? "✗" :
+                        paper.fullpaperStatus === "Pending" ? "⏳" : "○"
+            },
+            {
+                name: "Revision",
+                status: paper.revisionStatus,
+                isSkipped: isRevisionSkipped,
+                icon: isRevisionSkipped ? "⊘" :
+                    paper.revisionStatus === "Accepted" ? "✓" :
+                        paper.revisionStatus === "Rejected" ? "✗" :
+                            paper.revisionStatus === "Pending" ? "⏳" : "○"
+            },
+            {
+                name: "Camera Ready",
+                status: paper.cameraReadyStatus,
+                icon: paper.cameraReadyStatus === "Accepted" ? "✓" :
+                    paper.cameraReadyStatus === "Pending" ? "⏳" : "○"
+            }
+        ];
+
+        return {
+            phases,
+            rejectedPhase,
+            currentPhase,
+            canRegisterAsAuthor,
+            isRevisionSkipped
+        };
+    };
 
     const renderSubscribeButton = () => {
         if (purchasedTicketInfo) {
@@ -73,6 +166,603 @@ const ConferenceSubscribeCard: React.FC<ConferenceSubscribeCardProps> = ({
             );
         }
 
+        // Logic riêng cho Research Conference
+        if (conference.isResearchConference) {
+            const researchConf = conference as ResearchConferenceDetailResponse;
+
+            // Kiểm tra registration period từ researchPhase - CHỈ ẢNH HƯỞNG ĐẾN AUTHOR
+            const researchPhases = researchConf.researchPhase || [];
+
+            const currentRegistrationPhase = [...researchPhases]
+                .sort((a, b) => (a.phaseOrder || 0) - (b.phaseOrder || 0))
+                .find(phase => {
+                    if (!phase.registrationStartDate || !phase.registrationEndDate) return false;
+                    const start = new Date(phase.registrationStartDate);
+                    const end = new Date(phase.registrationEndDate);
+                    return phase.isActive && now >= start && now <= end;
+                });
+
+            const nextRegistrationPhase = [...researchPhases]
+                .sort((a, b) => (a.phaseOrder || 0) - (b.phaseOrder || 0))
+                .find(phase => {
+                    if (!phase.registrationStartDate) return false;
+                    const start = new Date(phase.registrationStartDate);
+                    return now < start;
+                });
+
+            // Lấy tickets và check phases
+            const authorTickets = (conference.conferencePrices || []).filter(ticket => ticket.isAuthor);
+            const listenerTickets = (conference.conferencePrices || []).filter(ticket => !ticket.isAuthor);
+
+            const hasAuthorTickets = authorTickets.length > 0;
+            const hasListenerTickets = listenerTickets.length > 0;
+
+            // Check giai đoạn cho Author tickets
+            const authorPhases = authorTickets.flatMap(ticket => [...(ticket.pricePhases || [])]);
+            const currentAuthorPhase = authorPhases.find(phase => {
+                const start = new Date(phase.startDate || "");
+                const end = new Date(phase.endDate || "");
+                return now >= start && now <= end && (phase.availableSlot ?? 0) > 0;
+            });
+            const futureAuthorPhases = authorPhases
+                .filter(phase => new Date(phase.startDate || "") > now)
+                .sort((a, b) => new Date(a.startDate || "").getTime() - new Date(b.startDate || "").getTime());
+            const nextAuthorPhaseStart = futureAuthorPhases.length > 0 ? new Date(futureAuthorPhases[0].startDate || "") : null;
+
+            // Check giai đoạn cho Listener tickets
+            const listenerPhases = listenerTickets.flatMap(ticket => ticket.pricePhases || []);
+            const currentListenerPhase = listenerPhases.find(phase => {
+                const start = new Date(phase.startDate || "");
+                const end = new Date(phase.endDate || "");
+                return now >= start && now <= end && (phase.availableSlot ?? 0) > 0;
+            });
+            const futureListenerPhases = listenerPhases
+                .filter(phase => new Date(phase.startDate || "") > now)
+                .sort((a, b) => new Date(a.startDate || "").getTime() - new Date(b.startDate || "").getTime());
+            const nextListenerPhaseStart = futureListenerPhases.length > 0 ? new Date(futureListenerPhases[0].startDate || "") : null;
+
+            // Xác định trạng thái
+            const authorStatus = currentAuthorPhase
+                ? 'available'
+                : nextAuthorPhaseStart
+                    ? 'upcoming'
+                    : 'closed';
+
+            const listenerStatus = currentListenerPhase
+                ? 'available'
+                : nextListenerPhaseStart
+                    ? 'upcoming'
+                    : 'closed';
+
+            const allowListener = researchConf.allowListener;
+
+            return (
+                <div className="space-y-2">
+                    {/* SECTION AUTHOR - Phụ thuộc registration phase */}
+                    {hasAuthorTickets && (
+                        <>
+                            {!hasSubmittedPaper ? (
+                                // TRƯỜNG HỢP 1: Chưa nộp bài - Check registration phase
+                                <>
+                                    {!currentRegistrationPhase && !nextRegistrationPhase ? (
+                                        <div className="text-center">
+                                            <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-red-300 text-red-700">
+                                                Đã hết thời gian đăng ký cho tác giả
+                                            </button>
+                                            <p className="text-xs mt-2 text-gray-500">
+                                                Hội nghị đã kết thúc giai đoạn đăng ký
+                                            </p>
+                                        </div>
+                                    ) : !currentRegistrationPhase && nextRegistrationPhase ? (
+                                        <div className="text-center">
+                                            <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-gray-300 text-gray-500">
+                                                Chưa đến thời gian đăng ký cho tác giả
+                                            </button>
+                                            <p className="text-xs mt-2 text-gray-500">
+                                                Bắt đầu: {formatDate(nextRegistrationPhase.registrationStartDate!)}
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
+                                                <p className="text-sm text-amber-800">
+                                                    💡 Vui lòng nộp bài báo (Abstract) trước khi đăng ký với tư cách tác giả
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={onOpenAbstractDialog}
+                                                className="w-full px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg"
+                                            >
+                                                Nộp mô tả bài báo (Abstract)
+                                            </button>
+                                        </>
+                                    )}
+                                </>
+                            ) : (() => {
+                                // TRƯỜNG HỢP 2: Đã nộp bài - Check paper phase status
+                                const paperStatus = getPaperPhaseStatus(submittedPaper ?? null);
+                                return (
+                                    <>
+                                        {/* Hiển thị trạng thái bài báo */}
+                                        <div className="p-4 rounded-lg bg-blue-50 border border-blue-200 space-y-3">
+                                            <div>
+                                                <p className="font-semibold text-blue-900 mb-1">{submittedPaper?.title}</p>
+                                                <p className="text-sm text-blue-700">{submittedPaper?.description}</p>
+                                            </div>
+                                            {paperStatus && (
+                                                <div className="space-y-2">
+                                                    <p className="text-xs font-semibold text-blue-800">Tiến trình xét duyệt bài báo:</p>
+                                                    {paperStatus.phases.map((phase, idx) => {
+                                                        const isBlocked = paperStatus.rejectedPhase &&
+                                                            idx > paperStatus.phases.findIndex(p => p.name === paperStatus.rejectedPhase);
+                                                        return (
+                                                            <div key={idx} className={`flex items-center gap-2 text-xs ${isBlocked ? 'opacity-40' : ''}`}>
+                                                                <span className="text-base">{phase.icon}</span>
+                                                                <span className={`font-medium ${phase.status === "Accepted" ? "text-green-700" :
+                                                                    phase.status === "Rejected" ? "text-red-700" :
+                                                                        phase.status === "Pending" ? "text-yellow-700" :
+                                                                            "text-gray-600"
+                                                                    }`}>
+                                                                    {phase.name}
+                                                                    {phase.isSkipped && " (Được bỏ qua)"}
+                                                                    {isBlocked && " (Đã bị từ chối)"}
+                                                                </span>
+                                                                {phase.status && (
+                                                                    <span className={`text-xs px-2 py-0.5 rounded ${phase.status === "Accepted" ? "bg-green-100 text-green-800" :
+                                                                        phase.status === "Rejected" ? "bg-red-100 text-red-800" :
+                                                                            phase.status === "Pending" ? "bg-yellow-100 text-yellow-800" :
+                                                                                "bg-gray-100 text-gray-800"
+                                                                        }`}>
+                                                                        {phaseStatusVN[phase.status] || phase.status}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                    <div className="pt-2">
+                                                        <Link
+                                                            href={`/customer/papers/${submittedPaper?.paperId}`}
+                                                            className="text-indigo-600 hover:underline text-sm font-medium"
+                                                        >
+                                                            Xem chi tiết bài báo
+                                                        </Link>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Nút đăng ký tác giả - check paper phase trước, sau đó mới check isAuthor phase */}
+                                        {paperStatus?.canRegisterAsAuthor ? (
+                                            // Bài báo đã pass, check isAuthor phase
+                                            authorStatus === 'available' ? (
+                                                <button
+                                                    onClick={() => {
+                                                        onSelectPaper?.(submittedPaper?.paperId || null);
+                                                        onOpenDialog('author');
+                                                    }}
+                                                    className="w-full px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg"
+                                                >
+                                                    ✓ Đăng ký cho Tác giả
+                                                </button>
+                                            ) : authorStatus === 'upcoming' ? (
+                                                <div className="text-center">
+                                                    <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-gray-300 text-gray-500">
+                                                        Chưa đến lúc thanh toán phí cho Tác giả
+                                                    </button>
+                                                    <p className="text-xs mt-2 text-gray-500">
+                                                        Ngày bắt đầu: {formatDate(nextAuthorPhaseStart!.toISOString())}
+                                                    </p>
+                                                </div>
+                                            ) : (
+                                                <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-red-300 text-red-700">
+                                                    Đã hết thời gian thanh toán phí cho Tác giả
+                                                </button>
+                                            )
+                                        ) : (
+                                            // Bài báo chưa pass các phase
+                                            <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
+                                                <p className="text-sm text-amber-800">
+                                                    {paperStatus?.rejectedPhase
+                                                        ? `⚠️ Bài báo bị từ chối ở giai đoạn ${paperStatus.rejectedPhase}`
+                                                        : "⏳ Vui lòng hoàn thành các giai đoạn xét duyệt để có thể đăng ký với tư cách tác giả"}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </>
+                                );
+                            })()}
+                        </>
+                    )}
+                    {/* {hasAuthorTickets && (
+                        <>
+                            {!currentRegistrationPhase && !nextRegistrationPhase ? (
+                                <div className="text-center">
+                                    <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-red-300 text-red-700">
+                                        Đã hết thời gian đăng ký cho tác giả
+                                    </button>
+                                    <p className="text-xs mt-2 text-gray-500">
+                                        Hội nghị đã kết thúc giai đoạn đăng ký
+                                    </p>
+                                </div>
+                            ) : !currentRegistrationPhase && nextRegistrationPhase ? (
+                                <div className="text-center">
+                                    <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-gray-300 text-gray-500">
+                                        Chưa đến thời gian đăng ký cho tác giả
+                                    </button>
+                                    <p className="text-xs mt-2 text-gray-500">
+                                        Bắt đầu: {formatDate(nextRegistrationPhase.registrationStartDate!)}
+                                    </p>
+                                </div>
+                            ) : (
+                                <>
+                                    {!hasSubmittedPaper ? (
+                                        // Chưa nộp bài
+                                        <>
+                                            <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
+                                                <p className="text-sm text-amber-800">
+                                                    💡 Vui lòng nộp bài báo (Abstract) trước khi đăng ký với tư cách tác giả
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={onOpenAbstractDialog}
+                                                className="w-full px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg"
+                                            >
+                                                Nộp mô tả bài báo (Abstract)
+                                            </button>
+                                        </>
+                                    ) : (() => {
+                                        const paperStatus = getPaperPhaseStatus(submittedPaper ?? null);
+
+                                        return (
+                                            <>
+                                               
+                                                <div className="p-4 rounded-lg bg-blue-50 border border-blue-200 space-y-3">
+                                                    <div>
+                                                        <p className="font-semibold text-blue-900 mb-1">{submittedPaper?.title}</p>
+                                                        <p className="text-sm text-blue-700">{submittedPaper?.description}</p>
+                                                    </div>
+
+                                                    {paperStatus && (
+                                                        <div className="space-y-2">
+                                                            <p className="text-xs font-semibold text-blue-800">Tiến trình xét duyệt bài báo:</p>
+                                                            {paperStatus.phases.map((phase, idx) => {
+                                                                const isBlocked = paperStatus.rejectedPhase &&
+                                                                    idx > paperStatus.phases.findIndex(p => p.name === paperStatus.rejectedPhase);
+
+                                                                return (
+                                                                    <div key={idx} className={`flex items-center gap-2 text-xs ${isBlocked ? 'opacity-40' : ''}`}>
+                                                                        <span className="text-base">{phase.icon}</span>
+                                                                        <span className={`font-medium ${phase.status === "Accepted" ? "text-green-700" :
+                                                                            phase.status === "Rejected" ? "text-red-700" :
+                                                                                phase.status === "Pending" ? "text-yellow-700" :
+                                                                                    "text-gray-600"
+                                                                            }`}>
+                                                                            {phase.name}
+                                                                            {phase.isSkipped && " (Được bỏ qua)"}
+                                                                            {isBlocked && " (Đã bị từ chối)"}
+                                                                        </span>
+                                                                        {phase.status && (
+                                                                            <span className={`text-xs px-2 py-0.5 rounded ${phase.status === "Accepted" ? "bg-green-100 text-green-800" :
+                                                                                phase.status === "Rejected" ? "bg-red-100 text-red-800" :
+                                                                                    phase.status === "Pending" ? "bg-yellow-100 text-yellow-800" :
+                                                                                        "bg-gray-100 text-gray-800"
+                                                                                }`}>
+                                                                                
+                                                                                {phaseStatusVN[phase.status] || phase.status}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                );
+                                                            })}
+
+                                                            <div className="pt-2">
+                                                                <Link
+                                                                    href={`/customer/papers/${submittedPaper?.paperId}`}
+                                                                    className="text-indigo-600 hover:underline text-sm font-medium"
+                                                                >
+                                                                    Xem chi tiết bài báo
+                                                                </Link>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                               
+                                                {paperStatus?.canRegisterAsAuthor ? (
+                                                    authorStatus === 'available' ? (
+                                                        <button
+                                                            onClick={() => onOpenDialog('author')}
+                                                            className="w-full px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg"
+                                                        >
+                                                            ✓ Đăng ký cho Tác giả
+                                                        </button>
+                                                    ) : authorStatus === 'upcoming' ? (
+                                                        <div className="text-center">
+                                                            <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-gray-300 text-gray-500">
+                                                                Chưa đến lúc thanh toán phí cho Tác giả
+                                                            </button>
+                                                            <p className="text-xs mt-2 text-gray-500">
+                                                                Ngày bắt đầu: {formatDate(nextAuthorPhaseStart!.toISOString())}
+                                                            </p>
+                                                        </div>
+                                                    ) : (
+                                                        <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-red-300 text-red-700">
+                                                            Đã hết thời gian thanh toán phí cho Tác giả
+                                                        </button>
+                                                    )
+                                                ) : (
+                                                    <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
+                                                        <p className="text-sm text-amber-800">
+                                                            {paperStatus?.rejectedPhase
+                                                                ? `⚠️ Bài báo bị từ chối ở giai đoạn ${paperStatus.rejectedPhase}`
+                                                                : "⏳ Vui lòng hoàn thành các giai đoạn xét duyệt để có thể đăng ký với tư cách tác giả"}
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </>
+                                        );
+                                    })()}
+                                </>
+                            )}
+                        </>
+                    )} */}
+                    {/* {hasAuthorTickets && (
+                        <>
+                            {!currentRegistrationPhase && !nextRegistrationPhase ? (
+                                <div className="text-center">
+                                    <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-red-300 text-red-700">
+                                        Đã hết thời gian đăng ký cho tác giả
+                                    </button>
+                                    <p className="text-xs mt-2 text-gray-500">
+                                        Hội nghị đã kết thúc giai đoạn đăng ký
+                                    </p>
+                                </div>
+                            ) : !currentRegistrationPhase && nextRegistrationPhase ? (
+                                // Chưa đến thời gian registration
+                                <div className="text-center">
+                                    <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-gray-300 text-gray-500">
+                                        Chưa đến thời gian đăng ký cho tác giả
+                                    </button>
+                                    <p className="text-xs mt-2 text-gray-500">
+                                        Bắt đầu: {formatDate(nextRegistrationPhase.registrationStartDate!)}
+                                    </p>
+                                </div>
+                            ) : (
+                                // Đang trong registration phase
+                                <>
+                                    {!hasSubmittedPaper ? (
+                                        // Chưa nộp bài
+                                        <>
+                                            <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
+                                                <p className="text-sm text-amber-800">
+                                                    💡 Vui lòng nộp bài báo (Abstract) trước khi đăng ký với tư cách tác giả
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={onOpenAbstractDialog}
+                                                className="w-full px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg"
+                                            >
+                                                Nộp mô tả bài báo (Abstract)
+                                            </button>
+                                        </>
+                                    ) : (
+                                        // Đã nộp bài - hiển thị nút đăng ký theo status
+                                        <>
+                                            {authorStatus === 'available' ? (
+                                                <button
+                                                    onClick={() => onOpenDialog('author')}
+                                                    className="w-full px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg"
+                                                >
+                                                    Đăng ký cho Tác giả
+                                                </button>
+                                            ) : authorStatus === 'upcoming' ? (
+                                                <div className="text-center">
+                                                    <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-gray-300 text-gray-500">
+                                                        Chưa đến lúc thanh toán phí cho Tác giả
+                                                    </button>
+                                                    <p className="text-xs mt-2 text-gray-500">
+                                                        Ngày bắt đầu: {formatDate(nextAuthorPhaseStart!.toISOString())}
+                                                    </p>
+                                                </div>
+                                            ) : (
+                                                <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-red-300 text-red-700">
+                                                    Đã hết thời gian thanh toán phí cho Tác giả
+                                                </button>
+                                            )}
+                                        </>
+                                    )}
+                                </>
+                            )}
+                        </>
+                    )} */}
+
+                    {/* SECTION LISTENER - Độc lập hoàn toàn, không phụ thuộc registration phase */}
+                    {allowListener && hasListenerTickets && (
+                        <>
+                            {listenerStatus === 'available' ? (
+                                <button
+                                    onClick={() => onOpenDialog('listener')}
+                                    className="w-full px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg"
+                                >
+                                    Đăng ký cho Thính giả
+                                </button>
+                            ) : listenerStatus === 'upcoming' ? (
+                                <div className="text-center">
+                                    <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-gray-300 text-gray-500">
+                                        Chưa đến lúc đăng ký với tư cách Thính giả
+                                    </button>
+                                    <p className="text-xs mt-2 text-gray-500">
+                                        Ngày bắt đầu: {formatDate(nextListenerPhaseStart!.toISOString())}
+                                    </p>
+                                </div>
+                            ) : (
+                                <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-red-300 text-red-700">
+                                    Đã hết thời gian  đăng ký với tư cách Thính giả
+                                </button>
+                            )}
+                        </>
+                    )}
+
+                    {/* Hiển thị thông báo nếu không có tickets nào */}
+                    {!hasAuthorTickets && !hasListenerTickets && (
+                        <div className="text-center py-4">
+                            <p className="text-gray-500 text-sm">Chưa có gói chi phí nào được mở bán</p>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+        // if (conference.isResearchConference) {
+        //     // Lấy riêng Author tickets và Listener tickets
+        //     const authorTickets = (conference.conferencePrices || []).filter(ticket => ticket.isAuthor);
+        //     const listenerTickets = (conference.conferencePrices || []).filter(ticket => !ticket.isAuthor);
+
+        //     // Check giai đoạn cho Author tickets
+        //     const authorPhases = authorTickets.flatMap(ticket => ticket.pricePhases || []);
+        //     const currentAuthorPhase = authorPhases.find(phase => {
+        //         const start = new Date(phase.startDate || "");
+        //         const end = new Date(phase.endDate || "");
+        //         return now >= start && now <= end && (phase.availableSlot ?? 0) > 0;
+        //     });
+        //     const futureAuthorPhases = authorPhases
+        //         .filter(phase => new Date(phase.startDate || "") > now)
+        //         .sort((a, b) => new Date(a.startDate || "").getTime() - new Date(b.startDate || "").getTime());
+        //     const nextAuthorPhaseStart = futureAuthorPhases.length > 0 ? new Date(futureAuthorPhases[0].startDate || "") : null;
+
+        //     // Check giai đoạn cho Listener tickets
+        //     const listenerPhases = listenerTickets.flatMap(ticket => ticket.pricePhases || []);
+        //     const currentListenerPhase = listenerPhases.find(phase => {
+        //         const start = new Date(phase.startDate || "");
+        //         const end = new Date(phase.endDate || "");
+        //         return now >= start && now <= end && (phase.availableSlot ?? 0) > 0;
+        //     });
+        //     const futureListenerPhases = listenerPhases
+        //         .filter(phase => new Date(phase.startDate || "") > now)
+        //         .sort((a, b) => new Date(a.startDate || "").getTime() - new Date(b.startDate || "").getTime());
+        //     const nextListenerPhaseStart = futureListenerPhases.length > 0 ? new Date(futureListenerPhases[0].startDate || "") : null;
+
+        //     // Xác định trạng thái của từng loại vé
+        //     const authorStatus = currentAuthorPhase
+        //         ? 'available'
+        //         : nextAuthorPhaseStart
+        //             ? 'upcoming'
+        //             : 'closed';
+
+        //     const listenerStatus = currentListenerPhase
+        //         ? 'available'
+        //         : nextListenerPhaseStart
+        //             ? 'upcoming'
+        //             : 'closed';
+
+        //     const allowListener = (conference as ResearchConferenceDetailResponse).allowListener;
+
+        //     // Nếu chưa nộp bài báo, ưu tiên hiển thị nút nộp bài
+        //     if (!hasSubmittedPaper) {
+        //         return (
+        //             <div className="space-y-2">
+        //                 {/* Thông báo yêu cầu nộp bài */}
+        //                 <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
+        //                     <p className="text-sm text-amber-800">
+        //                         💡 Vui lòng nộp bài báo (Abstract) nếu bạn muốn đăng ký với tư cách tác giả
+        //                     </p>
+        //                 </div>
+
+        //                 {/* Nút nộp bài báo */}
+        //                 <button
+        //                     onClick={onOpenAbstractDialog}
+        //                     className="w-full px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg"
+        //                 >
+        //                     Nộp mô tả bài báo (Abstract)
+        //                 </button>
+
+        //                 {/* Nếu Listener được phép và có vé available, hiển thị nút đăng ký listener */}
+        //                 {allowListener && listenerStatus === 'available' && (
+        //                     <button
+        //                         onClick={() => onOpenDialog('listener')}
+        //                         className="w-full px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg"
+        //                     >
+        //                         Đăng ký cho Thính giả
+        //                     </button>
+        //                 )}
+
+        //                 {/* Thông báo nếu listener chưa mở bán */}
+        //                 {allowListener && listenerStatus === 'upcoming' && (
+        //                     <div className="text-center">
+        //                         <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-gray-300 text-gray-500">
+        //                             Chưa đến lúc mở bán vé Thính giả
+        //                         </button>
+        //                         <p className="text-xs mt-2 text-gray-500">
+        //                             Ngày bắt đầu: {formatDate(nextListenerPhaseStart!.toISOString())}
+        //                         </p>
+        //                     </div>
+        //                 )}
+
+        //                 {allowListener && listenerStatus === 'closed' && (
+        //                     <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-red-300 text-red-700">
+        //                         Đã hết thời gian bán vé Thính giả
+        //                     </button>
+        //                 )}
+        //             </div>
+        //         );
+        //     }
+
+        //     // Đã nộp bài báo - hiển thị các nút đăng ký
+        //     return (
+        //         <div className="space-y-2">
+        //             {/* Nút đăng ký Tác giả */}
+        //             {authorStatus === 'available' ? (
+        //                 <button
+        //                     onClick={() => onOpenDialog('author')}
+        //                     className="w-full px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg"
+        //                 >
+        //                     Đăng ký cho Tác giả
+        //                 </button>
+        //             ) : authorStatus === 'upcoming' ? (
+        //                 <div className="text-center">
+        //                     <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-gray-300 text-gray-500">
+        //                         Chưa đến lúc mở bán vé Tác giả
+        //                     </button>
+        //                     <p className="text-xs mt-2 text-gray-500">
+        //                         Ngày bắt đầu: {formatDate(nextAuthorPhaseStart!.toISOString())}
+        //                     </p>
+        //                 </div>
+        //             ) : (
+        //                 <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-red-300 text-red-700">
+        //                     Đã hết thời gian bán vé Tác giả
+        //                 </button>
+        //             )}
+
+        //             {/* Nút đăng ký Thính giả */}
+        //             {allowListener && (
+        //                 <>
+        //                     {listenerStatus === 'available' ? (
+        //                         <button
+        //                             onClick={() => onOpenDialog('listener')}
+        //                             className="w-full px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg"
+        //                         >
+        //                             Đăng ký cho Thính giả
+        //                         </button>
+        //                     ) : listenerStatus === 'upcoming' ? (
+        //                         <div className="text-center">
+        //                             <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-gray-300 text-gray-500">
+        //                                 Chưa đến lúc mở bán vé Thính giả
+        //                             </button>
+        //                             <p className="text-xs mt-2 text-gray-500">
+        //                                 Ngày bắt đầu: {formatDate(nextListenerPhaseStart!.toISOString())}
+        //                             </p>
+        //                         </div>
+        //                     ) : (
+        //                         <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-red-300 text-red-700">
+        //                             Đã hết thời gian bán vé Thính giả
+        //                         </button>
+        //                     )}
+        //                 </>
+        //             )}
+        //         </div>
+        //     );
+        // }
+
+        // Logic cho Technical Conference (giữ nguyên như cũ)
         const allPhases = (conference.conferencePrices || []).flatMap((ticket) => ticket.pricePhases || []);
         const currentPhase = allPhases.find((phase) => {
             const start = new Date(phase.startDate || "");
@@ -108,23 +798,152 @@ const ConferenceSubscribeCard: React.FC<ConferenceSubscribeCardProps> = ({
 
         return (
             <button
-                onClick={onOpenDialog}
+                onClick={() => onOpenDialog('listener')}
                 className="w-full px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg"
             >
-                {conference.isResearchConference ? "Đăng ký tham dự" : "Mua vé"}
+                Mua vé
             </button>
         );
     };
 
+    // const renderSubscribeButton = () => {
+    //     if (purchasedTicketInfo) {
+    //         return (
+    //             <div className="space-y-3">
+    //                 <div className="p-4 rounded-lg bg-green-50 border border-green-200">
+    //                     <div className="flex items-start gap-3">
+    //                         <svg className="w-6 h-6 flex-shrink-0 mt-0.5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+    //                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+    //                         </svg>
+    //                         <div className="flex-1">
+    //                             <p className="font-semibold mb-1 text-green-800">Bạn đã mua vé thành công!</p>
+    //                             <div className="text-sm space-y-1 text-green-700">
+    //                                 <p><span className="font-medium">Loại vé:</span> {purchasedTicketInfo.ticket.ticketName}</p>
+    //                                 {purchasedTicketInfo.phase && (
+    //                                     <p><span className="font-medium">Giai đoạn:</span> {purchasedTicketInfo.phase.phaseName}</p>
+    //                                 )}
+    //                                 <p><span className="font-medium">Giá:</span> {(purchasedTicketInfo.ticket.ticketPrice || 0).toLocaleString("vi-VN")}₫</p>
+    //                             </div>
+    //                         </div>
+    //                     </div>
+    //                 </div>
+
+    //                 <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-gray-300 text-gray-500">
+    //                     Đã sở hữu vé
+    //                 </button>
+
+    //                 <p className="text-xs text-center text-gray-500">
+    //                     Bạn có thể xem chi tiết vé trong phần &quot;Vé của tôi&quot;
+    //                 </p>
+    //             </div>
+    //         );
+    //     }
+
+    //     const allPhases = (conference.conferencePrices || []).flatMap((ticket) => ticket.pricePhases || []);
+    //     const currentPhase = allPhases.find((phase) => {
+    //         const start = new Date(phase.startDate || "");
+    //         const end = new Date(phase.endDate || "");
+    //         return now >= start && now <= end && (phase.availableSlot ?? 0) > 0;
+    //     });
+
+    //     const futurePhases = allPhases
+    //         .filter((phase) => new Date(phase.startDate || "") > now)
+    //         .sort((a, b) => new Date(a.startDate || "").getTime() - new Date(b.startDate || "").getTime());
+    //     const nextPhaseStart = futurePhases.length > 0 ? new Date(futurePhases[0].startDate || "") : null;
+
+    //     if (!currentPhase && nextPhaseStart) {
+    //         return (
+    //             <div>
+    //                 <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-gray-300 text-gray-500">
+    //                     Chưa đến lúc mở bán vé
+    //                 </button>
+    //                 <p className="text-xs mt-2 text-center text-gray-500">
+    //                     Ngày bắt đầu bán vé: {formatDate(nextPhaseStart.toISOString())}
+    //                 </p>
+    //             </div>
+    //         );
+    //     }
+
+    //     if (!currentPhase && !nextPhaseStart) {
+    //         return (
+    //             <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-red-300 text-red-700">
+    //                 Đã hết thời gian bán vé
+    //             </button>
+    //         );
+    //     }
+
+    //     if (conference.isResearchConference) {
+    //         return (
+    //             <div className="space-y-2">
+    //                 <button
+    //                     onClick={() => onOpenDialog('author')}
+    //                     className="w-full px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg"
+    //                 >
+    //                     Đăng ký cho Tác giả
+    //                 </button>
+
+    //                 {(conference as ResearchConferenceDetailResponse).allowListener && (
+    //                     <button
+    //                         onClick={() => onOpenDialog('listener')}
+    //                         className="w-full px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg"
+    //                     >
+    //                         Đăng ký cho Thính giả
+    //                     </button>
+    //                 )}
+    //             </div>
+    //         );
+    //     }
+
+    //     return (
+    //         <button
+    //             onClick={() => {
+    //                 onOpenDialog('listener');
+    //             }}
+    //             className="w-full px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg"
+    //         >
+    //             {/* {conference.isResearchConference ? "Đăng ký tham dự" : "Mua vé"} */}
+    //             Mua vé
+    //         </button>
+    //     );
+    // };
+
     return (
         <div className={baseClasses}>
             <h3 className={titleClasses}>
-                Đăng ký ngay
+                {conference.isResearchConference ? "Đăng ký tham dự tại đây" : "Mua vé ngay"}
             </h3>
             <p className={`text-sm mb-4 ${textColor}`}>
-                Nhấn để chọn khung giá vé và thanh toán
+                {conference.isResearchConference ? "Đăng ký tham dự cho tác giả/thính giả" : "Nhấn để chọn khung giá vé và thanh toán"}
             </p>
             {renderSubscribeButton()}
+
+            {/* {isResearch && (
+                hasSubmittedPaper ? (
+                    <div className="rounded-lg border p-3 bg-green-50">
+                        <p className="font-semibold text-green-700">Đã nộp abstract</p>
+                        <p><strong>Title:</strong> {submittedPaper?.title}</p>
+                        <p><strong>Description:</strong> {submittedPaper?.description}</p>
+
+                        <button
+                            className="mt-3 w-full px-6 py-3 rounded-lg font-semibold 
+                           transition-all duration-300 bg-indigo-600 
+                           hover:bg-indigo-700 text-white shadow-md hover:shadow-lg"
+                            onClick={onOpenAbstractDialog}
+                        >
+                            Cập nhật abstract
+                        </button>
+                    </div>
+                ) : (
+                    <button
+                        className="mt-3 w-full px-6 py-3 rounded-lg font-semibold 
+                           transition-all duration-300 bg-indigo-600 
+                           hover:bg-indigo-700 text-white shadow-md hover:shadow-lg"
+                        onClick={onOpenAbstractDialog}
+                    >
+                        Nộp mô tả bài báo (Abstract)
+                    </button>
+                )
+            )} */}
         </div>
     );
 };
