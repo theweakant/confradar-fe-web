@@ -12,6 +12,7 @@ import { ApiError } from "@/types/api.type";
 import { isWithinDateRange } from "@/helper/paper";
 import ReviewerPaperCard from "./ReviewerPaperCard";
 import { parseApiError } from "@/helper/api";
+import { useGlobalTime } from "@/utils/TimeContext";
 
 interface CameraReadyPhaseProps {
     paperDetail: PaperDetailForReviewer;
@@ -28,6 +29,7 @@ export default function CameraReadyPhase({
     getStatusColor,
     paperId,
 }: CameraReadyPhaseProps) {
+    const { now } = useGlobalTime();
     const [showCameraReadyDecisionPopup, setShowCameraReadyDecisionPopup] =
         useState(false);
     const [cameraReadyDecisionStatus, setCameraReadyDecisionStatus] =
@@ -47,7 +49,8 @@ export default function CameraReadyPhase({
         currentPhase.cameraReadyDecideStatusEnd
         ? isWithinDateRange(
             currentPhase.cameraReadyDecideStatusStart,
-            currentPhase.cameraReadyDecideStatusEnd
+            currentPhase.cameraReadyDecideStatusEnd,
+            now
         )
         : false;
     // const canDecideCameraReadyStatus = (): boolean => {

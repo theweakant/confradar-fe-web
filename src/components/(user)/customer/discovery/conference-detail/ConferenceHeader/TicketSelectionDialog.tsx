@@ -4,6 +4,7 @@ import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import {
     ConferencePriceResponse,
     ResearchConferenceDetailResponse,
+    ResearchConferencePhaseResponse,
     TechnicalConferenceDetailResponse,
 } from "@/types/conference.type";
 import { getCurrentPrice } from "@/helper/conference";
@@ -38,6 +39,10 @@ interface TicketSelectionDialogProps {
     addingToWaitListLoading: boolean;
     accessToken: string | null;
     userType?: 'author' | 'listener';
+    nextPhaseInfo?: {
+        phase: ResearchConferencePhaseResponse;
+        hasAvailableSlots: boolean;
+    } | null;
 }
 
 const TicketSelectionDialog: React.FC<TicketSelectionDialogProps> = ({
@@ -63,6 +68,7 @@ const TicketSelectionDialog: React.FC<TicketSelectionDialogProps> = ({
     addingToWaitListLoading,
     accessToken,
     userType = 'listener',
+    nextPhaseInfo
 }) => {
     const { now, useFakeTime } = useGlobalTime();
 
@@ -104,10 +110,21 @@ const TicketSelectionDialog: React.FC<TicketSelectionDialogProps> = ({
 
     const checkAllAuthorTicketsSoldOut = () => {
         const authorTickets = (conference.conferencePrices || []).filter((ticket) => ticket.isAuthor);
+        if (nextPhaseInfo?.hasAvailableSlots) {
+            return (
+                authorTickets.length > 0 &&
+                authorTickets.every((ticket) => {
+                    const hasAnyAvailableSlot = ticket.pricePhases?.some((phase) => {
+                        return (phase.availableSlot ?? 0) > 0;
+                    });
+
+                    return !hasAnyAvailableSlot;
+                })
+            );
+        }
         return (
             authorTickets.length > 0 &&
             authorTickets.every((ticket) => {
-                // const now = new Date();
                 const currentPhase = ticket.pricePhases?.find((phase) => {
                     const startDate = new Date(phase.startDate || "");
                     const endDate = new Date(phase.endDate || "");
@@ -204,8 +221,8 @@ const TicketSelectionDialog: React.FC<TicketSelectionDialogProps> = ({
                         {isResearch && userType === 'author' && (
                             <div className="col-span-full my-2 bg-white/10 rounded-lg p-3 border border-white/20">
                                 <p className="text-white/80 text-sm italic">
-                                    💡 <b>Lưu ý:</b> Khi nộp bài báo (với tư cách tác giả), bạn sẽ thanh toán toàn bộ phí đăng ký ngay tại thời điểm nộp.
-                                    Nếu bài báo bị từ chối, hệ thống sẽ hoàn lại <b>số tiền đã thanh toán, nhưng đã trừ đi khoản phí đánh giá bài báo</b> tương ứng với hội nghị này.
+                                    💡 <b>Lưu ý:</b> Tác giả chỉ cần thanh toán phí đăng ký <b>sau khi bài Camera Ready đã được chấp nhận</b>.
+                                    Vui lòng hoàn tất thanh toán trong thời hạn quy định để bảo đảm bài báo được đưa vào chương trình hội nghị.
                                 </p>
                             </div>
                         )}
@@ -260,39 +277,22 @@ const TicketSelectionDialog: React.FC<TicketSelectionDialogProps> = ({
                                         isSelected={selectedTicket?.conferencePriceId === ticket.conferencePriceId}
                                         onSelect={handleTicketSelect}
                                         isResearch={isResearch}
+                                        nextPhaseInfo={nextPhaseInfo}
                                     />
                                 ))
                             )}
                         </div>
                     </>
 
-                    {/* <div
-                        className="space-y-3 max-h-[70vh] overflow-y-auto pr-1"
-                        style={{
-                            scrollbarWidth: "thin",
-                            scrollbarColor: "rgba(255,255,255,0.2) transparent",
-                            scrollBehavior: "smooth",
-                        }}
-                    >
-                        {(conference.conferencePrices || []).map((ticket) => (
-                            <TicketOption
-                                key={ticket.conferencePriceId}
-                                ticket={ticket}
-                                conference={conference}
-                                formatDate={formatDate}
-                                isSelected={selectedTicket?.conferencePriceId === ticket.conferencePriceId}
-                                onSelect={handleTicketSelect}
-                                isResearch={isResearch}
-                            />
-                        ))}
-                    </div> */}
+                    {userType === 'author' && (
+                        <WaitlistSection
+                            allAuthorTicketsSoldOut={checkAllAuthorTicketsSoldOut()}
+                            conferenceId={conference.conferenceId}
+                            onAddToWaitlist={onAddToWaitlist}
+                            loading={addingToWaitListLoading}
+                        />
+                    )}
 
-                    <WaitlistSection
-                        allAuthorTicketsSoldOut={checkAllAuthorTicketsSoldOut()}
-                        conferenceId={conference.conferenceId}
-                        onAddToWaitlist={onAddToWaitlist}
-                        loading={addingToWaitListLoading}
-                    />
 
                     {selectedTicket && (
                         <div className="mt-4 flex-shrink-0 space-y-4">

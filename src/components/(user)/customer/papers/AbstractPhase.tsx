@@ -11,6 +11,7 @@ import SubmittedPaperCard from "./SubmittedPaperCard";
 import { toast } from "sonner";
 import SubmissionFormDialog from "./SubmissionFormDialog";
 import { parseApiError } from "@/helper/api";
+import { useGlobalTime } from "@/utils/TimeContext";
 
 interface AbstractPhaseProps {
   paperId?: string;
@@ -24,10 +25,13 @@ interface AbstractPhaseProps {
 const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract, researchPhase, onSubmittedAbstract, researchConferenceInfo }) => {
   const isSubmitted = !!abstract;
 
+  const { now } = useGlobalTime();
+
   // Validate phase timing
   const phaseValidation = validatePhaseTime(
     researchPhase?.registrationStartDate,
-    researchPhase?.registrationEndDate
+    researchPhase?.registrationEndDate,
+    now
   );
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);

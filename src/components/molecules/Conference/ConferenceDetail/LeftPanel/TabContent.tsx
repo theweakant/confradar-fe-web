@@ -1,6 +1,6 @@
 // components/LeftPanel/TabContent.tsx
 
-import type { CommonConference } from "@/types/conference.type";
+import type { CommonConference, ResearchConferenceDetailResponse } from "@/types/conference.type";
 import type { TabId } from "../constants/tab";
 
 import { PriceTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/PriceTab";
@@ -23,7 +23,7 @@ interface TabContentProps {
   activeSubtab: TabId;
   conference: CommonConference;
   conferenceType: "technical" | "research" | null;
-  isCollaborator: boolean; 
+  isCollaborator: boolean;
   currentUserId?: string;
 }
 
@@ -31,20 +31,20 @@ export function TabContent({
   activeSubtab,
   conference,
   conferenceType,
-  isCollaborator, 
+  isCollaborator,
   currentUserId
 }: TabContentProps) {
   const renderTabContent = () => {
     switch (activeSubtab) {
       case "price":
         return <PriceTab conference={conference} />;
-      
+
       case "refund-policy":
         return <RefundPolicyTab conference={conference} />;
-      
+
       case "session":
         return <SessionTab conference={conference} conferenceId={conference.conferenceId!} conferenceType={conferenceType} />;
-      
+
       case "customers":
         return (
           <CustomerTab
@@ -56,31 +56,31 @@ export function TabContent({
         );
       case "sponsors-media":
         return <SponsorsMediaTab conference={conference} />;
-      
+
       case "research-materials":
         return conferenceType === "research" ? (
           <ResearchMaterialsTab conference={conference} />
         ) : null;
-      
+
       case "research-info":
         return conferenceType === "research" ? (
-          <ResearchInfoTab conference={conference} />
+          <ResearchInfoTab conference={conference as ResearchConferenceDetailResponse} />
         ) : null;
-      
+
       case "research-timeline":
         return <ResearchTimelineTab conferenceId={conference.conferenceId!} />;
-      
+
       case "paper-phase":
         return conferenceType === "research" ? (
-          <PaperTab 
-            conferenceId={conference.conferenceId!} 
-            conferenceData={conference} 
+          <PaperTab
+            conferenceId={conference.conferenceId!}
+            conferenceData={conference as ResearchConferenceDetailResponse}
           />
         ) : null;
-      
+
       case "refund-requests":
-        const isTicketSelling = "contract" in conference && conference.contract 
-          ? conference.contract.isTicketSelling 
+        const isTicketSelling = "contract" in conference && conference.contract
+          ? conference.contract.isTicketSelling
           : true;
         return (
           <RefundRequestTab
@@ -88,16 +88,16 @@ export function TabContent({
             conferenceType={conferenceType}
             isCollaborator={isCollaborator}
             isTicketSelling={isTicketSelling}
-            currentUserId={currentUserId} 
+            currentUserId={currentUserId}
             conferenceOwnerId={conference.createdBy}
           />
         );
-      
+
       case "other-requests":
         return conferenceType === "research" ? (
           <OtherRequestTab conferenceId={conference.conferenceId!} />
         ) : null;
-      
+
       case "paper-assignment":
         return conferenceType === "research" ? (
           <PaperAssignmentTab conferenceId={conference.conferenceId!} />

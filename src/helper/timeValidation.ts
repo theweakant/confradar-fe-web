@@ -25,9 +25,10 @@ const formatDate = (date: Date): string => {
 
 export const validatePhaseTime = (
   startDate?: string,
-  endDate?: string
+  endDate?: string,
+  now: Date = new Date()
 ): PhaseValidationResult => {
-  const { now } = useGlobalTime();
+  // const { now } = useGlobalTime();
 
   if (!startDate || !endDate) {
     return {
@@ -105,22 +106,22 @@ export interface TimeRemaining {
   hours: number;
 }
 
-export function getTimeRemaining(endDate: Date | string): TimeRemaining {
-  const { now } = useGlobalTime();
+// export function getTimeRemaining(endDate: Date | string): TimeRemaining {
+//   const { now } = useGlobalTime();
 
-  const end = endDate instanceof Date ? endDate : new Date(endDate);
-  if (isNaN(end.getTime())) return { days: 0, hours: 0 };
+//   const end = endDate instanceof Date ? endDate : new Date(endDate);
+//   if (isNaN(end.getTime())) return { days: 0, hours: 0 };
 
-  let diffMs = end.getTime() - now.getTime();
-  if (diffMs <= 0) return { days: 0, hours: 0 };
+//   let diffMs = end.getTime() - now.getTime();
+//   if (diffMs <= 0) return { days: 0, hours: 0 };
 
-  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  diffMs -= days * 24 * 60 * 60 * 1000;
+//   const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+//   diffMs -= days * 24 * 60 * 60 * 1000;
 
-  const hours = Math.floor(diffMs / (1000 * 60 * 60));
+//   const hours = Math.floor(diffMs / (1000 * 60 * 60));
 
-  return { days, hours };
-}
+//   return { days, hours };
+// }
 
 
 // export function getTimeRemaining(endDate: Date | string, now: Date = new Date()): TimeRemaining {

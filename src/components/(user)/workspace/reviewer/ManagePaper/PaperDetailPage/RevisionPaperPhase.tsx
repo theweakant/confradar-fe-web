@@ -181,7 +181,8 @@ export default function RevisionPaperPhase({
         currentPhase.revisionPaperDecideStatusEnd
         ? isWithinDateRange(
             currentPhase.revisionPaperDecideStatusStart,
-            currentPhase.revisionPaperDecideStatusEnd
+            currentPhase.revisionPaperDecideStatusEnd,
+            now
         )
         : false;
 

@@ -8,6 +8,7 @@ import SubmittedPaperCard from "./SubmittedPaperCard";
 import { toast } from "sonner";
 import SubmissionFormDialog from "./SubmissionFormDialog";
 import { parseApiError } from "@/helper/api";
+import { useGlobalTime } from "@/utils/TimeContext";
 
 interface CameraReadyPhaseProps {
   paperId?: string;
@@ -19,11 +20,13 @@ interface CameraReadyPhaseProps {
 
 const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({ paperId, cameraReady, researchPhase, onSubmittedCameraReady }) => {
   const isSubmitted = !!cameraReady;
+  const { now } = useGlobalTime();
 
   // Validate phase timing
   const phaseValidation = validatePhaseTime(
     researchPhase?.cameraReadyStartDate,
-    researchPhase?.cameraReadyEndDate
+    researchPhase?.cameraReadyEndDate,
+    now
   );
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);

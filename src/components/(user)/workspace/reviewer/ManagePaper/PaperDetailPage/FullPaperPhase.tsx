@@ -24,6 +24,7 @@ import ReviewerPaperCard from "./ReviewerPaperCard";
 import { parseApiError } from "@/helper/api";
 import { useAppSelector } from "@/redux/hooks/hooks";
 import { RootState } from "@/redux/store";
+import { useGlobalTime } from "@/utils/TimeContext";
 
 interface FullPaperPhaseProps {
     paperDetail: PaperDetailForReviewer;
@@ -40,6 +41,7 @@ export default function FullPaperPhase({
     getStatusColor,
     paperId,
 }: FullPaperPhaseProps) {
+    const { now } = useGlobalTime();
     const currentUserId = useAppSelector((state: RootState) => state.auth.user?.userId);
 
     const [note, setNote] = useState<string>("");
@@ -72,7 +74,8 @@ export default function FullPaperPhase({
         currentPhase.reviewEndDate
         ? isWithinDateRange(
             currentPhase.reviewStartDate,
-            currentPhase.reviewEndDate
+            currentPhase.reviewEndDate,
+            now
         )
         : false;
 
@@ -95,7 +98,8 @@ export default function FullPaperPhase({
         currentPhase.fullPaperDecideStatusEnd
         ? isWithinDateRange(
             currentPhase.fullPaperDecideStatusStart,
-            currentPhase.fullPaperDecideStatusEnd
+            currentPhase.fullPaperDecideStatusEnd,
+            now
         )
         : false;
 

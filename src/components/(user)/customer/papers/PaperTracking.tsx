@@ -15,8 +15,10 @@ import PaperStepIndicator from "@/components/molecules/PaperStepIndicator";
 import { Calendar } from "lucide-react";
 import TimelineDialog from "@/components/molecules/TimelineDialog";
 import PaymentPhase from "./PaymentPhase";
+import { useGlobalTime } from "@/utils/TimeContext";
 
 const PaperTracking = () => {
+  const { now } = useGlobalTime();
   const [currentStage, setCurrentStage] = useState<number>(1);
   const [maxReachedStage, setMaxReachedStage] = useState<number>(1);
 
@@ -126,17 +128,40 @@ const PaperTracking = () => {
 
     if (paperDetail.cameraReady?.status?.toLowerCase() === 'accepted') {
       completed.push(3);
-      completed.push(4);
     } else if (paperDetail.cameraReady?.status?.toLowerCase() === 'rejected') {
       failed.push(3);
     }
 
+    const cameraReadyAccepted = paperDetail.cameraReady?.status?.toLowerCase() === 'accepted';
+    const hasTicketId = paperDetail.ticketId !== null && paperDetail.ticketId !== undefined;
+
+    if (hasTicketId) {
+      // Đã thanh toán
+      completed.push(4);
+    } else if (cameraReadyAccepted) {
+
+      const paymentStart = paperDetail.researchPhase?.authorPaymentStart
+        ? new Date(paperDetail.researchPhase.authorPaymentStart)
+        : null;
+
+      const paymentEnd = paperDetail.researchPhase?.authorPaymentEnd
+        ? new Date(paperDetail.researchPhase.authorPaymentEnd)
+        : null;
+
+      if (paymentEnd && now > paymentEnd) {
+        failed.push(4);
+      }
+    }
     return { completedStepIndexes: completed, failedStepIndexes: failed };
-  }, [paperDetail]);
+  }, [paperDetail, now]);
 
   let maxStageAllowed = 4;
   if (failedStepIndexes.length > 0) {
     maxStageAllowed = failedStepIndexes[0];
+  }
+
+  if (paperDetail?.cameraReady?.status?.toLowerCase() !== 'accepted') {
+    maxStageAllowed = Math.min(maxStageAllowed, 3);
   }
 
   useEffect(() => {

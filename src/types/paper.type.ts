@@ -441,6 +441,8 @@ export interface PaperDetailResponse {
   cameraReady?: CameraReady | null;
   created?: string;
 
+  ticketId: string | null
+
   researchPhase?: ResearchPhaseDtoDetail;
   revisionDeadline?: RevisionDeadlineDetail[];
 
@@ -501,6 +503,8 @@ export type ResearchPhaseDtoDetail = {
   cameraReadyEndDate?: string
   cameraReadyDecideStatusStart?: string
   cameraReadyDecideStatusEnd?: string
+  authorPaymentStart?: string
+  authorPaymentEnd?: string
 }
 
 export interface Author {

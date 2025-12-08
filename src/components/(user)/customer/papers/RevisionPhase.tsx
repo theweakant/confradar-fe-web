@@ -129,10 +129,6 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
       // Bỏ qua kiểm tra startDate, chỉ kiểm tra endDate
       const end = nextDeadline.endSubmissionDate ? parseEndOfDay(nextDeadline.endSubmissionDate) : undefined;
 
-      console.log("TEST getTimeRemaining");
-      console.log("now:", now);
-      console.log("endDeadline:", end);
-
       if (!end) {
         return {
           isAvailable: false,
@@ -151,19 +147,6 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
         };
       }
 
-      // const timeRemaining = getTimeRemaining(end, now);
-      // console.log("timeRemaining:", timeRemaining);
-
-      // return {
-      //   isAvailable: true,
-      //   isExpired: false,
-      //   isPending: false,
-      //   daysRemaining: timeRemaining.days,
-      //   message: timeRemaining.days === 0
-      //     ? `Còn ${timeRemaining.hours} giờ để nộp Round ${nextRoundIndex + 1}.`
-      //     : `Còn ${timeRemaining.days} ngày và ${timeRemaining.hours} giờ để nộp Round ${nextRoundIndex + 1}.`
-      // };
-
       const daysRemaining = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
       return {
         isAvailable: true,
@@ -177,7 +160,8 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
     // Round đầu tiên - giữ nguyên logic cũ
     return validatePhaseTime(
       nextDeadline.startSubmissionDate,
-      nextDeadline.endSubmissionDate
+      nextDeadline.endSubmissionDate,
+      now
     );
   }, [revisionDeadline, revisionPaper?.submissions, now]);
 
@@ -444,7 +428,8 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
         // Round đầu tiên - giữ nguyên logic cũ
         validation = validatePhaseTime(
           deadline.startSubmissionDate,
-          deadline.endSubmissionDate
+          deadline.endSubmissionDate,
+          now
         );
       }
 

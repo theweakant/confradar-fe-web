@@ -14,6 +14,7 @@ import ConferenceDescriptionCard from "./ConferenceDescriptionCard";
 import TicketSelectionDialog from "./TicketSelectionDialog";
 import SubmissionFormDialog from "../../../papers/SubmissionFormDialog";
 import { parseApiError } from "@/helper/api";
+import { useGlobalTime } from "@/utils/TimeContext";
 
 interface ConferenceHeaderProps {
     conference: TechnicalConferenceDetailResponse | ResearchConferenceDetailResponse;
@@ -42,6 +43,8 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
     onSelectPaymentMethod,
     onSelectPaper
 }) => {
+    const { now, useFakeTime } = useGlobalTime();
+
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [userType, setUserType] = useState<'author' | 'listener'>('listener');
     const [showAuthorForm, setShowAuthorForm] = useState(false);
@@ -115,6 +118,46 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
             fetchAllPaymentMethods();
         }
     }, [isDialogOpen]);
+
+    const getNextAvailablePhase = () => {
+        if (!conference.isResearchConference) return null;
+
+        const researchConf = conference as ResearchConferenceDetailResponse;
+        const researchPhases = researchConf.researchPhase || [];
+
+        // Tìm phase hiện tại
+        const currentPhase = researchPhases.find(phase => {
+            if (!phase.authorPaymentStart || !phase.authorPaymentEnd) return false;
+            const start = new Date(phase.authorPaymentStart);
+            const end = new Date(phase.authorPaymentEnd);
+            return phase.isActive && now >= start && now <= end;
+        });
+
+        if (currentPhase) return null;
+
+        // Tìm phase tiếp theo
+        const sortedPhases = [...researchPhases].sort((a, b) => (a.phaseOrder || 0) - (b.phaseOrder || 0));
+        const nextPhase = sortedPhases.find(phase => {
+            if (!phase.authorPaymentStart) return false;
+            const start = new Date(phase.authorPaymentStart);
+            return phase.isActive && start > now;
+        });
+
+        if (!nextPhase) return null;
+
+        // Check xem có vé available không
+        const authorTickets = (conference.conferencePrices || []).filter(ticket => ticket.isAuthor);
+        const hasAvailableSlots = authorTickets.some(ticket => {
+            return ticket.pricePhases?.some(pricePhase => (pricePhase.availableSlot ?? 0) > 0);
+        });
+
+        return {
+            phase: nextPhase,
+            hasAvailableSlots
+        };
+    };
+
+    const nextPhaseInfo = getNextAvailablePhase();
 
     const handleOpenDialog = (type: 'author' | 'listener') => {
         setUserType(type);
@@ -237,6 +280,7 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                     addingToWaitListLoading={addingToWaitListLoading}
                     accessToken={accessToken}
                     userType={userType}
+                    nextPhaseInfo={nextPhaseInfo}
                 />
 
 

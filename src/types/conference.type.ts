@@ -920,4 +920,5 @@ export interface SubmittedPaper {
   fullpaperStatus: string | null;
   revisionStatus: string | null;
   cameraReadyStatus: string | null;
+  researchPhaseId: string | null;
 }
