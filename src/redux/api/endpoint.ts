@@ -233,6 +233,10 @@ export const endpoint = {
     CREATE_SKELETON_NAME_FOR_CONTRACT: "/conferencestep/create-skeleton-name-for-conference-in-contract-with-collaborator",
 
     GET_PRICES: (conferenceStepId: string) => `/conferencestep/${conferenceStepId}/prices`,
+
+    CREATE_NEXT_PHASE: "/conferencestep/create-next-phase",
+    ACTIVATE_NEXT_PHASE: "/conference/activate-next-phase",
+    ADD_PRICE_PHASE_FOR_NEXT_RESEARCH_PHASE: "/conferencestep/add-pricephase-for-next-research-phase",
   },
 
   CITY: {

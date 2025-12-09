@@ -11,14 +11,14 @@ import { ResearchMaterialsTab } from "@/components/molecules/Conference/Conferen
 import { ResearchInfoTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/ResearchInfoTab";
 import { RefundRequestTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/RefundRequestTab";
 import { OtherRequestTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/OtherRequest";
-import { ResearchTimelineTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/ResearchTimelineTab";
+import { ResearchTimelineTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/ResearchTimeline/index";
 import { PaperTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/Paper/index";
 import { PaperAssignmentTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/PaperAssignmentTab";
 import { CustomerTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/Customer/CustomerTab";
 import { ContractTab } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/ContractTab";
 
 import { TechnicalConferenceDetailResponse } from "@/types/conference.type";
-import { useGlobalTime } from "@/utils/TimeContext"; // ✅ Import hook
+import { useGlobalTime } from "@/utils/TimeContext"; 
 
 interface TabContentProps {
   activeSubtab: TabId;

@@ -423,6 +423,13 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
       icon: PackageCheck,
       color: "text-teal-600",
     },
+    {
+      title: "Tác giả thanh toán chi phí",
+      start: phase.authorPaymentStart,
+      end: phase.authorPaymentStart,
+      icon: PackageCheck,
+      color: "text-teal-600",
+    },
   ];
 
   return (
