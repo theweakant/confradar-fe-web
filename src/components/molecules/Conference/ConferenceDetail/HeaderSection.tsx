@@ -1,4 +1,3 @@
-
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { CommonConference } from "@/types/conference.type";
@@ -7,7 +6,8 @@ import { TAB_GROUPS } from "./constants/tab";
 interface HeaderSectionProps {
   conference: CommonConference;
   onBack: () => void;
-  dropdownActions?: React.ReactNode;
+  actions?: React.ReactNode;       // Dropdown menu (chỉ owner)
+  extraActions?: React.ReactNode;  // Nút "Vô hiệu hóa" (dành cho Organizer)
   getCategoryName: (id: string) => string;
   getStatusName: (id: string) => string;
   primaryTab: "detail" | "action";
@@ -16,7 +16,8 @@ interface HeaderSectionProps {
 
 export function HeaderSection({
   onBack,
-  dropdownActions,
+  actions,
+  extraActions,
   primaryTab,
   onPrimaryTabChange,
 }: HeaderSectionProps) {
@@ -59,8 +60,10 @@ export function HeaderSection({
             </div>
           </div>
 
+          {/* ✅ Hiển thị extraActions (nút vô hiệu hóa) TRƯỚC actions (dropdown) */}
           <div className="flex items-center gap-2">
-            {dropdownActions}
+            {extraActions}
+            {actions}
           </div>
         </div>
       </div>

@@ -52,6 +52,31 @@ export const statusApi = createApi({
       invalidatesTags: ["Status"], 
     }),
 
+
+        disableConference: builder.mutation<
+      ApiResponse<null>,
+      { conferenceId: string; reason: string }
+    >({
+      query: ({ conferenceId, reason }) => ({
+        url: endpoint.CONFERENCE.DISABLE_CONFERENCE,
+        method: "PUT",
+        params: { conferenceId, reason },
+      }),
+      invalidatesTags: ["Status"],
+    }),
+
+        transitionConferenceFromDisableToReady: builder.mutation<
+      ApiResponse<null>,
+      { conferenceId: string; reason: string }
+    >({
+      query: ({ conferenceId, reason }) => ({
+        url: endpoint.CONFERENCE.TRANSITION_CONF_FROM_DISABLE_TO_READY,
+        method: "PUT",
+        params: { conferenceId, reason },
+      }),
+      invalidatesTags: ["Status"],
+    }),
+
   }),
 });
 
@@ -59,5 +84,8 @@ export const {
   useGetAllConferenceStatusesQuery,
   useLazyGetAllConferenceStatusesQuery,
   useUpdateOwnConferenceStatusMutation,
-  useRequestConferenceApprovalMutation
+  useRequestConferenceApprovalMutation,
+
+  useDisableConferenceMutation,
+  useTransitionConferenceFromDisableToReadyMutation
 } = statusApi;

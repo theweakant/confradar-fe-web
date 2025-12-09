@@ -9,6 +9,7 @@ import {
   Pencil,
   RotateCcw,
   Trash2,
+  Ban,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,6 +41,8 @@ import { DeleteConferenceStatus } from "@/components/molecules/Status/DeleteStat
 import { RequestConferenceApproval } from "@/components/molecules/Status/RequestStatus";
 import { HistoryTimelineStatus } from "@/components/molecules/Status/HistoryTimelineStatus";
 import { RegisteredUsersModal } from "@/components/molecules/Conference/ConferenceDetail/RightSidebar/RegisterUserSection/RegisteredUsersModal";
+import { DisableTechConferenceModal } from "@/components/molecules/Status/DisableTechConference";
+import { EnableTechConferenceModal } from "@/components/molecules/Status/EnableTechConference";
 
 import { HeaderSection } from "./HeaderSection";
 import { RightSidebar } from "./RightSidebar";
@@ -73,6 +76,8 @@ export default function ConferenceDetailPage() {
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isAttendeesModalOpen, setIsAttendeesModalOpen] = useState(false);
   const [resumeEditingOpen, setResumeEditingOpen] = useState(false);
+  const [openDisableModal, setOpenDisableModal] = useState(false);
+  const [openEnableModal, setOpenEnableModal] = useState(false);
 
   const {
     data: techData,
@@ -179,7 +184,6 @@ export default function ConferenceDetailPage() {
     if (isOrganizer) {
       updateRoute = `/workspace/organizer/manage-conference/update-tech-conference/${conference.conferenceId}`;
     } else if (isCollaborator && isOwner) {
-      // Collaborator chỉ có route nếu là owner
       updateRoute = `/workspace/collaborator/manage-conference/update-tech-conference/${conference.conferenceId}`;
     }
   }
@@ -199,79 +203,118 @@ export default function ConferenceDetailPage() {
     conferencePrices: conference.conferencePrices ?? [],
   };
 
+  // ✅ ĐIỀU KIỆN MỚI: Chỉ Organizer được thao tác trên hội thảo kỹ thuật của Collaborator (isInternalHosted = false)
+  const isTechConfOfCollaborator =
+    conferenceType === "technical" &&
+    isOrganizer &&
+    conference.isInternalHosted === false;
+
+  const disableButton = isTechConfOfCollaborator &&
+    conference.conferenceStatusId === "7f2dcc1a-a107-4ed4-827e-eb994cbb648d" ? (
+    <Button
+      variant="outline"
+      size="sm"
+      className="gap-1.5 border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
+      onClick={() => setOpenDisableModal(true)}
+    >
+      <Ban className="w-4 h-4" />
+      Vô hiệu hóa
+    </Button>
+  ) : null;
+
+  const enableButton = isTechConfOfCollaborator &&
+    conference.conferenceStatusId &&
+    getStatusName(conference.conferenceStatusId) === "Disabled" ? (
+    <Button
+      variant="outline"
+      size="sm"
+      className="gap-1.5 border-emerald-500 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
+      onClick={() => setOpenEnableModal(true)}
+    >
+      <RotateCcw className="w-4 h-4" />
+      Khôi phục
+    </Button>
+  ) : null;
+
+  const extraActions = (
+    <>
+      {disableButton}
+      {enableButton}
+    </>
+  );
+
+  const actions = isOwner ? (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="border border-gray-200">
+          <MoreVertical className="w-5 h-5" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        {conference.conferenceStatusId &&
+          ["OnHold", "Draft", "Preparing"].includes(getStatusName(conference.conferenceStatusId)) &&
+          updateRoute && (
+            <DropdownMenuItem
+              onClick={() => router.push(updateRoute)}
+              className="cursor-pointer flex items-center gap-2 text-blue-600"
+            >
+              <Pencil className="w-4 h-4" />
+              Chỉnh sửa thông tin
+            </DropdownMenuItem>
+          )}
+
+        {conference.conferenceStatusId &&
+          conference.conferenceId &&
+          conference.contract &&
+          getStatusName(conference.conferenceStatusId) === "Draft" && (
+            <RequestConferenceApproval
+              conferenceId={conference.conferenceId}
+              contract={conference.contract}
+              conferenceData={safeConferenceData}
+              onSuccess={handleRefetch}
+              asDropdownItem={true}
+            />
+          )}
+
+        {conference.conferenceStatusId &&
+          !["Draft", "Deleted", "Rejected", "Cancelled"].includes(getStatusName(conference.conferenceStatusId)) && (
+            <DropdownMenuItem
+              onClick={() => setStatusDialogOpen(true)}
+              className="cursor-pointer flex items-center gap-2 text-purple-600"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Cập nhật trạng thái
+            </DropdownMenuItem>
+          )}
+
+        {conferenceType === "technical" &&
+          isCollaborator &&
+          conference.conferenceStatusId &&
+          getStatusName(conference.conferenceStatusId) === "Rejected" && (
+            <DropdownMenuItem
+              onClick={() => setResumeEditingOpen(true)}
+              className="cursor-pointer flex items-center gap-2 text-blue-600"
+            >
+              <Pencil className="w-4 h-4" />
+              Tiếp tục chỉnh sửa
+            </DropdownMenuItem>
+          )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  ) : null;
+
   return (
     <div className="min-h-screen bg-gray-50">
-<HeaderSection
-  conference={conference}
-  onBack={() => router.back()}
-  getCategoryName={getCategoryName}
-  getStatusName={getStatusName}
-  primaryTab={primaryTab}
-  onPrimaryTabChange={setPrimaryTab}
-  {...(isOwner
-    ? {
-        dropdownActions: (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="border border-gray-200">
-                <MoreVertical className="w-5 h-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              {conference.conferenceStatusId &&
-                ["OnHold", "Draft", "Preparing"].includes(getStatusName(conference.conferenceStatusId)) &&
-                updateRoute && (
-                  <DropdownMenuItem
-                    onClick={() => router.push(updateRoute)}
-                    className="cursor-pointer flex items-center gap-2 text-blue-600"
-                  >
-                    <Pencil className="w-4 h-4" />
-                    Chỉnh sửa thông tin
-                  </DropdownMenuItem>
-                )}
-
-              {conference.conferenceStatusId &&
-                conference.conferenceId &&
-                conference.contract &&
-                getStatusName(conference.conferenceStatusId) === "Draft" && (
-                  <RequestConferenceApproval
-                    conferenceId={conference.conferenceId}
-                    contract={conference.contract}
-                    conferenceData={safeConferenceData}
-                    onSuccess={handleRefetch}
-                    asDropdownItem={true}
-                  />
-                )}
-
-              {conference.conferenceStatusId &&
-                !["Draft", "Deleted", "Rejected", "Cancelled"].includes(getStatusName(conference.conferenceStatusId)) && (
-                  <DropdownMenuItem
-                    onClick={() => setStatusDialogOpen(true)}
-                    className="cursor-pointer flex items-center gap-2 text-purple-600"
-                  >
-                    <RotateCcw className="w-4 h-4" />
-                    Cập nhật trạng thái
-                  </DropdownMenuItem>
-                )}
-
-              {conferenceType === "technical" &&
-                isCollaborator &&
-                conference.conferenceStatusId &&
-                getStatusName(conference.conferenceStatusId) === "Rejected" && (
-                  <DropdownMenuItem
-                    onClick={() => setResumeEditingOpen(true)}
-                    className="cursor-pointer flex items-center gap-2 text-blue-600"
-                  >
-                    <Pencil className="w-4 h-4" />
-                    Tiếp tục chỉnh sửa
-                  </DropdownMenuItem>
-                )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ),
-      }
-    : {})}
-/>
+      <HeaderSection
+        conference={conference}
+        onBack={() => router.back()}
+        getCategoryName={getCategoryName}
+        getStatusName={getStatusName}
+        primaryTab={primaryTab}
+        onPrimaryTabChange={setPrimaryTab}
+        extraActions={extraActions}
+        actions={actions}
+      />
 
       <UpdateConferenceStatus
         open={statusDialogOpen}
@@ -290,6 +333,24 @@ export default function ConferenceDetailPage() {
           conferenceName: conference.conferenceName!,
           conferenceStatusId: conference.conferenceStatusId!,
         }}
+        onSuccess={handleRefetch}
+      />
+
+      <DisableTechConferenceModal
+        open={openDisableModal}
+        onClose={() => setOpenDisableModal(false)}
+        conferenceId={conference.conferenceId!}
+        conferenceName={conference.conferenceName!}
+        conferenceStatusId={conference.conferenceStatusId!}
+        onSuccess={handleRefetch}
+      />
+
+      <EnableTechConferenceModal
+        open={openEnableModal}
+        onClose={() => setOpenEnableModal(false)}
+        conferenceId={conference.conferenceId!}
+        conferenceName={conference.conferenceName!}
+        conferenceStatusId={conference.conferenceStatusId!}
         onSuccess={handleRefetch}
       />
 
