@@ -170,9 +170,9 @@ const TopConferences: React.FC<TopConferencesProps> = ({ conferences }) => {
         ) : (
           conferences.map((conf) => (
             <div key={conf.id} className="flex items-center gap-2 p-2 rounded-2xl hover:bg-gray-50 transition-colors">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0">
-              <Presentation size={24} className="text-gray" />
-            </div>
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0">
+                <Presentation size={24} className="text-gray" />
+              </div>
               <div className="flex-1 min-w-0">
                 <h4 className="font-medium text-sm text-gray-900 truncate mb-1">{conf.name}</h4>
                 <p className="text-xs text-gray-500 flex items-center gap-1">
@@ -251,14 +251,12 @@ const generateNext6MonthsData = (apiData: MonthlyStat[]): RevenueData[] => {
   const now = new Date();
   const next6Months: RevenueData[] = [];
   
-  // Tạo map từ API data để tra cứu nhanh
   const apiDataMap = new Map<string, number>();
   apiData.forEach((item) => {
     const key = `${item.year}-${item.month}`;
-    apiDataMap.set(key, item.monthlyTotal ?? 0);
-  });
+apiDataMap.set(key, item.monthlyTotal ?? 0);  
+});
   
-  // Tạo 6 tháng từ tháng hiện tại trở đi
   for (let i = 0; i < 6; i++) {
     const date = new Date(now.getFullYear(), now.getMonth() + i, 1);
     const month = date.getMonth() + 1;
@@ -344,7 +342,7 @@ export default function ConferenceDashboard() {
   // Tổng = completed + inProgress + pending (không tính Draft)
   const total = completed + inProgress + pending;
 
-  // ✅ FIX: Tạo dữ liệu 6 tháng từ tháng hiện tại trở đi
+  // ✅ FIX: Tạo dữ liệu 6 tháng với doanh thu thực (đã trừ hoàn tiền)
   const apiMonthlyStats = revenueData?.data?.monthlyStats || [];
   const revenueChart = generateNext6MonthsData(apiMonthlyStats);
 

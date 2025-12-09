@@ -70,6 +70,7 @@ export interface MonthlyStat {
   monthlyTotal: number; // tổng doanh thu tháng
   monthlyTickets: number; // số vé bán được
   conferences: ConferenceRevenue[];
+  totalRefundedAmount:number;
 }
 export interface ConferenceRevenue {
   conferenceId: string;

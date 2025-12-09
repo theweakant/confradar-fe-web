@@ -2,7 +2,7 @@
 
 import { Fragment } from 'react';
 import { useState, useEffect } from "react";
-import { TrendingUp, DollarSign, Download, CheckCircle, XCircle, Clock, AlertCircle, Users, ArrowLeft } from "lucide-react";
+import { TrendingUp, Download, CheckCircle, XCircle, Clock, AlertCircle, Users, ArrowLeft } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { useGetSoldTicketQuery, useExportSoldTicketQuery } from "@/redux/services/statistics.service";
 import type { GroupedTicket } from "@/types/statistics.type";
@@ -89,7 +89,7 @@ export default function StatisticsDashboard() {
     const totalRevenue = data?.totalRevenue || 0;
     const totalTicketsSold = data?.totalTicketsSold || 0;
     const totalRefundedAmount = data?.totalRefundedAmount || 0;
-    const totalRevenueWithoutRefunded = data?.totalRevenueWithoutRefunded || 0;
+    const netRevenue = totalRevenue + totalRefundedAmount; // ✅ Doanh thu thực đúng
     const totalTicketRefunded = data?.totalTicketRefunded || 0;
     const totalNotRefundedTicket = data?.totalNotRefundedTicket || 0;
 
@@ -149,7 +149,6 @@ export default function StatisticsDashboard() {
     const ticketList = Object.values(groupedTickets || {});
     const notCheckedIn = totalNotRefundedTicket - totalHasCheckin - totalExpireCheckin;
 
-    // Không cần netRevenue cũ — sẽ hiển thị theo ngữ cảnh
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Header */}
@@ -196,7 +195,6 @@ export default function StatisticsDashboard() {
                         <div className="text-xs mt-1 opacity-80">Bán thành công</div>
                     </div>
 
-                    {/* Card 3: Đã hoàn tiền */}
                     <div className="relative bg-red-100 text-red-900 rounded-xl p-6 flex-1 min-w-[200px] shadow-sm hover:shadow-md transition-shadow">
                         <div className="absolute top-5 right-5">
                             <XCircle className="w-5 h-5 opacity-70" />
@@ -205,7 +203,6 @@ export default function StatisticsDashboard() {
                         <div className="text-xs mt-1 opacity-80">Đã hoàn tiền</div>
                     </div>
 
-                    {/* Card 4: Đang xử lý */}
                     <div className="relative bg-yellow-100 text-yellow-900 rounded-xl p-6 flex-1 min-w-[200px] shadow-sm hover:shadow-md transition-shadow">
                         <div className="absolute top-5 right-5">
                             <Clock className="w-5 h-5 opacity-70" />
@@ -215,105 +212,81 @@ export default function StatisticsDashboard() {
                     </div>
                 </div>
 
-                {/* Middle Section - Revenue & Check-in Status */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                    {/* Revenue Analysis — HIỂN THỊ THEO VAI TRÒ */}
                     <div className="bg-white rounded-xl p-6 border border-gray-200">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                             {isCollaborator ? "Thu nhập của bạn" : "Phân tích doanh thu"}
                         </h3>
                         <div className="space-y-4">
-                            {/* Tổng doanh thu (luôn hiển thị) */}
                             <div className="flex justify-between items-center pb-4 border-b border-gray-200">
                                 <div>
                                     <p className="text-sm text-gray-600 font-medium">Tổng doanh thu</p>
-                                    <p className="text-xs text-gray-500 mt-0.5">Bao gồm cả phần tiền hoàn lại cho khách</p>
+                                    <p className="text-xs text-gray-500 mt-0.5">Bao gồm tất cả chi phí</p>
                                 </div>
                                 <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalRevenue)}</p>
                             </div>
 
-                            {/* Đã hoàn trả */}
                             <div className="flex justify-between items-center">
                                 <div>
                                     <p className="text-sm text-red-700 font-medium">Đã hoàn tiền</p>
-                                    <p className="text-xs text-gray-500 mt-0.5">Khách đã hủy & hoàn tiền lại cho khách hàng</p>
+                                    <p className="text-xs text-gray-500 mt-0.5">Khách đã hủy & đã hoàn tiền lại cho khách hàng</p>
                                 </div>
                                 <p className="text-xl font-bold text-red-700">{formatCurrency(totalRefundedAmount)}</p>
                             </div>
 
-                            {/* Doanh thu thực tế (sau hoàn tiền) */}
                             <div className="flex justify-between items-center pt-4 border-t-2 border-gray-300">
                                 <div>
                                     <p className="text-base text-green-700 font-bold">Doanh thu thực</p>
                                     <p className="text-xs text-gray-500 mt-0.5">Sau khi trừ hoàn tiền</p>
                                 </div>
-                                <p className="text-2xl font-bold text-green-700">{formatCurrency(totalRevenueWithoutRefunded)}</p>
+                                <p className="text-2xl font-bold text-green-700">{formatCurrency(netRevenue)}</p>
                             </div>
 
-                            {/* Hiển thị theo vai trò */}
-                            {hasCommissionData && (
+                            {hasCommissionData && isCollaborator && (
                                 <>
-                                    {isCollaborator ? (
-                                        <>
-                                            <div className="flex justify-between items-center pt-4 border-t border-gray-200">
-                                                <div>
-                                                    <p className="text-sm text-blue-700 font-medium">Số tiền đối tác nhận được</p>
-                                                    <p className="text-xs text-gray-500 mt-0.5">Số tiền nhận được sau khi trừ phí hoa hồng</p>
-                                                </div>
-                                                <p className="text-2xl font-bold text-blue-700">{formatCurrency(totalCommission)}</p>
-                                            </div>
+                                    <div className="flex justify-between items-center pt-4">
+                                        <div>
+                                            <p className="text-sm text-gray-600 font-medium">Phí liên kết bán vé ConfRadar</p>
+                                            <p className="text-xs text-gray-500 mt-0.5">Số tiền ConfRadar nhận</p>
+                                        </div>
+                                        <p className="text-xl font-bold text-gray-600">{formatCurrency(totalToConfRadar)}</p>
+                                    </div>
+                                    <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+                                        <div>
+                                            <p className="text-sm text-blue-700 font-medium">Số tiền đối tác nhận được</p>
+                                            <p className="text-xs text-gray-500 mt-0.5">Số tiền nhận được sau khi trừ phí hoa hồng</p>
+                                        </div>
+                                        <p className="text-2xl font-bold text-blue-700">{formatCurrency(totalCommission)}</p>
+                                    </div>
+                                </>
+                            )}
 
-                                            <div className="flex justify-between items-center pt-4">
-                                                <div>
-                                                    <p className="text-sm text-gray-600 font-medium">Phí liên kết bán vé ConfRadar</p>
-                                                    <p className="text-xs text-gray-500 mt-0.5">Số tiền ConfRadar nhận được</p>
-                                                </div>
-                                                <p className="text-xl font-bold text-gray-600">{formatCurrency(totalToConfRadar)}</p>
+                            {hasCommissionData && isOrganizer && (
+                                <>
+                                    {totalCommission > 0 && (
+                                        <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+                                            <div>
+                                                <p className="text-sm text-purple-700 font-medium">Chi phí hoa hồng đối tác</p>
+                                                <p className="text-xs text-gray-500 mt-0.5">Số tiền phải chuyển cho Collaborator</p>
                                             </div>
-                                        </>
-                                    ) : isOrganizer ? (
-                                        <>
-                                            {totalCommission > 0 && (
-                                                <div className="flex justify-between items-center pt-4 border-t border-gray-200">
-                                                    <div>
-                                                        <p className="text-sm text-purple-700 font-medium">Hoa hồng đối tác</p>
-                                                        <p className="text-xs text-gray-500 mt-0.5">Chuyển cho Collaborator</p>
-                                                    </div>
-                                                    <p className="text-xl font-bold text-purple-700">- {formatCurrency(totalCommission)}</p>
-                                                </div>
-                                            )}
+                                            <p className="text-xl font-bold text-purple-700">{formatCurrency(totalCommission)}</p>
+                                        </div>
+                                    )}
 
-                                            {totalToConfRadar > 0 && (
-                                                <div className="flex justify-between items-center pt-4">
-                                                    <div>
-                                                        <p className="text-sm text-orange-700 font-medium">Phí nền tảng ConfRadar</p>
-                                                        <p className="text-xs text-gray-500 mt-0.5">Hoa hồng dịch vụ</p>
-                                                    </div>
-                                                    <p className="text-xl font-bold text-orange-700">- {formatCurrency(totalToConfRadar)}</p>
-                                                </div>
-                                            )}
-
-                                            <div className="flex justify-between items-center pt-4 border-t-2 border-green-300 bg-green-50 -mx-6 -mb-6 px-6 py-5 rounded-b-xl">
-                                                <div>
-                                                    <p className="text-base text-green-700 font-bold">Doanh thu ròng</p>
-                                                    <p className="text-xs text-green-600 mt-0.5">
-                                                        Sau khi trừ hoa hồng
-                                                    </p>
-                                                </div>
-                                                <p className="text-3xl font-bold text-green-700">
-                                                    {formatCurrency(
-                                                        totalRevenueWithoutRefunded - totalCommission - totalToConfRadar
-                                                    )}
-                                                </p>
+                                    {totalToConfRadar > 0 && (
+                                        <div className="flex justify-between items-center pt-4">
+                                            <div>
+                                                <p className="text-sm text-orange-700 font-medium">Chi phí nền tảng ConfRadar</p>
+                                                <p className="text-xs text-gray-500 mt-0.5">Phí dịch vụ nền tảng</p>
                                             </div>
-                                        </>
-                                    ) : null}
+                                            <p className="text-xl font-bold text-orange-700">{formatCurrency(totalToConfRadar)}</p>
+                                        </div>
+                                    )}
                                 </>
                             )}
                         </div>
                     </div>
 
-                    {/* Check-in Status */}
                     <div className="bg-white rounded-xl p-6 border border-gray-200">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                             Tình trạng check-in
@@ -362,7 +335,6 @@ export default function StatisticsDashboard() {
                     </div>
                 </div>
 
-                {/* Ticket Details Table */}
                 <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                     <div className="p-6 border-b border-gray-200">
                         <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
@@ -379,7 +351,6 @@ export default function StatisticsDashboard() {
                                     <th className="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase">Giai đoạn</th>
                                     <th className="text-center px-6 py-3 text-xs font-semibold text-gray-600 uppercase">Đã bán</th>
                                     <th className="text-right px-6 py-3 text-xs font-semibold text-gray-600 uppercase">Giá bán</th>
-                                    <th className="text-center px-6 py-3 text-xs font-semibold text-gray-600 uppercase">Check-in Session</th>
                                     <th className="text-right px-6 py-3 text-xs font-semibold text-gray-600 uppercase">Doanh thu</th>
                                 </tr>
                             </thead>
@@ -387,14 +358,14 @@ export default function StatisticsDashboard() {
                                 {ticketList.map((ticket, idx) => (
                                     <Fragment key={`ticket-${idx}`}>
                                         {ticket.phases.map((phase, pIdx) => (
-                                                <tr
+                                            <tr
                                                 key={`${ticket.ticketName}-${phase.phaseName}-${pIdx}`}
                                                 className={`transition-colors ${
                                                     phase.isAuthor 
-                                                    ? 'bg-blue-50' 
-                                                    : 'hover:bg-gray-50'
+                                                        ? 'bg-blue-50' 
+                                                        : 'hover:bg-gray-50'
                                                 }`}
-                                                >
+                                            >
                                                 {pIdx === 0 && (
                                                     <td rowSpan={ticket.phases.length} className="px-6 py-4 border-r border-gray-200">
                                                         <div>
@@ -417,13 +388,6 @@ export default function StatisticsDashboard() {
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
                                                     <p className="font-semibold text-yellow-900">{formatCurrency(phase.actualPrice)}</p>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center justify-center gap-2 text-xs">
-                                                        <span className="text-green-600 font-medium">{phase.hasCheckin}</span>
-                                                        <span className="text-gray-400">/</span>
-                                                        <span className="text-gray-600">{phase.totalNotRefuned}</span>
-                                                    </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
                                                     <p className="font-semibold text-green-600">{formatCurrency(phase.revenue)}</p>
