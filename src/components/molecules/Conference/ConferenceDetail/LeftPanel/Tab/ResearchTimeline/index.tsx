@@ -382,10 +382,11 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
 
       {/* Modal 1: Tạo Phase mới */}
       <Dialog open={isCreatePhaseModalOpen} onOpenChange={setIsCreatePhaseModalOpen}>
-<DialogContent 
-  className="max-w-7xl max-h-[90vh] overflow-y-auto"
-  style={{ width: '70vw', maxWidth: '1400px' }}
->          <DialogHeader>
+      <DialogContent 
+        className="max-w-7xl max-h-[90vh] overflow-y-auto"
+        style={{ width: '70vw', maxWidth: '1400px' }}
+      >          
+        <DialogHeader>
             <DialogTitle>Tạo Phase {nextPhaseOrderForCreation}</DialogTitle>
           </DialogHeader>
           <CreatePhaseForm

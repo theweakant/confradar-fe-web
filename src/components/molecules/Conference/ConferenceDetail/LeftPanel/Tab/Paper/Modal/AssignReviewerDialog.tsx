@@ -37,15 +37,12 @@ export function AssignReviewerDialog({
   const hasAvailableReviewers = reviewersList.length > 0;
   const selectedReviewerIds = new Set(selectedReviewers.map((r) => r.userId));
 
-  // Trích xuất reviewer đã chọn (để hiển thị trong dropdown head)
   const selectedReviewerObjects = reviewersList.filter((rev) =>
     selectedReviewerIds.has(rev.userId)
   );
 
-  // Xác định head reviewer hiện tại (nếu có)
   const currentHeadReviewer = selectedReviewers.find((r) => r.isHeadReviewer)?.userId || "";
 
-  // Khi người dùng thay đổi head reviewer
   const handleHeadReviewerChange = (userId: string) => {
     const updated = selectedReviewers.map((r) => ({
       ...r,
@@ -54,16 +51,12 @@ export function AssignReviewerDialog({
     onReviewersChange(updated);
   };
 
-  // Khi người dùng toggle chọn/deselect reviewer
   const handleReviewerToggle = (userId: string, checked: boolean) => {
     if (checked) {
-      // Thêm reviewer mới, không phải head (mặc định)
       const newReviewer = { userId, isHeadReviewer: false };
       onReviewersChange([...selectedReviewers, newReviewer]);
     } else {
-      // Gỡ reviewer
       const updated = selectedReviewers.filter((r) => r.userId !== userId);
-      // Nếu gỡ head reviewer, không cần xử lý đặc biệt — head tự mất
       onReviewersChange(updated);
     }
   };
