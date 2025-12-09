@@ -3,6 +3,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import { X, Calendar, Clock, CheckCircle, AlertCircle, Users, FileText, Eye, LucideIcon } from 'lucide-react';
 import { CurrentResearchConferencePhaseForReviewer, ResearchPhaseDtoDetail, RevisionDeadlineDetail, RevisionRoundDeadlineForReviewer } from '@/types/paper.type';
 import { ResearchConferencePhaseResponse, RevisionRoundDeadlineResponse } from '@/types/conference.type';
+import { useGlobalTime } from '@/utils/TimeContext';
 
 interface TimelineDialogProps {
     isOpen: boolean;
@@ -21,6 +22,7 @@ const TimelineDialog: React.FC<TimelineDialogProps> = ({
     variant = 'reviewer',
     theme
 }) => {
+    const { now } = useGlobalTime();
     const formatDate = (date?: string) => {
         if (!date) return 'Chưa xác định';
         return new Date(date).toLocaleDateString('vi-VN', {
@@ -34,13 +36,13 @@ const TimelineDialog: React.FC<TimelineDialogProps> = ({
 
     const isDateInRange = (start?: string, end?: string) => {
         if (!start || !end) return false;
-        const now = new Date();
+        // const now = new Date();
         return now >= new Date(start) && now <= new Date(end);
     };
 
     const getPhaseStatus = (start?: string, end?: string) => {
         if (!start || !end) return 'pending';
-        const now = new Date();
+        // const now = new Date();
         const startDate = new Date(start);
         const endDate = new Date(end);
 
@@ -360,6 +362,22 @@ const TimelineDialog: React.FC<TimelineDialogProps> = ({
                                                     }
                                                 ]}
                                             />
+
+                                            {phaseData && 'authorPaymentStart' in phaseData && (
+                                                <PhaseSection
+                                                    title="Giai đoạn thanh toán cho bài báo"
+                                                    icon={FileText}
+                                                    color="green"
+                                                    items={[
+                                                        {
+                                                            label: 'Thanh toán cho bài báo (nếu được chấp nhận)',
+                                                            start: phaseData.authorPaymentStart,
+                                                            end: phaseData.authorPaymentEnd,
+                                                            note: 'Khách hàng phải thanh toán cho bài báo trong khoảng này'
+                                                        }
+                                                    ]}
+                                                />
+                                            )}
                                         </>
                                     )}
                                 </div>

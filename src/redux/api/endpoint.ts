@@ -314,7 +314,8 @@ export const endpoint = {
     UPDATE_CAMERA_READY: "/Paper/update-camera-ready",
     MARK_COMPLETE_REVISE: "/paper/mark-complete-revise",
 
-    GET_DETAIL_ASSIGNED_PAPERS: "/paper/get-detail-assigned-list"
+    GET_DETAIL_ASSIGNED_PAPERS: "/paper/get-detail-assigned-list",
+    ASSIGN_AUTHOR_TO_PAPER: "/paper/assign-author-to-paper"
   },
 
   FAVOURITE_CONFERENCE: {

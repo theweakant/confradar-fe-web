@@ -79,16 +79,18 @@ const EditProfileScreen: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<"profile" | "orcid">("profile");
 
+  const [isSavingAvatar, setIsSavingAvatar] = useState(false);
+
   const calculateCompletion = () => {
     const fields = [
       { value: profile?.fullName, weight: 10 },
-      { value: profile?.avatarUrl, weight: 5 },
+      { value: profile?.avatarUrl, weight: 20 },
       { value: profile?.phoneNumber, weight: 10 },
-      { value: profile?.bioDescription, weight: 20 },
+      { value: profile?.bioDescription, weight: 30 },
       { value: profile?.birthDay, weight: 15 },
       { value: profile?.gender, weight: 15 },
-      { value: true, weight: 15 },
-      { value: false, weight: 10 },
+      // { value: true, weight: 15 },
+      // { value: false, weight: 10 },
     ];
 
     const completed = fields.reduce((sum, field) => {
@@ -156,6 +158,33 @@ const EditProfileScreen: React.FC = () => {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges]);
+
+  const handleSaveAvatar = async () => {
+    if (!avatarFile) return;
+
+    try {
+      setIsSavingAvatar(true);
+      const updateData: ProfileUpdateRequest = {
+        fullName: editFormData.fullName || undefined,
+        phoneNumber: editFormData.phoneNumber ?? undefined,
+        gender: editFormData.gender as "Male" | "Female" | "Other" | undefined,
+        bioDescription: editFormData.bioDescription ?? undefined,
+        birthDay: editFormData.birthDay ?? undefined,
+        avatarFile: avatarFile || undefined,
+      };
+
+      await updateProfile(updateData);
+      // await updateProfile({ avatarFile });
+      alert("Avatar updated successfully!");
+      setAvatarFile(null);
+      await refetch();
+    } catch (error) {
+      alert("Error updating avatar.");
+    } finally {
+      setIsSavingAvatar(false);
+    }
+  };
+
 
   const handleInputChange = (field: string, value: string | null) => {
     setEditFormData((prev) => ({
@@ -387,6 +416,18 @@ const EditProfileScreen: React.FC = () => {
                         Choose file
                       </label>
                       {avatarFile && (
+                        <div className="mt-2 flex items-center gap-2">
+                          <Button
+                            onClick={handleSaveAvatar}
+                            disabled={isSavingAvatar}
+                            className="bg-blue-600 hover:bg-blue-700 text-white text-sm"
+                          >
+                            {isSavingAvatar ? "Saving..." : "Save Avatar"}
+                          </Button>
+                          <span className="text-sm text-gray-600">{avatarFile.name}</span>
+                        </div>
+                      )}
+                      {avatarFile && (
                         <p className="text-green-600 text-sm mt-2">
                           Selected: {avatarFile.name}
                         </p>
@@ -528,7 +569,7 @@ const EditProfileScreen: React.FC = () => {
                       <span className="text-sm text-gray-600">15%</span>
                     </div>
 
-                    <div className="flex items-center justify-between py-3">
+                    {/* <div className="flex items-center justify-between py-3">
                       <div className="flex items-center gap-3">
                         <CheckCircle className="w-5 h-5 text-green-600" />
                         <span className="text-gray-900">Notifications</span>
@@ -542,7 +583,7 @@ const EditProfileScreen: React.FC = () => {
                         <span className="text-gray-500">Bank details</span>
                       </div>
                       <span className="text-sm text-green-600">+30%</span>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </section>

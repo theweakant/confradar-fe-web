@@ -12,10 +12,11 @@ import { usePaperCustomer } from "@/redux/hooks/usePaper";
 import type { PaperPhase, PaperDetailResponse } from "@/types/paper.type";
 import { steps } from "@/helper/paper";
 import PaperStepIndicator from "@/components/molecules/PaperStepIndicator";
-import { Calendar } from "lucide-react";
+import { Calendar, Users } from "lucide-react";
 import TimelineDialog from "@/components/molecules/TimelineDialog";
 import PaymentPhase from "./PaymentPhase";
 import { useGlobalTime } from "@/utils/TimeContext";
+import AssignCoauthorDialog from "./AssignCoauthorDialog";
 
 const PaperTracking = () => {
   const { now } = useGlobalTime();
@@ -30,8 +31,13 @@ const PaperTracking = () => {
   const [paperDetailError, setPaperDetailError] = useState<string | null>(null);
   const [isTimelineOpen, setIsTimelineOpen] = useState(false);
 
+  const [isAssignCoauthorOpen, setIsAssignCoauthorOpen] = useState(false);
+
   const params = useParams();
   const paperId = params?.id as string;
+
+
+  const canAssignCoauthor = paperDetail?.cameraReady?.status?.toLowerCase() === 'accepted';
 
   const {
     paperPhases,
@@ -176,28 +182,6 @@ const PaperTracking = () => {
     }
   }, [paperDetail]);
 
-  // const maxStageAllowed = failedStepIndexes.length > 0 ? failedStepIndexes[0] + 1 : 4;
-
-  // const stages = [
-  //   { id: 1, label: "Abstract" },
-  //   { id: 2, label: "FullPaper" },
-  //   { id: 3, label: "Revise" },
-  //   { id: 4, label: "CameraReady" },
-  // ];
-
-  // const stages = paperPhases.length > 0
-  //   ? paperPhases.map((phase: PaperPhase, index: number) => ({
-  //     id: index + 1,
-  //     label: phase.phaseName || `Phase ${index + 1}`
-  //   }))
-  //   : [
-  //     { id: 1, label: 'Abstract' },
-  //     { id: 2, label: 'Full Paper' },
-  //     { id: 3, label: 'Revision' },
-  //     { id: 4, label: 'Camera Ready' },
-  //   ];
-
-  // Get error message for paper phases
   const getPaperPhasesErrorMessage = (): string => {
     if (!paperPhasesError) return "";
 
@@ -303,11 +287,25 @@ const PaperTracking = () => {
                 <div className="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-xl p-5 my-6 shadow-md">
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-bold text-gray-900">Thông tin tổng quan</h2>
-                    {paperDetail.currentPhase && (
-                      <span className="px-2.5 py-1 bg-blue-100 border border-blue-200 rounded-full text-blue-700 text-xs font-medium">
-                        {paperDetail.currentPhase.phaseName || "Chưa xác định"}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-3">
+                      {paperDetail.currentPhase && (
+                        <span className="px-2.5 py-1 bg-blue-100 border border-blue-200 rounded-full text-blue-700 text-xs font-medium">
+                          {paperDetail.currentPhase.phaseName || "Chưa xác định"}
+                        </span>
+                      )}
+                      <button
+                        onClick={() => setIsAssignCoauthorOpen(true)}
+                        disabled={!canAssignCoauthor}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition ${canAssignCoauthor
+                          ? 'bg-green-600 hover:bg-green-700 text-white'
+                          : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                          }`}
+                        title={canAssignCoauthor ? "Thêm đồng tác giả" : "Chỉ có thể thêm đồng tác giả sau khi Camera Ready được chấp nhận"}
+                      >
+                        <Users className="w-4 h-4" />
+                        Thêm đồng tác giả
+                      </button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -587,6 +585,15 @@ const PaperTracking = () => {
         revisionDeadlines={paperDetail?.revisionDeadline}
         variant="submitted"
         theme="light"
+      />
+
+      <AssignCoauthorDialog
+        isOpen={isAssignCoauthorOpen}
+        onClose={() => setIsAssignCoauthorOpen(false)}
+        paperId={paperId}
+        conferenceId={paperDetail?.researchConferenceInfo?.conferenceId}
+        currentCoauthors={paperDetail?.coAuthors || []}
+        onSuccess={loadPaperDetail}
       />
     </div>
   );

@@ -18,6 +18,7 @@ import {
   useUpdateFullPaperMutation,
   useUpdateRevisionSubmissionMutation,
   useUpdateCameraReadyMutation,
+  useAssignAuthorToPaperMutation,
 } from "@/redux/services/paper.service";
 import { parseApiError } from "@/helper/api";
 import type { ApiResponse } from "@/types/api.type";
@@ -152,6 +153,11 @@ export const usePaperCustomer = (conferenceId?: string) => {
     { isLoading: updateCameraReadyLoading, error: updateCameraReadyRawError },
   ] = useUpdateCameraReadyMutation();
 
+  const [
+    assignAuthorToPaper,
+    { isLoading: assigningAuthorLoading, error: assigningAuthorRawError },
+  ] = useAssignAuthorToPaperMutation();
+
   // errors
   const submittedPapersError = parseApiError<string>(submittedPapersRawError);
   const paperDetailError = parseApiError<string>(paperDetailRawError);
@@ -179,6 +185,8 @@ export const usePaperCustomer = (conferenceId?: string) => {
   const updateFullPaperError = parseApiError<string>(updateFullPaperRawError);
   const updateRevisionError = parseApiError<string>(updateRevisionRawError);
   const updateCameraReadyError = parseApiError<string>(updateCameraReadyRawError);
+
+  const assignAuthorError = parseApiError<string>(assigningAuthorRawError);
 
   const fetchSubmittedPapers = useCallback(async (): Promise<
     ApiResponse<PaperCustomer[]>
@@ -393,6 +401,18 @@ export const usePaperCustomer = (conferenceId?: string) => {
     [updateCameraReady]
   );
 
+  const handleAssignAuthor = useCallback(
+    async (paperId: string, userIds: string[]): Promise<ApiResponse<any>> => {
+      try {
+        const result = await assignAuthorToPaper({ paperId, userIds }).unwrap();
+        return result;
+      } catch (error) {
+        throw error;
+      }
+    },
+    [assignAuthorToPaper]
+  );
+
   const loading =
     submittedPapersLoading ||
     paperDetailLoading ||
@@ -410,7 +430,8 @@ export const usePaperCustomer = (conferenceId?: string) => {
     updateAbstractLoading ||
     updateFullPaperLoading ||
     updateRevisionLoading ||
-    updateCameraReadyLoading;
+    updateCameraReadyLoading ||
+    assigningAuthorLoading;
 
   return {
     //Data
@@ -436,6 +457,7 @@ export const usePaperCustomer = (conferenceId?: string) => {
     handleUpdateFullPaper,
     handleUpdateRevisionSubmission,
     handleUpdateCameraReady,
+    handleAssignAuthor,
 
     //Loading
     loading,
@@ -461,5 +483,6 @@ export const usePaperCustomer = (conferenceId?: string) => {
     updateFullPaperError,
     updateRevisionError,
     updateCameraReadyError,
+    assignAuthorError,
   };
 };

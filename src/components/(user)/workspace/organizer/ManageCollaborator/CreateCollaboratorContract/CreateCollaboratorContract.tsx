@@ -214,7 +214,17 @@ const CreateCollaboratorContract: React.FC<CreateCollaboratorContractProps> = ({
   const [stepData, setStepData] = useState<StepData>({
     selectedUser: null,
     selectedConference: null,
-    contractData: {}
+    contractData: {
+      isMediaStep: false,
+      isPolicyStep: false,
+      isSessionStep: false,
+      isPriceStep: false,
+      isTicketSelling: false,
+      isSponsorStep: false,
+      commission: undefined,
+      // signDay: '',
+      // finalizePaymentDate: ''
+    }
   });
   const [showUserDialog, setShowUserDialog] = useState(false);
   const [showConferenceDialog, setShowConferenceDialog] = useState(false);
@@ -323,23 +333,67 @@ const CreateCollaboratorContract: React.FC<CreateCollaboratorContractProps> = ({
   const handleSubmit = async () => {
     const { contractData } = stepData;
 
-    if (
-      !contractData.userId ||
-      !contractData.conferenceId ||
-      !contractData.signDay ||
-      !contractData.commission ||
-      !contractData.finalizePaymentDate ||
-      !contractData.contractFile ||
-      contractData.isMediaStep === undefined ||
-      contractData.isPolicyStep === undefined ||
-      contractData.isSessionStep === undefined ||
-      contractData.isPriceStep === undefined ||
-      contractData.isTicketSelling === undefined ||
-      contractData.isSponsorStep === undefined
-    ) {
-      toast.error('Vui lòng điền đầy đủ thông tin bắt buộc');
-      return;
+    // Các field bắt buộc chung
+    const requiredFields: (keyof CreateCollaboratorContractRequest)[] = [
+      'userId',
+      'conferenceId',
+      'signDay',
+      'contractFile',
+      // 'isMediaStep',
+      // 'isPolicyStep',
+      // 'isSponsorStep'
+    ];
+
+    for (const field of requiredFields) {
+      if (contractData[field] === undefined || contractData[field] === null) {
+        toast.error('Vui lòng điền đầy đủ thông tin bắt buộc');
+        return;
+      }
     }
+
+    // Logic riêng cho isTicketSelling
+    if (contractData.isTicketSelling) {
+      if (
+        !contractData.finalizePaymentDate ||
+        !contractData.commission ||
+        contractData.isPriceStep !== true ||
+        contractData.isSessionStep !== true
+      ) {
+        toast.error(
+          'Vui lòng điền đầy đủ thông tin thanh toán, giá vé và session khi bán vé'
+        );
+        return;
+      }
+    } else {
+      // Khi isTicketSelling = false, finalizePaymentDate, commission không bắt buộc
+      // isPriceStep, isSessionStep chỉ cần có value, true/false đều ok
+      if (
+        contractData.isPriceStep === undefined ||
+        contractData.isSessionStep === undefined
+      ) {
+        toast.error('Vui lòng xác định bước Price và Session');
+        return;
+      }
+    }
+    // const { contractData } = stepData;
+
+    // if (
+    //   !contractData.userId ||
+    //   !contractData.conferenceId ||
+    //   !contractData.signDay ||
+    //   !contractData.commission ||
+    //   !contractData.finalizePaymentDate ||
+    //   !contractData.contractFile ||
+    //   contractData.isMediaStep === undefined ||
+    //   contractData.isPolicyStep === undefined ||
+    //   contractData.isSessionStep === undefined ||
+    //   contractData.isPriceStep === undefined ||
+    //   contractData.isTicketSelling === undefined ||
+    //   contractData.isSponsorStep === undefined
+    // ) {
+    //   toast.error('Vui lòng điền đầy đủ thông tin bắt buộc');
+    //   return;
+    // }
     try {
       await createContract(contractData as CreateCollaboratorContractRequest).unwrap();
       toast.success('Tạo hợp đồng thành công');
