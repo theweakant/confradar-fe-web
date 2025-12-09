@@ -715,7 +715,7 @@ const handlePendingConferenceDetail = (conferenceId: string) => {
                       <div className="grid grid-cols-2 gap-4 mb-4">
                         <div className="flex items-center text-sm text-gray-600">
                           <Users className="w-4 h-4 mr-2" />
-                          <span>Người tạo: {conference.createdBy ?? "N/A"}</span>
+                          <span>Người tạo: {conference.userNameCreator ?? "N/A"}</span>
                         </div>
                         <div className="flex items-center text-sm text-gray-600">
                           <Tag className="w-4 h-4 mr-2" />

@@ -110,6 +110,9 @@ export const endpoint = {
     UPDATE_OWN_STATUS: "/Conference/Update-own-conference-Status",
     REQUEST_CONFERENCE_APPROVE: "/Conference/request-a-conference-to-be-approved",
 
+    DISABLE_CONFERENCE: "/conference/disable-conference",
+    TRANSITION_CONF_FROM_DISABLE_TO_READY: "/conference/transition-conference-from-disable-to-ready",
+
     DETAIL: "/Conference",
     TECHNICAL_DETAIL: "/Conference/technical-detail-for-anon",
     RESEARCH_DETAIL: "/Conference/research-detail-for-anon",
