@@ -402,7 +402,7 @@ export const usePaperCustomer = (conferenceId?: string) => {
   );
 
   const handleAssignAuthor = useCallback(
-    async (paperId: string, userIds: string[]): Promise<ApiResponse<any>> => {
+    async (paperId: string, userIds: string[]): Promise<ApiResponse<unknown>> => {
       try {
         const result = await assignAuthorToPaper({ paperId, userIds }).unwrap();
         return result;
