@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, User, Mail, Calendar, Shield, Activity } from 'lucide-react';
+import { User, Mail, Calendar, Shield } from 'lucide-react';
 import { UserDetailForAdminAndOrganizerResponse } from '@/types/user.type';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';

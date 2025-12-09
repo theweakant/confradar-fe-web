@@ -116,6 +116,22 @@ export interface AssignedReviewer {
   name: string;
   isHeadReviewer: boolean;
 }
+export interface PaymentDetail {
+  conferencePriceId: string;
+  ticketPrice: number;
+  ticketName: string;
+  ticketDescription: string;
+  isAuthor: boolean;
+  purchasedPhaseInfo: PurchasedPhaseInfo;
+}
+export interface PurchasedPhaseInfo {
+  pricePhaseId: string;
+  phaseName: string;
+  startDate: string; // "YYYY-MM-DD"
+  endDate: string;   // "YYYY-MM-DD"
+  applyPercent: number;
+}
+
 export interface PaperDetail {
   paperId: string;
   title: string;
@@ -128,6 +144,8 @@ export interface PaperDetail {
   fullPaperPhase: FullPaperPhase | null;
   revisionPhase: RevisionPhase | null;
   cameraReadyPhase: CameraReadyPhase | null;
+  paymentDetail: PaymentDetail | null;
+
 }
 
 export interface SubmittedPapersResponse {

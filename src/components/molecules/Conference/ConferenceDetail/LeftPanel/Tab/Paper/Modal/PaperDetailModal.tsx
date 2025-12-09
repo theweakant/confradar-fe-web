@@ -4,6 +4,7 @@ import { X, FileText, Users, Calendar, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { PaperDetail } from "@/types/statistics.type";
+import { formatCurrency } from "@/helper/format";
 
 interface PaperDetailModalProps {
   paper: PaperDetail;
@@ -57,7 +58,7 @@ export function PaperDetailModal({
   const abstractDecided =
     paper.abstractPhase &&
     (paper.abstractPhase.status === "Accepted" || paper.abstractPhase.status === "Rejected");
-
+    
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
@@ -293,37 +294,88 @@ export function PaperDetailModal({
             )}
           </div>
 
+          {/* --- Reviewer đã gán --- */}
           <div className="bg-white rounded-lg p-5 border border-gray-200">
             <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
               <Users className="w-5 h-5 text-green-600" />
               Reviewer đã gán ({paper.assignedReviewers?.length || 0})
             </h4>
-              {hasReviewers ? (
-                <div className="flex flex-wrap gap-2">
-                  {paper.assignedReviewers.map((reviewer) => (
-                    <div
-                      key={reviewer.userId}
-                      className="flex items-center gap-2 bg-purple-50 px-3 py-2 rounded-lg border border-purple-200"
-                    >
-                      <Avatar className="w-6 h-6">
-                        <AvatarFallback className="bg-gradient-to-br from-purple-400 to-purple-600 text-white text-xs">
-                          {reviewer.name.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm text-gray-700">{reviewer.name}</span>
-                      {reviewer.isHeadReviewer && (
-                        <span className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-800 text-xs px-1.5 py-0.5 rounded-full font-medium">
-                          <span>★</span> Head
-                        </span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500">Chưa có reviewer nào được gán</p>
-              )}
+            {hasReviewers ? (
+              <div className="flex flex-wrap gap-2">
+                {paper.assignedReviewers.map((reviewer) => (
+                  <div
+                    key={reviewer.userId}
+                    className="flex items-center gap-2 bg-purple-50 px-3 py-2 rounded-lg border border-purple-200"
+                  >
+                    <Avatar className="w-6 h-6">
+                      <AvatarFallback className="bg-gradient-to-br from-purple-400 to-purple-600 text-white text-xs">
+                        {reviewer.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm text-gray-700">{reviewer.name}</span>
+                    {reviewer.isHeadReviewer && (
+                      <span className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-800 text-xs px-1.5 py-0.5 rounded-full font-medium">
+                        <span>★</span> Head
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">Chưa có reviewer nào được gán</p>
+            )}
           </div>
 
+          {/* --- Thông tin thanh toán (MỚI) --- */}
+          {paper.paymentDetail && (
+            <div
+              className={`rounded-lg p-4 border ${
+                paper.paymentDetail.isAuthor
+                  ? "bg-blue-50 border-blue-300"
+                  : "bg-gray-50 border-gray-200"
+              }`}
+            >
+              <h5 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                Thông tin thanh toán
+                {/* {paper.paymentDetail.isAuthor && (
+                  <span className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full font-medium">
+                    Bạn là tác giả
+                  </span>
+                )} */}
+              </h5>
+
+              <div className="space-y-2 text-sm">
+                <div>
+                  <span className="font-medium">Loại chi phí:</span>{" "}
+                  <span className="text-gray-700">{paper.paymentDetail.ticketName}</span>
+                </div>
+                <div>
+                  <span className="font-medium">Số tiền:</span>{" "}
+                  <span className="text-gray-700 font-semibold">
+                    {formatCurrency(paper.paymentDetail.ticketPrice)}
+                  </span>
+                </div>
+
+                {paper.paymentDetail.purchasedPhaseInfo && (
+                  <div className="mt-2 pt-2 border-t border-gray-200">
+                    <div className="font-medium text-gray-800">Giai đoạn:</div>
+                    <div className="text-gray-700">
+                      {paper.paymentDetail.purchasedPhaseInfo.phaseName} (
+                      {formatDate(paper.paymentDetail.purchasedPhaseInfo.startDate)} →{" "}
+                      {formatDate(paper.paymentDetail.purchasedPhaseInfo.endDate)})
+                    </div>
+                    {paper.paymentDetail.purchasedPhaseInfo.applyPercent !== 100 && (
+                      <div className="text-sm text-amber-700 mt-1">
+                        Tỷ lệ áp dụng: {paper.paymentDetail.purchasedPhaseInfo.applyPercent}%
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* --- Các nút hành động --- */}
           {abstractPending && (
             <div className="flex gap-4 pt-4 border-t border-gray-200">
               <Button

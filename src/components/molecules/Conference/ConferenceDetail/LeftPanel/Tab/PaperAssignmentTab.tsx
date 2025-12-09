@@ -1,4 +1,3 @@
-// src/components/.../PaperAssignmentTab.tsx
 import { useState } from "react";
 import PaperAssignmentCalendar from "@/components/molecules/Calendar/SessionCalendar/PaperAssignmentCalendar";
 

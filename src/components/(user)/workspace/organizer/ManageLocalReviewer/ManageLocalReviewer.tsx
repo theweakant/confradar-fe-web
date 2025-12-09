@@ -29,7 +29,6 @@ import {
 import {
     ListUserDetailForAdminAndOrganizerResponse,
     UserDetailForAdminAndOrganizerResponse,
-    CollaboratorRequest,
     CreateLocalReviewerRequest
 } from "@/types/user.type";
 import { toast } from "sonner";

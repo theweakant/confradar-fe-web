@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, Calendar, Users } from 'lucide-react';
+import { TrendingUp, Calendar, Users, Presentation } from 'lucide-react';
 import {
   useGetConferencesGroupByStatusQuery,
   useGetRevenueStatsQuery,
@@ -8,6 +8,7 @@ import {
 } from '@/redux/services/dashboard.service';
 import { formatCurrency } from '@/helper/format';
 import { useAuth } from '@/redux/hooks/useAuth';
+import { MonthlyStat } from '@/types/dashboard.type';
 
 interface ConferenceStatsProps {
   total: number;
@@ -107,24 +108,33 @@ const RevenueChart: React.FC<RevenueChartProps> = ({ data }) => {
     <div className="bg-white rounded-3xl p-6 shadow-md border border-gray-100">
       <h3 className="text-lg font-semibold mb-6 text-gray-900">Doanh Thu Theo Tháng</h3>
       <div className="flex items-end justify-between h-56 gap-2">
-        {data.map((item, index) => {
-          const height = maxRevenue > 0 ? (item.revenue / maxRevenue) * 100 : 0;
-          return (
-            <div key={`revenue-bar-${index}`} className="flex-1 flex flex-col items-center gap-3">
-              <div className="w-full h-full flex items-end relative">
-                {index % 2 === 0 && (
-                  <div className="absolute inset-0 bg-gray-100/50 rounded-t-2xl" style={{ height: '100%' }}></div>
-                )}
-                <div
-                  className="w-full rounded-2xl transition-all bg-emerald-500 relative z-10"
-                  style={{ height: `${height}%` }}
-                  title={formatCurrency(item.revenue)}
-                ></div>
+        {data.length === 0 ? (
+          <div className="w-full h-full flex items-center justify-center text-gray-400">
+            Chưa có dữ liệu doanh thu
+          </div>
+        ) : (
+          data.map((item, index) => {
+            const height = maxRevenue > 0 ? (item.revenue / maxRevenue) * 100 : 0;
+            return (
+              <div key={`revenue-bar-${index}`} className="flex-1 flex flex-col items-center gap-3">
+                <div className="w-full h-full flex items-end relative">
+                  {index % 2 === 0 && (
+                    <div className="absolute inset-0 bg-gray-100/50 rounded-t-2xl" style={{ height: '100%' }}></div>
+                  )}
+                  <div
+                    className="w-full rounded-2xl transition-all bg-emerald-500 relative z-10 hover:bg-emerald-600"
+                    style={{ height: `${height}%`, minHeight: height > 0 ? '12px' : '0' }}
+                    title={formatCurrency(item.revenue)}
+                  ></div>
+                </div>
+                <div className="text-center">
+                  <span className="text-sm font-medium text-gray-700 block">{item.month}</span>
+                  <span className="text-xs text-gray-500">{formatCurrency(item.revenue)}</span>
+                </div>
               </div>
-              <span className="text-sm font-medium text-gray-700">{item.month}</span>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
     </div>
   );
@@ -152,23 +162,27 @@ const TopConferences: React.FC<TopConferencesProps> = ({ conferences }) => {
   return (
     <div className="bg-white rounded-3xl p-6 shadow-md border border-gray-100">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">Hội nghị/ hội thảo được tham dự nhiều nhất</h3>
+        <h3 className="text-lg font-semibold text-gray-900">Được tham dự nhiều nhất</h3>
       </div>
       <div className="space-y-4">
-        {conferences.map((conf) => (
-          <div key={conf.id} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-gray-50 transition-colors">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-2xl flex-shrink-0">
-              📊
+        {conferences.length === 0 ? (
+          <div className="text-center text-gray-400 py-8">Chưa có dữ liệu</div>
+        ) : (
+          conferences.map((conf) => (
+            <div key={conf.id} className="flex items-center gap-2 p-2 rounded-2xl hover:bg-gray-50 transition-colors">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0">
+              <Presentation size={24} className="text-gray" />
             </div>
-            <div className="flex-1 min-w-0">
-              <h4 className="font-medium text-sm text-gray-900 truncate mb-1">{conf.name}</h4>
-              <p className="text-xs text-gray-500 flex items-center gap-1">
-                <Users size={12} />
-                {conf.registrations} đăng ký ({conf.occupancyRate.toFixed(1)}%)
-              </p>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-medium text-sm text-gray-900 truncate mb-1">{conf.name}</h4>
+                <p className="text-xs text-gray-500 flex items-center gap-1">
+                  <Users size={12} />
+                  {conf.registrations} đăng ký ({conf.occupancyRate.toFixed(1)}%)
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
@@ -230,6 +244,34 @@ const ConferenceProgress: React.FC<ProgressProps> = ({ completed, inProgress, pe
       </div>
     </div>
   );
+};
+
+// ============= HELPER FUNCTION =============
+const generateNext6MonthsData = (apiData: MonthlyStat[]): RevenueData[] => {
+  const now = new Date();
+  const next6Months: RevenueData[] = [];
+  
+  // Tạo map từ API data để tra cứu nhanh
+  const apiDataMap = new Map<string, number>();
+  apiData.forEach((item) => {
+    const key = `${item.year}-${item.month}`;
+    apiDataMap.set(key, item.monthlyTotal ?? 0);
+  });
+  
+  // Tạo 6 tháng từ tháng hiện tại trở đi
+  for (let i = 0; i < 6; i++) {
+    const date = new Date(now.getFullYear(), now.getMonth() + i, 1);
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    const key = `${year}-${month}`;
+    
+    next6Months.push({
+      month: `T${month}`,
+      revenue: apiDataMap.get(key) || 0,
+    });
+  }
+  
+  return next6Months;
 };
 
 // ============= MAIN DASHBOARD =============
@@ -294,8 +336,7 @@ export default function ConferenceDashboard() {
         inProgress += count;
         break;
       default:
-        // Các trạng thái khác (nếu có) → có thể gộp vào "Đang diễn ra" hoặc bỏ qua
-        // Ở đây, để an toàn, ta gộp vào "Đang diễn ra"
+        // Các trạng thái khác (nếu có) → gộp vào "Đang diễn ra"
         inProgress += count;
     }
   });
@@ -303,10 +344,9 @@ export default function ConferenceDashboard() {
   // Tổng = completed + inProgress + pending (không tính Draft)
   const total = completed + inProgress + pending;
 
-  const revenueChart = (revenueData?.data?.monthlyStats || []).map((item) => ({
-    month: `T${new Date(item.month).getMonth() + 1}`,
-    revenue: item.revenue,
-  }));
+  // ✅ FIX: Tạo dữ liệu 6 tháng từ tháng hiện tại trở đi
+  const apiMonthlyStats = revenueData?.data?.monthlyStats || [];
+  const revenueChart = generateNext6MonthsData(apiMonthlyStats);
 
   const firstUpcoming = upcomingData?.data?.[0];
   const reminder = firstUpcoming
@@ -327,7 +367,7 @@ export default function ConferenceDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Dashboard Quản Lý Hội Nghị/ Hội Thảo</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Dashboard Quản Lý</h1>
 
         <ConferenceStats
           total={total}
@@ -343,7 +383,7 @@ export default function ConferenceDashboard() {
           {reminder ? (
             <UpcomingReminder conference={reminder} />
           ) : (
-            <div className="bg-white rounded-3xl p-6 shadow-md border border-gray-100 flex items-center justify-center">
+            <div className="bg-white rounded-3xl p-6 shadow-md border border-gray-100 flex items-center justify-center text-gray-500">
               Không có hội nghị hay hội thảo sắp tới
             </div>
           )}

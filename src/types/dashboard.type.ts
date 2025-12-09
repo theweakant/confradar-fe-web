@@ -64,11 +64,19 @@ export interface TopRegisteredConferencesResponse {
 }
 
 export interface MonthlyStat {
-  month: string; // e.g., "2025-11"
-  revenue: number;
-  ticketsSold: number;
+  month: number;        // số tháng (1-12)
+  year: number;         // năm (2026)
+  monthLabel: string;   // "2/2026"
+  monthlyTotal: number; // tổng doanh thu tháng
+  monthlyTickets: number; // số vé bán được
+  conferences: ConferenceRevenue[];
 }
-
+export interface ConferenceRevenue {
+  conferenceId: string;
+  conferenceName: string;
+  ticketsSold: number;
+  revenue: number;
+}
 export interface RevenueStatsResponse {
   totalRevenue: number;
   totalTicketsSold: number;
