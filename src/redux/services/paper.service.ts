@@ -94,7 +94,7 @@ export const paperApi = createApi({
 
     decideAbstractStatus: builder.mutation<
       ApiResponse<unknown>,
-      { paperId: string; abstractId: string; globalStatus: string; reason: string}
+      { paperId: string; abstractId: string; globalStatus: string; reason: string }
     >({
       query: (body) => ({
         url: endpoint.PAPER.DECIDE_ABSTRACT,
@@ -564,6 +564,18 @@ export const paperApi = createApi({
       }),
       providesTags: ['Paper'],
     }),
+
+    assignAuthorToPaper: builder.mutation<
+      ApiResponse<unknown>,
+      { paperId: string; userIds: string[] }
+    >({
+      query: ({ paperId, userIds }) => ({
+        url: endpoint.PAPER.ASSIGN_AUTHOR_TO_PAPER,
+        method: 'POST',
+        body: { paperId, userIds },
+      }),
+      invalidatesTags: ['Paper'],
+    }),
   }),
 });
 
@@ -622,4 +634,5 @@ export const {
   useMarkCompleteReviseMutation,
 
   useGetDetailAssignedListQuery,
+  useAssignAuthorToPaperMutation,
 } = paperApi;

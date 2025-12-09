@@ -31,8 +31,10 @@ import type {
 } from "@/types/ticket.type";
 import { isSameDay, isThisWeek, isThisMonth, isAfter, startOfToday } from "date-fns";
 import { toast } from "sonner";
+import { useGlobalTime } from "@/utils/TimeContext";
 
 export default function TicketConferences() {
+  const {now} = useGlobalTime();
   const { tickets, loading, ticketsError, refetchTickets, handleRefundTicket, refunding, refundError } = useTicket();
 
   const [selectedFilter, setSelectedFilter] = useState<string>("all");
@@ -87,7 +89,7 @@ export default function TicketConferences() {
     refundPercent?: number;
     applicableDeadline?: string;
   } => {
-    const now = new Date();
+    // const now = new Date();
 
     // CHECK CHUNG CHO TẤT CẢ VÉ (bao gồm cả Author)
     // Bước 1: Check hasRefundPolicy
@@ -171,7 +173,7 @@ export default function TicketConferences() {
   };
 
   const filterTicketsByDate = (ticketList: typeof tickets) => {
-    const now = new Date();
+    // const now = new Date();
     return ticketList.filter((ticket) => {
       const date = ticket.registeredDate ? new Date(ticket.registeredDate) : null;
       if (!date) return false;

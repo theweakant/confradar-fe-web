@@ -117,13 +117,30 @@ export const contractApi = createApi({
                 formData.append("userId", data.userId);
                 formData.append("isMediaStep", data.isMediaStep.toString());
                 formData.append("isPolicyStep", data.isPolicyStep.toString());
-                formData.append("isSessionStep", data.isSessionStep.toString());
-                formData.append("isPriceStep", data.isPriceStep.toString());
+                formData.append("isSessionStep", String(data.isSessionStep ?? false));
+                formData.append("isPriceStep", String(data.isPriceStep ?? false));
                 formData.append("isTicketSelling", data.isTicketSelling.toString());
                 formData.append("isSponsorStep", data.isSponsorStep.toString());
                 formData.append("signDay", data.signDay);
-                formData.append("finalizePaymentDate", data.finalizePaymentDate);
                 formData.append("conferenceId", data.conferenceId);
+
+                if (data.finalizePaymentDate) {
+                    formData.append("finalizePaymentDate", data.finalizePaymentDate);
+                }
+                if (data.commission !== undefined) {
+                    formData.append("commission", data.commission.toString());
+                }
+
+                // formData.append("userId", data.userId);
+                // formData.append("isMediaStep", data.isMediaStep.toString());
+                // formData.append("isPolicyStep", data.isPolicyStep.toString());
+                // formData.append("isSessionStep", data.isSessionStep.toString());
+                // formData.append("isPriceStep", data.isPriceStep.toString());
+                // formData.append("isTicketSelling", data.isTicketSelling.toString());
+                // formData.append("isSponsorStep", data.isSponsorStep.toString());
+                // formData.append("signDay", data.signDay);
+                // formData.append("finalizePaymentDate", data.finalizePaymentDate);
+                // formData.append("conferenceId", data.conferenceId);
 
                 if (data.commission !== undefined) {
                     formData.append("commission", data.commission.toString());
