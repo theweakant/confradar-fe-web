@@ -21,7 +21,7 @@ interface ApproveChangeSessionProps {
   open: boolean;
   onClose: () => void;
   sessionChangeRequestId: string;
-  paperTitle?: string; 
+  paperTitle?: string; // ← giờ là mô tả yêu cầu đổi phiên, không phải tiêu đề bài báo thuần
   onSuccess?: () => void;
 }
 
@@ -84,7 +84,7 @@ export const ApproveChangeSession: React.FC<ApproveChangeSessionProps> = ({
         <div className="space-y-4">
           {paperTitle && (
             <div className="bg-gray-50 p-3 rounded-md">
-              <Label className="text-sm text-gray-600">Bài báo</Label>
+              <Label className="text-sm text-gray-600">Yêu cầu thay đổi</Label>
               <p className="mt-1 font-medium text-gray-900">{paperTitle}</p>
             </div>
           )}

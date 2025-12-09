@@ -3,13 +3,14 @@ import { ProgressTimelineSection } from "./ProgressSection";
 import { StatisticsSection } from "./StatisticSection";
 import { RegisteredUserSection } from "./RegisteredUserSection";
 import type { CommonConference } from "@/types/conference.type";
-import { useGlobalTime } from "@/utils/TimeContext"; // ✅ Import hook
+import { useGlobalTime } from "@/utils/TimeContext"; 
 
 interface RightSidebarProps {
   conference: CommonConference;
   conferenceId: string;
   isCollaborator: boolean;
   conferenceType: "technical" | "research" | null;
+  isOwnConference: boolean;
   getCategoryName: (id: string) => string;
   getStatusName: (id: string) => string;
   getCityName: (id: string) => string;
@@ -21,6 +22,8 @@ export function RightSidebar({
   conference,
   conferenceId,
   isCollaborator,
+  conferenceType,
+  isOwnConference,
   getStatusName,
   onOpenTimeline,
   onOpenFullAttendees
@@ -37,9 +40,13 @@ export function RightSidebar({
       />
 
       {/* Statistics */}
-      <StatisticsSection
-        conferenceId={conferenceId}
-      />
+      {conferenceType && (
+        <StatisticsSection
+          conferenceId={conferenceId}
+          conferenceType={conferenceType} // ✅ "technical" hoặc "research"
+          isOwnConference={isOwnConference}
+        />
+      )}
 
       {/* Recent Activities */}
       <RegisteredUserSection

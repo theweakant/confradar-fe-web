@@ -1,4 +1,5 @@
 // components/OtherRequestTab/Session/SessionChangeCard.tsx
+
 import { Clock, Layers } from "lucide-react";
 import { formatDate } from "@/helper/format";
 import { renderStatusBadge } from "../utils/utils";
@@ -10,6 +11,9 @@ interface SessionChangeCardProps {
 }
 
 export function SessionChangeCard({ request, onClick }: SessionChangeCardProps) {
+  const currentTitle = request.currentSession?.title || "Không có tiêu đề";
+  const newTitle = request.newSession?.title || "Không có tiêu đề";
+
   return (
     <div 
       onClick={onClick}
@@ -18,8 +22,8 @@ export function SessionChangeCard({ request, onClick }: SessionChangeCardProps) 
       {/* Header */}
       <div className="flex justify-between items-start mb-3">
         <div>
-          <p className="text-xs text-gray-500 mb-0.5">Mã yêu cầu</p>
-          <p className="text-base font-bold text-gray-900">#{request.sessionChangeRequestId}</p>
+          <p className="text-xs text-gray-500 mb-0.5">Bài báo</p>
+          <p className="text-base font-bold text-gray-900">{request.paparTile  }</p>
         </div>
         {renderStatusBadge(request.globalStatusName)}
       </div>
@@ -29,8 +33,8 @@ export function SessionChangeCard({ request, onClick }: SessionChangeCardProps) 
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <Layers className="w-4 h-4 text-gray-500 flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-gray-500">Phiên hiện tại</p>
-            <p className="text-sm font-medium text-gray-900 truncate">{request.currentSessionId}</p>
+            <p className="text-xs text-gray-500">Session hiện tại</p>
+            <p className="text-sm font-medium text-gray-900 truncate">{currentTitle}</p>
           </div>
         </div>
         
@@ -39,8 +43,8 @@ export function SessionChangeCard({ request, onClick }: SessionChangeCardProps) 
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <Layers className="w-4 h-4 text-blue-600 flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-blue-600">Phiên mới</p>
-            <p className="text-sm font-semibold text-blue-700 truncate">{request.newSessionId}</p>
+            <p className="text-xs text-blue-600">Session mới</p>
+            <p className="text-sm font-semibold text-blue-700 truncate">{newTitle}</p>
           </div>
         </div>
       </div>

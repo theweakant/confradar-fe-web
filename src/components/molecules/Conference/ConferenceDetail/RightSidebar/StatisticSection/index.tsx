@@ -1,6 +1,6 @@
 "use client";
 
-import { TrendingUp, DollarSign } from "lucide-react";
+import { TrendingUp, DollarSign, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useGetSoldTicketQuery } from "@/redux/services/statistics.service";
 import { formatCurrency } from "@/helper/format";
@@ -8,9 +8,11 @@ import { useAuth } from "@/redux/hooks/useAuth";
 
 interface StatisticsSectionProps {
   conferenceId: string;
+  conferenceType: "research" | "technical"; 
+  isOwnConference: boolean;           
 }
 
-export function StatisticsSection({ conferenceId }: StatisticsSectionProps) {
+export function StatisticsSection({ conferenceId, conferenceType, isOwnConference }: StatisticsSectionProps) {
   const router = useRouter();
   const { user } = useAuth();
 
@@ -77,7 +79,6 @@ export function StatisticsSection({ conferenceId }: StatisticsSectionProps) {
             const data = soldTicketResponse?.data;
             const totalRevenue = data?.totalRevenue || 0;
             const totalTicketsSold = data?.totalTicketsSold || 0;
-            const totalRefundedAmount = data?.totalRefundedAmount || 0;
             const totalRevenueWithoutRefunded = data?.totalRevenueWithoutRefunded || 0;
 
             let totalCommission = 0;
@@ -92,18 +93,27 @@ export function StatisticsSection({ conferenceId }: StatisticsSectionProps) {
               }
             });
 
-            let displayAmountLabel = "";
-            let displayAmount = 0;
+            let primaryLabel = "";
+            let primaryValue = 0;
 
             if (isCollaborator) {
-              displayAmountLabel = "Thu nhập của bạn";
-              displayAmount = totalCommission;
+              // Collaborator chỉ xem technical của chính họ
+              primaryLabel = "Số tiền đối tác nhận được";
+              primaryValue = totalCommission;
             } else if (isOrganizer) {
-              displayAmountLabel = "Doanh thu ròng";
-              displayAmount = totalRevenueWithoutRefunded - totalCommission - totalToConfRadar;
+              // Organizer:
+              if (conferenceType === "technical" && !isOwnConference) {
+                // Xem technical do collaborator tạo → chỉ thấy phần ConfRadar nhận
+                primaryLabel = "Số tiền ConfRadar nhận";
+                primaryValue = totalToConfRadar;
+              } else {
+                // Các trường hợp còn lại: technical của mình, hoặc mọi trường hợp research
+                primaryLabel = "Doanh thu ròng";
+                primaryValue = totalRevenueWithoutRefunded - totalCommission - totalToConfRadar;
+              }
             } else {
-              displayAmountLabel = "Doanh thu hợp lệ";
-              displayAmount = totalRevenueWithoutRefunded;
+              primaryLabel = "Doanh thu hợp lệ";
+              primaryValue = totalRevenueWithoutRefunded;
             }
 
             return (
@@ -126,14 +136,14 @@ export function StatisticsSection({ conferenceId }: StatisticsSectionProps) {
                       <DollarSign className="w-4 h-4 text-purple-600" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-xs text-gray-500">{displayAmountLabel}</p>
-                      {displayAmount >= 0 ? (
+                      <p className="text-xs text-gray-500">{primaryLabel}</p>
+                      {primaryValue >= 0 ? (
                         <p className="text-base font-bold text-green-700">
-                          {formatCurrency(displayAmount)}
+                          {formatCurrency(primaryValue)}
                         </p>
                       ) : (
                         <p className="text-base font-bold text-red-700">
-                          -{formatCurrency(Math.abs(displayAmount))}
+                          -{formatCurrency(Math.abs(primaryValue))}
                         </p>
                       )}
                       <p className="text-xs text-gray-500 mt-0.5">

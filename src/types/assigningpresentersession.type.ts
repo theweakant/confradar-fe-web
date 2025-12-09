@@ -40,11 +40,40 @@ export interface PendingPresenterChangeResponse {
   sessionId: string | null;
 }
 
+export interface ConferenceSession {
+  conferenceSessionId: string;
+  title: string;
+  description: string;
+  startTime: string; // "HH:mm:ss"
+  endTime: string;
+  date: string; // "YYYY-MM-DD"
+  conferenceId: string;
+  roomId: string;
+  room: {
+    roomId: string;
+    number: string;
+    displayName: string;
+    cityId: string;
+    cityname: string;
+    destinationId: string;
+    destinationName: string;
+  };
+  // sessionMedia: any[]; 
+  // feedbacks: any[];
+}
+
 export interface PendingSessionChangeResponse {
   sessionChangeRequestId: string;
-  currentSessionId: string;
-  newSessionId: string;
+  currentSessionId: string | null;
+  currentSession: ConferenceSession | null;
+  newSessionId: string | null;
+  newSession: ConferenceSession | null;
+  conferenceId: string;
+  conferenceName: string;
+  conferencDescription: string; 
   paperId: string;
+  paparTile: string; 
+  paperDescription: string;
   requestedById: string;
   requestedByName: string;
   globalStatusId: string;

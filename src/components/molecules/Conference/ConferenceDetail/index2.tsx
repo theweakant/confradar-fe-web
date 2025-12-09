@@ -440,6 +440,7 @@ export default function ConferenceDetailPage() {
             conferenceId={conference.conferenceId!}
             isCollaborator={isCollaborator}
             conferenceType={conferenceType}
+            isOwnConference={isOwner}
             getCategoryName={getCategoryName}
             getStatusName={getStatusName}
             getCityName={getCityName}

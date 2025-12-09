@@ -89,12 +89,11 @@ export default function StatisticsDashboard() {
     const totalRevenue = data?.totalRevenue || 0;
     const totalTicketsSold = data?.totalTicketsSold || 0;
     const totalRefundedAmount = data?.totalRefundedAmount || 0;
-    const netRevenue = totalRevenue + totalRefundedAmount; // ✅ Doanh thu thực đúng
     const totalTicketRefunded = data?.totalTicketRefunded || 0;
     const totalNotRefundedTicket = data?.totalNotRefundedTicket || 0;
 
-    let totalCommission = 0; // tiền trả cho Collaborator
-    let totalToConfRadar = 0; // tiền ConfRadar giữ lại
+    let totalCommission = 0; 
+    let totalToConfRadar = 0; 
     let hasCommissionData = false;
     let totalHasCheckin = 0;
     let totalExpireCheckin = 0;
@@ -147,7 +146,7 @@ export default function StatisticsDashboard() {
     }, {} as Record<string, GroupedTicket>);
 
     const ticketList = Object.values(groupedTickets || {});
-    const notCheckedIn = totalNotRefundedTicket - totalHasCheckin - totalExpireCheckin;
+    // const notCheckedIn = totalNotRefundedTicket - totalHasCheckin - totalExpireCheckin;
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -234,12 +233,7 @@ export default function StatisticsDashboard() {
                                 <p className="text-xl font-bold text-red-700">{formatCurrency(totalRefundedAmount)}</p>
                             </div>
 
-                            <div className="flex justify-between items-center pt-4 border-t-2 border-gray-300">
-                                <div>
-                                    <p className="text-base text-green-700 font-bold">Doanh thu thực</p>
-                                    <p className="text-xs text-gray-500 mt-0.5">Sau khi trừ hoàn tiền</p>
-                                </div>
-                                <p className="text-2xl font-bold text-green-700">{formatCurrency(netRevenue)}</p>
+                            <div className="flex justify-between items-center border-t-2 border-gray-300">
                             </div>
 
                             {hasCommissionData && isCollaborator && (
@@ -264,22 +258,22 @@ export default function StatisticsDashboard() {
                             {hasCommissionData && isOrganizer && (
                                 <>
                                     {totalCommission > 0 && (
-                                        <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+                                        <div className="flex justify-between items-center pt-4">
                                             <div>
-                                                <p className="text-sm text-purple-700 font-medium">Chi phí hoa hồng đối tác</p>
-                                                <p className="text-xs text-gray-500 mt-0.5">Số tiền phải chuyển cho Collaborator</p>
+                                                <p className="text-sm text-yellow-600 font-medium">Chi phí hoa hồng đối tác</p>
+                                                <p className="text-xs text-gray-500 mt-0.5">Số tiền phải chuyển cho đối tác</p>
                                             </div>
-                                            <p className="text-xl font-bold text-purple-700">{formatCurrency(totalCommission)}</p>
+                                            <p className="text-xl font-bold text-yellow-600">{formatCurrency(totalCommission)}</p>
                                         </div>
                                     )}
 
                                     {totalToConfRadar > 0 && (
-                                        <div className="flex justify-between items-center pt-4">
+                                        <div className="flex justify-between items-center pt-4 border-t border-gray-200">
                                             <div>
-                                                <p className="text-sm text-orange-700 font-medium">Chi phí nền tảng ConfRadar</p>
+                                                <p className="text-sm text-green-700 font-medium">Chi phí nền tảng ConfRadar</p>
                                                 <p className="text-xs text-gray-500 mt-0.5">Phí dịch vụ nền tảng</p>
                                             </div>
-                                            <p className="text-xl font-bold text-orange-700">{formatCurrency(totalToConfRadar)}</p>
+                                            <p className="text-xl font-bold text-green-700">{formatCurrency(totalToConfRadar)}</p>
                                         </div>
                                     )}
                                 </>
@@ -316,7 +310,7 @@ export default function StatisticsDashboard() {
                                         <p className="text-xs text-gray-500">Chưa tham dự</p>
                                     </div>
                                 </div>
-                                <p className="text-3xl font-bold text-blue-600">{notCheckedIn}</p>
+                                <p className="text-3xl font-bold text-blue-600">{totalPending}</p>
                             </div>
 
                             <div className="flex justify-between items-center p-4 bg-orange-50 rounded-lg border border-orange-200">
