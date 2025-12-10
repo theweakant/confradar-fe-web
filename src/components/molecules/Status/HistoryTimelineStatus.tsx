@@ -40,8 +40,11 @@ export const HistoryTimelineStatus: React.FC<HistoryTimelineStatusProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 p-4">
+      {/* ✅ Overlay được render trước và có z-index thấp hơn */}
+      <div className="absolute inset-0 -z-10" onClick={onClose}></div>
+
       <div
-        className="relative w-full max-w-2xl bg-white rounded-lg shadow-xl max-h-[90vh] overflow-hidden flex flex-col"
+        className="relative w-full max-w-2xl bg-white rounded-lg shadow-xl max-h-[90vh] overflow-hidden flex flex-col z-10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -65,7 +68,7 @@ export const HistoryTimelineStatus: React.FC<HistoryTimelineStatusProps> = ({
               {sortedTimelines.map((item) => (
                 <div key={item.conferenceTimelineId} className="mb-6 relative">
                   {/* Dot timeline */}
-                  <div className="absolute -left-3 top-1 w-2 h-2 rounded-full bg-blue-500"></div>
+                  <div className="absolute -left-[1.6rem] top-1 w-2 h-2 rounded-full bg-blue-500"></div>
 
                   {/* Nội dung */}
                   <div className="mb-1 text-sm text-gray-500">{formatDate(item.changeDate)}</div>
@@ -86,10 +89,6 @@ export const HistoryTimelineStatus: React.FC<HistoryTimelineStatusProps> = ({
           )}
         </div>
       </div>
-
-      {/* Overlay close */}
-      <div className="absolute inset-0" onClick={onClose}></div>
     </div>
   );
 };
-
