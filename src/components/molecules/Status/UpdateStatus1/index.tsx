@@ -56,7 +56,7 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
   contract,
   onSuccess,
 }) => {
-  const { now } = useGlobalTime(); // ✅ Lấy fake time hoặc thời gian thật từ context
+  const { now } = useGlobalTime(); 
 
   const { user } = useAuth();
   const roles: string[] = Array.isArray(user?.role)
@@ -399,7 +399,7 @@ export const UpdateConferenceStatus: React.FC<UpdateConferenceStatusProps> = ({
               {currentStatusName === "Completed" ? "Đóng" : "Hủy"}
             </Button>
             {currentStatusName !== "Completed" && (
-              <Button onClick={handleSubmit} disabled={!canSubmit || isLoading}>
+              <Button onClick={handleSubmit} disabled={ isLoading}>
                 {isLoading ? "Đang xử lý..." : "Xác nhận"}
               </Button>
             )}
