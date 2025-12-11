@@ -10,6 +10,7 @@ import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 import { useGetAllRoomsQuery } from "@/redux/services/room.service";
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllRankingCategoriesQuery } from "@/redux/services/category.service";
+import { useGetAllPublishersQuery } from "@/redux/services/publisher.service";
 // Shared Components
 import {
   StepIndicator,
@@ -97,6 +98,7 @@ export default function ResearchConferenceStepForm({
   const { data: roomsData, isLoading: isRoomsLoading } = useGetAllRoomsQuery();
   const { data: citiesData, isLoading: isCitiesLoading } = useGetAllCitiesQuery();
   const { data: rankingData, isLoading: isRankingLoading } = useGetAllRankingCategoriesQuery();
+  const { data: publishersData, isLoading: isPublishersLoading } = useGetAllPublishersQuery();
 
   const [showNoRoomSessionForm, setShowNoRoomSessionForm] = useState(false);
   const [assignRoomModalOpen, setAssignRoomModalOpen] = useState(false);
@@ -384,6 +386,14 @@ export default function ResearchConferenceStepForm({
         label: ranking.rankName || "N/A",
       })) || [],
     [rankingData]
+  );
+  const publisherOptions = useMemo(
+    () =>
+      publishersData?.data?.map((publisher) => ({
+        value: publisher.publisherId,
+        label: publisher.name || "N/A",
+      })) || [],
+    [publishersData]
   );
 
   const handleFieldBlur = useCallback(
@@ -801,7 +811,8 @@ export default function ResearchConferenceStepForm({
       isCategoriesLoading ||
       isRoomsLoading ||
       isCitiesLoading ||
-      isRankingLoading);
+      isRankingLoading ||
+      isPublishersLoading);
 
   if (isLoading) {
     return <LoadingOverlay message="Đang tải dữ liệu hội nghị..." />;
@@ -883,6 +894,8 @@ export default function ResearchConferenceStepForm({
             isRankingLoading={isRankingLoading}
             validationErrors={validationErrors}
             totalSlot={basicForm.totalSlot}
+            publisherOptions={publisherOptions}
+            isPublisherLoading={isPublishersLoading}
           />
           <FlexibleNavigationButtons
             currentStep={2}
@@ -945,7 +958,7 @@ export default function ResearchConferenceStepForm({
             maxTotalSlot={basicForm.totalSlot}
             allowListener={researchDetail.allowListener}
             numberPaperAccept={researchDetail.numberPaperAccept ?? 0}
-            reviewFee={researchDetail.reviewFee ?? 0}
+            submitPaperFee={researchDetail.submitPaperFee ?? 0}
           />
           <FlexibleNavigationButtons
             currentStep={4}

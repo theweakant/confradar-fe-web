@@ -53,6 +53,13 @@ export const endpoint = {
 
   },
 
+  PUBLISHER: {
+    LIST: "/publisher",
+    CREATE: "/publisher",
+    UPDATE: "/publisher",
+    DELETE: "/publisher",
+  },
+
   CATEGORY: {
     LIST: "/ConferenceCategory",
     DETAIL: "/ConferenceCategory",

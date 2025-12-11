@@ -1,4 +1,4 @@
-import { useEffect } from "react"; 
+import { useEffect } from "react";
 import { FormInput } from "@/components/molecules/FormInput";
 import { FormSelect } from "@/components/molecules/FormSelect";
 import { FormTextArea } from "@/components/molecules/FormTextArea";
@@ -11,18 +11,9 @@ interface ResearchDetailFormProps {
   isRankingLoading: boolean;
   validationErrors?: Record<string, string>;
   totalSlot: number;
+  publisherOptions: Array<{ value: string; label: string }>; // ✅ THÊM
+  isPublisherLoading: boolean; // ✅ THÊM
 }
-
-const PAPER_FORMAT_OPTIONS = [
-  { value: "acm", label: "ACM" },
-  { value: "apa", label: "APA" },
-  { value: "chicago", label: "Chicago" },
-  { value: "elsevier", label: "Elsevier" },
-  { value: "ieee", label: "IEEE" },
-  { value: "lncs", label: "LNCS" },
-  { value: "mla", label: "MLA" },
-  { value: "springer", label: "Springer" },
-];
 
 export function ResearchDetailForm({
   formData,
@@ -30,9 +21,12 @@ export function ResearchDetailForm({
   rankingOptions,
   isRankingLoading,
   validationErrors = {},
-  totalSlot
+  totalSlot,
+  publisherOptions, // ✅ THÊM
+  isPublisherLoading, // ✅ THÊM
 }: ResearchDetailFormProps) {
   const currentYear = new Date().getFullYear();
+
   const handleChange = <K extends keyof ResearchDetail>(
     field: K,
     value: ResearchDetail[K]
@@ -40,7 +34,7 @@ export function ResearchDetailForm({
     onChange({ ...formData, [field]: value });
   };
 
-
+  // Auto-adjust numberPaperAccept based on allowListener & totalSlot
   useEffect(() => {
     const allowListener = formData.allowListener;
     let newNumberPaperAccept: number | undefined;
@@ -67,7 +61,7 @@ export function ResearchDetailForm({
     onChange({
       ...formData,
       rankingCategoryId: newCategoryId,
-      rankValue: "", 
+      rankValue: "",
     });
   };
 
@@ -76,21 +70,22 @@ export function ResearchDetailForm({
   );
   const rankType = selectedRanking?.label;
 
-
-
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-4">
-        <FormSelect
-          label="Định dạng bài báo"
-          name="paperFormat"
-          value={formData.paperFormat}
-          onChange={(val) => handleChange("paperFormat", val)}
-          options={PAPER_FORMAT_OPTIONS}
-          error={validationErrors.paperFormat}
-          required
-        />
+      {/* ✅ THÊM: Nhà xuất bản */}
+      <FormSelect
+        label="Nhà xuất bản"
+        name="publisherId"
+        value={formData.publisherId}
+        onChange={(val) => handleChange("publisherId", val)}
+        options={publisherOptions}
+        error={validationErrors.publisherId}
+        required
+        disabled={isPublisherLoading}
+      />
 
+      {/* Grid: số bài báo, số lần sửa, phí nộp bài */}
+      <div className="grid grid-cols-3 gap-4">
         <FormInput
           label="Số bài báo chấp nhận"
           name="numberPaperAccept"
@@ -99,7 +94,7 @@ export function ResearchDetailForm({
           onChange={(val) => handleChange("numberPaperAccept", Number(val))}
           error={validationErrors.numberPaperAccept}
           placeholder="VD: 50"
-          disabled={!formData.allowListener} 
+          disabled={!formData.allowListener}
           max={formData.allowListener ? totalSlot - 1 : totalSlot}
           min="0"
         />
@@ -113,8 +108,28 @@ export function ResearchDetailForm({
           error={validationErrors.revisionAttemptAllowed}
           placeholder="VD: 2"
         />
+
+        {/* ✅ ĐỔI TÊN: reviewFee → submitPaperFee */}
+        <FormInput
+          label="Phí nộp bài báo (VND)"
+          name="submitPaperFee"
+          type="text"
+          value={
+            formData.submitPaperFee > 0
+              ? formData.submitPaperFee.toLocaleString("vi-VN")
+              : ""
+          }
+          onChange={(val) => {
+            const rawValue = val.replace(/\D/g, "");
+            const numValue = rawValue === "" ? 0 : Number(rawValue);
+            handleChange("submitPaperFee", numValue);
+          }}
+          error={validationErrors.submitPaperFee}
+          placeholder="VD: 500.000"
+        />
       </div>
 
+      {/* Xếp hạng */}
       <div className="grid grid-cols-3 gap-4">
         <FormSelect
           label="Loại xếp hạng"
@@ -127,7 +142,7 @@ export function ResearchDetailForm({
           disabled={isRankingLoading}
         />
 
-        {/* Hiển thị input phù hợp theo loại xếp hạng */}
+        {/* Giá trị xếp hạng */}
         {formData.rankingCategoryId && (
           <>
             {rankType === "Core" || rankType === "CoreRanking" ? (
@@ -170,6 +185,7 @@ export function ResearchDetailForm({
           </>
         )}
 
+        {/* Năm xếp hạng */}
         <FormInput
           label="Năm xếp hạng"
           name="rankYear"
@@ -179,20 +195,23 @@ export function ResearchDetailForm({
           max={currentYear}
           error={validationErrors.rankYear}
         />
+
+        {/* Lưu ý xếp hạng */}
         {formData.rankingCategoryId && (
-        <div className="text-xs text-gray-600 bg-blue-50 p-2 rounded">
-          <strong>Lưu ý:</strong>{" "}
-          {rankType === "Core" || rankType === "CoreRanking"
-            ? "Chọn Q1-Q4 cho xếp hạng Core."
-            : rankType === "IF" || rankType === "CiteScore"
-            ? "Nhập số thập phân không âm (ví dụ: 1.25)."
-            : rankType === "H5"
-            ? "Nhập số nguyên không âm (ví dụ: 15)."
-            : "Nhập giá trị xếp hạng hợp lệ."}
-        </div>
-      )}
+          <div className="text-xs text-gray-600 bg-blue-50 p-2 rounded">
+            <strong>Lưu ý:</strong>{" "}
+            {rankType === "Core" || rankType === "CoreRanking"
+              ? "Chọn Q1-Q4 cho xếp hạng Core."
+              : rankType === "IF" || rankType === "CiteScore"
+              ? "Nhập số thập phân không âm (ví dụ: 1.25)."
+              : rankType === "H5"
+              ? "Nhập số nguyên không âm (ví dụ: 15)."
+              : "Nhập giá trị xếp hạng hợp lệ."}
+          </div>
+        )}
       </div>
 
+      {/* Mô tả xếp hạng */}
       <FormTextArea
         label="Mô tả xếp hạng"
         name="rankingDescription"
@@ -203,26 +222,7 @@ export function ResearchDetailForm({
         placeholder="Mô tả chi tiết về xếp hạng của hội nghị..."
       />
 
-
-
-      <FormInput
-        label="Phí review bài báo (VND)"
-        name="reviewFee"
-        type="text"
-        value={
-          formData.reviewFee > 0 
-            ? formData.reviewFee.toLocaleString("vi-VN") 
-            : ""
-        }
-        onChange={(val) => {
-          const rawValue = val.replace(/\D/g, "");
-          const numValue = rawValue === "" ? 0 : Number(rawValue);
-          handleChange("reviewFee", numValue);
-        }}
-        error={validationErrors.reviewFee}
-        placeholder="VD: 500.000"
-      />
-
+      {/* Cho phép người nghe */}
       <div className="flex items-center gap-2">
         <input
           type="checkbox"

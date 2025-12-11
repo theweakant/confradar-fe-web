@@ -145,6 +145,7 @@ export interface Ticket {
   ticketName: string;
   ticketDescription: string;
   isAuthor?: boolean;
+  isPublish?: boolean;
   totalSlot: number;
   phases: Phase[];
 }
@@ -300,14 +301,14 @@ export interface ConferenceBasicResponse {
 //RESEARCH DETAIL STEP
 export interface ResearchDetail {
   researchDetailId?: string;
-  paperFormat: string;
+  publisherId: string;
   numberPaperAccept: number;
   revisionAttemptAllowed: number;
   rankingDescription: string;
   allowListener: boolean;
   rankValue: string;
   rankYear: number;
-  reviewFee: number;
+  submitPaperFee: number;
   rankingCategoryId: string;
 }
 
@@ -531,6 +532,7 @@ export interface ResearchConferenceDetailResponse {
   // Research Conference specific fields
   researchDetailId?: string
   name?: string;
+  publisherId?:string;
   paperFormat?: string;
   numberPaperAccept?: number;
   revisionAttemptAllowed?: number;
@@ -539,6 +541,7 @@ export interface ResearchConferenceDetailResponse {
   rankValue?: string;
   rankYear?: number;
   reviewFee?: number;
+  submitPaperFee?:number;
   rankingCategoryId?: string;
   rankingCategoryName?: string;
 
@@ -589,6 +592,7 @@ export interface ConferencePriceResponse {
   ticketName?: string;
   ticketDescription?: string;
   isAuthor?: boolean;
+  isPublish?:boolean;
   totalSlot?: number;
   availableSlot?: number;
   pricePhases?: ConferencePricePhaseResponse[];

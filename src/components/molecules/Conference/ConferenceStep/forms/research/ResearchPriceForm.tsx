@@ -17,7 +17,7 @@ interface ResearchPriceFormProps {
   maxTotalSlot: number;
   allowListener: boolean;
   numberPaperAccept: number;
-  reviewFee: number;
+  submitPaperFee: number;
 }
 
 export function ResearchPriceForm({
@@ -30,15 +30,16 @@ export function ResearchPriceForm({
   maxTotalSlot,
   allowListener,
   numberPaperAccept,
-  reviewFee,
+  submitPaperFee,
 }: ResearchPriceFormProps) {
   const [newTicket, setNewTicket] = useState<Omit<Ticket, "ticketId">>({
-    ticketPrice: allowListener ? 0 : (reviewFee || 0),
+    ticketPrice: allowListener ? 0 : (submitPaperFee || 0),
     ticketName: "",
     ticketDescription: "",
     isAuthor: !allowListener,
+    isPublish: false,
     totalSlot: 0,
-    phases: [], // ✅ Thêm phases vào initial state
+    phases: [],
   });
 
   const [editingTicketIndex, setEditingTicketIndex] = useState<number | null>(null);
@@ -51,11 +52,9 @@ export function ResearchPriceForm({
     let usedSlots = tickets
       .filter(t => t.isAuthor)
       .reduce((sum, t) => sum + t.totalSlot, 0);
-    
     if (editingTicketIndex !== null && tickets[editingTicketIndex]?.isAuthor) {
       usedSlots -= tickets[editingTicketIndex].totalSlot;
     }
-    
     return usedSlots;
   };
 
@@ -63,11 +62,9 @@ export function ResearchPriceForm({
     let usedSlots = tickets
       .filter(t => !t.isAuthor)
       .reduce((sum, t) => sum + t.totalSlot, 0);
-    
     if (editingTicketIndex !== null && !tickets[editingTicketIndex]?.isAuthor) {
       usedSlots -= tickets[editingTicketIndex].totalSlot;
     }
-    
     return usedSlots;
   };
 
@@ -76,13 +73,14 @@ export function ResearchPriceForm({
 
   useEffect(() => {
     if (editingTicketIndex === null) {
-      setNewTicket((prev) => ({ 
-        ...prev, 
+      setNewTicket(prev => ({
+        ...prev,
         isAuthor: !allowListener,
-        ticketPrice: allowListener ? prev.ticketPrice : (reviewFee || prev.ticketPrice)
+        isPublish: false,
+        ticketPrice: allowListener ? prev.ticketPrice : (submitPaperFee || prev.ticketPrice),
       }));
     }
-  }, [allowListener, reviewFee, editingTicketIndex]);
+  }, [allowListener, submitPaperFee, editingTicketIndex]);
 
   const handleAddTicket = () => {
     if (!newTicket.ticketName.trim()) {
@@ -94,9 +92,9 @@ export function ResearchPriceForm({
       return;
     }
 
-    if (newTicket.isAuthor && newTicket.ticketPrice < reviewFee) {
+    if (newTicket.isAuthor && newTicket.ticketPrice < submitPaperFee) {
       toast.error(
-        `Chi phí cho tác giả (${newTicket.ticketPrice.toLocaleString()} VND) không được nhỏ hơn phí đánh giá bài báo (${reviewFee.toLocaleString()} VND)!`
+        `Chi phí cho tác giả (${newTicket.ticketPrice.toLocaleString()} VND) không được nhỏ hơn phí nộp bài báo (${submitPaperFee.toLocaleString()} VND)!`
       );
       return;
     }
@@ -106,41 +104,34 @@ export function ResearchPriceForm({
       return;
     }
 
-    // Kiểm tra timeline tương ứng
     const timelineStart = newTicket.isAuthor ? authorTimelineStart : ticketSaleStart;
     const timelineEnd = newTicket.isAuthor ? authorTimelineEnd : ticketSaleEnd;
 
     if (!timelineStart || !timelineEnd) {
-      const missingTimeline = newTicket.isAuthor 
-        ? "Author Payment (Timeline)" 
-        : "Ticket Sale (Bước 1)";
+      const missingTimeline = newTicket.isAuthor ? "Author Payment (Timeline)" : "Ticket Sale (Bước 1)";
       toast.error(`Vui lòng điền ${missingTimeline} trước!`);
       return;
     }
 
-    if (newTicket.isAuthor) {
-      if (newTicket.totalSlot > numberPaperAccept) {
-        toast.error(
-          `Số lượng cho tác giả (${newTicket.totalSlot}) không được vượt quá số bài báo được chấp nhận (${numberPaperAccept})!`
-        );
-        return;
-      }
+    if (newTicket.isAuthor && newTicket.totalSlot > numberPaperAccept) {
+      toast.error(
+        `Số lượng cho tác giả (${newTicket.totalSlot}) không được vượt quá số bài báo được chấp nhận (${numberPaperAccept})!`
+      );
+      return;
     }
 
     const currentAuthorSlots = tickets
       .filter((t, i) => t.isAuthor && i !== editingTicketIndex)
       .reduce((sum, t) => sum + t.totalSlot, 0);
-
     const currentListenerSlots = tickets
       .filter((t, i) => !t.isAuthor && i !== editingTicketIndex)
       .reduce((sum, t) => sum + t.totalSlot, 0);
 
-    const totalAuthorSlots = newTicket.isAuthor 
-      ? currentAuthorSlots + newTicket.totalSlot 
+    const totalAuthorSlots = newTicket.isAuthor
+      ? currentAuthorSlots + newTicket.totalSlot
       : currentAuthorSlots;
-
-    const totalListenerSlots = !newTicket.isAuthor 
-      ? currentListenerSlots + newTicket.totalSlot 
+    const totalListenerSlots = !newTicket.isAuthor
+      ? currentListenerSlots + newTicket.totalSlot
       : currentListenerSlots;
 
     if (!allowListener) {
@@ -148,7 +139,6 @@ export function ResearchPriceForm({
         toast.error("Không cho phép tạo chi phí cho người nghe!");
         return;
       }
-      
       if (totalAuthorSlots > numberPaperAccept) {
         toast.error(
           `Tổng số lượng cho tác giả (${totalAuthorSlots}) không được vượt quá số bài báo được chấp nhận (${numberPaperAccept})!`
@@ -158,12 +148,9 @@ export function ResearchPriceForm({
     } else {
       const totalSlots = totalAuthorSlots + totalListenerSlots;
       if (totalSlots > maxTotalSlot) {
-        toast.error(
-          `Tổng số lượng chi phí (${totalSlots}) vượt quá giới hạn ${maxTotalSlot}!`
-        );
+        toast.error(`Tổng số lượng chi phí (${totalSlots}) vượt quá giới hạn ${maxTotalSlot}!`);
         return;
       }
-
       if (totalAuthorSlots > numberPaperAccept) {
         toast.error(
           `Tổng số lượng chi phí cho tác giả (${totalAuthorSlots}) không được vượt quá số bài báo được chấp nhận (${numberPaperAccept})!`
@@ -172,14 +159,13 @@ export function ResearchPriceForm({
       }
     }
 
-    // Tự động tạo 1 phase duy nhất
     const autoPhase: Phase = {
       phaseName: "Default Phase",
-      applyPercent: 100, // Không tăng/giảm giá
+      applyPercent: 100,
       startDate: timelineStart,
       endDate: timelineEnd,
       totalslot: newTicket.totalSlot,
-      refundInPhase: [], // Không có chính sách hoàn tiền
+      refundInPhase: [],
     };
 
     const ticketWithPhase = {
@@ -192,7 +178,7 @@ export function ResearchPriceForm({
       updatedTickets[editingTicketIndex] = {
         ...ticketWithPhase,
         ticketId: updatedTickets[editingTicketIndex]?.ticketId,
-        priceId: updatedTickets[editingTicketIndex]?.priceId
+        priceId: updatedTickets[editingTicketIndex]?.priceId,
       };
       onTicketsChange(updatedTickets);
       toast.success("Cập nhật thành công!");
@@ -202,12 +188,13 @@ export function ResearchPriceForm({
     }
 
     setNewTicket({
-      ticketPrice: allowListener ? 0 : (reviewFee || 0),
+      ticketPrice: allowListener ? 0 : (submitPaperFee || 0),
       ticketName: "",
       ticketDescription: "",
       isAuthor: !allowListener,
+      isPublish: false,
       totalSlot: 0,
-      phases: [], // ✅ Reset phases
+      phases: [],
     });
     setEditingTicketIndex(null);
   };
@@ -218,8 +205,9 @@ export function ResearchPriceForm({
       ticketName: ticket.ticketName,
       ticketDescription: ticket.ticketDescription || "",
       isAuthor: ticket.isAuthor ?? false,
+      isPublish: ticket.isPublish ?? false,
       totalSlot: ticket.totalSlot,
-      phases: ticket.phases || [], // ✅ Copy phases từ ticket đang edit
+      phases: ticket.phases || [],
     });
     setEditingTicketIndex(index);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -229,7 +217,6 @@ export function ResearchPriceForm({
     const ticket = tickets[index];
     const updatedList = tickets.filter((_, i) => i !== index);
     onTicketsChange(updatedList);
-    
     if (onRemoveTicket && ticket.priceId) {
       onRemoveTicket(ticket.priceId);
     }
@@ -238,13 +225,10 @@ export function ResearchPriceForm({
 
   return (
     <div className="space-y-4">
-      {/* Ticket List */}
       <div className="border p-4 rounded mb-4">
         <h4 className="font-medium mb-3 text-blue-600">Danh sách đã tạo ({tickets.length})</h4>
-
         {tickets.map((t, idx) => {
           const phase = t.phases?.[0];
-          
           return (
             <div
               key={t.ticketId || idx}
@@ -257,6 +241,11 @@ export function ResearchPriceForm({
                     {t.isAuthor && (
                       <span className="bg-blue-600 text-white text-xs font-semibold px-2 py-0.5 rounded">
                         Tác giả
+                      </span>
+                    )}
+                    {t.isPublish && (
+                      <span className="bg-green-600 text-white text-xs font-semibold px-2 py-0.5 rounded">
+                        Xuất bản
                       </span>
                     )}
                   </div>
@@ -273,7 +262,6 @@ export function ResearchPriceForm({
                   <div className="text-xs text-gray-500">Số lượng: {t.totalSlot}</div>
                 </div>
               </div>
-
               <div className="flex gap-2 mt-3">
                 <Button size="sm" variant="outline" onClick={() => handleEditTicket(t, idx)} className="flex-1">
                   Sửa
@@ -292,17 +280,16 @@ export function ResearchPriceForm({
         })}
       </div>
 
-      {/* Add New Ticket Form */}
       <div className="border p-4 rounded">
         <h4 className="font-medium mb-3">
           {editingTicketIndex !== null ? "Chỉnh sửa" : "Thêm mới"}
         </h4>
-        
-        {newTicket.isAuthor && reviewFee > 0 && (
+
+        {newTicket.isAuthor && submitPaperFee > 0 && (
           <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="text-sm text-blue-800">
-              <strong>Lưu ý:</strong> Chi phí cho tác giả phải lớn hơn hoặc bằng phí đánh giá bài báo:{" "}
-              <strong className="text-blue-900">{reviewFee.toLocaleString()} VND</strong>
+              <strong>Lưu ý:</strong> Chi phí cho tác giả phải lớn hơn hoặc bằng phí nộp bài báo:{" "}
+              <strong className="text-blue-900">{submitPaperFee.toLocaleString()} VND</strong>
             </div>
           </div>
         )}
@@ -360,17 +347,32 @@ export function ResearchPriceForm({
           </div>
         )}
 
+        {newTicket.isAuthor && (
+          <div className="flex items-center gap-2 mt-2 p-3 bg-green-50 rounded-lg border border-green-200">
+            <input
+              type="checkbox"
+              id="isPublish"
+              checked={newTicket.isPublish}
+              onChange={(e) => setNewTicket({ ...newTicket, isPublish: e.target.checked })}
+              className="w-4 h-4 text-green-600"
+            />
+            <label htmlFor="isPublish" className="text-sm font-medium text-green-900">
+              Xuất bản bài báo
+            </label>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-3 mt-2">
           <FormInput
             label={
-              newTicket.isAuthor 
-                ? `Chi phí gốc (VND) - Tối thiểu: ${reviewFee.toLocaleString("vi-VN")}`
+              newTicket.isAuthor
+                ? `Chi phí gốc (VND) - Tối thiểu: ${submitPaperFee.toLocaleString("vi-VN")}`
                 : "Chi phí thính giả (VND)"
             }
             type="text"
             value={
-              newTicket.ticketPrice > 0 
-                ? newTicket.ticketPrice.toLocaleString("vi-VN") 
+              newTicket.ticketPrice > 0
+                ? newTicket.ticketPrice.toLocaleString("vi-VN")
                 : ""
             }
             onChange={(val) => {
@@ -378,14 +380,14 @@ export function ResearchPriceForm({
               const numValue = rawValue === "" ? 0 : Number(rawValue);
               setNewTicket({ ...newTicket, ticketPrice: numValue });
             }}
-            placeholder={newTicket.isAuthor ? reviewFee.toLocaleString("vi-VN") : "500.000"}
+            placeholder={newTicket.isAuthor ? submitPaperFee.toLocaleString("vi-VN") : "500.000"}
           />
           <FormInput
             label={
               newTicket.isAuthor
                 ? `Số lượng cho tác giả (Còn lại: ${remainingAuthorSlots})`
                 : `Số lượng cho người nghe (Còn lại: ${remainingListenerSlots})`
-            }         
+            }
             type="number"
             value={newTicket.totalSlot}
             onChange={(val) => setNewTicket({ ...newTicket, totalSlot: Number(val) })}

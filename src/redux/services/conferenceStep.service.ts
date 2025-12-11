@@ -146,7 +146,8 @@ export const conferenceStepApi = createApi({
           ticketPrice: number;
           ticketName: string;
           ticketDescription: string;
-          totalSlot: number;
+          totalSlot: number;  
+          isPublish?: boolean;
         };
       }
     >({

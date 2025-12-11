@@ -102,14 +102,14 @@ export function useResearchConferenceData({
       // === Map Research Detail ===
       const researchDetail: ResearchDetail = {
         researchDetailId: data.researchDetailId ?? undefined,
-        paperFormat: data.paperFormat ?? "",
+        publisherId: data.publisherId ?? "",
         numberPaperAccept: data.numberPaperAccept ?? 0,
         revisionAttemptAllowed: data.revisionAttemptAllowed ?? 1,
         rankingDescription: data.rankingDescription ?? "",
         allowListener: data.allowListener ?? false,
         rankValue: data.rankValue ?? "",
         rankYear: data.rankYear ?? new Date().getFullYear(),
-        reviewFee: data.reviewFee ?? 0,
+        submitPaperFee: data.submitPaperFee ?? 0,
         rankingCategoryId: data.rankingCategoryId ?? "",
       };
 
@@ -187,16 +187,15 @@ export function useResearchConferenceData({
           roundNumber: rd.roundNumber ?? 1,
           researchConferencePhaseId: rd.researchConferencePhaseId ?? "",
         })),
-        // ❌ KHÔNG CÒN isWaitlist, isActive
       }));
 
-      // === Map Tickets ===
       const tickets: Ticket[] = (data.conferencePrices || []).map((p) => ({
         priceId: p.conferencePriceId,
         ticketPrice: p.ticketPrice ?? 0,
         ticketName: p.ticketName ?? "",
         ticketDescription: p.ticketDescription ?? "",
         isAuthor: p.isAuthor ?? false,
+        isPublish: p.isPublish ?? false,
         totalSlot: p.totalSlot ?? 0,
         phases: (p.pricePhases || []).map((ph) => ({
           pricePhaseId: ph.pricePhaseId,

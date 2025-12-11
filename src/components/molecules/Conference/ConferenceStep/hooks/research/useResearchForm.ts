@@ -35,14 +35,14 @@ const INITIAL_BASIC_FORM: ConferenceBasicForm = {
 };
 
 const INITIAL_RESEARCH_DETAIL: ResearchDetail = {
-  paperFormat: "",
+  publisherId: "",
   numberPaperAccept: 0,
   revisionAttemptAllowed: 0,
   rankingDescription: "",
   allowListener: false,
   rankValue: "",
   rankYear: new Date().getFullYear(),
-  reviewFee: 0,
+  submitPaperFee: 0,
   rankingCategoryId: "",
 };
 
