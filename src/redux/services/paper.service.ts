@@ -576,6 +576,26 @@ export const paperApi = createApi({
       }),
       invalidatesTags: ['Paper'],
     }),
+
+    updatePaperInfo: builder.mutation<
+      ApiResponse<unknown>,
+      {
+        paperId: string;
+        title?: string;
+        description?: string;
+        reason?: string | null;
+      }
+    >({
+      query: (body) => ({
+        url: endpoint.PAPER.UPDATE_PAPER_INFO,
+        method: "PUT",
+        body, // JSON body
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+      invalidatesTags: ["Paper"],
+    }),
   }),
 });
 
@@ -635,4 +655,5 @@ export const {
 
   useGetDetailAssignedListQuery,
   useAssignAuthorToPaperMutation,
+  useUpdatePaperInfoMutation,
 } = paperApi;

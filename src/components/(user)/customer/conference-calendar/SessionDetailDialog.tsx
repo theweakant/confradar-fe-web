@@ -479,7 +479,7 @@ const SessionDetailDialog: React.FC<SessionDetailDialogProps> = ({
                                                                 {paper.paperDescription && (
                                                                     <div className="mt-2">
                                                                         <label className="text-xs uppercase tracking-wider text-gray-400">
-                                                                            Mô tả bài báo
+                                                                            Miêu tả về bài báo
                                                                         </label>
                                                                         <p className="text-sm text-gray-300 leading-relaxed">
                                                                             {paper.paperDescription}

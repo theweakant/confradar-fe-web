@@ -526,6 +526,7 @@ export interface Abstract {
   fileUrl?: string | null;
   created?: string;
   updated?: string;
+  reason?: string;
 }
 
 export interface FullPaper {
@@ -536,6 +537,7 @@ export interface FullPaper {
   fileUrl?: string | null;
   created?: string;
   updated?: string;
+  reason?: string;
 }
 
 export interface RevisionPaper {
@@ -548,6 +550,7 @@ export interface RevisionPaper {
   submissions: RevisionSubmission[];
   created?: string;
   updated?: string;
+  reason?: string;
   // reviews: RevisionReview[];
   // revisionPaperId: string;
   // revisionRound?: number | null;
@@ -599,6 +602,7 @@ export interface CameraReady {
   fileUrl?: string;
   created?: string;
   updated?: string;
+  reason?: string;
 }
 
 export interface CreateAbstractRequest {
