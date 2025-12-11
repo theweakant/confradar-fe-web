@@ -319,7 +319,8 @@ export const endpoint = {
     MARK_COMPLETE_REVISE: "/paper/mark-complete-revise",
 
     GET_DETAIL_ASSIGNED_PAPERS: "/paper/get-detail-assigned-list",
-    ASSIGN_AUTHOR_TO_PAPER: "/paper/assign-author-to-paper"
+    ASSIGN_AUTHOR_TO_PAPER: "/paper/assign-author-to-paper",
+    UPDATE_PAPER_INFO: "/paper/paper",
   },
 
   FAVOURITE_CONFERENCE: {

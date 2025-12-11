@@ -33,6 +33,10 @@ const PaperTracking = () => {
 
   const [isAssignCoauthorOpen, setIsAssignCoauthorOpen] = useState(false);
 
+  const [isEditInfoOpen, setIsEditInfoOpen] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+
   const params = useParams();
   const paperId = params?.id as string;
 
@@ -44,6 +48,8 @@ const PaperTracking = () => {
     paperPhasesError,
     fetchPaperDetail,
     loading: paperPhasesLoading,
+
+    handleUpdatePaperInfo
   } = usePaperCustomer();
 
   const loadPaperDetail = async () => {
@@ -317,11 +323,30 @@ const PaperTracking = () => {
                       </div>
 
                       {paperDetail.title && (
+                        <div className="bg-gray-100 rounded-lg p-3 relative">
+                          <p className="text-gray-600 text-[10px] uppercase tracking-wider mb-1">Tiêu đề</p>
+                          <p className="text-gray-900 text-sm font-medium leading-snug">{paperDetail.title}</p>
+
+                          <button
+                            className="absolute top-2 right-2 text-xs text-blue-600 hover:underline"
+                            onClick={() => {
+                              setEditTitle(paperDetail.title || "");
+                              setEditDescription(paperDetail.description || "");
+                              setIsEditInfoOpen(true);
+                            }}
+                          >
+                            Chỉnh sửa
+                          </button>
+                        </div>
+                      )}
+
+
+                      {/* {paperDetail.title && (
                         <div className="bg-gray-100 rounded-lg p-3">
                           <p className="text-gray-600 text-[10px] uppercase tracking-wider mb-1">Tiêu đề</p>
                           <p className="text-gray-900 text-sm font-medium leading-snug">{paperDetail.title}</p>
                         </div>
-                      )}
+                      )} */}
 
                       <div className="grid grid-cols-2 gap-3">
                         {paperDetail.created && (
@@ -369,7 +394,7 @@ const PaperTracking = () => {
 
                       {paperDetail.description && (
                         <div className="bg-blue-50 rounded-lg p-3 border-l-2 border-blue-500">
-                          <p className="text-gray-600 text-[10px] uppercase tracking-wider mb-1">Mô tả</p>
+                          <p className="text-gray-600 text-[10px] uppercase tracking-wider mb-1">Miêu tả</p>
                           <p className="text-gray-700 text-xs leading-relaxed line-clamp-3">{paperDetail.description}</p>
                         </div>
                       )}
@@ -577,6 +602,60 @@ const PaperTracking = () => {
           </div>
         </main>
       </div>
+
+      {isEditInfoOpen && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white w-full max-w-md rounded-xl p-5 shadow-xl">
+            <h3 className="text-lg font-semibold mb-3">Chỉnh sửa bài báo</h3>
+
+            <div className="mb-3">
+              <label className="text-xs text-gray-600">Tiêu đề</label>
+              <input
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                className="w-full border rounded-lg px-3 py-2 mt-1 text-sm"
+              />
+            </div>
+
+            <div className="mb-3">
+              <label className="text-xs text-gray-600">Mô tả</label>
+              <textarea
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                className="w-full border rounded-lg px-3 py-2 mt-1 text-sm h-28"
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 mt-4">
+              <button
+                className="px-4 py-2 text-sm bg-gray-200 rounded-lg"
+                onClick={() => setIsEditInfoOpen(false)}
+              >
+                Hủy
+              </button>
+
+              <button
+                className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                onClick={async () => {
+                  try {
+                    await handleUpdatePaperInfo(paperId, {
+                      title: editTitle,
+                      description: editDescription,
+                    });
+
+                    setIsEditInfoOpen(false);
+                    loadPaperDetail(); // reload lại dữ liệu
+                  } catch (err) {
+                    alert("Cập nhật thất bại");
+                  }
+                }}
+              >
+                Lưu
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <TimelineDialog
         isOpen={isTimelineOpen}

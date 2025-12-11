@@ -216,7 +216,7 @@ const ConferenceCalendar: React.FC = () => {
   }
 
   return (
-    <div className="h-screen bg-gray-50 text-gray-900 p-6">
+    <div className="min-h-screen bg-gray-50 text-gray-900 p-6">
       <div className="max-w-7xl mx-auto flex-1 flex flex-col h-full">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -387,7 +387,7 @@ const ConferenceCalendar: React.FC = () => {
                 ))
               ) : (
                 // <div className="text-center py-8 text-gray-500">
-                <div className="flex items-center justify-center h-full text-gray-500">
+                <div className="flex items-center justify-center h-[50vh] text-gray-500">
                   <p>Không tìm thấy hội nghị nào</p>
                 </div>
               )}

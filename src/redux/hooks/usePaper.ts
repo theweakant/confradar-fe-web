@@ -19,6 +19,7 @@ import {
   useUpdateRevisionSubmissionMutation,
   useUpdateCameraReadyMutation,
   useAssignAuthorToPaperMutation,
+  useUpdatePaperInfoMutation,
 } from "@/redux/services/paper.service";
 import { parseApiError } from "@/helper/api";
 import type { ApiResponse } from "@/types/api.type";
@@ -158,6 +159,11 @@ export const usePaperCustomer = (conferenceId?: string) => {
     { isLoading: assigningAuthorLoading, error: assigningAuthorRawError },
   ] = useAssignAuthorToPaperMutation();
 
+  const [
+    updatePaperInfo,
+    { isLoading: updatePaperInfoLoading, error: updatePaperInfoRawError },
+  ] = useUpdatePaperInfoMutation();
+
   // errors
   const submittedPapersError = parseApiError<string>(submittedPapersRawError);
   const paperDetailError = parseApiError<string>(paperDetailRawError);
@@ -187,6 +193,8 @@ export const usePaperCustomer = (conferenceId?: string) => {
   const updateCameraReadyError = parseApiError<string>(updateCameraReadyRawError);
 
   const assignAuthorError = parseApiError<string>(assigningAuthorRawError);
+
+  const updatePaperInfoError = parseApiError<string>(updatePaperInfoRawError);
 
   const fetchSubmittedPapers = useCallback(async (): Promise<
     ApiResponse<PaperCustomer[]>
@@ -413,6 +421,21 @@ export const usePaperCustomer = (conferenceId?: string) => {
     [assignAuthorToPaper]
   );
 
+  const handleUpdatePaperInfo = useCallback(
+    async (
+      paperId: string,
+      data: { title?: string; description?: string; reason?: string | null }
+    ): Promise<ApiResponse<unknown>> => {
+      try {
+        const result = await updatePaperInfo({ paperId, ...data }).unwrap();
+        return result;
+      } catch (error) {
+        throw error;
+      }
+    },
+    [updatePaperInfo]
+  );
+
   const loading =
     submittedPapersLoading ||
     paperDetailLoading ||
@@ -431,7 +454,8 @@ export const usePaperCustomer = (conferenceId?: string) => {
     updateFullPaperLoading ||
     updateRevisionLoading ||
     updateCameraReadyLoading ||
-    assigningAuthorLoading;
+    assigningAuthorLoading ||
+    updatePaperInfoLoading;
 
   return {
     //Data
@@ -458,6 +482,7 @@ export const usePaperCustomer = (conferenceId?: string) => {
     handleUpdateRevisionSubmission,
     handleUpdateCameraReady,
     handleAssignAuthor,
+    handleUpdatePaperInfo,
 
     //Loading
     loading,
@@ -484,5 +509,6 @@ export const usePaperCustomer = (conferenceId?: string) => {
     updateRevisionError,
     updateCameraReadyError,
     assignAuthorError,
+    updatePaperInfoError,
   };
 };

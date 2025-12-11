@@ -619,7 +619,7 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
 
   const handleUpdateSubmission = useCallback(async (submissionId: string) => {
     if (!editTitle.trim() || !editDescription.trim()) {
-      alert("Vui lòng nhập tiêu đề và mô tả");
+      alert("Vui lòng nhập tiêu đề và miêu tả");
       return;
     }
 
@@ -685,6 +685,7 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
                     submissionCount: revisionPaper.submissions?.length || 0,
                     created: revisionPaper.created,
                     updated: revisionPaper.updated,
+                    reason: revisionPaper.reason
                   }}
                   paperType="Revision Paper"
                 // showFileViewer={false}

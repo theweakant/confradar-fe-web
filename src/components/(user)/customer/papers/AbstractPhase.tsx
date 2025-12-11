@@ -208,7 +208,8 @@ const AbstractPhase: React.FC<AbstractPhaseProps> = ({ paperId, abstract, resear
             status: abstract.status,
             created: abstract.created,
             updated: abstract.updated,
-            fileUrl: abstract.fileUrl
+            fileUrl: abstract.fileUrl,
+            reason: abstract.reason
           }}
           paperType="Abstract"
         />

@@ -161,7 +161,8 @@ const CameraReadyPhase: React.FC<CameraReadyPhaseProps> = ({ paperId, cameraRead
             status: cameraReady.status,
             created: cameraReady.created,
             updated: cameraReady.updated,
-            fileUrl: cameraReady.fileUrl
+            fileUrl: cameraReady.fileUrl,
+            reason: cameraReady.reason
           }}
           paperType="Camera Ready"
         />

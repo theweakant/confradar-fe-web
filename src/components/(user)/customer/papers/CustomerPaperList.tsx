@@ -179,7 +179,7 @@ function PaperCard({ paper }: { paper: PaperCustomer }) {
 
             {(paper.description || paper.paperDescription) && (
               <div className="space-y-1">
-                <span className="text-sm text-gray-500">Mô tả:</span>
+                <span className="text-sm text-gray-500">Miêu tả:</span>
                 <p className="text-sm text-gray-700">
                   {paper.description || paper.paperDescription}
                 </p>
