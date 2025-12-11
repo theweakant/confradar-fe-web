@@ -122,7 +122,7 @@ describe('Register Page - Test Cases', () => {
       renderWithProviders(<Register />);
 
       const submitButton = screen.getByRole('button', { name: /Đăng Ký/i });
-      
+
       // Try to submit empty form
       await user.click(submitButton);
 
@@ -143,10 +143,10 @@ describe('Register Page - Test Cases', () => {
       renderWithProviders(<Register />);
 
       const emailInput = screen.getByLabelText(/Email/i) as HTMLInputElement;
-      
+
       // Enter invalid email
       await user.type(emailInput, 'invalidemail.com');
-      
+
       // Check HTML5 validation
       expect(emailInput.validity.valid).toBe(false);
       expect(emailInput.validity.typeMismatch).toBe(true);
@@ -233,7 +233,7 @@ describe('Register Page - Test Cases', () => {
       Object.defineProperty(file, 'size', { value: 2 * 1024 * 1024 }); // 2MB
 
       const fileInput = screen.getByLabelText(/Chọn ảnh/i) as HTMLInputElement;
-      
+
       // Upload file
       await user.upload(fileInput, file);
 
@@ -263,7 +263,7 @@ describe('Register Page - Test Cases', () => {
       Object.defineProperty(largeFile, 'size', { value: 6 * 1024 * 1024 }); // 6MB
 
       const fileInput = screen.getByLabelText(/Chọn ảnh/i) as HTMLInputElement;
-      
+
       // Try to upload large file
       await user.upload(fileInput, largeFile);
 
@@ -287,7 +287,7 @@ describe('Register Page - Test Cases', () => {
       const pdfFile = new File(['dummy content'], 'document.pdf', { type: 'application/pdf' });
 
       const fileInput = screen.getByLabelText(/Chọn ảnh/i) as HTMLInputElement;
-      
+
       // Try to upload PDF file
       await user.upload(fileInput, pdfFile);
 
@@ -322,7 +322,7 @@ describe('Register Page - Test Cases', () => {
   describe('REG-TC12: Loading State During Submission', () => {
     it('should disable form controls during registration', async () => {
       const user = userEvent.setup();
-      
+
       // Mock slow API call
       const mockRegisterUser = jest.fn(() => ({
         unwrap: () => new Promise((resolve) => setTimeout(resolve, 2000))
@@ -380,7 +380,7 @@ describe('Register Page - Test Cases', () => {
       // Find and click remove button
       const removeButtons = screen.getAllByRole('button');
       const removeButton = removeButtons.find(btn => btn.querySelector('.w-3.h-3'));
-      
+
       if (removeButton) {
         await user.click(removeButton);
 

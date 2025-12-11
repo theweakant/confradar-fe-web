@@ -103,7 +103,11 @@ describe("Header component", () => {
     });
 
     it("renders 'Profile' button when accessToken exists", () => {
-        mockedUseAppSelector.mockReturnValue("FAKE_TOKEN");
+        // mockedUseAppSelector.mockReturnValue("FAKE_TOKEN");
+        mockedUseAppSelector.mockReturnValue({
+            accessToken: "FAKE_TOKEN",
+            user: { role: ["customer"] },
+        });
         render(<Header />);
         expect(screen.getByText("Profile")).toBeInTheDocument();
     });
