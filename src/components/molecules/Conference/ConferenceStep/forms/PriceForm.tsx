@@ -21,9 +21,7 @@ interface PriceFormProps {
   maxTotalSlot: number;
 }
 
-// ========================
-// Phase Modal Component
-// ========================
+
 interface PhaseModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -79,7 +77,6 @@ function PhaseModal({
     return Math.max(1, diffDays);
   }, [phaseData.startDate, ticketSaleEnd]);
 
-  // Khi sửa phase
   useEffect(() => {
     if (editingPhase) {
       const percentValue =
@@ -102,7 +99,6 @@ function PhaseModal({
         totalslot: editingPhase.totalslot,
       });
 
-      // ✅ Giữ nguyên refundPolicyId khi map
       const sortedRefunds = [...((editingPhase.refundInPhase as RefundInPhase[]) || [])].sort(
         (a, b) => new Date(a.refundDeadline).getTime() - new Date(b.refundDeadline).getTime()
       );
@@ -110,7 +106,6 @@ function PhaseModal({
     }
   }, [editingPhase, maxDuration]);
 
-  // Khi thêm mới
   useEffect(() => {
     if (isOpen && !editingPhase) {
       const startDate = minStartDateForNewPhase || ticketSaleStart;
@@ -482,6 +477,20 @@ export function PriceForm({
   const [editingTicketIndex, setEditingTicketIndex] = useState<number | null>(null);
   const [isEditingPhaseIndex, setIsEditingPhaseIndex] = useState<number | null>(null);
 
+  const getUsedSlots = () => {
+    let usedSlots = tickets.reduce((sum, t) => sum + t.totalSlot, 0);
+    
+    if (editingTicketIndex !== null && tickets[editingTicketIndex]) {
+      usedSlots -= tickets[editingTicketIndex].totalSlot;
+    }
+    
+    return usedSlots;
+  };
+
+  const usedSlots = getUsedSlots();
+  const remainingSlots = maxTotalSlot - usedSlots;
+
+
   const { currentStep, handleUnmarkCompleted } = useStepNavigation();
 
   useEffect(() => {
@@ -548,8 +557,13 @@ export function PriceForm({
       toast.error("Số lượng vé phải lớn hơn 0!");
       return;
     }
+    if (newTicket.totalSlot > remainingSlots) {
+      toast.error(
+        `Số lượng vé (${newTicket.totalSlot}) vượt quá số lượng còn lại (${remainingSlots})!`
+      );
+      return;
+    }
 
-    // 🔒 Bắt buộc phải có ít nhất 1 giai đoạn nếu có slot
     if (newTicket.totalSlot > 0 && newTicket.phases.length === 0) {
       toast.error("Vui lòng thêm ít nhất một giai đoạn giá cho vé này!");
       return;
@@ -798,12 +812,14 @@ export function PriceForm({
               placeholder="500.000"
             />
             <FormInput
-            label={`Tổng số lượng vé (Số lượng tham dự: ${maxTotalSlot})`}
-            type="number"
-            value={newTicket.totalSlot}
-            onChange={(val) => setNewTicket({ ...newTicket, totalSlot: Number(val) })}
-            placeholder="100"
-          />
+              label={`Tổng số lượng vé (Còn lại: ${remainingSlots}/${maxTotalSlot})`}
+              type="number"
+              value={newTicket.totalSlot}
+              onChange={(val) => setNewTicket({ ...newTicket, totalSlot: Number(val) })}
+              placeholder="100"
+              max={remainingSlots}
+              min="0"
+            />
         </div>
 
         <div className="border-t pt-3 mt-3">

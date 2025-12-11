@@ -1,19 +1,18 @@
 // components/RightSidebar/ProgressTimelineSection.tsx
-import { Clock } from "lucide-react";
 import type { CommonConference } from "@/types/conference.type";
 
 interface ProgressTimelineSectionProps {
   conference: CommonConference;
   getStatusName: (id: string) => string;
   onOpenTimeline?: () => void;
-  now: Date; // ✅ Nhận thời gian hiện tại từ props (hỗ trợ fake time)
+  now: Date; 
 }
 
 export function ProgressTimelineSection({
   conference,
   getStatusName,
   onOpenTimeline,
-  now, // ✅ Destructure `now` từ props
+  now, 
 }: ProgressTimelineSectionProps) {
   const statusName = getStatusName(conference.conferenceStatusId ?? "");
 

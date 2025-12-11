@@ -43,7 +43,7 @@ export function RightSidebar({
       {conferenceType && (
         <StatisticsSection
           conferenceId={conferenceId}
-          conferenceType={conferenceType} // ✅ "technical" hoặc "research"
+          conferenceType={conferenceType} 
           isOwnConference={isOwnConference}
         />
       )}

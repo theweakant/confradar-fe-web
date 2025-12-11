@@ -999,6 +999,43 @@ export const conferenceStepApi = createApi({
       }),
       providesTags: ["ConferenceStep"],
     }),
+
+
+    createNextPhase: builder.mutation<void, {
+      conferenceId: string;
+      newPhase: ResearchPhase;
+      authorConferencePriceIds: string[];
+    }>({
+      query: ({ conferenceId, newPhase, authorConferencePriceIds }) => ({
+        url: endpoint.CONFERENCE_STEP.CREATE_NEXT_PHASE, 
+        method: 'POST',
+        params: { conferenceId }, 
+        body: {
+          newPhase,
+          authorConferencePriceIds
+        }
+      })
+    }),
+
+      activateNextPhase: builder.mutation<void, string>({
+        query: (conferenceId) => ({
+          url: endpoint.CONFERENCE_STEP.ACTIVATE_NEXT_PHASE, 
+          method: 'PUT',
+          params: { confId: conferenceId } 
+        })
+      }),
+
+    addPricePhaseForNextResearchPhase: builder.mutation<void, {
+      conferencePriceId: string;
+      phases: Phase[];
+    }>({
+      query: ({ conferencePriceId, phases }) => ({
+        url: endpoint.CONFERENCE_STEP.ADD_PRICE_PHASE_FOR_NEXT_RESEARCH_PHASE,
+        method: 'PUT',
+        params: { conferencePriceId }, 
+        body: { phases },
+      }),
+    }),
   }),
 });
 
@@ -1069,4 +1106,9 @@ export const {
   useCreateSkeletonNameForConferenceInContractMutation,
 
   useGetConferenceStepPricesQuery,
+  
+  useCreateNextPhaseMutation,
+  useActivateNextPhaseMutation,
+  useAddPricePhaseForNextResearchPhaseMutation
+
 } = conferenceStepApi;

@@ -65,7 +65,6 @@ import { AssignRoomModal } from "@/components/molecules/Calendar/RoomCalendar/Mo
 
 import { ResearchSession } from "@/types/conference.type";
 
-// DELETE TRACKING FOR CREATE MODE
 const useMockDeleteTracking = () => {
   return useMemo(
     () => ({

@@ -326,7 +326,7 @@ export interface RevisionRoundDeadline {
 
 export interface ResearchPhase {
   researchPhaseId?: string;
-
+phaseOrder?: number;
   registrationStartDate: string;
   registrationEndDate: string;
   fullPaperStartDate: string;
