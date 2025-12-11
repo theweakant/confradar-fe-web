@@ -1,5 +1,5 @@
-import React from 'react';
-import { TrendingUp, Calendar, Users, Presentation } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { TrendingUp, Calendar, Users, Presentation, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   useGetConferencesGroupByStatusQuery,
   useGetRevenueStatsQuery,
@@ -9,6 +9,16 @@ import {
 import { formatCurrency } from '@/helper/format';
 import { useAuth } from '@/redux/hooks/useAuth';
 import { MonthlyStat } from '@/types/dashboard.type';
+
+// shadcn/ui components
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface ConferenceStatsProps {
   total: number;
@@ -27,12 +37,18 @@ interface RevenueChartProps {
 }
 
 interface UpcomingConference {
-  name: string;
-  date: string;
+  conferenceId: string;
+  conferenceName: string;
+  bannerImageUrl?: string;
+  startDate: string;
+  endDate: string;
+  daysUntilStart: number;
+  statusName: string;
 }
 
 interface ReminderProps {
-  conference: UpcomingConference;
+  conferences: UpcomingConference[];
+  isLoading: boolean;
 }
 
 interface Conference {
@@ -105,8 +121,7 @@ const RevenueChart: React.FC<RevenueChartProps> = ({ data }) => {
   const maxRevenue = data.length ? Math.max(...data.map(d => d.revenue)) : 1;
 
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-md border border-gray-100">
-      <h3 className="text-lg font-semibold mb-6 text-gray-900">Doanh Thu Theo Tháng</h3>
+    <div className="bg-white rounded-3xl px-6 py-12 shadow-md border border-gray-100">
       <div className="flex items-end justify-between h-56 gap-2">
         {data.length === 0 ? (
           <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -140,21 +155,103 @@ const RevenueChart: React.FC<RevenueChartProps> = ({ data }) => {
   );
 };
 
-const UpcomingReminder: React.FC<ReminderProps> = ({ conference }) => {
+const UpcomingReminder: React.FC<ReminderProps> = ({ conferences, isLoading }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  if (isLoading) {
+    return (
+      <Card className="rounded-3xl border-gray-100">
+        <CardContent className="p-6 flex items-center justify-center">
+          <p className="text-gray-500">Đang tải...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!conferences || conferences.length === 0) {
+    return (
+      <Card className="rounded-3xl border-gray-100">
+        <CardContent className="p-6 flex items-center justify-center text-gray-500">
+          Không có hội nghị sắp tới
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const conference = conferences[currentIndex];
+  const hasMultiple = conferences.length > 1;
+
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev === 0 ? conferences.length - 1 : prev - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev === conferences.length - 1 ? 0 : prev + 1));
+  };
+
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-md border border-gray-100">
-      <h3 className="text-lg font-semibold mb-6 text-gray-900">Nhắc Nhở</h3>
-      <div className="mb-6">
-        <h4 className="font-semibold text-gray-900 mb-3">{conference.name}</h4>
-        <p className="text-sm text-gray-500 flex items-center gap-2">
-          <Calendar size={16} />
-          Ngày: {new Date(conference.date).toLocaleDateString('vi-VN')}
+    <Card className="rounded-3xl border-gray-100 relative">
+      <CardContent className="p-3">
+        <div className="flex items-start justify-between mb-4">
+          <h4 className="font-semibold text-gray-900 flex-1">{conference.conferenceName}</h4>
+          <span className="ml-2 px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full whitespace-nowrap">
+            {conference.statusName === 'Ready' ? 'Sẵn sàng' : 'Sắp diễn ra'}
+          </span>
+        </div>
+
+        <p className="text-sm text-gray-600 mb-4">
+          {new Date(conference.startDate).toLocaleDateString('vi-VN')} → {new Date(conference.endDate).toLocaleDateString('vi-VN')} 
+          <span className="text-emerald-600 font-medium ml-2">
+            ({conference.daysUntilStart} ngày nữa)
+          </span>
         </p>
-      </div>
-      <div className="w-full bg-emerald-500 text-white font-medium py-3 px-4 rounded-2xl text-center">
-        Sắp diễn ra
-      </div>
-    </div>
+
+        {conference.bannerImageUrl && (
+          <div className="rounded-2xl overflow-hidden">
+            <img 
+              src={conference.bannerImageUrl} 
+              alt={conference.conferenceName}
+              className="w-full h-32 object-cover"
+            />
+          </div>
+        )}
+
+        {hasMultiple && (
+          <div className="flex items-center justify-between mt-4">
+            <button
+              onClick={handlePrev}
+              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+              aria-label="Hội nghị trước"
+            >
+              <ChevronLeft size={20} className="text-gray-600" />
+            </button>
+            
+            <div className="flex gap-1.5">
+              {conferences.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentIndex(idx)}
+                  className={`h-2 rounded-full transition-all ${
+                    idx === currentIndex 
+                      ? 'w-6 bg-emerald-500' 
+                      : 'w-2 bg-gray-300 hover:bg-gray-400'
+                  }`}
+                  aria-label={`Đến hội nghị ${idx + 1}`}
+                />
+              ))}
+            </div>
+
+            <button
+              onClick={handleNext}
+              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+              aria-label="Hội nghị tiếp theo"
+            >
+              <ChevronRight size={20} className="text-gray-600" />
+            </button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
@@ -171,7 +268,7 @@ const TopConferences: React.FC<TopConferencesProps> = ({ conferences }) => {
           conferences.map((conf) => (
             <div key={conf.id} className="flex items-center gap-2 p-2 rounded-2xl hover:bg-gray-50 transition-colors">
               <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0">
-                <Presentation size={24} className="text-gray" />
+                <Presentation size={24} className="text-gray-600" />
               </div>
               <div className="flex-1 min-w-0">
                 <h4 className="font-medium text-sm text-gray-900 truncate mb-1">{conf.name}</h4>
@@ -188,7 +285,7 @@ const TopConferences: React.FC<TopConferencesProps> = ({ conferences }) => {
   );
 };
 
-const ConferenceProgress: React.FC<ProgressProps> = ({ completed, inProgress, pending }) => {
+const   ConferenceProgress: React.FC<ProgressProps> = ({ completed, inProgress, pending }) => {
   const total = completed + inProgress + pending;
   const completedPercent = total > 0 ? Math.round((completed / total) * 100) : 0;
   const progressAngle = (completedPercent / 100) * 360;
@@ -246,30 +343,47 @@ const ConferenceProgress: React.FC<ProgressProps> = ({ completed, inProgress, pe
   );
 };
 
-// ============= HELPER FUNCTION =============
-const generateNext6MonthsData = (apiData: MonthlyStat[]): RevenueData[] => {
+// Helper: tạo danh sách tháng cho dropdown (tháng hiện tại trở về trước, tối đa 24 tháng)
+const generateMonthOptions = () => {
+  const options = [];
   const now = new Date();
-  const next6Months: RevenueData[] = [];
-  
-  const apiDataMap = new Map<string, number>();
-  apiData.forEach((item) => {
-    const key = `${item.year}-${item.month}`;
-apiDataMap.set(key, item.monthlyTotal ?? 0);  
-});
-  
   for (let i = 0; i < 6; i++) {
-    const date = new Date(now.getFullYear(), now.getMonth() + i, 1);
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
-    const key = `${year}-${month}`;
-    
-    next6Months.push({
-      month: `T${month}`,
-      revenue: apiDataMap.get(key) || 0,
+    const label = `${month} / ${year}`;
+    const value = `${year}-${month.toString().padStart(2, '0')}`;
+    options.push({ label, value, year, month });
+  }
+  return options;
+};
+
+// Helper: tạo dữ liệu doanh thu 6 tháng TRƯỚC (kể từ tháng được chọn)
+const generateRevenueDataFor6MonthsBack = (
+  selectedYear: number,
+  selectedMonth: number,
+  apiData: MonthlyStat[]
+): RevenueData[] => {
+  const result: RevenueData[] = [];
+  const apiMap = new Map<string, number>();
+  apiData.forEach((item) => {
+    const key = `${item.year}-${item.month.toString().padStart(2, '0')}`;
+    apiMap.set(key, item.monthlyTotal ?? 0);
+  });
+
+  for (let i = 5; i >= 0; i--) {
+    const date = new Date(selectedYear, selectedMonth - 1 - i, 1);
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    const key = `${year}-${month.toString().padStart(2, '0')}`;
+    const label = `T${month}`;
+    result.push({
+      month: label,
+      revenue: apiMap.get(key) || 0,
     });
   }
-  
-  return next6Months;
+
+  return result;
 };
 
 // ============= MAIN DASHBOARD =============
@@ -277,17 +391,32 @@ export default function ConferenceDashboard() {
   const { user } = useAuth();
   const userId = user?.userId || '';
 
+  const [selectedRevenueMonth, setSelectedRevenueMonth] = useState<string>(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+  });
+
+  // Chỉ cho chọn theo quý: 3, 6, 9, ..., 24 tháng
+  const QUARTER_OPTIONS = [3, 6, 9, 12, 15, 18, 21, 24];
+  const [upcomingMonths, setUpcomingMonths] = useState<number>(3);
+
+  // Parse selected revenue month
+  const { year: revYear, month: revMonth } = useMemo(() => {
+    const [y, m] = selectedRevenueMonth.split('-').map(Number);
+    return { year: y, month: m };
+  }, [selectedRevenueMonth]);
+
   const { data: groupByStatusData } = useGetConferencesGroupByStatusQuery(userId, {
     skip: !userId,
   });
 
-  const { data: revenueData } = useGetRevenueStatsQuery(
-    { userId, monthBack: 6 },
+  const { data: revenueData, isLoading: revenueLoading } = useGetRevenueStatsQuery(
+    { userId, monthBack: 24 },
     { skip: !userId }
   );
 
-  const { data: upcomingData } = useGetUpcomingConferencesQuery(
-    { userId, nextMonths: 3 },
+  const { data: upcomingData, isLoading: upcomingLoading } = useGetUpcomingConferencesQuery(
+    { userId, nextMonths: upcomingMonths },
     { skip: !userId }
   );
 
@@ -305,55 +434,31 @@ export default function ConferenceDashboard() {
   }
 
   // --- Transform status logic ---
-  let completed = 0;      // "Completed"
-  let inProgress = 0;     // "Preparing", "Ready", "OnHold"
-  let pending = 0;        // "Pending"
-  // "Draft" → bỏ qua hoàn toàn
+let completed = 0;
+let inProgress = 0; 
+let pending = 0;
 
-  const groupByStatus = groupByStatusData?.data?.groupByStatus || [];
-
-  groupByStatus.forEach((group) => {
-    const count = group.count;
-    const status = group.groupName;
-
-    // Bỏ qua "Draft"
-    if (status === 'Draft') {
-      return;
-    }
-
-    switch (status) {
-      case 'Completed':
-        completed = count;
-        break;
-      case 'Pending':
-        pending = count;
-        break;
-      case 'Preparing':
-      case 'Ready':
-      case 'OnHold':
-        inProgress += count;
-        break;
-      default:
-        // Các trạng thái khác (nếu có) → gộp vào "Đang diễn ra"
-        inProgress += count;
-    }
-  });
-
-  // Tổng = completed + inProgress + pending (không tính Draft)
+const groupByStatus = groupByStatusData?.data?.groupByStatus || [];
+groupByStatus.forEach((group) => {
+  const { count, groupName: status } = group;
+  if (status === 'Completed') {
+    completed = count;
+  } else if (status === 'Ready') {
+    inProgress = count;
+  } else if (status === 'Pending') {
+    pending = count;
+  }
+});
   const total = completed + inProgress + pending;
 
-  // ✅ FIX: Tạo dữ liệu 6 tháng với doanh thu thực (đã trừ hoàn tiền)
+  // --- Revenue Chart Data ---
   const apiMonthlyStats = revenueData?.data?.monthlyStats || [];
-  const revenueChart = generateNext6MonthsData(apiMonthlyStats);
+  const revenueChart = generateRevenueDataFor6MonthsBack(revYear, revMonth, apiMonthlyStats);
 
-  const firstUpcoming = upcomingData?.data?.[0];
-  const reminder = firstUpcoming
-    ? {
-        name: firstUpcoming.conferenceName,
-        date: firstUpcoming.startDate,
-      }
-    : null;
+  // --- Upcoming Conference ---
+  const upcomingConferences = upcomingData?.data || [];
 
+  // --- Top Conferences ---
   const topConferences = (topData?.data?.conferenceRegisters || []).map((item) => ({
     id: item.conferenceId,
     name: item.name,
@@ -361,6 +466,9 @@ export default function ConferenceDashboard() {
     totalSlot: item.totalSlot,
     occupancyRate: item.occupancyRate,
   }));
+
+  // Month options for revenue dropdown
+  const monthOptions = generateMonthOptions();
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -376,15 +484,48 @@ export default function ConferenceDashboard() {
 
         <div className="grid grid-cols-3 gap-6 mb-6">
           <div className="col-span-2">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Doanh Thu Theo Tháng</h3>
+              <Select
+                value={selectedRevenueMonth}
+                onValueChange={setSelectedRevenueMonth}
+              >
+                <SelectTrigger className="w-36 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {monthOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <RevenueChart data={revenueChart} />
           </div>
-          {reminder ? (
-            <UpcomingReminder conference={reminder} />
-          ) : (
-            <div className="bg-white rounded-3xl p-6 shadow-md border border-gray-100 flex items-center justify-center text-gray-500">
-              Không có hội nghị hay hội thảo sắp tới
+
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Hội Nghị Sắp Tới</h3>
+              <Select
+                value={upcomingMonths.toString()}
+                onValueChange={(v) => setUpcomingMonths(Number(v))}
+              >
+                <SelectTrigger className="w-28 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {QUARTER_OPTIONS.map((months) => (
+                    <SelectItem key={months} value={months.toString()}>
+                      {months} tháng
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          )}
+            <UpcomingReminder conferences={upcomingConferences} isLoading={upcomingLoading} />
+          </div>
         </div>
 
         <div className="grid grid-cols-3 gap-6">
@@ -394,7 +535,6 @@ export default function ConferenceDashboard() {
             inProgress={inProgress}
             pending={pending}
           />
-          {/* Cột thứ 3 để trống hoặc mở rộng sau */}
         </div>
       </div>
     </div>
