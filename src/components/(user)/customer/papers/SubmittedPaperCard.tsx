@@ -12,6 +12,7 @@ interface SubmittedPaperInfo {
     created?: string;
     updated?: string;
     fileUrl?: string | null;
+    reason?: string | null;
 }
 
 interface SubmittedPaperCardProps {
@@ -69,7 +70,7 @@ const SubmittedPaperCard: React.FC<SubmittedPaperCardProps> = ({
 
                             {paperInfo.description && (
                                 <div>
-                                    <p className="text-xs text-gray-600 mb-1">Mô tả</p>
+                                    <p className="text-xs text-gray-600 mb-1">Miêu tả</p>
                                     <p className="text-sm text-gray-700 leading-relaxed">
                                         {paperInfo.description}
                                     </p>
@@ -81,13 +82,22 @@ const SubmittedPaperCard: React.FC<SubmittedPaperCardProps> = ({
                     {/* Meta Information Grid */}
                     <div className="grid grid-cols-1 gap-3 pt-3 border-t border-green-200">
                         {(paperInfo.status || paperInfo.reviewStatus || paperInfo.overallStatus) && (
-                            <div>
-                                <p className="text-xs text-gray-600 mb-1">Trạng thái</p>
-                                <p className={`text-sm font-medium ${getStatusColor(
-                                    paperInfo.status ?? paperInfo.reviewStatus ?? paperInfo.overallStatus ?? undefined
-                                )}`}>
-                                    {paperInfo.status || paperInfo.reviewStatus || paperInfo.overallStatus || "Chưa rõ"}
-                                </p>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <p className="text-xs text-gray-600 mb-1">Trạng thái</p>
+                                    <p className={`text-sm font-medium ${getStatusColor(
+                                        paperInfo.status ?? paperInfo.reviewStatus ?? paperInfo.overallStatus ?? undefined
+                                    )}`}>
+                                        {paperInfo.status || paperInfo.reviewStatus || paperInfo.overallStatus || "Chưa rõ"}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <p className="text-xs text-gray-600 mb-1">Đánh giá từ Reviewer</p>
+                                    <p className="text-sm text-gray-700">
+                                        {paperInfo.reason?.trim() || "Không có lý do"}
+                                    </p>
+                                </div>
                             </div>
                         )}
 

@@ -344,7 +344,7 @@ const ConferenceSubscribeCard: React.FC<ConferenceSubscribeCardProps> = ({
                                                 onClick={onOpenAbstractDialog}
                                                 className="w-full px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg"
                                             >
-                                                Nộp mô tả bài báo (Abstract)
+                                                Nộp bản giới thiệu của bài báo (Abstract)
                                             </button>
                                         </>
                                     )}

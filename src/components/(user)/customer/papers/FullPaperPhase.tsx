@@ -157,7 +157,8 @@ const FullPaperPhase: React.FC<FullPaperPhaseProps> = ({ paperId, fullPaper, res
             reviewStatus: fullPaper.reviewStatus,
             created: fullPaper.created,
             updated: fullPaper.updated,
-            fileUrl: fullPaper.fileUrl
+            fileUrl: fullPaper.fileUrl,
+            reason: fullPaper.reason
           }}
           paperType="Full Paper"
         />
