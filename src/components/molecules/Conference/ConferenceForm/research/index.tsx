@@ -1,18 +1,15 @@
 "use client";
-
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useEffect, useMemo, useCallback, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks/hooks";
-import { setMaxStep, setMode, setVisibleSteps  } from "@/redux/slices/conferenceStep.slice";
+import { setMaxStep, setMode, setVisibleSteps } from "@/redux/slices/conferenceStep.slice";
 import { Plus } from "lucide-react";
-
 // API Queries
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 import { useGetAllRoomsQuery } from "@/redux/services/room.service";
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllRankingCategoriesQuery } from "@/redux/services/category.service";
-
 // Shared Components
 import {
   StepIndicator,
@@ -21,28 +18,24 @@ import {
   PageHeader,
 } from "@/components/molecules/Conference/ConferenceStep/components/index";
 import { FlexibleNavigationButtons } from "@/components/molecules/Conference/ConferenceStep/components/FlexibleNavigationButtons";
-
 // Shared Forms
 import { PolicyForm } from "@/components/molecules/Conference/ConferenceStep/forms/PolicyForm";
 import { MediaForm } from "@/components/molecules/Conference/ConferenceStep/forms/MediaForm";
 import { SponsorForm } from "@/components/molecules/Conference/ConferenceStep/forms/SponsorForm";
-
 // Research-Specific Forms
 import { ResearchBasicInfoForm } from "@/components/molecules/Conference/ConferenceStep/forms/research/ResearchBasicInfoForm";
 import { ResearchDetailForm } from "@/components/molecules/Conference/ConferenceStep/forms/research/ResearchDetailForm";
 import { ResearchPhaseForm } from "@/components/molecules/Conference/ConferenceStep/forms/research/ResearchPhaseForm";
 import { ResearchPriceForm } from "@/components/molecules/Conference/ConferenceStep/forms/research/ResearchPriceForm";
 import { MaterialsForm } from "@/components/molecules/Conference/ConferenceStep/forms/research/MaterialsForm";
-
 import {
   useStepNavigation,
-  useResearchFormSubmit,  
+  useResearchFormSubmit,
   useValidation,
   useResearchForm,
   useDeleteTracking,
   useResearchConferenceData,
 } from "@/components/molecules/Conference/ConferenceStep/hooks/index";
-
 import {
   validateConferenceName,
   validateDateRange,
@@ -52,17 +45,14 @@ import {
   validateBasicForm,
   validateAllResearchPhases,
 } from "@/components/molecules/Conference/ConferenceStep/validations";
-
 import {
   RESEARCH_STEP_LABELS,
   RESEARCH_MAX_STEP,
 } from "@/components/molecules/Conference/ConferenceStep/constants";
-
 import { NoRoomResearchSessionForm } from "@/components/molecules/Calendar/RoomCalendar/Form/NoRoomResearchSessionForm";
 import RoomCalendar from "@/components/molecules/Calendar/RoomCalendar/RoomCalendar";
 import { UnassignedSessionsList } from "@/components/molecules/Calendar/RoomCalendar/Session/UnassignedSessionsList";
 import { AssignRoomModal } from "@/components/molecules/Calendar/RoomCalendar/Modal/AssignRoomModal";
-
 import { ResearchSession } from "@/types/conference.type";
 
 const useMockDeleteTracking = () => {
@@ -95,11 +85,9 @@ export default function ResearchConferenceStepForm({
   conferenceId,
 }: ResearchConferenceStepFormProps) {
   const dispatch = useAppDispatch();
-  
   const router = useRouter();
   const reduxConferenceId = useAppSelector((state) => state.conferenceStep.conferenceId);
   const actualConferenceId = mode === "create" ? reduxConferenceId : conferenceId;
-
   const realDeleteTracking = useDeleteTracking();
   const mockDeleteTracking = useMockDeleteTracking();
   const deleteTracking =
@@ -177,9 +165,11 @@ export default function ResearchConferenceStepForm({
 
   const initialDataRef = useRef<InitialFormData | null>(null);
   const [hasLoadedData, setHasLoadedData] = useState(false);
+
   const visibleSteps = useMemo(() => {
     return Array.from({ length: RESEARCH_MAX_STEP }, (_, i) => i + 1);
   }, []);
+
   const {
     isLoading: isConferenceLoading,
     isFetching,
@@ -214,7 +204,6 @@ export default function ResearchConferenceStepForm({
             setRankingReferences(loadedRankingReferences);
             setMediaList(loadedMediaList);
             setSponsors(loadedSponsors);
-
             initialDataRef.current = {
               basicForm: loadedBasicForm,
               researchDetail: loadedResearchDetail,
@@ -229,7 +218,6 @@ export default function ResearchConferenceStepForm({
               mediaList: loadedMediaList,
               sponsors: loadedSponsors,
             };
-
             if (loadedBasicForm && Object.keys(loadedBasicForm).length > 0) {
               handleMarkHasData(1);
             }
@@ -265,7 +253,6 @@ export default function ResearchConferenceStepForm({
             if (loadedSponsors && loadedSponsors.length > 0) {
               handleMarkHasData(9);
             }
-
             setHasLoadedData(true);
           }
         : () => {},
@@ -280,16 +267,13 @@ export default function ResearchConferenceStepForm({
 
   useEffect(() => {
     if (!hasLoadedData || mode !== "edit" || !initialDataRef.current) return;
-
     const current = initialDataRef.current;
-
     const checkIfDirty = (step: number, currentData: unknown, initialData: unknown) => {
       const isDifferent = JSON.stringify(currentData) !== JSON.stringify(initialData);
       if (isDifferent) {
         handleMarkDirty(step);
       }
     };
-
     checkIfDirty(1, basicForm, current.basicForm);
     checkIfDirty(2, researchDetail, current.researchDetail);
     checkIfDirty(3, researchPhases, current.researchPhases);
@@ -450,29 +434,15 @@ export default function ResearchConferenceStepForm({
     [basicForm, validate, clearError]
   );
 
-const handleNextStep = useCallback(() => {
-  const currentIndex = visibleSteps.indexOf(currentStep);
-  if (currentIndex < visibleSteps.length - 1) {
-    handleGoToStep(visibleSteps[currentIndex + 1]);
-  }
-}, [currentStep, visibleSteps, handleGoToStep]);
-
-const handlePreviousStep = useCallback(() => {
-  const currentIndex = visibleSteps.indexOf(currentStep);
-  if (currentIndex > 0) {
-    handleGoToStep(visibleSteps[currentIndex - 1]);
-  }
-}, [currentStep, visibleSteps, handleGoToStep]);
-
   const handleComplete = useCallback(() => {
-  toast.success("Trở về trang quản lí!");
-  router.push("/workspace/organizer/manage-conference");
-}, [router]);
+    toast.success("Trở về trang quản lí!");
+    router.push("/workspace/organizer/manage-conference");
+  }, [router]);
 
-const isCurrentStepLast = useMemo(() => {
-  const currentIndex = visibleSteps.indexOf(currentStep);
-  return currentIndex === visibleSteps.length - 1;
-}, [currentStep, visibleSteps]);
+  const isCurrentStepLast = useMemo(() => {
+    const currentIndex = visibleSteps.indexOf(currentStep);
+    return currentIndex === visibleSteps.length - 1;
+  }, [currentStep, visibleSteps]);
 
   const handleBasicSubmit = async () => {
     const basicValidation = validateBasicForm(basicForm);
@@ -494,41 +464,32 @@ const isCurrentStepLast = useMemo(() => {
       handleNext();
     }
   };
-  
-const handleTimelineSubmit = async () => {
-  if (researchPhases.length === 0) {
-    toast.error("Phải có ít nhất 1 timeline!");
-    return;
-  }
 
-  // ✅ Validate toàn bộ mảng phases (theo spec mới)
-  const fullValidation = validateAllResearchPhases(
-    researchPhases,
-    basicForm.startDate // conference start date
-  );
-
-  if (!fullValidation.isValid) {
-    toast.error(`Lỗi timeline: ${fullValidation.error}`);
-    return;
-  }
-
-  console.log('📤 Calling submitResearchPhase with:', {
-    phasesCount: researchPhases.length,
-    phases: researchPhases.map((p, i) => ({
-      index: i + 1,
-      registrationStart: p.registrationStartDate,
-      authorPaymentEnd: p.authorPaymentEnd,
-    })),
-  });
-
-  const result = await submitResearchPhase(researchPhases);
-  console.log('📥 submitResearchPhase result:', result);
-
-  if (result.success) {
-    handleMarkHasData(3);
-    handleNext();
-  }
-};
+  const handleTimelineSubmit = async () => {
+    if (researchPhases.length === 0) {
+      toast.error("Phải có ít nhất 1 timeline!");
+      return;
+    }
+    const fullValidation = validateAllResearchPhases(researchPhases, basicForm.startDate);
+    if (!fullValidation.isValid) {
+      toast.error(`Lỗi timeline: ${fullValidation.error}`);
+      return;
+    }
+    console.log('📤 Calling submitResearchPhase with:', {
+      phasesCount: researchPhases.length,
+      phases: researchPhases.map((p, i) => ({
+        index: i + 1,
+        registrationStart: p.registrationStartDate,
+        authorPaymentEnd: p.authorPaymentEnd,
+      })),
+    });
+    const result = await submitResearchPhase(researchPhases);
+    console.log('📥 submitResearchPhase result:', result);
+    if (result.success) {
+      handleMarkHasData(3);
+      handleNext();
+    }
+  };
 
   const handlePriceSubmit = async () => {
     if (tickets.length === 0) {
@@ -569,26 +530,21 @@ const handleTimelineSubmit = async () => {
       toast.error("Session không có ID để cập nhật!");
       return;
     }
-
     console.log("📝 Updating session at index:", index, "with data:", updatedSession);
-
     setSessions((prev) => {
       const newSessions = [...prev];
       newSessions[index] = updatedSession;
       return newSessions;
     });
-
     handleMarkDirty(5);
     toast.success(`Đã cập nhật session "${updatedSession.title}" thành công!`);
   };
 
   const handleSessionDeletedFromCalendar = (index: number) => {
     const deletedSession = sessions[index];
-    
     if (deletedSession?.sessionId && mode === "edit") {
       realDeleteTracking.trackDeletedSession(deletedSession.sessionId);
     }
-    
     setSessions((prev) => prev.filter((_, i) => i !== index));
     handleMarkDirty(5);
     toast.success("Đã xóa session thành công!");
@@ -598,14 +554,11 @@ const handleTimelineSubmit = async () => {
     return sessions.filter((session) => !session.roomId);
   }, [sessions]);
 
-  // Thêm handler
   const handleAssignRoom = (session: ResearchSession, index: number) => {
-    // Tìm index thực trong mảng sessions gốc
-    const actualIndex = sessions.findIndex(s => 
-      s.sessionId ? s.sessionId === session.sessionId : 
+    const actualIndex = sessions.findIndex(s =>
+      s.sessionId ? s.sessionId === session.sessionId :
       (s.title === session.title && s.date === session.date && s.startTime === session.startTime)
     );
-    
     setSessionToAssignRoom(session);
     setSessionToAssignRoomIndex(actualIndex);
     setAssignRoomModalOpen(true);
@@ -668,9 +621,6 @@ const handleTimelineSubmit = async () => {
     }
   };
 
-  // ========================================
-  // UPDATE MODE: UPDATE CURRENT STEP
-  // ========================================
   const handleUpdateCurrentStep = useCallback(async () => {
     let result;
     switch (currentStep) {
@@ -741,7 +691,6 @@ const handleTimelineSubmit = async () => {
         return { success: false };
       }
     }
-
     if (result?.success) {
       handleClearDirty(currentStep);
       if (initialDataRef.current) {
@@ -776,7 +725,6 @@ const handleTimelineSubmit = async () => {
         }
       }
     }
-
     return result || { success: false };
   }, [
     currentStep,
@@ -806,7 +754,6 @@ const handleTimelineSubmit = async () => {
 
   const handleUpdateAll = async () => {
     if (mode !== "edit") return { success: false };
-
     const result = await submitAll({
       basicForm,
       researchDetail,
@@ -821,15 +768,12 @@ const handleTimelineSubmit = async () => {
       mediaList,
       sponsors,
     });
-
     if (result?.success) {
       toast.success("Cập nhật toàn bộ hội nghị thành công!");
       realDeleteTracking.resetDeleteTracking();
-
       for (let i = 1; i <= RESEARCH_MAX_STEP; i++) {
         handleClearDirty(i);
       }
-
       initialDataRef.current = {
         basicForm: { ...basicForm },
         researchDetail: { ...researchDetail },
@@ -848,7 +792,6 @@ const handleTimelineSubmit = async () => {
       const errorMsg = result?.errors?.join("; ") || "Lưu toàn bộ thất bại";
       toast.error(errorMsg);
     }
-
     return result || { success: false };
   };
 
@@ -878,7 +821,6 @@ const handleTimelineSubmit = async () => {
             : "Cập nhật thông tin hội nghị nghiên cứu"
         }
       />
-
       <StepIndicator
         currentStep={currentStep}
         activeStep={activeStep}
@@ -890,7 +832,6 @@ const handleTimelineSubmit = async () => {
         mode={stepMode}
         onStepClick={handleGoToStep}
       />
-
       {(isSubmitting || isFetching) && (
         <LoadingOverlay
           message={
@@ -900,7 +841,6 @@ const handleTimelineSubmit = async () => {
           }
         />
       )}
-
       {currentStep === 1 && (
         <StepContainer
           stepNumber={1}
@@ -924,13 +864,12 @@ const handleTimelineSubmit = async () => {
             mode={mode}
             isLastStep={isCurrentStepLast}
             isStepCompleted={isStepCompleted}
-            onNext={handleNextStep}
+            onNext={handleNext}
             onSubmit={handleBasicSubmit}
             onUpdate={handleUpdateCurrentStep}
           />
         </StepContainer>
       )}
-
       {currentStep === 2 && (
         <StepContainer
           stepNumber={2}
@@ -952,14 +891,13 @@ const handleTimelineSubmit = async () => {
             mode={mode}
             isLastStep={isCurrentStepLast}
             isStepCompleted={isStepCompleted}
-            onPrevious={handlePreviousStep}
-            onNext={handleNextStep}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
             onSubmit={handleResearchDetailSubmit}
             onUpdate={handleUpdateCurrentStep}
           />
         </StepContainer>
       )}
-
       {/* STEP 3 */}
       {currentStep === 3 && (
         <StepContainer
@@ -983,14 +921,13 @@ const handleTimelineSubmit = async () => {
             mode={mode}
             isLastStep={isCurrentStepLast}
             isStepCompleted={isStepCompleted}
-            onPrevious={handlePreviousStep}
-            onNext={handleNextStep}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
             onSubmit={handleTimelineSubmit}
             onUpdate={handleUpdateCurrentStep}
           />
-        </StepContainer>  
+        </StepContainer>
       )}
-
       {/* STEP 4 */}
       {currentStep === 4 && (
         <StepContainer
@@ -1017,15 +954,14 @@ const handleTimelineSubmit = async () => {
             mode={mode}
             isLastStep={isCurrentStepLast}
             isStepCompleted={isStepCompleted}
-            onPrevious={handlePreviousStep}
-            onNext={handleNextStep}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
             onSubmit={handlePriceSubmit}
             onUpdate={handleUpdateCurrentStep}
           />
         </StepContainer>
       )}
-
-      {/* STEP 5: SESSIONS  */}
+      {/* STEP 5: SESSIONS */}
       {currentStep === 5 && (
         <StepContainer
           stepNumber={5}
@@ -1053,7 +989,6 @@ const handleTimelineSubmit = async () => {
               </div>
             </div>
           )}
-
           {!actualConferenceId && mode === "create" && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
               <div className="flex items-start gap-3">
@@ -1076,7 +1011,6 @@ const handleTimelineSubmit = async () => {
               </div>
             </div>
           )}
-
           {(basicForm.startDate || basicForm.endDate) && (
             <div className="text-xs text-gray-500 space-y-1 mb-4">
               <p>
@@ -1099,19 +1033,17 @@ const handleTimelineSubmit = async () => {
               <p>• Quản lý session trong chi tiết phòng trên lịch</p>
             </div>
           )}
-
           {unassignedSessions.length > 0 && (
             <UnassignedSessionsList
               sessions={unassignedSessions}
               onAssignRoom={handleAssignRoom}
             />
           )}
-
           <div className="border rounded-lg overflow-hidden bg-white shadow-sm mb-4">
             <div className="mt-4 mr-4 flex justify-end">
-            <button
-              onClick={() => setShowNoRoomSessionForm(true)}
-              className="
+              <button
+                onClick={() => setShowNoRoomSessionForm(true)}
+                className="
                 flex items-center gap-2
                 px-4 py-1.5 
                 bg-white border border-gray-300
@@ -1119,15 +1051,13 @@ const handleTimelineSubmit = async () => {
                 text-brown-700 font-medium
                 hover:bg-gray-100 transition
               "
-            >
-              <Plus size={16} strokeWidth={2} className="text-brown-500 hover:text-brown-700" />
-
-              <span className="text-sm text-brown-700">Thêm session (không xếp phòng)</span>
-
-            </button>
+              >
+                <Plus size={16} strokeWidth={2} className="text-brown-500 hover:text-brown-700" />
+                <span className="text-sm text-brown-700">Thêm session (không xếp phòng)</span>
+              </button>
             </div>
             <RoomCalendar
-              conferenceId={actualConferenceId || undefined} 
+              conferenceId={actualConferenceId || undefined}
               conferenceType="Research"
               onSessionCreated={handleSessionCreatedFromCalendar}
               onSessionUpdated={handleSessionUpdatedFromCalendar}
@@ -1136,9 +1066,7 @@ const handleTimelineSubmit = async () => {
               endDate={basicForm.endDate}
               existingSessions={sessions}
             />
-
           </div>
-
           <AssignRoomModal
             open={assignRoomModalOpen}
             session={sessionToAssignRoom}
@@ -1150,7 +1078,6 @@ const handleTimelineSubmit = async () => {
             }}
             onConfirm={handleAssignRoomConfirm}
           />
-
           {showNoRoomSessionForm && actualConferenceId && basicForm.startDate && basicForm.endDate && (
             <NoRoomResearchSessionForm
               open={true}
@@ -1176,14 +1103,13 @@ const handleTimelineSubmit = async () => {
             isStepCompleted={isStepCompleted}
             isOptionalStep={true}
             isSkippable={sessions.length === 0}
-            onPrevious={handlePreviousStep}
-            onNext={handleNextStep}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
             onSubmit={handleSessionsSubmit}
             onUpdate={handleUpdateCurrentStep}
           />
         </StepContainer>
       )}
-
       {/* STEP 6 */}
       {currentStep === 6 && (
         <StepContainer
@@ -1208,14 +1134,13 @@ const handleTimelineSubmit = async () => {
             isStepCompleted={isStepCompleted}
             isOptionalStep={true}
             isSkippable={policies.length === 0 && refundPolicies.length === 0}
-            onPrevious={handlePreviousStep}
-            onNext={handleNextStep}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
             onSubmit={handlePoliciesSubmit}
             onUpdate={handleUpdateCurrentStep}
           />
         </StepContainer>
       )}
-
       {/* STEP 7 */}
       {currentStep === 7 && (
         <StepContainer
@@ -1247,14 +1172,13 @@ const handleTimelineSubmit = async () => {
               rankingFiles.length === 0 &&
               rankingReferences.length === 0
             }
-            onPrevious={handlePreviousStep}
-            onNext={handleNextStep}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
             onSubmit={handleMaterialsSubmit}
             onUpdate={handleUpdateCurrentStep}
           />
         </StepContainer>
       )}
-
       {/* STEP 8 */}
       {currentStep === 8 && (
         <StepContainer
@@ -1276,14 +1200,13 @@ const handleTimelineSubmit = async () => {
             isStepCompleted={isStepCompleted}
             isOptionalStep={true}
             isSkippable={mediaList.length === 0}
-            onPrevious={handlePreviousStep}
-            onNext={handleNextStep}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
             onSubmit={handleMediaSubmit}
             onUpdate={handleUpdateCurrentStep}
           />
         </StepContainer>
       )}
-
       {/* STEP 9 */}
       {currentStep === 9 && (
         <StepContainer
@@ -1305,8 +1228,8 @@ const handleTimelineSubmit = async () => {
             isLastStep={isCurrentStepLast}
             isOptionalStep={true}
             isSkippable={sponsors.length === 0}
-            onPrevious={handlePreviousStep}
-            onNext={handleNextStep}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
             onSubmit={handleSponsorsSubmit}
             onUpdate={handleUpdateCurrentStep}
             onComplete={mode === "edit" ? handleComplete : undefined}

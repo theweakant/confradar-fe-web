@@ -327,7 +327,7 @@ export function ResearchPhaseForm({
             </div>
           </div>
           <div className="text-xs text-blue-600 mt-3 pt-3 border-t border-blue-200">
-            Timeline research phải kết thúc trước ngày bán
+            Các giai đoạn research phải kết thúc trước ngày hội nghị bắt đầu
           </div>
         </div>
       )}
@@ -366,7 +366,7 @@ export function ResearchPhaseForm({
         onStartDateChange={(val) => updatePhaseStartDate("registration", val)}
         onDurationChange={(val) => updatePhaseDuration("registration", val)}
         minDate={activePhaseIndex === 0 ? undefined : addDays(phases[activePhaseIndex - 1].authorPaymentEnd)}
-        maxDate={ticketSaleStart ? addDays(ticketSaleStart, -1) : undefined}
+        maxDate={eventStartDate ? addDays(eventStartDate, -1) : undefined}
       />
 
       <PhaseSection
@@ -577,7 +577,6 @@ export function ResearchPhaseForm({
         onStartDateChange={(val) => updatePhaseStartDate("cameraReady", val)}
         onDurationChange={(val) => updatePhaseDuration("cameraReady", val)}
         minDate={addDays(activePhase.revisionPaperDecideStatusEnd)}
-        maxDate={ticketSaleStart ? addDays(ticketSaleStart, -1) : undefined}
       />
 
       <PhaseSection
@@ -598,7 +597,7 @@ export function ResearchPhaseForm({
         onStartDateChange={(val) => updatePhaseStartDate("authorPayment", val)}
         onDurationChange={(val) => updatePhaseDuration("authorPayment", val)}
         minDate={addDays(activePhase.cameraReadyDecideStatusEnd)}
-        maxDate={activePhaseIndex === 0 ? addDays(ticketSaleStart, -1) : eventStartDate ? addDays(eventStartDate, -1) : undefined}
+        maxDate={activePhaseIndex === 0 ? addDays(eventStartDate, -1) : eventStartDate ? addDays(eventStartDate, -1) : undefined}
       />
     </div>
   );
