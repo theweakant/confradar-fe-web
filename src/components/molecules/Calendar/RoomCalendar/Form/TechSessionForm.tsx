@@ -3,7 +3,14 @@ import { Clock, Users, MapPin, Calendar as CalendarIcon, AlertCircle, Image as I
 import { toast } from "sonner";
 import type { Session, Speaker, SessionMedia } from "@/types/conference.type";
 import { ImageUpload } from "@/components/atoms/ImageUpload";
-
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 interface SingleSessionFormProps {
   conferenceId: string;
   roomId: string;
@@ -175,8 +182,8 @@ function SessionDetailModal({ isOpen, onClose, sessions }: SessionDetailModalPro
         {sessions.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             <AlertCircle className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-            <p className="font-medium">Chưa có phiên họp nào</p>
-            <p className="text-sm mt-1">Hãy tạo phiên họp đầu tiên của bạn!</p>
+            <p className="font-medium">Chưa có session nào</p>
+            <p className="text-sm mt-1">Hãy tạo session đầu tiên của bạn!</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -472,13 +479,8 @@ if (startDay !== endDay) {
     <div className="space-y-4">
       <div>
         <h3 className="text-lg font-bold text-gray-900 mb-1">
-          {isEditMode ? "Chỉnh sửa phiên họp" : "Tạo phiên họp mới"}
+          {isEditMode ? "Chỉnh sửa session" : "Tạo session mới"}
         </h3>
-        <p className="text-sm text-gray-600">
-          {isEditMode 
-            ? "Cập nhật thông tin chi tiết cho phiên họp"
-            : "Điền thông tin chi tiết cho phiên họp trong khung giờ đã chọn"}
-        </p>
       </div>
 
       {/* Session Info Cards - 3 columns */}
@@ -529,7 +531,7 @@ if (startDay !== endDay) {
       <div className="space-y-3">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Tên session <span className="text-red-500">*</span>
+            Tiêu đề <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
@@ -545,7 +547,7 @@ if (startDay !== endDay) {
           <textarea
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            placeholder="Mô tả nội dung phiên họp..."
+            placeholder="Mô tả nội dung session..."
             rows={3}
             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
           />
@@ -557,17 +559,23 @@ if (startDay !== endDay) {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Giờ bắt đầu <span className="text-red-500">*</span>
             </label>
-            <select
+            <Select
               value={formData.selectedStartTime}
-              onChange={(e) => setFormData({ ...formData, selectedStartTime: e.target.value })}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              onValueChange={(value) => setFormData({ ...formData, selectedStartTime: value })}
             >
-              {startTimeOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Chọn giờ bắt đầu" />
+              </SelectTrigger>
+              <SelectContent className="max-h-[200px] overflow-y-auto">
+                <SelectGroup>
+                  {startTimeOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
@@ -612,7 +620,7 @@ if (startDay !== endDay) {
         <div className="border-t pt-3">
           <div className="flex items-center justify-between mb-2">
             <label className="block text-sm font-medium text-gray-700">
-              Hình ảnh phiên họp
+              Hình ảnh session
             </label>
             {formData.sessionMedias.length > 0 && (
               <span className="text-xs text-gray-500">

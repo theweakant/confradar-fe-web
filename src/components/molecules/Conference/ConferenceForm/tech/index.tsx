@@ -1017,6 +1017,7 @@ function TechConferenceStepFormContent({
                   startDate={basicForm.startDate}
                   endDate={basicForm.endDate}
                   existingSessions={sessions}
+                  cityId={basicForm.cityId}
                 />
               )}
             </div>
