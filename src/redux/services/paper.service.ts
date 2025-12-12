@@ -596,6 +596,15 @@ export const paperApi = createApi({
       }),
       invalidatesTags: ["Paper"],
     }),
+
+    publishResearchPaper: builder.mutation<ApiResponse<unknown>, { conferenceId: string }>({
+      query: ({ conferenceId }) => ({
+        url: endpoint.PAPER.PUBLISH_RESEARCH_PAPER,
+        method: "PUT",
+        params: { conferenceId }, 
+      }),
+      invalidatesTags: ["Paper"], 
+    }),
   }),
 });
 
@@ -656,4 +665,6 @@ export const {
   useGetDetailAssignedListQuery,
   useAssignAuthorToPaperMutation,
   useUpdatePaperInfoMutation,
+
+  usePublishResearchPaperMutation
 } = paperApi;

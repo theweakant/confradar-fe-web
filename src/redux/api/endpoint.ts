@@ -328,6 +328,7 @@ export const endpoint = {
     GET_DETAIL_ASSIGNED_PAPERS: "/paper/get-detail-assigned-list",
     ASSIGN_AUTHOR_TO_PAPER: "/paper/assign-author-to-paper",
     UPDATE_PAPER_INFO: "/paper/paper",
+    PUBLISH_RESEARCH_PAPER: "/paper/publish-research-paper"
   },
 
   FAVOURITE_CONFERENCE: {

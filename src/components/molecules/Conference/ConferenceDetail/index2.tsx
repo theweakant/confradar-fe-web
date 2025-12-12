@@ -8,8 +8,8 @@ import {
   MoreVertical,
   Pencil,
   RotateCcw,
-  Trash2,
   Ban,
+  ArrowUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +35,7 @@ import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 import { useViewRegisteredUsersForConferenceQuery } from "@/redux/services/conference.service";
 import { useUpdateOwnConferenceStatusMutation } from "@/redux/services/status.service";
+import { usePublishResearchPaperMutation } from "@/redux/services/paper.service";
 
 import { UpdateConferenceStatus } from "@/components/molecules/Status/UpdateStatus1/index";
 import { DeleteConferenceStatus } from "@/components/molecules/Status/DeleteStatus";
@@ -78,6 +79,7 @@ export default function ConferenceDetailPage() {
   const [resumeEditingOpen, setResumeEditingOpen] = useState(false);
   const [openDisableModal, setOpenDisableModal] = useState(false);
   const [openEnableModal, setOpenEnableModal] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   const {
     data: techData,
@@ -94,12 +96,12 @@ export default function ConferenceDetailPage() {
   } = useGetResearchConferenceDetailInternalQuery(conferenceId);
 
   const { data: attendeesData } = useViewRegisteredUsersForConferenceQuery(conferenceId);
-
   const { data: categoriesData } = useGetAllCategoriesQuery();
   const { data: statusesData } = useGetAllConferenceStatusesQuery();
   const { data: citiesData } = useGetAllCitiesQuery();
 
   const [updateStatus] = useUpdateOwnConferenceStatusMutation();
+  const [publishPapers] = usePublishResearchPaperMutation();
 
   useEffect(() => {
     if (researchData?.data && !researchError && researchData.data.isResearchConference) {
@@ -203,7 +205,27 @@ export default function ConferenceDetailPage() {
     conferencePrices: conference.conferencePrices ?? [],
   };
 
-  // ✅ ĐIỀU KIỆN MỚI: Chỉ Organizer được thao tác trên hội thảo kỹ thuật của Collaborator (isInternalHosted = false)
+  const isResearchAndCompleted = 
+    conferenceType === "research" && 
+    conference.conferenceStatusId && 
+    getStatusName(conference.conferenceStatusId) === "Completed";
+
+
+    const handlePublishPapers = async () => {
+      if (!conference?.conferenceId || isPublishing) return; 
+
+      setIsPublishing(true);
+      try {
+        await publishPapers({ conferenceId: conference.conferenceId }).unwrap();
+        toast.success("Bài báo đã được xuất bản thành công!");
+        handleRefetch();
+      } catch (err) {
+        toast.error("Không thể xuất bản bài báo. Vui lòng thử lại.");
+      } finally {
+        setIsPublishing(false); 
+      }
+    };
+
   const isTechConfOfCollaborator =
     conferenceType === "technical" &&
     isOrganizer &&
@@ -236,12 +258,65 @@ export default function ConferenceDetailPage() {
     </Button>
   ) : null;
 
+  // const extraActions = (
+  //   <>
+  //     {disableButton}
+  //     {enableButton}
+  //   </>
+  // );
+
   const extraActions = (
-    <>
-      {disableButton}
-      {enableButton}
-    </>
-  );
+  <>
+    {isResearchAndCompleted && (
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={isPublishing} 
+        className="gap-1.5 border-orange-300 bg-orange-50 text-orange-700 hover:bg-orange-100 hover:text-orange-800"
+        onClick={handlePublishPapers}
+      >
+        {isPublishing ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Đang xuất bản...
+          </>
+        ) : (
+          <>
+            <ArrowUp className="w-4 h-4" />
+            Xuất bản 
+          </>
+        )}
+      </Button>
+    )}
+
+    {isTechConfOfCollaborator &&
+      conference.conferenceStatusId === "7f2dcc1a-a107-4ed4-827e-eb994cbb648d" && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5 border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
+          onClick={() => setOpenDisableModal(true)}
+        >
+          <Ban className="w-4 h-4" />
+          Vô hiệu hóa
+        </Button>
+      )}
+
+    {isTechConfOfCollaborator &&
+      conference.conferenceStatusId &&
+      getStatusName(conference.conferenceStatusId) === "Disabled" && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5 border-emerald-500 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
+          onClick={() => setOpenEnableModal(true)}
+        >
+          <RotateCcw className="w-4 h-4" />
+          Khôi phục
+        </Button>
+      )}
+  </>
+);
 
   const actions = isOwner ? (
     <DropdownMenu>
