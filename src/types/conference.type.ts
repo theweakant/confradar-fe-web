@@ -327,7 +327,7 @@ export interface RevisionRoundDeadline {
 
 export interface ResearchPhase {
   researchPhaseId?: string;
-phaseOrder?: number;
+  phaseOrder?: number;
   registrationStartDate: string;
   registrationEndDate: string;
   fullPaperStartDate: string;
@@ -508,6 +508,10 @@ export interface TechnicalConferenceDetailResponse {
   contract: CollaboratorContract;
   userNameCreator?: string;
   createdBy?: string;
+
+  statusName?: string;
+  categoryName?: string;
+  cityName?: string;
 }
 
 export interface ResearchConferenceDetailResponse {
@@ -529,10 +533,14 @@ export interface ResearchConferenceDetailResponse {
   conferenceCategoryId?: string;
   conferenceStatusId?: string;
 
+  statusName?: string;
+  categoryName?: string;
+  cityName?: string;
+
   // Research Conference specific fields
   researchDetailId?: string
   name?: string;
-  publisherId?:string;
+  publisherId?: string;
   paperFormat?: string;
   numberPaperAccept?: number;
   revisionAttemptAllowed?: number;
@@ -541,7 +549,7 @@ export interface ResearchConferenceDetailResponse {
   rankValue?: string;
   rankYear?: number;
   reviewFee?: number;
-  submitPaperFee?:number;
+  submitPaperFee?: number;
   rankingCategoryId?: string;
   rankingCategoryName?: string;
 
@@ -592,7 +600,7 @@ export interface ConferencePriceResponse {
   ticketName?: string;
   ticketDescription?: string;
   isAuthor?: boolean;
-  isPublish?:boolean;
+  isPublish?: boolean;
   totalSlot?: number;
   availableSlot?: number;
   pricePhases?: ConferencePricePhaseResponse[];
