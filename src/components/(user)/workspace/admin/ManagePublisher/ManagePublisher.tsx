@@ -134,7 +134,6 @@ export default function ManagePublisher() {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold text-gray-900">
@@ -154,7 +153,6 @@ export default function ManagePublisher() {
           </p>
         </div>
 
-        {/* Search & Filter */}
         <SearchFilter
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
@@ -168,7 +166,6 @@ export default function ManagePublisher() {
           // ]}
         />
 
-        {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center justify-between">
@@ -183,7 +180,6 @@ export default function ManagePublisher() {
           </div>
         </div>
 
-        {/* Table */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           {publishersLoading ? (
             <div className="p-8 text-center text-gray-500">
@@ -200,7 +196,6 @@ export default function ManagePublisher() {
         </div>
       </div>
 
-      {/* Form Modal */}
       <Modal
         isOpen={isFormModalOpen}
         onClose={() => {
@@ -220,7 +215,6 @@ export default function ManagePublisher() {
         />
       </Modal>
 
-      {/* Detail Modal */}
       <Modal
         isOpen={isDetailModalOpen}
         onClose={() => {
@@ -240,7 +234,6 @@ export default function ManagePublisher() {
         )}
       </Modal>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog
         open={!!deletePublisherId}
         onOpenChange={() => setDeletePublisherId(null)}
