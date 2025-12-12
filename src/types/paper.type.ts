@@ -83,6 +83,7 @@ export interface CameraReadyForReviewer {
   cameraReadyUrl: string;
   title: string;
   description: string;
+  reason: string | null;
   createdAt: string;
   reviewAt: string | null;
   cameraReadyStartDate: string;
@@ -154,6 +155,7 @@ export interface RevisionPaperForReviewer {
   globalStatusName: string;
   title: string;
   description: string;
+  reason: string | null;
   createdAt: string;
   isAllSubmittedRevisionPaperReview: boolean;
   isAnsweredAllDiscussion: boolean;
@@ -187,6 +189,7 @@ export interface FullPaperForReviewer {
   isAllSubmittedFullPaperReview: boolean;
   title: string;
   description: string;
+  reason: string | null;
   fullPaperStartDate: string | null;
   fullPaperEndDate: string | null;
   fullPaperReviews: FullPaperReview[];

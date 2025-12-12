@@ -4,6 +4,11 @@
 @tailwind components;
 @tailwind utilities;
 
+.tox-promotion,
+.tox-statusbar__branding {
+  display: none !important;
+}
+
 :root {
   --radius: 0.625rem;
   --background: 0 0% 100%;
@@ -79,6 +84,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -112,6 +118,7 @@ body {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
