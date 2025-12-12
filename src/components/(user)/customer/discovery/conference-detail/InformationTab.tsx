@@ -143,7 +143,7 @@ const InformationTab: React.FC<InformationTabProps> = ({
           <div>
             <span className="text-gray-600 text-sm">City ID:</span>
             <p className="text-gray-900 font-medium">
-              {conference.cityId || "Chưa có City ID"}
+              {conference.cityName || "Chưa có thông tin thành phố"}
             </p>
           </div>
           <div>
@@ -151,13 +151,13 @@ const InformationTab: React.FC<InformationTabProps> = ({
               Conference Category ID:
             </span>
             <p className="text-gray-900 font-medium">
-              {conference.conferenceCategoryId || "Chưa có Category ID"}
+              {conference.categoryName || "Chưa có thông tin danh mục"}
             </p>
           </div>
           <div>
             <span className="text-gray-600 text-sm">Conference Status ID:</span>
             <p className="text-gray-900 font-medium">
-              {conference.conferenceStatusId || "Chưa có Status ID"}
+              {conference.statusName || "Chưa có thông tin trạng thái"}
             </p>
           </div>
         </div>

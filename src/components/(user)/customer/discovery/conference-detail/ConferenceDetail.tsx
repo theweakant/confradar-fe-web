@@ -458,6 +458,8 @@ const ConferenceDetail = () => {
                 selectedPaymentMethod={selectedPaymentMethod}
                 onSelectPaymentMethod={setSelectedPaymentMethod}
                 onSelectPaper={setSelectedPaperId}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
               />
             </div>
           </div>
@@ -556,7 +558,7 @@ const ConferenceDetail = () => {
               </div>
 
               {/* Tab Navigation */}
-              <div className="bg-white rounded-xl border-2 border-gray-200 shadow-md overflow-hidden">
+              {/* <div className="bg-white rounded-xl border-2 border-gray-200 shadow-md overflow-hidden">
                 {[
                   { key: "info", label: "Thông tin & Hình ảnh", icon: "📋" },
                   { key: "sessions", label: "Lịch trình Sessions", icon: "📅" },
@@ -578,7 +580,7 @@ const ConferenceDetail = () => {
                     <span>{tab.label}</span>
                   </button>
                 ))}
-              </div>
+              </div> */}
             </div>
 
             {/* Tab Content - bên phải */}
