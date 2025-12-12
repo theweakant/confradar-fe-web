@@ -237,7 +237,7 @@ export default function ReviewPaperPage() {
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">Thông tin bài báo:</h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Paper ID:</span>
+                    <span className="text-gray-600">#</span>
                     <span className="font-medium text-gray-900">{paperId}</span>
                   </div>
                   {paperDetail.currentPaperPhase && (
@@ -305,12 +305,14 @@ export default function ReviewPaperPage() {
         {/* Paper Detail Card */}
         <div className="bg-white rounded-xl shadow-sm p-8 space-y-6">
           {/* Header */}
-          <div className="pb-4 border-b">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <FileText className="w-6 h-6 text-blue-600" />
-              Chi tiết bài báo
-            </h2>
-            <p className="text-sm text-gray-500 mt-1">Paper ID: {paperId}</p>
+          <div className="pb-4 border-b flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Chi tiết bài báo</h2>
+              <p className="text-sm text-gray-500 mt-1">#{paperId}</p>
+            </div>
+            <span className="px-3 py-1 bg-purple-200 rounded-full text-xs whitespace-nowrap">
+              {paperDetail.isHeadReviewer ? "HEAD REVIEWER" : "REVIEWER"}
+            </span>
           </div>
 
           {currentPhase && (
@@ -319,23 +321,10 @@ export default function ReviewPaperPage() {
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
             >
               <Calendar className="w-4 h-4" />
-              Xem lịch trình đầy đủ
+              Xem lịch trình
             </button>
           )}
 
-          {/* Role Badge with Decision Button */}
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-purple-900 flex items-center gap-2">
-                <span className="px-3 py-1 bg-purple-200 rounded-full text-xs">
-                  {paperDetail.isHeadReviewer ? "HEAD REVIEWER" : "REVIEWER"}
-                </span>
-                {paperDetail.isHeadReviewer
-                  ? "Bạn là Head Reviewer cho bài báo này"
-                  : "Bạn là Reviewer cho bài báo này"}
-              </p>
-            </div>
-          </div>
           {/* {currentPhase && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <h4 className="text-sm font-semibold text-blue-900 mb-3 flex items-center gap-2">

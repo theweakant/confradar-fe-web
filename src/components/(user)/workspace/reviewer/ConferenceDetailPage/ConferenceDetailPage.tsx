@@ -263,22 +263,23 @@ const PaperTable = ({ papers, onView }: PaperTableProps) => {
                             Hội nghị
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Giai đoạn hiện tại
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             Vai trò
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Giai đoạn hiện tại
+                        </th>
+
+                        {/* <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             Full Paper
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        </th> */}
+                        {/* <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             Revision
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        </th> */}
+                        {/* <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             Camera Ready
-                        </th>
+                        </th> */}
                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Đang trong giai đoạn?
+                            Đang trong giai đoạn
                         </th>
                         <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             Thao tác
@@ -333,13 +334,9 @@ const PaperTable = ({ papers, onView }: PaperTableProps) => {
                                 {/* Title */}
                                 <td className="px-4 py-4">
                                     <div className="flex items-start gap-2">
-                                        <FileText className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
                                         <div>
                                             <p className="font-medium text-gray-900 line-clamp-2">
                                                 {paper.title || "Không có tiêu đề"}
-                                            </p>
-                                            <p className="text-xs text-gray-500 mt-1">
-                                                ID: {paper.paperId}
                                             </p>
                                         </div>
                                     </div>
@@ -351,7 +348,14 @@ const PaperTable = ({ papers, onView }: PaperTableProps) => {
                                         {paper.conferenceName || "N/A"}
                                     </p>
                                 </td>
-
+                                <td className="px-4 py-4">
+                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${paper.isHeadReviewer
+                                        ? 'bg-purple-100 text-purple-800'
+                                        : 'bg-gray-100 text-gray-700'
+                                        }`}>
+                                        {paper.isHeadReviewer ? "Head Reviewer" : "Reviewer"}
+                                    </span>
+                                </td>
                                 {/* Current Phase */}
                                 <td className="px-4 py-4">
                                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
@@ -360,17 +364,10 @@ const PaperTable = ({ papers, onView }: PaperTableProps) => {
                                 </td>
 
                                 {/* Role */}
-                                <td className="px-4 py-4">
-                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${paper.isHeadReviewer
-                                        ? 'bg-purple-100 text-purple-800'
-                                        : 'bg-gray-100 text-gray-700'
-                                        }`}>
-                                        {paper.isHeadReviewer ? "Head" : "Reviewer"}
-                                    </span>
-                                </td>
+
 
                                 {/* Full Paper */}
-                                <td className="px-4 py-4">
+                                {/* <td className="px-4 py-4">
                                     {paper.fullPaperWork?.fullPaperId ? (
                                         <div className="space-y-1">
                                             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${paper.fullPaperWork.statusName === 'Accepted'
@@ -392,10 +389,10 @@ const PaperTable = ({ papers, onView }: PaperTableProps) => {
                                     ) : (
                                         <span className="text-xs text-gray-400">-</span>
                                     )}
-                                </td>
+                                </td> */}
 
                                 {/* Revision */}
-                                <td className="px-4 py-4">
+                                {/* <td className="px-4 py-4">
                                     {paper.revisionWork?.revisionPaperId ? (
                                         <div className="space-y-1">
                                             <div className="flex items-center gap-2">
@@ -422,10 +419,10 @@ const PaperTable = ({ papers, onView }: PaperTableProps) => {
                                     ) : (
                                         <span className="text-xs text-gray-400">-</span>
                                     )}
-                                </td>
+                                </td> */}
 
                                 {/* Camera Ready */}
-                                <td className="px-4 py-4">
+                                {/* <td className="px-4 py-4">
                                     {paper.cameraReadyWork?.cameraReadyId ? (
                                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${paper.cameraReadyWork.statusName === 'Accepted'
                                             ? 'bg-green-100 text-green-800'
@@ -440,7 +437,7 @@ const PaperTable = ({ papers, onView }: PaperTableProps) => {
                                     ) : (
                                         <span className="text-xs text-gray-400">-</span>
                                     )}
-                                </td>
+                                </td> */}
 
                                 {/* Reviewed Phases */}
                                 <td className="px-4 py-4">
@@ -480,7 +477,6 @@ const PaperTable = ({ papers, onView }: PaperTableProps) => {
                                         className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
                                     >
                                         <Eye className="w-4 h-4" />
-                                        Xem
                                     </button>
                                 </td>
                             </tr>
