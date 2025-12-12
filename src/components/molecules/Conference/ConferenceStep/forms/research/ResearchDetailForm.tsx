@@ -1,8 +1,20 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { FormInput } from "@/components/molecules/FormInput";
-import { FormSelect } from "@/components/molecules/FormSelect";
 import { FormTextArea } from "@/components/molecules/FormTextArea";
+import { Building2 } from "lucide-react";
+import { PublisherSelectionModal } from "@/components/molecules/Conference/ConferenceStep/modal/PublisherSelectionModal";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import type { ResearchDetail } from "@/types/conference.type";
+import { Publisher } from "@/types/publisher.type";
 
 interface ResearchDetailFormProps {
   formData: ResearchDetail;
@@ -11,8 +23,9 @@ interface ResearchDetailFormProps {
   isRankingLoading: boolean;
   validationErrors?: Record<string, string>;
   totalSlot: number;
-  publisherOptions: Array<{ value: string; label: string }>; // ✅ THÊM
-  isPublisherLoading: boolean; // ✅ THÊM
+  publisherOptions: Array<{ value: string; label: string }>;
+  isPublisherLoading: boolean;
+  publishers?: Publisher[]; // ✅ THÊM: Full publisher data
 }
 
 export function ResearchDetailForm({
@@ -22,10 +35,12 @@ export function ResearchDetailForm({
   isRankingLoading,
   validationErrors = {},
   totalSlot,
-  publisherOptions, // ✅ THÊM
-  isPublisherLoading, // ✅ THÊM
+  publisherOptions,
+  isPublisherLoading,
+  publishers = [], // ✅ THÊM
 }: ResearchDetailFormProps) {
   const currentYear = new Date().getFullYear();
+  const [publisherModalOpen, setPublisherModalOpen] = useState(false);
 
   const handleChange = <K extends keyof ResearchDetail>(
     field: K,
@@ -65,24 +80,78 @@ export function ResearchDetailForm({
     });
   };
 
+  const handlePublisherSelect = (publisherId: string) => {
+    handleChange("publisherId", publisherId);
+  };
+
   const selectedRanking = rankingOptions.find(
     (opt) => opt.value === formData.rankingCategoryId
   );
   const rankType = selectedRanking?.label;
 
+  const selectedPublisher = publishers.find(
+    (pub) => pub.publisherId === formData.publisherId
+  );
+
   return (
     <div className="space-y-4">
-      {/* ✅ THÊM: Nhà xuất bản */}
-      <FormSelect
-        label="Nhà xuất bản"
-        name="publisherId"
-        value={formData.publisherId}
-        onChange={(val) => handleChange("publisherId", val)}
-        options={publisherOptions}
-        error={validationErrors.publisherId}
-        required
-        disabled={isPublisherLoading}
-      />
+      {/* ✅ THAY ĐỔI: Publisher Selection Button */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Nhà xuất bản <span className="text-red-500">*</span>
+        </label>
+        
+        {/* Display Selected Publisher */}
+        {selectedPublisher ? (
+          <div className="border-2 border-blue-600 bg-blue-50 rounded-lg p-4 mb-2">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3 flex-1">
+                {selectedPublisher.logoUrl && (
+                  <img
+                    src={selectedPublisher.logoUrl}
+                    alt={selectedPublisher.name}
+                    className="h-10 object-contain"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
+                )}
+                <div className="flex-1">
+                  <h4 className="font-semibold text-sm text-gray-900">
+                    {selectedPublisher.name}
+                  </h4>
+                  <p className="text-xs text-gray-600 mt-1">
+                    Format: {selectedPublisher.paperFormat}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPublisherModalOpen(true)}
+                className="text-xs text-blue-600 hover:text-blue-800 hover:underline"
+              >
+                Thay đổi
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setPublisherModalOpen(true)}
+            disabled={isPublisherLoading}
+            className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 text-gray-700 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Building2 className="w-5 h-5" />
+            <span className="font-medium">
+              {isPublisherLoading ? "Đang tải..." : "Chọn nhà xuất bản"}
+            </span>
+          </button>
+        )}
+        
+        {validationErrors.publisherId && (
+          <p className="text-xs text-red-500 mt-1">{validationErrors.publisherId}</p>
+        )}
+      </div>
 
       {/* Grid: số bài báo, số lần sửa, phí nộp bài */}
       <div className="grid grid-cols-3 gap-4">
@@ -109,7 +178,6 @@ export function ResearchDetailForm({
           placeholder="VD: 2"
         />
 
-        {/* ✅ ĐỔI TÊN: reviewFee → submitPaperFee */}
         <FormInput
           label="Phí nộp bài báo (VND)"
           name="submitPaperFee"
@@ -131,35 +199,62 @@ export function ResearchDetailForm({
 
       {/* Xếp hạng */}
       <div className="grid grid-cols-3 gap-4">
-        <FormSelect
-          label="Loại xếp hạng"
-          name="rankingCategoryId"
-          value={formData.rankingCategoryId || ""}
-          onChange={handleRankingCategoryChange}
-          options={rankingOptions}
-          error={validationErrors.rankingCategoryId}
-          required
-          disabled={isRankingLoading}
-        />
+        {/* Loại xếp hạng */}
+        <div className="space-y-2">
+          <Label htmlFor="rankingCategoryId">
+            Loại xếp hạng <span className="text-red-500">*</span>
+          </Label>
+          <Select
+            value={formData.rankingCategoryId || ""}
+            onValueChange={handleRankingCategoryChange}
+            disabled={isRankingLoading}
+          >
+            <SelectTrigger id="rankingCategoryId" className={validationErrors.rankingCategoryId ? "border-red-500" : ""}>
+              <SelectValue placeholder="Chọn loại xếp hạng" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {rankingOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+          {validationErrors.rankingCategoryId && (
+            <p className="text-xs text-red-500">{validationErrors.rankingCategoryId}</p>
+          )}
+        </div>
 
         {/* Giá trị xếp hạng */}
         {formData.rankingCategoryId && (
           <>
             {rankType === "Core" || rankType === "CoreRanking" ? (
-              <FormSelect
-                label="Giá trị xếp hạng"
-                name="rankValue"
-                value={formData.rankValue}
-                onChange={(val) => handleChange("rankValue", val)}
-                options={[
-                  { value: "Q1", label: "Q1" },
-                  { value: "Q2", label: "Q2" },
-                  { value: "Q3", label: "Q3" },
-                  { value: "Q4", label: "Q4" },
-                ]}
-                error={validationErrors.rankValue}
-                required
-              />
+              <div className="space-y-2">
+                <Label htmlFor="rankValue">
+                  Giá trị xếp hạng <span className="text-red-500">*</span>
+                </Label>
+                <Select
+                  value={formData.rankValue}
+                  onValueChange={(val) => handleChange("rankValue", val)}
+                >
+                  <SelectTrigger id="rankValue" className={validationErrors.rankValue ? "border-red-500" : ""}>
+                    <SelectValue placeholder="Chọn giá trị" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="Q1">Q1</SelectItem>
+                      <SelectItem value="Q2">Q2</SelectItem>
+                      <SelectItem value="Q3">Q3</SelectItem>
+                      <SelectItem value="Q4">Q4</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                {validationErrors.rankValue && (
+                  <p className="text-xs text-red-500">{validationErrors.rankValue}</p>
+                )}
+              </div>
             ) : (
               <FormInput
                 label="Giá trị xếp hạng"
@@ -235,6 +330,16 @@ export function ResearchDetailForm({
           Cho phép người nghe tham dự (không nộp bài)
         </label>
       </div>
+
+      {/* ✅ Publisher Selection Modal */}
+      <PublisherSelectionModal
+        open={publisherModalOpen}
+        publishers={publishers}
+        selectedPublisherId={formData.publisherId}
+        onClose={() => setPublisherModalOpen(false)}
+        onSelect={handlePublisherSelect}
+        isLoading={isPublisherLoading}
+      />
     </div>
   );
 }

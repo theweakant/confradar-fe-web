@@ -3,6 +3,14 @@ import { Clock, Calendar as CalendarIcon, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import type { ResearchSession, SessionMedia } from "@/types/conference.type";
 import { ImageUpload } from "@/components/atoms/ImageUpload";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface NoRoomResearchSessionFormProps {
   conferenceId: string;
@@ -150,70 +158,70 @@ export function NoRoomResearchSessionForm({
     setFormData((prev) => ({ ...prev, sessionMedias }));
   };
 
-const handleSubmit = () => {
-  if (!formData.title.trim()) {
-    toast.error("Vui lòng nhập tiêu đề phiên họp!");
-    return;
-  }
+  const handleSubmit = () => {
+    if (!formData.title.trim()) {
+      toast.error("Vui lòng nhập tiêu đề phiên họp!");
+      return;
+    }
 
-  if (formData.timeRange < 0.5) {
-    toast.error("Thời lượng tối thiểu là 0.5 giờ (30 phút)!");
-    return;
-  }
+    if (formData.timeRange < 0.5) {
+      toast.error("Thời lượng tối thiểu là 0.5 giờ (30 phút)!");
+      return;
+    }
 
-  if (formData.timeRange > maxTimeRange) {
-    toast.error(`Thời lượng tối đa là ${maxTimeRange} giờ (theo giờ bắt đầu đã chọn)!`);
-    return;
-  }
+    if (formData.timeRange > maxTimeRange) {
+      toast.error(`Thời lượng tối đa là ${maxTimeRange} giờ (theo giờ bắt đầu đã chọn)!`);
+      return;
+    }
 
-  const startDate = new Date(formData.selectedStartTime);
-  const endDate = new Date(calculatedEndTime);
-  
-  const startDay = startDate.getDate();
-  const startMonth = startDate.getMonth();
-  const startYear = startDate.getFullYear();
-  
-  const endDay = endDate.getDate();
-  const endMonth = endDate.getMonth();
-  const endYear = endDate.getFullYear();
-  
-  const isSameDay = (
-    startDay === endDay && 
-    startMonth === endMonth && 
-    startYear === endYear
-  );
-  
-  if (!isSameDay) {
-    toast.error("Phiên họp không được kéo dài qua ngày hôm sau. Vui lòng chọn thời gian kết thúc trước 23:59.");
-    return;
-  }
-
-  if (selectedDate < conferenceStartDate || selectedDate > conferenceEndDate) {
-    toast.error(
-      `Ngày phải nằm trong khoảng từ ${formatDate(conferenceStartDate)} đến ${formatDate(conferenceEndDate)}`
+    const startDate = new Date(formData.selectedStartTime);
+    const endDate = new Date(calculatedEndTime);
+    
+    const startDay = startDate.getDate();
+    const startMonth = startDate.getMonth();
+    const startYear = startDate.getFullYear();
+    
+    const endDay = endDate.getDate();
+    const endMonth = endDate.getMonth();
+    const endYear = endDate.getFullYear();
+    
+    const isSameDay = (
+      startDay === endDay && 
+      startMonth === endMonth && 
+      startYear === endYear
     );
-    return;
-  }
+    
+    if (!isSameDay) {
+      toast.error("Phiên họp không được kéo dài qua ngày hôm sau. Vui lòng chọn thời gian kết thúc trước 23:59.");
+      return;
+    }
 
-  const session: ResearchSession = {
-    sessionId: initialSession?.sessionId,
-    conferenceId,
-    title: formData.title,
-    description: formData.description,
-    date: selectedDate,
-    startTime: formData.selectedStartTime,
-    endTime: calculatedEndTime,
-    timeRange: formData.timeRange,
-    roomId: "", 
-    roomDisplayName: undefined,
-    roomNumber: undefined,
-    sessionMedias: formData.sessionMedias,
+    if (selectedDate < conferenceStartDate || selectedDate > conferenceEndDate) {
+      toast.error(
+        `Ngày phải nằm trong khoảng từ ${formatDate(conferenceStartDate)} đến ${formatDate(conferenceEndDate)}`
+      );
+      return;
+    }
+
+    const session: ResearchSession = {
+      sessionId: initialSession?.sessionId,
+      conferenceId,
+      title: formData.title,
+      description: formData.description,
+      date: selectedDate,
+      startTime: formData.selectedStartTime,
+      endTime: calculatedEndTime,
+      timeRange: formData.timeRange,
+      roomId: "", 
+      roomDisplayName: undefined,
+      roomNumber: undefined,
+      sessionMedias: formData.sessionMedias,
+    };
+
+    onSave(session);
+    toast.success(isEditMode ? "Đã cập nhật phiên họp thành công!" : "Đã tạo phiên họp thành công!");
+    onClose();
   };
-
-  onSave(session);
-  toast.success(isEditMode ? "Đã cập nhật phiên họp thành công!" : "Đã tạo phiên họp thành công!");
-  onClose();
-};
 
   if (!open) return null;
 
@@ -223,7 +231,7 @@ const handleSubmit = () => {
         <div className="p-5">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-bold text-gray-900">
-              {isEditMode ? "Chỉnh sửa phiên họp" : "Tạo phiên họp mới (không phòng)"}
+              {isEditMode ? "Chỉnh sửa session" : "Tạo session mới (xếp phòng sau)"}
             </h2>
             <button
               onClick={onClose}
@@ -234,22 +242,6 @@ const handleSubmit = () => {
           </div>
 
           <div className="space-y-4">
-            {!isEditMode && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Ngày tổ chức <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  min={conferenceStartDate}
-                  max={conferenceEndDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-            )}
-
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-3">
                 <div className="flex items-center gap-2 mb-1">
@@ -269,10 +261,26 @@ const handleSubmit = () => {
               </div>
             </div>
 
+            {!isEditMode && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Ngày tổ chức <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  min={conferenceStartDate}
+                  max={conferenceEndDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            )}
+
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tiêu đề phiên họp <span className="text-red-500">*</span>
+                  Tiêu đề <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -295,21 +303,28 @@ const handleSubmit = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
+                {/* ✅ THAY ĐỔI: Dùng Shadcn Select cho giờ bắt đầu */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Giờ bắt đầu <span className="text-red-500">*</span>
                   </label>
-                  <select
+                  <Select
                     value={formData.selectedStartTime}
-                    onChange={(e) => setFormData({ ...formData, selectedStartTime: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    onValueChange={(value) => setFormData({ ...formData, selectedStartTime: value })}
                   >
-                    {startTimeOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Chọn giờ bắt đầu" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {startTimeOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>
@@ -358,7 +373,9 @@ const handleSubmit = () => {
 
               <div className="border-t pt-3">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="block text-sm font-medium text-gray-700">Hình ảnh phiên họp</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Hình ảnh phiên họp <span className="text-red-500">*</span>
+                  </label>
                   {formData.sessionMedias.length > 0 && (
                     <span className="text-xs text-gray-500">{formData.sessionMedias.length} file đã chọn</span>
                   )}

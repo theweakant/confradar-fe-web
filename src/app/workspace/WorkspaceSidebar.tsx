@@ -432,6 +432,11 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
         href: "/workspace/admin/manage-category",
         icon: FileText,
       },
+      {
+      label: "Nhà xuất bản",
+      href: "/workspace/admin/manage-publisher",
+      icon: Building2,
+      },
       { label: "Báo cáo", href: "/workspace/admin/report", icon: FileText },
       {
         label: "Log hệ thống",
@@ -458,6 +463,11 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
         label: "Địa điểm",
         href: "/workspace/organizer/manage-accommodation",
         icon: Home,
+      },
+      {
+      label: "Nhà xuất bản",
+      href: "/workspace/organizer/manage-publisher",
+      icon: Building2,
       },
       {
         label: "Quản lý người dùng",

@@ -896,6 +896,7 @@ export default function ResearchConferenceStepForm({
             totalSlot={basicForm.totalSlot}
             publisherOptions={publisherOptions}
             isPublisherLoading={isPublishersLoading}
+            publishers={publishersData?.data || []}
           />
           <FlexibleNavigationButtons
             currentStep={2}
@@ -1066,7 +1067,7 @@ export default function ResearchConferenceStepForm({
               "
               >
                 <Plus size={16} strokeWidth={2} className="text-brown-500 hover:text-brown-700" />
-                <span className="text-sm text-brown-700">Thêm session (không xếp phòng)</span>
+                <span className="text-sm text-brown-700">Thêm session (xếp phòng sau)</span>
               </button>
             </div>
             <RoomCalendar
@@ -1078,6 +1079,7 @@ export default function ResearchConferenceStepForm({
               startDate={basicForm.startDate}
               endDate={basicForm.endDate}
               existingSessions={sessions}
+              cityId={basicForm.cityId}
             />
           </div>
           <AssignRoomModal

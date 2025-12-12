@@ -319,7 +319,7 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
                           </button>
                           <div>
                             <DialogTitle className="text-lg font-semibold text-white">
-                              {editingSession ? "Chỉnh sửa phiên họp" : "Tạo phiên họp"}
+                              {editingSession ? "Chỉnh sửa session" : "Tạo session"}
                             </DialogTitle>
                             <div className="text-xs text-green-100 mt-0.5">
                               {roomDisplayName || `Phòng ${roomNumber}`}

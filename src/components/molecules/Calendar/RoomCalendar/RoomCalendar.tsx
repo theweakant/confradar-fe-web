@@ -42,6 +42,7 @@ interface RoomCalendarProps {
   startDate?: string;
   endDate?: string;
   existingSessions?: (Session | ResearchSession)[];
+  cityId?: string;
 }
 
 const RoomCalendar: React.FC<RoomCalendarProps> = ({
@@ -53,6 +54,7 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
   startDate,
   endDate,
   existingSessions = [],
+  cityId
 }) => {
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -81,6 +83,12 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
 
   const calendarRef = useRef<FullCalendar>(null);
   const roomListRef = useRef<HTMLDivElement>(null);
+
+useEffect(() => {
+  if (cityId && cityId !== filterCity) {
+    setFilterCity(cityId);
+  }
+}, [cityId]);
 
   useEffect(() => {
     if (calendarRef.current && startDate) {
@@ -357,7 +365,7 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
                 <SelectTrigger>
                   <SelectValue placeholder="Chọn thành phố" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-[200px] overflow-y-auto">
                   {cityOptions.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
                       {opt.label}
@@ -373,7 +381,7 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
                 <SelectTrigger>
                   <SelectValue placeholder="Chọn điểm đến" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-[200px] overflow-y-auto">
                   {destinationOptions.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
                       {opt.label}

@@ -5,7 +5,8 @@ import type {
   ConferencePriceResponse,
   ConferencePricePhaseResponse,
 } from "@/types/conference.type";
-import type { CommonConference } from "@/types/conference.type"; 
+import type { CommonConference } from "@/types/conference.type";
+import { FileText, CheckCircle2 } from "lucide-react";
 
 interface PriceTabProps {
   conference: CommonConference;
@@ -31,13 +32,19 @@ export function PriceTab({ conference, now }: PriceTabProps) {
             >
               <div className="flex items-start justify-between gap-6 mb-6 pb-6 border-b border-border">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
+                  <div className="flex items-center gap-3 mb-2 flex-wrap">
                     <h3 className="text-2xl font-bold text-foreground">
                       {price.ticketName}
                     </h3>
                     {price.isAuthor && (
                       <span className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 rounded-full text-xs font-semibold border border-yellow-200 dark:border-yellow-800">
                         AUTHOR
+                      </span>
+                    )}
+                    {price.isPublish && (
+                      <span className="flex items-center gap-1.5 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs font-semibold border border-green-200 dark:border-green-800">
+                        {/* <FileText className="w-3.5 h-3.5" /> */}
+                        <span>Xuất bản</span>
                       </span>
                     )}
                   </div>
@@ -58,6 +65,21 @@ export function PriceTab({ conference, now }: PriceTabProps) {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <InfoField label="Tổng Slot" value={price.totalSlot} />
                 <InfoField label="Slot Còn Lại" value={price.availableSlot} />
+                <InfoField 
+                  label="Xuất bản" 
+                  value={
+                    <span className="flex items-center gap-1.5">
+                      {price.isPublish ? (
+                        <>
+                          <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />
+                          <span className="text-green-600 dark:text-green-400">Có</span>
+                        </>
+                      ) : (
+                        <span className="text-gray-500">Không</span>
+                      )}
+                    </span>
+                  }
+                />
               </div>
 
               {price.pricePhases && price.pricePhases.length > 0 && (
@@ -68,7 +90,7 @@ export function PriceTab({ conference, now }: PriceTabProps) {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {price.pricePhases.map(
                       (phase: ConferencePricePhaseResponse) => {
-                        const badge = getPhaseBadge(phase.startDate, phase.endDate, now); // ✅ Truyền `now`
+                        const badge = getPhaseBadge(phase.startDate, phase.endDate, now);
                         
                         return (
                           <div
@@ -132,7 +154,7 @@ export function PriceTab({ conference, now }: PriceTabProps) {
 function getPhaseBadge(
   startDate?: string,
   endDate?: string,
-  now: Date = new Date() // ✅ Nhận `now` từ ngoài, fallback an toàn nếu cần
+  now: Date = new Date()
 ): { text: string; className: string } {
   if (!startDate || !endDate) {
     return {
@@ -141,7 +163,6 @@ function getPhaseBadge(
     };
   }
 
-  // Clone `now` và reset giờ để so sánh theo ngày
   const nowNormalized = new Date(now);
   nowNormalized.setHours(0, 0, 0, 0);
 
@@ -180,21 +201,23 @@ function getPhaseBadge(
 // --- Reusable Helper Component (nội bộ) ---
 interface InfoFieldProps {
   label: string;
-  value: string | number | boolean | null | undefined;
+  value: string | number | boolean | null | undefined | React.ReactNode;
 }
 
 function InfoField({ label, value }: InfoFieldProps) {
   return (
     <div>
       <p className="text-xs font-medium text-gray-500 mb-1">{label}</p>
-      <p className="text-sm text-gray-900 font-semibold break-words">
-        {value != null && value !== "" ? String(value) : "N/A"}
-      </p>
+      <div className="text-sm text-gray-900 font-semibold break-words">
+        {value != null && value !== "" ? (
+          typeof value === 'boolean' ? String(value) : value
+        ) : "N/A"}
+      </div>
     </div>
   );
 }
 
-// Helper để định dạng ngày (không phụ thuộc `now`)
+// Helper để định dạng ngày
 function formatDate(dateString: string | null | undefined): string {
   if (!dateString) return "N/A";
   const date = new Date(dateString);
