@@ -94,12 +94,6 @@ export const TAB_GROUPS: TabGroup[] = [
         conferenceType: "all",
       },
       {
-        id: "customers",
-        label: "Người mua",
-        icon: Calendar,
-        conferenceType: "all",
-      },
-      {
         id: "contract",
         label: "Hợp đồng",
         icon: FileSignature,
@@ -113,6 +107,12 @@ export const TAB_GROUPS: TabGroup[] = [
     label: "Quản lí",
     icon: Activity,
     tabs: [
+      {
+        id: "customers",
+        label: "Người mua",
+        icon: Calendar,
+        conferenceType: "all",
+      },
       {
         id: "refund-requests",
         label: "Hoàn tiền",
