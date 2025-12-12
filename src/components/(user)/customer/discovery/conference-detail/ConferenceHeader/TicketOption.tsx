@@ -105,10 +105,10 @@ const TicketOption: React.FC<TicketOptionProps> = ({
     return (
         <label
             className={`block rounded-xl p-4 border transition-all ${isDisabled
-                ? "bg-gray-500/20 border-gray-400/30 cursor-not-allowed opacity-60"
+                ? "bg-gray-100 border-gray-300 cursor-not-allowed opacity-60"
                 : isSelected
-                    ? "bg-coral-100 border-yellow-400 border-2 shadow-md cursor-pointer"
-                    : "bg-white/10 border-white/20 hover:bg-white/20 cursor-pointer"
+                    ? "bg-yellow-50 border-yellow-400 border-2 shadow-md cursor-pointer"
+                    : "bg-white border-gray-200 hover:bg-gray-50 cursor-pointer"
                 }`}
             onClick={() => onSelect(ticket, isDisabled)}
         >
@@ -116,94 +116,128 @@ const TicketOption: React.FC<TicketOptionProps> = ({
 
             <div className="flex justify-between items-start mb-1">
                 <div className="flex flex-col">
-                    <span className="font-semibold text-lg">{ticket.ticketName}</span>
+                    <span className="font-semibold text-lg text-gray-900">{ticket.ticketName}</span>
                     {ticket.isAuthor ? (
-                        <span className="text-xs text-yellow-300 font-medium mt-0.5">
+                        <span className="text-xs text-yellow-600 font-medium mt-0.5">
                             {isResearch ? "Phí đăng ký với tư cách tác giả" : "Vé dành cho tác giả"}
                         </span>
                     ) : (
                         isResearch && (
-                            <span className="text-xs text-blue-300 font-medium mt-0.5">
+                            <span className="text-xs text-blue-600 font-medium mt-0.5">
                                 Phí đăng ký với tư cách thính giả
                             </span>
                         )
                     )}
+                    {/* Hiển thị badge isPublish */}
+                    {ticket.isAuthor && ticket.isPublish && (
+                        <span className="text-xs text-purple-600 font-medium mt-0.5 flex items-center gap-1">
+                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                                <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
+                            </svg>
+                            Bao gồm phí xuất bản bài báo
+                        </span>
+                    )}
                 </div>
                 <div className="text-right">
                     {hasDiscount && (
-                        <span className="text-sm line-through text-white/60 block">
+                        <span className="text-sm line-through text-gray-400 block">
                             {(ticket.ticketPrice || 0).toLocaleString("vi-VN")}₫
                         </span>
                     )}
-                    <span className="text-coral-300 font-bold text-lg">
+                    <span className="text-orange-600 font-bold text-lg">
                         {currentPrice.toLocaleString("vi-VN")}₫
                     </span>
                 </div>
             </div>
 
             {ticket.ticketDescription && (
-                <p className="text-sm text-white/70">{ticket.ticketDescription}</p>
+                <p className="text-sm text-gray-600">{ticket.ticketDescription}</p>
             )}
 
-            <div className="mt-2 text-sm space-y-1">
+            <div className="mt-2 text-sm space-y-1 text-gray-700">
                 {currentPhase && (
                     <div>
                         <p>
-                            <span className="font-medium text-coral-200">
+                            <span className="font-medium text-orange-600">
                                 {isResearch ? "Giai đoạn phí tham dự hiện tại" : "Giai đoạn vé hiện tại:"}
                             </span>{" "}
                             {currentPhase.phaseName || "Không xác định"}
                         </p>
-                        {currentPhase.applyPercent !== undefined && (
+                        {!isResearch && currentPhase.applyPercent !== undefined && (
                             <p
                                 className={`text-sm font-medium ${currentPhase.applyPercent > 100
-                                    ? "text-red-500"
+                                    ? "text-red-600"
                                     : currentPhase.applyPercent < 100
-                                        ? "text-green-500"
-                                        : "text-gray-400"
+                                        ? "text-green-600"
+                                        : "text-gray-500"
+                                    }`}
+                            >
+                                {currentPhase.applyPercent > 100
+                                    ? `Tăng ${currentPhase.applyPercent - 100}% so với giá gốc`
+                                    : currentPhase.applyPercent < 100
+                                        ? `Giảm ${100 - currentPhase.applyPercent}% so với giá gốc`
+                                        : ""}
+                            </p>
+                        )}
+                        {/* {currentPhase.applyPercent !== undefined && (
+                            <p
+                                className={`text-sm font-medium ${currentPhase.applyPercent > 100
+                                    ? "text-red-600"
+                                    : currentPhase.applyPercent < 100
+                                        ? "text-green-600"
+                                        : "text-gray-500"
                                     }`}
                             >
                                 {currentPhase.applyPercent > 100
                                     ? `+${currentPhase.applyPercent - 100}%`
                                     : currentPhase.applyPercent < 100
                                         ? `-${100 - currentPhase.applyPercent}%`
-                                        : "±0%"}
+                                        : ""}
                             </p>
-                        )}
+                        )} */}
 
                         <p>
-                            <span className="font-medium text-coral-200">Số lượng:</span>{" "}
+                            <span className="font-medium text-orange-600">Số lượng:</span>{" "}
                             {currentPhase?.availableSlot} / {currentPhase?.totalSlot}
                         </p>
 
                         {!(nextPhaseInfo?.hasAvailableSlots) && currentPhase?.startDate && (
-                            <p className="text-white/70">
+                            <p className="text-gray-600">
                                 <span className="font-medium">Hiệu lực:</span> {formatDate(currentPhase.startDate)} →{" "}
                                 {formatDate(currentPhase.endDate)}
                             </p>
                         )}
-
-                        {/* {currentPhase?.startDate && (
-                            <p className="text-white/70">
-                                <span className="font-medium">Hiệu lực:</span> {formatDate(currentPhase.startDate)} →{" "}
-                                {formatDate(currentPhase.endDate)}
-                            </p>
-                        )} */}
                     </div>
                 )}
             </div>
 
+            {/* Thông báo về phí xuất bản - hiển thị dưới dạng info box */}
+            {ticket.isAuthor && ticket.isPublish && (
+                <div className="mt-3 p-2.5 bg-purple-50 border border-purple-200 rounded-lg">
+                    <div className="flex items-start gap-2">
+                        <svg className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                            <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
+                        </svg>
+                        <p className="text-xs text-purple-700">
+                            Phí này bao gồm chi phí xuất bản bài báo của bạn
+                        </p>
+                    </div>
+                </div>
+            )}
+
             {isBeforeSale && nextPhase && (
-                <div className="mt-3 p-2 bg-yellow-500/20 border border-yellow-400/40 rounded-lg">
-                    <p className="text-xs text-yellow-200">
+                <div className="mt-3 p-2 bg-yellow-50 border border-yellow-300 rounded-lg">
+                    <p className="text-xs text-yellow-700">
                         Vé sẽ mở bán từ {formatDate(nextPhase.startDate)} → {formatDate(nextPhase.endDate)}
                     </p>
                 </div>
             )}
 
             {currentPhaseSoldOut && !isLastPhase && nextPhase && (
-                <div className="mt-3 p-2 bg-yellow-500/20 border border-yellow-400/40 rounded-lg">
-                    <p className="text-xs text-yellow-200">
+                <div className="mt-3 p-2 bg-yellow-50 border border-yellow-300 rounded-lg">
+                    <p className="text-xs text-yellow-700">
                         Giai đoạn hiện tại đã hết vé, vui lòng chờ giai đoạn tiếp theo từ{" "}
                         {formatDate(nextPhase.startDate)} → {formatDate(nextPhase.endDate)}
                     </p>
@@ -211,25 +245,154 @@ const TicketOption: React.FC<TicketOptionProps> = ({
             )}
 
             {isTicketSoldOut && isLastPhase && (
-                <div className="mt-3 p-2 bg-red-500/20 border border-red-400/40 rounded-lg">
-                    <p className="text-xs text-red-200">Vé đã bán hết</p>
+                <div className="mt-3 p-2 bg-red-50 border border-red-300 rounded-lg">
+                    <p className="text-xs text-red-700">Vé đã bán hết</p>
                 </div>
             )}
 
             {isPurchasedTicket && (
-                <div className="mb-2 inline-flex items-center gap-1 px-2 py-1 bg-green-500/30 border border-green-400/40 rounded-full">
-                    <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                <div className="mb-2 inline-flex items-center gap-1 px-2 py-1 bg-green-50 border border-green-300 rounded-full">
+                    <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                         <path
                             fillRule="evenodd"
                             d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
                             clipRule="evenodd"
                         />
                     </svg>
-                    <span className="text-xs text-green-300 font-medium">Đã mua</span>
+                    <span className="text-xs text-green-700 font-medium">Đã mua</span>
                 </div>
             )}
         </label>
     );
+
+    // return (
+    //     <label
+    //         className={`block rounded-xl p-4 border transition-all ${isDisabled
+    //             ? "bg-gray-500/20 border-gray-400/30 cursor-not-allowed opacity-60"
+    //             : isSelected
+    //                 ? "bg-coral-100 border-yellow-400 border-2 shadow-md cursor-pointer"
+    //                 : "bg-white/10 border-white/20 hover:bg-white/20 cursor-pointer"
+    //             }`}
+    //         onClick={() => onSelect(ticket, isDisabled)}
+    //     >
+    //         <input type="radio" name="ticket" value={ticket.conferencePriceId} className="hidden" />
+
+    //         <div className="flex justify-between items-start mb-1">
+    //             <div className="flex flex-col">
+    //                 <span className="font-semibold text-lg">{ticket.ticketName}</span>
+    //                 {ticket.isAuthor ? (
+    //                     <span className="text-xs text-yellow-300 font-medium mt-0.5">
+    //                         {isResearch ? "Phí đăng ký với tư cách tác giả" : "Vé dành cho tác giả"}
+    //                     </span>
+    //                 ) : (
+    //                     isResearch && (
+    //                         <span className="text-xs text-blue-300 font-medium mt-0.5">
+    //                             Phí đăng ký với tư cách thính giả
+    //                         </span>
+    //                     )
+    //                 )}
+    //             </div>
+    //             <div className="text-right">
+    //                 {hasDiscount && (
+    //                     <span className="text-sm line-through text-white/60 block">
+    //                         {(ticket.ticketPrice || 0).toLocaleString("vi-VN")}₫
+    //                     </span>
+    //                 )}
+    //                 <span className="text-coral-300 font-bold text-lg">
+    //                     {currentPrice.toLocaleString("vi-VN")}₫
+    //                 </span>
+    //             </div>
+    //         </div>
+
+    //         {ticket.ticketDescription && (
+    //             <p className="text-sm text-white/70">{ticket.ticketDescription}</p>
+    //         )}
+
+    //         <div className="mt-2 text-sm space-y-1">
+    //             {currentPhase && (
+    //                 <div>
+    //                     <p>
+    //                         <span className="font-medium text-coral-200">
+    //                             {isResearch ? "Giai đoạn phí tham dự hiện tại" : "Giai đoạn vé hiện tại:"}
+    //                         </span>{" "}
+    //                         {currentPhase.phaseName || "Không xác định"}
+    //                     </p>
+    //                     {currentPhase.applyPercent !== undefined && (
+    //                         <p
+    //                             className={`text-sm font-medium ${currentPhase.applyPercent > 100
+    //                                 ? "text-red-500"
+    //                                 : currentPhase.applyPercent < 100
+    //                                     ? "text-green-500"
+    //                                     : "text-gray-400"
+    //                                 }`}
+    //                         >
+    //                             {currentPhase.applyPercent > 100
+    //                                 ? `+${currentPhase.applyPercent - 100}%`
+    //                                 : currentPhase.applyPercent < 100
+    //                                     ? `-${100 - currentPhase.applyPercent}%`
+    //                                     : "±0%"}
+    //                         </p>
+    //                     )}
+
+    //                     <p>
+    //                         <span className="font-medium text-coral-200">Số lượng:</span>{" "}
+    //                         {currentPhase?.availableSlot} / {currentPhase?.totalSlot}
+    //                     </p>
+
+    //                     {!(nextPhaseInfo?.hasAvailableSlots) && currentPhase?.startDate && (
+    //                         <p className="text-white/70">
+    //                             <span className="font-medium">Hiệu lực:</span> {formatDate(currentPhase.startDate)} →{" "}
+    //                             {formatDate(currentPhase.endDate)}
+    //                         </p>
+    //                     )}
+
+    //                     {/* {currentPhase?.startDate && (
+    //                         <p className="text-white/70">
+    //                             <span className="font-medium">Hiệu lực:</span> {formatDate(currentPhase.startDate)} →{" "}
+    //                             {formatDate(currentPhase.endDate)}
+    //                         </p>
+    //                     )} */}
+    //                 </div>
+    //             )}
+    //         </div>
+
+    //         {isBeforeSale && nextPhase && (
+    //             <div className="mt-3 p-2 bg-yellow-500/20 border border-yellow-400/40 rounded-lg">
+    //                 <p className="text-xs text-yellow-200">
+    //                     Vé sẽ mở bán từ {formatDate(nextPhase.startDate)} → {formatDate(nextPhase.endDate)}
+    //                 </p>
+    //             </div>
+    //         )}
+
+    //         {currentPhaseSoldOut && !isLastPhase && nextPhase && (
+    //             <div className="mt-3 p-2 bg-yellow-500/20 border border-yellow-400/40 rounded-lg">
+    //                 <p className="text-xs text-yellow-200">
+    //                     Giai đoạn hiện tại đã hết vé, vui lòng chờ giai đoạn tiếp theo từ{" "}
+    //                     {formatDate(nextPhase.startDate)} → {formatDate(nextPhase.endDate)}
+    //                 </p>
+    //             </div>
+    //         )}
+
+    //         {isTicketSoldOut && isLastPhase && (
+    //             <div className="mt-3 p-2 bg-red-500/20 border border-red-400/40 rounded-lg">
+    //                 <p className="text-xs text-red-200">Vé đã bán hết</p>
+    //             </div>
+    //         )}
+
+    //         {isPurchasedTicket && (
+    //             <div className="mb-2 inline-flex items-center gap-1 px-2 py-1 bg-green-500/30 border border-green-400/40 rounded-full">
+    //                 <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+    //                     <path
+    //                         fillRule="evenodd"
+    //                         d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+    //                         clipRule="evenodd"
+    //                     />
+    //                 </svg>
+    //                 <span className="text-xs text-green-300 font-medium">Đã mua</span>
+    //             </div>
+    //         )}
+    //     </label>
+    // );
 };
 
 export default TicketOption;

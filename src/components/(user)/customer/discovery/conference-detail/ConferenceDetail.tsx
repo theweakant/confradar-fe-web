@@ -333,19 +333,6 @@ const ConferenceDetail = () => {
 
   return (
     <div className={`${isResearch ? 'bg-gray-50' : ''}`}>
-      {/* Background cho tech conference (giữ nguyên) */}
-      {/* {!isResearch && (
-        <div className="absolute inset-0">
-          <div
-            className="h-[50vh] bg-cover bg-center"
-            style={{
-              backgroundImage: `url(${conference.bannerImageUrl || "/images/customer_route/confbannerbg1.jpg"})`,
-            }}
-          />
-          <div className="h-[calc(100vh-15rem)] bg-gradient-to-br from-gray-900 via-blue-900 to-black overflow-hidden" />
-        </div>
-      )} */}
-
       {!isResearch && (
         <>
           {/* Section 1: Header với Banner Background */}
@@ -375,14 +362,7 @@ const ConferenceDetail = () => {
             </div>
           </div>
 
-          {/* <div className="relative h-16">
-            <div className="absolute inset-0 bg-gradient-to-b from-blue-50 to-white opacity-70 backdrop-blur-sm" />
-          </div> */}
-
           {/* Section 2: Tab + Content với Gradient Background */}
-          {/* <div className="w-full bg-gradient-to-br from-gray-900 via-blue-900 to-black"> */}
-          {/* <div className="w-full bg-gradient-to-br from-gray-50 via-gray-100 to-blue-50"> */}
-          {/* <div className="w-full bg-gradient-to-br from-blue-50 via-indigo-50 to-cyan-50"> */}
           <div className="w-full bg-gradient-to-br from-sky-800 via-indigo-700 to-cyan-600 text-white">
             <div className="max-w-6xl mx-auto px-4 py-12">
               {/* Sponsors */}
@@ -392,10 +372,7 @@ const ConferenceDetail = () => {
 
               {/* Tabs Container */}
               <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
-                {/* <div className="bg-white/20 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden"> */}
-
                 {/* Tab Navigation */}
-                {/* <div className="flex border-b border-gray-200 overflow-x-auto"> */}
                 <div className="flex border-b border-gray-200 overflow-x-auto bg-gradient-to-r from-blue-50 via-blue-100 to-white shadow-sm">
                   {[
                     { key: "info", label: "Thông tin & Hình ảnh" },
@@ -407,11 +384,6 @@ const ConferenceDetail = () => {
                     <button
                       key={tab.key}
                       onClick={() => setActiveTab(tab.key)}
-                      //                     className={`px-6 py-4 font-medium whitespace-nowrap transition-all 
-                      // ${activeTab === tab.key
-                      //                         ? "text-navy-700 border-b-2 border-blue-700 bg-blue-50"
-                      //                         : "text-gray-700 hover:text-navy-800 hover:bg-gray-100"
-                      //                       }`}
                       className={`px-6 py-4 font-medium whitespace-nowrap transition-all ${activeTab === tab.key
                         ? "text-blue-700 font-semibold border-b-2 border-blue-700 bg-blue-50"
                         : "text-gray-700 hover:text-blue-600 hover:bg-blue-100 transition-colors duration-200"
@@ -505,12 +477,6 @@ const ConferenceDetail = () => {
                     💡 <b>Lưu ý:</b> Bài báo của bạn sẽ được đánh giá qua <b>4 giai đoạn</b> của timeline đánh giá. Bạn sẽ chỉ thanh toán <b>phí đăng ký tham dự</b> khi bài báo được chấp nhận ở vòng cuối cùng. Nếu bài báo bị từ chối, bạn sẽ không phải trả phí đăng ký.
                   </p>
                 </div>
-                {/* <div className="col-span-full my-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border-l-4 border-blue-500 shadow-sm">
-                  <p className="text-gray-700 text-sm">
-                    💡 <b>Lưu ý:</b> Khi nộp bài báo (với tư cách tác giả), bạn sẽ thanh toán toàn bộ phí đăng ký ngay tại thời điểm nộp.
-                    Nếu bài báo bị từ chối, hệ thống sẽ hoàn lại <b>số tiền đã thanh toán, nhưng đã trừ đi khoản phí đánh giá bài báo</b> tương ứng với hội nghị này.
-                  </p>
-                </div> */}
                 <div className="bg-white border-2 border-gray-200 rounded-xl p-6 shadow-lg grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="p-3 bg-gradient-to-br from-blue-50 to-white rounded-lg border border-blue-100">
                     <span className="text-gray-600 text-sm font-medium block mb-1">Định dạng bài báo chấp nhận:</span>
@@ -559,7 +525,7 @@ const ConferenceDetail = () => {
                         "Chưa có thông tin về năm xếp hạng"}
                     </p>
                   </div>
-                  <div className="p-3 bg-gradient-to-br from-amber-50 to-white rounded-lg border border-amber-200">
+                  {/* <div className="p-3 bg-gradient-to-br from-amber-50 to-white rounded-lg border border-amber-200">
                     <span className="text-gray-600 text-sm font-medium block mb-1">
                       Phí review bài báo <br />
                       <span className="text-gray-500 text-xs italic">
@@ -571,7 +537,7 @@ const ConferenceDetail = () => {
                         ? `${(conference as ResearchConferenceDetailResponse).reviewFee?.toLocaleString("vi-VN")}₫`
                         : "Phí đánh giá bài báo chưa xác định"}
                     </p>
-                  </div>
+                  </div> */}
                   <div className="p-3 bg-gradient-to-br from-blue-50 to-white rounded-lg border border-blue-100">
                     <span className="text-gray-600 text-sm font-medium block mb-1">Ranking Category Name:</span>
                     <p className="text-gray-900 font-semibold">
@@ -588,105 +554,17 @@ const ConferenceDetail = () => {
                   </div>
                 </div>
               </div>
-              {/* <div className="mb-8">
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                  Thông tin chi tiết về hội nghị nghiên cứu
-                </h3>
-                <div className="col-span-full my-2 bg-blue-50 rounded-lg p-3 border border-blue-200">
-                  <p className="text-gray-700 text-sm italic">
-                    💡 <b>Lưu ý:</b> Khi nộp bài báo (với tư cách tác giả), bạn sẽ thanh toán toàn bộ phí đăng ký ngay tại thời điểm nộp.
-                    Nếu bài báo bị từ chối, hệ thống sẽ hoàn lại <b>số tiền đã thanh toán, nhưng đã trừ đi khoản phí đánh giá bài báo</b> tương ứng với hội nghị này.
-                  </p>
-                </div>
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <span className="text-gray-600 text-sm">Định dạng bài báo chấp nhận:</span>
-                    <p className="text-gray-900 font-medium">
-                      {(conference as ResearchConferenceDetailResponse).paperFormat ||
-                        "Chưa có thông tin về định dạng bài báo"}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-gray-600 text-sm">Số lượng bài báo tối đa chấp nhận:</span>
-                    <p className="text-gray-900 font-medium">
-                      {(conference as ResearchConferenceDetailResponse).numberPaperAccept !== undefined
-                        ? (conference as ResearchConferenceDetailResponse).numberPaperAccept
-                        : "Chưa xác định số lượng bài báo được chấp nhận"}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-gray-600 text-sm">Số vòng chỉnh sửa tối đa:</span>
-                    <p className="text-gray-900 font-medium">
-                      {(conference as ResearchConferenceDetailResponse).revisionAttemptAllowed !== undefined
-                        ? (conference as ResearchConferenceDetailResponse).revisionAttemptAllowed
-                        : "Chưa xác định số lần sửa đổi tối đa"}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-gray-600 text-sm">Cho phép thính giả tham dự?</span>
-                    <p className="text-gray-900 font-medium">
-                      {(conference as ResearchConferenceDetailResponse).allowListener !== undefined
-                        ? (conference as ResearchConferenceDetailResponse).allowListener
-                          ? "Có"
-                          : "Không"
-                        : "Chưa xác định chính sách người nghe"}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-gray-600 text-sm">Giá trị xếp hạng:</span>
-                    <p className="text-gray-900 font-medium">
-                      {(conference as ResearchConferenceDetailResponse).rankValue ||
-                        "Chưa có thông tin về giá trị xếp hạng"}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-gray-600 text-sm">Năm xếp hạng:</span>
-                    <p className="text-gray-900 font-medium">
-                      {(conference as ResearchConferenceDetailResponse).rankYear ||
-                        "Chưa có thông tin về năm xếp hạng"}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-gray-600 text-sm">
-                      Phí review bài báo <br />
-                      <span className="text-gray-500 text-xs italic">
-                        (Khoản phí này đã được tính gộp vào phí đăng ký tham dự nếu bạn đăng ký với tư cách <b>tác giả</b>)
-                      </span>
-                    </span>
-                    <p className="text-gray-900 font-medium">
-                      {(conference as ResearchConferenceDetailResponse).reviewFee !== undefined
-                        ? `${(conference as ResearchConferenceDetailResponse).reviewFee?.toLocaleString("vi-VN")}₫`
-                        : "Phí đánh giá bài báo chưa xác định"}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-gray-600 text-sm">Ranking Category Name:</span>
-                    <p className="text-gray-900 font-medium">
-                      {(conference as ResearchConferenceDetailResponse).rankingCategoryName ||
-                        "Chưa có thông tin về danh mục xếp hạng"}
-                    </p>
-                  </div>
-                  <div className="col-span-full">
-                    <span className="text-gray-600 text-sm">Ranking Description:</span>
-                    <p className="text-gray-900 mt-1">
-                      {(conference as ResearchConferenceDetailResponse).rankingDescription ||
-                        "Chưa có mô tả về xếp hạng"}
-                    </p>
-                  </div>
-                </div>
-              </div> */}
 
-              {/* Tab Navigation */}
               {/* Tab Navigation */}
               <div className="bg-white rounded-xl border-2 border-gray-200 shadow-md overflow-hidden">
                 {[
                   { key: "info", label: "Thông tin & Hình ảnh", icon: "📋" },
                   { key: "sessions", label: "Lịch trình Sessions", icon: "📅" },
                   { key: "prices", label: "Các mức phí tham dự", icon: "🎫" },
-                  { key: "research-timeline", label: "Timeline nộp bài", icon: "⏰" },
+                  { key: "research-timeline", label: "Các deadline quan trọng của nộp bài báo", icon: "⏰" },
                   { key: "research-documents", label: "Tài liệu & Hướng dẫn", icon: "📄" },
                   { key: "policy", label: "Chính sách", icon: "📜" },
-                  { key: "feedback", label: "Đánh giá", icon: "⭐" },
+                  // { key: "feedback", label: "Đánh giá", icon: "⭐" },
                 ].map((tab, index) => (
                   <button
                     key={tab.key}
@@ -701,28 +579,6 @@ const ConferenceDetail = () => {
                   </button>
                 ))}
               </div>
-              {/* <div className="flex flex-col border-b border-gray-200">
-                {[
-                  { key: "info", label: "Thông tin & Hình ảnh" },
-                  { key: "sessions", label: "Lịch trình Sessions" },
-                  { key: "prices", label: "Các mức phí tham dự" },
-                  { key: "research-timeline", label: "Timeline nộp bài" },
-                  { key: "research-documents", label: "Tài liệu & Hướng dẫn" },
-                  { key: "policy", label: "Chính sách" },
-                  { key: "feedback", label: "Đánh giá" },
-                ].map(tab => (
-                  <button
-                    key={tab.key}
-                    onClick={() => setActiveTab(tab.key)}
-                    className={`px-4 py-2 text-left font-medium transition-colors ${activeTab === tab.key
-                      ? "text-blue-600 border-l-4 border-blue-600 bg-blue-50"
-                      : "text-gray-600 hover:text-gray-900"
-                      }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div> */}
             </div>
 
             {/* Tab Content - bên phải */}
@@ -759,39 +615,6 @@ const ConferenceDetail = () => {
                 {activeTab === "policy" && <PolicyTab conference={conference} />}
               </div>
             </div>
-            {/* <div className="lg:col-span-2 flex flex-col h-full max-h-full">
-              <div className="overflow-y-auto flex-1">
-                {activeTab === "info" && (
-                  <InformationTab
-                    conference={conference}
-                    setSelectedImage={setSelectedImage}
-                  />
-                )}
-                {activeTab === "sessions" && (
-                  <SessionsTab
-                    conference={conference}
-                    formatDate={formatDate}
-                    formatTime={formatTime}
-                    formatDateTime={formatDateTime}
-                    setSelectedImage={setSelectedImage}
-                  />
-                )}
-                {activeTab === "prices" && (
-                  <ConferencePriceTab
-                    conference={conference}
-                    formatDate={formatDate}
-                    formatTime={formatTime}
-                  />
-                )}
-                {activeTab === "research-timeline" && researchConference && (
-                  <ResearchTimelineTab conference={researchConference} formatDate={formatDate} />
-                )}
-                {activeTab === "research-documents" && researchConference && (
-                  <ResearchDocumentsTab conference={researchConference} />
-                )}
-                {activeTab === "policy" && <PolicyTab conference={conference} />}
-              </div>
-            </div> */}
           </div>
 
           {/* Sponsors */}
@@ -800,214 +623,6 @@ const ConferenceDetail = () => {
           </div>
         </div>
       )
-        // : (
-
-
-        // <div className="relative z-10 h-screen overflow-auto">
-        //   <div className="max-w-6xl mx-auto px-4">
-        //     <div>
-        //       <ConferenceHeader
-        //         conference={conference}
-        //         handlePurchaseTicket={handlePurchaseTicket}
-        //         accessToken={accessToken}
-        //         formatDate={formatDate}
-        //         selectedTicket={selectedTicket}
-        //         onSelectTicket={setSelectedTicket}
-        //         authorInfo={authorInfo}
-        //         onAuthorInfoChange={setAuthorInfo}
-        //         selectedPaymentMethod={selectedPaymentMethod}
-        //         onSelectPaymentMethod={setSelectedPaymentMethod}
-        //       />
-        //     </div>
-
-        //     <div className="max-w-6xl mx-auto px-4 py-8">
-        //       <SponsorCarousel sponsors={conference.sponsors ?? []} />
-        //     </div>
-
-        //     <div className="max-w-6xl mx-auto px-4 py-8">
-        //       <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-        //         <div className="flex border-b border-gray-300 overflow-x-auto">
-        //           <button
-        //             onClick={() => setActiveTab("info")}
-        //             className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "info"
-        //               ? "text-blue-600 border-b-2 border-blue-600"
-        //               : "text-gray-600 hover:text-gray-800"
-        //               }`}
-        //           >
-        //             Thông tin & Hình ảnh
-        //           </button>
-        //           <button
-        //             onClick={() => setActiveTab("sessions")}
-        //             className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "sessions"
-        //               ? "text-blue-600 border-b-2 border-blue-600"
-        //               : "text-gray-600 hover:text-gray-800"
-        //               }`}
-        //           >
-        //             Lịch trình Sessions
-        //           </button>
-        //           <button
-        //             onClick={() => setActiveTab("prices")}
-        //             className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "prices"
-        //               ? "text-blue-600 border-b-2 border-blue-600"
-        //               : "text-gray-600 hover:text-gray-800"
-        //               }`}
-        //           >
-        //             Các loại vé
-        //           </button>
-        //           <button
-        //             onClick={() => setActiveTab("policy")}
-        //             className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "policy"
-        //               ? "text-blue-600 border-b-2 border-blue-600"
-        //               : "text-gray-600 hover:text-gray-800"
-        //               }`}
-        //           >
-        //             Chính sách
-        //           </button>
-        //           <button
-        //             onClick={() => setActiveTab("feedback")}
-        //             className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "feedback"
-        //               ? "text-blue-600 border-b-2 border-blue-600"
-        //               : "text-gray-600 hover:text-gray-800"
-        //               }`}
-        //           >
-        //             Đánh giá
-        //           </button>
-        //         </div>
-
-        //         <div className="p-6 md:p-8">
-        //           {activeTab === "info" && (
-        //             <InformationTab
-        //               conference={conference}
-        //               setSelectedImage={setSelectedImage}
-        //             />
-        //           )}
-        //           {activeTab === "sessions" && (
-        //             <SessionsTab
-        //               conference={conference}
-        //               formatDate={formatDate}
-        //               formatTime={formatTime}
-        //               formatDateTime={formatDateTime}
-        //               setSelectedImage={setSelectedImage}
-        //             />
-        //           )}
-        //           {activeTab === "prices" && (
-        //             <ConferencePriceTab
-        //               conference={conference}
-        //               formatDate={formatDate}
-        //               formatTime={formatTime}
-        //             />
-        //           )}
-        //           {activeTab === "policy" && <PolicyTab conference={conference} />}
-        //         </div>
-        //       </div>
-        //     </div>
-        //   </div>
-        // </div>
-
-
-        // <div className="relative z-10 h-screen overflow-auto">
-        //   <div className="max-w-6xl mx-auto px-4">
-        //     <div>
-        //       <ConferenceHeader
-        //         conference={conference}
-        //         handlePurchaseTicket={handlePurchaseTicket}
-        //         accessToken={accessToken}
-        //         formatDate={formatDate}
-        //         selectedTicket={selectedTicket}
-        //         onSelectTicket={setSelectedTicket}
-        //         authorInfo={authorInfo}
-        //         onAuthorInfoChange={setAuthorInfo}
-        //         selectedPaymentMethod={selectedPaymentMethod}
-        //         onSelectPaymentMethod={setSelectedPaymentMethod}
-        //       />
-        //     </div>
-
-        //     <div className="max-w-6xl mx-auto px-4 py-8">
-        //       <SponsorCarousel sponsors={conference.sponsors ?? []} />
-        //     </div>
-
-        //     <div className="max-w-6xl mx-auto px-4 py-8">
-        //       <div className="bg-black rounded-2xl shadow-lg overflow-hidden">
-        //         <div className="flex border-b border-gray-700 overflow-x-auto">
-        //           <button
-        //             onClick={() => setActiveTab("info")}
-        //             className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "info"
-        //               ? "text-blue-500 border-b-2 border-coral-500"
-        //               : "text-white/70 hover:text-white"
-        //               }`}
-        //           >
-        //             Thông tin & Hình ảnh
-        //           </button>
-        //           <button
-        //             onClick={() => setActiveTab("sessions")}
-        //             className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "sessions"
-        //               ? "text-blue-500 border-b-2 border-coral-500"
-        //               : "text-white/70 hover:text-white"
-        //               }`}
-        //           >
-        //             Lịch trình Sessions
-        //           </button>
-        //           <button
-        //             onClick={() => setActiveTab("prices")}
-        //             className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "prices"
-        //               ? "text-blue-500 border-b-2 border-coral-400"
-        //               : "text-white/70 hover:text-white"
-        //               }`}
-        //           >
-        //             Các loại vé
-        //           </button>
-        //           <button
-        //             onClick={() => setActiveTab("policy")}
-        //             className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "policy"
-        //               ? "text-blue-500 border-b-2 border-coral-500"
-        //               : "text-white/70 hover:text-white"
-        //               }`}
-        //           >
-        //             Chính sách
-        //           </button>
-        //           <button
-        //             onClick={() => setActiveTab("feedback")}
-        //             className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "feedback"
-        //               ? "text-blue-500 border-b-2 border-coral-500"
-        //               : "text-white/70 hover:text-white"
-        //               }`}
-        //           >
-        //             Đánh giá
-        //           </button>
-        //         </div>
-
-        //         <div className="p-6 md:p-8">
-        //           {activeTab === "info" && (
-        //             <InformationTab
-        //               conference={conference}
-        //               setSelectedImage={setSelectedImage}
-        //             />
-        //           )}
-        //           {activeTab === "sessions" && (
-        //             <SessionsTab
-        //               conference={conference}
-        //               formatDate={formatDate}
-        //               formatTime={formatTime}
-        //               formatDateTime={formatDateTime}
-        //               setSelectedImage={setSelectedImage}
-        //             />
-        //           )}
-        //           {activeTab === "prices" && (
-        //             <ConferencePriceTab
-        //               conference={conference}
-        //               formatDate={formatDate}
-        //               formatTime={formatTime}
-        //             />
-        //           )}
-        //           {activeTab === "policy" && (
-        //             <PolicyTab conference={conference} />
-        //           )}
-        //         </div>
-        //       </div>
-        //     </div>
-        //   </div>
-        // </div>
-        // )
       }
 
       {/* Image Modal */}
@@ -1021,227 +636,6 @@ const ConferenceDetail = () => {
       }
     </div >
   );
-
-  // return (
-  //   <div className="relative min-h-screen">
-  //     <div className="absolute inset-0">
-  //       <div
-  //         className="h-[50vh] bg-cover bg-center"
-  //         style={{
-  //           backgroundImage: `url(${conference.bannerImageUrl || "/images/customer_route/confbannerbg1.jpg"})`,
-  //         }}
-  //       />
-  //       <div className="h-[calc(100vh-15rem)] bg-gradient-to-br from-gray-900 via-blue-900 to-black overflow-hidden" />
-  //     </div>
-
-  //     <div className="relative z-10 h-screen overflow-auto">
-  //       <div className="max-w-6xl mx-auto px-4">
-  //         <div>
-  //           <ConferenceHeader
-  //             conference={conference}
-  //             // isDialogOpen={isDialogOpen}
-  //             // setIsDialogOpen={setIsDialogOpen}
-  //             // selectedTicket={selectedTicket}
-  //             // setSelectedTicket={setSelectedTicket}
-  //             // paymentLoading={paymentLoading}
-  //             handlePurchaseTicket={handlePurchaseTicket}
-  //             accessToken={accessToken}
-  //             formatDate={formatDate}
-  //             selectedTicket={selectedTicket}
-  //             onSelectTicket={setSelectedTicket}
-  //             authorInfo={authorInfo}
-  //             onAuthorInfoChange={setAuthorInfo}
-  //             selectedPaymentMethod={selectedPaymentMethod}
-  //             onSelectPaymentMethod={setSelectedPaymentMethod}
-  //           // authorInfo={authorInfo}
-  //           // setAuthorInfo={setAuthorInfo}
-  //           // showAuthorForm={showAuthorForm}
-  //           // setShowAuthorForm={setShowAuthorForm}
-  //           // selectedPaymentMethod={selectedPaymentMethod}
-  //           // setSelectedPaymentMethod={setSelectedPaymentMethod}
-  //           // showPaymentMethods={showPaymentMethods}
-  //           // setShowPaymentMethods={setShowPaymentMethods}
-  //           />
-  //         </div>
-
-  //         <div className="max-w-6xl mx-auto px-4 py-8">
-  //           <SponsorCarousel sponsors={conference.sponsors ?? []} />
-  //         </div>
-
-  //         <div className="max-w-6xl mx-auto px-4 py-8">
-  //           <div className="bg-black rounded-2xl shadow-lg overflow-hidden">
-  //             {" "}
-  //             {/* Container tabs background đen */}
-  //             {/* Tab Headers */}
-  //             <div className="flex border-b border-gray-700 overflow-x-auto">
-  //               {" "}
-  //               {/* border hơi nhạt trên bg đen */}
-  //               <button
-  //                 onClick={() => setActiveTab("info")}
-  //                 className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "info"
-  //                   ? "text-blue-500 border-b-2 border-coral-500"
-  //                   : "text-white/70 hover:text-white"
-  //                   }`}
-  //               >
-  //                 Thông tin & Hình ảnh
-  //               </button>
-  //               <button
-  //                 onClick={() => setActiveTab("sessions")}
-  //                 className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "sessions"
-  //                   ? "text-blue-500 border-b-2 border-coral-500"
-  //                   : "text-white/70 hover:text-white"
-  //                   }`}
-  //               >
-  //                 Lịch trình Sessions
-  //               </button>
-  //               <button
-  //                 onClick={() => setActiveTab("prices")}
-  //                 className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "prices"
-  //                   ? "text-blue-500 border-b-2 border-coral-400"
-  //                   : "text-white/70 hover:text-white"
-  //                   }`}
-  //               >
-  //                 Các loại vé
-  //               </button>
-  //               {isResearch && (
-  //                 <>
-  //                   <button
-  //                     onClick={() => setActiveTab("research-timeline")}
-  //                     className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "research-timeline"
-  //                       ? "text-blue-500 border-b-2 border-coral-500"
-  //                       : "text-white/70 hover:text-white"
-  //                       }`}
-  //                   >
-  //                     Timeline nộp bài
-  //                   </button>
-  //                   <button
-  //                     onClick={() => setActiveTab("research-documents")}
-  //                     className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "research-documents"
-  //                       ? "text-blue-500 border-b-2 border-coral-500"
-  //                       : "text-white/70 hover:text-white"
-  //                       }`}
-  //                   >
-  //                     Tài liệu & Hướng dẫn
-  //                   </button>
-  //                 </>
-  //               )}
-  //               {/* {isResearch && (
-  //                 <button
-  //                   onClick={() => setActiveTab("research")}
-  //                   className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "research"
-  //                     ? "text-blue-500 border-b-2 border-coral-500"
-  //                     : "text-white/70 hover:text-white"
-  //                     }`}
-  //                 >
-  //                   Research Paper Information
-  //                 </button>
-  //               )} */}
-  //               <button
-  //                 onClick={() => setActiveTab("policy")}
-  //                 className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "policy"
-  //                   ? "text-blue-500 border-b-2 border-coral-500"
-  //                   : "text-white/70 hover:text-white"
-  //                   }`}
-  //               >
-  //                 Chính sách
-  //               </button>
-  //               <button
-  //                 onClick={() => setActiveTab("feedback")}
-  //                 className={`px-6 py-4 font-medium whitespace-nowrap transition-colors ${activeTab === "feedback"
-  //                   ? "text-blue-500 border-b-2 border-coral-500"
-  //                   : "text-white/70 hover:text-white"
-  //                   }`}
-  //               >
-  //                 Đánh giá
-  //               </button>
-  //             </div>
-  //             {/* Tab Content */}
-  //             <div className="p-6 md:p-8">
-  //               {/* Info Tab */}
-  //               {activeTab === "info" && (
-  //                 <InformationTab
-  //                   conference={conference}
-  //                   setSelectedImage={setSelectedImage}
-  //                 />
-  //               )}
-
-  //               {/* Sessions Tab */}
-  //               {activeTab === "sessions" && (
-  //                 <SessionsTab
-  //                   conference={conference}
-  //                   formatDate={formatDate}
-  //                   formatTime={formatTime}
-  //                   formatDateTime={formatDateTime}
-  //                   setSelectedImage={setSelectedImage}
-  //                 />
-  //               )}
-
-  //               {activeTab === "prices" && (
-  //                 <ConferencePriceTab
-  //                   conference={conference}
-  //                   formatDate={formatDate}
-  //                   formatTime={formatTime}
-  //                 />
-  //               )}
-  //               {activeTab === "research-timeline" &&
-  //                 isResearch &&
-  //                 researchConference && (
-  //                   <ResearchTimelineTab
-  //                     conference={researchConference}
-  //                     formatDate={formatDate}
-  //                   />
-  //                 )}
-
-  //               {/* Research Documents Tab */}
-  //               {activeTab === "research-documents" &&
-  //                 isResearch &&
-  //                 researchConference && (
-  //                   <ResearchDocumentsTab
-  //                     conference={researchConference}
-  //                   />
-  //                 )}
-
-  //               {/* Research Paper Information Tab */}
-  //               {/* {activeTab === "research" &&
-  //                 isResearch &&
-  //                 researchConference && (
-  //                   <ResearchPaperInformationTab
-  //                     conference={researchConference}
-  //                     formatDate={formatDate}
-  //                     formatTime={formatTime}
-  //                   />
-  //                 )} */}
-
-  //               {/* Policy Tab */}
-  //               {activeTab === "policy" && (
-  //                 <PolicyTab conference={conference} />
-  //               )}
-
-  //               {/* Feedback Tab */}
-  //               {/* {activeTab === 'feedback' && (
-  //                 <FeedbackTab
-  //                   conference={conference}
-  //                   newFeedback={newFeedback}
-  //                   setNewFeedback={setNewFeedback}
-  //                   feedbacks={feedbacks}
-  //                   handleAddFeedback={handleAddFeedback}
-  //                 />
-  //               )} */}
-  //             </div>
-  //           </div>
-  //         </div>
-  //       </div>
-  //     </div>
-
-  //     {/* Image Modal */}
-  //     {selectedImage && (
-  //       <MediaModal
-  //         url={selectedImage}
-  //         onClose={() => setSelectedImage(null)}
-  //       />
-  //     )}
-  //   </div>
-  // );
 };
 
 export default ConferenceDetail;

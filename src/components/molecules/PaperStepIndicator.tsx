@@ -30,7 +30,7 @@ const PaperStepIndicator: React.FC<StepIndicatorProps> = ({
     const stepLabelMap: Record<string, string> = {
         Abstract: "Tóm tắt (Abstract)",
         FullPaper: "Bài báo đầy đủ (Full Paper)",
-        Revise: "Vòng chỉnh sửa (Revision Paper)",
+        Revise: "Final Review (Vòng chỉnh sửa và đánh giá cuối cùng)",
         CameraReady: "Bản cuối cùng (Camera Ready)",
         Payment: "Thanh toán",
     };
