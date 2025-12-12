@@ -398,6 +398,33 @@ const PaperTracking = () => {
                           <p className="text-gray-700 text-xs leading-relaxed line-clamp-3">{paperDetail.description}</p>
                         </div>
                       )}
+
+                      {/* Publishing Link */}
+                      <div className="bg-gray-100 rounded-lg p-3">
+                        <p className="text-gray-600 text-[10px] uppercase tracking-wider mb-1">
+                          Link xuất bản bài báo của bạn
+                        </p>
+
+                        {paperDetail.publishingLink ? (
+                          <a
+                            href={paperDetail.publishingLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 text-sm font-medium underline break-all"
+                          >
+                            {paperDetail.publishingLink}
+                          </a>
+                        ) : (
+                          <p className="text-gray-500 text-xs italic">
+                            Hiện chưa có link xuất bản.
+                            <br />
+                            <span className="text-gray-400">
+                              (Link xuất bản bài báo này chỉ có nếu bạn đăng ký loại phí có xuất bản bài báo)
+                            </span>
+                          </p>
+                        )}
+                      </div>
+
                     </div>
 
                     {/* Right: Conference Information */}

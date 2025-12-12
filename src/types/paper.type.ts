@@ -435,6 +435,7 @@ export interface PaperDetailResponse {
   paperId: string;
   title?: string;
   description?: string;
+  publishingLink: string | null;
   currentPhase: PaperPhase;
   rootAuthor: Author;
   coAuthors: Author[];
