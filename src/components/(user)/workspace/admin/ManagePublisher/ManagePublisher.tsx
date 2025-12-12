@@ -150,7 +150,7 @@ export default function ManagePublisher() {
             </Button>
           </div>
           <p className="text-gray-600 mt-2">
-            Quản lý các nhà xuất bản trong hệ thống
+            Quản lý các nhà xuất bản bài báo
           </p>
         </div>
 
@@ -159,13 +159,13 @@ export default function ManagePublisher() {
           searchValue={searchQuery}
           onSearchChange={setSearchQuery}
           searchPlaceholder="Tìm kiếm nhà xuất bản..."
-          filters={[
-            {
-              value: filterStatus,
-              onValueChange: setFilterStatus,
-              options: statusOptions,
-            },
-          ]}
+          // filters={[
+          //   {
+          //     value: filterStatus,
+          //     onValueChange: setFilterStatus,
+          //     options: statusOptions,
+          //   },
+          // ]}
         />
 
         {/* Summary Cards */}
