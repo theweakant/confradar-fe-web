@@ -28,6 +28,9 @@ interface ConferenceHeaderProps {
     selectedPaymentMethod: string | null;
     onSelectPaymentMethod: (id: string | null) => void;
     onSelectPaper?: (paperId: string | null) => void;
+
+    activeTab?: string;
+    onTabChange?: (tab: string) => void;
 }
 
 const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
@@ -41,7 +44,10 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
     onAuthorInfoChange,
     selectedPaymentMethod,
     onSelectPaymentMethod,
-    onSelectPaper
+    onSelectPaper,
+
+    activeTab,
+    onTabChange,
 }) => {
     const { now, useFakeTime } = useGlobalTime();
 
@@ -231,6 +237,8 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                             accessToken={accessToken}
                             showSubscribeCard={showSubscribeCard}
                             isResearch={isResearch}
+                            activeTab={activeTab}
+                            onTabChange={onTabChange}
                         />
                     </div>
 

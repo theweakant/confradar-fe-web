@@ -360,28 +360,28 @@ const ResearchTimelineTab: React.FC<ResearchTimelineTabProps> = ({
 
                     {/* Các sections giữ nguyên như cũ */}
                     {renderPhaseSection(
-                        "📝 Đăng ký & Nộp bản tóm tắt (Abstract)",
+                        "Đăng ký & Nộp bản tóm tắt (Abstract)",
                         <Users className="w-5 h-5 text-blue-600" />,
                         [
                             {
                                 label: "Thời gian đăng ký với tư cách tác giả",
                                 startDate: phase.registrationStartDate,
                                 endDate: phase.registrationEndDate,
-                                note: "Khách hàng chỉ được mua vé và nộp bài báo trong khoảng thời gian này"
+                                note: "Khách hàng nộp bài báo (bản giới thiêu Abstract) trong khoảng thời gian này"
                             },
-                            {
-                                label: "Thời gian quyết định trạng thái bản tóm tắt (Abstract)",
-                                startDate: phase.abstractDecideStatusStart,
-                                endDate: phase.abstractDecideStatusEnd,
-                                note: "Ban tổ chức phải quyết định trạng thái và phân công reviewer trong khoảng này"
-                            }
+                            // {
+                            //     label: "Thời gian quyết định trạng thái bản tóm tắt (Abstract)",
+                            //     startDate: phase.abstractDecideStatusStart,
+                            //     endDate: phase.abstractDecideStatusEnd,
+                            //     note: "Ban tổ chức phải quyết định trạng thái và phân công reviewer trong khoảng này"
+                            // }
                         ],
                         "border-blue-500"
                     )}
 
                     {/* Full Paper Section */}
                     {renderPhaseSection(
-                        "📄 Nộp bài báo bản đầy đủ (Full Paper)",
+                        "Nộp bài báo bản đầy đủ (Full Paper)",
                         <FileText className="w-5 h-5 text-green-600" />,
                         [
                             {
@@ -390,25 +390,25 @@ const ResearchTimelineTab: React.FC<ResearchTimelineTabProps> = ({
                                 endDate: phase.fullPaperEndDate,
                                 note: "Khách hàng phải nộp full paper trong khoảng thời gian này"
                             },
-                            {
-                                label: "Thời gian đánh giá",
-                                startDate: phase.reviewStartDate,
-                                endDate: phase.reviewEndDate,
-                                note: "Các reviewer phải nộp đánh giá trong khoảng này"
-                            },
-                            {
-                                label: "Thời gian quyết định trạng thái bài báo đầy đủ",
-                                startDate: phase.fullPaperDecideStatusStart,
-                                endDate: phase.fullPaperDecideStatusEnd,
-                                note: "Head Reviewer phải quyết định trạng thái trong khoảng này"
-                            }
+                            // {
+                            //     label: "Thời gian đánh giá",
+                            //     startDate: phase.reviewStartDate,
+                            //     endDate: phase.reviewEndDate,
+                            //     note: "Các reviewer phải nộp đánh giá trong khoảng này"
+                            // },
+                            // {
+                            //     label: "Thời gian quyết định trạng thái bài báo đầy đủ",
+                            //     startDate: phase.fullPaperDecideStatusStart,
+                            //     endDate: phase.fullPaperDecideStatusEnd,
+                            //     note: "Head Reviewer phải quyết định trạng thái trong khoảng này"
+                            // }
                         ],
                         "border-green-500"
                     )}
 
                     {/* Revision Paper Section */}
                     {renderPhaseSection(
-                        "🔄 Chỉnh sửa bài báo (Revision Paper)",
+                        "Vòng Final Review (Các vòng chỉnh sửa bài bóa)",
                         <Clock className="w-5 h-5 text-orange-600" />,
                         [
                             {
@@ -417,12 +417,12 @@ const ResearchTimelineTab: React.FC<ResearchTimelineTabProps> = ({
                                 endDate: phase.reviseEndDate,
                                 note: "Khách hàng sẽ nộp các bản chỉnh sửa theo nhận xét từ Head Reviewer. Head Reviewer sẽ gửi phản hồi và yêu cầu chỉnh sửa qua từng vòng trong khoảng này."
                             },
-                            {
-                                label: "Thời gian quyết định trạng thái bài báo chỉnh sửa",
-                                startDate: phase.revisionPaperDecideStatusStart,
-                                endDate: phase.revisionPaperDecideStatusEnd,
-                                note: "Head Reviewer phải quyết định trạng thái trong khoảng này"
-                            }
+                            // {
+                            //     label: "Thời gian quyết định trạng thái bài báo chỉnh sửa",
+                            //     startDate: phase.revisionPaperDecideStatusStart,
+                            //     endDate: phase.revisionPaperDecideStatusEnd,
+                            //     note: "Head Reviewer phải quyết định trạng thái trong khoảng này"
+                            // }
                         ],
                         "border-orange-500"
                     )}
@@ -469,21 +469,21 @@ const ResearchTimelineTab: React.FC<ResearchTimelineTabProps> = ({
 
                     {/* Camera Ready Section */}
                     {renderPhaseSection(
-                        "📹 Bản cuối cùng (Camera Ready)",
+                        "Bản cuối cùng (Camera Ready)",
                         <FileText className="w-5 h-5 text-purple-600" />,
                         [
                             {
                                 label: "Thời gian nộp bản camera ready",
                                 startDate: phase.cameraReadyStartDate,
                                 endDate: phase.cameraReadyEndDate,
-                                note: "Khách hàng phải nộp bản camera-ready trong khoảng thời gian này"
+                                note: "Khách hàng phải nộp bản chính thức camera-ready trong khoảng thời gian này"
                             },
-                            {
-                                label: "Thời gian quyết định trạng thái camera ready",
-                                startDate: phase.cameraReadyDecideStatusStart,
-                                endDate: phase.cameraReadyDecideStatusEnd,
-                                note: "Head Reviewer phải quyết định trạng thái trong khoảng này"
-                            }
+                            // {
+                            //     label: "Thời gian quyết định trạng thái camera ready",
+                            //     startDate: phase.cameraReadyDecideStatusStart,
+                            //     endDate: phase.cameraReadyDecideStatusEnd,
+                            //     note: "Head Reviewer phải quyết định trạng thái trong khoảng này"
+                            // }
                         ],
                         "border-purple-500"
                     )}

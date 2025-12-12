@@ -645,6 +645,17 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
                                                     {price.ticketDescription}
                                                 </p>
                                             )}
+                                            <div className="ml-8 mb-2">
+                                                {price.isPublish ? (
+                                                    <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
+                                                        Bao gồm phí xuất bản bài báo
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">
+                                                        Không bao gồm phí xuất bản bài báo
+                                                    </span>
+                                                )}
+                                            </div>
                                             {phaseInfo.currentPhase && (
                                                 <>
                                                     <div className="flex items-center gap-2">
@@ -863,6 +874,17 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
                                     <p className="text-xs text-gray-600">
                                         {selectedPrice.ticketDescription}
                                     </p>
+                                    <div className="ml-8 mb-2">
+                                        {selectedPrice.isPublish ? (
+                                            <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
+                                                Bao gồm xuất bản bài báo
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">
+                                                Không bao gồm phí xuất bản bài báo
+                                            </span>
+                                        )}
+                                    </div>
                                     <p className="text-sm font-semibold text-gray-900 mt-2">
                                         {formatCurrency(selectedPrice.ticketPrice ?? 0)}
                                     </p>
@@ -872,7 +894,6 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
                                     const apply = selectedPhase.applyPercent ?? 100;
                                     const original = selectedPrice.ticketPrice ?? 0;
 
-                                    // Không tăng không giảm → không hiển thị gì
                                     if (apply === 100) return null;
 
                                     const finalPrice = Math.round(original * (apply / 100));

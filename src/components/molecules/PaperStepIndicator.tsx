@@ -26,13 +26,13 @@ const PaperStepIndicator: React.FC<StepIndicatorProps> = ({
   completedStepIndexes = [],
   failedStepIndexes = [],
 }) => {
-  const stepLabelMap: Record<string, string> = {
-    Abstract: "Tóm tắt (Abstract)",
-    FullPaper: "Bài báo đầy đủ (Full Paper)",
-    Revise: "Vòng chỉnh sửa (Revision Paper)",
-    CameraReady: "Bản cuối cùng (Camera Ready)",
-    Payment: "Thanh toán",
-  };
+    const stepLabelMap: Record<string, string> = {
+        Abstract: "Tóm tắt (Abstract)",
+        FullPaper: "Bài báo đầy đủ (Full Paper)",
+        Revise: "Final Review (Vòng chỉnh sửa và đánh giá cuối cùng)",
+        CameraReady: "Bản cuối cùng (Camera Ready)",
+        Payment: "Thanh toán",
+    };
 
   const visibleSteps = hiddenStepIndexes.length > 0
     ? steps.map((step, idx) => ({ step, index: idx })).filter(({ index }) => !hiddenStepIndexes.includes(index))

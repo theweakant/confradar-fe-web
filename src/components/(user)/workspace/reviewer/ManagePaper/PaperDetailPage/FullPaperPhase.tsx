@@ -25,6 +25,7 @@ import { parseApiError } from "@/helper/api";
 import { useAppSelector } from "@/redux/hooks/hooks";
 import { RootState } from "@/redux/store";
 import { useGlobalTime } from "@/utils/TimeContext";
+import { Editor } from '@tinymce/tinymce-react';
 
 interface FullPaperPhaseProps {
     paperDetail: PaperDetailForReviewer;
@@ -292,7 +293,8 @@ export default function FullPaperPhase({
                         isAllSubmittedReview: paperDetail.fullPaper.isAllSubmittedFullPaperReview,
                         reviewStartDate: currentPhase?.reviewStartDate,
                         reviewEndDate: currentPhase?.reviewEndDate,
-                        fileUrl: paperDetail.fullPaper.fullPaperUrl
+                        fileUrl: paperDetail.fullPaper.fullPaperUrl,
+                        reason: paperDetail.fullPaper.reason
                     }}
                     paperType="Full Paper"
                     phaseInfo={paperDetail.currentResearchConferencePhase}
@@ -327,7 +329,7 @@ export default function FullPaperPhase({
                                     leaveFrom="opacity-100 scale-100"
                                     leaveTo="opacity-0 scale-95"
                                 >
-                                    <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                                    <Dialog.Panel className="w-fullmax-w-5xl transform overflow-hidden rounded-2xl bg-white p-8 text-left align-middle shadow-xl transition-all">
                                         <Dialog.Title
                                             as="h3"
                                             className="text-lg font-medium leading-6 text-gray-900 mb-4"
@@ -339,12 +341,33 @@ export default function FullPaperPhase({
                                             {/* Ghi chú nội bộ */}
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">Ghi chú nội bộ</label>
-                                                <textarea
+                                                <Editor
+                                                    apiKey="3y5fjdjkfiq85zyoqsx6xzhjkh2xteadh3g6lcrm1k56vgn1"
+                                                    value={note}
+                                                    onEditorChange={(content) => setNote(content)}
+                                                    init={{
+                                                        height: 500,
+                                                        menubar: true,
+                                                        plugins: [
+                                                            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap',
+                                                            'preview', 'anchor', 'searchreplace', 'visualblocks', 'code',
+                                                            'fullscreen', 'insertdatetime', 'media', 'table', 'help', 'wordcount'
+                                                        ],
+                                                        toolbar:
+                                                            'undo redo | blocks | ' +
+                                                            'bold italic underline forecolor | alignleft aligncenter ' +
+                                                            'alignright alignjustify | bullist numlist outdent indent | ' +
+                                                            'image table | removeformat | help',
+                                                        content_style:
+                                                            'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+                                                    }}
+                                                />
+                                                {/* <textarea
                                                     placeholder="Nhập ghi chú nội bộ..."
                                                     className="w-full border rounded-lg p-3 text-sm min-h-[100px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                     value={note}
                                                     onChange={(e) => setNote(e.target.value)}
-                                                />
+                                                /> */}
                                             </div>
 
                                             {/* Phản hồi tới tác giả */}
@@ -366,9 +389,9 @@ export default function FullPaperPhase({
                                                     value={reviewStatus}
                                                     onChange={(e) => setReviewStatus(e.target.value)}
                                                 >
-                                                    <option value="Accepted">Accepted</option>
-                                                    <option value="Revise">Revise</option>
-                                                    <option value="Rejected">Rejected</option>
+                                                    <option value="Accepted">Chấp nhận</option>
+                                                    <option value="Revise">Cần chỉnh sửa</option>
+                                                    <option value="Rejected">Từ chối</option>
                                                 </select>
                                             </div>
 
@@ -839,9 +862,9 @@ export default function FullPaperPhase({
                                         value={decisionStatus}
                                         onChange={(e) => setDecisionStatus(e.target.value)}
                                     >
-                                        <option value="Accepted">Accepted</option>
-                                        <option value="Revise">Revise</option>
-                                        <option value="Rejected">Rejected</option>
+                                        <option value="Accepted">Chấp nhận</option>
+                                        <option value="Revise">Cần chỉnh sửa</option>
+                                        <option value="Rejected">Từ chối</option>
                                     </select>
                                 </div>
 

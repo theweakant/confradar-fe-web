@@ -114,12 +114,12 @@ const CustomerSidebar: React.FC<SidebarProps> = ({ className = "" }) => {
       icon: Ticket,
       href: "/customer/tickets",
     },
-    {
-      id: "transaction",
-      label: "Lịch sử giao dịch",
-      icon: Ticket,
-      href: "/customer/transaction-history",
-    },
+    // {
+    //   id: "transaction",
+    //   label: "Lịch sử giao dịch",
+    //   icon: Ticket,
+    //   href: "/customer/transaction-history",
+    // },
     {
       id: "paper",
       label: "Bài báo của bạn",

@@ -136,7 +136,8 @@ export default function CameraReadyPhase({
                         reviewEndDate: currentPhase?.cameraReadyEndDate,
                         createdAt: paperDetail.cameraReady.createdAt,
                         updatedAt: paperDetail.cameraReady.reviewAt ?? undefined,
-                        fileUrl: paperDetail.cameraReady.cameraReadyUrl
+                        fileUrl: paperDetail.cameraReady.cameraReadyUrl,
+                        reason: paperDetail.cameraReady.reason
                     }}
                     paperType="Camera Ready"
                     phaseInfo={paperDetail.currentResearchConferencePhase}
@@ -230,8 +231,8 @@ export default function CameraReadyPhase({
                                     value={cameraReadyDecisionStatus}
                                     onChange={(e) => setCameraReadyDecisionStatus(e.target.value)}
                                 >
-                                    <option value="Accepted">Accepted</option>
-                                    <option value="Rejected">Rejected</option>
+                                    <option value="Accepted">Chấp nhận</option>
+                                    <option value="Rejected">Từ chối</option>
                                 </select>
                             </div>
 
