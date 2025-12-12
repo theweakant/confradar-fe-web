@@ -386,6 +386,14 @@ export const endpoint = {
     PRESENT_SESSION: '/statistics/present-session',
   },
 
+  REVIEWER: {
+    STATS: {
+      ASSIGNED: '/reviewer/stats/assigned',
+      REVIEWED: '/reviewer/stats/reviewed',
+      PENDING_REVIEWS: '/reviewer/stats/pending-reviews',
+    },
+  },
+
   REPORT: {
     CREATE: "/report",
     GET_UNRESOLVED: "/report/unresolved",
