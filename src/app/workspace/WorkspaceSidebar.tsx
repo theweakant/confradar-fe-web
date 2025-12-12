@@ -393,6 +393,10 @@ import {
   GraduationCap,
   Home,
   ChevronDown,
+  Flag,
+  ClipboardClock,
+  BookOpen,
+  Receipt,
 } from "lucide-react";
 import type { ElementType } from "react";
 import { useDispatch } from "react-redux";
@@ -435,9 +439,9 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
       {
       label: "Nhà xuất bản",
       href: "/workspace/admin/manage-publisher",
-      icon: Building2,
+      icon: BookOpen,
       },
-      { label: "Báo cáo", href: "/workspace/admin/report", icon: FileText },
+      { label: "Báo cáo", href: "/workspace/admin/report", icon: Flag },
       {
         label: "Log hệ thống",
         href: "/workspace/admin/system-logs",
@@ -467,7 +471,7 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
       {
       label: "Nhà xuất bản",
       href: "/workspace/organizer/manage-publisher",
-      icon: Building2,
+      icon: BookOpen,
       },
       {
         label: "Quản lý người dùng",
@@ -482,7 +486,7 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
       {
         label: "Lịch trình",
         href: "/workspace/organizer/conference-calendar",
-        icon: FileText,
+        icon: ClipboardClock,
       },
     ],
     [ROLES.COLLABORATOR]: [
@@ -499,12 +503,12 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
       {
         label: "Lịch trình",
         href: "/workspace/collaborator/conference-calendar",
-        icon: FileText,
+        icon: ClipboardClock,
       },
       {
         label: "Hợp đồng",
         href: "/workspace/collaborator/contract",
-        icon: Settings,
+        icon: Receipt,
       },
     ],
     [ROLES.LOCAL_REVIEWER]: [

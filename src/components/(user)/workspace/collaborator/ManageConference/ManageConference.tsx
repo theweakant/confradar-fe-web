@@ -14,7 +14,7 @@ import {
   Clock,
   Play,
   CheckCircle2,
-  XCircle, // ← icon mới cho "rejected"
+  XCircle, 
 } from "lucide-react";
 import NextImage from "next/image";
 import {
@@ -130,9 +130,6 @@ export default function ConferenceManagementTabs() {
       ...(filterCategory !== "all" && { conferenceCategoryId: filterCategory }),
       ...(filterCity !== "all" && { cityId: filterCity }),
     },
-    {
-      skip: activeTab !== "draft",
-    }
   );
 
   const nonDraftItems = nonDraftData?.data?.items || [];
