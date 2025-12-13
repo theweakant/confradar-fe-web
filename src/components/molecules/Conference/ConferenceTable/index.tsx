@@ -1,4 +1,3 @@
-// components/organisms/conference/ConferenceTable.tsx
 import React from "react";
 import {
   Pencil,

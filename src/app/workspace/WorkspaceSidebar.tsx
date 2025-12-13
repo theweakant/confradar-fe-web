@@ -436,11 +436,11 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
         href: "/workspace/admin/manage-category",
         icon: FileText,
       },
-      {
-      label: "Nhà xuất bản",
-      href: "/workspace/admin/manage-publisher",
-      icon: BookOpen,
-      },
+      // {
+      // label: "Nhà xuất bản",
+      // href: "/workspace/admin/manage-publisher",
+      // icon: BookOpen,
+      // },
       { label: "Báo cáo", href: "/workspace/admin/report", icon: Flag },
       {
         label: "Log hệ thống",
@@ -468,11 +468,11 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
         href: "/workspace/organizer/manage-accommodation",
         icon: Home,
       },
-      {
-      label: "Nhà xuất bản",
-      href: "/workspace/organizer/manage-publisher",
-      icon: BookOpen,
-      },
+      // {
+      // label: "Nhà xuất bản",
+      // href: "/workspace/organizer/manage-publisher",
+      // icon: BookOpen,
+      // },
       {
         label: "Quản lý người dùng",
         href: "/workspace/organizer/manage-user",
