@@ -113,22 +113,23 @@ function RevisionReviewsList({
                                 </div>
 
                                 {review.note && (
-                                    <div className="mb-3 bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded">
-                                        <p className="text-xs font-semibold text-yellow-800 mb-1">
-                                            Ghi chú nội bộ:
-                                        </p>
-                                        <p className="text-sm text-gray-700">{review.note}</p>
-                                    </div>
-                                )}
+                                    <div className="mb-4 rounded-xl border border-yellow-200 bg-yellow-50 p-4">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span className="text-xs font-semibold text-yellow-800 uppercase tracking-wide">
+                                                Ghi chú nội bộ
+                                            </span>
+                                        </div>
 
-                                {review.feedbackToAuthor && (
-                                    <div className="mb-3">
-                                        <p className="text-xs font-semibold text-gray-600 mb-1">
-                                            Phản hồi tới tác giả:
-                                        </p>
-                                        <p className="text-sm text-gray-700 leading-relaxed">
-                                            {review.feedbackToAuthor}
-                                        </p>
+                                        <div
+                                            className="
+        prose prose-sm max-w-none
+        prose-p:my-1 prose-ul:my-1 prose-ol:my-1
+        text-gray-800
+        max-h-60 overflow-y-auto
+        pr-2
+      "
+                                            dangerouslySetInnerHTML={{ __html: review.note }}
+                                        />
                                     </div>
                                 )}
 

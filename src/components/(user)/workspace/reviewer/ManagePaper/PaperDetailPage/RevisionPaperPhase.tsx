@@ -36,7 +36,8 @@ import RevisionReviewsList from "./RevisionReviewsList";
 import { parseApiError } from "@/helper/api";
 import { cn } from "@/utils/utils";
 import { useGlobalTime } from "@/utils/TimeContext";
-import { Editor } from '@tinymce/tinymce-react'
+import ReactQuill from "react-quill-new"
+import "react-quill-new/dist/quill.snow.css"
 
 interface RevisionPaperPhaseProps {
     paperDetail: PaperDetailForReviewer;
@@ -1751,46 +1752,19 @@ export default function RevisionPaperPhase({
                                                                     </span>
 
                                                                     <div className="flex-1 space-y-2">
-                                                                        <Editor
-                                                                            apiKey="YOUR_API_KEY_HERE"
-                                                                            value={feedback.feedback || ""}
-                                                                            onEditorChange={(content) =>
-                                                                                updateFeedback(
-                                                                                    submission.revisionPaperSubmissionId,
-                                                                                    index,
-                                                                                    content
-                                                                                )
-                                                                            }
-                                                                            init={{
-                                                                                height: 280,
-                                                                                menubar: false,
-                                                                                plugins: [
-                                                                                    'advlist', 'autolink', 'lists', 'link', 'image',
-                                                                                    'charmap', 'preview', 'anchor', 'searchreplace',
-                                                                                    'visualblocks', 'code', 'fullscreen',
-                                                                                    'insertdatetime', 'media', 'table', 'help', 'wordcount'
-                                                                                ],
-                                                                                toolbar:
-                                                                                    'undo redo | styles | bold italic underline forecolor | ' +
-                                                                                    'alignleft aligncenter alignright alignjustify | bullist numlist | ' +
-                                                                                    'table image | removeformat | code',
-                                                                                content_style:
-                                                                                    'body { font-family: Helvetica, Arial, sans-serif; font-size: 14px }'
-                                                                            }}
-                                                                        // className="w-full"
-                                                                        />
-                                                                        {/* <textarea
-                                                                            placeholder={`Viết feedback #${feedback.sortOrder}...`}
-                                                                            className="flex-1 border border-gray-300 rounded-lg p-3 text-sm min-h-[90px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none hover:border-gray-400 transition-colors"
-                                                                            value={feedback.feedback}
-                                                                            onChange={(e) =>
-                                                                                updateFeedback(
-                                                                                    submission.revisionPaperSubmissionId,
-                                                                                    index,
-                                                                                    e.target.value,
-                                                                                )
-                                                                            }
-                                                                        /> */}
+                                                                        <div className="rounded-lg border border-gray-300 bg-white overflow-hidden">
+                                                                            <ReactQuill
+                                                                                theme="snow"
+                                                                                value={feedback.feedback || ""}
+                                                                                onChange={(content) =>
+                                                                                    updateFeedback(
+                                                                                        submission.revisionPaperSubmissionId,
+                                                                                        index,
+                                                                                        content
+                                                                                    )
+                                                                                }
+                                                                            />
+                                                                        </div>
                                                                         <button
                                                                             onClick={() =>
                                                                                 removeFeedback(
