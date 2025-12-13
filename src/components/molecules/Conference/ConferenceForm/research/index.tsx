@@ -10,7 +10,6 @@ import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 import { useGetAllRoomsQuery } from "@/redux/services/room.service";
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllRankingCategoriesQuery } from "@/redux/services/category.service";
-import { useGetAllPublishersQuery } from "@/redux/services/publisher.service";
 // Shared Components
 import {
   StepIndicator,
@@ -46,6 +45,8 @@ import {
   validateBasicForm,
   validateAllResearchPhases,
 } from "@/components/molecules/Conference/ConferenceStep/validations";
+import { validateResearchTicketConfig } from "@/components/molecules/Conference/ConferenceStep/forms/research/ResearchPriceForm";
+
 import {
   RESEARCH_STEP_LABELS,
   RESEARCH_MAX_STEP,
@@ -98,7 +99,6 @@ export default function ResearchConferenceStepForm({
   const { data: roomsData, isLoading: isRoomsLoading } = useGetAllRoomsQuery();
   const { data: citiesData, isLoading: isCitiesLoading } = useGetAllCitiesQuery();
   const { data: rankingData, isLoading: isRankingLoading } = useGetAllRankingCategoriesQuery();
-  const { data: publishersData, isLoading: isPublishersLoading } = useGetAllPublishersQuery();
 
   const [showNoRoomSessionForm, setShowNoRoomSessionForm] = useState(false);
   const [assignRoomModalOpen, setAssignRoomModalOpen] = useState(false);
@@ -387,14 +387,6 @@ export default function ResearchConferenceStepForm({
       })) || [],
     [rankingData]
   );
-  const publisherOptions = useMemo(
-    () =>
-      publishersData?.data?.map((publisher) => ({
-        value: publisher.publisherId,
-        label: publisher.name || "N/A",
-      })) || [],
-    [publishersData]
-  );
 
   const handleFieldBlur = useCallback(
     (field: string) => {
@@ -513,6 +505,13 @@ export default function ResearchConferenceStepForm({
       );
       return;
     }
+
+    const ticketValidation = validateResearchTicketConfig(tickets);
+    if (!ticketValidation.isValid) {
+      toast.error(`Set up loại chi phí không hợp lệ: ${ticketValidation.error}`);
+      return;
+    }
+
     const result = await submitPrice(tickets);
     if (result.success) {
       handleMarkHasData(4);
@@ -669,6 +668,11 @@ export default function ResearchConferenceStepForm({
           );
           return { success: false };
         }
+        const ticketValidation = validateResearchTicketConfig(tickets);
+        if (!ticketValidation.isValid) {
+          toast.error(`Set up loại chi phí không hợp lệ: ${ticketValidation.error}`);
+          return { success: false };
+        }
         result = await submitPrice(tickets);
         break;
       }
@@ -811,8 +815,7 @@ export default function ResearchConferenceStepForm({
       isCategoriesLoading ||
       isRoomsLoading ||
       isCitiesLoading ||
-      isRankingLoading ||
-      isPublishersLoading);
+      isRankingLoading);
 
   if (isLoading) {
     return <LoadingOverlay message="Đang tải dữ liệu hội nghị..." />;
@@ -894,9 +897,6 @@ export default function ResearchConferenceStepForm({
             isRankingLoading={isRankingLoading}
             validationErrors={validationErrors}
             totalSlot={basicForm.totalSlot}
-            publisherOptions={publisherOptions}
-            isPublisherLoading={isPublishersLoading}
-            publishers={publishersData?.data || []}
           />
           <FlexibleNavigationButtons
             currentStep={2}

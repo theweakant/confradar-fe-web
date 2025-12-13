@@ -35,7 +35,7 @@ const INITIAL_BASIC_FORM: ConferenceBasicForm = {
 };
 
 const INITIAL_RESEARCH_DETAIL: ResearchDetail = {
-  publisherId: "",
+  paperFormat: "",
   numberPaperAccept: 0,
   revisionAttemptAllowed: 0,
   rankingDescription: "",
@@ -80,10 +80,6 @@ const getEmptyPhase = (): ResearchPhase => ({
   revisionPaperDecideStatusEnd: "",
   revisionPaperDecideStatusDuration: 1,
 
-  cameraReadyDecideStatusStart: "",
-  cameraReadyDecideStatusEnd: "",
-  cameraReadyDecideStatusDuration: 1,
-
   authorPaymentStart: "",
   authorPaymentEnd: "",
   authorPaymentDuration: 1,
@@ -91,41 +87,21 @@ const getEmptyPhase = (): ResearchPhase => ({
   revisionRoundDeadlines: [],
 });
 
-// ✅ Bắt đầu với 1 phase duy nhất (không còn 2 phases)
 const INITIAL_RESEARCH_PHASES: ResearchPhase[] = [getEmptyPhase()];
 
 export function useResearchForm() {
-  // Step 1: Basic Info
   const [basicForm, setBasicForm] = useState<ConferenceBasicForm>(INITIAL_BASIC_FORM);
-
-  // Step 2: Research Detail
   const [researchDetail, setResearchDetail] = useState<ResearchDetail>(INITIAL_RESEARCH_DETAIL);
-
-  // Step 3: Research Phases (N phases)
   const [researchPhases, setResearchPhases] = useState<ResearchPhase[]>(INITIAL_RESEARCH_PHASES);
-
-  // Step 4: Price
   const [tickets, setTickets] = useState<Ticket[]>([]);
-
-  // Step 5: Sessions
   const [sessions, setSessions] = useState<ResearchSession[]>([]);
-
-  // Step 6: Policies
   const [policies, setPolicies] = useState<Policy[]>([]);
   const [refundPolicies, setRefundPolicies] = useState<RefundPolicy[]>([]);
-
-  // Step 7: Materials & Rankings
   const [researchMaterials, setResearchMaterials] = useState<ResearchMaterial[]>([]);
   const [rankingFiles, setRankingFiles] = useState<ResearchRankingFile[]>([]);
   const [rankingReferences, setRankingReferences] = useState<ResearchRankingReference[]>([]);
-
-  // Step 8: Media
   const [mediaList, setMediaList] = useState<Media[]>([]);
-
-  // Step 9: Sponsors
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
-
-  // Auto-calculate end date based on start date and date range
   useEffect(() => {
     if (basicForm.startDate && basicForm.dateRange && basicForm.dateRange > 0) {
       const start = new Date(basicForm.startDate);
@@ -136,7 +112,6 @@ export function useResearchForm() {
     }
   }, [basicForm.startDate, basicForm.dateRange]);
 
-  // Auto-calculate ticket sale end date
   useEffect(() => {
     if (
       basicForm.ticketSaleStart &&

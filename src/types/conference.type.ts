@@ -301,7 +301,7 @@ export interface ConferenceBasicResponse {
 //RESEARCH DETAIL STEP
 export interface ResearchDetail {
   researchDetailId?: string;
-  publisherId: string;
+  paperFormat: string;
   numberPaperAccept: number;
   revisionAttemptAllowed: number;
   rankingDescription: string;
@@ -347,8 +347,6 @@ export interface ResearchPhase {
   fullPaperDecideStatusEnd: string;
   revisionPaperDecideStatusStart: string;
   revisionPaperDecideStatusEnd: string;
-  cameraReadyDecideStatusStart: string;
-  cameraReadyDecideStatusEnd: string;
 
   registrationDuration?: number;
   fullPaperDuration?: number;
@@ -359,7 +357,6 @@ export interface ResearchPhase {
   fullPaperDecideStatusDuration?: number;
   revisionPaperReviewDuration?: number;
   revisionPaperDecideStatusDuration?: number;
-  cameraReadyDecideStatusDuration?: number;
   authorPaymentDuration?: number
 
 

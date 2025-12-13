@@ -1,11 +1,47 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/molecules/FormInput";
 import { FormTextArea } from "@/components/molecules/FormTextArea";
 import { formatCurrency, formatDate } from "@/helper/format";
 import { toast } from "sonner";
 import type { Ticket, Phase, ResearchPhase } from "@/types/conference.type";
+
+
+export const validateResearchTicketConfig = (tickets: Ticket[]): { isValid: boolean; error?: string } => {
+  const authorTickets = tickets.filter(t => t.isAuthor);
+  const listenerTickets = tickets.filter(t => !t.isAuthor);
+
+  if (listenerTickets.length === 0) {
+    return { isValid: false, error: "Thiếu vé người nghe." };
+  }
+
+  // 2. Phải có ít nhất 2 vé tác giả
+  if (authorTickets.length < 2) {
+    return { isValid: false, error: "Cần ít nhất 2 loại chi phí dành cho tác giả xuất bản & không xuất bản." };
+  }
+
+  const hasPublish = authorTickets.some(t => t.isPublish);
+  const hasNonPublish = authorTickets.some(t => !t.isPublish);
+  if (!hasPublish || !hasNonPublish) {
+    return {
+      isValid: false,
+      error: "Thiếu loại chi phí cho tác giả có xuất bản hoặc không xuất bản!",
+    };
+  }
+
+  // 4. Giá xuất bản > giá không xuất bản
+  const publishTicket = authorTickets.find(t => t.isPublish);
+  const nonPublishTicket = authorTickets.find(t => !t.isPublish);
+  if (publishTicket && nonPublishTicket && publishTicket.ticketPrice <= nonPublishTicket.ticketPrice) {
+    return {
+      isValid: false,
+      error: `Loại chi phí có xuất bản (${publishTicket.ticketPrice.toLocaleString()} VND) phải cao hơn loại chi phí không xuất bản (${nonPublishTicket.ticketPrice.toLocaleString()} VND).`,
+    };
+  }
+
+  return { isValid: true };
+};
 
 interface ResearchPriceFormProps {
   tickets: Ticket[];
@@ -70,6 +106,11 @@ export function ResearchPriceForm({
 
   const remainingAuthorSlots = numberPaperAccept - getUsedAuthorSlots();
   const remainingListenerSlots = (maxTotalSlot - numberPaperAccept) - getUsedListenerSlots();
+
+  // Validate cấu hình hiện tại
+  const ticketValidation = useMemo(() => {
+    return validateResearchTicketConfig(tickets);
+  }, [tickets]);
 
   useEffect(() => {
     if (editingTicketIndex === null) {
@@ -225,6 +266,15 @@ export function ResearchPriceForm({
 
   return (
     <div className="space-y-4">
+      {/* Cảnh báo validation */}
+      {!ticketValidation.isValid && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div className="text-sm text-red-800">
+            <strong>Cảnh báo:</strong> {ticketValidation.error}
+          </div>
+        </div>
+      )}
+
       <div className="border p-4 rounded mb-4">
         <h4 className="font-medium mb-3 text-blue-600">Danh sách đã tạo ({tickets.length})</h4>
         {tickets.map((t, idx) => {

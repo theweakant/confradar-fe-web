@@ -433,7 +433,6 @@ export default function ConferenceDashboard() {
     );
   }
 
-  // --- Transform status logic ---
 let completed = 0;
 let inProgress = 0; 
 let pending = 0;

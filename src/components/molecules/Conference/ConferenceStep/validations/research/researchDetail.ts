@@ -140,7 +140,7 @@ export const validateReviewFee = (value: number): ValidationResult => {
 };
 
 export const validateResearchDetail = (detail: ResearchDetail): ValidationResult => {
-  if (!detail.publisherId?.trim()) {
+  if (!detail.paperFormat) {
     return { isValid: false, error: "Vui lòng chọn nhà xuất bản" };
   }
   
@@ -152,6 +152,8 @@ export const validateResearchDetail = (detail: ResearchDetail): ValidationResult
     return { isValid: false, error: "Vui lòng nhập giá trị xếp hạng" };
   }
   
+  const paperFormatResult = validatePaperFormat(detail.paperFormat);
+  if (!paperFormatResult.isValid) return paperFormatResult;
   
   const rankValueResult = validateRankValue(detail.rankValue);
   if (!rankValueResult.isValid) return rankValueResult;

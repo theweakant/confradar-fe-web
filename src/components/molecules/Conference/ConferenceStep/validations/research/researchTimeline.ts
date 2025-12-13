@@ -143,8 +143,6 @@ export const validateSingleResearchPhase = (
     revisionPaperDecideStatusEnd,
     cameraReadyStartDate,
     cameraReadyEndDate,
-    cameraReadyDecideStatusStart,
-    cameraReadyDecideStatusEnd,
     authorPaymentStart,
     authorPaymentEnd,
     revisionRoundDeadlines,
@@ -156,7 +154,6 @@ export const validateSingleResearchPhase = (
     reviseDuration,
     revisionPaperDecideStatusDuration,
     cameraReadyDuration,
-    cameraReadyDecideStatusDuration,
   } = phase;
 
   // 1. Kiểm tra đầy đủ các trường bắt buộc
@@ -177,8 +174,6 @@ export const validateSingleResearchPhase = (
     { value: revisionPaperDecideStatusEnd, name: "Revision Paper Decide End" },
     { value: cameraReadyStartDate, name: "Camera Ready Start" },
     { value: cameraReadyEndDate, name: "Camera Ready End" },
-    { value: cameraReadyDecideStatusStart, name: "Camera Ready Decide Start" },
-    { value: cameraReadyDecideStatusEnd, name: "Camera Ready Decide End" },
     { value: authorPaymentStart, name: "Author Payment Start" },
     { value: authorPaymentEnd, name: "Author Payment End" },
   ];
@@ -201,7 +196,6 @@ export const validateSingleResearchPhase = (
     { value: reviseDuration, name: "Thời gian Revise" },
     { value: revisionPaperDecideStatusDuration, name: "Thời gian quyết định Revision Paper" },
     { value: cameraReadyDuration, name: "Thời gian Camera Ready" },
-    { value: cameraReadyDecideStatusDuration, name: "Thời gian quyết định Camera Ready" },
   ];
 
   for (const { value, name } of durations) {
@@ -219,7 +213,6 @@ export const validateSingleResearchPhase = (
     { start: reviseStartDate, end: reviseEndDate, name: "Revise" },
     { start: revisionPaperDecideStatusStart, end: revisionPaperDecideStatusEnd, name: "Revision Paper Decide" },
     { start: cameraReadyStartDate, end: cameraReadyEndDate, name: "Camera Ready" },
-    { start: cameraReadyDecideStatusStart, end: cameraReadyDecideStatusEnd, name: "Camera Ready Decide" },
     { start: authorPaymentStart, end: authorPaymentEnd, name: "Author Payment" },
   ];
 
@@ -237,8 +230,7 @@ export const validateSingleResearchPhase = (
     { prevEnd: fullPaperDecideStatusEnd, currStart: reviseStartDate, prevName: "Full Paper Decide", currName: "Revise" },
     { prevEnd: reviseEndDate, currStart: revisionPaperDecideStatusStart, prevName: "Revise", currName: "Revision Paper Decide" },
     { prevEnd: revisionPaperDecideStatusEnd, currStart: cameraReadyStartDate, prevName: "Revision Paper Decide", currName: "Camera Ready" },
-    { prevEnd: cameraReadyEndDate, currStart: cameraReadyDecideStatusStart, prevName: "Camera Ready", currName: "Camera Ready Decide" },
-    { prevEnd: cameraReadyDecideStatusEnd, currStart: authorPaymentStart, prevName: "Camera Ready Decide", currName: "Author Payment" },
+    { prevEnd: cameraReadyEndDate, currStart: authorPaymentStart, prevName: "Camera Ready", currName: "Author Payment" },
   ];
 
   for (const { prevEnd, currStart, prevName, currName } of internalSequences) {
@@ -246,7 +238,6 @@ export const validateSingleResearchPhase = (
     if (!result.isValid) return result;
   }
 
-  // 5. Validate với phase trước (không chồng chéo)
   if (previousPhase) {
     const prevPayEnd = previousPhase.authorPaymentEnd;
     const currRegStart = registrationStartDate;
