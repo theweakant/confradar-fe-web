@@ -305,8 +305,6 @@
       
       
       if (hasExistingDetail) {
-        // PUT - Research detail đã tồn tại trong DB
-        console.log('📤 Calling updateResearchDetail (PUT)');
         result = await updateResearchDetail({ 
           conferenceId, 
           data: detail 
@@ -314,8 +312,6 @@
         toast.success("Cập nhật chi tiết nghiên cứu thành công!");
         await triggerRefetch();
       } else {
-        // POST - Research detail chưa tồn tại
-        console.log('📤 Calling createResearchDetail (POST)');
         result = await createResearchDetail({ 
           conferenceId, 
           data: detail 

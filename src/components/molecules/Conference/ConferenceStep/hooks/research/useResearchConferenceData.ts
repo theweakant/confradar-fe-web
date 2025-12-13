@@ -65,7 +65,6 @@ export function useResearchConferenceData({
     hasDispatchedRef.current = false;
   }, [conferenceId]);
 
-  // Helper: Tính duration từ startDate → endDate (số ngày thực tế + 1)
   const calcDuration = (start: string, end: string): number => {
     if (!start || !end) return 1;
     const diffTime = new Date(end).getTime() - new Date(start).getTime();
@@ -99,10 +98,9 @@ export function useResearchConferenceData({
         ticketSaleEnd: data.ticketSaleEnd ?? "",
       };
 
-      // === Map Research Detail ===
       const researchDetail: ResearchDetail = {
         researchDetailId: data.researchDetailId ?? undefined,
-        publisherId: data.publisherId ?? "",
+        paperFormat: data.paperFormat ?? "",
         numberPaperAccept: data.numberPaperAccept ?? 0,
         revisionAttemptAllowed: data.revisionAttemptAllowed ?? 1,
         rankingDescription: data.rankingDescription ?? "",
@@ -113,7 +111,6 @@ export function useResearchConferenceData({
         rankingCategoryId: data.rankingCategoryId ?? "",
       };
 
-      // ✅ MAP N PHASES TRỰC TIẾP — KHÔNG CÒN MAIN/WAITLIST
       const researchPhases: ResearchPhase[] = (
         data.researchPhase && Array.isArray(data.researchPhase)
           ? data.researchPhase

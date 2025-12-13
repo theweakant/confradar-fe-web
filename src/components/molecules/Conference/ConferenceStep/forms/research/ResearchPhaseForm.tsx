@@ -59,9 +59,6 @@ const getEmptyPhase = (): ResearchPhase => ({
   revisionPaperDecideStatusStart: "",
   revisionPaperDecideStatusEnd: "",
   revisionPaperDecideStatusDuration: 1,
-  cameraReadyDecideStatusStart: "",
-  cameraReadyDecideStatusEnd: "",
-  cameraReadyDecideStatusDuration: 1,
   authorPaymentStart: "",
   authorPaymentEnd: "",
   authorPaymentDuration: 1,
@@ -103,7 +100,6 @@ export function ResearchPhaseForm({
       "abstractDecideStatus",
       "fullPaperDecideStatus", 
       "revisionPaperDecideStatus",
-      "cameraReadyDecideStatus",
       "authorPayment"
     ];
     const isSpecial = specialFields.includes(fieldPrefix);
@@ -167,7 +163,6 @@ export function ResearchPhaseForm({
     const [rvStart, rvEnd] = createSegmentWithChaining(lastPhase.reviseDuration || 1);
     const [rpdStart, rpdEnd] = createSegmentWithChaining(lastPhase.revisionPaperDecideStatusDuration || 1);
     const [crStart, crEnd] = createSegmentWithChaining(lastPhase.cameraReadyDuration || 1);
-    const [crdStart, crdEnd] = createSegmentWithChaining(lastPhase.cameraReadyDecideStatusDuration || 1);
     const [apStart, apEnd] = createSegmentWithChaining(lastPhase.authorPaymentDuration || 1);
 
     const newRevisionRounds: RevisionRoundDeadline[] = [];
@@ -219,9 +214,6 @@ export function ResearchPhaseForm({
       cameraReadyStartDate: crStart,
       cameraReadyEndDate: crEnd,
       cameraReadyDuration: lastPhase.cameraReadyDuration || 1,
-      cameraReadyDecideStatusStart: crdStart,
-      cameraReadyDecideStatusEnd: crdEnd,
-      cameraReadyDecideStatusDuration: lastPhase.cameraReadyDecideStatusDuration || 1,
       authorPaymentStart: apStart,
       authorPaymentEnd: apEnd,
       authorPaymentDuration: lastPhase.authorPaymentDuration || 1,
@@ -580,23 +572,13 @@ export function ResearchPhaseForm({
       />
 
       <PhaseSection
-        title="9. Quyết định trạng thái Camera Ready"
-        startDate={activePhase.cameraReadyDecideStatusStart}
-        endDate={activePhase.cameraReadyDecideStatusEnd}
-        duration={activePhase.cameraReadyDecideStatusDuration ?? 1}
-        onStartDateChange={(val) => updatePhaseStartDate("cameraReadyDecideStatus", val)}
-        onDurationChange={(val) => updatePhaseDuration("cameraReadyDecideStatus", val)}
-        minDate={addDays(activePhase.cameraReadyEndDate)}
-      />
-
-      <PhaseSection
-        title="10. Giai đoạn tác giả thanh toán chi phí"
+        title="9. Giai đoạn tác giả thanh toán chi phí"
         startDate={activePhase.authorPaymentStart}
         endDate={activePhase.authorPaymentEnd}
         duration={activePhase.authorPaymentDuration ?? 1}
         onStartDateChange={(val) => updatePhaseStartDate("authorPayment", val)}
         onDurationChange={(val) => updatePhaseDuration("authorPayment", val)}
-        minDate={addDays(activePhase.cameraReadyDecideStatusEnd)}
+        minDate={addDays(activePhase.cameraReadyEndDate)}
         maxDate={activePhaseIndex === 0 ? addDays(eventStartDate, -1) : eventStartDate ? addDays(eventStartDate, -1) : undefined}
       />
     </div>

@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { FormInput } from "@/components/molecules/FormInput";
 import { FormTextArea } from "@/components/molecules/FormTextArea";
-import { Building2 } from "lucide-react";
-import { PublisherSelectionModal } from "@/components/molecules/Conference/ConferenceStep/modal/PublisherSelectionModal";
 import {
   Select,
   SelectContent,
@@ -14,7 +12,17 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import type { ResearchDetail } from "@/types/conference.type";
-import { Publisher } from "@/types/publisher.type";
+
+const PAPER_FORMAT_OPTIONS = [
+  { value: "acm", label: "ACM" },
+  { value: "apa", label: "APA" },
+  { value: "chicago", label: "Chicago" },
+  { value: "elsevier", label: "Elsevier" },
+  { value: "ieee", label: "IEEE" },
+  { value: "lncs", label: "LNCS" },
+  { value: "mla", label: "MLA" },
+  { value: "springer", label: "Springer" },
+];
 
 interface ResearchDetailFormProps {
   formData: ResearchDetail;
@@ -23,9 +31,6 @@ interface ResearchDetailFormProps {
   isRankingLoading: boolean;
   validationErrors?: Record<string, string>;
   totalSlot: number;
-  publisherOptions: Array<{ value: string; label: string }>;
-  isPublisherLoading: boolean;
-  publishers?: Publisher[]; // ✅ THÊM: Full publisher data
 }
 
 export function ResearchDetailForm({
@@ -35,12 +40,8 @@ export function ResearchDetailForm({
   isRankingLoading,
   validationErrors = {},
   totalSlot,
-  publisherOptions,
-  isPublisherLoading,
-  publishers = [], // ✅ THÊM
 }: ResearchDetailFormProps) {
   const currentYear = new Date().getFullYear();
-  const [publisherModalOpen, setPublisherModalOpen] = useState(false);
 
   const handleChange = <K extends keyof ResearchDetail>(
     field: K,
@@ -80,76 +81,38 @@ export function ResearchDetailForm({
     });
   };
 
-  const handlePublisherSelect = (publisherId: string) => {
-    handleChange("publisherId", publisherId);
-  };
-
   const selectedRanking = rankingOptions.find(
     (opt) => opt.value === formData.rankingCategoryId
   );
   const rankType = selectedRanking?.label;
 
-  const selectedPublisher = publishers.find(
-    (pub) => pub.publisherId === formData.publisherId
-  );
-
   return (
     <div className="space-y-4">
-      {/* ✅ THAY ĐỔI: Publisher Selection Button */}
+      {/* ✅ THAY ĐỔI: Định dạng bài báo */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Nhà xuất bản <span className="text-red-500">*</span>
-        </label>
-        
-        {/* Display Selected Publisher */}
-        {selectedPublisher ? (
-          <div className="border-2 border-blue-600 bg-blue-50 rounded-lg p-4 mb-2">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-3 flex-1">
-                {selectedPublisher.logoUrl && (
-                  <img
-                    src={selectedPublisher.logoUrl}
-                    alt={selectedPublisher.name}
-                    className="h-10 object-contain"
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                    }}
-                  />
-                )}
-                <div className="flex-1">
-                  <h4 className="font-semibold text-sm text-gray-900">
-                    {selectedPublisher.name}
-                  </h4>
-                  <p className="text-xs text-gray-600 mt-1">
-                    Format: {selectedPublisher.paperFormat}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setPublisherModalOpen(true)}
-                className="text-xs text-blue-600 hover:text-blue-800 hover:underline"
-              >
-                Thay đổi
-              </button>
-            </div>
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setPublisherModalOpen(true)}
-            disabled={isPublisherLoading}
-            className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 text-gray-700 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Building2 className="w-5 h-5" />
-            <span className="font-medium">
-              {isPublisherLoading ? "Đang tải..." : "Chọn nhà xuất bản"}
-            </span>
-          </button>
-        )}
-        
-        {validationErrors.publisherId && (
-          <p className="text-xs text-red-500 mt-1">{validationErrors.publisherId}</p>
+        <Label htmlFor="paperFormat">
+          Định dạng bài báo <span className="text-red-500">*</span>
+        </Label>
+        <Select
+          value={formData.paperFormat || ""}
+          onValueChange={(val) => handleChange("paperFormat", val)}
+          disabled={false} // Không có loading state cho paperFormat nữa
+        >
+          <SelectTrigger id="paperFormat" className={validationErrors.paperFormat ? "border-red-500" : ""}>
+            <SelectValue placeholder="Chọn định dạng bài báo" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              {PAPER_FORMAT_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+        {validationErrors.paperFormat && (
+          <p className="text-xs text-red-500 mt-1">{validationErrors.paperFormat}</p>
         )}
       </div>
 
@@ -330,16 +293,6 @@ export function ResearchDetailForm({
           Cho phép người nghe tham dự (không nộp bài)
         </label>
       </div>
-
-      {/* ✅ Publisher Selection Modal */}
-      <PublisherSelectionModal
-        open={publisherModalOpen}
-        publishers={publishers}
-        selectedPublisherId={formData.publisherId}
-        onClose={() => setPublisherModalOpen(false)}
-        onSelect={handlePublisherSelect}
-        isLoading={isPublisherLoading}
-      />
     </div>
   );
 }

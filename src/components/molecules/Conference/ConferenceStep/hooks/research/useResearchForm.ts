@@ -35,7 +35,7 @@ const INITIAL_BASIC_FORM: ConferenceBasicForm = {
 };
 
 const INITIAL_RESEARCH_DETAIL: ResearchDetail = {
-  publisherId: "",
+  paperFormat: "",
   numberPaperAccept: 0,
   revisionAttemptAllowed: 0,
   rankingDescription: "",
