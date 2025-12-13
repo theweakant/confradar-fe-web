@@ -100,8 +100,6 @@ export const validateSingleResearchPhase = (
     revisionPaperDecideStatusEnd,
     cameraReadyStartDate,
     cameraReadyEndDate,
-    cameraReadyDecideStatusStart,
-    cameraReadyDecideStatusEnd,
     authorPaymentStart,
     authorPaymentEnd,
   } = phase;
@@ -123,8 +121,6 @@ export const validateSingleResearchPhase = (
     !revisionPaperDecideStatusEnd ||
     !cameraReadyStartDate ||
     !cameraReadyEndDate ||
-    !cameraReadyDecideStatusStart ||
-    !cameraReadyDecideStatusEnd ||
     !authorPaymentStart ||
     !authorPaymentEnd
   ) {
@@ -152,8 +148,6 @@ export const validateSingleResearchPhase = (
     revisionDecideEnd: new Date(revisionPaperDecideStatusEnd),
     camStart: new Date(cameraReadyStartDate),
     camEnd: new Date(cameraReadyEndDate),
-    camDecideStart: new Date(cameraReadyDecideStatusStart),
-    camDecideEnd: new Date(cameraReadyDecideStatusEnd),
     paymentStart: new Date(authorPaymentStart),
     paymentEnd: new Date(authorPaymentEnd),
   };
@@ -224,16 +218,8 @@ export const validateSingleResearchPhase = (
       error: `${phaseLabel} - Camera Ready: Ngày bắt đầu phải trước ngày kết thúc`,
     },
     {
-      condition: dates.camEnd > dates.camDecideStart,
-      error: `${phaseLabel} - Camera Ready Decide Status phải bắt đầu sau Camera Ready kết thúc`,
-    },
-    {
-      condition: dates.camDecideStart >= dates.camDecideEnd,
-      error: `${phaseLabel} - Camera Ready Decide Status: Ngày bắt đầu phải trước ngày kết thúc`,
-    },
-    {
-      condition: dates.camDecideEnd > dates.paymentStart,
-      error: `${phaseLabel} - Author Payment phải bắt đầu sau Camera Ready Decide Status kết thúc`,
+      condition: dates.camEnd >= dates.paymentStart,
+      error: `${phaseLabel} - Author Payment phải bắt đầu sau Camera Ready kết thúc`,
     },
     {
       condition: dates.paymentStart >= dates.paymentEnd,
@@ -241,7 +227,6 @@ export const validateSingleResearchPhase = (
     },
   ];
 
-  // Find first failing check
   const failedCheck = checks.find((check) => check.condition);
   if (failedCheck) {
     return {

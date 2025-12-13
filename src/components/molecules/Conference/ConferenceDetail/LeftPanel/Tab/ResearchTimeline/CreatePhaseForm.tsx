@@ -68,9 +68,6 @@ const getEmptyPhase = (): ResearchPhase => ({
   revisionPaperDecideStatusStart: "",
   revisionPaperDecideStatusEnd: "",
   revisionPaperDecideStatusDuration: 1,
-  cameraReadyDecideStatusStart: "",
-  cameraReadyDecideStatusEnd: "",
-  cameraReadyDecideStatusDuration: 1,
   authorPaymentStart: "",
   authorPaymentEnd: "",
   authorPaymentDuration: 1,
@@ -108,7 +105,6 @@ export function CreatePhaseForm({
       "abstractDecideStatus",
       "fullPaperDecideStatus",
       "revisionPaperDecideStatus",
-      "cameraReadyDecideStatus",
       "authorPayment",
     ];
     const isSpecial = specialFields.includes(fieldPrefix);
@@ -274,7 +270,6 @@ export function CreatePhaseForm({
         abstractDecideStatusDuration,
         fullPaperDecideStatusDuration,
         revisionPaperDecideStatusDuration,
-        cameraReadyDecideStatusDuration,
         authorPaymentDuration,
         ...phaseWithoutDuration
       } = phase;
@@ -586,27 +581,13 @@ export function CreatePhaseForm({
       />
 
       <PhaseSection
-        title="9. Quyết định trạng thái Camera Ready"
-        startDate={phase.cameraReadyDecideStatusStart || ""}
-        endDate={phase.cameraReadyDecideStatusEnd || ""}
-        duration={phase.cameraReadyDecideStatusDuration ?? 1}
-        onStartDateChange={(val) =>
-          updatePhaseStartDate("cameraReadyDecideStatus", val)
-        }
-        onDurationChange={(val) =>
-          updatePhaseDuration("cameraReadyDecideStatus", val)
-        }
-        minDate={addDays(phase.cameraReadyEndDate)}
-      />
-
-      <PhaseSection
-        title="10. Giai đoạn tác giả thanh toán chi phí"
+        title="9. Giai đoạn tác giả thanh toán chi phí"
         startDate={phase.authorPaymentStart || ""}
         endDate={phase.authorPaymentEnd || ""}
         duration={phase.authorPaymentDuration ?? 1}
         onStartDateChange={(val) => updatePhaseStartDate("authorPayment", val)}
         onDurationChange={(val) => updatePhaseDuration("authorPayment", val)}
-        minDate={addDays(phase.cameraReadyDecideStatusEnd)}
+        minDate={addDays(phase.cameraReadyEndDate)}
         maxDate={addDays(conferenceStartDate, -1)}
       />
 
@@ -624,7 +605,6 @@ export function CreatePhaseForm({
   );
 }
 
-// Reuse PhaseSection from your code
 interface PhaseSectionProps {
   title: string;
   startDate: string;

@@ -362,8 +362,6 @@
         "revisionPaperDecideStatusEnd",
         "cameraReadyStartDate",
         "cameraReadyEndDate",
-        "cameraReadyDecideStatusStart",
-        "cameraReadyDecideStatusEnd",
         "authorPaymentStart",
         "authorPaymentEnd",
       ];

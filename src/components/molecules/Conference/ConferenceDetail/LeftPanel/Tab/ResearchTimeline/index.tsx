@@ -114,7 +114,6 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
         abstractDecideStatusDuration,
         fullPaperDecideStatusDuration,
         revisionPaperDecideStatusDuration,
-        cameraReadyDecideStatusDuration,
         authorPaymentDuration,
         ...phaseForApi
       } = newPhase;
@@ -230,13 +229,6 @@ export function ResearchTimelineTab({ conferenceId }: ResearchTimelineTabProps) 
       end: phase.cameraReadyEndDate,
       icon: FileText,
       color: "text-green-600",
-    },
-    {
-      title: "Quyết định Camera Ready",
-      start: phase.cameraReadyDecideStatusStart,
-      end: phase.cameraReadyDecideStatusEnd,
-      icon: PackageCheck,
-      color: "text-teal-600",
     },
     {
       title: "Tác giả thanh toán chi phí",

@@ -165,12 +165,6 @@ export function useResearchConferenceData({
           phaseData.revisionPaperDecideStatusStart ?? "",
           phaseData.revisionPaperDecideStatusEnd ?? ""
         ),
-        cameraReadyDecideStatusStart: phaseData.cameraReadyDecideStatusStart ?? "",
-        cameraReadyDecideStatusEnd: phaseData.cameraReadyDecideStatusEnd ?? "",
-        cameraReadyDecideStatusDuration: calcDuration(
-          phaseData.cameraReadyDecideStatusStart ?? "",
-          phaseData.cameraReadyDecideStatusEnd ?? ""
-        ),
         authorPaymentStart: phaseData.authorPaymentStart ?? "",
         authorPaymentEnd: phaseData.authorPaymentEnd ?? "",
         authorPaymentDuration: calcDuration(
