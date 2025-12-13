@@ -31,6 +31,7 @@ import { dashboardApi } from "./services/dashboard.service";
 import { auditLogApi } from "./services/auditlog.service";
 import { orcidApi } from "./services/orcid.service";
 import { publisherApi } from "./services/publisher.service";
+import { reviewerApi } from "./services/reviewer.service";
 
 // Cấu hình persist
 const persistConfig = {
@@ -54,6 +55,7 @@ const persistConfig = {
     auditLogApi.reducerPath,
     orcidApi.reducerPath,
     publisherApi.reducerPath,
+    reviewerApi.reducerPath,
   ],
 };
 
@@ -88,6 +90,8 @@ const appReducer = combineReducers({
   [auditLogApi.reducerPath]: auditLogApi.reducer,
   [orcidApi.reducerPath]: orcidApi.reducer,
   [publisherApi.reducerPath]: publisherApi.reducer,
+  [reviewerApi.reducerPath]: reviewerApi.reducer,
+
 });
 
 export type AppState = ReturnType<typeof appReducer>;

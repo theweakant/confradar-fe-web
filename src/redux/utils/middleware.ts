@@ -20,6 +20,7 @@ import { dashboardApi } from "../services/dashboard.service";
 import { auditLogApi } from "../services/auditlog.service";
 import { orcidApi } from "../services/orcid.service";
 import { publisherApi } from "../services/publisher.service";
+import { reviewerApi } from "../services/reviewer.service";
 
 export const apiMiddlewares: Middleware[] = [
   authApi.middleware,
@@ -43,4 +44,6 @@ export const apiMiddlewares: Middleware[] = [
   auditLogApi.middleware,
   orcidApi.middleware,
   publisherApi.middleware,
+  reviewerApi.middleware,
+  
 ];
