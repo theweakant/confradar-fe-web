@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import type { Ticket, Phase, ResearchPhase } from "@/types/conference.type";
 
 
-const validateResearchTicketConfig = (tickets: Ticket[]): { isValid: boolean; error?: string } => {
+export const validateResearchTicketConfig = (tickets: Ticket[]): { isValid: boolean; error?: string } => {
   const authorTickets = tickets.filter(t => t.isAuthor);
   const listenerTickets = tickets.filter(t => !t.isAuthor);
 
@@ -18,7 +18,7 @@ const validateResearchTicketConfig = (tickets: Ticket[]): { isValid: boolean; er
 
   // 2. Phải có ít nhất 2 vé tác giả
   if (authorTickets.length < 2) {
-    return { isValid: false, error: "Thiếu ít nhất 2 loại vé dành cho tác giả xuất bản & không xuất bản." };
+    return { isValid: false, error: "Cần ít nhất 2 loại chi phí dành cho tác giả xuất bản & không xuất bản." };
   }
 
   const hasPublish = authorTickets.some(t => t.isPublish);
@@ -26,7 +26,7 @@ const validateResearchTicketConfig = (tickets: Ticket[]): { isValid: boolean; er
   if (!hasPublish || !hasNonPublish) {
     return {
       isValid: false,
-      error: "Thiếu vé TÁC GIẢ CÓ XUẤT BẢN hoặc KHÔNG XUẤT BẢN.",
+      error: "Thiếu loại chi phí cho tác giả có xuất bản hoặc không xuất bản!",
     };
   }
 
@@ -270,7 +270,7 @@ export function ResearchPriceForm({
       {!ticketValidation.isValid && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
           <div className="text-sm text-red-800">
-            <strong>Cảnh báo cấu hình vé:</strong> {ticketValidation.error}
+            <strong>Cảnh báo:</strong> {ticketValidation.error}
           </div>
         </div>
       )}

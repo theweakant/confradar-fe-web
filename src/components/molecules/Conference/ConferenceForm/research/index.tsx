@@ -45,6 +45,8 @@ import {
   validateBasicForm,
   validateAllResearchPhases,
 } from "@/components/molecules/Conference/ConferenceStep/validations";
+import { validateResearchTicketConfig } from "@/components/molecules/Conference/ConferenceStep/forms/research/ResearchPriceForm";
+
 import {
   RESEARCH_STEP_LABELS,
   RESEARCH_MAX_STEP,
@@ -503,6 +505,13 @@ export default function ResearchConferenceStepForm({
       );
       return;
     }
+
+    const ticketValidation = validateResearchTicketConfig(tickets);
+    if (!ticketValidation.isValid) {
+      toast.error(`Set up loại chi phí không hợp lệ: ${ticketValidation.error}`);
+      return;
+    }
+
     const result = await submitPrice(tickets);
     if (result.success) {
       handleMarkHasData(4);
@@ -657,6 +666,11 @@ export default function ResearchConferenceStepForm({
           toast.error(
             "Hội nghị nghiên cứu cần có ít nhất một loại chi phí dành cho tác giả!"
           );
+          return { success: false };
+        }
+        const ticketValidation = validateResearchTicketConfig(tickets);
+        if (!ticketValidation.isValid) {
+          toast.error(`Set up loại chi phí không hợp lệ: ${ticketValidation.error}`);
           return { success: false };
         }
         result = await submitPrice(tickets);
