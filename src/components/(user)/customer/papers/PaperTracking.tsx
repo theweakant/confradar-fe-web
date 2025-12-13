@@ -41,7 +41,8 @@ const PaperTracking = () => {
   const paperId = params?.id as string;
 
 
-  const canAssignCoauthor = paperDetail?.cameraReady?.status?.toLowerCase() === 'accepted';
+  // const canAssignCoauthor = paperDetail?.cameraReady?.status?.toLowerCase() === 'accepted';
+  const canAssignCoauthor = !!paperDetail?.cameraReady;
 
   const {
     paperPhases,
@@ -83,25 +84,6 @@ const PaperTracking = () => {
     loadPaperDetail();
   }, [paperId, fetchPaperDetail]);
 
-  useEffect(() => {
-    if (paperPhases.length > 0 && paperDetail?.currentPhase) {
-      // const currentPhaseIndex = paperPhases.findIndex(
-      //   (phase: PaperPhase) => phase.paperPhaseId === paperDetail.currentPhase.paperPhaseId
-      // );
-
-      const currentPhaseIndex = steps.findIndex(
-        (obj) =>
-          obj.label.toLowerCase() ===
-          paperDetail.currentPhase!.phaseName?.toLowerCase(),
-      );
-
-      if (currentPhaseIndex !== -1) {
-        setCurrentStage(currentPhaseIndex);
-        setMaxReachedStage(currentPhaseIndex);
-      }
-    }
-  }, [paperPhases, paperDetail]);
-
   const hiddenStepIndexes = React.useMemo(() => {
     const hidden: number[] = [];
 
@@ -138,24 +120,17 @@ const PaperTracking = () => {
       failed.push(2);
     }
 
-    if (paperDetail.cameraReady?.status?.toLowerCase() === 'accepted') {
+    if (paperDetail.cameraReady) {
       completed.push(3);
-    } else if (paperDetail.cameraReady?.status?.toLowerCase() === 'rejected') {
-      failed.push(3);
     }
 
-    const cameraReadyAccepted = paperDetail.cameraReady?.status?.toLowerCase() === 'accepted';
-    const hasTicketId = paperDetail.ticketId !== null && paperDetail.ticketId !== undefined;
+    const hasCameraReady = !!paperDetail.cameraReady;
+    const hasTicketId =
+      paperDetail.ticketId !== null && paperDetail.ticketId !== undefined;
 
     if (hasTicketId) {
-      // Đã thanh toán
       completed.push(4);
-    } else if (cameraReadyAccepted) {
-
-      const paymentStart = paperDetail.researchPhase?.authorPaymentStart
-        ? new Date(paperDetail.researchPhase.authorPaymentStart)
-        : null;
-
+    } else if (hasCameraReady) {
       const paymentEnd = paperDetail.researchPhase?.authorPaymentEnd
         ? new Date(paperDetail.researchPhase.authorPaymentEnd)
         : null;
@@ -164,6 +139,33 @@ const PaperTracking = () => {
         failed.push(4);
       }
     }
+
+    // if (paperDetail.cameraReady?.status?.toLowerCase() === 'accepted') {
+    //   completed.push(3);
+    // } else if (paperDetail.cameraReady?.status?.toLowerCase() === 'rejected') {
+    //   failed.push(3);
+    // }
+
+    // const cameraReadyAccepted = paperDetail.cameraReady?.status?.toLowerCase() === 'accepted';
+    // const hasTicketId = paperDetail.ticketId !== null && paperDetail.ticketId !== undefined;
+
+    // if (hasTicketId) {
+    //   // Đã thanh toán
+    //   completed.push(4);
+    // } else if (cameraReadyAccepted) {
+
+    //   const paymentStart = paperDetail.researchPhase?.authorPaymentStart
+    //     ? new Date(paperDetail.researchPhase.authorPaymentStart)
+    //     : null;
+
+    //   const paymentEnd = paperDetail.researchPhase?.authorPaymentEnd
+    //     ? new Date(paperDetail.researchPhase.authorPaymentEnd)
+    //     : null;
+
+    //   if (paymentEnd && now > paymentEnd) {
+    //     failed.push(4);
+    //   }
+    // }
     return { completedStepIndexes: completed, failedStepIndexes: failed };
   }, [paperDetail, now]);
 
@@ -172,21 +174,81 @@ const PaperTracking = () => {
     maxStageAllowed = failedStepIndexes[0];
   }
 
-  if (paperDetail?.cameraReady?.status?.toLowerCase() !== 'accepted') {
+  if (!paperDetail?.cameraReady) {
     maxStageAllowed = Math.min(maxStageAllowed, 3);
   }
 
   useEffect(() => {
     if (!paperDetail) return;
 
-    const cameraReadyAccepted =
-      paperDetail.cameraReady?.status?.toLowerCase() === "accepted";
-
-    if (cameraReadyAccepted) {
+    if (paperDetail.ticketId) {
       setCurrentStage(4);
       setMaxReachedStage(4);
+      return;
+    }
+
+    if (paperDetail.cameraReady) {
+      setCurrentStage(4);
+      setMaxReachedStage(4);
+      return;
+    }
+
+    if (paperDetail.currentPhase) {
+      const idx = steps.findIndex(
+        s =>
+          s.label.toLowerCase() ===
+          paperDetail.currentPhase.phaseName?.toLowerCase()
+      );
+
+      if (idx !== -1) {
+        setCurrentStage(idx);
+        setMaxReachedStage(idx);
+      }
     }
   }, [paperDetail]);
+
+
+  //  useEffect(() => {
+  //   if (paperPhases.length > 0 && paperDetail?.currentPhase) {
+  //     // const currentPhaseIndex = paperPhases.findIndex(
+  //     //   (phase: PaperPhase) => phase.paperPhaseId === paperDetail.currentPhase.paperPhaseId
+  //     // );
+
+  //     const currentPhaseIndex = steps.findIndex(
+  //       (obj) =>
+  //         obj.label.toLowerCase() ===
+  //         paperDetail.currentPhase!.phaseName?.toLowerCase(),
+  //     );
+
+  //     if (currentPhaseIndex !== -1) {
+  //       setCurrentStage(currentPhaseIndex);
+  //       setMaxReachedStage(currentPhaseIndex);
+  //     }
+  //   }
+  // }, [paperPhases, paperDetail]);
+
+  // useEffect(() => {
+  //   if (!paperDetail) return;
+
+  //   if (paperDetail.cameraReady) {
+  //     setCurrentStage(4);
+  //     setMaxReachedStage(4);
+  //   }
+  // }, [paperDetail]);
+
+
+  //   useEffect(() => {
+  //   if (!paperDetail) return;
+
+  //   const cameraReadyAccepted =
+  //     paperDetail.cameraReady?.status?.toLowerCase() === "accepted";
+
+  //   if (cameraReadyAccepted) {
+  //     setCurrentStage(4);
+  //     setMaxReachedStage(4);
+  //   }
+  // }, [paperDetail]);
+
 
   const getPaperPhasesErrorMessage = (): string => {
     if (!paperPhasesError) return "";
