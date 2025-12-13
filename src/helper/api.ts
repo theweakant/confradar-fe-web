@@ -10,9 +10,6 @@ export const parseApiError = <T>(
   if ("data" in error) {
     return error as ApiQueryError<T>;
   }
-  // if ('message' in error) {
-  //   return { name: 'Error', message: error.message } as ApiQueryError<T>;
-  // }
   return null;
 };
 
