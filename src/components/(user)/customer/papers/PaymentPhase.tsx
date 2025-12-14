@@ -440,7 +440,6 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
                     </div>
                 );
             } else {
-                // Không có phase tiếp theo - return message
                 return (
                     <div className="space-y-6">
                         <h3 className="text-lg font-semibold text-gray-900">Giai đoạn Thanh toán</h3>
@@ -486,28 +485,6 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
             );
         }
     }
-
-    // if (!phaseValidation.isAvailable) {
-    //     return (
-    //         <div className="space-y-6">
-    //             <h3 className="text-lg font-semibold text-gray-900">Giai đoạn Thanh toán</h3>
-    //             <div className={`border rounded-xl p-6 ${phaseValidation.isExpired
-    //                 ? "bg-red-50 border-red-300"
-    //                 : "bg-yellow-50 border-yellow-300"
-    //                 }`}>
-    //                 <p className={`text-sm ${phaseValidation.isExpired ? "text-red-700" : "text-yellow-700"
-    //                     }`}>
-    //                     {phaseValidation.message}
-    //                 </p>
-    //                 {phaseValidation.formattedPeriod && (
-    //                     <p className="text-sm text-gray-600 mt-2">
-    //                         <strong>Thời gian:</strong> {phaseValidation.formattedPeriod}
-    //                     </p>
-    //                 )}
-    //             </div>
-    //         </div>
-    //     );
-    // }
 
     if (authorPrices.length === 0) {
         return (
@@ -923,24 +900,6 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
                                         </>
                                     );
                                 })()}
-
-                                {/* {selectedPhase.applyPercent && selectedPhase.applyPercent > 0 && (
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-sm text-gray-600">Discount</span>
-                                        <span className="text-sm font-semibold text-red-600">
-                                            -Rp {((selectedPrice.ticketPrice ?? 0) * (selectedPhase.applyPercent / 100)).toLocaleString("vi-VN")}
-                                        </span>
-                                    </div>
-                                )} */}
-
-                                {/* <div className="pt-3 border-t border-gray-200 flex justify-between items-center">
-                                    <span className="text-base font-semibold text-gray-900">Total</span>
-                                    <span className="text-xl font-bold text-gray-900">
-                                        {formatCurrency(
-                                            calculateFinalPrice(selectedPrice.ticketPrice ?? 0, selectedPhase.applyPercent)
-                                        )}
-                                    </span>
-                                </div> */}
                             </div>
 
                             <div className="mt-6">
@@ -973,24 +932,6 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
                                     </p>
                                 )}
                             </div>
-
-                            {/* <button
-                                onClick={handlePayment}
-                                disabled={!selectedPaymentMethod || isProcessing}
-                                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {isProcessing ? (
-                                    <div className="flex items-center justify-center gap-2">
-                                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"></path>
-                                        </svg>
-                                        <span>Processing...</span>
-                                    </div>
-                                ) : (
-                                    "Pay"
-                                )}
-                            </button> */}
 
                             <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500">
                                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">

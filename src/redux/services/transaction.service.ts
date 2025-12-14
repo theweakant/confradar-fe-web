@@ -89,11 +89,11 @@ export const transactionApi = createApi({
       query: () => endpoint.PAYMENT_METHOD.GET_ALL,
       providesTags: ["PaymentMethod"],
     }),
+
     getOwnWallet: builder.query<ApiResponse<WalletResponse>, void>({
       query: () => endpoint.WALLET.VIEW_OWN_WALLET,
       providesTags: ["Wallet"],
     }),
-
   }),
 });
 
