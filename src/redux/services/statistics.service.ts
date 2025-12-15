@@ -5,7 +5,6 @@ import { endpoint } from '../api/endpoint';
 import { ApiResponse } from '@/types/api.type';
 import {
   SoldTicketResponse,
-  TicketHolder,
   SubmittedPapersResponse,
   ReviewerAssignment,
   PresentSessionResponse,

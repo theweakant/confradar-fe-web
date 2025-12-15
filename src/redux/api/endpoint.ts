@@ -29,7 +29,7 @@ export const endpoint = {
       `/auth/activate-external-reviewer/${userId}`,
 
     GET_NOTIFICATION: "/notification/own-notification",
-
+    UPDATE_NOTIFICATION_READ_STATUS: "/notification/update-read-status",
     LIST_COLLABORATOR_ACCOUNTS: "/auth/list-collaborator-accounts",
     LIST_ORGANIZATION: "/auth/list-organization",
 
@@ -365,6 +365,10 @@ export const endpoint = {
 
     OWN_COLLABORATOR_CONTRACT: "/contract/own-collaborator-contract",
     UPDATE_COLLABORATOR_CONTRACT_STATUS: "/contract/collaborator-contract",
+
+    EXTERNAL_CONTRACTS_COUNT: "/contract/external-contracts-count",
+    EXTERNAL_CONTRACTS_ACTIVE: "/contract/external-contracts-active",
+    EXTERNAL_CONTRACTS_WAGE_TOTAL: "/contract/external-contracts-wage-total",
   },
 
   ASSIGNINGPRESENTERSESSION: {

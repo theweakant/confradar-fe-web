@@ -14,7 +14,7 @@ import {
   Organization,
   CreateLocalReviewerRequest,
 } from "@/types/user.type";
-import { Notification } from "@/types/notification.type";
+import { Notification, UpdateReadStatusBatchRequest } from "@/types/notification.type";
 import { ApiResponse } from "@/types/api.type";
 
 export const userApi = createApi({
@@ -127,7 +127,14 @@ export const userApi = createApi({
       }),
       providesTags: ["Notifications"],
     }),
-
+    updateNotificationReadStatus: builder.mutation<ApiResponse<null>, UpdateReadStatusBatchRequest>({
+      query: (data) => ({
+        url: endpoint.AUTH.UPDATE_NOTIFICATION_READ_STATUS  , 
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Notifications"], 
+    }),
     getCollaboratorAccounts: builder.query<
       ApiResponse<CollaboratorAccountResponse[]>,
       void
@@ -177,7 +184,7 @@ export const {
   useSuspendExternalReviewerMutation,
   useActivateExternalReviewerMutation,
   useGetOwnNotificationsQuery,
-
+  useUpdateNotificationReadStatusMutation,
   useGetCollaboratorAccountsQuery,
   useLazyGetCollaboratorAccountsQuery,
 
