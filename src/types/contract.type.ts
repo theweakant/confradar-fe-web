@@ -74,6 +74,22 @@ export interface OwnContractDetailResponse {
     conferenceBannerImageUrl?: string;
 }
 
+
+export interface ExternalContractsCountResponse {
+  contractCount: number;
+  contractDetail: OwnContractDetailResponse[];
+}
+
+export interface ExternalContractsActiveResponse {
+  activeContractCount: number;
+  contractDetail: OwnContractDetailResponse[];
+}
+
+export interface ExternalContractsWageTotalResponse {
+  wage: number;
+  contractDetail: OwnContractDetailResponse[];
+}
+
 export interface CreateCollaboratorContractRequest {
     userId: string;
     isMediaStep: boolean;

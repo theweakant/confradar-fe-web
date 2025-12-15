@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { endpoint } from "../api/endpoint";
-import { CollaboratorContractResponse, ContractDetailResponseForOrganizer, CreateCollaboratorContractRequest, CreateNewReviewerContractRequest, CreateReviewerContractRequest, GetUsersForReviewerContractRequest, GetUsersForReviewerContractResponse, OwnCollaboratorContractResponse, OwnContractDetailResponse } from "@/types/contract.type";
+import { CollaboratorContractResponse, ContractDetailResponseForOrganizer, CreateCollaboratorContractRequest, CreateNewReviewerContractRequest, CreateReviewerContractRequest, GetUsersForReviewerContractRequest, GetUsersForReviewerContractResponse, OwnCollaboratorContractResponse, OwnContractDetailResponse, ExternalContractsCountResponse, ExternalContractsActiveResponse, ExternalContractsWageTotalResponse, } from "@/types/contract.type";
 import { apiClient } from "../api/apiClient";
 import { ApiResponse, ApiResponsePagination } from "@/types/api.type";
 
@@ -196,6 +196,39 @@ export const contractApi = createApi({
             }),
             invalidatesTags: ["Contract"],
         }),
+
+        getExternalContractsCount: builder.query<
+            ApiResponse<ExternalContractsCountResponse>,
+            void
+        >({
+            query: () => ({
+            url: endpoint.CONTRACT.EXTERNAL_CONTRACTS_COUNT,
+            method: "GET",
+            }),
+            providesTags: ["Contract"],
+        }),
+
+        getExternalContractsActive: builder.query<
+            ApiResponse<ExternalContractsActiveResponse>,
+            void
+        >({
+            query: () => ({
+            url: endpoint.CONTRACT.EXTERNAL_CONTRACTS_ACTIVE,
+            method: "GET",
+            }),
+            providesTags: ["Contract"],
+        }),
+
+        getExternalContractsWageTotal: builder.query<
+            ApiResponse<ExternalContractsWageTotalResponse>,
+            void
+        >({
+            query: () => ({
+            url: endpoint.CONTRACT.EXTERNAL_CONTRACTS_WAGE_TOTAL,
+            method: "GET",
+            }),
+            providesTags: ["Contract"],
+        }),
     }),
 });
 
@@ -216,4 +249,14 @@ export const {
     useLazyGetOwnCollaboratorContractsQuery,
 
     useUpdateCollaboratorContractStatusMutation,
+
+
+    useGetExternalContractsCountQuery,
+    useLazyGetExternalContractsCountQuery,
+
+    useGetExternalContractsActiveQuery,
+    useLazyGetExternalContractsActiveQuery,
+
+    useGetExternalContractsWageTotalQuery,
+    useLazyGetExternalContractsWageTotalQuery,
 } = contractApi;
