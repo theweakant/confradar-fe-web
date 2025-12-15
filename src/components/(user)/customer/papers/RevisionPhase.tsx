@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useState, Fragment } from 'react';
 import { usePaperCustomer } from '@/redux/hooks/usePaper';
-import { ResearchPhaseDtoDetail, RevisionPaper, RevisionSubmissionFeedback, RevisionDeadlineDetail, RevisionSubmission } from '@/types/paper.type';
+import { ResearchPhaseDtoDetail, RevisionPaper, RevisionSubmissionFeedback, RevisionDeadlineDetail, RevisionSubmission, FullPaper } from '@/types/paper.type';
 import "@cyntler/react-doc-viewer/dist/index.css";
 import FeedbackDialog from './FeedbackDialog';
 import { CheckCircle, MessageSquare } from 'lucide-react';
@@ -21,9 +21,11 @@ interface RevisionPhaseProps {
   revisionDeadline?: RevisionDeadlineDetail[];
 
   onSubmittedRevision?: () => void;
+
+  fullPaper?: FullPaper | null;
 }
 
-const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, researchPhase, revisionDeadline, onSubmittedRevision }) => {
+const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, researchPhase, revisionDeadline, onSubmittedRevision, fullPaper }) => {
   const { now } = useGlobalTime();
 
   const {
@@ -95,7 +97,26 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
       };
     }
 
-    // ✅ THÊM LOGIC MỚI: Kiểm tra round trước
+    if (nextRoundIndex === 0) {
+      const fullPaperRevise = fullPaper?.reviewStatus?.toLowerCase() === 'revise';
+
+      if (!fullPaperRevise) {
+        return {
+          isAvailable: false,
+          isExpired: false,
+          isPending: true,
+          message: "Cần full paper có trạng thái 'Revise' để nộp revision"
+        };
+      }
+
+      return validatePhaseTime(
+        undefined,
+        nextDeadline.endSubmissionDate,
+        now
+      );
+    }
+
+
     if (nextRoundIndex > 0) {
       const previousSubmission = revisionPaper?.submissions?.[nextRoundIndex - 1];
 
@@ -151,12 +172,19 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
       };
     }
 
+    return {
+      isAvailable: false,
+      isExpired: false,
+      isPending: true,
+      message: "Không xác định được trạng thái"
+    };
+
     // Round đầu tiên - giữ nguyên logic cũ
-    return validatePhaseTime(
-      nextDeadline.startSubmissionDate,
-      nextDeadline.endSubmissionDate,
-      now
-    );
+    // return validatePhaseTime(
+    //   nextDeadline.startSubmissionDate,
+    //   nextDeadline.endSubmissionDate,
+    //   now
+    // );
   }, [revisionDeadline, revisionPaper?.submissions, now]);
 
   const responseValidation: PhaseValidationResult = useMemo(() => {
@@ -266,8 +294,26 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
 
       let validation: PhaseValidationResult;
 
-      // ✅ LOGIC MỚI: Kiểm tra round trước
-      if (index > 0) {
+      if (index === 0) {
+        const fullPaperRevise = fullPaper?.reviewStatus?.toLowerCase() === 'revise';
+
+        if (!fullPaperRevise) {
+          validation = {
+            isAvailable: false,
+            isExpired: false,
+            isPending: true,
+            message: "Cần full paper có trạng thái 'Revise' để nộp revision"
+          };
+        } else {
+          validation = validatePhaseTime(
+            undefined,
+            deadline.endSubmissionDate,
+            now
+          );
+        }
+      }
+      // if (index > 0)
+      else {
         const previousSubmission = revisionPaper?.submissions?.[index - 1];
 
         // Nếu chưa có submission ở round trước
@@ -324,14 +370,15 @@ const RevisionPhase: React.FC<RevisionPhaseProps> = ({ paperId, revisionPaper, r
             }
           }
         }
-      } else {
-        // Round đầu tiên - giữ nguyên logic cũ
-        validation = validatePhaseTime(
-          deadline.startSubmissionDate,
-          deadline.endSubmissionDate,
-          now
-        );
       }
+      // else {
+      //   // Round đầu tiên - giữ nguyên logic cũ
+      //   validation = validatePhaseTime(
+      //     deadline.startSubmissionDate,
+      //     deadline.endSubmissionDate,
+      //     now
+      //   );
+      // }
 
       return {
         roundNumber: deadline.roundNumber || 0,

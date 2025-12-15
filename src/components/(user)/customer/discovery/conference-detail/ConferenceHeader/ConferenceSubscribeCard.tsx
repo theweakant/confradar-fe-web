@@ -59,6 +59,26 @@ const ConferenceSubscribeCard: React.FC<ConferenceSubscribeCardProps> = ({
         Revise: "Cần chỉnh sửa",
     };
 
+    const getAvailableCurrentResearchPhase = () => {
+        if (!conference.isResearchConference) return null;
+
+        const researchConf = conference as ResearchConferenceDetailResponse;
+        const researchPhases = researchConf.researchPhase || [];
+
+        const currentPhase = submittedPaper?.researchPhaseId
+            ? researchPhases.find(phase => {
+                if (phase.researchConferencePhaseId !== submittedPaper.researchPhaseId) return false;
+                if (!phase.authorPaymentEnd) return false;
+                // const start = new Date(phase.authorPaymentStart);
+                const end = new Date(phase.authorPaymentEnd);
+                return now <= end && phase.isActive;
+                // now >= start && 
+            }) || null
+            : null;
+
+        return currentPhase;
+    }
+
     const getNextAvailablePhase = () => {
         if (!conference.isResearchConference) return null;
 
@@ -68,10 +88,11 @@ const ConferenceSubscribeCard: React.FC<ConferenceSubscribeCardProps> = ({
         const currentPhase = submittedPaper?.researchPhaseId
             ? researchPhases.find(phase => {
                 if (phase.researchConferencePhaseId !== submittedPaper.researchPhaseId) return false;
-                if (!phase.authorPaymentStart || !phase.authorPaymentEnd) return false;
-                const start = new Date(phase.authorPaymentStart);
+                if (!phase.authorPaymentEnd) return false;
+                // const start = new Date(phase.authorPaymentStart);
                 const end = new Date(phase.authorPaymentEnd);
-                return now >= start && now <= end && phase.isActive;
+                return now <= end && phase.isActive;
+                // now >= start && 
             }) || null
             : null;
 
@@ -80,15 +101,34 @@ const ConferenceSubscribeCard: React.FC<ConferenceSubscribeCardProps> = ({
             phase: currentPhase,
             hasAvailableSlots: (conference.conferencePrices || [])
                 .filter(ticket => ticket.isAuthor)
-                .some(ticket => ticket.pricePhases?.some(pricePhase => (pricePhase.availableSlot ?? 0) > 0))
+                .some(ticket => (ticket.availableSlot ?? 0) > 0)
+            // .some(ticket => ticket.pricePhases?.some(pricePhase => (pricePhase.availableSlot ?? 0) > 0))
         };
 
         // Tìm phase tiếp theo
+        // const sortedPhases = [...researchPhases].sort(
+        //     (a, b) => (a.phaseOrder ?? 0) - (b.phaseOrder ?? 0)
+        // );
+
+        // Lấy phaseOrder hiện tại (dù đã hết hạn)
+        // const currentPhaseOrder = submittedPaper?.researchPhaseId
+        //     ? sortedPhases.find(p => p.researchConferencePhaseId === submittedPaper.researchPhaseId)
+        //         ?.phaseOrder ?? -1
+        //     : -1;
+
+        // const nextPhase = sortedPhases.find(phase => {
+        //     if (!phase.isActive) return false;
+        //     if (phase.phaseOrder == null) return false;
+        //     return phase.phaseOrder > currentPhaseOrder;
+        // });
+
+        // if (!nextPhase) return null;
         const sortedPhases = [...researchPhases].sort((a, b) => (a.phaseOrder || 0) - (b.phaseOrder || 0));
         const nextPhase = sortedPhases.find(phase => {
             if (!phase.authorPaymentStart) return false;
             const start = new Date(phase.authorPaymentStart);
-            return phase.isActive && start > now;
+            return phase.isActive;
+            // && start > now;
         });
 
         if (!nextPhase) return null;
@@ -96,7 +136,8 @@ const ConferenceSubscribeCard: React.FC<ConferenceSubscribeCardProps> = ({
         // Check xem có vé available không
         const authorTickets = (conference.conferencePrices || []).filter(ticket => ticket.isAuthor);
         const hasAvailableSlots = authorTickets.some(ticket => {
-            return ticket.pricePhases?.some(pricePhase => (pricePhase.availableSlot ?? 0) > 0);
+            return (ticket.availableSlot ?? 0) > 0;
+            // return ticket.pricePhases?.some(pricePhase => (pricePhase.availableSlot ?? 0) > 0);
         });
 
         return {
@@ -106,6 +147,7 @@ const ConferenceSubscribeCard: React.FC<ConferenceSubscribeCardProps> = ({
     };
 
     const nextPhaseInfo = getNextAvailablePhase();
+    const availableResearchPhase = getAvailableCurrentResearchPhase();
 
     const getPaperPhaseStatus = (paper: SubmittedPaper | null) => {
         if (!paper) return null;
@@ -127,13 +169,16 @@ const ConferenceSubscribeCard: React.FC<ConferenceSubscribeCardProps> = ({
         const isRevisionSkipped = paper.fullpaperStatus === "Accepted";
 
         // Xác định current phase và cho phép đăng ký
-        if (paper.cameraReadyStatus === "Accepted") {
-            currentPhase = "Camera Ready";
-            canRegisterAsAuthor = true;
-        } else if (paper.revisionStatus === "Accepted") {
+        // if (paper.cameraReadyStatus === "Accepted") {
+        //     currentPhase = "Camera Ready";
+        //     canRegisterAsAuthor = true;
+        // } else 
+        if (paper.revisionStatus === "Accepted") {
             currentPhase = "Revision";
+            canRegisterAsAuthor = true;
         } else if (paper.fullpaperStatus === "Accepted" && isRevisionSkipped) {
             currentPhase = "Full Paper";
+            canRegisterAsAuthor = true;
         } else if (paper.fullpaperStatus) {
             currentPhase = "Full Paper";
         } else if (paper.abstractStatus) {
@@ -245,6 +290,13 @@ const ConferenceSubscribeCard: React.FC<ConferenceSubscribeCardProps> = ({
             const hasAuthorTickets = authorTickets.length > 0;
             const hasListenerTickets = listenerTickets.length > 0;
 
+            const isAuthorHasSlot = authorTickets.some(ticket => (ticket.availableSlot ?? 0) > 0)
+            const authorPaymentEnd = availableResearchPhase?.authorPaymentEnd
+                ? new Date(availableResearchPhase.authorPaymentEnd)
+                : null;
+
+            const isAuthorHasPassPaymentDeadline = !availableResearchPhase;
+
             // Check giai đoạn cho Author tickets
             const authorPhases = authorTickets.flatMap(ticket => [...(ticket.pricePhases || [])]);
 
@@ -293,11 +345,17 @@ const ConferenceSubscribeCard: React.FC<ConferenceSubscribeCardProps> = ({
             const nextListenerPhaseStart = futureListenerPhases.length > 0 ? new Date(futureListenerPhases[0].startDate || "") : null;
 
             // Xác định trạng thái
-            const authorStatus = currentAuthorPhase
-                ? 'available'
-                : nextAuthorPhaseStart
-                    ? 'upcoming'
+            const authorStatus = isAuthorHasPassPaymentDeadline
+                ? 'closed'
+                : isAuthorHasSlot
+                    ? 'available'
                     : 'closed';
+
+            // const authorStatus = currentAuthorPhase
+            //     ? 'available'
+            //     : nextAuthorPhaseStart
+            //         ? 'upcoming'
+            //         : 'closed';
 
             const listenerStatus = currentListenerPhase
                 ? 'available'
@@ -453,20 +511,22 @@ const ConferenceSubscribeCard: React.FC<ConferenceSubscribeCardProps> = ({
                                                     >
                                                         ✓ Đăng ký cho Tác giả
                                                     </button>
-                                                ) : authorStatus === 'upcoming' ? (
-                                                    <div className="text-center">
-                                                        <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-gray-300 text-gray-500">
-                                                            Chưa đến lúc thanh toán phí cho Tác giả
+                                                )
+                                                    // : authorStatus === 'upcoming' ? (
+                                                    //     <div className="text-center">
+                                                    //         <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-gray-300 text-gray-500">
+                                                    //             Chưa đến lúc thanh toán phí cho Tác giả
+                                                    //         </button>
+                                                    //         <p className="text-xs mt-2 text-gray-500">
+                                                    //             Ngày bắt đầu: {formatDate(nextAuthorPhaseStart!.toISOString())}
+                                                    //         </p>
+                                                    //     </div>
+                                                    // )
+                                                    : (
+                                                        <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-red-300 text-red-700">
+                                                            Đã hết thời gian thanh toán phí cho Tác giả
                                                         </button>
-                                                        <p className="text-xs mt-2 text-gray-500">
-                                                            Ngày bắt đầu: {formatDate(nextAuthorPhaseStart!.toISOString())}
-                                                        </p>
-                                                    </div>
-                                                ) : (
-                                                    <button disabled className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-red-300 text-red-700">
-                                                        Đã hết thời gian thanh toán phí cho Tác giả
-                                                    </button>
-                                                )}
+                                                    )}
                                             </>
                                         ) : (
                                             // Bài báo chưa pass các phase

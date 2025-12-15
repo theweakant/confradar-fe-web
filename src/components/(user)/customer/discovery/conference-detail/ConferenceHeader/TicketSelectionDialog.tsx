@@ -114,9 +114,11 @@ const TicketSelectionDialog: React.FC<TicketSelectionDialogProps> = ({
             return (
                 authorTickets.length > 0 &&
                 authorTickets.every((ticket) => {
-                    const hasAnyAvailableSlot = ticket.pricePhases?.some((phase) => {
-                        return (phase.availableSlot ?? 0) > 0;
-                    });
+                    // const hasAnyAvailableSlot = ticket.pricePhases?.some((phase) => {
+                    //     return (phase.availableSlot ?? 0) > 0;
+                    // });
+                    const hasAnyAvailableSlot =
+                        (ticket.availableSlot ?? 0) > 0;
 
                     return !hasAnyAvailableSlot;
                 })
@@ -136,10 +138,14 @@ const TicketSelectionDialog: React.FC<TicketSelectionDialogProps> = ({
                     return startDate > now;
                 });
 
-                const currentPhaseAvailable = (currentPhase?.availableSlot ?? 0) > 0;
-                const futurePhaseAvailable = futurePhases?.some((phase) => (phase.availableSlot ?? 0) > 0);
+                const priceAvailable = (ticket.availableSlot ?? 0) > 0;
 
-                return !currentPhaseAvailable && !futurePhaseAvailable;
+                return !priceAvailable;
+
+                // const currentPhaseAvailable = (currentPhase?.availableSlot ?? 0) > 0;
+                // const futurePhaseAvailable = futurePhases?.some((phase) => (phase.availableSlot ?? 0) > 0);
+
+                // return !currentPhaseAvailable && !futurePhaseAvailable;
             })
         );
     };
@@ -230,7 +236,7 @@ const TicketSelectionDialog: React.FC<TicketSelectionDialogProps> = ({
                                     </div>
                                     <p className={`font-medium text-center mb-1 ${isResearch ? 'text-gray-800' : 'text-gray-900'
                                         }`}>
-                                        Hội nghị này không cho phép người nghe tham dự
+                                        Hội nghị này không cho phép thính giả tham dự
                                     </p>
                                     <p className="text-gray-600 text-sm text-center">
                                         Vui lòng chọn tab &quot;Tác giả&quot; để xem các gói phí tham dự

@@ -28,9 +28,8 @@ export const validatePhaseTime = (
   endDate?: string,
   now: Date = new Date()
 ): PhaseValidationResult => {
-  // const { now } = useGlobalTime();
 
-  if (!startDate || !endDate) {
+  if (!endDate) {
     return {
       isAvailable: false,
       isExpired: false,
@@ -39,12 +38,16 @@ export const validatePhaseTime = (
     };
   }
 
-  const start = new Date(startDate);
   const end = new Date(endDate);
-  const formattedPeriod = `${formatDate(start)} - ${formatDate(end)}`;
 
-  // Check if current time is before start time
-  if (now < start) {
+  // Nếu không có startDate, coi như luôn available (miễn chưa quá endDate)
+  const start = startDate ? new Date(startDate) : null;
+  const formattedPeriod = start
+    ? `${formatDate(start)} - ${formatDate(end)}`
+    : `Đến ${formatDate(end)}`;
+
+  // Nếu có startDate, check như cũ
+  if (start && now < start) {
     const daysUntilStart = Math.ceil((start.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     return {
       isAvailable: false,
@@ -71,7 +74,7 @@ export const validatePhaseTime = (
     };
   }
 
-  // Current time is within the valid period
+  // Current time is within the valid period (hoặc không có startDate)
   const daysRemaining = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
   return {
     isAvailable: true,
@@ -84,6 +87,68 @@ export const validatePhaseTime = (
     message: `Bạn còn ${daysRemaining} ngày để thao tác.`
   };
 };
+
+// export const validatePhaseTime = (
+//   startDate?: string,
+//   endDate?: string,
+//   now: Date = new Date()
+// ): PhaseValidationResult => {
+//   // const { now } = useGlobalTime();
+
+//   if (!startDate || !endDate) {
+//     return {
+//       isAvailable: false,
+//       isExpired: false,
+//       isPending: true,
+//       message: "Thông tin thời gian chưa được cập nhật"
+//     };
+//   }
+
+//   const start = new Date(startDate);
+//   const end = new Date(endDate);
+//   const formattedPeriod = `${formatDate(start)} - ${formatDate(end)}`;
+
+//   // Check if current time is before start time
+//   if (now < start) {
+//     const daysUntilStart = Math.ceil((start.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+//     return {
+//       isAvailable: false,
+//       isExpired: false,
+//       isPending: true,
+//       daysUntilStart,
+//       startDate,
+//       endDate,
+//       formattedPeriod,
+//       message: `Chưa đến thời gian. Còn ${daysUntilStart} ngày để bắt đầu giai đoạn này.`
+//     };
+//   }
+
+//   // Check if current time is after end time
+//   if (now > end) {
+//     return {
+//       isAvailable: false,
+//       isExpired: true,
+//       isPending: false,
+//       startDate,
+//       endDate,
+//       formattedPeriod,
+//       message: "Bạn đã hết hạn thao tác cho giai đoạn bài báo này."
+//     };
+//   }
+
+//   // Current time is within the valid period
+//   const daysRemaining = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+//   return {
+//     isAvailable: true,
+//     isExpired: false,
+//     isPending: false,
+//     daysRemaining,
+//     startDate,
+//     endDate,
+//     formattedPeriod,
+//     message: `Bạn còn ${daysRemaining} ngày để thao tác.`
+//   };
+// };
 
 export function parseStartOfDay(date?: string | Date): Date | undefined {
   if (!date) return undefined;
