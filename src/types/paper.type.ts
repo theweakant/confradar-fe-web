@@ -615,6 +615,7 @@ export interface CreateAbstractRequest {
   title: string;
   description: string;
   // coAuthorId: string[];
+  conferenceSessionId: string;
 }
 
 export interface AvailableCustomerResponse {
