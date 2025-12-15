@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { TrendingUp, Calendar, Users, Presentation, ChevronLeft, ChevronRight } from 'lucide-react';
+import { TrendingUp, Users, Presentation, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   useGetConferencesGroupByStatusQuery,
   useGetRevenueStatsQuery,

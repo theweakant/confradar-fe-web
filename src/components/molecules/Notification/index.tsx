@@ -7,6 +7,7 @@ import { Notification } from '@/types/notification.type';
 import { Bell, User, Sun, Moon } from 'lucide-react';
 import { useGlobalTime } from "@/utils/TimeContext";
 import { toast } from 'sonner'; 
+import { ApiError } from '@/types/api.type';
 
 const formatDate = (dateString: string, now: Date) => {
   const date = new Date(dateString);
@@ -66,8 +67,10 @@ const NotificationSystem: React.FC<NotificationSystemProps> = ({ mode: initialMo
       await updateReadStatus([
         { notificationId, readStatus: true }
       ]).unwrap();
-    } catch (error) {
-      toast.error('Không thể cập nhật trạng thái thông báo.');
+    } catch (error: unknown) {
+      const err = error as ApiError;
+      const errorMessage = err?.message || 'Không thể cập nhật trạng thái thông báo.';
+      toast.error(errorMessage);
     }
   };
 
@@ -83,8 +86,10 @@ const NotificationSystem: React.FC<NotificationSystemProps> = ({ mode: initialMo
         unreadIds.map(id => ({ notificationId: id, readStatus: true }))
       ).unwrap();
       toast.success('Đã đánh dấu tất cả thông báo là đã đọc.');
-    } catch (error) {
-      toast.error('Không thể đánh dấu tất cả là đã đọc.');
+    } catch (error: unknown) {
+      const err = error as ApiError;
+      const errorMessage = err?.message || 'Không thể đánh dấu tất cả là đã đọc.';
+      toast.error(errorMessage);
     }
   };
 
