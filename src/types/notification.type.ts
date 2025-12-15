@@ -7,3 +7,11 @@ export interface Notification {
   createdAt: string;   // ISO string, ví dụ: "2025-11-22T20:28:06.666"
   readStatus: boolean;
 }
+
+
+export interface UpdateReadStatusRequest {
+  notificationId: string;
+  readStatus: boolean;
+}
+
+export type UpdateReadStatusBatchRequest = UpdateReadStatusRequest[];

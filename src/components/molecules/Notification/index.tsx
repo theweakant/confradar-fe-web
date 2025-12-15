@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
-import { useGetOwnNotificationsQuery } from '@/redux/services/user.service';
+import {
+  useGetOwnNotificationsQuery,
+  useUpdateNotificationReadStatusMutation,
+} from '@/redux/services/user.service';
 import { Notification } from '@/types/notification.type';
 import { Bell, User, Sun, Moon } from 'lucide-react';
 import { useGlobalTime } from "@/utils/TimeContext";
+import { toast } from 'sonner'; 
 
 const formatDate = (dateString: string, now: Date) => {
   const date = new Date(dateString);
@@ -25,6 +29,7 @@ interface NotificationSystemProps {
 const NotificationSystem: React.FC<NotificationSystemProps> = ({ mode: initialMode = 'light' }) => {
   const { now } = useGlobalTime();
   const { data, isLoading, isError } = useGetOwnNotificationsQuery();
+  const [updateReadStatus, { isLoading: isUpdating }] = useUpdateNotificationReadStatusMutation();
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const [mode, setMode] = useState<'light' | 'dark'>(initialMode);
 
@@ -49,29 +54,54 @@ const NotificationSystem: React.FC<NotificationSystemProps> = ({ mode: initialMo
   }
 
   const allNotifications: Notification[] = data.data;
-  
-  const notifications = filter === 'unread' 
+
+  const notifications = filter === 'unread'
     ? allNotifications.filter(n => !n.readStatus)
     : allNotifications;
-  
+
   const unreadCount = allNotifications.filter(n => !n.readStatus).length;
+
+  const markAsRead = async (notificationId: string) => {
+    try {
+      await updateReadStatus([
+        { notificationId, readStatus: true }
+      ]).unwrap();
+    } catch (error) {
+      toast.error('Không thể cập nhật trạng thái thông báo.');
+    }
+  };
+
+  const markAllAsRead = async () => {
+    if (unreadCount === 0) return;
+
+    const unreadIds = allNotifications
+      .filter(n => !n.readStatus)
+      .map(n => n.notificationId);
+
+    try {
+      await updateReadStatus(
+        unreadIds.map(id => ({ notificationId: id, readStatus: true }))
+      ).unwrap();
+      toast.success('Đã đánh dấu tất cả thông báo là đã đọc.');
+    } catch (error) {
+      toast.error('Không thể đánh dấu tất cả là đã đọc.');
+    }
+  };
 
   return (
     <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
-      {/* Header */}
       <div className={`px-4 py-3 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <h1 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
               Thông Báo
             </h1>
-            
-            {/* Dark/Light Mode Toggle */}
+
             <button
               onClick={() => setMode(prev => prev === 'light' ? 'dark' : 'light')}
               className={`p-2 rounded-lg transition-colors ${
-                isDark 
-                  ? 'bg-gray-800 hover:bg-gray-700 text-yellow-400' 
+                isDark
+                  ? 'bg-gray-800 hover:bg-gray-700 text-yellow-400'
                   : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
               }`}
               aria-label="Toggle theme"
@@ -82,20 +112,20 @@ const NotificationSystem: React.FC<NotificationSystemProps> = ({ mode: initialMo
 
           <div className="flex flex-col items-end gap-2">
             <div className="flex gap-4">
-              <button 
+              <button
                 onClick={() => setFilter('all')}
                 className={`text-sm font-medium ${
-                  filter === 'all' 
+                  filter === 'all'
                     ? (isDark ? 'text-white' : 'text-gray-900')
                     : (isDark ? 'text-gray-500' : 'text-gray-400')
                 }`}
               >
                 Tất cả
               </button>
-              <button 
+              <button
                 onClick={() => setFilter('unread')}
                 className={`text-sm font-medium ${
-                  filter === 'unread' 
+                  filter === 'unread'
                     ? (isDark ? 'text-white' : 'text-gray-900')
                     : (isDark ? 'text-gray-500' : 'text-gray-400')
                 }`}
@@ -103,17 +133,15 @@ const NotificationSystem: React.FC<NotificationSystemProps> = ({ mode: initialMo
                 Chưa đọc
               </button>
             </div>
-            
-            {/* Nút Đọc tất cả */}
+
             {unreadCount > 0 && (
-              <button 
-                onClick={() => {
-                  console.log('Mark all as read');
-                }}
+              <button
+                onClick={markAllAsRead}
+                disabled={isUpdating}
                 className={`text-xs font-medium ${
-                  isDark 
-                    ? 'text-blue-400 hover:text-blue-300' 
-                    : 'text-blue-600 hover:text-blue-700'
+                  isUpdating
+                    ? (isDark ? 'text-gray-600' : 'text-gray-400')
+                    : (isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700')
                 }`}
               >
                 Đọc tất cả ({unreadCount})
@@ -133,8 +161,13 @@ const NotificationSystem: React.FC<NotificationSystemProps> = ({ mode: initialMo
           {notifications.map((notif) => (
             <div
               key={notif.notificationId}
+              onClick={() => {
+                if (!notif.readStatus) {
+                  markAsRead(notif.notificationId);
+                }
+              }}
               className={`px-4 py-4 transition-colors cursor-pointer ${
-                !notif.readStatus 
+                !notif.readStatus
                   ? (isDark ? 'bg-gray-800 hover:bg-gray-750' : 'bg-gray-50 hover:bg-gray-100')
                   : (isDark ? 'bg-gray-900 hover:bg-gray-800' : 'bg-white hover:bg-gray-50')
               }`}
@@ -157,10 +190,10 @@ const NotificationSystem: React.FC<NotificationSystemProps> = ({ mode: initialMo
                         {notif.title}
                       </span>
                       <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
-                        {formatDate(notif.createdAt, now)}                      
+                        {formatDate(notif.createdAt, now)}
                       </span>
                     </div>
-                    
+
                     {!notif.readStatus && (
                       <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0 mt-1"></div>
                     )}
@@ -168,8 +201,8 @@ const NotificationSystem: React.FC<NotificationSystemProps> = ({ mode: initialMo
 
                   <div className="my-2">
                     <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${
-                      isDark 
-                        ? 'bg-purple-900 text-purple-300' 
+                      isDark
+                        ? 'bg-purple-900 text-purple-300'
                         : 'bg-purple-100 text-purple-500'
                     }`}>
                       {notif.type || 'Type N/A'}

@@ -1,7 +1,6 @@
-export default function ReviewerOutsourcePage() {
-  return (
-    <div>
-      <h1 className="text-2xl font-bold">Reviewer Outsource Dashboard</h1>
-    </div>
-  );
+// src/app/reviewer-outsource/page.tsx (hoặc đường dẫn thực tế của bạn)
+import ExternalReviewerDashboard from '@/components/molecules/Dashboard/ExternalReviewerDashboard';
+
+export default function Page() {
+  return <ExternalReviewerDashboard />;
 }
