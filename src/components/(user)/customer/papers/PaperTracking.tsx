@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
 
 import Slider from "rc-slider";
@@ -9,7 +9,7 @@ import FullPaperPhase from "./FullPaperPhase";
 import RevisionPhase from "./RevisionPhase";
 import CameraReadyPhase from "./CameraReadyPhase";
 import { usePaperCustomer } from "@/redux/hooks/usePaper";
-import type { PaperPhase, PaperDetailResponse } from "@/types/paper.type";
+import type { PaperPhase, PaperDetailResponse, ResearchPhaseDtoDetail } from "@/types/paper.type";
 import { steps } from "@/helper/paper";
 import PaperStepIndicator from "@/components/molecules/PaperStepIndicator";
 import { Calendar, Users } from "lucide-react";
@@ -17,6 +17,7 @@ import TimelineDialog from "@/components/molecules/TimelineDialog";
 import PaymentPhase from "./PaymentPhase";
 import { useGlobalTime } from "@/utils/TimeContext";
 import AssignCoauthorDialog from "./AssignCoauthorDialog";
+import { useConference } from "@/redux/hooks/useConference";
 
 const PaperTracking = () => {
   const { now } = useGlobalTime();
@@ -53,6 +54,14 @@ const PaperTracking = () => {
     handleUpdatePaperInfo
   } = usePaperCustomer();
 
+
+  const {
+    researchConference,
+    researchConferenceLoading,
+    researchConferenceError,
+    refetchResearchConference,
+  } = useConference({ id: paperDetail?.researchConferenceInfo?.conferenceId ?? undefined });
+
   const loadPaperDetail = async () => {
     if (!paperId) return;
 
@@ -79,8 +88,6 @@ const PaperTracking = () => {
   };
 
   useEffect(() => {
-
-
     loadPaperDetail();
   }, [paperId, fetchPaperDetail]);
 
@@ -120,44 +127,40 @@ const PaperTracking = () => {
       failed.push(2);
     }
 
-    if (paperDetail.cameraReady) {
+    const canSubmitCameraReady =
+      fullPaperStatus === 'accepted' ||
+      paperDetail.revisionPaper?.overallStatus?.toLowerCase() === 'accepted';
+
+    if (paperDetail.cameraReady || paperDetail.ticketId) {
       completed.push(3);
     }
 
-    const hasCameraReady = !!paperDetail.cameraReady;
-    const hasTicketId =
-      paperDetail.ticketId !== null && paperDetail.ticketId !== undefined;
+    const hasTicketId = paperDetail.ticketId !== null && paperDetail.ticketId !== undefined;
 
     if (hasTicketId) {
       completed.push(4);
-    } else if (hasCameraReady) {
+    } else if (canSubmitCameraReady) {
       const paymentEnd = paperDetail.researchPhase?.authorPaymentEnd
         ? new Date(paperDetail.researchPhase.authorPaymentEnd)
         : null;
 
-      if (paymentEnd && now > paymentEnd) {
+      if (paymentEnd && now > paymentEnd && !paperDetail.cameraReady) {
+        failed.push(3);
         failed.push(4);
       }
     }
 
-    // if (paperDetail.cameraReady?.status?.toLowerCase() === 'accepted') {
+    // if (paperDetail.cameraReady) {
     //   completed.push(3);
-    // } else if (paperDetail.cameraReady?.status?.toLowerCase() === 'rejected') {
-    //   failed.push(3);
     // }
 
-    // const cameraReadyAccepted = paperDetail.cameraReady?.status?.toLowerCase() === 'accepted';
-    // const hasTicketId = paperDetail.ticketId !== null && paperDetail.ticketId !== undefined;
+    // const hasCameraReady = !!paperDetail.cameraReady;
+    // const hasTicketId =
+    //   paperDetail.ticketId !== null && paperDetail.ticketId !== undefined;
 
     // if (hasTicketId) {
-    //   // Đã thanh toán
     //   completed.push(4);
-    // } else if (cameraReadyAccepted) {
-
-    //   const paymentStart = paperDetail.researchPhase?.authorPaymentStart
-    //     ? new Date(paperDetail.researchPhase.authorPaymentStart)
-    //     : null;
-
+    // } else if (hasCameraReady) {
     //   const paymentEnd = paperDetail.researchPhase?.authorPaymentEnd
     //     ? new Date(paperDetail.researchPhase.authorPaymentEnd)
     //     : null;
@@ -170,13 +173,24 @@ const PaperTracking = () => {
   }, [paperDetail, now]);
 
   let maxStageAllowed = 4;
+  const fullPaperAccepted = paperDetail?.fullPaper?.reviewStatus?.toLowerCase() === 'accepted';
+  const revisionAccepted = paperDetail?.revisionPaper?.overallStatus?.toLowerCase() === 'accepted';
+  const canAccessCameraReady = fullPaperAccepted || revisionAccepted;
+
   if (failedStepIndexes.length > 0) {
     maxStageAllowed = failedStepIndexes[0];
+  } else if (!canAccessCameraReady) {
+    maxStageAllowed = fullPaperAccepted ? 3 : 2;
+  } else if (!paperDetail?.cameraReady && !paperDetail?.ticketId) {
+    maxStageAllowed = 4;
   }
+  // if (failedStepIndexes.length > 0) {
+  //   maxStageAllowed = failedStepIndexes[0];
+  // }
 
-  if (!paperDetail?.cameraReady) {
-    maxStageAllowed = Math.min(maxStageAllowed, 3);
-  }
+  // if (!paperDetail?.cameraReady) {
+  //   maxStageAllowed = Math.min(maxStageAllowed, 3);
+  // }
 
   useEffect(() => {
     if (!paperDetail) return;
@@ -248,6 +262,96 @@ const PaperTracking = () => {
   //     setMaxReachedStage(4);
   //   }
   // }, [paperDetail]);
+
+  const getActivePhaseForPayment = (): ResearchPhaseDtoDetail | undefined => {
+    if (!paperDetail?.researchPhase) return undefined;
+
+    const currentPhase = paperDetail.researchPhase;
+    const paymentEnd = currentPhase.authorPaymentEnd
+      ? new Date(currentPhase.authorPaymentEnd)
+      : null;
+
+    // Nếu chưa quá hạn payment, dùng phase hiện tại
+    if (!paymentEnd || now <= paymentEnd) {
+      return currentPhase;
+    }
+
+    // Đã quá hạn payment, tìm phase tiếp theo đang active
+    if (!paperDetail.researchConferenceInfo?.conferenceId) {
+      return currentPhase;
+    }
+
+    // Lấy tất cả phases từ conference (giả sử có trong researchConferenceInfo)
+    // Nếu không có, bạn cần fetch từ API hoặc có sẵn trong paperDetail
+    const allPhases = researchConference?.researchPhase;
+
+    if (!allPhases || allPhases.length === 0) {
+      return currentPhase;
+    }
+
+    // Tìm index của phase hiện tại
+    const currentPhaseIndex = allPhases.findIndex(
+      (p) => p.researchConferencePhaseId === currentPhase.researchConferencePhaseId
+    );
+
+    if (currentPhaseIndex === -1) {
+      return currentPhase;
+    }
+
+    // Lấy các phase sau phase hiện tại, sort theo phaseOrder
+    const nextPhases = allPhases
+      .slice(currentPhaseIndex + 1)
+      .sort((a, b) => (a.phaseOrder || 0) - (b.phaseOrder || 0));
+
+    // Tìm phase đầu tiên đang active
+    const nextActivePhase = nextPhases.find((phase) => phase.isActive);
+
+    if (nextActivePhase) {
+      return {
+        researchConferencePhaseId: nextActivePhase.researchConferencePhaseId!,
+        conferenceId: nextActivePhase.conferenceId,
+
+        registrationStartDate: nextActivePhase.registrationStartDate,
+        registrationEndDate: nextActivePhase.registrationEndDate,
+
+        abstractDecideStatusStart: nextActivePhase.abstractDecideStatusStart,
+        abstractDecideStatusEnd: nextActivePhase.abstractDecideStatusEnd,
+
+        fullPaperStartDate: nextActivePhase.fullPaperStartDate,
+        fullPaperEndDate: nextActivePhase.fullPaperEndDate,
+
+        reviewStartDate: nextActivePhase.reviewStartDate,
+        reviewEndDate: nextActivePhase.reviewEndDate,
+
+        fullPaperDecideStatusStart: nextActivePhase.fullPaperDecideStatusStart,
+        fullPaperDecideStatusEnd: nextActivePhase.fullPaperDecideStatusEnd,
+
+        reviseStartDate: nextActivePhase.reviseStartDate,
+        reviseEndDate: nextActivePhase.reviseEndDate,
+
+        revisionPaperReviewStart: nextActivePhase.revisionPaperReviewStart,
+        revisionPaperReviewEnd: nextActivePhase.revisionPaperReviewEnd,
+
+        revisionPaperDecideStatusStart: nextActivePhase.revisionPaperDecideStatusStart,
+        revisionPaperDecideStatusEnd: nextActivePhase.revisionPaperDecideStatusEnd,
+
+        cameraReadyStartDate: nextActivePhase.cameraReadyStartDate,
+        cameraReadyEndDate: nextActivePhase.cameraReadyEndDate,
+
+        cameraReadyDecideStatusStart: nextActivePhase.cameraReadyDecideStatusStart,
+        cameraReadyDecideStatusEnd: nextActivePhase.cameraReadyDecideStatusEnd,
+
+        authorPaymentStart: nextActivePhase.authorPaymentStart,
+        authorPaymentEnd: nextActivePhase.authorPaymentEnd,
+      } as ResearchPhaseDtoDetail;
+    }
+
+    return currentPhase;
+  };
+
+  const activePhaseForPayment = useMemo(() => {
+    return getActivePhaseForPayment();
+  }, [paperDetail?.researchPhase, paperDetail?.researchConferenceInfo, now]);
 
 
   const getPaperPhasesErrorMessage = (): string => {
@@ -460,33 +564,6 @@ const PaperTracking = () => {
                           <p className="text-gray-700 text-xs leading-relaxed line-clamp-3">{paperDetail.description}</p>
                         </div>
                       )}
-
-                      {/* Publishing Link */}
-                      <div className="bg-gray-100 rounded-lg p-3">
-                        <p className="text-gray-600 text-[10px] uppercase tracking-wider mb-1">
-                          Link xuất bản bài báo của bạn
-                        </p>
-
-                        {paperDetail.publishingLink ? (
-                          <a
-                            href={paperDetail.publishingLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 text-sm font-medium underline break-all"
-                          >
-                            {paperDetail.publishingLink}
-                          </a>
-                        ) : (
-                          <p className="text-gray-500 text-xs italic">
-                            Hiện chưa có link xuất bản.
-                            <br />
-                            <span className="text-gray-400">
-                              (Link xuất bản bài báo này chỉ có nếu bạn đăng ký loại phí có xuất bản bài báo)
-                            </span>
-                          </p>
-                        )}
-                      </div>
-
                     </div>
 
                     {/* Right: Conference Information */}
@@ -658,6 +735,8 @@ const PaperTracking = () => {
                       fullPaper={paperDetail?.fullPaper || null}
                       researchPhase={paperDetail?.researchPhase}
                       onSubmittedFullPaper={loadPaperDetail}
+
+                      abstract={paperDetail?.abstract || null}
                     />
                   )}
                   {currentStage === 2 && currentStage <= maxStageAllowed && (
@@ -667,14 +746,20 @@ const PaperTracking = () => {
                       researchPhase={paperDetail?.researchPhase}
                       revisionDeadline={paperDetail?.revisionDeadline}
                       onSubmittedRevision={loadPaperDetail}
+
+                      fullPaper={paperDetail?.fullPaper || null}
                     />
                   )}
                   {currentStage === 3 && currentStage <= maxStageAllowed && (
                     <CameraReadyPhase
                       paperId={paperId}
                       cameraReady={paperDetail?.cameraReady || null}
-                      researchPhase={paperDetail?.researchPhase}
+                      // researchPhase={paperDetail?.researchPhase}
+                      researchPhase={activePhaseForPayment}
                       onSubmittedCameraReady={loadPaperDetail}
+
+                      fullPaper={paperDetail?.fullPaper || null}
+                      revisionPaper={paperDetail?.revisionPaper || null}
                     />
                   )}
 
@@ -682,7 +767,8 @@ const PaperTracking = () => {
                     <PaymentPhase
                       paperId={paperId}
                       conferenceId={paperDetail?.researchConferenceInfo?.conferenceId ?? undefined}
-                      researchPhase={paperDetail?.researchPhase}
+                      // researchPhase={paperDetail?.researchPhase}
+                      researchPhase={activePhaseForPayment}
                       onPaymentSuccess={loadPaperDetail}
                     />
                   )}

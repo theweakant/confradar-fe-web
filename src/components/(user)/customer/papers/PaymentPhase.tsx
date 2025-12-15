@@ -34,9 +34,11 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
 }) => {
     const { now } = useGlobalTime();
     const [selectedPrice, setSelectedPrice] = useState<ConferencePriceResponse | null>(null);
-    const [selectedPhase, setSelectedPhase] = useState<ConferencePricePhaseResponse | null>(null);
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+
+    const [wantsPublication, setWantsPublication] = useState<boolean | null>(null);
+
 
     // Fetch prices
     // const {
@@ -67,13 +69,8 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
 
     const pricesResponse = researchConference?.conferencePrices;
 
-    const priceNotSelected = !selectedPrice || !selectedPhase;
+    const priceNotSelected = !selectedPrice;
     const paymentNotSelected = !selectedPaymentMethod;
-
-    const originalPrice = selectedPrice?.ticketPrice ?? 0;
-    const applyPercent = selectedPhase?.applyPercent ?? 100;
-
-    const finalPrice = Math.round(originalPrice * (applyPercent / 100));
 
     useEffect(() => {
         if (researchPaymentError) {
@@ -87,18 +84,46 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
 
     // Validate phase timing
     const phaseValidation = validatePhaseTime(
-        researchPhase?.authorPaymentStart,
+        // researchPhase?.authorPaymentStart,
+        // researchPhase?.authorPaymentEnd,
+        undefined,
         researchPhase?.authorPaymentEnd,
         now
     );
 
     // Filter author prices only
+    // const authorPrices = useMemo(() => {
+    //     if (!pricesResponse) return [];
+    //     return Array.isArray(pricesResponse)
+    //         ? pricesResponse.filter((price) => price.isAuthor === true)
+    //         : [];
+    // }, [pricesResponse]);
+
     const authorPrices = useMemo(() => {
         if (!pricesResponse) return [];
-        return Array.isArray(pricesResponse)
+
+        let filtered = Array.isArray(pricesResponse)
             ? pricesResponse.filter((price) => price.isAuthor === true)
             : [];
-    }, [pricesResponse]);
+
+        // Apply publication filter nếu đã chọn
+        if (wantsPublication !== null) {
+            filtered = filtered.filter((price) => price.isPublish === wantsPublication);
+        }
+
+        return filtered;
+    }, [pricesResponse, wantsPublication]);
+
+    useEffect(() => {
+        if (selectedPrice && wantsPublication !== null) {
+            const stillAvailable = authorPrices.some(
+                p => p.conferencePriceId === selectedPrice.conferencePriceId
+            );
+            if (!stillAvailable) {
+                setSelectedPrice(null);
+            }
+        }
+    }, [wantsPublication, authorPrices, selectedPrice]);
 
     const getNextAvailablePhase = (): NextPhaseInfo | null => {
         if (!researchConference?.researchPhase || !researchPhase?.researchConferencePhaseId) {
@@ -126,9 +151,12 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
 
         // Check xem phase đó có vé available không
         const hasAvailableSlots = authorPrices.some((price) => {
-            return price.pricePhases?.some((pricePhase) => {
-                return (pricePhase.availableSlot ?? 0) > 0;
-            });
+            //  return price.pricePhases?.some((pricePhase) => {
+            return (price.availableSlot ?? 0) > 0;
+            // });
+            // return price.pricePhases?.some((pricePhase) => {
+            //     return (pricePhase.availableSlot ?? 0) > 0;
+            // });
         });
 
         return {
@@ -165,9 +193,12 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
                 authorTickets.length > 0 &&
                 authorTickets.every((ticket) => {
                     // Chỉ check xem có phase nào còn slot không
-                    const hasAnyAvailableSlot = ticket.pricePhases?.some((phase) => {
-                        return (phase.availableSlot ?? 0) > 0;
-                    });
+                    // const hasAnyAvailableSlot = ticket.pricePhases?.some((phase) => {
+                    //     return (phase.availableSlot ?? 0) > 0;
+                    // });
+
+                    const hasAnyAvailableSlot =
+                        (ticket.availableSlot ?? 0) > 0;
 
                     return !hasAnyAvailableSlot;
                 })
@@ -187,10 +218,14 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
                     return startDate > now;
                 });
 
-                const currentPhaseAvailable = (currentPhase?.availableSlot ?? 0) > 0;
-                const futurePhaseAvailable = futurePhases?.some((phase) => (phase.availableSlot ?? 0) > 0);
+                // const currentPhaseAvailable = (currentPhase?.availableSlot ?? 0) > 0;
+                // const futurePhaseAvailable = futurePhases?.some((phase) => (phase.availableSlot ?? 0) > 0);
 
-                return !currentPhaseAvailable && !futurePhaseAvailable;
+                // return !currentPhaseAvailable && !futurePhaseAvailable;
+
+                const priceAvailable = (ticket.availableSlot ?? 0) > 0;
+
+                return !priceAvailable;
             })
         );
     };
@@ -254,11 +289,16 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
     };
 
     const handlePriceSelect = (price: ConferencePriceResponse) => {
-        const phaseInfo = getPricePhaseInfo(price);
-        if (phaseInfo.currentPhase) {
-            setSelectedPrice(price);
-            setSelectedPhase(phaseInfo.currentPhase);
-        }
+        //   const phaseInfo = getPricePhaseInfo(price);
+        // if (phaseInfo.currentPhase) {
+        setSelectedPrice(price);
+        // setSelectedPhase(phaseInfo.currentPhase);
+        // }
+        // const phaseInfo = getPricePhaseInfo(price);
+        // if (phaseInfo.currentPhase) {
+        //     setSelectedPrice(price);
+        //     setSelectedPhase(phaseInfo.currentPhase);
+        // }
     };
 
     const handlePayment = async () => {
@@ -268,7 +308,7 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
             return;
         }
 
-        if (!selectedPrice || !selectedPhase || !selectedPaymentMethod || !paperId) {
+        if (!selectedPrice || !selectedPaymentMethod || !paperId) {
             toast.error("Vui lòng chọn đầy đủ thông tin thanh toán");
             return;
         }
@@ -396,12 +436,8 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
     if (!phaseValidation.isAvailable) {
         // Nếu đã quá hạn thanh toán của phase hiện tại
         if (phaseValidation.isExpired) {
-            // Kiểm tra xem có phase tiếp theo available không
             if (nextPhaseInfo && nextPhaseInfo.isAvailable && nextPhaseInfo.hasAvailableSlots) {
-                // KHÔNG return ở đây, mà để code tiếp tục chạy xuống dưới
-                // Chỉ cần set một flag để hiển thị warning message
             } else if (nextPhaseInfo && nextPhaseInfo.isAvailable && !nextPhaseInfo.hasAvailableSlots) {
-                // Hết slot - return message
                 return (
                     <div className="space-y-6">
                         <h3 className="text-lg font-semibold text-gray-900">Giai đoạn Thanh toán</h3>
@@ -486,16 +522,16 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
         }
     }
 
-    if (authorPrices.length === 0) {
-        return (
-            <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-gray-900">Giai đoạn Thanh toán</h3>
-                <div className="bg-gray-50 border border-gray-300 rounded-xl p-6 text-center">
-                    <p className="text-gray-600">Chưa có gói thanh toán nào được mở bán</p>
-                </div>
-            </div>
-        );
-    }
+    // if (authorPrices.length === 0) {
+    //     return (
+    //         <div className="space-y-6">
+    //             <h3 className="text-lg font-semibold text-gray-900">Giai đoạn Thanh toán</h3>
+    //             <div className="bg-gray-50 border border-gray-300 rounded-xl p-6 text-center">
+    //                 <p className="text-gray-600">Chưa có gói thanh toán nào được mở bán</p>
+    //             </div>
+    //         </div>
+    //     );
+    // }
 
     const showExpiredWarning = !phaseValidation.isAvailable &&
         phaseValidation.isExpired &&
@@ -551,8 +587,32 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
                             </>
                         )}
 
+                        {phaseValidation.formattedPeriod && (
+                            <div className="bg-gray-50 border border-gray-300 rounded-xl p-4">
+                                <p className="text-gray-700 text-sm mb-2">
+                                    <strong>Hạn chót:</strong> {phaseValidation.formattedPeriod}
+                                </p>
+
+                                {!phaseValidation.isAvailable && phaseValidation.isExpired && (
+                                    <div className="border rounded-lg p-3 bg-red-50 border-red-300">
+                                        <p className="text-sm text-red-700">
+                                            {phaseValidation.message}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {phaseValidation.isAvailable && phaseValidation.daysRemaining && (
+                                    <div className="bg-blue-50 border border-blue-300 rounded-lg p-3">
+                                        <p className="text-blue-700 text-sm">
+                                            {phaseValidation.message}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {/* Phase timing information - chỉ hiển thị khi trong thời hạn bình thường */}
-                        {!showExpiredWarning && phaseValidation.formattedPeriod && (
+                        {/* {!showExpiredWarning && phaseValidation.formattedPeriod && (
                             <div className="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4">
                                 <p className="text-blue-700 text-sm mb-1">
                                     <strong>Thời gian thanh toán:</strong> {phaseValidation.formattedPeriod}
@@ -563,10 +623,10 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
                                     </p>
                                 )}
                             </div>
-                        )}
+                        )} */}
 
                         {/* Phase timing information */}
-                        {phaseValidation.formattedPeriod && (
+                        {/* {phaseValidation.formattedPeriod && (
                             <div className="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4">
                                 <p className="text-blue-700 text-sm mb-1">
                                     <strong>Thời gian thanh toán:</strong> {phaseValidation.formattedPeriod}
@@ -576,17 +636,218 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
                                         {phaseValidation.message}
                                     </p>
                                 )}
+                            </div>
+                        )} */}
+
+                        <div className="mb-6">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                                Bạn có muốn xuất bản bài báo không?
+                            </h3>
+                            <p className="text-sm text-gray-600 mb-4">
+                                Chọn loại gói phù hợp với nhu cầu của bạn
+                            </p>
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    onClick={() => setWantsPublication(true)}
+                                    className={`relative border-2 rounded-xl p-4 transition-all ${wantsPublication === true
+                                        ? "border-green-500 bg-green-50"
+                                        : "border-gray-200 hover:border-gray-300"
+                                        }`}
+                                >
+                                    {wantsPublication === true && (
+                                        <div className="absolute top-3 right-3">
+                                            <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                                                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="flex flex-col items-center text-center">
+                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 ${wantsPublication === true ? "bg-green-100" : "bg-gray-100"
+                                            }`}>
+                                            <svg className={`w-6 h-6 ${wantsPublication === true ? "text-green-600" : "text-gray-600"
+                                                }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                        </div>
+                                        <h4 className="font-semibold text-gray-900 mb-1">Có xuất bản</h4>
+                                        <p className="text-xs text-gray-600">
+                                            Bao gồm phí xuất bản bài báo
+                                        </p>
+                                    </div>
+                                </button>
+
+                                <button
+                                    onClick={() => setWantsPublication(false)}
+                                    className={`relative border-2 rounded-xl p-4 transition-all ${wantsPublication === false
+                                        ? "border-blue-500 bg-blue-50"
+                                        : "border-gray-200 hover:border-gray-300"
+                                        }`}
+                                >
+                                    {wantsPublication === false && (
+                                        <div className="absolute top-3 right-3">
+                                            <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
+                                                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="flex flex-col items-center text-center">
+                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 ${wantsPublication === false ? "bg-blue-100" : "bg-gray-100"
+                                            }`}>
+                                            <svg className={`w-6 h-6 ${wantsPublication === false ? "text-blue-600" : "text-gray-600"
+                                                }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                        </div>
+                                        <h4 className="font-semibold text-gray-900 mb-1">Không xuất bản</h4>
+                                        <p className="text-xs text-gray-600">
+                                            Chỉ tham dự hội nghị
+                                        </p>
+                                    </div>
+                                </button>
+                            </div>
+
+                            {/* Show message if filter selected but no packages available */}
+                            {wantsPublication !== null && authorPrices.length === 0 && (
+                                <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                    <p className="text-sm text-yellow-700">
+                                        {wantsPublication
+                                            ? "Hiện không có gói có xuất bản bài báo. Vui lòng chọn gói không xuất bản."
+                                            : "Hiện không có gói không xuất bản. Vui lòng chọn gói có xuất bản."
+                                        }
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Select Package */}
+                        {wantsPublication !== null && (
+                            <div className="mb-8">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Chọn mức phí thanh toán
+                                    {authorPrices.length > 0 && (
+                                        <span className="ml-2 text-sm font-normal text-gray-600">
+                                            ({authorPrices.length} gói khả dụng)
+                                        </span>
+                                    )}
+                                </h3>
+
+                                {authorPrices.length === 0 ? (
+                                    <div className="text-center py-8 bg-gray-50 rounded-xl border border-gray-200">
+                                        <p className="text-gray-600">
+                                            Không có gói thanh toán phù hợp
+                                        </p>
+                                        <button
+                                            onClick={() => setWantsPublication(null)}
+                                            className="mt-3 text-sm text-blue-600 hover:underline"
+                                        >
+                                            Xem tất cả gói
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {authorPrices.map((price) => {
+                                            const isSelected = selectedPrice?.conferencePriceId === price.conferencePriceId;
+                                            const isAvailable = (price.availableSlot ?? 0) > 0;
+
+                                            return (
+                                                <div
+                                                    key={price.conferencePriceId}
+                                                    className={`relative border-2 rounded-xl p-4 cursor-pointer transition-all ${isSelected
+                                                        ? "border-blue-500 bg-blue-50"
+                                                        : isAvailable
+                                                            ? "border-gray-200 hover:border-gray-300"
+                                                            : "border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed"
+                                                        }`}
+                                                    onClick={() => isAvailable && handlePriceSelect(price)}
+                                                >
+                                                    {isSelected && (
+                                                        <div className="absolute top-3 right-3">
+                                                            <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
+                                                                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                                </svg>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    <div className="flex items-center gap-3 mb-2">
+                                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${isSelected ? "border-blue-500" : "border-gray-300"
+                                                            }`}>
+                                                            {isSelected && <div className="w-3 h-3 rounded-full bg-blue-500" />}
+                                                        </div>
+                                                        <h4 className="font-semibold text-gray-900">
+                                                            {price.ticketName || "Package"}
+                                                        </h4>
+                                                    </div>
+                                                    {price.ticketDescription && (
+                                                        <p className="text-sm text-gray-600 ml-8 mb-2">
+                                                            {price.ticketDescription}
+                                                        </p>
+                                                    )}
+                                                    <div className="ml-8 mb-3 flex items-baseline gap-1">
+                                                        <span
+                                                            className={`text-2xl font-bold tracking-tight ${isSelected ? "text-blue-600" : "text-gray-900"
+                                                                }`}
+                                                        >
+                                                            {(price.ticketPrice ?? 0).toLocaleString("vi-VN")}
+                                                        </span>
+                                                        <span className="text-sm font-semibold text-gray-500">₫</span>
+
+                                                    </div>
+                                                    <div className="ml-8 mb-2">
+                                                        {price.isPublish ? (
+                                                            <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
+                                                                Bao gồm phí xuất bản bài báo
+                                                            </span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">
+                                                                Không bao gồm phí xuất bản bài báo
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    {!isAvailable && (
+                                                        <span className="ml-8 text-sm font-medium text-red-600">Đã hết chỗ</span>
+                                                    )}
+
+                                                    {priceNotSelected && (
+                                                        <p className="text-sm text-red-600 mt-1">Vui lòng chọn loại phí thanh toán</p>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Show message to select preference first */}
+                        {wantsPublication === null && (
+                            <div className="mb-8 text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                                <svg className="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                                <p className="text-gray-600 text-sm">
+                                    Vui lòng chọn loại gói ở trên để xem danh sách phí thanh toán
+                                </p>
                             </div>
                         )}
 
                         {/* Select Package */}
-                        <div className="mb-8">
+                        {/* <div className="mb-8">
                             <h3 className="text-lg font-semibold text-gray-900 mb-4">Chọn mức phí thanh toán</h3>
                             <div className="space-y-3">
                                 {authorPrices.map((price) => {
-                                    const phaseInfo = getPricePhaseInfo(price);
+                                    // const phaseInfo = getPricePhaseInfo(price);
+                                    // const isSelected = selectedPrice?.conferencePriceId === price.conferencePriceId;
+                                    // const isAvailable = phaseInfo.currentPhase && (phaseInfo.currentPhase.availableSlot ?? 0) > 0;
+
+                                    // const phaseInfo = getPricePhaseInfo(price);
                                     const isSelected = selectedPrice?.conferencePriceId === price.conferencePriceId;
-                                    const isAvailable = phaseInfo.currentPhase && (phaseInfo.currentPhase.availableSlot ?? 0) > 0;
+                                    const isAvailable = (price.availableSlot ?? 0) > 0;
 
                                     return (
                                         <div
@@ -622,6 +883,16 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
                                                     {price.ticketDescription}
                                                 </p>
                                             )}
+                                            <div className="ml-8 mb-3 flex items-baseline gap-1">
+                                                <span
+                                                    className={`text-2xl font-bold tracking-tight ${isSelected ? "text-blue-600" : "text-gray-900"
+                                                        }`}
+                                                >
+                                                    {(price.ticketPrice ?? 0).toLocaleString("vi-VN")}
+                                                </span>
+                                                <span className="text-sm font-semibold text-gray-500">₫</span>
+
+                                            </div>
                                             <div className="ml-8 mb-2">
                                                 {price.isPublish ? (
                                                     <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
@@ -633,67 +904,8 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
                                                     </span>
                                                 )}
                                             </div>
-                                            {phaseInfo.currentPhase && (
-                                                <>
-                                                    <div className="flex items-center gap-2">
-                                                        {/* GIÁ ĐÃ TÍNH */}
-                                                        <span className="text-lg font-bold text-purple-700">
-                                                            {formatCurrency(
-                                                                Math.round(
-                                                                    (price.ticketPrice ?? 0) *
-                                                                    ((phaseInfo.currentPhase?.applyPercent ?? 100) / 100)
-                                                                )
-                                                            )}
-                                                        </span>
-
-                                                        {/* LOGIC INLINE TĂNG/GIẢM */}
-                                                        {(() => {
-                                                            const apply = phaseInfo.currentPhase?.applyPercent ?? 100;
-                                                            const original = price.ticketPrice ?? 0;
-
-                                                            if (apply === 100) return null;
-
-                                                            // Tính phần trăm chênh lệch
-                                                            const diff = apply < 100 ? 100 - apply : apply - 100;
-
-                                                            return (
-                                                                <>
-                                                                    {/* Giá gốc gạch ngang */}
-                                                                    <span className="text-sm text-gray-500 line-through">
-                                                                        {formatCurrency(original)}
-                                                                    </span>
-
-                                                                    {/* Badge giảm */}
-                                                                    {apply < 100 && (
-                                                                        <span className="text-xs font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded">
-                                                                            -{diff}%
-                                                                        </span>
-                                                                    )}
-
-                                                                    {/* Badge tăng */}
-                                                                    {apply > 100 && (
-                                                                        <span className="text-xs font-semibold text-orange-700 bg-orange-100 px-2 py-0.5 rounded">
-                                                                            +{diff}%
-                                                                        </span>
-                                                                    )}
-                                                                </>
-                                                            );
-                                                        })()}
-                                                    </div>
-
-                                                    {/* Phase time range */}
-                                                    {!(nextPhaseInfo?.isAvailable && nextPhaseInfo?.hasAvailableSlots) && (
-                                                        <div className="mt-1 ml-8 text-xs text-gray-500">
-                                                            {formatDateRange(
-                                                                phaseInfo.currentPhase.startDate,
-                                                                phaseInfo.currentPhase.endDate
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </>
-                                            )}
                                             {!isAvailable && (
-                                                <span className="ml-8 text-sm font-medium text-red-600">Đã bán hết</span>
+                                                <span className="ml-8 text-sm font-medium text-red-600">Đã hết chỗ</span>
                                             )}
 
                                             {priceNotSelected && (
@@ -703,7 +915,7 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
                                     );
                                 })}
                             </div>
-                        </div>
+                        </div> */}
 
                         {/* Thêm sau div chứa danh sách prices, trước phần Select Payment Method */}
                         {checkAllAuthorTicketsSoldOut() && (
@@ -749,7 +961,7 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
                         )}
 
                         {/* Select Payment Method */}
-                        {selectedPrice && selectedPhase && (
+                        {selectedPrice && (
                             <div>
                                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Chọn phương thức thanh toán</h3>
 
@@ -838,7 +1050,7 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
                 </div>
 
                 {/* Right Column - Payment Summary */}
-                {selectedPrice && selectedPhase && (
+                {selectedPrice && (
                     <div className="lg:col-span-1">
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sticky top-6">
                             <h3 className="text-lg font-semibold text-gray-900 mb-4">Tổng tiền thanh toán</h3>
@@ -866,46 +1078,12 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
                                         {formatCurrency(selectedPrice.ticketPrice ?? 0)}
                                     </p>
                                 </div>
-
-                                {(() => {
-                                    const apply = selectedPhase.applyPercent ?? 100;
-                                    const original = selectedPrice.ticketPrice ?? 0;
-
-                                    if (apply === 100) return null;
-
-                                    const finalPrice = Math.round(original * (apply / 100));
-                                    const diff = apply < 100 ? 100 - apply : apply - 100;
-
-                                    return (
-                                        <>
-                                            {/* Nếu giảm giá */}
-                                            {apply < 100 && (
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-sm text-gray-600">Discount</span>
-                                                    <span className="text-sm font-semibold text-green-600">
-                                                        -{diff}% ({(original - finalPrice).toLocaleString("vi-VN")}₫)
-                                                    </span>
-                                                </div>
-                                            )}
-
-                                            {/* Nếu tăng giá */}
-                                            {apply > 100 && (
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-sm text-gray-600">Price Increase</span>
-                                                    <span className="text-sm font-semibold text-orange-600">
-                                                        +{diff}% ({(finalPrice - original).toLocaleString("vi-VN")}₫)
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </>
-                                    );
-                                })()}
                             </div>
 
                             <div className="mt-6">
                                 <button
                                     onClick={handlePayment}
-                                    disabled={!selectedPrice || !selectedPhase || !selectedPaymentMethod || isProcessing}
+                                    disabled={!selectedPrice || !selectedPaymentMethod || isProcessing}
                                     className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed flex justify-between items-center"
                                 >
                                     {isProcessing ? (
@@ -919,15 +1097,15 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
                                     ) : (
                                         <>
                                             <span>Thanh toán</span>
-                                            <span className="font-semibold">{finalPrice.toLocaleString("vi-VN")}₫</span>
+                                            <span className="font-semibold">{selectedPrice.ticketPrice?.toLocaleString("vi-VN") ?? "0"}₫</span>
                                         </>
                                     )}
                                 </button>
 
                                 {/* Validation message */}
-                                {(!selectedPrice || !selectedPhase || !selectedPaymentMethod) && (
+                                {(!selectedPrice || !selectedPaymentMethod) && (
                                     <p className="text-sm text-red-600 mt-2 text-center">
-                                        {!selectedPrice || !selectedPhase ? "Vui lòng chọn loại phí." : ""}
+                                        {!selectedPrice ? "Vui lòng chọn loại phí." : ""}
                                         {!selectedPaymentMethod ? " Vui lòng chọn phương thức thanh toán." : ""}
                                     </p>
                                 )}
@@ -945,231 +1123,6 @@ const PaymentPhase: React.FC<PaymentPhaseProps> = ({
             </div>
         </div >
     );
-
-
-    // return (
-    //     <div className="space-y-6">
-    //         <h3 className="text-lg font-semibold text-gray-900">Giai đoạn Thanh toán</h3>
-    //         <p className="text-gray-600">Chọn gói thanh toán phù hợp để hoàn tất đăng ký</p>
-
-    //         {/* Phase timing information */}
-    //         {phaseValidation.formattedPeriod && (
-    //             <div className="bg-blue-50 border border-blue-300 rounded-xl p-4">
-    //                 <p className="text-blue-700 text-sm mb-2">
-    //                     <strong>Thời gian thanh toán:</strong> {phaseValidation.formattedPeriod}
-    //                 </p>
-    //                 {phaseValidation.daysRemaining && (
-    //                     <p className="text-blue-600 text-sm">
-    //                         {phaseValidation.message}
-    //                     </p>
-    //                 )}
-    //             </div>
-    //         )}
-
-    //         {/* Price Cards */}
-    //         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-    //             {authorPrices.map((price) => {
-    //                 const phaseInfo = getPricePhaseInfo(price);
-    //                 const isSelected = selectedPrice?.conferencePriceId === price.conferencePriceId;
-    //                 const isAvailable = phaseInfo.currentPhase && (phaseInfo.currentPhase.availableSlot ?? 0) > 0;
-    //                 const finalPrice = phaseInfo.currentPhase
-    //                     ? calculateFinalPrice(price.ticketPrice ?? 0, phaseInfo.currentPhase.applyPercent)
-    //                     : price.ticketPrice ?? 0;
-
-    //                 return (
-    //                     <div
-    //                         key={price.conferencePriceId}
-    //                         className={`border rounded-xl p-5 transition-all cursor-pointer ${isSelected
-    //                             ? "border-blue-500 bg-blue-50 shadow-md"
-    //                             : isAvailable
-    //                                 ? "border-gray-300 bg-white hover:border-blue-400 hover:shadow-sm"
-    //                                 : "border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed"
-    //                             }`}
-    //                         onClick={() => isAvailable && handlePriceSelect(price)}
-    //                     >
-    //                         <div className="flex items-start justify-between mb-3">
-    //                             <div className="flex-1">
-    //                                 <h4 className="text-lg font-semibold text-gray-900 mb-1">
-    //                                     {price.ticketName || "Gói thanh toán"}
-    //                                 </h4>
-    //                                 {price.ticketDescription && (
-    //                                     <p className="text-sm text-gray-600 line-clamp-2">
-    //                                         {price.ticketDescription}
-    //                                     </p>
-    //                                 )}
-    //                             </div>
-    //                             {isSelected && (
-    //                                 <div className="ml-3">
-    //                                     <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center">
-    //                                         <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-    //                                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-    //                                         </svg>
-    //                                     </div>
-    //                                 </div>
-    //                             )}
-    //                         </div>
-
-    //                         {phaseInfo.currentPhase && (
-    //                             <div className="space-y-2">
-    //                                 <div className="flex items-baseline gap-2">
-    //                                     <span className="text-2xl font-bold text-gray-900">
-    //                                         {formatCurrency(finalPrice)}
-    //                                     </span>
-    //                                     {phaseInfo.currentPhase.applyPercent && phaseInfo.currentPhase.applyPercent > 0 && (
-    //                                         <span className="text-sm text-gray-500 line-through">
-    //                                             {formatCurrency(price.ticketPrice ?? 0)}
-    //                                         </span>
-    //                                     )}
-    //                                 </div>
-
-    //                                 {phaseInfo.currentPhase.applyPercent && phaseInfo.currentPhase.applyPercent > 0 && (
-    //                                     <div className="inline-block px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded">
-    //                                         Giảm {phaseInfo.currentPhase.applyPercent}%
-    //                                     </div>
-    //                                 )}
-
-    //                                 <div className="pt-2 space-y-1 text-sm text-gray-600">
-    //                                     <p>
-    //                                         <strong>Giai đoạn:</strong> {phaseInfo.currentPhase.phaseName || "Hiện tại"}
-    //                                     </p>
-    //                                     <p>
-    //                                         <strong>Hạn chót:</strong> {formatDate(phaseInfo.currentPhase.endDate)}
-    //                                     </p>
-    //                                     <p>
-    //                                         <strong>Còn lại:</strong>{" "}
-    //                                         <span className={`font-semibold ${(phaseInfo.currentPhase.availableSlot ?? 0) < 10
-    //                                             ? "text-red-600"
-    //                                             : "text-green-600"
-    //                                             }`}>
-    //                                             {phaseInfo.currentPhase.availableSlot || 0}
-    //                                         </span>
-    //                                         /{phaseInfo.currentPhase.totalSlot || 0} slot
-    //                                     </p>
-    //                                 </div>
-    //                             </div>
-    //                         )}
-
-    //                         {!phaseInfo.currentPhase && phaseInfo.futurePhases.length > 0 && (
-    //                             <div className="text-sm text-gray-600">
-    //                                 <p className="font-medium mb-1">Sắp mở bán:</p>
-    //                                 <p>{formatDate(phaseInfo.futurePhases[0].startDate)}</p>
-    //                             </div>
-    //                         )}
-
-    //                         {!phaseInfo.hasAvailableSlots && (
-    //                             <div className="mt-2 text-sm font-medium text-red-600">
-    //                                 Đã hết slot
-    //                             </div>
-    //                         )}
-    //                     </div>
-    //                 );
-    //             })}
-    //         </div>
-
-    //         {/* Payment Method Selection */}
-    //         {selectedPrice && selectedPhase && (
-    //             <div className="bg-white border border-gray-300 rounded-xl p-5 space-y-4">
-    //                 <h4 className="text-md font-semibold text-gray-900">Chọn phương thức thanh toán</h4>
-
-    //                 {paymentMethodsLoading ? (
-    //                     <div className="flex justify-center py-4">
-    //                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-    //                     </div>
-    //                 ) : paymentMethods.length === 0 ? (
-    //                     <p className="text-gray-600 text-sm">Không có phương thức thanh toán</p>
-    //                 ) : (
-    //                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-    //                         {paymentMethods.map((method) => (
-    //                             <div
-    //                                 key={method.paymentMethodId}
-    //                                 className={`border rounded-lg p-3 cursor-pointer transition-all ${selectedPaymentMethod === method.paymentMethodId
-    //                                     ? "border-blue-500 bg-blue-50"
-    //                                     : "border-gray-300 hover:border-blue-400"
-    //                                     }`}
-    //                                 onClick={() => setSelectedPaymentMethod(method.paymentMethodId)}
-    //                             >
-    //                                 <div className="flex items-center gap-3">
-    //                                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedPaymentMethod === method.paymentMethodId
-    //                                         ? "border-blue-600"
-    //                                         : "border-gray-300"
-    //                                         }`}>
-    //                                         {selectedPaymentMethod === method.paymentMethodId && (
-    //                                             <div className="w-3 h-3 rounded-full bg-blue-600" />
-    //                                         )}
-    //                                     </div>
-    //                                     <div className="flex-1">
-    //                                         <p className="font-medium text-gray-900 text-sm">
-    //                                             {method.methodName}
-    //                                         </p>
-    //                                     </div>
-    //                                 </div>
-    //                             </div>
-    //                         ))}
-    //                     </div>
-    //                 )}
-    //             </div>
-    //         )}
-
-    //         {/* Payment Summary & Action */}
-    //         {selectedPrice && selectedPhase && (
-    //             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-5">
-    //                 <h4 className="text-md font-semibold text-gray-900 mb-3">Tóm tắt thanh toán</h4>
-    //                 <div className="space-y-2 text-sm">
-    //                     <div className="flex justify-between">
-    //                         <span className="text-gray-600">Gói đăng ký:</span>
-    //                         <span className="font-medium text-gray-900">{selectedPrice.ticketName}</span>
-    //                     </div>
-    //                     <div className="flex justify-between">
-    //                         <span className="text-gray-600">Giai đoạn:</span>
-    //                         <span className="font-medium text-gray-900">{selectedPhase.phaseName}</span>
-    //                     </div>
-    //                     {selectedPhase.applyPercent && selectedPhase.applyPercent > 0 && (
-    //                         <>
-    //                             <div className="flex justify-between">
-    //                                 <span className="text-gray-600">Giá gốc:</span>
-    //                                 <span className="text-gray-500 line-through">
-    //                                     {formatCurrency(selectedPrice.ticketPrice ?? 0)}
-    //                                 </span>
-    //                             </div>
-    //                             <div className="flex justify-between text-green-600">
-    //                                 <span>Giảm giá ({selectedPhase.applyPercent}%):</span>
-    //                                 <span>-{formatCurrency(
-    //                                     (selectedPrice.ticketPrice ?? 0) * (selectedPhase.applyPercent / 100)
-    //                                 )}</span>
-    //                             </div>
-    //                         </>
-    //                     )}
-    //                     <div className="pt-2 border-t border-blue-200 flex justify-between items-baseline">
-    //                         <span className="font-semibold text-gray-900">Tổng cộng:</span>
-    //                         <span className="text-2xl font-bold text-blue-600">
-    //                             {formatCurrency(
-    //                                 calculateFinalPrice(selectedPrice.ticketPrice ?? 0, selectedPhase.applyPercent)
-    //                             )}
-    //                         </span>
-    //                     </div>
-    //                 </div>
-
-    //                 <button
-    //                     onClick={handlePayment}
-    //                     disabled={!selectedPaymentMethod || isProcessing}
-    //                     className="w-full mt-4 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
-    //                 >
-    //                     {isProcessing ? (
-    //                         <div className="flex items-center justify-center gap-2">
-    //                             <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-    //                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-    //                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"></path>
-    //                             </svg>
-    //                             <span>Đang xử lý...</span>
-    //                         </div>
-    //                     ) : (
-    //                         "Xác nhận thanh toán"
-    //                     )}
-    //                 </button>
-    //             </div>
-    //         )}
-    //     </div>
-    // );
 };
 
 export default PaymentPhase;
