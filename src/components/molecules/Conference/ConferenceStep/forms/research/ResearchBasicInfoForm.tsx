@@ -1,5 +1,12 @@
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { FormInput } from "@/components/molecules/FormInput";
-import { FormSelect } from "@/components/molecules/FormSelect";
 import { FormTextArea } from "@/components/molecules/FormTextArea";
 import { DatePickerInput } from "@/components/atoms/DatePickerInput";
 import { ImageUpload } from "@/components/atoms/ImageUpload";
@@ -36,7 +43,6 @@ export function ResearchBasicInfoForm({
 
   return (
     <div className="space-y-4">
-      {/* Conference Name */}
       <FormInput
         label="Tên hội nghị nghiên cứu"
         name="conferenceName"
@@ -49,7 +55,6 @@ export function ResearchBasicInfoForm({
         placeholder="VD: International Conference on AI Research 2025"
       />
 
-      {/* Description */}
       <FormTextArea
         label="Mô tả"
         value={value.description ?? ""}
@@ -59,7 +64,6 @@ export function ResearchBasicInfoForm({
         placeholder="Mô tả chi tiết về hội nghị nghiên cứu..."
       />
 
-      {/* Event Date Range Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <DatePickerInput
           label="Ngày bắt đầu hội nghị"
@@ -97,7 +101,6 @@ export function ResearchBasicInfoForm({
         </div>
       </div>
 
-      {/* Ticket Sale Period */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <DatePickerInput
           label="Ngày bắt đầu đăng kí cho thính giả"
@@ -143,7 +146,6 @@ export function ResearchBasicInfoForm({
         </div>
       </div>
 
-      {/* Warning Note for Research Conference */}
       {value.ticketSaleStart && value.startDate && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
           <p className="text-sm text-amber-800">
@@ -153,7 +155,6 @@ export function ResearchBasicInfoForm({
         </div>
       )}
 
-      {/* Capacity & Category */}
       <div className="grid grid-cols-2 gap-4">
         <FormInput
           label="Tổng số người tham dự"
@@ -168,18 +169,35 @@ export function ResearchBasicInfoForm({
           required
           placeholder="VD: 200"
         />
-        <FormSelect
-          label="Danh mục"
-          name="categoryId"
-          value={value.conferenceCategoryId}
-          onChange={(val) => handleChange("conferenceCategoryId", val)}
-          options={categoryOptions}
-          required
-          disabled={isCategoriesLoading}
-        />
+        
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            Danh mục <span className="text-red-500">*</span>
+          </label>
+          <Select
+            value={value.conferenceCategoryId ?? ""}
+            onValueChange={(val) => handleChange("conferenceCategoryId", val)}
+            disabled={isCategoriesLoading}
+          >
+            <SelectTrigger className={`w-full ${validationErrors.conferenceCategoryId ? "border-red-500" : ""}`}>
+              <SelectValue placeholder="Chọn danh mục..." />
+            </SelectTrigger>
+            <SelectContent className="max-h-[200px] overflow-y-auto">
+              <SelectGroup>
+                {categoryOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+          {validationErrors.conferenceCategoryId && (
+            <p className="mt-1 text-sm text-red-600">{validationErrors.conferenceCategoryId}</p>
+          )}
+        </div>
       </div>
 
-      {/* Address & City */}
       <div className="grid grid-cols-2 gap-4">
         <FormInput
           label="Địa chỉ"
@@ -188,18 +206,35 @@ export function ResearchBasicInfoForm({
           onChange={(val) => handleChange("address", val)}
           placeholder="VD: 123 Nguyen Hue, District 1"
         />
-        <FormSelect
-          label="Thành phố"
-          name="cityId"
-          value={value.cityId}
-          onChange={(val) => handleChange("cityId", val)}
-          options={cityOptions}
-          required
-          disabled={isCitiesLoading}
-        />
+        
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            Thành phố <span className="text-red-500">*</span>
+          </label>
+          <Select
+            value={value.cityId ?? ""}
+            onValueChange={(val) => handleChange("cityId", val)}
+            disabled={isCitiesLoading}
+          >
+            <SelectTrigger className={`w-full ${validationErrors.cityId ? "border-red-500" : ""}`}>
+              <SelectValue placeholder="Chọn thành phố..." />
+            </SelectTrigger>
+            <SelectContent className="max-h-[200px] overflow-y-auto">
+              <SelectGroup>
+                {cityOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+          {validationErrors.cityId && (
+            <p className="mt-1 text-sm text-red-600">{validationErrors.cityId}</p>
+          )}
+        </div>
       </div>
 
-      {/* Banner Image */}
       <ImageUpload
         label="Banner Image (1 ảnh)"
         subtext="Dưới 4MB, định dạng PNG hoặc JPG"
@@ -208,7 +243,6 @@ export function ResearchBasicInfoForm({
         onChange={(file) => handleChange("bannerImageFile", file as File | null)}
       />
 
-      {/* Info Note */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
         <p className="text-sm text-blue-800">
           <strong>Chú ý:</strong> Hội nghị nghiên cứu yêu cầu thiết lập Timeline 

@@ -1,4 +1,3 @@
-// ExternalReviewerWorkspace.test.tsx
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -7,7 +6,6 @@ import { configureStore } from '@reduxjs/toolkit';
 import OwnContracts from '@/components/(user)/workspace/external-reviewer/OwnContracts';
 import { OwnContractDetailDialog } from '@/components/(user)/workspace/external-reviewer/OwnContractDetailDialog';
 
-// Mock data
 const mockContracts = [
   {
     reviewerContractId: 'contract-1',
@@ -18,7 +16,7 @@ const mockContracts = [
     wage: 5000000,
     signDay: '2024-01-15T00:00:00Z',
     expireDay: '2024-12-31T00:00:00Z',
-    contractUrl: 'https://example.com/contract1.pdf', // ✅ removed trailing spaces
+    contractUrl: 'https://example.com/contract1.pdf', 
     isActive: true,
   },
   {
@@ -26,14 +24,12 @@ const mockContracts = [
     conferenceName: 'Tech Summit 2024',
     conferenceDescription: 'Technology summit for developers',
     conferenceId: 'conf-2',
-    // Optional fields omitted (equivalent to undefined)
     wage: 3000000,
     signDay: '2024-02-20T00:00:00Z',
     isActive: false,
   },
 ];
 
-// Mock Redux store
 const createMockStore = () => {
   return configureStore({
     reducer: {
@@ -47,7 +43,6 @@ const createMockStore = () => {
   });
 };
 
-// Mock API hooks
 jest.mock('@/redux/services/contract.service', () => ({
   useGetOwnReviewContractsQuery: jest.fn(() => ({
     data: { data: mockContracts },
@@ -214,8 +209,6 @@ describe('OwnContracts Component', () => {
     if (contractCard) {
       fireEvent.click(contractCard);
     }
-
-    // Dialog logic tested separately
     expect(true).toBe(true);
   });
 
