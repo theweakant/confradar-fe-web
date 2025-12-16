@@ -571,7 +571,7 @@ export interface ResearchConferenceDetailResponse {
   contract?: CollaboratorContract;
   createdBy?: string;
 
-  submittedPaper: SubmittedPaper;
+  submittedPaper?: SubmittedPaper;
 }
 
 export interface ConferencePolicyResponse {

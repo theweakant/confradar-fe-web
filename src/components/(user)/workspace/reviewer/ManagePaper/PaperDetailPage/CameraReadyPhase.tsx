@@ -106,7 +106,7 @@ export default function CameraReadyPhase({
                         Camera Ready
                     </h3>
 
-                    {paperDetail.isHeadReviewer && (
+                    {/* {paperDetail.isHeadReviewer && (
                         <Button
                             onClick={() => setShowCameraReadyDecisionPopup(true)}
                             className="bg-green-600 hover:bg-green-700"
@@ -123,7 +123,7 @@ export default function CameraReadyPhase({
                                     : "Chưa đến lúc quyết định"
                                 : "Đã quyết định trạng thái, không thể lặp lại hành động này"}
                         </Button>
-                    )}
+                    )} */}
                 </div>
 
                 <ReviewerPaperCard

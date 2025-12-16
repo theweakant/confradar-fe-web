@@ -97,7 +97,7 @@ export default function RevisionPaperPhase({
         useState(false);
 
     const [revisionDecisionStatus, setRevisionDecisionStatus] =
-        useState("Pending");
+        useState("Accepted");
 
 
     const [markingComplete, setMarkingComplete] = useState<{
