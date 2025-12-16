@@ -109,17 +109,17 @@ const ReviewerPaperCard: React.FC<ReviewerPaperCardProps> = ({
         //     };
         // }
 
-        if (paperTypeLower.includes("camera ready")) {
-            return {
-                sections: [
-                    {
-                        label: "Quyết định trạng thái bản Camera Ready",
-                        startDate: phaseInfo.cameraReadyDecideStatusStart,
-                        endDate: phaseInfo.cameraReadyDecideStatusEnd,
-                    },
-                ],
-            };
-        }
+        // if (paperTypeLower.includes("camera ready")) {
+        //     return {
+        //         sections: [
+        //             {
+        //                 label: "Quyết định trạng thái bản Camera Ready",
+        //                 startDate: phaseInfo.cameraReadyDecideStatusStart,
+        //                 endDate: phaseInfo.cameraReadyDecideStatusEnd,
+        //             },
+        //         ],
+        //     };
+        // }
 
         return null;
     };
