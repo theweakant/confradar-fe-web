@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -222,7 +223,7 @@ export default function ConferenceManagementTabs() {
     if (lower === "completed") return "bg-green-600 text-white font-semibold";
     if (lower === "cancelled") return "bg-red-600 text-white font-semibold";
     if (lower === "draft") return "bg-orange-100 text-orange-700";
-    if (lower === "rejected") return "bg-red-100 text-red-800"; // ← style mới
+    if (lower === "rejected") return "bg-red-100 text-red-800"; 
     return "bg-gray-100 text-gray-700";
   };
 
@@ -231,7 +232,7 @@ export default function ConferenceManagementTabs() {
     ongoing: { label: "Đang diễn ra", icon: <Play className="w-5 h-5" /> },
     completed: { label: "Đã kết thúc", icon: <CheckCircle2 className="w-5 h-5" /> },
     draft: { label: "Bản nháp", icon: <FileText className="w-5 h-5" /> },
-    rejected: { label: "Bị từ chối", icon: <XCircle className="w-5 h-5" /> }, // ← tab mới
+    rejected: { label: "Bị từ chối", icon: <XCircle className="w-5 h-5" /> }, 
   };
 
   if (error) {
