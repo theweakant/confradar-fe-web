@@ -56,7 +56,6 @@ export default function ManageConference() {
       ...(filterStatus !== "all" && { conferenceStatusId: filterStatus }),
       ...(filterCity !== "all" && { cityId: filterCity }),
       ...(searchQuery && { searchKeyword: searchQuery }),
-      // ⚠️ Không cần truyền conferenceCategoryId vì endpoint hiện tại KHÔNG hỗ trợ (theo Swagger bạn gửi)
     },
     {
       skip: activeTab !== "my",
@@ -75,7 +74,7 @@ export default function ManageConference() {
       ...(filterStatus !== "all" && { conferenceStatusId: filterStatus }),
       ...(filterCity !== "all" && { cityId: filterCity }),
       ...(searchQuery && { searchKeyword: searchQuery }),
-      ...(filterCategory !== "all" && { conferenceCategoryId: filterCategory }), // research endpoint hỗ trợ category
+      ...(filterCategory !== "all" && { conferenceCategoryId: filterCategory }), 
     },
     {
       skip: activeTab !== "research",
@@ -95,7 +94,6 @@ export default function ManageConference() {
     return () => clearTimeout(timer);
   }, [searchQuery, filterCategory, filterStatus, filterCity, activeTab]);
 
-  // ✅ Không cần filter client-side nữa — API đã trả đúng conferences của organizer
   const myConferences = useMemo(() => {
     if (activeTab === "my") {
       return techConferencesData?.data?.items || [];
@@ -114,11 +112,9 @@ export default function ManageConference() {
   const statuses = statusesData?.data || [];
   const categories = categoriesData?.data || [];
 
-  // ✅ Cập nhật logic display: chỉ research tab mới filter theo category (nếu API hỗ trợ)
   const displayConferences = useMemo(() => {
     let conferences = activeTab === "my" ? myConferences : researchConferences;
 
-    // Chỉ filter category ở tab research (nếu endpoint hỗ trợ)
     if (activeTab === "research" && filterCategory !== "all") {
       conferences = conferences.filter(
         (conf) => conf.conferenceCategoryId === filterCategory
