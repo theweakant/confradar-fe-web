@@ -130,7 +130,7 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
                             <Clock className="w-4 h-4 text-gray-700" />
                             <span className="text-sm text-gray-700">
                               {s.startTime && s.endTime
-                                ? `${formatTimeDate(s.startTime)} - ${formatTimeDate(s.endTime)}`
+                                ? `${formatTime(s.startTime)} - ${formatTime(s.endTime)}`
                                 : "Thời gian chưa xác định"}
                             </span>
                           </div>
@@ -250,8 +250,8 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
                             <div className="flex items-center gap-2">
                               <Clock className="w-4 h-4 text-gray-700" />
                               <span className="text-sm text-gray-700">
-                                {formatTimeDate(s.startTime)} -{" "}
-                                {formatTimeDate(s.endTime)}
+                                {formatTime(s.startTime)} -{" "}
+                                {formatTime(s.endTime)}
                               </span>
                             </div>
                           )}
