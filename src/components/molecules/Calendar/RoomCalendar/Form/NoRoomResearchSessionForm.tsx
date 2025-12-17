@@ -14,8 +14,8 @@ import {
 
 interface NoRoomResearchSessionFormProps {
   conferenceId: string;
-  conferenceStartDate: string; // "YYYY-MM-DD"
-  conferenceEndDate: string;   // "YYYY-MM-DD"
+  conferenceStartDate: string; 
+  conferenceEndDate: string;   
   existingSessions?: ResearchSession[];
   initialSession?: ResearchSession;
   open: boolean;
@@ -23,12 +23,7 @@ interface NoRoomResearchSessionFormProps {
   onClose: () => void;
 }
 
-/**
- * Form tạo hoặc chỉnh sửa phiên họp nghiên cứu KHÔNG CẦN PHÒNG.
- * - Cho phép chọn ngày trong khoảng [conferenceStartDate, conferenceEndDate]
- * - Không có diễn giả (speaker)
- * - Không gắn phòng (roomId = null)
- */
+
 export function NoRoomResearchSessionForm({
   conferenceId,
   conferenceStartDate,
@@ -64,7 +59,6 @@ export function NoRoomResearchSessionForm({
     initialSession?.endTime || `${selectedDate}T07:00:00`
   );
 
-  // Reset thời gian khi đổi ngày (chỉ khi tạo mới)
   useEffect(() => {
     if (!isEditMode) {
       const newStartTime = `${selectedDate}T06:00:00`;
@@ -96,7 +90,6 @@ export function NoRoomResearchSessionForm({
     });
   };
 
-  // Tạo danh sách giờ bắt đầu từ 06:00 đến 23:00 theo ngày đã chọn
   const startTimeOptions = useMemo(() => {
     const options: Array<{ value: string; label: string }> = [];
     for (let hour = 6; hour <= 23; hour++) {
@@ -119,7 +112,6 @@ export function NoRoomResearchSessionForm({
     return `${hours}h${minutes > 0 ? ` ${minutes}p` : ""}`;
   };
 
-  // Tính thời lượng tối đa không vượt quá 23:59
   const maxTimeRange = useMemo(() => {
     const start = new Date(formData.selectedStartTime);
     const endOfDay = new Date(start);
@@ -129,7 +121,6 @@ export function NoRoomResearchSessionForm({
     return Math.max(0.5, Math.floor(hours * 2) / 2);
   }, [formData.selectedStartTime]);
 
-  // Tự động cập nhật giờ kết thúc
   useEffect(() => {
     const start = new Date(formData.selectedStartTime);
     const proposedEnd = new Date(start.getTime() + formData.timeRange * 60 * 60 * 1000);
@@ -303,7 +294,6 @@ export function NoRoomResearchSessionForm({
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                {/* ✅ THAY ĐỔI: Dùng Shadcn Select cho giờ bắt đầu */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Giờ bắt đầu <span className="text-red-500">*</span>
@@ -315,7 +305,7 @@ export function NoRoomResearchSessionForm({
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Chọn giờ bắt đầu" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="max-h-[200px] overflow-y-auto">
                       <SelectGroup>
                         {startTimeOptions.map((option) => (
                           <SelectItem key={option.value} value={option.value}>

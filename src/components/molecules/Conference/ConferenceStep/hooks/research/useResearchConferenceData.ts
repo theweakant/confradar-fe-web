@@ -34,6 +34,7 @@ interface UseResearchConferenceDataProps {
     rankingReferences: ResearchRankingReference[];
     mediaList: Media[];
     sponsors: Sponsor[];
+    conferenceStatusId: string;
   }) => void;
   onError?: (error: unknown) => void;
 }
@@ -266,6 +267,7 @@ export function useResearchConferenceData({
         imageFile: s.imageUrl ?? null,
         imageUrl: s.imageUrl ?? "",
       }));
+      const conferenceStatusId = data.conferenceStatusId ?? "";
 
       dispatch(
         loadExistingConference({
@@ -289,6 +291,7 @@ export function useResearchConferenceData({
         rankingReferences,
         mediaList,
         sponsors,
+        conferenceStatusId
       });
     }
   }, [

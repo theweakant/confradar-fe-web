@@ -4,19 +4,23 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { EventClickArg } from "@fullcalendar/core";
+import { DatesSetArg } from "@fullcalendar/core";
+
 import { DoorOpen, Filter, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+
 import { useGetAvailableRoomsBetweenDatesQuery } from "@/redux/services/room.service";
 import { useGetAllDestinationsQuery } from "@/redux/services/destination.service";
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import type { AvailableRoom } from "@/types/room.type";
 import type { Session, ResearchSession } from "@/types/conference.type";
-import { DatesSetArg } from "@fullcalendar/core";
+
 import RoomCard from "./Room/RoomCard";
 import RoomDetailDialog from "./Room/RoomDetail";
 import { ChangeDateModal } from "@/components/molecules/Calendar/RoomCalendar/Modal/ChangeDateModal";
 import { ChangeRoomModal } from "@/components/molecules/Calendar/RoomCalendar/Modal/ChangeRoomModal";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+
 import {
   Dialog,
   DialogContent,
@@ -42,7 +46,8 @@ interface RoomCalendarProps {
   startDate?: string;
   endDate?: string;
   existingSessions?: (Session | ResearchSession)[];
-  cityId?: string;
+  cityId?: string; 
+  conferenceStatusId?: string;
 }
 
 const RoomCalendar: React.FC<RoomCalendarProps> = ({
@@ -54,16 +59,15 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
   startDate,
   endDate,
   existingSessions = [],
-  cityId
+  cityId,
+  conferenceStatusId
 }) => {
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [roomDetailOpen, setRoomDetailOpen] = useState(false);
 
-  const [filterCity, setFilterCity] = useState("all");
   const [filterDestination, setFilterDestination] = useState("all");
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [tempFilterCity, setTempFilterCity] = useState("all");
   const [tempFilterDestination, setTempFilterDestination] = useState("all");
 
   const [changeDateModalOpen, setChangeDateModalOpen] = useState(false);
@@ -84,11 +88,6 @@ const RoomCalendar: React.FC<RoomCalendarProps> = ({
   const calendarRef = useRef<FullCalendar>(null);
   const roomListRef = useRef<HTMLDivElement>(null);
 
-useEffect(() => {
-  if (cityId && cityId !== filterCity) {
-    setFilterCity(cityId);
-  }
-}, [cityId]);
 
   useEffect(() => {
     if (calendarRef.current && startDate) {
@@ -121,20 +120,12 @@ useEffect(() => {
   } = useGetAvailableRoomsBetweenDatesQuery({
     startdate: dateRange.start,
     endate: dateRange.end,
-    ...(filterCity !== "all" && { cityId: filterCity }),
+    cityId: cityId || undefined, 
     ...(filterDestination !== "all" && { destinationId: filterDestination }),
   });
 
   const rooms = roomsData?.data || [];
 
-  const cityOptions = useMemo(() => {
-    const allOption = { value: "all", label: "Tất cả thành phố" };
-    const apiCities = cities.map((city) => ({
-      value: city.cityId,
-      label: city.cityName || "N/A",
-    }));
-    return [allOption, ...apiCities];
-  }, [cities]);
 
   const destinationOptions = useMemo(() => {
     const allOption = { value: "all", label: "Tất cả điểm đến" };
@@ -146,11 +137,8 @@ useEffect(() => {
   }, [destinations]);
 
   const activeFilterCount = useMemo(() => {
-    let count = 0;
-    if (filterCity !== "all") count++;
-    if (filterDestination !== "all") count++;
-    return count;
-  }, [filterCity, filterDestination]);
+    return filterDestination !== "all" ? 1 : 0;
+  }, [filterDestination]);
 
   const uniqueRooms = Array.from(
     new Map(rooms.map((room) => [room.roomId, room])).values()
@@ -243,24 +231,20 @@ useEffect(() => {
   };
 
   const handleOpenFilterModal = () => {
-    setTempFilterCity(filterCity);
     setTempFilterDestination(filterDestination);
     setIsFilterModalOpen(true);
   };
 
   const handleApplyFilters = () => {
-    setFilterCity(tempFilterCity);
     setFilterDestination(tempFilterDestination);
     setIsFilterModalOpen(false);
   };
 
   const handleResetFilters = () => {
-    setTempFilterCity("all");
     setTempFilterDestination("all");
   };
 
   const handleClearAllFilters = () => {
-    setFilterCity("all");
     setFilterDestination("all");
   };
 
@@ -309,6 +293,13 @@ useEffect(() => {
     <div className="w-full">
       <div className="mx-4 mb-6">
         <div className="bg-white rounded-lg shadow-sm p-4">
+          {cityId && (
+            <div className="text-sm text-gray-600 mb-3">
+              <span className="font-medium">Thành phố:</span>{" "}
+              {cities.find((c) => c.cityId === cityId)?.cityName || "N/A"}
+            </div>
+          )}
+
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={handleOpenFilterModal} className="relative">
               <Filter className="w-4 h-4 mr-2" />
@@ -333,12 +324,6 @@ useEffect(() => {
 
           {activeFilterCount > 0 && (
             <div className="flex flex-wrap justify-end gap-2 mt-3 pt-3 border-t">
-              {filterCity !== "all" && (
-                <Badge variant="secondary" className="gap-1">
-                  Thành phố: {cityOptions.find((o) => o.value === filterCity)?.label}
-                  <X className="w-3 h-3 cursor-pointer" onClick={() => setFilterCity("all")} />
-                </Badge>
-              )}
               {filterDestination !== "all" && (
                 <Badge variant="secondary" className="gap-1">
                   Điểm đến: {destinationOptions.find((o) => o.value === filterDestination)?.label}
@@ -358,23 +343,7 @@ useEffect(() => {
           <DialogHeader>
             <DialogTitle>Bộ lọc tìm kiếm</DialogTitle>
           </DialogHeader>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4">
-            <div>
-              <Label className="text-sm font-medium text-gray-700 mb-2 block">Thành phố</Label>
-              <Select value={tempFilterCity} onValueChange={setTempFilterCity}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Chọn thành phố" />
-                </SelectTrigger>
-                <SelectContent className="max-h-[200px] overflow-y-auto">
-                  {cityOptions.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
+          <div className="grid grid-cols-1 gap-4 py-4">
             <div>
               <Label className="text-sm font-medium text-gray-700 mb-2 block">Điểm đến</Label>
               <Select value={tempFilterDestination} onValueChange={setTempFilterDestination}>

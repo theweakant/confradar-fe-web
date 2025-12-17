@@ -1,3 +1,11 @@
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { FormInput } from "@/components/molecules/FormInput";
 import { FormSelect } from "@/components/molecules/FormSelect";
 import { FormTextArea } from "@/components/molecules/FormTextArea";
@@ -66,7 +74,6 @@ export function BasicInfoForm({
         required
       />
 
-      {/* Date Range Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <DatePickerInput
           label="Ngày bắt đầu"
@@ -101,7 +108,6 @@ export function BasicInfoForm({
         </div>
       </div>
 
-      {/* Ticket Sale Period */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <DatePickerInput
           label="Ngày bắt đầu bán vé"
@@ -136,7 +142,6 @@ export function BasicInfoForm({
         </div>
       </div>
 
-      {/* Capacity & Category */}
       <div className="grid grid-cols-2 gap-4">
         <FormInput
           label="Tổng số người tham dự"
@@ -145,15 +150,32 @@ export function BasicInfoForm({
           value={formData.totalSlot}
           onChange={(val) => handleChange("totalSlot", Number(val))}
         />
-        <FormSelect
-          label="Danh mục"
-          name="categoryId"
-          value={formData.conferenceCategoryId}
-          onChange={(val) => handleChange("conferenceCategoryId", val)}
-          options={categoryOptions}
-          required
-          disabled={isCategoriesLoading}
-        />
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            Danh mục <span className="text-red-500">*</span>
+          </label>
+          <Select
+            value={formData.conferenceCategoryId ?? ""}
+            onValueChange={(val) => handleChange("conferenceCategoryId", val)}
+            disabled={isCategoriesLoading}
+          >
+            <SelectTrigger className={`w-full ${validationErrors.conferenceCategoryId ? "border-red-500" : ""}`}>
+              <SelectValue placeholder="Chọn danh mục..." />
+            </SelectTrigger>
+            <SelectContent className="max-h-[200px] overflow-y-auto">
+              <SelectGroup>
+                {categoryOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+          {validationErrors.conferenceCategoryId && (
+            <p className="mt-1 text-sm text-red-600">{validationErrors.conferenceCategoryId}</p>
+          )}
+        </div>
       </div>
 
       {/* Address & City */}
@@ -164,25 +186,58 @@ export function BasicInfoForm({
           value={formData.address}
           onChange={(val) => handleChange("address", val)}
         />
-        <FormSelect
-          label="Thành phố"
-          name="cityId"
-          value={formData.cityId}
-          onChange={(val) => handleChange("cityId", val)}
-          options={cityOptions}
-          required
-          disabled={isCitiesLoading}
-        />
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            Thành phố <span className="text-red-500">*</span>
+          </label>
+          <Select
+            value={formData.cityId ?? ""}
+            onValueChange={(val) => handleChange("cityId", val)}
+            disabled={isCitiesLoading}
+          >
+            <SelectTrigger className={`w-full ${validationErrors.cityId ? "border-red-500" : ""}`}>
+              <SelectValue placeholder="Chọn thành phố..." />
+            </SelectTrigger>
+            <SelectContent className="max-h-[200px] overflow-y-auto">
+              <SelectGroup>
+                {cityOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+          {validationErrors.cityId && (
+            <p className="mt-1 text-sm text-red-600">{validationErrors.cityId}</p>
+          )}
+        </div>
       </div>
 
       {/* Target Audience */}
       <div className="grid grid-cols-2 gap-4">
-        <FormSelect
-          label="Đối tượng mục tiêu"
-          value={formData.targetAudienceTechnicalConference}
-          onChange={(val) => handleChange("targetAudienceTechnicalConference", val)}
-          options={TARGET_OPTIONS}
-        />
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            Đối tượng mục tiêu
+          </label>
+          <Select
+            value={formData.targetAudienceTechnicalConference ?? ""}
+            onValueChange={(val) => handleChange("targetAudienceTechnicalConference", val)}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Chọn đối tượng..." />
+            </SelectTrigger>
+            <SelectContent className="max-h-[200px] overflow-y-auto">
+              <SelectGroup>
+              {TARGET_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
         {formData.targetAudienceTechnicalConference === "Khác" && (
           <FormInput
             label="Nhập đối tượng khác"

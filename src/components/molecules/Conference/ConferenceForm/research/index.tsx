@@ -5,12 +5,10 @@ import { useEffect, useMemo, useCallback, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks/hooks";
 import { setMaxStep, setMode, setVisibleSteps } from "@/redux/slices/conferenceStep.slice";
 import { Plus } from "lucide-react";
-// API Queries
 import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
 import { useGetAllRoomsQuery } from "@/redux/services/room.service";
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
 import { useGetAllRankingCategoriesQuery } from "@/redux/services/category.service";
-// Shared Components
 import {
   StepIndicator,
   StepContainer,
@@ -18,11 +16,9 @@ import {
   PageHeader,
 } from "@/components/molecules/Conference/ConferenceStep/components/index";
 import { FlexibleNavigationButtons } from "@/components/molecules/Conference/ConferenceStep/components/FlexibleNavigationButtons";
-// Shared Forms
 import { PolicyForm } from "@/components/molecules/Conference/ConferenceStep/forms/PolicyForm";
 import { MediaForm } from "@/components/molecules/Conference/ConferenceStep/forms/MediaForm";
 import { SponsorForm } from "@/components/molecules/Conference/ConferenceStep/forms/SponsorForm";
-// Research-Specific Forms
 import { ResearchBasicInfoForm } from "@/components/molecules/Conference/ConferenceStep/forms/research/ResearchBasicInfoForm";
 import { ResearchDetailForm } from "@/components/molecules/Conference/ConferenceStep/forms/research/ResearchDetailForm";
 import { ResearchPhaseForm } from "@/components/molecules/Conference/ConferenceStep/forms/research/ResearchPhaseForm";
@@ -51,6 +47,8 @@ import {
   RESEARCH_STEP_LABELS,
   RESEARCH_MAX_STEP,
 } from "@/components/molecules/Conference/ConferenceStep/constants";
+import { useGetAllConferenceStatusesQuery } from "@/redux/services/status.service";
+
 import { NoRoomResearchSessionForm } from "@/components/molecules/Calendar/RoomCalendar/Form/NoRoomResearchSessionForm";
 import RoomCalendar from "@/components/molecules/Calendar/RoomCalendar/RoomCalendar";
 import { UnassignedSessionsList } from "@/components/molecules/Calendar/RoomCalendar/Session/UnassignedSessionsList";
@@ -99,11 +97,21 @@ export default function ResearchConferenceStepForm({
   const { data: roomsData, isLoading: isRoomsLoading } = useGetAllRoomsQuery();
   const { data: citiesData, isLoading: isCitiesLoading } = useGetAllCitiesQuery();
   const { data: rankingData, isLoading: isRankingLoading } = useGetAllRankingCategoriesQuery();
+  const { data: statusesData } = useGetAllConferenceStatusesQuery();
+
+  const statuses = statusesData?.data || [];
+
+
 
   const [showNoRoomSessionForm, setShowNoRoomSessionForm] = useState(false);
   const [assignRoomModalOpen, setAssignRoomModalOpen] = useState(false);
   const [sessionToAssignRoom, setSessionToAssignRoom] = useState<ResearchSession | null>(null);
   const [sessionToAssignRoomIndex, setSessionToAssignRoomIndex] = useState<number>(-1);
+  const [conferenceStatusId, setConferenceStatusId] = useState<string>("");
+
+  const getStatusName = (statusId: string) =>
+    statuses.find((s) => s.conferenceStatusId === statusId)?.conferenceStatusName || statusId;
+  const conferenceStatusName = getStatusName(conferenceStatusId);
 
   const {
     currentStep,
@@ -186,6 +194,7 @@ export default function ResearchConferenceStepForm({
             researchPhases: loadedResearchPhases,
             tickets: loadedTickets,
             sessions: loadedSessions,
+            conferenceStatusId: loadedConferenceStatusId,
             policies: loadedPolicies,
             refundPolicies: loadedRefundPolicies,
             researchMaterials: loadedResearchMaterials,
@@ -199,6 +208,7 @@ export default function ResearchConferenceStepForm({
             setResearchPhases(loadedResearchPhases);
             setTickets(loadedTickets);
             setSessions(loadedSessions);
+            setConferenceStatusId(loadedConferenceStatusId || "");
             setPolicies(loadedPolicies);
             setRefundPolicies(loadedRefundPolicies);
             setResearchMaterials(loadedResearchMaterials);
@@ -331,6 +341,8 @@ export default function ResearchConferenceStepForm({
     deletedMediaIds: realDeleteTracking.deletedMediaIds,
     deletedSponsorIds: realDeleteTracking.deletedSponsorIds,
     deletedRevisionDeadlineIds: realDeleteTracking.deletedRevisionDeadlineIds,
+    initialSessions: initialDataRef.current?.sessions || [],
+
   });
 
   const { validationErrors, validate, clearError } = useValidation();
@@ -477,16 +489,8 @@ export default function ResearchConferenceStepForm({
       toast.error(`Lỗi timeline: ${fullValidation.error}`);
       return;
     }
-    console.log('📤 Calling submitResearchPhase with:', {
-      phasesCount: researchPhases.length,
-      phases: researchPhases.map((p, i) => ({
-        index: i + 1,
-        registrationStart: p.registrationStartDate,
-        authorPaymentEnd: p.authorPaymentEnd,
-      })),
-    });
+
     const result = await submitResearchPhase(researchPhases);
-    console.log('📥 submitResearchPhase result:', result);
     if (result.success) {
       handleMarkHasData(3);
       handleNext();
@@ -520,7 +524,11 @@ export default function ResearchConferenceStepForm({
   };
 
   const handleSessionsSubmit = async () => {
-    const result = await submitSessions(sessions);
+    const result = await submitSessions(sessions, {
+      deletedSessionIds: realDeleteTracking.deletedSessionIds,
+      initialSessions: initialDataRef.current?.sessions || [],
+      conferenceStatusName: conferenceStatusName, 
+    });
     if (result.success) {
       if (sessions.length > 0) handleMarkHasData(5);
       handleNext();
@@ -677,7 +685,11 @@ export default function ResearchConferenceStepForm({
         break;
       }
       case 5: {
-        result = await submitSessions(sessions);
+        result = await submitSessions(sessions, {
+          deletedSessionIds: realDeleteTracking.deletedSessionIds,
+          initialSessions: initialDataRef.current?.sessions || [],
+          conferenceStatusName: conferenceStatusName,
+        });
         break;
       }
       case 6: {
@@ -765,49 +777,6 @@ export default function ResearchConferenceStepForm({
     submitSponsors,
     handleClearDirty,
   ]);
-
-  const handleUpdateAll = async () => {
-    if (mode !== "edit") return { success: false };
-    const result = await submitAll({
-      basicForm,
-      researchDetail,
-      researchPhases,
-      tickets,
-      sessions,
-      policies,
-      refundPolicies,
-      researchMaterials,
-      rankingFiles,
-      rankingReferences,
-      mediaList,
-      sponsors,
-    });
-    if (result?.success) {
-      toast.success("Cập nhật toàn bộ hội nghị thành công!");
-      realDeleteTracking.resetDeleteTracking();
-      for (let i = 1; i <= RESEARCH_MAX_STEP; i++) {
-        handleClearDirty(i);
-      }
-      initialDataRef.current = {
-        basicForm: { ...basicForm },
-        researchDetail: { ...researchDetail },
-        researchPhases: [...researchPhases],
-        tickets: [...tickets],
-        sessions: [...sessions],
-        policies: [...policies],
-        refundPolicies: [...refundPolicies],
-        researchMaterials: [...researchMaterials],
-        rankingFiles: [...rankingFiles],
-        rankingReferences: [...rankingReferences],
-        mediaList: [...mediaList],
-        sponsors: [...sponsors],
-      };
-    } else {
-      const errorMsg = result?.errors?.join("; ") || "Lưu toàn bộ thất bại";
-      toast.error(errorMsg);
-    }
-    return result || { success: false };
-  };
 
   const isLoading =
     mode === "edit" &&
@@ -1047,6 +1016,25 @@ export default function ResearchConferenceStepForm({
               <p>• Quản lý session trong chi tiết phòng trên lịch</p>
             </div>
           )}
+            {conferenceStatusName === "Ready" && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <div className="flex items-start gap-3">
+                <svg className="w-5 h-5 text-blue-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <h4 className="text-sm font-semibold text-blue-900 mb-1">
+                    Hội nghị đang ở trạng thái &rsquo;Ready&rsquo;
+                  </h4>
+                  <p className="text-sm text-blue-800">
+                    Ở trạng thái này, bạn chỉ được <strong>gán phòng</strong> cho session chưa có phòng. 
+                    Không thể tạo session mới hoặc chỉnh sửa session đã có phòng.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {unassignedSessions.length > 0 && (
             <UnassignedSessionsList
               sessions={unassignedSessions}
@@ -1080,6 +1068,7 @@ export default function ResearchConferenceStepForm({
               endDate={basicForm.endDate}
               existingSessions={sessions}
               cityId={basicForm.cityId}
+              conferenceStatusId={conferenceStatusId}
             />
           </div>
           <AssignRoomModal
@@ -1125,7 +1114,6 @@ export default function ResearchConferenceStepForm({
           />
         </StepContainer>
       )}
-      {/* STEP 6 */}
       {currentStep === 6 && (
         <StepContainer
           stepNumber={6}

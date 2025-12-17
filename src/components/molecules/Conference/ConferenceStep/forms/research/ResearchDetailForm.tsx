@@ -88,15 +88,14 @@ export function ResearchDetailForm({
 
   return (
     <div className="space-y-4">
-      {/* ✅ THAY ĐỔI: Định dạng bài báo */}
-      <div>
-        <Label htmlFor="paperFormat">
+      <div className="space-y-2">
+        <Label htmlFor="paperFormat" className="mb-2">
           Định dạng bài báo <span className="text-red-500">*</span>
         </Label>
         <Select
           value={formData.paperFormat || ""}
           onValueChange={(val) => handleChange("paperFormat", val)}
-          disabled={false} // Không có loading state cho paperFormat nữa
+          disabled={false}
         >
           <SelectTrigger id="paperFormat" className={validationErrors.paperFormat ? "border-red-500" : ""}>
             <SelectValue placeholder="Chọn định dạng bài báo" />

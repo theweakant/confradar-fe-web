@@ -6,8 +6,8 @@ import { TAB_GROUPS } from "./constants/tab";
 interface HeaderSectionProps {
   conference: CommonConference;
   onBack: () => void;
-  actions?: React.ReactNode;       // Dropdown menu (chỉ owner)
-  extraActions?: React.ReactNode;  // Nút "Vô hiệu hóa" (dành cho Organizer)
+  actions?: React.ReactNode;      
+  extraActions?: React.ReactNode;  
   getCategoryName: (id: string) => string;
   getStatusName: (id: string) => string;
   primaryTab: "detail" | "action";
@@ -60,7 +60,6 @@ export function HeaderSection({
             </div>
           </div>
 
-          {/* ✅ Hiển thị extraActions (nút vô hiệu hóa) TRƯỚC actions (dropdown) */}
           <div className="flex items-center gap-2">
             {extraActions}
             {actions}
