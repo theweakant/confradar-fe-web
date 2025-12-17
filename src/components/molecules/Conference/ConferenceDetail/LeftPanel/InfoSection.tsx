@@ -18,7 +18,7 @@ interface MetaInfoSectionProps {
   getCityName: (id: string) => string;
   isOrganizer: boolean;
   isCollaborator: boolean;
-  now: Date; // ✅ Nhận thời gian hiện tại từ props
+  now: Date; 
 }
 
 type ConferenceSession =
@@ -47,7 +47,6 @@ function isTechnicalSession(
   return 'sessionDate' in session;
 }
 
-// ✅ Nhận `now` từ ngoài
 function getDaysRemaining(targetDate: string | undefined | null, now: Date) {
   if (!targetDate) return null;
   const target = new Date(targetDate);
@@ -64,7 +63,6 @@ function formatCountdown(days: number | null) {
   return `Còn ${days} ngày`;
 }
 
-// ✅ Nhận `now` từ ngoài
 function getNextPricePhase(conference: CommonConference, now: Date) {
   if (!conference.conferencePrices) return null;
 
@@ -95,7 +93,6 @@ function getNextPricePhase(conference: CommonConference, now: Date) {
   return nearestPhase;
 }
 
-// ✅ Nhận `now` từ ngoài
 function getNextSession(conference: CommonConference, now: Date): SessionWithDays | null {
   let sessions: ConferenceSession[] | undefined;
 
@@ -132,7 +129,6 @@ function getNextSession(conference: CommonConference, now: Date): SessionWithDay
   return nearestSession;
 }
 
-// ✅ Nhận `now` từ ngoài
 function getNextResearchDeadline(conference: CommonConference, now: Date) {
   if (!isResearchConference(conference) || !conference.researchPhase) {
     return null;
@@ -179,7 +175,7 @@ export function MetaInfoSection({
   getCityName,
   isOrganizer,
   isCollaborator,
-  now, // ✅ Destructure `now` từ props
+  now, 
 }: MetaInfoSectionProps) {
   const isResearch = isResearchConference(conference);
   const nextPricePhase = getNextPricePhase(conference, now);
@@ -383,7 +379,7 @@ export function MetaInfoSection({
         <PriceTimeline
           conference={conference}
           isResearch={isResearchConference(conference)}
-          now={now} // ✅ Truyền `now` xuống
+          now={now} 
         />
       )}
       

@@ -489,16 +489,8 @@ export default function ResearchConferenceStepForm({
       toast.error(`Lỗi timeline: ${fullValidation.error}`);
       return;
     }
-    console.log('📤 Calling submitResearchPhase with:', {
-      phasesCount: researchPhases.length,
-      phases: researchPhases.map((p, i) => ({
-        index: i + 1,
-        registrationStart: p.registrationStartDate,
-        authorPaymentEnd: p.authorPaymentEnd,
-      })),
-    });
+
     const result = await submitResearchPhase(researchPhases);
-    console.log('📥 submitResearchPhase result:', result);
     if (result.success) {
       handleMarkHasData(3);
       handleNext();
@@ -534,7 +526,8 @@ export default function ResearchConferenceStepForm({
   const handleSessionsSubmit = async () => {
     const result = await submitSessions(sessions, {
       deletedSessionIds: realDeleteTracking.deletedSessionIds,
-      initialSessions: initialDataRef.current?.sessions || []
+      initialSessions: initialDataRef.current?.sessions || [],
+      conferenceStatusName: conferenceStatusName, 
     });
     if (result.success) {
       if (sessions.length > 0) handleMarkHasData(5);
@@ -694,7 +687,8 @@ export default function ResearchConferenceStepForm({
       case 5: {
         result = await submitSessions(sessions, {
           deletedSessionIds: realDeleteTracking.deletedSessionIds,
-          initialSessions: initialDataRef.current?.sessions || []
+          initialSessions: initialDataRef.current?.sessions || [],
+          conferenceStatusName: conferenceStatusName,
         });
         break;
       }
