@@ -841,15 +841,25 @@ export const conferenceStepApi = createApi({
 
     updateResearchSession: builder.mutation<
       ApiResponse<Session>,
-      { sessionId: string; data: ResearchSession }
+      { 
+        sessionId: string; 
+        data: Partial<ResearchSession>; 
+      }
     >({
       query: ({ sessionId, data }) => {
-        const { title, description, startTime, endTime, date, roomId } = data;
+        const body: Partial<ResearchSession> = {};  
+              
+        if (data.title !== undefined) body.title = data.title;
+        if (data.description !== undefined) body.description = data.description;
+        if (data.startTime !== undefined) body.startTime = data.startTime;
+        if (data.endTime !== undefined) body.endTime = data.endTime;
+        if (data.date !== undefined) body.date = data.date;
+        if (data.roomId !== undefined) body.roomId = data.roomId;
 
         return {
           url: endpoint.CONFERENCE_STEP.UPDATE_RESEARCH_SESSION(sessionId),
           method: "PUT",
-          body: { title, description, startTime, endTime, date, roomId },
+          body,
         };
       },
       invalidatesTags: ["ConferenceStep"],
