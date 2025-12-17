@@ -19,7 +19,7 @@ interface SubmissionFormDialogProps {
     initialData?: SubmissionFormData;
     isEditMode?: boolean;
     shouldCloseOnSuccess?: boolean;
-    conferenceSessions?: ResearchConferenceSessionResponse[]; // Danh sách sessions
+    conferenceSessions?: ResearchConferenceSessionResponse[];
     conferenceName?: string;
 }
 
@@ -28,7 +28,7 @@ export interface SubmissionFormData {
     description: string;
     file: File | null;
     coAuthorIds?: string[];
-    conferenceSessionId?: string;
+    // conferenceSessionId?: string;
 }
 
 const SubmissionFormDialog: React.FC<SubmissionFormDialogProps> = ({
@@ -223,12 +223,11 @@ const SubmissionFormDialog: React.FC<SubmissionFormDialogProps> = ({
                                                 />
                                             </div>
 
-                                            <div>
+                                            {/* <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                                     Chủ đề bạn muốn nộp bài báo <span className="text-red-500">*</span>
                                                 </label>
 
-                                                {/* Chú thích */}
                                                 <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                                                     <p className="text-sm text-blue-800">
                                                         <span className="font-semibold">Hội nghị nghiên cứu {conferenceName || 'này'}</span> đang có những session sau:
@@ -240,7 +239,6 @@ const SubmissionFormDialog: React.FC<SubmissionFormDialogProps> = ({
                                                     </p>
                                                 </div>
 
-                                                {/* Dropdown */}
                                                 <select
                                                     value={formData.conferenceSessionId || ""}
                                                     onChange={(e) => setFormData(prev => ({
@@ -269,7 +267,6 @@ const SubmissionFormDialog: React.FC<SubmissionFormDialogProps> = ({
                                                     )}
                                                 </select>
 
-                                                {/* Hiển thị thông tin session đã chọn */}
                                                 {formData.conferenceSessionId && conferenceSessions && (
                                                     <div className="mt-2 p-2 bg-gray-50 border border-gray-200 rounded-lg">
                                                         <p className="text-xs font-medium text-gray-700">Session đã chọn:</p>
@@ -283,7 +280,7 @@ const SubmissionFormDialog: React.FC<SubmissionFormDialogProps> = ({
                                                         )}
                                                     </div>
                                                 )}
-                                            </div>
+                                            </div> */}
 
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -466,7 +463,7 @@ const SubmissionFormDialog: React.FC<SubmissionFormDialogProps> = ({
                                         disabled={
                                             !formData.title.trim() ||
                                             !formData.description.trim() ||
-                                            !formData.conferenceSessionId ||
+                                            // !formData.conferenceSessionId ||
                                             (!isEditMode && !formData.file) ||
                                             loading
                                         }
