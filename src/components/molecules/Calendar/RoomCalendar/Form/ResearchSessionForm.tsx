@@ -87,7 +87,6 @@ export function ResearchSingleSessionForm({
     return diffMs / (1000 * 60 * 60);
   };
 
-  // ✅ Tính và định dạng thời lượng: "1h 30p", "2h", v.v.
   const calculateDuration = (start: string, end: string) => {
     const startDate = new Date(start);
     const endDate = new Date(end);
@@ -102,7 +101,6 @@ export function ResearchSingleSessionForm({
     return `${hours}h${minutes > 0 ? ` ${minutes}p` : ""}`;
   };
 
-  // ✅ Khởi tạo state an toàn
   const getSafeTime = (time: string | undefined, fallback: string): string => {
     if (!time) return fallback;
     const d = new Date(time);
@@ -260,13 +258,13 @@ const handleSubmit = () => {
     );
     return;
   }
-  const convertToTimeOnly = (isoString: string): string => {
-    const date = new Date(isoString);
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const seconds = date.getSeconds().toString().padStart(2, '0');
-    return `${hours}:${minutes}:${seconds}`;
-  };
+  // const convertToTimeOnly = (isoString: string): string => {
+  //   const date = new Date(isoString);
+  //   const hours = date.getHours().toString().padStart(2, '0');
+  //   const minutes = date.getMinutes().toString().padStart(2, '0');
+  //   const seconds = date.getSeconds().toString().padStart(2, '0');
+  //   return `${hours}:${minutes}:${seconds}`;
+  // };
   const session: ResearchSession = {
     sessionId: initialSession?.sessionId,
     conferenceId,
