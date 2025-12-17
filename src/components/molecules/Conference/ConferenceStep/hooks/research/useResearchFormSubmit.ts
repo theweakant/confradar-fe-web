@@ -71,6 +71,21 @@
   } from "@/types/conference.type";
   import { validateBasicForm, validateAllResearchPhases } from "../../validations";
 
+
+ const hasSessionChanged = (
+   current: ResearchSession,
+   initial: ResearchSession
+ ): boolean => {
+   return (
+     current.title !== initial.title ||
+     current.description !== initial.description ||
+     current.date !== initial.date ||
+     current.startTime !== initial.startTime ||
+     current.endTime !== initial.endTime ||
+     current.roomId !== initial.roomId
+   );
+ };
+
   interface UseResearchFormSubmitProps {
     onRefetchNeeded?: () => Promise<void>;
     stepsWithData?: Set<number>;
@@ -85,6 +100,8 @@
     deletedMediaIds?: string[];
     deletedSponsorIds?: string[];
     deletedRevisionDeadlineIds?: string[];
+    initialSessions?: ResearchSession[];
+
   }
 
   export function useResearchFormSubmit(props?: UseResearchFormSubmitProps) {
@@ -413,9 +430,13 @@
 
     const submitSessions = async (
       sessions: ResearchSession[],
-      options?: { deletedSessionIds?: string[] }
+      options?: { 
+        deletedSessionIds?: string[];
+        initialSessions?: ResearchSession[];
+      }
     ) => {
       const currentDeletedIds = options?.deletedSessionIds || deletedSessionIds;
+      const initialSessions = options?.initialSessions || [];
 
       if (!conferenceId) {
         toast.error("Không tìm thấy conference ID!");
@@ -432,15 +453,24 @@
             );
           }
 
-          const existingSessions = sessions.filter((s) => s.sessionId);
-          if (existingSessions.length > 0) {
-            
+          const changedSessions = sessions.filter((currentSession) => {
+            if (!currentSession.sessionId) return false; 
+
+            const initialSession = initialSessions.find(
+              (s) => s.sessionId === currentSession.sessionId
+            );
+
+            if (!initialSession) return true; 
+
+            return hasSessionChanged(currentSession, initialSession);
+          });
+
+          if (changedSessions.length > 0) {
             await Promise.all(
-              existingSessions.map((session) => {
+              changedSessions.map((session) => {
                 if (!session.sessionId) {
                   throw new Error(`Session "${session.title}" không có ID`);
                 }
-
                 return updateSession({
                   sessionId: session.sessionId,
                   data: {
@@ -458,7 +488,6 @@
 
           const newSessions = sessions.filter((s) => !s.sessionId);
           if (newSessions.length > 0) {
-            
             await createSessions({ 
               conferenceId, 
               data: { sessions: newSessions } 
@@ -466,15 +495,19 @@
           }
 
           await triggerRefetch();
-          toast.success("Cập nhật phiên họp thành công!");
-          
+
+          if (changedSessions.length > 0 || newSessions.length > 0 || currentDeletedIds.length > 0) {
+            toast.success("Cập nhật phiên họp thành công!");
+          } else {
+            toast.info("Không có thay đổi nào cần lưu");
+          }
+
         } else {
           if (sessions.length === 0) {
             dispatch(markStepCompleted(5));
             toast.info("Đã bỏ qua phần phiên họp");
             return { success: true, skipped: true };
           }
-
           await createSessions({ 
             conferenceId, 
             data: { sessions } 
@@ -926,7 +959,10 @@
         await submitResearchPhase(stepsData.researchPhases);
         await submitPrice(stepsData.tickets);
         if (stepsData.sessions.length > 0) {
-          await submitSessions(stepsData.sessions, { deletedSessionIds: deletedSessionIds });
+          await submitSessions(stepsData.sessions, { 
+            deletedSessionIds: deletedSessionIds,
+            initialSessions: props?.initialSessions || []
+          });
         }
         if (stepsData.policies.length > 0 || stepsData.refundPolicies.length > 0) {
           await submitPolicies(stepsData.policies, stepsData.refundPolicies);

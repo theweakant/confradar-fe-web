@@ -15,7 +15,7 @@ interface FlexibleNavigationButtonsProps {
   onNext?: () => void;
   onSubmit?: () => Promise<void>;
   onUpdate?: () => Promise<{ success: boolean }>;
-  onComplete?: () => void; // ✅ Thêm callback cho nút "Hoàn tất"
+  onComplete?: () => void; 
 }
 
 export function FlexibleNavigationButtons({

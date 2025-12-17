@@ -260,16 +260,21 @@ const handleSubmit = () => {
     );
     return;
   }
-
-  // ✅ GỬI ISO STRING GIỐNG TECH
+  const convertToTimeOnly = (isoString: string): string => {
+    const date = new Date(isoString);
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}`;
+  };
   const session: ResearchSession = {
     sessionId: initialSession?.sessionId,
     conferenceId,
     title: formData.title,
     description: formData.description,
     date,
-    startTime: formData.selectedStartTime,  // ✅ ISO: "2026-08-25T08:00:00"
-    endTime: calculatedEndTime,              // ✅ ISO: "2026-08-25T10:00:00"
+    startTime: convertToTimeOnly(formData.selectedStartTime),
+    endTime: convertToTimeOnly(calculatedEndTime),           
     timeRange: formData.timeRange,
     roomId,
     roomDisplayName,

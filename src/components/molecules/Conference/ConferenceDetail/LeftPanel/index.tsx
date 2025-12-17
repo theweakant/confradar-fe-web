@@ -1,10 +1,9 @@
-// components/LeftPanel/index.tsx
 
 import { getFilteredTabs, type TabId } from "../constants/tab";
 import type { CommonConference } from "@/types/conference.type";
 import { TabContent } from "./TabContent";
 import { MetaInfoSection } from "./InfoSection";
-import { useGlobalTime } from "@/utils/TimeContext"; // ✅ Import hook
+import { useGlobalTime } from "@/utils/TimeContext"; 
 
 interface LeftPanelProps {
   primaryTab: "detail" | "action";
