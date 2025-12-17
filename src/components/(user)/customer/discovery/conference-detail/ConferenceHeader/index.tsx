@@ -125,6 +125,8 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
         }
     }, [isDialogOpen]);
 
+    console.log("🔥 conference FULL OBJECT:", conference);
+
     const getNextAvailablePhase = () => {
         if (!conference.isResearchConference) return null;
 
@@ -302,7 +304,7 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                                 conferenceId: conference.conferenceId!,
                                 title: data.title,
                                 description: data.description,
-                                conferenceSessionId: data.conferenceSessionId!,
+                                // conferenceSessionId: data.conferenceSessionId!,
                             });
 
                             if (result.success) {
@@ -320,8 +322,8 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                     loading={submitLoading}
                     includeCoauthors={true}
                     shouldCloseOnSuccess={false}
-                    conferenceSessions={(conference as ResearchConferenceDetailResponse).sessions} // Truyền sessions
-                    conferenceName={conference.conferenceName} // Truyền tên hội nghị
+                    conferenceSessions={(conference as ResearchConferenceDetailResponse).researchSessions}
+                    conferenceName={conference.conferenceName}
                 />
             </div>
         );
