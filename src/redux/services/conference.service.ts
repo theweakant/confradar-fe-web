@@ -57,6 +57,8 @@ export const conferenceApi = createApi({
         cityId?: string;
         startDate?: string;
         endDate?: string;
+        rankingCategoryId?: string;
+        allowListener?: boolean;
       }
     >({
       query: ({
@@ -66,10 +68,12 @@ export const conferenceApi = createApi({
         cityId,
         startDate,
         endDate,
+        rankingCategoryId,
+        allowListener,
       }) => ({
         url: endpoint.CONFERENCE.LIST_WITH_PRICES,
         method: "GET",
-        params: { page, pageSize, searchKeyword, cityId, startDate, endDate },
+        params: { page, pageSize, searchKeyword, cityId, startDate, endDate, rankingCategoryId, allowListener, },
       }),
       providesTags: (result) =>
         result?.data?.items
@@ -310,7 +314,7 @@ export const conferenceApi = createApi({
       }) => ({
         url: `${endpoint.CONFERENCE.LIST_BY_STATUS}/${conferenceStatusId}`,
         method: "GET",
-        params: { page, pageSize, searchKeyword, cityId, startDate, endDate },
+        params: { page, pageSize, searchKeyword, cityId, startDate, endDate, },
       }),
       providesTags: (result) =>
         result?.data?.items
@@ -555,10 +559,10 @@ export const conferenceApi = createApi({
     >({
       query: (confId) => ({
         url: endpoint.CONFERENCE.ADD_DAYS_SINCE_LAST_ONHOLD,
-        method: "PUT", 
+        method: "PUT",
         params: { confId },
       }),
-      invalidatesTags: ["Conference"], 
+      invalidatesTags: ["Conference"],
     }),
   }),
 });

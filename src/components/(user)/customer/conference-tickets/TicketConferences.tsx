@@ -83,6 +83,20 @@ export default function TicketConferences() {
     if (refundError) toast.error(refundError.data?.message);
   }, [refundError]);
 
+  const formatTime = (dateTime?: string) => {
+  if (!dateTime) return "";
+
+  // ISO datetime: "2025-12-20T09:30:00"
+  const timePart = dateTime.includes("T")
+    ? dateTime.split("T")[1]
+    : dateTime;
+
+  const [hour, minute] = timePart.split(":");
+  if (!hour || !minute) return "";
+
+  return `${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`;
+};
+
   const canRefundTicket = (ticket: CustomerPaidTicketResponse): {
     canRefund: boolean;
     refundAmount?: number;
@@ -1028,18 +1042,29 @@ export default function TicketConferences() {
                               {selectedCheckIn.checkInTime ? formatDateTime(selectedCheckIn.checkInTime) : 'Chưa điểm danh'}
                             </div>
                           </div>
-                          <div>
-                            <div className="text-gray-600 flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
-                              Ngày diễn ra
-                            </div>
-                            <div className="text-gray-900">
-                              {formatDate(
-                                selectedCheckIn.conferenceSessionDetail
-                                  ?.sessionDate,
-                              )}
-                            </div>
-                          </div>
+                           <div>
+    <div className="text-gray-600 flex items-center gap-1">
+      <Calendar className="h-4 w-4" />
+      Thời gian diễn ra
+    </div>
+    <div className="text-gray-900">
+      {formatDate(
+        selectedCheckIn.conferenceSessionDetail?.sessionDate
+      )}
+      {selectedCheckIn.conferenceSessionDetail?.startTime &&
+        selectedCheckIn.conferenceSessionDetail?.endTime && (
+          <span className="ml-1">
+            ({formatTime(
+              selectedCheckIn.conferenceSessionDetail.startTime
+            )}
+            {" - "}
+            {formatTime(
+              selectedCheckIn.conferenceSessionDetail.endTime
+            )})
+          </span>
+        )}
+    </div>
+  </div>
                         </div>
 
                         {selectedCheckIn.conferenceSessionDetail && (
