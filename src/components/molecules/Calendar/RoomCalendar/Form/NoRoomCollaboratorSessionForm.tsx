@@ -7,8 +7,8 @@ import { formatTimeOnly } from "@/helper/format";
 
 interface CollaboratorSessionFormProps {
   conferenceId: string;
-  conferenceStartDate: string; 
-  conferenceEndDate: string;   
+  conferenceStartDate: string;
+  conferenceEndDate: string;
   existingSessions?: Session[];
   initialSession?: Session;
   open: boolean;
@@ -34,12 +34,10 @@ function SpeakerModal({ isOpen, onClose, onAdd }: SpeakerModalProps) {
       toast.error("Vui lòng nhập tên diễn giả!");
       return;
     }
-
     if (!newSpeaker.image) {
       toast.error("Vui lòng chọn ảnh diễn giả!");
       return;
     }
-
     onAdd(newSpeaker as Speaker);
     setNewSpeaker({ name: "", description: "", image: null });
     onClose();
@@ -128,6 +126,13 @@ function SpeakerModal({ isOpen, onClose, onAdd }: SpeakerModalProps) {
   );
 }
 
+// Helper: kiểm tra chuỗi ngày/thời gian hợp lệ
+const isValidISODate = (str: string): boolean => {
+  if (!str) return false;
+  const d = new Date(str);
+  return !isNaN(d.getTime());
+};
+
 export function CollaboratorSessionForm({
   conferenceId,
   conferenceStartDate,
@@ -139,33 +144,43 @@ export function CollaboratorSessionForm({
   onClose,
 }: CollaboratorSessionFormProps) {
   const isEditMode = !!initialSession;
+
+  // Fallback an toàn cho selectedDate
+  const safeInitialDate = initialSession?.date || conferenceStartDate;
   const [selectedDate, setSelectedDate] = useState<string>(
-    initialSession?.date || conferenceStartDate
+    isValidISODate(safeInitialDate) ? safeInitialDate : new Date().toISOString().split('T')[0]
   );
 
   const calculateTimeRangeFromSession = (session?: Session): number => {
     if (!session) return 1;
     const start = new Date(session.startTime);
     const end = new Date(session.endTime);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return 1;
     const diffMs = end.getTime() - start.getTime();
-    return diffMs / (1000 * 60 * 60);
+    return Math.max(0.5, diffMs / (1000 * 60 * 60));
   };
+
+  const initialTimeRange = initialSession ? calculateTimeRangeFromSession(initialSession) : 1;
+  const initialStartTime = initialSession?.startTime || `${selectedDate}T06:00:00`;
 
   const [formData, setFormData] = useState({
     title: initialSession?.title || "",
     description: initialSession?.description || "",
-    selectedStartTime: initialSession?.startTime || `${selectedDate}T06:00:00`,
-    timeRange: initialSession ? calculateTimeRangeFromSession(initialSession) : 1,
+    selectedStartTime: isValidISODate(initialStartTime) ? initialStartTime : `${selectedDate}T06:00:00`,
+    timeRange: initialTimeRange,
     speakers: initialSession?.speaker || ([] as Speaker[]),
     sessionMedias: initialSession?.sessionMedias || ([] as SessionMedia[]),
   });
 
-  const [calculatedEndTime, setCalculatedEndTime] = useState(
-    initialSession?.endTime || `${selectedDate}T07:00:00`
+  const [calculatedEndTime, setCalculatedEndTime] = useState<string>(
+    initialSession?.endTime && isValidISODate(initialSession.endTime)
+      ? initialSession.endTime
+      : `${selectedDate}T07:00:00`
   );
 
   const [isSpeakerModalOpen, setIsSpeakerModalOpen] = useState(false);
 
+  // Khi thay đổi selectedDate → reset thời gian nếu không phải edit
   useEffect(() => {
     if (!isEditMode) {
       const newStartTime = `${selectedDate}T06:00:00`;
@@ -198,14 +213,12 @@ export function CollaboratorSessionForm({
   };
 
   const startTimeOptions = useMemo(() => {
+    if (!isValidISODate(selectedDate)) return [];
     const options: Array<{ value: string; label: string }> = [];
     for (let hour = 6; hour <= 23; hour++) {
       const timeStr = `${hour.toString().padStart(2, "0")}:00`;
       const isoString = `${selectedDate}T${timeStr}:00`;
-      options.push({
-        value: isoString,
-        label: timeStr,
-      });
+      options.push({ value: isoString, label: timeStr });
     }
     return options;
   }, [selectedDate]);
@@ -213,6 +226,7 @@ export function CollaboratorSessionForm({
   const calculateDuration = (start: string, end: string) => {
     const startDate = new Date(start);
     const endDate = new Date(end);
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return "1h";
     const diffMinutes = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60));
     const hours = Math.floor(diffMinutes / 60);
     const minutes = diffMinutes % 60;
@@ -221,6 +235,9 @@ export function CollaboratorSessionForm({
 
   const maxTimeRange = useMemo(() => {
     const start = new Date(formData.selectedStartTime);
+    if (isNaN(start.getTime())) {
+      return 17.5; // 06:00 → 23:30
+    }
     const endOfDay = new Date(start);
     endOfDay.setHours(23, 59, 59, 999);
     const diffMs = endOfDay.getTime() - start.getTime();
@@ -228,26 +245,39 @@ export function CollaboratorSessionForm({
     return Math.max(0.5, Math.floor(hours * 2) / 2);
   }, [formData.selectedStartTime]);
 
+  // Tính lại thời gian kết thúc khi timeRange hoặc startTime thay đổi
   useEffect(() => {
     const start = new Date(formData.selectedStartTime);
-    const proposedEnd = new Date(start.getTime() + formData.timeRange * 60 * 60 * 1000);
+    if (isNaN(start.getTime())) {
+      // Fallback nếu startTime không hợp lệ
+      const fallbackTime = `${selectedDate || new Date().toISOString().split('T')[0]}T06:00:00`;
+      setFormData(prev => ({ ...prev, selectedStartTime: fallbackTime, timeRange: 1 }));
+      setCalculatedEndTime(`${selectedDate || new Date().toISOString().split('T')[0]}T07:00:00`);
+      return;
+    }
+
+    let safeTimeRange = formData.timeRange;
+    if (isNaN(safeTimeRange) || safeTimeRange < 0.5) {
+      safeTimeRange = 1;
+      setFormData(prev => ({ ...prev, timeRange: 1 }));
+    }
+
+    const proposedEnd = new Date(start.getTime() + safeTimeRange * 60 * 60 * 1000);
     const endOfDay = new Date(start);
     endOfDay.setHours(23, 59, 59, 999);
 
     if (proposedEnd > endOfDay) {
       setCalculatedEndTime(endOfDay.toISOString());
       const maxHours = (endOfDay.getTime() - start.getTime()) / (1000 * 60 * 60);
-      setFormData((prev) => ({ ...prev, timeRange: Math.floor(maxHours * 2) / 2 }));
+      const newTimeRange = Math.max(0.5, Math.floor(maxHours * 2) / 2);
+      setFormData(prev => ({ ...prev, timeRange: newTimeRange }));
     } else {
       setCalculatedEndTime(proposedEnd.toISOString());
     }
-  }, [formData.timeRange, formData.selectedStartTime]);
+  }, [formData.timeRange, formData.selectedStartTime, selectedDate]);
 
   const handleAddSpeaker = (speaker: Speaker) => {
-    setFormData({
-      ...formData,
-      speakers: [...formData.speakers, speaker],
-    });
+    setFormData({ ...formData, speakers: [...formData.speakers, speaker] });
   };
 
   const handleRemoveSpeaker = (index: number) => {
@@ -259,21 +289,12 @@ export function CollaboratorSessionForm({
   };
 
   const handleMediaChange = (fileOrFiles: File | File[] | null) => {
-    let files: File[] | null = null;
-
-    if (fileOrFiles === null) {
-      files = null;
-    } else if (Array.isArray(fileOrFiles)) {
-      files = fileOrFiles;
-    } else {
-      files = [fileOrFiles];
-    }
-
-    if (!files || files.length === 0) {
+    if (!fileOrFiles || (Array.isArray(fileOrFiles) && fileOrFiles.length === 0)) {
       setFormData((prev) => ({ ...prev, sessionMedias: [] }));
       return;
     }
 
+    const files = Array.isArray(fileOrFiles) ? fileOrFiles : [fileOrFiles];
     const sessionMedias: SessionMedia[] = files.map((file) => ({
       mediaFile: file,
       mediaUrl: "",
@@ -287,12 +308,10 @@ export function CollaboratorSessionForm({
       toast.error("Vui lòng nhập tiêu đề session!");
       return;
     }
-
     if (formData.timeRange < 0.5) {
       toast.error("Thời lượng tối thiểu là 0.5 giờ (30 phút)!");
       return;
     }
-
     if (formData.timeRange > maxTimeRange) {
       toast.error(`Thời lượng tối đa là ${maxTimeRange} giờ (theo giờ bắt đầu đã chọn)!`);
       return;
@@ -300,6 +319,11 @@ export function CollaboratorSessionForm({
 
     const startDate = new Date(formData.selectedStartTime);
     const endDate = new Date(calculatedEndTime);
+
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      toast.error("Dữ liệu thời gian không hợp lệ!");
+      return;
+    }
 
     const getLocalDateStr = (date: Date): string => {
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -325,7 +349,7 @@ export function CollaboratorSessionForm({
       description: formData.description,
       date: selectedDate,
       startTime: formatTimeOnly(formData.selectedStartTime),
-      endTime: formatTimeOnly(formData.selectedStartTime),
+      endTime: formatTimeOnly(calculatedEndTime),
       timeRange: formData.timeRange,
       roomId: "",
       roomDisplayName: undefined,
@@ -339,6 +363,10 @@ export function CollaboratorSessionForm({
   };
 
   if (!open) return null;
+
+  // Đảm bảo max và value không bao giờ là NaN
+  const safeMaxTimeRange = isNaN(maxTimeRange) ? 17.5 : maxTimeRange;
+  const safeTimeRange = isNaN(formData.timeRange) ? 1 : formData.timeRange;
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[50] p-4">
@@ -381,7 +409,6 @@ export function CollaboratorSessionForm({
                 </div>
                 <div className="text-sm font-semibold text-gray-900">{formatDate(selectedDate)}</div>
               </div>
-
               <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-3">
                 <div className="flex items-center gap-2 mb-1">
                   <Clock className="w-4 h-4 text-green-600" />
@@ -443,16 +470,19 @@ export function CollaboratorSessionForm({
                     type="number"
                     step="0.5"
                     min="0.5"
-                    max={maxTimeRange}
-                    value={formData.timeRange}
-                    onChange={(e) => setFormData({ ...formData, timeRange: Number(e.target.value) })}
+                    max={safeMaxTimeRange}
+                    value={safeTimeRange}
+                    onChange={(e) => {
+                      const val = e.target.valueAsNumber;
+                      setFormData({ ...formData, timeRange: isNaN(val) ? 1 : val });
+                    }}
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               </div>
 
               <p className="text-xs text-gray-500">
-                Tối thiểu: 0.5 giờ • Tối đa: {maxTimeRange} giờ (không qua 23:59)
+                Tối thiểu: 0.5 giờ • Tối đa: {safeMaxTimeRange} giờ (không qua 23:59)
               </p>
 
               <div className="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg p-3">
@@ -481,7 +511,6 @@ export function CollaboratorSessionForm({
                     <span className="text-xs text-gray-500">{formData.sessionMedias.length} file đã chọn</span>
                   )}
                 </div>
-
                 <ImageUpload
                   label=""
                   subtext="Chọn một hoặc nhiều file ảnh (dưới 4MB mỗi file)"
@@ -493,14 +522,12 @@ export function CollaboratorSessionForm({
 
               <div className="border-t pt-3">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Diễn giả
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700">Diễn giả</label>
                   <span className="text-xs text-gray-500">
                     {formData.speakers.length > 0
                       ? `${formData.speakers.length} diễn giả`
                       : "Không có diễn giả"}
-                  </span>                
+                  </span>
                 </div>
 
                 {formData.speakers.length > 0 && (
@@ -529,7 +556,6 @@ export function CollaboratorSessionForm({
                             </div>
                           )}
                         </div>
-
                         <button
                           type="button"
                           onClick={() => handleRemoveSpeaker(idx)}
