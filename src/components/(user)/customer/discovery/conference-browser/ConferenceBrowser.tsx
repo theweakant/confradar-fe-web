@@ -3,9 +3,9 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useConference } from "@/redux/hooks/useConference";
-import { useGetAllCategoriesQuery } from "@/redux/services/category.service";
+import { useGetAllCategoriesQuery, useGetAllRankingCategoriesQuery } from "@/redux/services/category.service";
 import { useGetAllCitiesQuery } from "@/redux/services/city.service";
-import { CategoryOption, ConferenceResponse } from "@/types/conference.type";
+import { CategoryOption, ConferenceRanking, ConferenceResponse } from "@/types/conference.type";
 import { Category } from "@/types/category.type";
 import { City } from "@/types/city.type";
 import { mockStatusData } from "@/data/mockStatus.data";
@@ -50,6 +50,9 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
+  const [selectedRanking, setSelectedRanking] = useState("all");
+  const [allowListener, setAllowListener] = useState(false);
+
   const itemsPerPage = 12;
 
   const {
@@ -77,6 +80,12 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
     isLoading: citiesLoading,
     error: citiesError,
   } = useGetAllCitiesQuery();
+
+  const {
+    data: rankingsData,
+    isLoading: rankingsLoading,
+    error: rankingsError,
+  } = useGetAllRankingCategoriesQuery();
 
   const getBackgroundColor = () => {
     switch (bannerFilter) {
@@ -106,6 +115,14 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
     //   return defaultConferences?.items || [];
     // }
   };
+
+  const rankings: { value: string; label: string }[] = [
+    { value: "all", label: "Tất cả xếp hạng" },
+    ...(rankingsData?.data?.map((ranking: ConferenceRanking) => ({
+      value: ranking.rankId,
+      label: ranking.rankName,
+    })) || []),
+  ];
 
   const currentConferences = getCurrentConferences();
 
@@ -145,6 +162,8 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
     selectedPrice,
     selectedRating,
     sortBy,
+    selectedRanking, // Thêm dòng này
+    allowListener,
   ]);
 
   useEffect(() => {
@@ -163,6 +182,8 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
         ...(endDateFilter && {
           endDate: endDateFilter.toISOString().split("T")[0],
         }),
+        ...(selectedRanking !== "all" && { rankingId: selectedRanking }),
+        ...(bannerFilter === "research" && { allowListener }),
       };
       fetchConferencesByStatus(selectedStatus, params);
     } else {
@@ -177,6 +198,8 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
         ...(endDateFilter && {
           endDate: endDateFilter.toISOString().split("T")[0],
         }),
+        ...(selectedRanking !== "all" && { rankingCategoryId: selectedRanking }),
+        ...(bannerFilter === "research" && { allowListener }),
       };
       fetchConferencesWithPrices(params);
     }
@@ -201,6 +224,8 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
     selectedStatus,
     startDateFilter,
     endDateFilter,
+    selectedRanking,
+    allowListener,
     fetchConferencesWithPrices,
     fetchConferencesByStatus,
   ]);
@@ -526,7 +551,16 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
             setEndDateFilter(null);
             setPriceRange([0, absoluteMaxPrice]);
             setSortBy("date");
+            setSelectedRanking("all");
+            setAllowListener(false);
           }}
+
+          selectedRanking={selectedRanking}
+          setSelectedRanking={setSelectedRanking}
+          rankings={rankings}
+          allowListener={allowListener}
+          setAllowListener={setAllowListener}
+          bannerFilter={bannerFilter}
         // DropdownSelect={DropdownSelect}
         />
 

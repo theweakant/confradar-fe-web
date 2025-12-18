@@ -159,6 +159,8 @@ export const useConference = (params?: {
       cityId?: string;
       startDate?: string;
       endDate?: string;
+      rankingCategoryId?: string;
+      allowListener?: boolean;
     }) => triggerGetAllWithPrices(params || {}).unwrap(),
     [triggerGetAllWithPrices],
   );
