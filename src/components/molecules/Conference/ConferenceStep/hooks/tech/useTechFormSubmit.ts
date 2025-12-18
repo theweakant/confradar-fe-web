@@ -56,6 +56,38 @@ import type {
 import { useDeleteTracking } from "../useDeleteTracking";
 import { validateBasicForm } from "../../validations";
 
+const hasSessionChanged = (
+  current: Session,
+  initial: Session
+): boolean => {
+  return (
+    current.title !== initial.title ||
+    current.description !== initial.description ||
+    current.date !== initial.date ||
+    current.startTime !== initial.startTime ||
+    current.endTime !== initial.endTime ||
+    current.roomId !== initial.roomId ||
+    JSON.stringify(current.speaker) !== JSON.stringify(initial.speaker) ||
+    JSON.stringify(current.sessionMedias) !== JSON.stringify(initial.sessionMedias)
+  );
+};
+
+const hasOnlyRoomIdChanged = (
+  current: Session,
+  initial: Session
+): boolean => {
+  return (
+    current.roomId !== initial.roomId &&
+    current.title === initial.title &&
+    current.description === initial.description &&
+    current.date === initial.date &&
+    current.startTime === initial.startTime &&
+    current.endTime === initial.endTime &&
+    JSON.stringify(current.speaker) === JSON.stringify(initial.speaker) &&
+    JSON.stringify(current.sessionMedias) === JSON.stringify(initial.sessionMedias)
+  );
+};
+
 interface UseFormSubmitProps {
   onRefetchNeeded?: () => Promise<void>;
   deletedTicketIds?: string[];
@@ -65,6 +97,7 @@ interface UseFormSubmitProps {
   deletedSponsorIds?: string[];
   deletedPhaseIds?: string[]; 
   deletedRefundPolicyIds?: string[]; 
+  initialSessions?: Session[];
 
 }
 
@@ -412,14 +445,17 @@ const submitPrice = async (tickets: Ticket[]) => {
   }
 };
 
-  // === STEP 3: SESSIONS ===
 const submitSessions = async (
   sessions: Session[],
   eventStartDate: string,
   eventEndDate: string,
-  options?: { deletedSessionIds?: string[] }
+  options?: { 
+    deletedSessionIds?: string[];
+    initialSessions?: Session[];
+  }
 ) => {
   const currentDeletedIds = options?.deletedSessionIds || deletedSessionIds;
+  const initialSessions = options?.initialSessions || [];
   
   if (!conferenceId) {
     toast.error("Không tìm thấy conference ID!");
@@ -480,15 +516,32 @@ const submitSessions = async (
 
     if (mode === "edit") {
       if (currentDeletedIds.length > 0) {
-        await Promise.all(currentDeletedIds.map((id) => deleteSession(id).unwrap()));
+        await Promise.all(
+          currentDeletedIds.map((id) => deleteSession(id).unwrap())
+        );
       }
 
-      const existingSessions = sessions.filter((s) => s.sessionId);
-      if (existingSessions.length > 0) {
+      const changedSessions = sessions.filter((currentSession) => {
+        if (!currentSession.sessionId) return false; 
+
+        const initialSession = initialSessions.find(
+          (s) => s.sessionId === currentSession.sessionId
+        );
+
+        if (!initialSession) return true; 
+
+        return hasSessionChanged(currentSession, initialSession);
+      });
+
+      if (changedSessions.length > 0) {
         await Promise.all(
-          existingSessions.map((session) =>
-            updateSession({
-              sessionId: session.sessionId!,
+          changedSessions.map((session) => {
+            if (!session.sessionId) {
+              throw new Error(`Session "${session.title}" không có ID`);
+            }
+
+            return updateSession({
+              sessionId: session.sessionId,
               data: {
                 title: session.title,
                 description: session.description,
@@ -497,8 +550,8 @@ const submitSessions = async (
                 date: session.date,
                 roomId: session.roomId,
               },
-            }).unwrap()
-          )
+            }).unwrap();
+          })
         );
       }
 
@@ -512,20 +565,36 @@ const submitSessions = async (
       }
 
       await triggerRefetch();
+
+      if (changedSessions.length > 0 || newSessions.length > 0 || currentDeletedIds.length > 0) {
+        const messages: string[] = [];
+        if (changedSessions.length > 0) messages.push(`${changedSessions.length} session đã cập nhật`);
+        if (newSessions.length > 0) messages.push(`${newSessions.length} session mới`);
+        if (currentDeletedIds.length > 0) messages.push(`${currentDeletedIds.length} session đã xóa`);
+        
+        toast.success(`Lưu thành công! (${messages.join(", ")})`);
+      } else {
+        toast.info("Không có thay đổi nào cần lưu");
+      }
+
     } else {
       const formattedSessions = sessions.map(formatSession);
-      await createSessions({ conferenceId, data: { sessions: formattedSessions } }).unwrap();
+      await createSessions({ 
+        conferenceId, 
+        data: { sessions: formattedSessions } 
+      }).unwrap();
+      
+      if (isSubmittingAll) {
+        toast.success("Lưu session thành công!");
+      }
     }
 
     if (isSubmittingAll) {
       dispatch(markStepCompleted(3));
     }
     
-    if (isSubmittingAll) {
-      toast.success("Lưu session thành công!");
-    }
-    
     return { success: true };
+    
   } catch (error) {
     const apiError = error as { data?: ApiError };
     console.error("Sessions submit failed:", error);

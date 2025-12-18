@@ -65,7 +65,16 @@ export const formatTimeDate = (date?: string): string => {
   return `${hours}h${minutes} ${day}/${month}/${year}`;
 };
 
-//date time
+export const formatTimeOnly = (isoString: string): string => {
+  const d = new Date(isoString);
+  return d.toLocaleTimeString("en-GB", { 
+    hour: "2-digit", 
+    minute: "2-digit", 
+    second: "2-digit",
+    hour12: false 
+  }); 
+};
+
 export const formatDateTime = (date: string): string => {
   return format(new Date(date), "dd/MM/yyyy HH:mm:ss");
 };

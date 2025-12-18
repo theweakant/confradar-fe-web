@@ -17,6 +17,7 @@ import type {
   ResearchRankingFile,
   ResearchRankingReference,
   RefundPolicyResponse,
+  ResearchSession,
 } from "@/types/conference.type";
 
 interface UseResearchConferenceDataProps {
@@ -26,7 +27,7 @@ interface UseResearchConferenceDataProps {
     researchDetail: ResearchDetail;
     researchPhases: ResearchPhase[];
     tickets: Ticket[];
-    sessions: Session[];
+    sessions: ResearchSession[];
     policies: Policy[];
     refundPolicies: RefundPolicy[];
     researchMaterials: ResearchMaterial[];
@@ -206,21 +207,30 @@ export function useResearchConferenceData({
       }));
 
       // === Map Sessions ===
-      const sessions: Session[] = (data.researchSessions || []).map((s) => ({
-        sessionId: s.conferenceSessionId,
-        title: s.title ?? "",
-        description: s.description ?? "",
-        startTime: s.startTime ?? "",
-        endTime: s.endTime ?? "",
-        date: s.date ?? "",
-        roomId: s.roomId ?? "",
-        speaker: [],
-        sessionMedias: (s.sessionMedia || []).map((m) => ({
-          sessionMediaId: m.conferenceSessionMediaId,
-          mediaFile: m.conferenceSessionMediaUrl ?? null,
-          mediaUrl: m.conferenceSessionMediaUrl ?? "",
-        })),
-      }));
+      const sessions: ResearchSession[] = (data.researchSessions || []).map((s) => {
+        const sessionDate = s.date ?? "";
+        const startTime = s.startTime ?? ""; 
+        const endTime = s.endTime ?? "";     
+
+        
+        return {
+          sessionId: s.conferenceSessionId,
+          conferenceId: s.conferenceId,
+          title: s.title ?? "",
+          description: s.description ?? "",
+          date: sessionDate,      
+          startTime: startTime,     
+          endTime: endTime,        
+          roomId: s.roomId ?? "",
+          roomDisplayName: s.room?.displayName ?? "",
+          roomNumber: s.room?.number ?? "",
+          sessionMedias: (s.sessionMedia || []).map((m) => ({
+            sessionMediaId: m.conferenceSessionMediaId,
+            mediaFile: m.conferenceSessionMediaUrl ?? null,
+            mediaUrl: m.conferenceSessionMediaUrl ?? "",
+          })),
+        };
+      });
 
       // === Map Policies ===
       const policies: Policy[] = (data.policies || []).map((p) => ({

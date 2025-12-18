@@ -510,11 +510,11 @@ export default function ResearchConferenceStepForm({
       return;
     }
 
-    const ticketValidation = validateResearchTicketConfig(tickets);
-    if (!ticketValidation.isValid) {
-      toast.error(`Set up loại chi phí không hợp lệ: ${ticketValidation.error}`);
-      return;
-    }
+    // const ticketValidation = validateResearchTicketConfig(tickets);
+    // if (!ticketValidation.isValid) {
+    //   toast.error(`Set up loại chi phí không hợp lệ: ${ticketValidation.error}`);
+    //   return;
+    // }
 
     const result = await submitPrice(tickets);
     if (result.success) {
@@ -524,6 +524,14 @@ export default function ResearchConferenceStepForm({
   };
 
   const handleSessionsSubmit = async () => {
+  console.log("📤 handleSessionsSubmit - sessions state:", sessions.map(s => ({
+    title: s.title,
+    startTime: s.startTime,
+    endTime: s.endTime,
+    startTimeType: typeof s.startTime,
+    endTimeType: typeof s.endTime,
+  })));
+
     const result = await submitSessions(sessions, {
       deletedSessionIds: realDeleteTracking.deletedSessionIds,
       initialSessions: initialDataRef.current?.sessions || [],

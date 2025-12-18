@@ -3,11 +3,12 @@ import { Clock, Users, Calendar as CalendarIcon, AlertCircle } from "lucide-reac
 import { toast } from "sonner";
 import type { Session, Speaker, SessionMedia } from "@/types/conference.type";
 import { ImageUpload } from "@/components/atoms/ImageUpload";
+import { formatTimeOnly } from "@/helper/format";
 
 interface CollaboratorSessionFormProps {
   conferenceId: string;
-  conferenceStartDate: string; // "YYYY-MM-DD"
-  conferenceEndDate: string;   // "YYYY-MM-DD"
+  conferenceStartDate: string; 
+  conferenceEndDate: string;   
   existingSessions?: Session[];
   initialSession?: Session;
   open: boolean;
@@ -323,8 +324,8 @@ export function CollaboratorSessionForm({
       title: formData.title,
       description: formData.description,
       date: selectedDate,
-      startTime: formData.selectedStartTime,
-      endTime: calculatedEndTime,
+      startTime: formatTimeOnly(formData.selectedStartTime),
+      endTime: formatTimeOnly(formData.selectedStartTime),
       timeRange: formData.timeRange,
       roomId: "",
       roomDisplayName: undefined,

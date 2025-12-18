@@ -94,28 +94,35 @@ export function useTechConferenceData({
         })),
       }));
 
-      // === Map Sessions ===
-      const sessions: Session[] = (data.sessions || []).map((s) => ({
-        sessionId: s.conferenceSessionId,
-        title: s.title ?? "",
-        description: s.description ?? "",
-        startTime: s.startTime ?? "",
-        endTime: s.endTime ?? "",
-        date: s.date ?? s.sessionDate ?? "",
-        roomId: s.roomId ?? "",
-        speaker: (s.speakers || []).map((sp) => ({
-          speakerId: sp.speakerId,
-          name: sp.name ?? "",
-          description: sp.description ?? "",
-          image: sp.image,
-          imageUrl: sp.image ?? "",
-        })),
-        sessionMedias: (s.sessionMedia || []).map((m) => ({
-          sessionMediaId: m.conferenceSessionMediaId,
-          mediaFile: m.conferenceSessionMediaUrl,
-          mediaUrl: m.conferenceSessionMediaUrl ?? "",
-        })),
-      }));
+      const sessions: Session[] = (data.sessions || []).map((s) => {
+        const sessionDate = s.date ?? s.sessionDate ?? "";
+        const startTime = s.startTime ?? ""; 
+        const endTime = s.endTime ?? "";     
+        return {
+          sessionId: s.conferenceSessionId,
+          conferenceId: s.conferenceId,
+          title: s.title ?? "",
+          description: s.description ?? "",
+          date: sessionDate,       
+          startTime: startTime,    
+          endTime: endTime,        
+          roomId: s.roomId ?? "",
+          roomDisplayName: s.room?.displayName ?? "",
+          roomNumber: s.room?.number ?? "",
+          speaker: (s.speakers || []).map((sp) => ({
+            speakerId: sp.speakerId,
+            name: sp.name ?? "",
+            description: sp.description ?? "",
+            image: sp.image,
+            imageUrl: sp.image ?? "",
+          })),
+          sessionMedias: (s.sessionMedia || []).map((m) => ({
+            sessionMediaId: m.conferenceSessionMediaId,
+            mediaFile: m.conferenceSessionMediaUrl,
+            mediaUrl: m.conferenceSessionMediaUrl ?? "",
+          })),
+        };
+      });
 
       const policies: Policy[] = (data.policies || []).map((p: ConferencePolicyResponse) => ({
         policyId: p.policyId,

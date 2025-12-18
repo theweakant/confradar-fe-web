@@ -23,10 +23,29 @@ import {
 } from "@/redux/services/room.service";
 import { SessionList } from "../Session/SessionList";
 import { LocalSessionList } from "../Session/Local/LocalSessionList";
-import { SingleSessionForm } from "../Form/TechSessionForm";
-import { ResearchSingleSessionForm } from "../Form/ResearchSessionForm";
+import { SingleSessionForm } from "../Form/TechSessionForm"; //organizer
+import { ResearchSingleSessionForm } from "../Form/ResearchSessionForm"
 import type { Session, ResearchSession } from "@/types/conference.type";
-
+const normalizeSessionTime = (time: string): string => {
+  if (!time) return "";
+  
+  // Nếu đã là "HH:mm:ss" → giữ nguyên
+  if (/^\d{2}:\d{2}:\d{2}$/.test(time)) {
+    return time;
+  }
+  
+  // Nếu là ISO → convert
+  const date = new Date(time);
+  if (isNaN(date.getTime())) {
+    console.error("❌ Invalid time format:", time);
+    return "00:00:00";
+  }
+  
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
+  return `${hours}:${minutes}:${seconds}`;
+};
 interface RoomDetailDialogProps {
   open: boolean;
   roomId: string | null;
@@ -132,8 +151,8 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
   };
 
   const handleTimeSlotSelect = (span: { startTime: string; endTime: string }) => {
-     if (!conferenceId) {
-      toast.error('Không thể tạo phiên họp: Thiếu Conference ID');
+     if (!conferenceId || !date) {
+      toast.error('Không thể tạo session: Thiếu thông tin ngày');
       return;
     }
 
@@ -152,63 +171,133 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
     setEditingSession(null);
   };
 
-  const handleSessionSave = async (session: Session | ResearchSession) => {
-    setIsCreatingSession(true);
+  // const handleSessionSave = async (session: Session | ResearchSession) => {
+  //   setIsCreatingSession(true);
 
-    try {
-      if (editingSession) {
-        if (!editingSession.sessionId) {
-          toast.error("Không thể cập nhật session không có ID!");
-          setIsCreatingSession(false);
-          return;
-        }
+  //   try {
+  //     if (editingSession) {
+  //       if (!editingSession.sessionId) {
+  //         toast.error("Không thể cập nhật session không có ID!");
+  //         setIsCreatingSession(false);
+  //         return;
+  //       }
 
-        const updatedSession: Session | ResearchSession = {
-          ...session,
-          sessionId: editingSession.sessionId,
-        };
+  //       const updatedSession: Session | ResearchSession = {
+  //         ...session,
+  //         sessionId: editingSession.sessionId,
+  //       };
 
-        const actualIndex = findActualIndex(editingSession);
+  //       const actualIndex = findActualIndex(editingSession);
 
-        if (actualIndex !== -1) {
-          const updatedSessions = [...localSessions];
-          updatedSessions[actualIndex] = updatedSession;
-          setLocalSessions(updatedSessions);
+  //       if (actualIndex !== -1) {
+  //         const updatedSessions = [...localSessions];
+  //         updatedSessions[actualIndex] = updatedSession;
+  //         setLocalSessions(updatedSessions);
 
-          if (onSessionUpdated) {
-            await Promise.resolve(onSessionUpdated(updatedSession, actualIndex))
-              .catch((error) => {
-                setLocalSessions(localSessions);
-                toast.error("Cập nhật thất bại!");
-                throw error;
-              });
-          }
+  //         if (onSessionUpdated) {
+  //           await Promise.resolve(onSessionUpdated(updatedSession, actualIndex))
+  //             .catch((error) => {
+  //               setLocalSessions(localSessions);
+  //               toast.error("Cập nhật thất bại!");
+  //               throw error;
+  //             });
+  //         }
 
-          setMode("view");
-          setSelectedSlot(null);
-          setEditingSession(null);
-          toast.success(`Đã cập nhật session "${updatedSession.title}"!`);
-        } else {
-          toast.error("Không tìm thấy session để cập nhật");
-        }
-      } else {
-        setLocalSessions((prev) => [...prev, session]);
+  //         setMode("view");
+  //         setSelectedSlot(null);
+  //         setEditingSession(null);
+  //         toast.success(`Đã cập nhật session "${updatedSession.title}"!`);
+  //       } else {
+  //         toast.error("Không tìm thấy session để cập nhật");
+  //       }
+  //     } else {
+  //       setLocalSessions((prev) => [...prev, session]);
         
-        if (onSessionCreated) {
-          onSessionCreated(session);
-        }
+  //       if (onSessionCreated) {
+  //         onSessionCreated(session);
+  //       }
         
+  //       setMode("view");
+  //       setSelectedSlot(null);
+  //       setEditingSession(null);
+  //       toast.success(`Đã tạo session "${session.title}"!`);
+  //     }
+  //   } catch (error) {
+  //     toast.error("Có lỗi xảy ra khi lưu session");
+  //   } finally {
+  //     setIsCreatingSession(false);
+  //   }
+  // };
+
+const handleSessionSave = async (session: Session | ResearchSession) => {
+  setIsCreatingSession(true);
+
+  try {
+    // ✅ NORMALIZE NGAY TẠI ĐÂY
+    const normalizedSession = {
+      ...session,
+      startTime: normalizeSessionTime(session.startTime),
+      endTime: normalizeSessionTime(session.endTime),
+    };
+    
+    console.log("🟢 RoomDetailDialog - Normalized session:", {
+      original: { startTime: session.startTime, endTime: session.endTime },
+      normalized: { startTime: normalizedSession.startTime, endTime: normalizedSession.endTime },
+    });
+    
+    if (editingSession) {
+      if (!editingSession.sessionId) {
+        toast.error("Không thể cập nhật session không có ID!");
+        setIsCreatingSession(false);
+        return;
+      }
+
+      const updatedSession: Session | ResearchSession = {
+        ...normalizedSession,  // ✅ DÙNG NORMALIZED
+        sessionId: editingSession.sessionId,
+      };
+
+      const actualIndex = findActualIndex(editingSession);
+
+      if (actualIndex !== -1) {
+        const updatedSessions = [...localSessions];
+        updatedSessions[actualIndex] = updatedSession;
+        setLocalSessions(updatedSessions);
+
+        if (onSessionUpdated) {
+          await Promise.resolve(onSessionUpdated(updatedSession, actualIndex))
+            .catch((error) => {
+              setLocalSessions(localSessions);
+              toast.error("Cập nhật thất bại!");
+              throw error;
+            });
+        }
+
         setMode("view");
         setSelectedSlot(null);
         setEditingSession(null);
-        toast.success(`Đã tạo session "${session.title}"!`);
+        toast.success(`Đã cập nhật session "${updatedSession.title}"!`);
+      } else {
+        toast.error("Không tìm thấy session để cập nhật");
       }
-    } catch (error) {
-      toast.error("Có lỗi xảy ra khi lưu session");
-    } finally {
-      setIsCreatingSession(false);
+    } else {
+      setLocalSessions((prev) => [...prev, normalizedSession]);  // ✅ DÙNG NORMALIZED
+      
+      if (onSessionCreated) {
+        onSessionCreated(normalizedSession);  // ✅ DÙNG NORMALIZED
+      }
+      
+      setMode("view");
+      setSelectedSlot(null);
+      setEditingSession(null);
+      toast.success(`Đã tạo session "${normalizedSession.title}"!`);
     }
-  };
+  } catch (error) {
+    toast.error("Có lỗi xảy ra khi lưu session");
+  } finally {
+    setIsCreatingSession(false);
+  }
+};
 
   const handleEditSession = (session: Session | ResearchSession, _filteredIndex: number) => {
     const normalizeTime = (timeStr: string, dateStr: string): string => {

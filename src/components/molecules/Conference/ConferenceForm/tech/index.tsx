@@ -17,8 +17,8 @@ import { MediaForm } from "@/components/molecules/Conference/ConferenceStep/form
 import { SponsorForm } from "@/components/molecules/Conference/ConferenceStep/forms/SponsorForm";
 import { BasicInfoForm } from "@/components/molecules/Conference/ConferenceStep/forms/BasicInfoForm";
 import { PriceForm } from "@/components/molecules/Conference/ConferenceStep/forms/PriceForm";
-import RoomCalendar from "@/components/molecules/Calendar/RoomCalendar/RoomCalendar";
-import SessionProposalCalendar from "@/components/molecules/Calendar/SessionCalendar/SessionProposalCalendar";
+import RoomCalendar from "@/components/molecules/Calendar/RoomCalendar/RoomCalendar"; //organizer
+import SessionProposalCalendar from "@/components/molecules/Calendar/SessionCalendar/SessionProposalCalendar"; //collab
 import {
   useStepNavigation,
   useFormSubmit,
@@ -494,7 +494,9 @@ function TechConferenceStepFormContent({
       sessions,
       basicForm.startDate!,
       basicForm.endDate!,
-      { deletedSessionIds: realDeleteTracking.deletedSessionIds }
+      { deletedSessionIds: realDeleteTracking.deletedSessionIds,
+        initialSessions: initialDataRef.current?.sessions || []
+       }
     );
     if (result.success) {
       if (sessions.length > 0) handleMarkHasData(3);
@@ -680,7 +682,9 @@ function TechConferenceStepFormContent({
           sessions,
           basicForm.startDate!,
           basicForm.endDate!,
-          { deletedSessionIds: realDeleteTracking.deletedSessionIds }
+          { deletedSessionIds: realDeleteTracking.deletedSessionIds,
+            initialSessions: initialDataRef.current?.sessions || []
+           }
         );
         break;
       }

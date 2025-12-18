@@ -10,7 +10,6 @@ import { formatCurrency } from '@/helper/format';
 import { useAuth } from '@/redux/hooks/useAuth';
 import { MonthlyStat } from '@/types/dashboard.type';
 
-// shadcn/ui components
 import {
   Select,
   SelectContent,
@@ -69,7 +68,6 @@ interface ProgressProps {
   pending: number;
 }
 
-// ============= COMPONENTS =============
 
 const ConferenceStats: React.FC<ConferenceStatsProps> = ({ total, completed, inProgress, pending }) => {
   return (
@@ -343,7 +341,6 @@ const   ConferenceProgress: React.FC<ProgressProps> = ({ completed, inProgress, 
   );
 };
 
-// Helper: tạo danh sách tháng cho dropdown (tháng hiện tại trở về trước, tối đa 24 tháng)
 const generateMonthOptions = () => {
   const options = [];
   const now = new Date();
@@ -358,7 +355,6 @@ const generateMonthOptions = () => {
   return options;
 };
 
-// Helper: tạo dữ liệu doanh thu 6 tháng TRƯỚC (kể từ tháng được chọn)
 const generateRevenueDataFor6MonthsBack = (
   selectedYear: number,
   selectedMonth: number,
@@ -386,7 +382,6 @@ const generateRevenueDataFor6MonthsBack = (
   return result;
 };
 
-// ============= MAIN DASHBOARD =============
 export default function ConferenceDashboard() {
   const { user } = useAuth();
   const userId = user?.userId || '';
@@ -396,11 +391,9 @@ export default function ConferenceDashboard() {
     return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
   });
 
-  // Chỉ cho chọn theo quý: 3, 6, 9, ..., 24 tháng
   const QUARTER_OPTIONS = [3, 6, 9, 12, 15, 18, 21, 24];
   const [upcomingMonths, setUpcomingMonths] = useState<number>(3);
 
-  // Parse selected revenue month
   const { year: revYear, month: revMonth } = useMemo(() => {
     const [y, m] = selectedRevenueMonth.split('-').map(Number);
     return { year: y, month: m };

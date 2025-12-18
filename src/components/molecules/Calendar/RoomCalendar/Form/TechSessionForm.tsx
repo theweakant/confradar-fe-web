@@ -257,6 +257,12 @@ export function SingleSessionForm({
   onSave,
   onCancel,
 }: SingleSessionFormProps) {
+    console.log('📅 SingleSessionForm props:', {
+    date,
+    startTime: slotStartTime,
+    endTime: slotEndTime,
+    roomId,
+  });
   const calculateTimeRangeFromSession = (session?: Session): number => {
     if (!session) return 1;
     const start = new Date(session.startTime);
@@ -298,12 +304,11 @@ export function SingleSessionForm({
     });
   };
 const startTimeOptions = useMemo(() => {
+  if (!date) return [];
   const options: Array<{ value: string; label: string }> = [];
   
-  // Lấy ngày từ date prop
-  const dateStr = date; // "YYYY-MM-DD"
+  const dateStr = date; 
   
-  // Tạo các option từ 6:00 đến 23:00 (mỗi giờ)
   for (let hour = 6; hour <= 23; hour++) {
     const timeStr = `${hour.toString().padStart(2, '0')}:00`;
     const isoString = `${dateStr}T${timeStr}:00`;
@@ -331,19 +336,24 @@ const startTimeOptions = useMemo(() => {
 const maxTimeRange = useMemo(() => {
   const start = new Date(formData.selectedStartTime);
   
-  // Tạo thời điểm 23:59:59 của cùng ngày
   const endOfDay = new Date(start);
   endOfDay.setHours(23, 59, 59, 999);
   
-  // Tính số giờ từ start đến 23:59
   const diffMs = endOfDay.getTime() - start.getTime();
   const hours = diffMs / (1000 * 60 * 60);
   
-  // Làm tròn xuống theo bước 0.5 giờ
   return Math.max(0.5, Math.floor(hours * 2) / 2);
 }, [formData.selectedStartTime]);
 
 useEffect(() => {
+  // 👇 Thêm log debug
+  console.log('⏰ Calculating endTime:', {
+    selectedStartTime: formData.selectedStartTime,
+    timeRange: formData.timeRange,
+    startDate: new Date(formData.selectedStartTime),
+    isValid: !isNaN(new Date(formData.selectedStartTime).getTime())
+  });
+
   const start = new Date(formData.selectedStartTime);
   const proposedEnd = new Date(start.getTime() + formData.timeRange * 60 * 60 * 1000);
   
@@ -413,11 +423,8 @@ const handleSubmit = () => {
     return;
   }
 
-  // if (formData.speakers.length === 0) {
-  //   toast.error("Vui lòng thêm ít nhất 1 diễn giả!");
-  //   return;
-  // }
 
+  
   if (formData.timeRange < 0.5) {
     toast.error("Thời lượng tối thiểu là 0.5 giờ (30 phút)!");
     return;

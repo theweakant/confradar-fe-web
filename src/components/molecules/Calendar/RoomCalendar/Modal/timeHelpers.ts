@@ -1,9 +1,5 @@
 // utils/timeHelpers.ts
 
-/**
- * Parse time string to Date object
- * Hỗ trợ cả ISO string và "HH:mm:ss" format
- */
 export const parseTimeToDate = (timeString: string, dateString?: string): Date | null => {
   if (!timeString || typeof timeString !== 'string') {
     return null;
