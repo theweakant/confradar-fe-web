@@ -207,7 +207,7 @@ export function CustomerTicketModal({
         </div>
 
       <DialogFooter className="flex flex-row justify-end gap-2 pt-3 mt-4 border-t">
-        {!ticket.isRefunded && (
+        {/* {!ticket.isRefunded && (
           // ✅ CẬP NHẬT: chỉ render nếu là owner
           currentUserId &&
           conferenceOwnerId &&
@@ -231,7 +231,7 @@ export function CustomerTicketModal({
               )}
             </>
           )
-        )}
+        )} */}
         <Button 
           variant="outline" 
           onClick={() => onOpenChange(false)}

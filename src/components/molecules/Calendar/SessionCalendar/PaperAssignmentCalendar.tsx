@@ -7,7 +7,6 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { EventClickArg } from "@fullcalendar/core";
-import { FileText } from "lucide-react";
 import { useGetPresentSessionQuery } from "@/redux/services/statistics.service";
 import { useListAcceptedPapersQuery } from "@/redux/services/paper.service";
 import type { AcceptedPaper } from "@/types/paper.type";
@@ -27,7 +26,7 @@ interface PresentSessionData {
 interface PaperAssignmentCalendarProps {
   conferenceId?: string;
   onPaperSelected?: (paperId: string) => void;
-  selectedPaperId?: string | null; // ✅ Đã thêm prop này
+  selectedPaperId?: string | null; 
   startDate?: string;
   acceptedPapers?: AcceptedPaper[];
 }
