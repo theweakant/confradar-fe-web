@@ -483,23 +483,72 @@ const submitSessions = async (
   try {
     setIsSubmitting(true);
 
-    const formatTime = (datetime: string) => {
-      const date = new Date(datetime);
-      return date.toTimeString().slice(0, 8);
+    // 🔍 DEBUG: Log sessions TRƯỚC khi xử lý
+    console.log("📊 submitSessions - Input sessions:", sessions);
+
+    const extractTimeOnly = (timeInput: string): string => {
+      console.log("🔍 extractTimeOnly input:", timeInput);
+      
+      // Nếu đã là format "HH:mm:ss", giữ nguyên
+      if (/^\d{2}:\d{2}:\d{2}$/.test(timeInput)) {
+        console.log("✅ Already in HH:mm:ss format:", timeInput);
+        return timeInput;
+      }
+
+      // Nếu là format "HH:mm", thêm seconds
+      if (/^\d{2}:\d{2}$/.test(timeInput)) {
+        const result = `${timeInput}:00`;
+        console.log("✅ Converted HH:mm to HH:mm:ss:", result);
+        return result;
+      }
+
+      // Nếu có chứa 'T' (ISO string), extract time
+      if (timeInput.includes('T')) {
+        const d = new Date(timeInput);
+        if (isNaN(d.getTime())) {
+          console.error("❌ Invalid ISO date:", timeInput);
+          return "00:00:00";
+        }
+        const hours = d.getHours().toString().padStart(2, '0');
+        const minutes = d.getMinutes().toString().padStart(2, '0');
+        const seconds = d.getSeconds().toString().padStart(2, '0');
+        const result = `${hours}:${minutes}:${seconds}`;
+        console.log("✅ Extracted from ISO:", result);
+        return result;
+      }
+
+      // Fallback: try to parse as Date
+      const d = new Date(timeInput);
+      if (!isNaN(d.getTime())) {
+        const hours = d.getHours().toString().padStart(2, '0');
+        const minutes = d.getMinutes().toString().padStart(2, '0');
+        const seconds = d.getSeconds().toString().padStart(2, '0');
+        const result = `${hours}:${minutes}:${seconds}`;
+        console.log("✅ Parsed as Date:", result);
+        return result;
+      }
+
+      console.error("❌ Could not parse time, returning default:", timeInput);
+      return "00:00:00";
     };
 
     const formatSession = (s: Session) => {
-      const startDateTime = new Date(s.startTime);
-      const endDateTime = new Date(s.endTime);
-      const startTime = startDateTime.toTimeString().slice(0, 8);
-      const endTime = endDateTime.toTimeString().slice(0, 8);
+      console.log("📊 formatSession - Input session:", {
+        title: s.title,
+        startTime: s.startTime,
+        endTime: s.endTime,
+        date: s.date
+      });
 
-      return {
+      const formattedStartTime = extractTimeOnly(s.startTime);
+      const formattedEndTime = extractTimeOnly(s.endTime);
+
+      const formatted = {
         title: s.title,
         description: s.description,
         date: s.date,
-        startTime,
-        endTime,
+        startTime: formattedStartTime,
+        endTime: formattedEndTime,
         roomId: s.roomId,
         speaker: s.speaker.map((sp) => ({
           name: sp.name,
@@ -512,15 +561,27 @@ const submitSessions = async (
           mediaUrl: typeof media.mediaFile === "string" ? media.mediaFile : undefined,
         })),
       };
+
+      console.log("📤 formatSession - Output:", {
+        title: formatted.title,
+        startTime: formatted.startTime,
+        endTime: formatted.endTime,
+        date: formatted.date
+      });
+
+      return formatted;
     };
 
     if (mode === "edit") {
+      // Xóa các session đã đánh dấu xóa
       if (currentDeletedIds.length > 0) {
+        console.log("🗑️ Deleting sessions:", currentDeletedIds);
         await Promise.all(
           currentDeletedIds.map((id) => deleteSession(id).unwrap())
         );
       }
 
+      // Tìm các session đã thay đổi
       const changedSessions = sessions.filter((currentSession) => {
         if (!currentSession.sessionId) return false; 
 
@@ -533,6 +594,9 @@ const submitSessions = async (
         return hasSessionChanged(currentSession, initialSession);
       });
 
+      console.log("📝 Changed sessions:", changedSessions.length);
+
+      // Update các session đã thay đổi
       if (changedSessions.length > 0) {
         await Promise.all(
           changedSessions.map((session) => {
@@ -540,24 +604,33 @@ const submitSessions = async (
               throw new Error(`Session "${session.title}" không có ID`);
             }
 
+            const updateData = {
+              title: session.title,
+              description: session.description,
+              startTime: extractTimeOnly(session.startTime),
+              endTime: extractTimeOnly(session.endTime),
+              date: session.date,
+              roomId: session.roomId,
+            };
+
+            console.log("🔄 Updating session:", session.sessionId, updateData);
+
             return updateSession({
               sessionId: session.sessionId,
-              data: {
-                title: session.title,
-                description: session.description,
-                startTime: formatTime(session.startTime),
-                endTime: formatTime(session.endTime),
-                date: session.date,
-                roomId: session.roomId,
-              },
+              data: updateData,
             }).unwrap();
           })
         );
       }
 
+      // Tạo các session mới
       const newSessions = sessions.filter((s) => !s.sessionId);
+      console.log("➕ New sessions:", newSessions.length);
+
       if (newSessions.length > 0) {
         const formattedNewSessions = newSessions.map(formatSession);
+        console.log("📤 Sending new sessions to API:", formattedNewSessions);
+
         await createSessions({
           conferenceId,
           data: { sessions: formattedNewSessions },
@@ -578,7 +651,10 @@ const submitSessions = async (
       }
 
     } else {
+      // Mode: create
       const formattedSessions = sessions.map(formatSession);
+      console.log("📤 CREATE MODE - Sending sessions to API:", formattedSessions);
+
       await createSessions({ 
         conferenceId, 
         data: { sessions: formattedSessions } 
@@ -597,7 +673,7 @@ const submitSessions = async (
     
   } catch (error) {
     const apiError = error as { data?: ApiError };
-    console.error("Sessions submit failed:", error);
+    console.error("❌ Sessions submit failed:", error);
     toast.error(apiError?.data?.message || "Lưu session thất bại!");
     return { success: false, error };
   } finally {

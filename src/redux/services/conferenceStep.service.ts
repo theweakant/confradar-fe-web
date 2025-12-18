@@ -30,6 +30,7 @@ import type {
 
   SessionDetailForScheduleResponse
 } from "@/types/conference.type";
+import { normalizeDateFormat, normalizeTimeFormat, validateTimeFormat } from "@/helper/format";
 
 export const conferenceStepApi = createApi({
   reducerPath: "conferenceStepApi",
@@ -188,55 +189,46 @@ export const conferenceStepApi = createApi({
       query: ({ conferenceId, data }) => {
         const formData = new FormData();
 
-        // Lặp qua từng session
         data.sessions.forEach((session, index) => {
+          const startTime = normalizeTimeFormat(session.startTime);
+          const endTime = normalizeTimeFormat(session.endTime);
+          const date = normalizeDateFormat(session.date);
+
           formData.append(`sessions[${index}].title`, session.title);
-          formData.append(
-            `sessions[${index}].description`,
-            session.description,
-          );
-          formData.append(`sessions[${index}].startTime`, session.startTime);
-          formData.append(`sessions[${index}].endTime`, session.endTime);
-          formData.append(`sessions[${index}].date`, session.date);
+          formData.append(`sessions[${index}].description`, session.description || "");
+          formData.append(`sessions[${index}].startTime`, startTime);
+          formData.append(`sessions[${index}].endTime`, endTime);
+          formData.append(`sessions[${index}].date`, date);
           formData.append(`sessions[${index}].roomId`, session.roomId);
 
-          // Speaker
-          session.speaker?.forEach((sp, spIndex) => {
-            formData.append(
-              `sessions[${index}].speaker[${spIndex}].name`,
-              sp.name,
-            );
-            formData.append(
-              `sessions[${index}].speaker[${spIndex}].description`,
-              sp.description,
-            );
-            if (sp.image instanceof File) {
-              formData.append(
-                `sessions[${index}].speaker[${spIndex}].image`,
-                sp.image,
-              );
-            } else if (sp.imageUrl) {
-              formData.append(
-                `sessions[${index}].speaker[${spIndex}].imageUrl`,
-                sp.imageUrl,
-              );
-            }
-          });
+          if (session.speaker && session.speaker.length > 0) {
+            session.speaker.forEach((sp, spIndex) => {
+              formData.append(`sessions[${index}].speaker[${spIndex}].name`, sp.name);
+              formData.append(`sessions[${index}].speaker[${spIndex}].description`, sp.description || "");
+              
+              if (sp.image instanceof File) {
+                formData.append(`sessions[${index}].speaker[${spIndex}].image`, sp.image);
+              } else if (sp.imageUrl) {
+                formData.append(`sessions[${index}].speaker[${spIndex}].imageUrl`, sp.imageUrl);
+              }
+            });
+          }
 
-          // Session medias
-          session.sessionMedias?.forEach((media, mediaIndex) => {
-            if (media.mediaFile instanceof File) {
-              formData.append(
-                `sessions[${index}].sessionMedias[${mediaIndex}].mediaFile`,
-                media.mediaFile,
-              );
-            } else if (media.mediaUrl) {
-              formData.append(
-                `sessions[${index}].sessionMedias[${mediaIndex}].mediaUrl`,
-                media.mediaUrl,
-              );
-            }
-          });
+          if (session.sessionMedias && session.sessionMedias.length > 0) {
+            session.sessionMedias.forEach((media, mediaIndex) => {
+              if (media.mediaFile instanceof File) {
+                formData.append(
+                  `sessions[${index}].sessionMedias[${mediaIndex}].mediaFile`,
+                  media.mediaFile
+                );
+              } else if (media.mediaUrl) {
+                formData.append(
+                  `sessions[${index}].sessionMedias[${mediaIndex}].mediaUrl`,
+                  media.mediaUrl
+                );
+              }
+            });
+          }
         });
 
         return {
@@ -263,11 +255,22 @@ export const conferenceStepApi = createApi({
         };
       }
     >({
-      query: ({ sessionId, data }) => ({
-        url: endpoint.CONFERENCE_STEP.UPDATE_SESSION(sessionId),
-        method: "PUT",
-        body: data,
-      }),
+      query: ({ sessionId, data }) => {
+        const normalizedData = {
+          title: data.title,
+          description: data.description,
+          startTime: normalizeTimeFormat(data.startTime),
+          endTime: normalizeTimeFormat(data.endTime),
+          date: normalizeDateFormat(data.date),
+          roomId: data.roomId,
+        };
+
+        return {
+          url: endpoint.CONFERENCE_STEP.UPDATE_SESSION(sessionId),
+          method: "PUT",
+          body: normalizedData,
+        };
+      },
       invalidatesTags: ["ConferenceStep"],
     }),
 
@@ -528,72 +531,67 @@ export const conferenceStepApi = createApi({
     }),
 
     //CREATE SESSION
-    createResearchSessions: builder.mutation<
-      ApiResponse<string>,
-      { conferenceId: string; data: ConferenceResearchSessionData }
-    >({
-      query: ({ conferenceId, data }) => {
 
 
-        data.sessions.forEach((session, idx) => {
-          console.log(`Session ${idx}:`, {
-            title: session.title,
-            mediaCount: session.sessionMedias?.length,
-            mediaFiles: session.sessionMedias?.map(m => ({
-              isFile: m.mediaFile instanceof File,
-              fileName: m.mediaFile instanceof File ? m.mediaFile.name : 'NOT A FILE',
-              type: typeof m.mediaFile
-            }))
-          });
-        });
+// ========================================
+// CREATE RESEARCH SESSIONS
+// ========================================
+createResearchSessions: builder.mutation<
+  ApiResponse<string>,
+  { conferenceId: string; data: ConferenceResearchSessionData }
+>({
+  query: ({ conferenceId, data }) => {
+    console.log("🔵 RTK Query - Creating sessions");
+    console.log("📥 Input data:", data);
 
+    const formData = new FormData();
 
-        const formData = new FormData();
+    data.sessions.forEach((session, index) => {
+      // ✅ Không convert - data từ form đã đúng format "HH:mm:ss"
+      const startTime = validateTimeFormat(session.startTime);
+      const endTime = validateTimeFormat(session.endTime);
+      
+      console.log(`✅ Session ${index}:`, {
+        title: session.title,
+        startTime,
+        endTime,
+        date: session.date,
+      });
 
-        const formatTime = (datetime: string): string => {
-          const date = new Date(datetime);
-          return date.toTimeString().split(" ")[0];
-        };
+      formData.append(`sessions[${index}].title`, session.title);
+      formData.append(`sessions[${index}].description`, session.description || "");
+      formData.append(`sessions[${index}].startTime`, startTime);
+      formData.append(`sessions[${index}].endTime`, endTime);
+      formData.append(`sessions[${index}].date`, session.date);
+      formData.append(`sessions[${index}].roomId`, session.roomId);
 
-        const formatDate = (datetime: string): string => {
-          const date = new Date(datetime);
-          return date.toISOString().split("T")[0];
-        };
-
-        data.sessions.forEach((session, index) => {
-          formData.append(`sessions[${index}].title`, session.title);
-          formData.append(`sessions[${index}].description`, session.description || "");
-
-          formData.append(`sessions[${index}].startTime`, formatTime(session.startTime));
-          formData.append(`sessions[${index}].endTime`, formatTime(session.endTime));
-          formData.append(`sessions[${index}].date`, formatDate(session.date || session.startTime));
-
-          formData.append(`sessions[${index}].roomId`, session.roomId);
-
-          if (session.sessionMedias && session.sessionMedias.length > 0) {
-            session.sessionMedias.forEach((media, mediaIndex) => {
-              if (media.mediaFile && media.mediaFile instanceof File) {
-                formData.append(
-                  `sessions[${index}].SessionMedias[${mediaIndex}].MediaFile`,
-                  media.mediaFile
-                );
-              }
-
-              formData.append(
-                `sessions[${index}].SessionMedias[${mediaIndex}].MediaUrl`,
-                (typeof media.mediaFile === "string" && media.mediaFile) || media.mediaUrl || ""
-              );
-            });
+      // Media files
+      if (session.sessionMedias && session.sessionMedias.length > 0) {
+        session.sessionMedias.forEach((media, mediaIndex) => {
+          if (media.mediaFile && media.mediaFile instanceof File) {
+            formData.append(
+              `sessions[${index}].SessionMedias[${mediaIndex}].MediaFile`,
+              media.mediaFile
+            );
           }
+
+          formData.append(
+            `sessions[${index}].SessionMedias[${mediaIndex}].MediaUrl`,
+            (typeof media.mediaFile === "string" && media.mediaFile) || media.mediaUrl || ""
+          );
         });
-        return {
-          url: endpoint.CONFERENCE_STEP.CREATE_RESEARCH_SESSION(conferenceId),
-          method: "POST",
-          body: formData,
-        };
-      },
-      invalidatesTags: ["ConferenceStep"],
-    }),
+      }
+    });
+
+
+    return {
+      url: endpoint.CONFERENCE_STEP.CREATE_RESEARCH_SESSION(conferenceId),
+      method: "POST",
+      body: formData,
+    };
+  },
+  invalidatesTags: ["ConferenceStep"],
+}),
 
 
 
@@ -839,31 +837,44 @@ export const conferenceStepApi = createApi({
       invalidatesTags: ["ConferenceStep"],
     }),
 
-    updateResearchSession: builder.mutation<
-      ApiResponse<Session>,
-      { 
-        sessionId: string; 
-        data: Partial<ResearchSession>; 
-      }
-    >({
-      query: ({ sessionId, data }) => {
-        const body: Partial<ResearchSession> = {};  
-              
-        if (data.title !== undefined) body.title = data.title;
-        if (data.description !== undefined) body.description = data.description;
-        if (data.startTime !== undefined) body.startTime = data.startTime;
-        if (data.endTime !== undefined) body.endTime = data.endTime;
-        if (data.date !== undefined) body.date = data.date;
-        if (data.roomId !== undefined) body.roomId = data.roomId;
+updateResearchSession: builder.mutation<
+  ApiResponse<Session>,
+  { 
+    sessionId: string; 
+    data: Partial<ResearchSession>; 
+  }
+>({
+  query: ({ sessionId, data }) => {
+    console.log("🔵 RTK Query - Updating session");
+    console.log("📥 Input data:", data);
 
-        return {
-          url: endpoint.CONFERENCE_STEP.UPDATE_RESEARCH_SESSION(sessionId),
-          method: "PUT",
-          body,
-        };
-      },
-      invalidatesTags: ["ConferenceStep"],
-    }),
+    const body: Partial<ResearchSession> = {};
+    
+    if (data.title !== undefined) body.title = data.title;
+    if (data.description !== undefined) body.description = data.description;
+    
+    // ✅ Validate nhưng KHÔNG convert - data từ form đã đúng
+    if (data.startTime !== undefined) {
+      body.startTime = validateTimeFormat(data.startTime);
+    }
+    
+    if (data.endTime !== undefined) {
+      body.endTime = validateTimeFormat(data.endTime);
+    }
+    
+    if (data.date !== undefined) body.date = data.date;
+    if (data.roomId !== undefined) body.roomId = data.roomId;
+
+    console.log("✅ Update body:", body);
+
+    return {
+      url: endpoint.CONFERENCE_STEP.UPDATE_RESEARCH_SESSION(sessionId),
+      method: "PUT",
+      body,
+    };
+  },
+  invalidatesTags: ["ConferenceStep"],
+}),
 
     updateResearchRankingReference: builder.mutation<
       ApiResponse<{ success: boolean }>,

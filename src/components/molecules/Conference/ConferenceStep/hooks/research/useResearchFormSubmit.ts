@@ -71,37 +71,6 @@
   } from "@/types/conference.type";
   import { validateBasicForm, validateAllResearchPhases } from "../../validations";
 
-  // ===== THÊM 2 HÀM NÀY SAU IMPORTS, TRƯỚC export function useResearchFormSubmit =====
-
-const normalizeSessionTime = (time: string): string => {
-  if (!time) return "";
-  
-  // Nếu đã là "HH:mm:ss" → giữ nguyên
-  if (/^\d{2}:\d{2}:\d{2}$/.test(time)) {
-    return time;
-  }
-  
-  // Nếu là ISO → convert
-  const date = new Date(time);
-  if (isNaN(date.getTime())) {
-    console.error("❌ Invalid time format:", time);
-    return "00:00:00";
-  }
-  
-  const hours = date.getHours().toString().padStart(2, '0');
-  const minutes = date.getMinutes().toString().padStart(2, '0');
-  const seconds = date.getSeconds().toString().padStart(2, '0');
-  return `${hours}:${minutes}:${seconds}`;
-};
-
-const normalizeSession = (session: ResearchSession): ResearchSession => {
-  return {
-    ...session,
-    startTime: normalizeSessionTime(session.startTime),
-    endTime: normalizeSessionTime(session.endTime),
-  };
-};
-
  const hasSessionChanged = (
    current: ResearchSession,
    initial: ResearchSession
@@ -492,14 +461,12 @@ const submitSessions = async (
   try {
     setIsSubmitting(true);
     
-    // ✅ NORMALIZE TẤT CẢ SESSIONS TRƯỚC KHI XỬ LÝ
-    const normalizedSessions = sessions.map(normalizeSession);
-    const normalizedInitialSessions = initialSessions.map(normalizeSession);
-    
-    console.log("🔵 Normalized sessions:", normalizedSessions.map(s => ({
+    // ✅ GỬI TRỰC TIẾP ISO STRINGS - KHÔNG normalize ở đây nữa
+    console.log("📤 Sending ISO strings to API:", sessions.map(s => ({
       title: s.title,
-      startTime: s.startTime,
-      endTime: s.endTime,
+      startTime: s.startTime,  // ISO: "2026-11-05T01:00:00.000Z"
+      endTime: s.endTime,      // ISO: "2026-11-05T03:00:00.000Z"
+      date: s.date,
     })));
     
     if (mode === "edit") {
@@ -520,30 +487,28 @@ const submitSessions = async (
       
       if (isReadyStatus) {
         // ✅ Khi Ready: CHỈ cho phép sessions có roomId thay đổi
-        changedSessions = normalizedSessions.filter((currentSession) => {
+        changedSessions = sessions.filter((currentSession) => {
           if (!currentSession.sessionId) return false;
 
-          const initialSession = normalizedInitialSessions.find(
+          const initialSession = initialSessions.find(
             (s) => s.sessionId === currentSession.sessionId
           );
 
           if (!initialSession) return false;
 
-          // Chỉ chấp nhận nếu CHỈ roomId thay đổi
           return hasOnlyRoomIdChanged(currentSession, initialSession);
         });
 
         // Kiểm tra có session nào thay đổi field khác không
-        const invalidChanges = normalizedSessions.filter((currentSession) => {
+        const invalidChanges = sessions.filter((currentSession) => {
           if (!currentSession.sessionId) return false;
 
-          const initialSession = normalizedInitialSessions.find(
+          const initialSession = initialSessions.find(
             (s) => s.sessionId === currentSession.sessionId
           );
 
           if (!initialSession) return false;
 
-          // Nếu có thay đổi NHƯNG không phải chỉ roomId
           return hasSessionChanged(currentSession, initialSession) && 
                 !hasOnlyRoomIdChanged(currentSession, initialSession);
         });
@@ -555,10 +520,10 @@ const submitSessions = async (
 
       } else {
         // ✅ Khi KHÔNG phải Ready: Cho phép thay đổi bất kỳ field nào
-        changedSessions = normalizedSessions.filter((currentSession) => {
+        changedSessions = sessions.filter((currentSession) => {
           if (!currentSession.sessionId) return false;
 
-          const initialSession = normalizedInitialSessions.find(
+          const initialSession = initialSessions.find(
             (s) => s.sessionId === currentSession.sessionId
           );
 
@@ -586,15 +551,15 @@ const submitSessions = async (
               }).unwrap();
             }
 
-            // ✅ Session đã được normalize
+            // ✅ Gửi ISO strings - RTK Query sẽ convert sang "HH:mm:ss"
             return updateSession({
               sessionId: session.sessionId,
               data: {
                 title: session.title,
                 description: session.description,
                 date: session.date,
-                startTime: session.startTime,  // ✅ Đã normalize
-                endTime: session.endTime,      // ✅ Đã normalize
+                startTime: session.startTime,  // ✅ ISO string
+                endTime: session.endTime,      // ✅ ISO string
                 roomId: session.roomId,
               },
             }).unwrap();
@@ -603,7 +568,7 @@ const submitSessions = async (
       }
 
       // 4. Tạo sessions mới (KHÔNG cho phép khi Ready)
-      const newSessions = normalizedSessions.filter((s) => !s.sessionId);
+      const newSessions = sessions.filter((s) => !s.sessionId);
       if (isReadyStatus && newSessions.length > 0) {
         toast.error("Không thể tạo session mới khi hội nghị ở trạng thái Ready!");
         return { success: false };
@@ -612,7 +577,7 @@ const submitSessions = async (
       if (!isReadyStatus && newSessions.length > 0) {
         await createSessions({ 
           conferenceId, 
-          data: { sessions: newSessions }  // ✅ Đã normalize
+          data: { sessions: newSessions }  // ✅ ISO strings
         }).unwrap();
       }
 
@@ -626,7 +591,7 @@ const submitSessions = async (
 
     } else {
       // Mode "create"
-      if (normalizedSessions.length === 0) {
+      if (sessions.length === 0) {
         dispatch(markStepCompleted(5));
         toast.info("Đã bỏ qua phần phiên họp");
         return { success: true, skipped: true };
@@ -634,7 +599,7 @@ const submitSessions = async (
       
       await createSessions({ 
         conferenceId, 
-        data: { sessions: normalizedSessions }  // ✅ Đã normalize
+        data: { sessions }  // ✅ ISO strings
       }).unwrap();
       
       toast.success("Tạo phiên họp thành công!");

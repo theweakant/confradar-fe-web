@@ -11,6 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { extractTimeOnly } from "@/helper/format";
+
 interface SingleSessionFormProps {
   conferenceId: string;
   roomId: string;
@@ -257,34 +259,55 @@ export function SingleSessionForm({
   onSave,
   onCancel,
 }: SingleSessionFormProps) {
-    console.log('📅 SingleSessionForm props:', {
-    date,
-    startTime: slotStartTime,
-    endTime: slotEndTime,
-    roomId,
-  });
   const calculateTimeRangeFromSession = (session?: Session): number => {
     if (!session) return 1;
     const start = new Date(session.startTime);
     const end = new Date(session.endTime);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return 1;
     const diffMs = end.getTime() - start.getTime();
-    return diffMs / (1000 * 60 * 60);
+    return diffMs > 0 ? diffMs / (1000 * 60 * 60) : 1;
   };
+
+  // ✅ Đảm bảo startTime/endTime luôn là ISO string
+  const ensureISO = (timeStr: string, fallbackDate: string): string => {
+    if (timeStr.includes('T')) {
+      const d = new Date(timeStr);
+      return isNaN(d.getTime()) ? `${fallbackDate}T06:00:00` : timeStr;
+    }
+    // Nếu chỉ có "HH:mm:ss", ghép với date
+    if (/^\d{2}:\d{2}:\d{2}$/.test(timeStr)) {
+      return `${fallbackDate}T${timeStr}`;
+    }
+    // Nếu có "HH:mm", thêm ":00"
+    if (/^\d{2}:\d{2}$/.test(timeStr)) {
+      return `${fallbackDate}T${timeStr}:00`;
+    }
+    return `${fallbackDate}T06:00:00`;
+  };
+
+  const initialStartTime = initialSession?.startTime
+    ? ensureISO(initialSession.startTime, date)
+    : slotStartTime;
+
+  const initialEndTime = initialSession?.endTime
+    ? ensureISO(initialSession.endTime, date)
+    : slotEndTime;
 
   const [formData, setFormData] = useState({
     title: initialSession?.title || "",
     description: initialSession?.description || "",
-    selectedStartTime: initialSession?.startTime || slotStartTime,
+    selectedStartTime: initialStartTime,
     timeRange: initialSession ? calculateTimeRangeFromSession(initialSession) : 1,
     speakers: initialSession?.speaker || ([] as Speaker[]),
     sessionMedias: initialSession?.sessionMedias || ([] as SessionMedia[]),
   });
 
-  const [calculatedEndTime, setCalculatedEndTime] = useState(initialSession?.endTime || slotEndTime);
+  const [calculatedEndTime, setCalculatedEndTime] = useState(initialEndTime);
   const [isSpeakerModalOpen, setIsSpeakerModalOpen] = useState(false);
   const [isSessionDetailModalOpen, setIsSessionDetailModalOpen] = useState(false);
 
   const isEditMode = !!initialSession;
+
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
     return d.toLocaleDateString("vi-VN", {
@@ -303,26 +326,20 @@ export function SingleSessionForm({
       hour12: false,
     });
   };
-const startTimeOptions = useMemo(() => {
-  if (!date) return [];
-  const options: Array<{ value: string; label: string }> = [];
-  
-  const dateStr = date; 
-  
-  for (let hour = 6; hour <= 23; hour++) {
-    const timeStr = `${hour.toString().padStart(2, '0')}:00`;
-    const isoString = `${dateStr}T${timeStr}:00`;
-    
-    options.push({
-      value: isoString,
-      label: timeStr,
-    });
-  }
-  
-  return options;
-}, [date]);
 
-
+  const startTimeOptions = useMemo(() => {
+    if (!date) return [];
+    const options: Array<{ value: string; label: string }> = [];
+    for (let hour = 6; hour <= 23; hour++) {
+      const timeStr = `${hour.toString().padStart(2, '0')}:00`;
+      const isoString = `${date}T${timeStr}:00`;
+      options.push({
+        value: isoString,
+        label: timeStr,
+      });
+    }
+    return options;
+  }, [date]);
 
   const calculateDuration = (start: string, end: string) => {
     const startDate = new Date(start);
@@ -333,49 +350,54 @@ const startTimeOptions = useMemo(() => {
     return `${hours}h${minutes > 0 ? ` ${minutes}p` : ""}`;
   };
 
-const maxTimeRange = useMemo(() => {
-  const start = new Date(formData.selectedStartTime);
-  
-  const endOfDay = new Date(start);
-  endOfDay.setHours(23, 59, 59, 999);
-  
-  const diffMs = endOfDay.getTime() - start.getTime();
-  const hours = diffMs / (1000 * 60 * 60);
-  
-  return Math.max(0.5, Math.floor(hours * 2) / 2);
-}, [formData.selectedStartTime]);
+  const maxTimeRange = useMemo(() => {
+    const start = new Date(formData.selectedStartTime);
+    const endOfDay = new Date(start);
+    endOfDay.setHours(23, 59, 59, 999);
+    const diffMs = endOfDay.getTime() - start.getTime();
+    const hours = diffMs / (1000 * 60 * 60);
+    return Math.max(0.5, Math.floor(hours * 2) / 2);
+  }, [formData.selectedStartTime]);
 
-useEffect(() => {
-  // 👇 Thêm log debug
-  console.log('⏰ Calculating endTime:', {
-    selectedStartTime: formData.selectedStartTime,
-    timeRange: formData.timeRange,
-    startDate: new Date(formData.selectedStartTime),
-    isValid: !isNaN(new Date(formData.selectedStartTime).getTime())
-  });
+  useEffect(() => {
+    const start = new Date(formData.selectedStartTime);
+    if (isNaN(start.getTime())) return;
 
-  const start = new Date(formData.selectedStartTime);
-  const proposedEnd = new Date(start.getTime() + formData.timeRange * 60 * 60 * 1000);
-  
-  // Tạo thời điểm 23:59:59 của cùng ngày
-  const endOfDay = new Date(start);
-  endOfDay.setHours(23, 59, 59, 999);
+    const proposedEnd = new Date(start.getTime() + formData.timeRange * 60 * 60 * 1000);
+    const endOfDay = new Date(start);
+    endOfDay.setHours(23, 59, 59, 999);
 
-  // Nếu proposedEnd vượt quá 23:59, giới hạn lại
-  if (proposedEnd > endOfDay) {
-    setCalculatedEndTime(endOfDay.toISOString());
-    const maxHours = (endOfDay.getTime() - start.getTime()) / (1000 * 60 * 60);
-    setFormData(prev => ({ ...prev, timeRange: Math.floor(maxHours * 2) / 2 }));
-  } else {
-    setCalculatedEndTime(proposedEnd.toISOString());
-  }
-}, [formData.timeRange, formData.selectedStartTime]);
+    if (proposedEnd > endOfDay) {
+      setCalculatedEndTime(endOfDay.toISOString());
+      const maxHours = (endOfDay.getTime() - start.getTime()) / (1000 * 60 * 60);
+      setFormData(prev => ({ ...prev, timeRange: Math.max(0.5, Math.floor(maxHours * 2) / 2) }));
+    } else {
+      setCalculatedEndTime(proposedEnd.toISOString());
+    }
+  }, [formData.timeRange, formData.selectedStartTime]);
 
   useEffect(() => {
     if (!isEditMode) {
       setFormData(prev => ({ ...prev, timeRange: 1 }));
     }
   }, [formData.selectedStartTime, isEditMode]);
+
+  useEffect(() => {
+    if (initialSession) {
+      const safeStartTime = ensureISO(initialSession.startTime, date);
+      const safeEndTime = ensureISO(initialSession.endTime, date);
+      const timeRange = calculateTimeRangeFromSession(initialSession);
+      setFormData({
+        title: initialSession.title || "",
+        description: initialSession.description || "",
+        selectedStartTime: safeStartTime,
+        timeRange: timeRange,
+        speakers: initialSession.speaker || [],
+        sessionMedias: initialSession.sessionMedias || [],
+      });
+      setCalculatedEndTime(safeEndTime);
+    }
+  }, [initialSession, date]);
 
   const handleAddSpeaker = (speaker: Speaker) => {
     setFormData({
@@ -394,7 +416,6 @@ useEffect(() => {
 
   const handleMediaChange = (fileOrFiles: File | File[] | null) => {
     let files: File[] | null = null;
-
     if (fileOrFiles === null) {
       files = null;
     } else if (Array.isArray(fileOrFiles)) {
@@ -416,71 +437,72 @@ useEffect(() => {
     setFormData(prev => ({ ...prev, sessionMedias }));
   };
 
+  const handleSubmit = () => {
+    if (!formData.title.trim()) {
+      toast.error("Vui lòng nhập tiêu đề session!");
+      return;
+    }
 
-const handleSubmit = () => {
-  if (!formData.title.trim()) {
-    toast.error("Vui lòng nhập tiêu đề session!");
-    return;
-  }
+    if (formData.timeRange < 0.5) {
+      toast.error("Thời lượng tối thiểu là 0.5 giờ (30 phút)!");
+      return;
+    }
 
+    if (formData.timeRange > maxTimeRange) {
+      toast.error(`Thời lượng tối đa là ${maxTimeRange} giờ!`);
+      return;
+    }
 
-  
-  if (formData.timeRange < 0.5) {
-    toast.error("Thời lượng tối thiểu là 0.5 giờ (30 phút)!");
-    return;
-  }
+    const startDate = new Date(formData.selectedStartTime);
+    const endDate = new Date(calculatedEndTime);
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      toast.error("Thời gian không hợp lệ!");
+      return;
+    }
 
-  if (formData.timeRange > maxTimeRange) {
-    toast.error(
-      `Thời lượng tối đa là ${maxTimeRange} giờ (theo giờ bắt đầu đã chọn)!`
-    );
-    return;
-  }
+    const startDay = startDate.toISOString().split('T')[0];
+    const endDay = endDate.toISOString().split('T')[0];
+    if (startDay !== endDay) {
+      toast.error("Session không được qua ngày hôm sau. Chọn thời gian kết thúc trước 23:59.");
+      return;
+    }
 
-// Kiểm tra không qua ngày
-const startDate = new Date(formData.selectedStartTime);
-const endDate = new Date(calculatedEndTime);
+    const proposedEnd = new Date(formData.selectedStartTime);
+    proposedEnd.setTime(proposedEnd.getTime() + formData.timeRange * 60 * 60 * 1000);
+    const maxEnd = new Date(slotEndTime);
+    if (proposedEnd > maxEnd) {
+      toast.error(`Thời gian kết thúc vượt quá khung giờ trống!`);
+      return;
+    }
 
-const startDay = startDate.toISOString().split('T')[0];
-const endDay = endDate.toISOString().split('T')[0];
+    const extractTimeFromISO = (isoString: string): string => {
+      const d = new Date(isoString);
+      if (isNaN(d.getTime())) return "00:00:00";
+      const hours = d.getHours().toString().padStart(2, '0');
+      const minutes = d.getMinutes().toString().padStart(2, '0');
+      const seconds = d.getSeconds().toString().padStart(2, '0');
+      return `${hours}:${minutes}:${seconds}`;
+    };
 
-if (startDay !== endDay) {
-  toast.error("Session không được qua ngày hôm sau. Chọn thời gian kết thúc trước 23:59.");
-  return;
-}
+    const session: Session = {
+      sessionId: initialSession?.sessionId,
+      conferenceId,
+      title: formData.title,
+      description: formData.description,
+      date,
+      startTime: extractTimeFromISO(formData.selectedStartTime),
+      endTime: extractTimeFromISO(calculatedEndTime),
+      timeRange: formData.timeRange,
+      roomId,
+      roomDisplayName,
+      roomNumber,
+      speaker: formData.speakers,
+      sessionMedias: formData.sessionMedias,
+    };
 
-  const proposedEnd = new Date(formData.selectedStartTime);
-  proposedEnd.setTime(proposedEnd.getTime() + formData.timeRange * 60 * 60 * 1000);
-  const maxEnd = new Date(slotEndTime);
-
-  if (proposedEnd > maxEnd) {
-    toast.error(
-      `Thời gian kết thúc (${formatTime(proposedEnd.toISOString())}) vượt quá khung giờ trống (${formatTime(slotEndTime)})!`
-    );
-    return;
-  }
-
-  const session: Session = {
-    sessionId: initialSession?.sessionId,
-    
-    conferenceId,
-    title: formData.title,
-    description: formData.description,
-    date,
-    startTime: formData.selectedStartTime,
-    endTime: calculatedEndTime,
-    timeRange: formData.timeRange,
-    roomId,
-    roomDisplayName,
-    roomNumber,
-    speaker: formData.speakers,
-    sessionMedias: formData.sessionMedias,
+    onSave(session);
+    toast.success(isEditMode ? "Đã cập nhật session thành công!" : "Đã tạo session thành công!");
   };
-
-
-  onSave(session);
-  toast.success(isEditMode ? "Đã cập nhật session thành công!" : "Đã tạo session thành công!");
-};
 
   return (
     <div className="space-y-4">
@@ -490,7 +512,6 @@ if (startDay !== endDay) {
         </h3>
       </div>
 
-      {/* Session Info Cards - 3 columns */}
       <div className="grid grid-cols-3 gap-3">
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-3">
           <div className="flex items-center gap-2 mb-1">
@@ -560,7 +581,6 @@ if (startDay !== endDay) {
           />
         </div>
 
-        {/* Time Selection - 2 columns */}
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -605,7 +625,6 @@ if (startDay !== endDay) {
           Tối thiểu: 0.5 giờ • Tối đa: {maxTimeRange} giờ
         </p>
 
-        {/* Preview - 3 columns */}
         <div className="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg p-3">
           <div className="flex items-center gap-2 mb-2">
             <AlertCircle className="w-4 h-4 text-green-600" />

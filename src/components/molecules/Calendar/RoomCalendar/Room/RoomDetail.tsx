@@ -23,29 +23,12 @@ import {
 } from "@/redux/services/room.service";
 import { SessionList } from "../Session/SessionList";
 import { LocalSessionList } from "../Session/Local/LocalSessionList";
-import { SingleSessionForm } from "../Form/TechSessionForm"; //organizer
+
+import { SingleSessionForm } from "../Form/TechSessionForm";
 import { ResearchSingleSessionForm } from "../Form/ResearchSessionForm"
+
 import type { Session, ResearchSession } from "@/types/conference.type";
-const normalizeSessionTime = (time: string): string => {
-  if (!time) return "";
-  
-  // Nếu đã là "HH:mm:ss" → giữ nguyên
-  if (/^\d{2}:\d{2}:\d{2}$/.test(time)) {
-    return time;
-  }
-  
-  // Nếu là ISO → convert
-  const date = new Date(time);
-  if (isNaN(date.getTime())) {
-    console.error("❌ Invalid time format:", time);
-    return "00:00:00";
-  }
-  
-  const hours = date.getHours().toString().padStart(2, '0');
-  const minutes = date.getMinutes().toString().padStart(2, '0');
-  const seconds = date.getSeconds().toString().padStart(2, '0');
-  return `${hours}:${minutes}:${seconds}`;
-};
+
 interface RoomDetailDialogProps {
   open: boolean;
   roomId: string | null;
@@ -171,80 +154,11 @@ const RoomDetailDialog: React.FC<RoomDetailDialogProps> = ({
     setEditingSession(null);
   };
 
-  // const handleSessionSave = async (session: Session | ResearchSession) => {
-  //   setIsCreatingSession(true);
-
-  //   try {
-  //     if (editingSession) {
-  //       if (!editingSession.sessionId) {
-  //         toast.error("Không thể cập nhật session không có ID!");
-  //         setIsCreatingSession(false);
-  //         return;
-  //       }
-
-  //       const updatedSession: Session | ResearchSession = {
-  //         ...session,
-  //         sessionId: editingSession.sessionId,
-  //       };
-
-  //       const actualIndex = findActualIndex(editingSession);
-
-  //       if (actualIndex !== -1) {
-  //         const updatedSessions = [...localSessions];
-  //         updatedSessions[actualIndex] = updatedSession;
-  //         setLocalSessions(updatedSessions);
-
-  //         if (onSessionUpdated) {
-  //           await Promise.resolve(onSessionUpdated(updatedSession, actualIndex))
-  //             .catch((error) => {
-  //               setLocalSessions(localSessions);
-  //               toast.error("Cập nhật thất bại!");
-  //               throw error;
-  //             });
-  //         }
-
-  //         setMode("view");
-  //         setSelectedSlot(null);
-  //         setEditingSession(null);
-  //         toast.success(`Đã cập nhật session "${updatedSession.title}"!`);
-  //       } else {
-  //         toast.error("Không tìm thấy session để cập nhật");
-  //       }
-  //     } else {
-  //       setLocalSessions((prev) => [...prev, session]);
-        
-  //       if (onSessionCreated) {
-  //         onSessionCreated(session);
-  //       }
-        
-  //       setMode("view");
-  //       setSelectedSlot(null);
-  //       setEditingSession(null);
-  //       toast.success(`Đã tạo session "${session.title}"!`);
-  //     }
-  //   } catch (error) {
-  //     toast.error("Có lỗi xảy ra khi lưu session");
-  //   } finally {
-  //     setIsCreatingSession(false);
-  //   }
-  // };
 
 const handleSessionSave = async (session: Session | ResearchSession) => {
   setIsCreatingSession(true);
 
   try {
-    // ✅ NORMALIZE NGAY TẠI ĐÂY
-    const normalizedSession = {
-      ...session,
-      startTime: normalizeSessionTime(session.startTime),
-      endTime: normalizeSessionTime(session.endTime),
-    };
-    
-    console.log("🟢 RoomDetailDialog - Normalized session:", {
-      original: { startTime: session.startTime, endTime: session.endTime },
-      normalized: { startTime: normalizedSession.startTime, endTime: normalizedSession.endTime },
-    });
-    
     if (editingSession) {
       if (!editingSession.sessionId) {
         toast.error("Không thể cập nhật session không có ID!");
@@ -253,7 +167,7 @@ const handleSessionSave = async (session: Session | ResearchSession) => {
       }
 
       const updatedSession: Session | ResearchSession = {
-        ...normalizedSession,  // ✅ DÙNG NORMALIZED
+        ...session, 
         sessionId: editingSession.sessionId,
       };
 
@@ -281,16 +195,16 @@ const handleSessionSave = async (session: Session | ResearchSession) => {
         toast.error("Không tìm thấy session để cập nhật");
       }
     } else {
-      setLocalSessions((prev) => [...prev, normalizedSession]);  // ✅ DÙNG NORMALIZED
+      setLocalSessions((prev) => [...prev, session]);
       
       if (onSessionCreated) {
-        onSessionCreated(normalizedSession);  // ✅ DÙNG NORMALIZED
+        onSessionCreated(session);  
       }
       
       setMode("view");
       setSelectedSlot(null);
       setEditingSession(null);
-      toast.success(`Đã tạo session "${normalizedSession.title}"!`);
+      toast.success(`Đã tạo session "${session.title}"!`);
     }
   } catch (error) {
     toast.error("Có lỗi xảy ra khi lưu session");
@@ -299,27 +213,25 @@ const handleSessionSave = async (session: Session | ResearchSession) => {
   }
 };
 
-  const handleEditSession = (session: Session | ResearchSession, _filteredIndex: number) => {
-    const normalizeTime = (timeStr: string, dateStr: string): string => {
-      if (timeStr.includes('T')) {
-        return timeStr; 
-      }
-      return `${dateStr}T${timeStr}`;
-    };
-
-    const normalizedSession = {
-      ...session,
-      startTime: normalizeTime(session.startTime, session.date),
-      endTime: normalizeTime(session.endTime, session.date),
-    };
-
-    setEditingSession(normalizedSession);
-    setSelectedSlot({
-      startTime: normalizedSession.startTime,
-      endTime: normalizedSession.endTime,
-    });
-    setMode("form");
+const handleEditSession = (session: Session | ResearchSession, _filteredIndex: number) => {
+  const combineDateTime = (date: string, time: string): string => {
+    if (time.includes('T')) return time;
+    return `${date}T${time}`;
   };
+
+  const normalizedSession = {
+    ...session,
+    startTime: combineDateTime(session.startTime, session.date),
+    endTime: combineDateTime(session.endTime, session.date),
+  };
+
+  setEditingSession(normalizedSession);
+  setSelectedSlot({
+    startTime: normalizedSession.startTime,
+    endTime: normalizedSession.endTime,
+  });
+  setMode("form");
+};
 
   const handleDeleteConfirm = (session: Session | ResearchSession, _filteredIndex: number) => {
     setDeleteConfirmSession(session);

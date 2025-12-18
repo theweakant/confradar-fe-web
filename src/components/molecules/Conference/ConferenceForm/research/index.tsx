@@ -510,12 +510,6 @@ export default function ResearchConferenceStepForm({
       return;
     }
 
-    // const ticketValidation = validateResearchTicketConfig(tickets);
-    // if (!ticketValidation.isValid) {
-    //   toast.error(`Set up loại chi phí không hợp lệ: ${ticketValidation.error}`);
-    //   return;
-    // }
-
     const result = await submitPrice(tickets);
     if (result.success) {
       handleMarkHasData(4);

@@ -75,6 +75,49 @@ export const formatTimeOnly = (isoString: string): string => {
   }); 
 };
 
+  export const extractTimeOnly = (isoString: string): string => {
+    const d = new Date(isoString);
+    if (isNaN(d.getTime())) {
+      return "00:00:00";
+    }
+
+    const hours = d.getHours().toString().padStart(2, '0');
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    const seconds = d.getSeconds().toString().padStart(2, '0');
+
+    return `${hours}:${minutes}:${seconds}`;
+  };
+
+  export const extractTimeOnly2 = (isoString: string): string => {
+    if (isoString.includes('T')) {
+      const timePart = isoString.split('T')[1];
+      if (timePart) {
+        const cleanTime = timePart.split('+')[0].split('-')[0].split('Z')[0];
+        return cleanTime.substring(0, 8); // "08:00:00"
+      }
+    }
+    return "00:00:00";
+};
+
+export const validateTimeFormat = (time: string): string => {
+  if (/^\d{2}:\d{2}:\d{2}$/.test(time)) {
+    return time;
+  }
+    try {
+    const date = new Date(time);
+    if (!isNaN(date.getTime())) {
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      const seconds = date.getSeconds().toString().padStart(2, '0');
+      return `${hours}:${minutes}:${seconds}`;
+    }
+  } catch (e) {
+    console.error("❌ Invalid time format:", time);
+  }
+  
+  return "00:00:00";
+};
+
 export const formatDateTime = (date: string): string => {
   return format(new Date(date), "dd/MM/yyyy HH:mm:ss");
 };
@@ -130,4 +173,42 @@ export const formatLocalTimeRange = (
   const endFormatted = formatLocalTime(endTime);
 
   return `${startFormatted} – ${endFormatted}`;
+};
+
+
+export  const normalizeTimeFormat = (time: string): string => {
+  if (/^\d{2}:\d{2}:\d{2}$/.test(time)) {
+    return time;
+  }
+  
+  try {
+    const date = new Date(time);
+    if (!isNaN(date.getTime())) {
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      const seconds = date.getSeconds().toString().padStart(2, '0');
+      return `${hours}:${minutes}:${seconds}`;
+    }
+  } catch (e) {
+    console.error("❌ Invalid time format:", time);
+  }
+  
+  return "00:00:00";
+};
+
+export const normalizeDateFormat = (dateOrIso: string): string => {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateOrIso)) {
+    return dateOrIso;
+  }
+  
+  try {
+    const date = new Date(dateOrIso);
+    if (!isNaN(date.getTime())) {
+      return date.toISOString().split('T')[0];
+    }
+  } catch (e) {
+    console.error("❌ Invalid date format:", dateOrIso);
+  }
+  
+  return new Date().toISOString().split('T')[0];
 };
