@@ -131,13 +131,7 @@ export default function TicketConferences() {
       return now < new Date(policy.refundDeadline);
     });
 
-    // Bước 5: Check registeredDate
-    const registeredDate = ticket.registeredDate ? new Date(ticket.registeredDate) : null;
-    if (!applicablePolicy || !registeredDate || now < registeredDate) {
-      return { canRefund: false };
-    }
-
-    // Bước 6: Tính toán refund amount
+    // Bước 5: Tính toán refund amount
     if (applicablePolicy && applicablePolicy.percentRefund) {
       const refundAmount = (ticket.actualPrice || 0) * (applicablePolicy.percentRefund / 100);
       return {
