@@ -281,7 +281,7 @@ export default function StatisticsDashboard() {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-xl p-6 border border-gray-200">
+                    {/* <div className="bg-white rounded-xl p-6 border border-gray-200">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                             Tình trạng check-in
                         </h3>
@@ -326,7 +326,7 @@ export default function StatisticsDashboard() {
                                 <p className="text-3xl font-bold text-orange-600">{totalExpireCheckin}</p>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
 
                 <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">

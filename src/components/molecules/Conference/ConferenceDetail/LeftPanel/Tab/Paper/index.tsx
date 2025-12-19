@@ -313,6 +313,7 @@ const isWithinAbstractDecisionPeriod = () => {
         isAssigning={isAssigning}
         onReviewersChange={setSelectedReviewers}
         onAssign={handleAssignReviewer}
+        existingReviewers={selectedPaper?.assignedReviewers || []}
       />
 
       <DecisionDialog
