@@ -80,18 +80,6 @@ export function PaperTab({ conferenceId, conferenceData }: PaperTabProps) {
   const abstractDecideStart = effectivePhase?.abstractDecideStatusStart;
   const abstractDecideEnd = effectivePhase?.abstractDecideStatusEnd;
 
-  // const isWithinAbstractDecisionPeriod = () => {
-  //   if (!abstractDecideStart || !abstractDecideEnd) return false;
-  //   const today = new Date();
-  //   today.setHours(0, 0, 0, 0);
-  //   const startDate = new Date(abstractDecideStart);
-  //   const endDate = new Date(abstractDecideEnd);
-  //   if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return false;
-  //   startDate.setHours(0, 0, 0, 0);
-  //   endDate.setHours(23, 59, 59, 999);
-  //   return today >= startDate && today <= endDate;
-  // };
-
 const isWithinAbstractDecisionPeriod = () => {
   if (!abstractDecideStart || !abstractDecideEnd) return false;
   const today = new Date(now); 
@@ -313,6 +301,7 @@ const isWithinAbstractDecisionPeriod = () => {
         isAssigning={isAssigning}
         onReviewersChange={setSelectedReviewers}
         onAssign={handleAssignReviewer}
+        existingReviewers={selectedPaper?.assignedReviewers || []}
       />
 
       <DecisionDialog
