@@ -280,6 +280,53 @@ export default function StatisticsDashboard() {
                             )}
                         </div>
                     </div>
+
+                    <div className="bg-white rounded-xl p-6 border border-gray-200">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            Tình trạng check-in
+                        </h3>
+                        
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center p-4 bg-green-50 rounded-lg border border-green-200">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+                                        <CheckCircle className="w-5 h-5 text-green-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-700">Thành công</p>
+                                        <p className="text-xs text-gray-500">Đã check-in</p>
+                                    </div>
+                                </div>
+                                <p className="text-3xl font-bold text-green-600">{totalHasCheckin}</p>
+                            </div>
+
+                            <div className="flex justify-between items-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+                                        <AlertCircle className="w-5 h-5 text-blue-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-700">Chưa check-in</p>
+                                        <p className="text-xs text-gray-500">Chưa tham dự</p>
+                                    </div>
+                                </div>
+                                <p className="text-3xl font-bold text-blue-600">{totalPending}</p>
+                            </div>
+
+                            <div className="flex justify-between items-center p-4 bg-orange-50 rounded-lg border border-orange-200">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+                                        <XCircle className="w-5 h-5 text-orange-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-700">Quá hạn</p>
+                                        <p className="text-xs text-gray-500">Hết hạn check-in</p>
+                                    </div>
+                                </div>
+                                <p className="text-3xl font-bold text-orange-600">{totalExpireCheckin}</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
