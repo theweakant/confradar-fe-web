@@ -82,19 +82,13 @@ export function CreatePhaseForm({
   onSubmit,
 }: CreatePhaseFormProps) {
   const [phase, setPhase] = useState<ResearchPhase>(getEmptyPhase());
-  const [selectedAuthorPriceIds, setSelectedAuthorPriceIds] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // State cho form thêm vòng chỉnh sửa
   const [newRevisionRound, setNewRevisionRound] = useState({
     roundNumber: 1,
     startDate: "",
     durationInDays: 3,
   });
-
-  useEffect(() => {
-    setSelectedAuthorPriceIds(authorPrices.map((p) => p.conferencePriceId));
-  }, [authorPrices]);
 
   const updatePhase = (updates: Partial<ResearchPhase>) => {
     setPhase((prev) => ({ ...prev, ...updates }));
@@ -199,8 +193,8 @@ export function CreatePhaseForm({
   };
 
   const validatePhase = (): boolean => {
-    if (selectedAuthorPriceIds.length === 0) {
-      toast.error("Vui lòng chọn ít nhất một loại chi phí tác giả");
+    if (authorPrices.length === 0) {
+      toast.error("Không có loại chi phí tác giả nào");
       return false;
     }
 
@@ -213,9 +207,20 @@ export function CreatePhaseForm({
       "revise",
       "revisionPaperDecideStatus",
       "cameraReady",
-      "cameraReadyDecideStatus",
       "authorPayment",
     ];
+
+    const fieldLabels: Record<string, string> = {
+      registration: "Đăng ký tham dự",
+      abstractDecideStatus: "Quyết định Abstract",
+      fullPaper: "Nộp Full Paper",
+      review: "Review",
+      fullPaperDecideStatus: "Quyết định Full Paper",
+      revise: "Final Review",
+      revisionPaperDecideStatus: "Quyết định Final Review",
+      cameraReady: "Nộp Camera Ready",
+      authorPayment: "Thanh toán",
+    };
 
     for (let i = 0; i < fields.length - 1; i++) {
       const currentField = fields[i];
@@ -227,12 +232,16 @@ export function CreatePhaseForm({
       const nextStart = phase[nextStartKey as keyof ResearchPhase] as string;
 
       if (!currentEnd || !nextStart) {
-        toast.error(`Vui lòng hoàn thành ngày kết thúc của "${currentField}"`);
+        toast.error(
+          `Vui lòng hoàn thành "${fieldLabels[currentField] || currentField}"`
+        );
         return false;
       }
 
       if (new Date(currentEnd) >= new Date(nextStart)) {
-        toast.error(`"${nextField}" phải bắt đầu sau khi "${currentField}" kết thúc`);
+        toast.error(
+          `"${fieldLabels[nextField] || nextField}" (${formatDate(nextStart)}) phải bắt đầu SAU "${fieldLabels[currentField] || currentField}" (${formatDate(currentEnd)})`
+        );
         return false;
       }
     }
@@ -276,7 +285,7 @@ export function CreatePhaseForm({
 
       await onSubmit({
         newPhase: phaseWithoutDuration,
-        authorConferencePriceIds: selectedAuthorPriceIds,
+        authorConferencePriceIds: authorPrices.map((p) => p.conferencePriceId),
       });
       toast.success("Đã tạo Phase mới thành công!");
     } catch (err) {
@@ -315,38 +324,36 @@ export function CreatePhaseForm({
         </div>
       )}
 
-      {/* Author Prices Selection */}
       <div>
-        <h4 className="font-medium mb-2">Chọn loại chi phí áp dụng cho tác giả:</h4>
+        <h4 className="font-medium mb-2">Loại chi phí áp dụng cho tác giả:</h4>
         <div className="grid grid-cols-2 gap-2">
           {authorPrices.map((price) => (
-            <label
+            <div
               key={price.conferencePriceId}
-              className="flex items-center gap-2 p-2 border rounded cursor-pointer hover:bg-gray-50"
+              className="flex items-center gap-3 p-3 border rounded bg-gray-50"
             >
-              <input
-                type="checkbox"
-                checked={selectedAuthorPriceIds.includes(price.conferencePriceId)}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setSelectedAuthorPriceIds([
-                      ...selectedAuthorPriceIds,
-                      price.conferencePriceId,
-                    ]);
-                  } else {
-                    setSelectedAuthorPriceIds(
-                      selectedAuthorPriceIds.filter((id) => id !== price.conferencePriceId)
-                    );
-                  }
-                }}
-                className="w-4 h-4"
-              />
-              <span>
+              <div className="w-5 h-5 bg-blue-600 rounded flex items-center justify-center flex-shrink-0">
+                <svg
+                  className="w-3 h-3 text-white"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+              <span className="text-sm">
                 {price.ticketName} ({formatCurrency(price.ticketPrice)})
               </span>
-            </label>
+            </div>
           ))}
         </div>
+        <p className="text-xs text-gray-500 mt-2">
+          Tất cả {authorPrices.length} loại vé tác giả sẽ được áp dụng cho phase mới
+        </p>
       </div>
 
       {/* === Các Phase Section giống `ResearchPhaseForm` === */}

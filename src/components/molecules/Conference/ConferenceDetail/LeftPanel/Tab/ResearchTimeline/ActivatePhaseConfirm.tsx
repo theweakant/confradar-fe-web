@@ -84,13 +84,6 @@ const getTimelineSteps = (phase: ResearchConferencePhaseResponse) => [
     color: "text-green-600",
   },
   {
-    title: "Quyết định Camera Ready",
-    start: phase.cameraReadyDecideStatusStart,
-    end: phase.cameraReadyDecideStatusEnd,
-    icon: PackageCheck,
-    color: "text-teal-600",
-  },
-  {
     title: "Tác giả thanh toán chi phí",
     start: phase.authorPaymentStart,
     end: phase.authorPaymentEnd,
@@ -107,7 +100,6 @@ export function ActivatePhaseConfirm({
 }: ActivatePhaseConfirmProps) {
   return (
     <div className="space-y-6">
-      {/* Warning Alert */}
       <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r">
         <p className="text-sm text-amber-800">
           <strong>⚠️ Lưu ý:</strong> Khi kích hoạt <strong>Phase {phase.phaseOrder}</strong>,{" "}
