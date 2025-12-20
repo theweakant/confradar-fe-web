@@ -22,7 +22,6 @@ export function CustomerTab({ conferenceId, conferenceType, currentUserId, confe
   );
 
   const ticketHolders = Array.isArray(data?.data?.items) ? data.data.items : [];
-  const totalRevenue = ticketHolders.reduce((sum, t) => sum + t.actualPrice, 0);
 
   const [selectedTicket, setSelectedTicket] = useState<TicketHolder | null>(null);
 
@@ -71,17 +70,6 @@ export function CustomerTab({ conferenceId, conferenceType, currentUserId, confe
                 </span>
               </h2>
             </div>
-            {/* {ticketHolders.length > 0 && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-green-50 rounded-lg border border-green-200">
-                <DollarSign className="w-5 h-5 text-green-600" />
-                <div>
-                  <p className="text-xs text-green-700 font-medium">Tổng thu</p>
-                  <p className="text-lg font-bold text-green-700">
-                    {formatCurrency(totalRevenue)}
-                  </p>
-                </div>
-              </div>
-            )} */}
         </div>
 
         {ticketHolders.length === 0 ? (
