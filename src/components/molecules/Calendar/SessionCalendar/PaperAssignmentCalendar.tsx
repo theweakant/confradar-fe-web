@@ -1,4 +1,3 @@
-// src/components/molecules/Calendar/PaperAssignmentCalendar.tsx
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
@@ -45,7 +44,6 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
   const [paperDetailDialogOpen, setPaperDetailDialogOpen] = useState(false);
   const calendarRef = useRef<FullCalendar>(null);
 
-  // 🔹 Fetch sessions with presenters
   const {
     data: sessionsResponse,
     isLoading: isLoadingSessions,
@@ -55,7 +53,6 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
     skip: !conferenceId,
   });
 
-  // 🔹 Fetch accepted papers
   const {
     data: acceptedPapersResponse,
     isLoading: isLoadingPapers,
@@ -71,7 +68,6 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
     ? externalAcceptedPapers
     : internalAcceptedPapers;
 
-  // 🔹 Filter papers: only show papers that are NOT assigned to any session
   const unassignedPapers = useMemo(() => {
     return papersToDisplay.filter(paper => !paper.isAssignedToSession);
   }, [papersToDisplay]);
@@ -89,7 +85,6 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
     },
   }));
 
-  // 🔹 Auto jump to first session date when component mounts or sessions load
   useEffect(() => {
     if (calendarRef.current && sessions.length > 0) {
       const calendarApi = calendarRef.current.getApi();
@@ -108,7 +103,6 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
     }
   }, [sessions]);
 
-  // 🔹 Handle manual startDate prop (if provided externally)
   useEffect(() => {
     if (calendarRef.current && startDate) {
       const calendarApi = calendarRef.current.getApi();
@@ -126,7 +120,6 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
   const handleSessionDialogClose = () => {
     setSessionDialogOpen(false);
     setSelectedSession(null);
-    // Refetch sessions after closing dialog to get updated data
     refetchSessions();
   };
 
@@ -178,7 +171,6 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
 
   return (
     <div className="w-full">
-      {/* Legend */}
       <div className="mb-4 flex gap-4 items-center text-xs px-1">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-blue-600"></div>
@@ -191,7 +183,6 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        {/* Calendar */}
         <div className="lg:col-span-2 bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
           <style>{`
             .fc {
@@ -279,7 +270,6 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
           />
         </div>
 
-        {/* Paper List - Only show unassigned papers */}
         <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm">
           <h2 className="text-base font-semibold mb-3 flex items-center gap-2 text-gray-900">
             Danh sách bài báo chưa gán ({unassignedPapers.length})
@@ -307,7 +297,6 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
         </div>
       </div>
 
-      {/* Presenter Session Detail Dialog */}
       <PresenterSessionDetailDialog
         open={sessionDialogOpen}
         session={selectedSession}
@@ -317,7 +306,6 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
         conferenceId={conferenceId}
       />
 
-      {/* Paper Detail Dialog */}
       <PaperDetailDialog
         open={paperDetailDialogOpen}
         paper={selectedPaper}
