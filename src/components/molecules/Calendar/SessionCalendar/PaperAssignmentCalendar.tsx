@@ -272,7 +272,7 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
 
         <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm">
           <h2 className="text-base font-semibold mb-3 flex items-center gap-2 text-gray-900">
-            Danh sách bài báo chưa gán ({unassignedPapers.length})
+            Danh sách bài báo ({unassignedPapers.length})
           </h2>
           <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
             {unassignedPapers.length === 0 ? (

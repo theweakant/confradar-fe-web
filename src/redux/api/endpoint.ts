@@ -416,6 +416,13 @@ export const endpoint = {
   AUDIT_LOG: {
     LIST: "/auditlog/list-audit-log",
     CATEGORIES: "/auditlog/list-audit-log-categories",
+
+    LIST_RECENT_AUDIT: "/auditlog/list-recent-audit",
+    LIST_RECENT_REPORT: "/auditlog/list-recent-report",
+    TOTAL_USERS: "/auditlog/total-users",
+    TOTAL_UNRESOLVE_REPORTS: "/auditlog/total-unresolve-reports",
+    INTERNAL_EVENT_COUNT: "/auditlog/internal-event-count",
+    EXTERNAL_EVENT_COUNT: "/auditlog/external-event-count",
   },
 
   ORCID: {
