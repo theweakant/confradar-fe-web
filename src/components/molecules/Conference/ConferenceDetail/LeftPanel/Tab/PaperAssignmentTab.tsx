@@ -10,7 +10,6 @@ export const PaperAssignmentTab: React.FC<PaperAssignmentTabProps> = ({ conferen
 
   return (
     <div className="h-full flex flex-col bg-white">
-      {/* Header Section */}
       <div className="px-2 py-5">
         <h2 className="text-xl font-semibold text-gray-900 mb-3">
           Xếp bài báo vào session
@@ -19,7 +18,6 @@ export const PaperAssignmentTab: React.FC<PaperAssignmentTabProps> = ({ conferen
           Chọn một bài báo từ danh sách bên phải, sau đó click vào phiên họp để xem chi tiết và gán.
         </p>
         
-        {/* Status Indicator */}
         {selectedPaperId && (
           <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-md">
             <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>

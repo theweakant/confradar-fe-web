@@ -267,7 +267,7 @@ export default function ConferenceDetailPage() {
 
   const extraActions = (
   <>
-    {isResearchAndCompleted && (
+    {/* {isResearchAndCompleted && (
       <Button
         variant="outline"
         size="sm"
@@ -287,7 +287,7 @@ export default function ConferenceDetailPage() {
           </>
         )}
       </Button>
-    )}
+    )} */}
 
     {isTechConfOfCollaborator &&
       conference.conferenceStatusId === "7f2dcc1a-a107-4ed4-827e-eb994cbb648d" && (

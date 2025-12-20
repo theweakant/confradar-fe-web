@@ -443,14 +443,11 @@ groupByStatus.forEach((group) => {
 });
   const total = completed + inProgress + pending;
 
-  // --- Revenue Chart Data ---
   const apiMonthlyStats = revenueData?.data?.monthlyStats || [];
   const revenueChart = generateRevenueDataFor6MonthsBack(revYear, revMonth, apiMonthlyStats);
 
-  // --- Upcoming Conference ---
   const upcomingConferences = upcomingData?.data || [];
 
-  // --- Top Conferences ---
   const topConferences = (topData?.data?.conferenceRegisters || []).map((item) => ({
     id: item.conferenceId,
     name: item.name,
@@ -459,7 +456,6 @@ groupByStatus.forEach((group) => {
     occupancyRate: item.occupancyRate,
   }));
 
-  // Month options for revenue dropdown
   const monthOptions = generateMonthOptions();
 
   return (
