@@ -1,7 +1,7 @@
 // src/components/molecules/Calendar/PaperAssignmentCalendar.tsx
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -12,6 +12,7 @@ import { useListAcceptedPapersQuery } from "@/redux/services/paper.service";
 import type { AcceptedPaper } from "@/types/paper.type";
 import PaperCard from "@/components/molecules/Calendar/SessionCalendar/Paper/PaperCard";
 import PresenterSessionDetailDialog from "@/components/molecules/Calendar/SessionCalendar/Modal/PresenterSessionDetail";
+import PaperDetailDialog from "@/components/molecules/Calendar/SessionCalendar/Modal/PaperDetailDialog";
 
 interface PresentSessionData {
   sessionId: string;
@@ -39,7 +40,9 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
   acceptedPapers: externalAcceptedPapers,
 }) => {
   const [selectedSession, setSelectedSession] = useState<PresentSessionData | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [sessionDialogOpen, setSessionDialogOpen] = useState(false);
+  const [selectedPaper, setSelectedPaper] = useState<AcceptedPaper | null>(null);
+  const [paperDetailDialogOpen, setPaperDetailDialogOpen] = useState(false);
   const calendarRef = useRef<FullCalendar>(null);
 
   // 🔹 Fetch sessions with presenters
@@ -67,6 +70,11 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
   const papersToDisplay = externalAcceptedPapers !== undefined
     ? externalAcceptedPapers
     : internalAcceptedPapers;
+
+  // 🔹 Filter papers: only show papers that are NOT assigned to any session
+  const unassignedPapers = useMemo(() => {
+    return papersToDisplay.filter(paper => !paper.isAssignedToSession);
+  }, [papersToDisplay]);
 
   const calendarEvents = sessions.map((session) => ({
     id: session.sessionId,
@@ -112,14 +120,30 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
     info.jsEvent.preventDefault();
     const session = info.event.extendedProps.session as PresentSessionData;
     setSelectedSession(session);
-    setDialogOpen(true);
+    setSessionDialogOpen(true);
   };
 
-  const handleDialogClose = () => {
-    setDialogOpen(false);
+  const handleSessionDialogClose = () => {
+    setSessionDialogOpen(false);
     setSelectedSession(null);
     // Refetch sessions after closing dialog to get updated data
     refetchSessions();
+  };
+
+  const handlePaperCardClick = (paper: AcceptedPaper) => {
+    setSelectedPaper(paper);
+    setPaperDetailDialogOpen(true);
+  };
+
+  const handlePaperDetailDialogClose = () => {
+    setPaperDetailDialogOpen(false);
+    setSelectedPaper(null);
+  };
+
+  const handleSelectPaperForAssignment = () => {
+    if (selectedPaper) {
+      onPaperSelected?.(selectedPaper.paperId);
+    }
   };
 
   const isLoading = isLoadingSessions || (externalAcceptedPapers === undefined && isLoadingPapers);
@@ -255,22 +279,26 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
           />
         </div>
 
-        {/* Paper List */}
+        {/* Paper List - Only show unassigned papers */}
         <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm">
           <h2 className="text-base font-semibold mb-3 flex items-center gap-2 text-gray-900">
-            Danh sách bài báo ({papersToDisplay.length})
+            Danh sách bài báo chưa gán ({unassignedPapers.length})
           </h2>
           <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
-            {papersToDisplay.length === 0 ? (
+            {unassignedPapers.length === 0 ? (
               <div className="text-gray-500 text-sm py-8 text-center">
-                Không có bài báo nào
+                <div className="mb-2">✓</div>
+                <p className="font-medium">Tất cả bài báo đã được gán</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Không còn bài báo nào cần gán vào session
+                </p>
               </div>
             ) : (
-              papersToDisplay.map((paper) => (
+              unassignedPapers.map((paper) => (
                 <PaperCard
                   key={paper.paperId}
                   paper={paper}
-                  onClick={() => onPaperSelected?.(paper.paperId)}
+                  onClick={() => handlePaperCardClick(paper)}
                   isSelected={selectedPaperId === paper.paperId}
                 />
               ))
@@ -281,12 +309,20 @@ const PaperAssignmentCalendar: React.FC<PaperAssignmentCalendarProps> = ({
 
       {/* Presenter Session Detail Dialog */}
       <PresenterSessionDetailDialog
-        open={dialogOpen}
+        open={sessionDialogOpen}
         session={selectedSession}
-        onClose={handleDialogClose}
+        onClose={handleSessionDialogClose}
         onRefetch={refetchSessions}
         selectedPaperId={selectedPaperId}
         conferenceId={conferenceId}
+      />
+
+      {/* Paper Detail Dialog */}
+      <PaperDetailDialog
+        open={paperDetailDialogOpen}
+        paper={selectedPaper}
+        onClose={handlePaperDetailDialogClose}
+        onSelectPaper={handleSelectPaperForAssignment}
       />
     </div>
   );

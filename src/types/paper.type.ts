@@ -1,11 +1,74 @@
 //paper.type.ts
+export interface User {
+  userId: string;
+  fullName: string;
+  avatarUrl: string | null;
+}
 
+export interface AbstractFile {
+  abstractId: string;
+  fileUrl: string;
+  status: string | null;
+  title: string;
+  description: string;
+  reason: string | null;
+  created: string | null;
+  updated: string | null;
+}
 
+export interface FullPaperFile {
+  fullPaperId: string;
+  fileUrl: string;
+  status: string | null;
+  title: string;
+  description: string;
+  reason: string | null;
+  created: string | null;
+  updated: string | null;
+}
+
+export interface RevisionPaperFile {
+  revisionPaperId: string;
+  fileUrl: string;
+  status: string | null;
+  rootPaperId: string | null;
+  title: string;
+  description: string;
+  reason: string | null;
+  created: string | null;
+  updated: string | null;
+}
+
+export interface CameraReadyFile {
+  cameraReadyId: string;
+  fileUrl: string;
+  status: string | null;
+  rootPaperId: string | null;
+  title: string;
+  description: string;
+  reason: string | null;
+  created: string | null;
+  updated: string | null;
+}
 
 export interface AcceptedPaper {
   paperId: string;
   title: string;
-  authorName: string;
+  description: string;
+  researchConferenceInfo: string | null;
+  created: string | null;
+  rootAuthor: User;
+  coAuthors: User[];
+  ticketId: string | null;
+  currentPhase: string | null;
+  abstract: AbstractFile | null;
+  fullPaper: FullPaperFile | null;
+  revisionPaper: RevisionPaperFile | null;
+  cameraReady: CameraReadyFile | null;
+  researchPhase: string | null;
+  revisionDeadline: string | null;
+  isAssignedToSession: boolean;
+  authorName?: string;
 }
 
 export interface AssignPresenterRequest {
