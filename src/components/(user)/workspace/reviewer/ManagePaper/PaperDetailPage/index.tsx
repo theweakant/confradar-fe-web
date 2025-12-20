@@ -30,10 +30,10 @@ export default function ReviewPaperPage() {
 
   // const { data, isLoading, error } = useGetPaperDetailForReviewerQuery(paperId);
   const [getPaperDetailForReviewer, { data, isLoading, error }] = useLazyGetPaperDetailForReviewerQuery();
-  // const paperDetail = data?.data;
-  const [paperDetail, setPaperDetail] = useState<PaperDetailForReviewer | null>(
-    null,
-  );
+  const paperDetail = data?.data.paperDetail;
+  // const [paperDetail, setPaperDetail] = useState<PaperDetailForReviewer | null>(
+  //   null,
+  // );
   const [paperDetailWrapper, setPaperDetailWrapper] = useState<PaperDetailWrapperForReviewer | null>(
     null,
   );
@@ -64,23 +64,29 @@ export default function ReviewPaperPage() {
   );
 
   useEffect(() => {
-    const loadPaperDetail = async () => {
-      if (!paperId) return;
+    if (paperId) {
+      getPaperDetailForReviewer(paperId);
+    }
+  }, [paperId, getPaperDetailForReviewer]);
 
-      // setIsLoadingPaperDetail(true);
-      // setPaperDetailError(null);
+  // useEffect(() => {
+  //   const loadPaperDetail = async () => {
+  //     if (!paperId) return;
 
-      try {
-        const response = await fetchPaperDetail(paperId);
-        setPaperDetail(response.data.paperDetail);
-      } catch (error: unknown) {
+  //     // setIsLoadingPaperDetail(true);
+  //     // setPaperDetailError(null);
 
-      }
-    };
+  //     try {
+  //       const response = await fetchPaperDetail(paperId);
+  //       setPaperDetail(response.data.paperDetail);
+  //     } catch (error: unknown) {
 
-    loadPaperDetail();
-    fetchPaperDetail(paperId)
-  }, [paperId, fetchPaperDetail])
+  //     }
+  //   };
+
+  //   loadPaperDetail();
+  //   fetchPaperDetail(paperId)
+  // }, [paperId, fetchPaperDetail])
 
   useEffect(() => {
     if (paperDetail?.currentPaperPhase) {
