@@ -1,4 +1,3 @@
-// components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/ContractTab.tsx
 
 import { Download, FileText, Calendar, Percent, CheckCircle, XCircle, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,27 +26,12 @@ export function ContractTab({ conferenceData }: ContractTabProps) {
     });
   };
 
-  const renderStepStatus = (isCompleted: boolean) => (
-    <div className="flex items-center gap-2">
-      {isCompleted ? (
-        <CheckCircle className="w-4 h-4 text-green-600" />
-      ) : (
-        <XCircle className="w-4 h-4 text-red-500" />
-      )}
-      <span className={isCompleted ? "text-green-700" : "text-red-600"}>
-        {isCompleted ? "Hoàn thành" : "Chưa hoàn thành"}
-      </span>
-    </div>
-  );
-
   return (
     <div className="space-y-6">
-      {/* Tiêu đề */}
       <div className="flex items-center gap-3">
         <h2 className="text-xl font-bold text-gray-900">Hợp đồng đối tác</h2>
       </div>
 
-      {/* Link tải hợp đồng */}
       {contract.contractUrl && (
         <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
           <div className="flex items-center justify-between">
@@ -84,7 +68,6 @@ export function ContractTab({ conferenceData }: ContractTabProps) {
         </div>
       )}
 
-      {/* Thông tin cốt lõi */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <InfoItem label="Ngày ký hợp đồng" icon={<Calendar className="w-4 h-4" />}>
           {formatDate(contract.signDay)}
@@ -108,7 +91,6 @@ export function ContractTab({ conferenceData }: ContractTabProps) {
         </InfoItem>
       </div>
 
-      {/* Trạng thái các bước */}
       <div>
         <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
           <CheckCircle className="w-5 h-5 text-gray-600" />

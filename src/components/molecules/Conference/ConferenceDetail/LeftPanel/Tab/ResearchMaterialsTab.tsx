@@ -39,7 +39,6 @@ export function ResearchMaterialsTab({ conference }: ResearchMaterialsTabProps) 
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-8">
-      {/* Header */}
       <div className="border-b border-gray-200 pb-4">
         <h2 className="text-2xl font-bold text-gray-900">
           Tài Liệu & Nguồn Tham Khảo Nghiên Cứu
@@ -49,7 +48,6 @@ export function ResearchMaterialsTab({ conference }: ResearchMaterialsTabProps) 
         </p>
       </div>
 
-      {/* Ranking Category */}
       <section className="bg-white border border-gray-200 rounded-lg p-6">
         <div className="flex items-center gap-2 mb-4">
           <Folder className="w-5 h-5 text-blue-600" />
@@ -62,7 +60,7 @@ export function ResearchMaterialsTab({ conference }: ResearchMaterialsTabProps) 
         </div>
       </section>
 
-      {/* Ranking Files */}
+      {/*  Files */}
       <section>
         <div className="flex items-center gap-2 mb-4">
           <FileText className="w-5 h-5 text-green-600" />
@@ -101,7 +99,6 @@ export function ResearchMaterialsTab({ conference }: ResearchMaterialsTabProps) 
         )}
       </section>
 
-      {/* Material Downloads */}
       <section>
         <div className="flex items-center gap-2 mb-4">
           <BookOpen className="w-5 h-5 text-purple-600" />
@@ -146,7 +143,6 @@ export function ResearchMaterialsTab({ conference }: ResearchMaterialsTabProps) 
         )}
       </section>
 
-      {/* Ranking Reference URLs */}
       <section>
         <div className="flex items-center gap-2 mb-4">
           <Link2 className="w-5 h-5 text-orange-600" />
@@ -189,7 +185,6 @@ export function ResearchMaterialsTab({ conference }: ResearchMaterialsTabProps) 
   );
 }
 
-// --- Helper Components ---
 interface InfoFieldProps {
   label: string;
   value: string | number | boolean | null | undefined;

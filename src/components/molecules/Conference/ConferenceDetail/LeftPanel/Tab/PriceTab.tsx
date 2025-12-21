@@ -6,7 +6,7 @@ import type {
   ConferencePricePhaseResponse,
 } from "@/types/conference.type";
 import type { CommonConference } from "@/types/conference.type";
-import { FileText, CheckCircle2 } from "lucide-react";
+import {  CheckCircle2 } from "lucide-react";
 
 interface PriceTabProps {
   conference: CommonConference;

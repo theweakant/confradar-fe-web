@@ -15,7 +15,6 @@ interface SponsorsMediaTabProps {
 export function SponsorsMediaTab({ conference }: SponsorsMediaTabProps) {
   return (
     <div className="space-y-10">
-      {/* Sponsors Section */}
       <section>
         <div className="flex items-center gap-2 mb-5">
           <Handshake className="w-5 h-5 text-primary" />
@@ -52,7 +51,6 @@ export function SponsorsMediaTab({ conference }: SponsorsMediaTabProps) {
         )}
       </section>
 
-      {/* Media Section */}
       <section>
         <div className="flex items-center gap-2 mb-5">
           <ImageIcon className="w-5 h-5 text-primary" />

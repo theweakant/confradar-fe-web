@@ -1,7 +1,5 @@
 "use client";
 
-import { Calendar, BookOpen } from "lucide-react";
-import { formatDate } from "@/helper/format";
 import type { ResearchConferenceDetailResponse, RevisionRoundDeadlineResponse } from "@/types/conference.type";
 
 interface ResearchInfoTabProps {
@@ -11,7 +9,6 @@ interface ResearchInfoTabProps {
 export function ResearchInfoTab({ conference }: ResearchInfoTabProps) {
   return (
     <div className="space-y-6">
-      {/* Basic Research Info */}
       <div className="bg-white rounded-lg p-2">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-semibold text-gray-900">
@@ -74,52 +71,3 @@ function InfoField({ label, value }: InfoFieldProps) {
   );
 }
 
-interface PhaseCardProps {
-  title: string;
-  number: number;
-  color: "blue" | "purple" | "orange" | "green";
-  startDate: string | null;
-  endDate: string | null;
-}
-
-function PhaseCard({ title, number, color, startDate, endDate }: PhaseCardProps) {
-  const colorMap = {
-    blue: {
-      bg: "bg-blue-500",
-      border: "border-blue-200",
-      bgLight: "bg-blue-50"
-    },
-    purple: {
-      bg: "bg-purple-500",
-      border: "border-purple-200",
-      bgLight: "bg-purple-50"
-    },
-    orange: {
-      bg: "bg-orange-500",
-      border: "border-orange-200",
-      bgLight: "bg-orange-50"
-    },
-    green: {
-      bg: "bg-green-500",
-      border: "border-green-200",
-      bgLight: "bg-green-50"
-    },
-  };
-
-  const style = colorMap[color];
-
-  return (
-    <div className={`${style.bgLight} border ${style.border} rounded-lg p-4`}>
-      <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <span className={`flex items-center justify-center w-6 h-6 ${style.bg} text-white rounded text-xs font-bold`}>
-          {number}
-        </span>
-        {title}
-      </h4>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <InfoField label="Bắt đầu" value={formatDate(startDate)} />
-        <InfoField label="Kết thúc" value={formatDate(endDate)} />
-      </div>
-    </div>
-  );
-}

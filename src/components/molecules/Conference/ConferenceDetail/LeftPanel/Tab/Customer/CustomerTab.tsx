@@ -1,8 +1,7 @@
-// components/pages/ConferenceDetailPage/Tab/CustomerTab.tsx
 "use client";
 
 import { useState } from "react";
-import { Ticket, User, Calendar, DollarSign } from "lucide-react";
+import { Ticket, User, Calendar } from "lucide-react";
 import { useGetTicketHoldersQuery } from "@/redux/services/statistics.service";
 import { skipToken } from "@reduxjs/toolkit/query/react";
 import { formatCurrency } from "@/helper/format";
@@ -60,7 +59,6 @@ export function CustomerTab({ conferenceId, conferenceType, currentUserId, confe
   return (
     <>
       <div className="space-y-4 p-3">
-        {/* Header with stats */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pb-4 border-b">
             <div>
               <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
@@ -88,7 +86,6 @@ export function CustomerTab({ conferenceId, conferenceType, currentUserId, confe
                 className="group p-4 border border-gray-200 rounded-xl bg-white hover:border-blue-300 hover:shadow-lg transition-all cursor-pointer"
                 onClick={() => setSelectedTicket(holder)}
               >
-                {/* Customer name & status */}
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
@@ -103,7 +100,6 @@ export function CustomerTab({ conferenceId, conferenceType, currentUserId, confe
                   </div>
                 </div>
 
-                {/* Key info */}
                 <div className="space-y-2 mb-3">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-gray-600 flex items-center gap-1.5">
@@ -127,7 +123,6 @@ export function CustomerTab({ conferenceId, conferenceType, currentUserId, confe
                   </div>
                 </div>
 
-                {/* Click hint */}
                 <div className="pt-2 border-t border-gray-100">
                   <p className="text-xs text-gray-400 text-center group-hover:text-blue-500 transition-colors">
                     Nhấn để xem chi tiết
