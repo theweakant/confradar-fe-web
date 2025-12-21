@@ -1,4 +1,3 @@
-// constants/tabConfig.ts
 
 import {
   Info,
@@ -16,9 +15,7 @@ import {
   FileSignature, 
 } from "lucide-react";
 
-// Giả sử TabId được export từ file khác (như bạn đã dùng)
-// Nếu bạn muốn định nghĩa TabId trong file này, hãy bỏ comment dòng dưới
-// và xóa import { TabId } ở nơi dùng (nhưng bạn đang import từ "../constants/tab")
+
 export type TabId = 
   | "price"
   | "customers"
@@ -109,7 +106,7 @@ export const TAB_GROUPS: TabGroup[] = [
     tabs: [
       {
         id: "customers",
-        label: "Người mua",
+        label: "Giao dịch",
         icon: Calendar,
         conferenceType: "all",
       },

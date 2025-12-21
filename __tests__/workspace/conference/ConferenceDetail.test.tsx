@@ -54,6 +54,11 @@ jest.mock('@/redux/services/statistics.service', () => ({
     error: null,
     refetch: jest.fn(),
   })),
+  useGetTransactionHistoryQuery: jest.fn(() => ({
+    data: { data: { userHistories: [] } },
+    isLoading: false,
+    isError: false,
+  })),
 }));
 
 jest.mock('@/redux/services/user.service', () => ({
@@ -358,7 +363,6 @@ const getCategoryName = () => 'Technology';
 const getStatusName = () => 'Active';
 const getCityName = () => 'Ho Chi Minh';
 
-// === Test Suites ===
 describe('MetaInfoSection Component', () => {
   it('renders conference name and ID', () => {
     renderWithProvider(
@@ -648,7 +652,6 @@ describe('PriceTab Component', () => {
     expect(screen.getByText('Early bird pricing')).toBeInTheDocument();
   });
 
-  // ✅ SỬA: Thêm khoảng trắng giữa số và ký hiệu
   it('renders ticket price', () => {
     renderWithProvider(<PriceTab conference={conferenceWithPrice} now={mockNow} />);
     expect(screen.getByText('500.000 ₫')).toBeInTheDocument();
@@ -695,7 +698,6 @@ describe('PriceTab Component', () => {
     expect(screen.getByText('AUTHOR')).toBeInTheDocument();
   });
 
-  // ✅ SỬA: Dùng getAllByText vì có nhiều "Xuất bản"
   it('renders Xuất bản badge', () => {
     const conferenceWithAuthor = {
       ...baseTechConference,
@@ -1428,7 +1430,23 @@ describe('PaperTab Component', () => {
 });
 
 describe('CustomerTab Component', () => {
-  it('renders customer tab title', async () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('renders loading state', async () => {
+    const { useGetTicketHoldersQuery, useGetTransactionHistoryQuery } = require('@/redux/services/statistics.service');
+    useGetTicketHoldersQuery.mockReturnValueOnce({
+      data: null,
+      isLoading: true,
+      isError: false,
+    });
+    useGetTransactionHistoryQuery.mockReturnValueOnce({
+      data: null,
+      isLoading: true,
+      isError: false,
+    });
+
     renderWithProvider(
       <CustomerTab
         conferenceId="conf-1"
@@ -1437,12 +1455,81 @@ describe('CustomerTab Component', () => {
         conferenceOwnerId="user-1"
       />
     );
+
+    await waitFor(() => {
+      expect(screen.getByText('Đang tải dữ liệu...')).toBeInTheDocument();
+    });
+    expect(document.querySelector('.animate-spin')).toBeInTheDocument();
+  });
+
+  it('renders error state', async () => {
+    const { useGetTicketHoldersQuery, useGetTransactionHistoryQuery } = require('@/redux/services/statistics.service');
+    useGetTicketHoldersQuery.mockReturnValueOnce({
+      data: null,
+      isLoading: false,
+      isError: true,
+    });
+    useGetTransactionHistoryQuery.mockReturnValueOnce({
+      data: null,
+      isLoading: false,
+      isError: false,
+    });
+
+    renderWithProvider(
+      <CustomerTab
+        conferenceId="conf-1"
+        conferenceType="technical"
+        currentUserId="user-1"
+        conferenceOwnerId="user-1"
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Lỗi khi tải dữ liệu')).toBeInTheDocument();
+      expect(screen.getByText('Không thể lấy thông tin người mua hoặc lịch sử giao dịch. Vui lòng thử lại.')).toBeInTheDocument();
+    });
+  });
+
+  it('renders customer tab title', async () => {
+    const { useGetTicketHoldersQuery, useGetTransactionHistoryQuery } = require('@/redux/services/statistics.service');
+    useGetTicketHoldersQuery.mockReturnValueOnce({
+      data: { data: { items: [] } },
+      isLoading: false,
+      isError: false,
+    });
+    useGetTransactionHistoryQuery.mockReturnValueOnce({
+      data: { data: { userHistories: [] } },
+      isLoading: false,
+      isError: false,
+    });
+
+    renderWithProvider(
+      <CustomerTab
+        conferenceId="conf-1"
+        conferenceType="technical"
+        currentUserId="user-1"
+        conferenceOwnerId="user-1"
+      />
+    );
+
     await waitFor(() => {
       expect(screen.getByText('Người mua')).toBeInTheDocument();
     });
   });
 
   it('renders empty state', async () => {
+    const { useGetTicketHoldersQuery, useGetTransactionHistoryQuery } = require('@/redux/services/statistics.service');
+    useGetTicketHoldersQuery.mockReturnValueOnce({
+      data: { data: { items: [] } },
+      isLoading: false,
+      isError: false,
+    });
+    useGetTransactionHistoryQuery.mockReturnValueOnce({
+      data: { data: { userHistories: [] } },
+      isLoading: false,
+      isError: false,
+    });
+
     renderWithProvider(
       <CustomerTab
         conferenceId="conf-1"
@@ -1451,13 +1538,15 @@ describe('CustomerTab Component', () => {
         conferenceOwnerId="user-1"
       />
     );
+
     await waitFor(() => {
       expect(screen.getByText('Chưa có người mua')).toBeInTheDocument();
+      expect(screen.getByText('Chưa có giao dịch nào được ghi nhận')).toBeInTheDocument();
     });
   });
 
   it('renders ticket holders', async () => {
-    const { useGetTicketHoldersQuery } = require('@/redux/services/statistics.service');
+    const { useGetTicketHoldersQuery, useGetTransactionHistoryQuery } = require('@/redux/services/statistics.service');
     useGetTicketHoldersQuery.mockReturnValueOnce({
       data: {
         data: {
@@ -1466,7 +1555,7 @@ describe('CustomerTab Component', () => {
               ticketId: 'ticket-1',
               customerName: 'John Doe',
               ticketTypeName: 'Early Bird',
-              purchaseDate: '2024-01-10',
+              purchaseDate: '2024-01-10T10:30:00',
               actualPrice: 500000,
               overallStatus: 'Đã thanh toán',
             },
@@ -1476,6 +1565,12 @@ describe('CustomerTab Component', () => {
       isLoading: false,
       isError: false,
     });
+    useGetTransactionHistoryQuery.mockReturnValueOnce({
+      data: { data: { userHistories: [] } },
+      isLoading: false,
+      isError: false,
+    });
+
     renderWithProvider(
       <CustomerTab
         conferenceId="conf-1"
@@ -1484,15 +1579,17 @@ describe('CustomerTab Component', () => {
         conferenceOwnerId="user-1"
       />
     );
+
     await waitFor(() => {
       expect(screen.getByText('John Doe')).toBeInTheDocument();
       expect(screen.getByText('Early Bird')).toBeInTheDocument();
       expect(screen.getByText('Đã thanh toán')).toBeInTheDocument();
+      expect(screen.getByText('500.000 ₫')).toBeInTheDocument();
     });
   });
 
   it('shows ticket count', async () => {
-    const { useGetTicketHoldersQuery } = require('@/redux/services/statistics.service');
+    const { useGetTicketHoldersQuery, useGetTransactionHistoryQuery } = require('@/redux/services/statistics.service');
     useGetTicketHoldersQuery.mockReturnValueOnce({
       data: {
         data: {
@@ -1505,6 +1602,12 @@ describe('CustomerTab Component', () => {
       isLoading: false,
       isError: false,
     });
+    useGetTransactionHistoryQuery.mockReturnValueOnce({
+      data: { data: { userHistories: [] } },
+      isLoading: false,
+      isError: false,
+    });
+
     renderWithProvider(
       <CustomerTab
         conferenceId="conf-1"
@@ -1513,10 +1616,881 @@ describe('CustomerTab Component', () => {
         conferenceOwnerId="user-1"
       />
     );
+
     await waitFor(() => {
       expect(screen.getByText('(2 đã bán)')).toBeInTheDocument();
     });
   });
+
+  it('shows pending payment status with yellow badge', async () => {
+    const { useGetTicketHoldersQuery, useGetTransactionHistoryQuery } = require('@/redux/services/statistics.service');
+    useGetTicketHoldersQuery.mockReturnValueOnce({
+      data: {
+        data: {
+          items: [
+            {
+              ticketId: 'ticket-1',
+              customerName: 'John Doe',
+              ticketTypeName: 'Early Bird',
+              purchaseDate: '2024-01-10',
+              actualPrice: 500000,
+              overallStatus: 'Chờ thanh toán',
+            },
+          ],
+        },
+      },
+      isLoading: false,
+      isError: false,
+    });
+    useGetTransactionHistoryQuery.mockReturnValueOnce({
+      data: { data: { userHistories: [] } },
+      isLoading: false,
+      isError: false,
+    });
+
+    renderWithProvider(
+      <CustomerTab
+        conferenceId="conf-1"
+        conferenceType="technical"
+        currentUserId="user-1"
+        conferenceOwnerId="user-1"
+      />
+    );
+
+    await waitFor(() => {
+      const badge = screen.getByText('Chờ thanh toán');
+      expect(badge).toBeInTheDocument();
+      expect(badge).toHaveClass('bg-yellow-100', 'text-yellow-700');
+    });
+  });
+
+  it('shows click hint on ticket card', async () => {
+    const { useGetTicketHoldersQuery, useGetTransactionHistoryQuery } = require('@/redux/services/statistics.service');
+    useGetTicketHoldersQuery.mockReturnValueOnce({
+      data: {
+        data: {
+          items: [
+            {
+              ticketId: 'ticket-1',
+              customerName: 'John',
+              ticketTypeName: 'VIP',
+              purchaseDate: '2024-01-10',
+              actualPrice: 500000,
+              overallStatus: 'Đã thanh toán',
+            },
+          ],
+        },
+      },
+      isLoading: false,
+      isError: false,
+    });
+    useGetTransactionHistoryQuery.mockReturnValueOnce({
+      data: { data: { userHistories: [] } },
+      isLoading: false,
+      isError: false,
+    });
+
+    renderWithProvider(
+      <CustomerTab
+        conferenceId="conf-1"
+        conferenceType="technical"
+        currentUserId="user-1"
+        conferenceOwnerId="user-1"
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Nhấn để xem chi tiết')).toBeInTheDocument();
+    });
+  });
+
+  it('renders multiple ticket holders in grid', async () => {
+    const { useGetTicketHoldersQuery, useGetTransactionHistoryQuery } = require('@/redux/services/statistics.service');
+    useGetTicketHoldersQuery.mockReturnValueOnce({
+      data: {
+        data: {
+          items: [
+            { ticketId: 'ticket-1', customerName: 'Alice', ticketTypeName: 'VIP', purchaseDate: '2024-01-10', actualPrice: 1000000, overallStatus: 'Đã thanh toán' },
+            { ticketId: 'ticket-2', customerName: 'Bob', ticketTypeName: 'Regular', purchaseDate: '2024-01-11', actualPrice: 500000, overallStatus: 'Đã thanh toán' },
+            { ticketId: 'ticket-3', customerName: 'Charlie', ticketTypeName: 'Early Bird', purchaseDate: '2024-01-12', actualPrice: 300000, overallStatus: 'Đã thanh toán' },
+          ],
+        },
+      },
+      isLoading: false,
+      isError: false,
+    });
+    useGetTransactionHistoryQuery.mockReturnValueOnce({
+      data: { data: { userHistories: [] } },
+      isLoading: false,
+      isError: false,
+    });
+
+    renderWithProvider(
+      <CustomerTab
+        conferenceId="conf-1"
+        conferenceType="technical"
+        currentUserId="user-1"
+        conferenceOwnerId="user-1"
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Alice')).toBeInTheDocument();
+      expect(screen.getByText('Bob')).toBeInTheDocument();
+      expect(screen.getByText('Charlie')).toBeInTheDocument();
+    });
+  });
+
+  it('renders transaction history title', async () => {
+    const { useGetTicketHoldersQuery, useGetTransactionHistoryQuery } = require('@/redux/services/statistics.service');
+    useGetTicketHoldersQuery.mockReturnValueOnce({
+      data: { data: { items: [] } },
+      isLoading: false,
+      isError: false,
+    });
+    useGetTransactionHistoryQuery.mockReturnValueOnce({
+      data: { data: { userHistories: [] } },
+      isLoading: false,
+      isError: false,
+    });
+
+    renderWithProvider(
+      <CustomerTab
+        conferenceId="conf-1"
+        conferenceType="technical"
+        currentUserId="user-1"
+        conferenceOwnerId="user-1"
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Lịch sử giao dịch')).toBeInTheDocument();
+    });
+  });
+
+  it('renders empty state for transaction history', async () => {
+    const { useGetTicketHoldersQuery, useGetTransactionHistoryQuery } = require('@/redux/services/statistics.service');
+    useGetTicketHoldersQuery.mockReturnValueOnce({
+      data: { data: { items: [] } },
+      isLoading: false,
+      isError: false,
+    });
+    useGetTransactionHistoryQuery.mockReturnValueOnce({
+      data: { data: { userHistories: [] } },
+      isLoading: false,
+      isError: false,
+    });
+
+    renderWithProvider(
+      <CustomerTab
+        conferenceId="conf-1"
+        conferenceType="technical"
+        currentUserId="user-1"
+        conferenceOwnerId="user-1"
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Chưa có lịch sử giao dịch')).toBeInTheDocument();
+    });
+  });
+
+  it('renders user transaction with details', async () => {
+    const { useGetTicketHoldersQuery, useGetTransactionHistoryQuery } = require('@/redux/services/statistics.service');
+    useGetTicketHoldersQuery.mockReturnValueOnce({
+      data: { data: { items: [] } },
+      isLoading: false,
+      isError: false,
+    });
+    useGetTransactionHistoryQuery.mockReturnValueOnce({
+      data: {
+        data: {
+          userHistories: [
+            {
+              userId: 'user-1',
+              fullName: 'John Doe',
+              email: 'john@example.com',
+              transactions: [
+                {
+                  transactionId: 'tx-1',
+                  ticketType: 'VIP Ticket',
+                  paymentMethod: 'VNPay',
+                  type: 'Mua vé',
+                  status: 'Thành công',
+                  amount: 1000000,
+                  transactionCode: 'TXN123456',
+                  time: '2024-01-10T10:30:00',
+                },
+              ],
+            },
+          ],
+        },
+      },
+      isLoading: false,
+      isError: false,
+    });
+
+    renderWithProvider(
+      <CustomerTab
+        conferenceId="conf-1"
+        conferenceType="technical"
+        currentUserId="user-1"
+        conferenceOwnerId="user-1"
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+      expect(screen.getByText('john@example.com')).toBeInTheDocument();
+      expect(screen.getByText('1 giao dịch')).toBeInTheDocument();
+      expect(screen.getByText('VIP Ticket')).toBeInTheDocument();
+      expect(screen.getByText('VNPay')).toBeInTheDocument();
+      expect(screen.getByText('Thành công')).toBeInTheDocument();
+      expect(screen.getByText('1.000.000 ₫')).toBeInTheDocument();
+      expect(screen.getByText('TXN123456')).toBeInTheDocument();
+    });
+  });
+
+  it('renders transaction count correctly', async () => {
+    const { useGetTicketHoldersQuery, useGetTransactionHistoryQuery } = require('@/redux/services/statistics.service');
+    useGetTicketHoldersQuery.mockReturnValueOnce({
+      data: { data: { items: [] } },
+      isLoading: false,
+      isError: false,
+    });
+    useGetTransactionHistoryQuery.mockReturnValueOnce({
+      data: {
+        data: {
+          userHistories: [
+            {
+              userId: 'user-1',
+              fullName: 'John Doe',
+              email: 'john@example.com',
+              transactions: [
+                {
+                  transactionId: 'tx-1',
+                  ticketType: 'VIP',
+                  paymentMethod: 'VNPay',
+                  type: 'Mua vé',
+                  status: 'Thành công',
+                  amount: 1000000,
+                  transactionCode: 'TXN001',
+                  time: '2024-01-10',
+                },
+                {
+                  transactionId: 'tx-2',
+                  ticketType: 'Regular',
+                  paymentMethod: 'MoMo',
+                  type: 'Mua vé',
+                  status: 'Thành công',
+                  amount: 500000,
+                  transactionCode: 'TXN002',
+                  time: '2024-01-11',
+                },
+                {
+                  transactionId: 'tx-3',
+                  ticketType: 'VIP',
+                  paymentMethod: 'VNPay',
+                  type: 'Mua vé',
+                  status: 'Thành công',
+                  amount: 800000,
+                  transactionCode: 'TXN003',
+                  time: '2024-01-12',
+                },
+              ],
+            },
+          ],
+        },
+      },
+      isLoading: false,
+      isError: false,
+    });
+
+    renderWithProvider(
+      <CustomerTab
+        conferenceId="conf-1"
+        conferenceType="technical"
+        currentUserId="user-1"
+        conferenceOwnerId="user-1"
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('3 giao dịch')).toBeInTheDocument();
+    });
+  });
+
+  it('renders refund transaction with orange badge', async () => {
+    const { useGetTicketHoldersQuery, useGetTransactionHistoryQuery } = require('@/redux/services/statistics.service');
+    useGetTicketHoldersQuery.mockReturnValueOnce({
+      data: { data: { items: [] } },
+      isLoading: false,
+      isError: false,
+    });
+    useGetTransactionHistoryQuery.mockReturnValueOnce({
+      data: {
+        data: {
+          userHistories: [
+            {
+              userId: 'user-1',
+              fullName: 'John Doe',
+              email: 'john@example.com',
+              transactions: [
+                {
+                  transactionId: 'tx-1',
+                  ticketType: 'VIP Ticket',
+                  paymentMethod: 'VNPay',
+                  type: 'Hoàn tiền',
+                  status: 'Thành công',
+                  amount: 1000000,
+                  transactionCode: 'REFUND123',
+                  time: '2024-01-10T10:30:00',
+                },
+              ],
+            },
+          ],
+        },
+      },
+      isLoading: false,
+      isError: false,
+    });
+
+    renderWithProvider(
+      <CustomerTab
+        conferenceId="conf-1"
+        conferenceType="technical"
+        currentUserId="user-1"
+        conferenceOwnerId="user-1"
+      />
+    );
+
+    await waitFor(() => {
+      const refundBadge = screen.getByText('Hoàn tiền');
+      expect(refundBadge).toBeInTheDocument();
+      expect(refundBadge).toHaveClass('bg-orange-100', 'text-orange-700');
+    });
+  });
+
+  it('renders successful transaction badge correctly', async () => {
+    const { useGetTicketHoldersQuery, useGetTransactionHistoryQuery } = require('@/redux/services/statistics.service');
+    useGetTicketHoldersQuery.mockReturnValueOnce({
+      data: { data: { items: [] } },
+      isLoading: false,
+      isError: false,
+    });
+    useGetTransactionHistoryQuery.mockReturnValueOnce({
+      data: {
+        data: {
+          userHistories: [
+            {
+              userId: 'user-1',
+              fullName: 'John Doe',
+              email: 'john@example.com',
+              transactions: [
+                {
+                  transactionId: 'tx-1',
+                  ticketType: 'VIP',
+                  paymentMethod: 'VNPay',
+                  type: 'Mua vé',
+                  status: 'Thành công',
+                  amount: 1000000,
+                  transactionCode: 'TXN001',
+                  time: '2024-01-10',
+                },
+              ],
+            },
+          ],
+        },
+      },
+      isLoading: false,
+      isError: false,
+    });
+
+    renderWithProvider(
+      <CustomerTab
+        conferenceId="conf-1"
+        conferenceType="technical"
+        currentUserId="user-1"
+        conferenceOwnerId="user-1"
+      />
+    );
+
+    await waitFor(() => {
+      const successBadge = screen.getByText('Thành công');
+      expect(successBadge).toBeInTheDocument();
+      expect(successBadge).toHaveClass('bg-green-100', 'text-green-700');
+    });
+  });
+
+  it('initially shows only first transaction per user', async () => {
+    const { useGetTicketHoldersQuery, useGetTransactionHistoryQuery } = require('@/redux/services/statistics.service');
+    useGetTicketHoldersQuery.mockReturnValueOnce({
+      data: { data: { items: [] } },
+      isLoading: false,
+      isError: false,
+    });
+    useGetTransactionHistoryQuery.mockReturnValueOnce({
+      data: {
+        data: {
+          userHistories: [
+            {
+              userId: 'user-1',
+              fullName: 'John Doe',
+              email: 'john@example.com',
+              transactions: [
+                {
+                  transactionId: 'tx-1',
+                  ticketType: 'VIP Ticket',
+                  paymentMethod: 'VNPay',
+                  type: 'Mua vé',
+                  status: 'Thành công',
+                  amount: 1000000,
+                  transactionCode: 'TXN001',
+                  time: '2024-01-10',
+                },
+                {
+                  transactionId: 'tx-2',
+                  ticketType: 'Regular Ticket',
+                  paymentMethod: 'MoMo',
+                  type: 'Mua vé',
+                  status: 'Thành công',
+                  amount: 500000,
+                  transactionCode: 'TXN002',
+                  time: '2024-01-11',
+                },
+              ],
+            },
+          ],
+        },
+      },
+      isLoading: false,
+      isError: false,
+    });
+
+    renderWithProvider(
+      <CustomerTab
+        conferenceId="conf-1"
+        conferenceType="technical"
+        currentUserId="user-1"
+        conferenceOwnerId="user-1"
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('TXN001')).toBeInTheDocument();
+      expect(screen.queryByText('TXN002')).not.toBeInTheDocument();
+      expect(screen.getByText('Xem thêm 1 giao dịch')).toBeInTheDocument();
+    });
+  });
+
+it('expands transactions on button click', async () => {
+  const { useGetTicketHoldersQuery, useGetTransactionHistoryQuery } = require('@/redux/services/statistics.service');
+  
+  const mockTicketHolders = {
+    data: { data: { items: [] } },
+    isLoading: false,
+    isError: false,
+  };
+  
+  const mockTransactionHistory = {
+    data: {
+      data: {
+        userHistories: [
+          {
+            userId: 'user-1',
+            fullName: 'John Doe',
+            email: 'john@example.com',
+            transactions: [
+              {
+                transactionId: 'tx-1',
+                ticketType: 'VIP',
+                paymentMethod: 'VNPay',
+                type: 'Mua vé',
+                status: 'Thành công',
+                amount: 1000000,
+                transactionCode: 'TXN001',
+                time: '2024-01-10',
+              },
+              {
+                transactionId: 'tx-2',
+                ticketType: 'Regular',
+                paymentMethod: 'MoMo',
+                type: 'Mua vé',
+                status: 'Thành công',
+                amount: 500000,
+                transactionCode: 'TXN002',
+                time: '2024-01-11',
+              },
+            ],
+          },
+        ],
+      },
+    },
+    isLoading: false,
+    isError: false,
+  };
+
+  useGetTicketHoldersQuery.mockReturnValue(mockTicketHolders);
+  useGetTransactionHistoryQuery.mockReturnValue(mockTransactionHistory);
+
+  renderWithProvider(
+    <CustomerTab
+      conferenceId="conf-1"
+      conferenceType="technical"
+      currentUserId="user-1"
+      conferenceOwnerId="user-1"
+    />
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText('John Doe')).toBeInTheDocument();
+  });
+
+  expect(screen.getByText('TXN001')).toBeInTheDocument();
+  expect(screen.queryByText('TXN002')).not.toBeInTheDocument();
+  expect(screen.getByText('Xem thêm 1 giao dịch')).toBeInTheDocument();
+
+  const expandButton = screen.getByText('Xem thêm 1 giao dịch');
+  fireEvent.click(expandButton);
+
+  await waitFor(() => {
+    expect(screen.getByText('TXN002')).toBeInTheDocument();
+    expect(screen.getByText('Thu gọn')).toBeInTheDocument();
+  });
+});
+
+it('collapses transactions on collapse button click', async () => {
+  const { useGetTicketHoldersQuery, useGetTransactionHistoryQuery } = require('@/redux/services/statistics.service');
+  
+  const mockTicketHolders = {
+    data: { data: { items: [] } },
+    isLoading: false,
+    isError: false,
+  };
+  
+  const mockTransactionHistory = {
+    data: {
+      data: {
+        userHistories: [
+          {
+            userId: 'user-1',
+            fullName: 'John Doe',
+            email: 'john@example.com',
+            transactions: [
+              {
+                transactionId: 'tx-1',
+                ticketType: 'VIP',
+                paymentMethod: 'VNPay',
+                type: 'Mua vé',
+                status: 'Thành công',
+                amount: 1000000,
+                transactionCode: 'TXN001',
+                time: '2024-01-10',
+              },
+              {
+                transactionId: 'tx-2',
+                ticketType: 'Regular',
+                paymentMethod: 'MoMo',
+                type: 'Mua vé',
+                status: 'Thành công',
+                amount: 500000,
+                transactionCode: 'TXN002',
+                time: '2024-01-11',
+              },
+            ],
+          },
+        ],
+      },
+    },
+    isLoading: false,
+    isError: false,
+  };
+
+  useGetTicketHoldersQuery.mockReturnValue(mockTicketHolders);
+  useGetTransactionHistoryQuery.mockReturnValue(mockTransactionHistory);
+
+  renderWithProvider(
+    <CustomerTab
+      conferenceId="conf-1"
+      conferenceType="technical"
+      currentUserId="user-1"
+      conferenceOwnerId="user-1"
+    />
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText('John Doe')).toBeInTheDocument();
+  });
+
+  const expandButton = screen.getByText('Xem thêm 1 giao dịch');
+  fireEvent.click(expandButton);
+
+  await waitFor(() => {
+    expect(screen.getByText('TXN002')).toBeInTheDocument();
+    expect(screen.getByText('Thu gọn')).toBeInTheDocument();
+  });
+
+  const collapseButton = screen.getByText('Thu gọn');
+  fireEvent.click(collapseButton);
+
+  await waitFor(() => {
+    expect(screen.queryByText('TXN002')).not.toBeInTheDocument();
+    expect(screen.getByText('Xem thêm 1 giao dịch')).toBeInTheDocument();
+  });
+});
+
+it('expands to show all users on button click', async () => {
+  const { useGetTicketHoldersQuery, useGetTransactionHistoryQuery } = require('@/redux/services/statistics.service');
+
+  const mockUsers = Array.from({ length: 5 }, (_, i) => ({
+    userId: `user-${i + 1}`,
+    fullName: `User ${i + 1}`,
+    email: `user${i + 1}@example.com`,
+    transactions: [
+      {
+        transactionId: `tx-${i + 1}`,
+        ticketType: 'VIP',
+        paymentMethod: 'VNPay',
+        type: 'Mua vé',
+        status: 'Thành công',
+        amount: 500000,
+        transactionCode: `TXN${i + 1}`,
+        time: '2024-01-10',
+      },
+    ],
+  }));
+
+  const mockTicketHolders = {
+    data: { data: { items: [] } },
+    isLoading: false,
+    isError: false,
+  };
+  
+  const mockTransactionHistory = {
+    data: { data: { userHistories: mockUsers } },
+    isLoading: false,
+    isError: false,
+  };
+
+  useGetTicketHoldersQuery.mockReturnValue(mockTicketHolders);
+  useGetTransactionHistoryQuery.mockReturnValue(mockTransactionHistory);
+
+  renderWithProvider(
+    <CustomerTab
+      conferenceId="conf-1"
+      conferenceType="technical"
+      currentUserId="user-1"
+      conferenceOwnerId="user-1"
+    />
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText('User 1')).toBeInTheDocument();
+    expect(screen.getByText('User 2')).toBeInTheDocument();
+    expect(screen.getByText('User 3')).toBeInTheDocument();
+  });
+
+  expect(screen.queryByText('User 4')).not.toBeInTheDocument();
+  expect(screen.queryByText('User 5')).not.toBeInTheDocument();
+  expect(screen.getByText('Xem thêm 2 người dùng khác')).toBeInTheDocument();
+
+  const expandButton = screen.getByText('Xem thêm 2 người dùng khác');
+  fireEvent.click(expandButton);
+
+  await waitFor(() => {
+    expect(screen.getByText('User 4')).toBeInTheDocument();
+    expect(screen.getByText('User 5')).toBeInTheDocument();
+    expect(screen.getByText('Thu gọn danh sách')).toBeInTheDocument();
+  });
+});
+
+it('collapses back to 3 users on collapse all button click', async () => {
+  const { useGetTicketHoldersQuery, useGetTransactionHistoryQuery } = require('@/redux/services/statistics.service');
+
+  const mockUsers = Array.from({ length: 5 }, (_, i) => ({
+    userId: `user-${i + 1}`,
+    fullName: `User ${i + 1}`,
+    email: `user${i + 1}@example.com`,
+    transactions: [
+      {
+        transactionId: `tx-${i + 1}`,
+        ticketType: 'VIP',
+        paymentMethod: 'VNPay',
+        type: 'Mua vé',
+        status: 'Thành công',
+        amount: 500000,
+        transactionCode: `TXN${i + 1}`,
+        time: '2024-01-10',
+      },
+    ],
+  }));
+
+  const mockTicketHolders = {
+    data: { data: { items: [] } },
+    isLoading: false,
+    isError: false,
+  };
+  
+  const mockTransactionHistory = {
+    data: { data: { userHistories: mockUsers } },
+    isLoading: false,
+    isError: false,
+  };
+
+  useGetTicketHoldersQuery.mockReturnValue(mockTicketHolders);
+  useGetTransactionHistoryQuery.mockReturnValue(mockTransactionHistory);
+
+  renderWithProvider(
+    <CustomerTab
+      conferenceId="conf-1"
+      conferenceType="technical"
+      currentUserId="user-1"
+      conferenceOwnerId="user-1"
+    />
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText('User 1')).toBeInTheDocument();
+  });
+
+  const expandButton = screen.getByText('Xem thêm 2 người dùng khác');
+  fireEvent.click(expandButton);
+
+  await waitFor(() => {
+    expect(screen.getByText('User 4')).toBeInTheDocument();
+    expect(screen.getByText('Thu gọn danh sách')).toBeInTheDocument();
+  });
+
+  const collapseButton = screen.getByText('Thu gọn danh sách');
+  fireEvent.click(collapseButton);
+
+  await waitFor(() => {
+    expect(screen.getByText('User 1')).toBeInTheDocument();
+    expect(screen.getByText('User 2')).toBeInTheDocument();
+    expect(screen.getByText('User 3')).toBeInTheDocument();
+    expect(screen.queryByText('User 4')).not.toBeInTheDocument();
+    expect(screen.queryByText('User 5')).not.toBeInTheDocument();
+    expect(screen.getByText('Xem thêm 2 người dùng khác')).toBeInTheDocument();
+  });
+});
+
+  it('initially shows only 3 users when more than 3 exist', async () => {
+    const { useGetTicketHoldersQuery, useGetTransactionHistoryQuery } = require('@/redux/services/statistics.service');
+    useGetTicketHoldersQuery.mockReturnValueOnce({
+      data: { data: { items: [] } },
+      isLoading: false,
+      isError: false,
+    });
+
+    const mockUsers = Array.from({ length: 5 }, (_, i) => ({
+      userId: `user-${i + 1}`,
+      fullName: `User ${i + 1}`,
+      email: `user${i + 1}@example.com`,
+      transactions: [
+        {
+          transactionId: `tx-${i + 1}`,
+          ticketType: 'VIP',
+          paymentMethod: 'VNPay',
+          type: 'Mua vé',
+          status: 'Thành công',
+          amount: 500000,
+          transactionCode: `TXN${i + 1}`,
+          time: '2024-01-10',
+        },
+      ],
+    }));
+
+    useGetTransactionHistoryQuery.mockReturnValueOnce({
+      data: { data: { userHistories: mockUsers } },
+      isLoading: false,
+      isError: false,
+    });
+
+    renderWithProvider(
+      <CustomerTab
+        conferenceId="conf-1"
+        conferenceType="technical"
+        currentUserId="user-1"
+        conferenceOwnerId="user-1"
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('User 1')).toBeInTheDocument();
+      expect(screen.getByText('User 2')).toBeInTheDocument();
+      expect(screen.getByText('User 3')).toBeInTheDocument();
+      expect(screen.queryByText('User 4')).not.toBeInTheDocument();
+      expect(screen.queryByText('User 5')).not.toBeInTheDocument();
+      expect(screen.getByText('Xem thêm 2 người dùng khác')).toBeInTheDocument();
+    });
+  });
+
+
+
+it('collapses back to 3 users on collapse all button click', async () => {
+  const { useGetTicketHoldersQuery, useGetTransactionHistoryQuery } = require('@/redux/services/statistics.service');
+  useGetTicketHoldersQuery.mockReturnValueOnce({
+    data: { data: { items: [] } },
+    isLoading: false,
+    isError: false,
+  });
+
+  const mockUsers = Array.from({ length: 5 }, (_, i) => ({
+    userId: `user-${i + 1}`,
+    fullName: `User ${i + 1}`,
+    email: `user${i + 1}@example.com`,
+    transactions: [
+      {
+        transactionId: `tx-${i + 1}`,
+        ticketType: 'VIP',
+        paymentMethod: 'VNPay',
+        type: 'Mua vé',
+        status: 'Thành công',
+        amount: 500000,
+        transactionCode: `TXN${i + 1}`,
+        time: '2024-01-10',
+      },
+    ],
+  }));
+
+  useGetTransactionHistoryQuery.mockReturnValueOnce({
+    data: { data: { userHistories: mockUsers } },
+    isLoading: false,
+    isError: false,
+  });
+
+  renderWithProvider(
+    <CustomerTab
+      conferenceId="conf-1"
+      conferenceType="technical"
+      currentUserId="user-1"
+      conferenceOwnerId="user-1"
+    />
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText('Xem thêm 2 người dùng khác')).toBeInTheDocument();
+  });
+
+  const expandButton = screen.getByText('Xem thêm 2 người dùng khác');
+  fireEvent.click(expandButton);
+
+  await waitFor(() => {
+    expect(screen.getByText('Thu gọn danh sách')).toBeInTheDocument();
+  }, { timeout: 3000 });
+
+  const collapseButton = screen.getByText('Thu gọn danh sách');
+  fireEvent.click(collapseButton);
+
+  await waitFor(() => {
+    expect(screen.getByText('User 1')).toBeInTheDocument();
+    expect(screen.getByText('User 2')).toBeInTheDocument();
+    expect(screen.getByText('User 3')).toBeInTheDocument();
+    expect(screen.queryByText('User 4')).not.toBeInTheDocument();
+    expect(screen.queryByText('User 5')).not.toBeInTheDocument();
+    expect(screen.getByText('Xem thêm 2 người dùng khác')).toBeInTheDocument();
+  }, { timeout: 3000 });
+});
 });
 
 describe('ContractTab Component', () => {

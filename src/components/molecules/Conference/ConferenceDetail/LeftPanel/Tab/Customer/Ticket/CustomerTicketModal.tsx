@@ -129,7 +129,7 @@ export function CustomerTicketModal({
               value={formatCurrency(ticket.actualPrice)}
               valueClassName="text-blue-600 font-semibold"
             />
-            <InfoRow
+            {/* <InfoRow
               icon={<CreditCard className="w-4 h-4" />}
               label="Trạng thái"
               value={
@@ -143,7 +143,7 @@ export function CustomerTicketModal({
                   {ticket.overallStatus}
                 </span>
               }
-            />
+            /> */}
           </div>
 
           {/* Session Check-ins Section */}

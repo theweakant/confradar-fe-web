@@ -388,6 +388,8 @@ export const endpoint = {
     SUBMITTED_PAPERS: '/statistics/submitted-papers',
     ASSIGN_REVIEWERS: '/statistics/assign-reviewers',
     PRESENT_SESSION: '/statistics/present-session',
+    TRANSACTION_HISTORY: '/statistics/transaction-history',
+
   },
 
   REVIEWER: {
