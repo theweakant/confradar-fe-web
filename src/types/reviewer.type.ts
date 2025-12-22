@@ -24,6 +24,6 @@ export interface ReviewedPapersResponse {
 }
 
 export interface PendingReviewPapersResponse {
-  totalPaperPending: number;
+  totalPendingReview: number;
   paperDetails: PaperDetail[];
 }
