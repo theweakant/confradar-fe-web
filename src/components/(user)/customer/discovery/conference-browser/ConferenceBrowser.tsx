@@ -53,6 +53,8 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
   const [selectedRanking, setSelectedRanking] = useState("all");
   const [allowListener, setAllowListener] = useState(false);
 
+  const [isComplete, setIsComplete] = useState(false);
+
   const itemsPerPage = 12;
 
   const {
@@ -162,8 +164,9 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
     selectedPrice,
     selectedRating,
     sortBy,
-    selectedRanking, // Thêm dòng này
+    selectedRanking,
     allowListener,
+    isComplete,
   ]);
 
   useEffect(() => {
@@ -200,6 +203,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
         }),
         ...(selectedRanking !== "all" && { rankingCategoryId: selectedRanking }),
         ...(bannerFilter === "research" && { allowListener }),
+        isComplete,
       };
       fetchConferencesWithPrices(params);
     }
@@ -226,6 +230,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
     endDateFilter,
     selectedRanking,
     allowListener,
+    isComplete,
     fetchConferencesWithPrices,
     fetchConferencesByStatus,
   ]);
@@ -553,6 +558,7 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
             setSortBy("date");
             setSelectedRanking("all");
             setAllowListener(false);
+            setIsComplete(false);
           }}
 
           selectedRanking={selectedRanking}
@@ -561,7 +567,10 @@ const ConferenceBrowser: React.FC<SearchSortFilterConferenceProps> = ({
           allowListener={allowListener}
           setAllowListener={setAllowListener}
           bannerFilter={bannerFilter}
-        // DropdownSelect={DropdownSelect}
+          // DropdownSelect={DropdownSelect}
+
+          isComplete={isComplete}
+          setIsComplete={setIsComplete}
         />
 
         <div className="flex justify-between items-center mb-6">
