@@ -85,6 +85,7 @@ export const useFirebaseLogin = () => {
       const role = getRolesFromToken(accessToken);
       const email = decoded?.email || result.user.email || "";
       const userId = decoded?.sub || "";
+      const active = decoded?.active || false;
 
       // let role: string | null = null;
 
@@ -96,7 +97,7 @@ export const useFirebaseLogin = () => {
       //   role = rawRole
       // }
 
-      const userInfo = { userId, email, role };
+      const userInfo = { userId, email, role, active };
 
       // 4️⃣ Lưu Redux format y như login thường
       dispatch(setCredentials({ user: userInfo, accessToken, refreshToken }));

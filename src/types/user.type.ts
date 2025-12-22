@@ -6,6 +6,7 @@ export interface AuthUser {
   userId: string;
   email: string;
   role: string[] | null;
+  active: boolean
 }
 
 export interface UserProfileResponse {
@@ -18,6 +19,7 @@ export interface UserProfileResponse {
   avatarUrl: string | null;
   bioDescription: string | null;
   createdAt: string;
+  active: boolean;
   // roles?: string[];
 
   // status?: string

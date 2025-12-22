@@ -7,6 +7,7 @@ import { Suspense, useState } from "react";
 import { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
 import LoadingUI from "@/components/utility/Loading";
+import RouteGuard from "@/utils/routeGuard";
 
 interface CustomerLayoutProps {
   children: React.ReactNode;
@@ -36,16 +37,22 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
   }
 
   return (
-    <div className="flex h-screen bg-customer-bg">
-      {accessToken && <CustomerSidebar />}
+    <RouteGuard
+      allowedRoles={[
+        "Customer",
+      ]}
+    >
+      <div className="flex h-screen bg-customer-bg">
+        {accessToken && <CustomerSidebar />}
 
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {!accessToken && <Header />}
-        <Suspense fallback={<LoadingUI />}>
-          <main className="flex-1 overflow-y-auto">{children}</main>
-        </Suspense>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {!accessToken && <Header />}
+          <Suspense fallback={<LoadingUI />}>
+            <main className="flex-1 overflow-y-auto">{children}</main>
+          </Suspense>
+        </div>
       </div>
-    </div>
+    </RouteGuard>
   );
 };
 

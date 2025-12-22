@@ -26,6 +26,8 @@ interface ConferenceSubscribeCardProps {
     submittedPaper?: SubmittedPaper | null;
     onOpenAbstractDialog?: () => void;
     onSelectPaper?: (paperId: string | null) => void;
+
+    accessToken: string | null;
 }
 
 const ConferenceSubscribeCard: React.FC<ConferenceSubscribeCardProps> = ({
@@ -38,9 +40,13 @@ const ConferenceSubscribeCard: React.FC<ConferenceSubscribeCardProps> = ({
     hasSubmittedPaper,
     submittedPaper,
     onOpenAbstractDialog,
-    onSelectPaper
+    onSelectPaper,
+
+    accessToken
 }) => {
     const { now } = useGlobalTime();
+
+    const isLoggedIn = !!accessToken;
 
     const baseClasses = isResearch
         ? "bg-white rounded-xl shadow-md p-6"
@@ -398,12 +404,32 @@ const ConferenceSubscribeCard: React.FC<ConferenceSubscribeCardProps> = ({
                                                     💡 Vui lòng nộp bài báo (Abstract) trước khi đăng ký với tư cách tác giả
                                                 </p>
                                             </div>
-                                            <button
+                                            {isLoggedIn ? (
+                                                <button
+                                                    onClick={onOpenAbstractDialog}
+                                                    className="w-full px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg"
+                                                >
+                                                    Nộp bản giới thiệu của bài báo (Abstract)
+                                                </button>
+                                            ) : (
+                                                <div className="text-center">
+                                                    <button
+                                                        disabled
+                                                        className="w-full px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-60 bg-gray-300 text-gray-500"
+                                                    >
+                                                        Đăng nhập để nộp Abstract
+                                                    </button>
+                                                    <p className="text-xs mt-2 text-gray-500">
+                                                        Vui lòng đăng nhập để tiếp tục
+                                                    </p>
+                                                </div>
+                                            )}
+                                            {/* <button
                                                 onClick={onOpenAbstractDialog}
                                                 className="w-full px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg"
                                             >
                                                 Nộp bản giới thiệu của bài báo (Abstract)
-                                            </button>
+                                            </button> */}
                                         </>
                                     )}
                                 </>

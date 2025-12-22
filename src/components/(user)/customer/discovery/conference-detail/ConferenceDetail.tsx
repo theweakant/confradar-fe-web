@@ -38,7 +38,8 @@ const ConferenceDetail = () => {
 
   const router = useRouter();
 
-  const { accessToken } = useSelector((state: RootState) => state.auth);
+  const { accessToken, user } = useSelector((state: RootState) => state.auth);
+  const active = user?.active;
 
   const {
     technicalConference,
@@ -356,6 +357,7 @@ const ConferenceDetail = () => {
                     onAuthorInfoChange={setAuthorInfo}
                     selectedPaymentMethod={selectedPaymentMethod}
                     onSelectPaymentMethod={setSelectedPaymentMethod}
+                    active={active ?? false}
                   />
                 </div>
               </div>
@@ -460,6 +462,7 @@ const ConferenceDetail = () => {
                 onSelectPaper={setSelectedPaperId}
                 activeTab={activeTab}
                 onTabChange={setActiveTab}
+                active={active ?? false}
               />
             </div>
           </div>
