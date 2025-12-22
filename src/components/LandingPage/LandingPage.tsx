@@ -6,9 +6,9 @@ import UpcomingConferences from "@/components/LandingPage/upcoming-conferences";
 import TrustedByCollaborator from "@/components/LandingPage/trust-section";
 import ExploreConferences from "@/components/LandingPage/explore-section";
 
-import AboutUs from "./AboutUs";
-import Policy from "./Policy";
-import FAQ from "./FAQ";
+// import AboutUs from "./AboutUs";
+// import Policy from "./Policy";
+// import FAQ from "./FAQ";
 
 import Footer from "@/components/LandingPage/footer";
 
@@ -24,9 +24,9 @@ export default function LandingPage() {
         <TrustedByCollaborator />
         <ExploreConferences />
 
-        <AboutUs/>
+        {/* <AboutUs/>  
         <Policy/>
-        <FAQ/>
+        <FAQ/> */}
       </main>
       <Footer />
     </div>

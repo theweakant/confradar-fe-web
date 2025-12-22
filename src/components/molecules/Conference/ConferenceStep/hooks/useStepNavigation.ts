@@ -31,7 +31,6 @@ export function useStepNavigation() {
   const mode = useAppSelector((state) => state.conferenceStep.mode);
 
   const handleNext = useCallback(() => {
-    // EDIT mode: Luôn cho phép navigation tự do
     if (mode === "edit") {
       dispatch(nextStep());
       return;
@@ -50,24 +49,16 @@ export function useStepNavigation() {
     }
   }, [dispatch, currentStep]);
 
-  // 🔥 FIXED: Remove restrictive navigation logic
   const handleGoToStep = useCallback(
-    (step: number) => {
-      console.log('🚀 handleGoToStep called:', { step, currentStep, mode });
-      
-      // ✅ EDIT mode: Luôn cho phép navigation tự do
+    (step: number) => {      
       if (mode === "edit") {
         dispatch(goToStep(step));
         return;
       }
-      
-      // ✅ CREATE mode: Cho phép navigate tới bất kỳ step nào (component sẽ handle validation)
-      // Không cần check completedSteps nữa vì logic đã được handle ở TechConferenceStepForm
       dispatch(goToStep(step));
       
-      console.log('✅ Navigation allowed to step:', step);
     },
-    [dispatch, mode, currentStep] // 🔥 Removed completedSteps dependency
+    [dispatch, mode, currentStep] 
   );
 
   const handleMarkCompleted = useCallback(

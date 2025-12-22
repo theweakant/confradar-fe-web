@@ -7,10 +7,9 @@ const policies = [
   {
     id: "terms",
     icon: FileText,
-    tag: "Khám phá",
+    tag: "Điều khoản",
     title: "Điều khoản sử dụng",
-    desc: "Lựa chọn của bạn, dữ liệu của bạn—được mã hóa hoàn toàn.",
-    lastUpdated: "15/01/2025",
+    desc: "Quyền và nghĩa vụ khi sử dụng nền tảng ConfRadar.",
     content: [
       {
         heading: "1. Chấp nhận điều khoản",
@@ -29,10 +28,9 @@ const policies = [
   {
     id: "privacy",
     icon: Shield,
-    tag: "Lịch trình",
+    tag: "Bảo mật",
     title: "Chính sách bảo mật",
-    desc: "Theo dõi và nhắc nhở deadline nộp bài dễ dàng.",
-    lastUpdated: "15/01/2025",
+    desc: "Bảo vệ dữ liệu cá nhân và quyền riêng tư của bạn.",
     content: [
       {
         heading: "1. Thu thập dữ liệu",
@@ -51,32 +49,30 @@ const policies = [
   {
     id: "refund",
     icon: RefreshCcw,
-    tag: "Phân tích",
+    tag: "Hoàn tiền",
     title: "Chính sách hoàn tiền",
-    desc: "Ra quyết định nhanh hơn với báo cáo tức thì.",
-    lastUpdated: "10/01/2025",
+    desc: "Điều kiện và quy trình hoàn tiền khi hủy đăng ký.",
     content: [
       {
         heading: "1. Điều kiện hoàn tiền",
-        text: "Hoàn tiền 100% nếu hủy trước 7 ngày. Hoàn 50% nếu hủy trước 3 ngày.",
+        text: "Hoàn tiền theo % mà giai đoạn chi phí bạn đã mua.",
       },
       {
         heading: "2. Quy trình",
-        text: "Gửi yêu cầu qua email hoặc form liên hệ. Xử lý trong 5-7 ngày làm việc.",
+        text: "Có thể tự gửi yêu cầu về hệ thống sẽ được hoàn tiền ngay lập tức!",
       },
     ],
   },
   {
     id: "guidelines",
     icon: BookOpen,
-    tag: "Bảo mật",
+    tag: "Quy định",
     title: "Quy định hội nghị",
-    desc: "Bảo vệ nâng cao và kiểm duyệt bởi AI.",
-    lastUpdated: "05/01/2025",
+    desc: "Quy tắc và chuẩn mực khi tham dự hội nghị.",
     content: [
       {
         heading: "1. Quy tắc tham dự",
-        text: "Tham gia đúng giờ, tôn trọng diễn giả và người tham dú khác.",
+        text: "Tham gia đúng giờ, tôn trọng diễn giả và người tham dự khác.",
       },
       {
         heading: "2. Ứng xử chuyên nghiệp",
@@ -97,16 +93,14 @@ export default function Policy() {
     <section className="bg-[#0a0a0a] min-h-screen py-20">
       <div className="max-w-5xl mx-auto px-6">
         <div className="flex items-center justify-center gap-2 text-white/60 text-sm mb-6">
-          <span>02</span>
-          <span>/</span>
-          <span>(Dịch vụ của chúng tôi)</span>
+          <span>Chính sách</span>
         </div>
 
         <div className="text-center mb-16 relative">
           <h2 className="text-4xl md:text-5xl font-bold text-white/80">
-            Xây dựng cho Nhu cầu
+            Chính sách & quy định chung            
             <br />
-            <span className="italic font-light text-white">Hội nghị Tương lai</span>
+            <span className="italic font-light text-white">Áp dụng cho hệ thống</span>
           </h2>
           <div className="absolute top-0 right-0 md:right-20">
             <svg viewBox="0 0 24 24" className="w-8 h-8 text-primary" fill="currentColor">
@@ -157,12 +151,9 @@ export default function Policy() {
                 <div className="px-6 pb-6 bg-[#0a0a0a]">
                   <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-6 mt-4">
                     <div className="flex items-center gap-4 mb-6">
-                      <div className="w-10 h-10 rounded-xl bg-[#ff6b35]/10 flex items-center justify-center">
-                        <policy.icon className="w-5 h-5 text-[#ff6b35]" />
-                      </div>
+                      <policy.icon className="w-6 h-6 text-white/70" />
                       <div>
                         <h3 className="text-xl font-bold text-white">{policy.title}</h3>
-                        <p className="text-xs text-gray-400">Cập nhật: {policy.lastUpdated}</p>
                       </div>
                     </div>
 

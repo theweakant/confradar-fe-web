@@ -15,16 +15,13 @@ export default function FAQ() {
 
   return (
     <section className="relative bg-[#0a0a0a] w-full min-h-screen py-20 overflow-hidden m-0 p-0">
-      <div className="absolute top-20 right-20 text-[#5b8def] text-4xl font-light select-none">✳</div>
-      <div className="absolute bottom-32 left-20 text-[#ff6b35] text-4xl font-light select-none">✳</div>
-
       <div className="absolute top-40 right-0 w-72 h-72 bg-[#5b8def]/10 rounded-full blur-3xl" />
       <div className="absolute bottom-20 left-0 w-96 h-96 bg-[#ff6b35]/5 rounded-full blur-3xl" />
 
       <div className="relative w-full max-w-7xl mx-auto px-6 md:px-8 lg:px-12">
         <div className="mb-8">
           <p className="text-sm text-gray-500">
-            03 / <span className="text-white">(FAQ&apos;s)</span>
+            <span className="text-white">FAQ&apos;s</span>
           </p>
         </div>
 

@@ -1,97 +1,160 @@
 "use client"
+import { useRouter } from 'next/navigation'
+import { ArrowUpRight, Sparkles, Calendar, Users, MapPin, TrendingUp } from "lucide-react"
+import Image from "next/image"
 
-import { useState } from "react"
-import { Plus, Minus } from "lucide-react"
-
-const faqItems = [
-  {
-    question: "CONFRADAR là gì và nó hoạt động như thế nào?",
-    answer:
-      "CONFRADAR là nền tảng tìm kiếm và quản lý hội nghị học thuật hàng đầu. Chúng tôi sử dụng AI để tổng hợp thông tin từ hàng nghìn nguồn, giúp bạn dễ dàng tìm kiếm, theo dõi và đăng ký tham gia các hội nghị phù hợp với lĩnh vực nghiên cứu của mình.",
-  },
-  {
-    question: "Làm thế nào để tìm kiếm hội nghị phù hợp với lĩnh vực của tôi?",
-    answer:
-      "Bạn có thể sử dụng bộ lọc thông minh của chúng tôi để tìm kiếm theo lĩnh vực, thời gian, địa điểm, hoặc từ khóa. Hệ thống AI cũng sẽ gợi ý các hội nghị phù hợp dựa trên lịch sử tìm kiếm và sở thích của bạn.",
-  },
-  {
-    question: "Tính năng thông báo và nhắc nhở hoạt động ra sao?",
-    answer:
-      "CONFRADAR gửi thông báo tự động về deadline nộp bài, ngày diễn ra hội nghị, và các cập nhật quan trọng. Bạn có thể tùy chỉnh tần suất và loại thông báo trong phần cài đặt tài khoản.",
-  },
-  {
-    question: "Dữ liệu hội nghị được cập nhật thường xuyên như thế nào?",
-    answer:
-      "Chúng tôi cập nhật dữ liệu hàng ngày từ các nguồn chính thức. Đội ngũ của chúng tôi cũng xác minh thông tin để đảm bảo độ chính xác cao nhất cho người dùng.",
-  },
-  {
-    question: "CONFRADAR có hỗ trợ nhiều ngôn ngữ không?",
-    answer:
-      "Có, CONFRADAR hỗ trợ đa ngôn ngữ bao gồm Tiếng Việt, Tiếng Anh và nhiều ngôn ngữ khác. Bạn có thể thay đổi ngôn ngữ hiển thị trong phần cài đặt.",
-  },
+const features = [
+  "Nền tảng số hóa, lấy người dùng làm trung tâm",
+  "Bảo mật dữ liệu và quyền riêng tư hàng đầu",
+  "Hỗ trợ cá nhân hóa với tự động hóa thông minh",
+  "Công cụ khám phá hội nghị, không chỉ là danh sách",
 ]
 
-export default function FAQ() {
-  const [openIndex, setOpenIndex] = useState<number | null>(0)
-
-  const toggleItem = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index)
-  }
+export default function AboutUs() {
+  const router = useRouter()
 
   return (
-    <section className="relative bg-[#0a0a0a] py-20 px-6 md:px-12 lg:px-20 overflow-hidden">
-      {/* Decorative asterisks */}
-      <div className="absolute top-20 right-20 text-[#5b8def] text-4xl font-light select-none">✳</div>
-      <div className="absolute bottom-32 left-20 text-[#ff6b35] text-4xl font-light select-none">✳</div>
-
-      {/* Decorative gradient orbs */}
-      <div className="absolute top-40 right-0 w-72 h-72 bg-[#5b8def]/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-20 left-0 w-96 h-96 bg-[#ff6b35]/5 rounded-full blur-3xl" />
-
-      <div className="relative max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left side - Section label */}
-          <div className="lg:col-span-1">
-            <p className="text-sm text-gray-500">
-              03 / <span className="text-white">(FAQ&apos;s)</span>
-            </p>
-          </div>
-
-          {/* Right side - Content */}
-          <div className="lg:col-span-11">
-            {/* Heading */}
-            <div className="mb-12">
-              <h2 className="text-4xl md:text-5xl font-light text-white leading-tight">
-                Giải đáp thắc mắc
+    <section className="bg-[#0d1117] min-h-screen">
+      <div className="relative py-20 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1a1f35] via-[#0d1117] to-[#1a1025] opacity-80" />
+        <div className="relative max-w-7xl mx-auto px-6">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="relative">
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight mb-12">
+                Khám phá ngay.
                 <br />
-                <span className="italic font-serif text-gray-300">Câu hỏi thường gặp</span>
-              </h2>
+                <span className="italic font-light text-white/90">Kết nối Tri thức.</span>
+              </h1>
+
+              <div className="relative h-[400px] md:h-[450px]">
+                <div className="absolute top-0 left-0 rounded-2xl shadow-2xl w-40 h-40 overflow-hidden">
+                  <Image
+                    src="/images/LandingPage/img/fpt_test_conf.jpg"
+                    alt="Hội nghị"
+                    width={160}
+                    height={160}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/placeholder-avatar.png";
+                    }}
+                  />
+                </div>
+
+                <div className="absolute top-4 right-0 md:right-12 rounded-2xl shadow-2xl w-48 h-40 overflow-hidden">
+                  <Image
+                    src="/images/LandingPage/img/img_5.jpg"
+                    alt="Hiệu suất"
+                    width={192}
+                    height={160}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/placeholder-avatar.png";
+                    }}
+                  />
+                </div>
+
+                <div className="absolute top-32 left-20 rounded-2xl shadow-2xl w-44 h-40 overflow-hidden">
+                  <Image
+                    src="/images/LandingPage/img/img_2.jpg"
+                    alt="Người dùng hoạt động"
+                    width={176}
+                    height={160}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/placeholder-avatar.png";
+                    }}
+                  />
+                </div>
+
+                <div className="absolute bottom-20 left-0 rounded-2xl shadow-2xl w-36 h-40 overflow-hidden">
+                  <Image
+                    src="/images/LandingPage/img/img_0.jpeg"
+                    alt="Tăng trưởng"
+                    width={144}
+                    height={160}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/placeholder-avatar.png";
+                    }}
+                  />
+                </div>
+
+                <div className="absolute bottom-0 right-0 md:right-8 rounded-2xl shadow-2xl w-48 h-40 overflow-hidden">
+                  <Image
+                    src="/images/LandingPage/img/img_6.jpg"
+                    alt="Hồ sơ người dùng"
+                    width={192}
+                    height={160}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/placeholder-avatar.png";
+                    }}
+                  />
+                </div>
+              </div>
             </div>
 
-            {/* FAQ Items */}
-            <div className="space-y-0">
-              {faqItems.map((item, index) => (
-                <div key={index} className="border-b border-white/10">
-                  <button
-                    onClick={() => toggleItem(index)}
-                    className="w-full py-6 flex items-center justify-between text-left hover:opacity-70 transition-opacity"
-                  >
-                    <span className="text-lg md:text-xl text-white pr-8">{item.question}</span>
-                    <span className="flex-shrink-0 text-gray-400">
-                      {openIndex === index ? (
-                        <Minus className="w-5 h-5 text-[#ff6b35]" />
-                      ) : (
-                        <Plus className="w-5 h-5" />
-                      )}
-                    </span>
-                  </button>
-                  {openIndex === index && (
-                    <div className="pb-6 pr-12">
-                      <p className="text-gray-400 leading-relaxed">{item.answer}</p>
-                    </div>
-                  )}
+            <div className="lg:pl-8">
+              <div className="flex items-center justify-end gap-2 mb-8 text-white/60 text-sm">
+                <span>Về chúng tôi</span>
+              </div>
+
+              <div className="flex items-start gap-4 mb-8">
+
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary rounded-full text-white text-sm font-medium">
+                    <Sparkles className="w-4 h-4" />
+                    ConfRadar
+                  </span>
+                  <div className="w-10 h-10 flex items-center justify-center">
+                  <Image
+                    src="/ConfradarLogo_Light.png"
+                    alt="ConfRadar Logo"
+                    width={64}
+                    height={64}
+                    className="w-full h-auto object-contain"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/placeholder-avatar.png";
+                    }}
+                  />
+                  </div>
                 </div>
-              ))}
+              </div>
+
+              <p className="text-white/70 leading-relaxed mb-8 max-w-md">
+                Tại ConfRadar, chúng tôi định nghĩa lại việc khám phá hội nghị với công nghệ và sự chăm sóc cá nhân hóa.
+                Chúng tôi tin rằng việc tìm kiếm hội nghị nên đơn giản và trao quyền, giúp cá nhân và tổ chức phát
+                triển.
+              </p>
+
+              <div className="space-y-4 mb-10">
+                {features.map((feature, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between py-3 border-b border-white/10 group"
+                  >
+                    <span className="text-white/90 group-hover:text-white transition-colors">{feature}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-end">
+                <button
+                  onClick={() => router.push('/customer')}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full text-white text-sm font-medium transition-colors"
+                >
+                  Tìm hiểu thêm
+                  <span className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                    <ArrowUpRight className="w-3 h-3 text-white" />
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

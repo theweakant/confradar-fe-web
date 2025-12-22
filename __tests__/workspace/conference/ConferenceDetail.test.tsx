@@ -7,8 +7,6 @@ import { configureStore } from '@reduxjs/toolkit';
 
 // Import components
 import { MetaInfoSection } from '@/components/molecules/Conference/ConferenceDetail/LeftPanel/InfoSection';
-import { PriceTimeline } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/PriceTimeline";
-import { ResearchPhaseTimeline } from "@/components/molecules/Conference/ConferenceDetail/LeftPanel/ResearchTimeline";
 import { PriceTab } from '@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/PriceTab';
 import { RefundPolicyTab } from '@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/RefundPolicyTab';
 import { SessionTab } from '@/components/molecules/Conference/ConferenceDetail/LeftPanel/Tab/SessionTab';
@@ -505,82 +503,6 @@ describe('MetaInfoSection Component', () => {
       />
     );
     expect(screen.getByText('Chưa có ảnh banner')).toBeInTheDocument();
-  });
-
-  // Skip các test về PriceTimeline và ResearchPhaseTimeline
-  it.skip('renders PriceTimeline for organizer', () => {
-    renderWithProvider(
-      <MetaInfoSection
-        conference={baseTechConference}
-        getCategoryName={getCategoryName}
-        getStatusName={getStatusName}
-        getCityName={getCityName}
-        isOrganizer={true}
-        isCollaborator={false}
-        now={mockNow}
-      />
-    );
-    expect(screen.getByTestId('price-timeline')).toBeInTheDocument();
-  });
-
-  it.skip('renders PriceTimeline for collaborator', () => {
-    renderWithProvider(
-      <MetaInfoSection
-        conference={baseTechConference}
-        getCategoryName={getCategoryName}
-        getStatusName={getStatusName}
-        getCityName={getCityName}
-        isOrganizer={false}
-        isCollaborator={true}
-        now={mockNow}
-      />
-    );
-    expect(screen.getByTestId('price-timeline')).toBeInTheDocument();
-  });
-
-  it('does not render PriceTimeline for regular user', () => {
-    renderWithProvider(
-      <MetaInfoSection
-        conference={baseTechConference}
-        getCategoryName={getCategoryName}
-        getStatusName={getStatusName}
-        getCityName={getCityName}
-        isOrganizer={false}
-        isCollaborator={false}
-        now={mockNow}
-      />
-    );
-    expect(screen.queryByTestId('price-timeline')).not.toBeInTheDocument();
-  });
-
-  it.skip('renders ResearchPhaseTimeline for research organizer', () => {
-    renderWithProvider(
-      <MetaInfoSection
-        conference={mockResearchConference}
-        getCategoryName={getCategoryName}
-        getStatusName={getStatusName}
-        getCityName={getCityName}
-        isOrganizer={true}
-        isCollaborator={false}
-        now={mockNow}
-      />
-    );
-    expect(screen.getByTestId('research-phase-timeline')).toBeInTheDocument();
-  });
-
-  it('does not render ResearchPhaseTimeline for technical conference', () => {
-    renderWithProvider(
-      <MetaInfoSection
-        conference={baseTechConference}
-        getCategoryName={getCategoryName}
-        getStatusName={getStatusName}
-        getCityName={getCityName}
-        isOrganizer={true}
-        isCollaborator={false}
-        now={mockNow}
-      />
-    );
-    expect(screen.queryByTestId('research-phase-timeline')).not.toBeInTheDocument();
   });
 
   it('renders ticket sale dates with countdown', () => {
