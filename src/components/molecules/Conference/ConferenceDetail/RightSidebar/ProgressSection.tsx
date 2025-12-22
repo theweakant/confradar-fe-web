@@ -107,6 +107,7 @@ export function ProgressTimelineSection({
     OnHold: "Tạm hoãn",
     Ready: "Sẵn sàng",
     Completed: "Hoàn thành",
+    Disabled: "Vô hiệu hóa",
   };
 
   // Xác định màu chữ cho progressDescription
