@@ -29,7 +29,6 @@ export function StepIndicator({
     const isCompleted = completedSteps.includes(step);
     const hasData = stepsWithData.includes(step);
 
-    // 🔥 FIX: Updated priority order
     // Priority order:
     // 1. Current step (hiện tại đang ở) - LUÔN ƯU TIÊN CAO NHẤT
     // 2. Dirty (có thay đổi chưa lưu) - chỉ show nếu KHÔNG phải current
@@ -42,24 +41,21 @@ export function StepIndicator({
         text: "text-white",
         ring: "ring-4 ring-blue-200",
         icon: step.toString(),
-        showWarning: isDirty, // Vẫn show warning icon nhưng giữ màu xanh
+        showWarning: isDirty, 
       };
     }
 
-    // 🔥 FIX: Trong edit mode, nếu step có data thì ưu tiên xanh hơn dirty
     if (mode === "edit") {
-      // Nếu step đã có data/completed, show xanh kể cả khi dirty
       if (hasData || isCompleted) {
         return {
           bg: "bg-green-600",
           text: "text-white",
           ring: "",
           icon: "✓",
-          showWarning: isDirty, // Show warning overlay
+          showWarning: false, 
         };
       }
       
-      // Chỉ show vàng khi dirty VÀ chưa có data
       if (isDirty) {
         return {
           bg: "bg-yellow-500",
@@ -70,7 +66,6 @@ export function StepIndicator({
         };
       }
     } else {
-      // Create mode: dirty luôn ưu tiên cao
       if (isDirty) {
         return {
           bg: "bg-yellow-500",
@@ -108,7 +103,6 @@ export function StepIndicator({
 
   return (
     <div className="mb-8">
-      {/* Warning nếu có dirty steps */}
       {dirtySteps.length > 0 && (
         <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-2">
           <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
@@ -125,7 +119,6 @@ export function StepIndicator({
         </div>
       )}
 
-      {/* Progress Bar */}
       <div className="flex items-center justify-between mb-3">
         {Array.from({ length: maxStep }, (_, i) => i + 1).map((step) => {
           const status = getStepStatus(step);
@@ -154,7 +147,6 @@ export function StepIndicator({
                   {status.icon}
                 </button>
 
-                {/* 🔥 FIX: Warning icon overlay - chỉ show khi showWarning = true */}
                 {status.showWarning && (
                   <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center border-2 border-white">
                     <span className="text-white text-[10px] font-bold">!</span>
@@ -177,7 +169,6 @@ export function StepIndicator({
         })}
       </div>
 
-      {/* Step Labels */}
       <div className="flex justify-between">
         {stepLabels.map((label, index) => {
           const step = index + 1;
