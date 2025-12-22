@@ -395,7 +395,6 @@ import {
   ChevronDown,
   Flag,
   ClipboardClock,
-  BookOpen,
   Receipt,
 } from "lucide-react";
 import type { ElementType } from "react";
@@ -571,12 +570,25 @@ export default function WorkspaceSidebar({ role }: WorkspaceSidebarProps) {
 
   const allMenus = normalizedRoles.flatMap(r => roleMenus[r] ?? []);
 
-  const activeRole = normalizedRoles.find(r =>
-    (roleMenus[r] ?? []).some(item =>
-      item.href === pathname ||
-      item.subMenu?.some(sub => sub.href === pathname)
-    )
-  );
+  // const activeRole = normalizedRoles.find(r =>
+  //   (roleMenus[r] ?? []).some(item =>
+  //     item.href === pathname ||
+  //     item.subMenu?.some(sub => sub.href === psathname)
+  //   )
+  // );
+
+const activeRole = normalizedRoles.find(r =>
+  (roleMenus[r] ?? []).some(item => {
+    if (pathname === item.href) return true;
+
+    if (pathname.startsWith(item.href + "/")) return true;
+    if (item.subMenu?.some(sub => 
+      pathname === sub.href || pathname.startsWith(sub.href + "/")
+    )) return true;
+    
+    return false;
+  })
+);
 
   const info = roleInfo[activeRole ?? ""] ?? {
     name: "Không xác định",
