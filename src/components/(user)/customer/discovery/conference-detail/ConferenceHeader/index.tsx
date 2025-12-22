@@ -256,6 +256,7 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                             hasSubmittedPaper={hasSubmittedPaper}
                             submittedPaper={submittedPaper}
                             onSelectPaper={onSelectPaper}
+                            accessToken={accessToken}
                         />
                     )}
                 </div>
@@ -352,6 +353,8 @@ const ConferenceHeader: React.FC<ConferenceHeaderProps> = ({
                         onOpenDialog={() => setIsDialogOpen(true)}
                         purchasedTicketInfo={getPurchasedTicketInfo()}
                         isResearch={isResearch}
+
+                        accessToken={null}
                     />
                 )}
             </div>
