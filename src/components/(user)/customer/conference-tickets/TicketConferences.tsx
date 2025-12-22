@@ -1217,7 +1217,7 @@ export default function TicketConferences() {
       `}</style>
 
       {/* Refund Confirmation Dialog */}
-      <div className="px-6 py-4">
+      {/* <div className="px-6 py-4">
         {selectedRefundTicket && (() => {
           const ticket = tickets.find(t => t.ticketId === selectedRefundTicket.ticketId);
           const refundInfo = ticket ? canRefundTicket(ticket) : null;
@@ -1282,7 +1282,7 @@ export default function TicketConferences() {
             </>
           );
         })()}
-      </div>
+      </div> */}
       <Transition appear show={refundDialogOpen} as={Fragment}>
         <Dialog
           as="div"
