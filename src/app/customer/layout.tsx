@@ -36,6 +36,20 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
     redirect("/auth/login");
   }
 
+  if (!accessToken) {
+    return (
+      <div className="flex h-screen bg-customer-bg">
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header />
+          <Suspense fallback={<LoadingUI />}>
+            <main className="flex-1 overflow-y-auto">{children}</main>
+          </Suspense>
+        </div>
+      </div>
+    );
+  }
+
+
   return (
     <RouteGuard
       allowedRoles={[

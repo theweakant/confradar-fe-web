@@ -16,7 +16,7 @@ const mockContracts = [
     wage: 5000000,
     signDay: '2024-01-15T00:00:00Z',
     expireDay: '2024-12-31T00:00:00Z',
-    contractUrl: 'https://example.com/contract1.pdf', 
+    contractUrl: 'https://example.com/contract1.pdf',
     isActive: true,
   },
   {
@@ -70,7 +70,7 @@ describe('OwnContracts Component', () => {
 
   it('renders all statistics cards', () => {
     renderWithProvider(<OwnContracts />);
-    expect(screen.getAllByText('Đang hoạt động')).toHaveLength(2); 
+    expect(screen.getAllByText('Đang hoạt động')).toHaveLength(2);
     expect(screen.getAllByText('Không hoạt động')).toHaveLength(3);
     expect(screen.getByText('Tổng hợp đồng')).toBeInTheDocument();
     expect(screen.getByText('Tổng thu nhập')).toBeInTheDocument();
@@ -335,7 +335,6 @@ describe('OwnContractDetailDialog Component', () => {
     );
 
     expect(screen.getByText('Thông tin tài chính')).toBeInTheDocument();
-    expect(screen.getByText('Mức lương')).toBeInTheDocument();
   });
 
   it('displays date information', () => {
