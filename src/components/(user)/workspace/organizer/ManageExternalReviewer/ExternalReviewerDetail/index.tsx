@@ -212,7 +212,7 @@ export const ExternalReviewerDetail: React.FC<ExternalReviewerDetailProps> = ({
                       </p>
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         <div>
-                          <span className="text-gray-500">Lương:</span>
+                          <span className="text-gray-500">Tiền công:</span>
                           <span className="ml-1 font-medium text-green-600">
                             {formatCurrency(contract.wage)}
                           </span>

@@ -72,7 +72,7 @@ export const ExternalReviewerForm: React.FC<ExternalReviewerFormProps> = ({
     }
 
     if (formData.wage <= 0) {
-      newErrors.wage = 'Vui lòng nhập lương hợp lệ';
+      newErrors.wage = 'Vui lòng nhập tiền công hợp lệ (> 0)';
     }
 
     if (!formData.signDay) {
@@ -269,7 +269,7 @@ export const ExternalReviewerForm: React.FC<ExternalReviewerFormProps> = ({
             {/* Wage */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Lương (VND) <span className="text-red-500">*</span>
+                Tiền công (VND) <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"

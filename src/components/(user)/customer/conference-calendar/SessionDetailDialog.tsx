@@ -556,7 +556,7 @@ const SessionDetailDialog: React.FC<SessionDetailDialogProps> = ({
                                                 </div>
                                             )}
 
-                                            {shouldShowChangeButton() && (
+                                            {/* {shouldShowChangeButton() && (
                                                 <div className="mt-4">
                                                     <label className="text-sm font-semibold text-gray-400">
                                                         Lý do yêu cầu chuyển lịch trình bày
@@ -570,7 +570,7 @@ const SessionDetailDialog: React.FC<SessionDetailDialogProps> = ({
                                                         disabled={isSubmittingSession || loadingByConference}
                                                     />
                                                 </div>
-                                            )}
+                                            )} */}
 
                                             {shouldShowChangePresenterButton() && showPresenterModal && (
                                                 <div className="mt-4 border border-purple-600 rounded-lg p-4 bg-purple-900/20">

@@ -177,6 +177,26 @@ export default function ManageExternalReviewer() {
         return `${day}/${month}/${year}`;
     };
 
+    // const formatVND = (value?: string) => {
+    //     if (value === undefined || value === null || value === "") return "";
+
+    //     const numberValue =
+    //         typeof value === "string" ? Number(value) : value;
+
+    //     if (isNaN(numberValue)) return "";
+
+    //     return numberValue.toLocaleString("vi-VN");
+    // };
+
+    const formatVND = (value: string) => {
+        if (!value) return "";
+        return Number(value).toLocaleString("vi-VN");
+    };
+
+    const unformatVND = (value: string) => {
+        return value.replace(/\D/g, "");
+    };
+
     // Show toast when errors occur
     useEffect(() => {
         if (createError) toast.error(createError.data?.message);
@@ -576,8 +596,8 @@ export default function ManageExternalReviewer() {
                                             key={page}
                                             onClick={() => setCurrentPage(page)}
                                             className={`px-3 py-1 rounded-md text-sm font-medium ${currentPage === page
-                                                    ? 'bg-blue-600 text-white'
-                                                    : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                                                ? 'bg-blue-600 text-white'
+                                                : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
                                                 }`}
                                         >
                                             {page}
@@ -827,12 +847,23 @@ export default function ManageExternalReviewer() {
                                         {/* Wage */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Lương (VND) *
+                                                Tiền công (VND) *
                                             </label>
                                             <input
-                                                type="number"
-                                                value={contractForm.wage}
-                                                onChange={(e) => setContractForm({ ...contractForm, wage: e.target.value })}
+                                                type="text"
+                                                inputMode="numeric"
+                                                // value={contractForm.wage}
+                                                // onChange={(e) => setContractForm({ ...contractForm, wage: e.target.value })}
+                                                value={formatVND(contractForm.wage)}
+                                                onChange={(e) => {
+                                                    const rawValue = unformatVND(e.target.value);
+
+                                                    setContractForm({
+                                                        ...contractForm,
+                                                        wage: rawValue,
+                                                    });
+                                                }}
+                                                placeholder="5.000.000"
                                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                 required
                                                 min="0"
