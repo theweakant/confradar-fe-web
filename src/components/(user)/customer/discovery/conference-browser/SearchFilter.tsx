@@ -8,6 +8,8 @@ import "react-day-picker/style.css";
 import { CategoryOption } from "@/types/conference.type";
 import { SortOption } from "@/types/ui-type/conference-browser.type";
 import DropdownSelect from "./DropdownSelect";
+import { Switch } from "@headlessui/react";
+
 
 interface SearchFilterProps {
   searchQuery: string;
@@ -43,6 +45,9 @@ interface SearchFilterProps {
   allowListener: boolean;
   setAllowListener: (value: boolean) => void;
   bannerFilter?: "technical" | "research" | "all";
+
+  isComplete: boolean;
+  setIsComplete: (value: boolean) => void;
 }
 
 const SearchFilter: React.FC<SearchFilterProps> = ({
@@ -79,6 +84,9 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
   allowListener,
   setAllowListener,
   bannerFilter,
+
+  isComplete,
+  setIsComplete,
 }) => {
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -296,6 +304,48 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
           )}
 
           {bannerFilter === "research" && (
+            <div className="flex flex-col w-full">
+              <label className="text-xs text-gray-600 mb-1">Cho phép thính giả</label>
+              <Switch
+                checked={allowListener}
+                onChange={setAllowListener}
+                className={`${allowListener ? 'bg-blue-600' : 'bg-gray-300'
+                  } relative inline-flex h-10 w-full items-center rounded-lg border border-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+              >
+                <span className="sr-only">Cho phép thính giả tham dự</span>
+                <span
+                  className={`${allowListener ? 'translate-x-[calc(100%-2rem)]' : 'translate-x-1'
+                    } inline-block h-8 w-8 transform rounded-md bg-white shadow-lg transition-transform`}
+                />
+                <span className={`${allowListener ? 'text-white ml-3' : 'text-gray-700 ml-12'
+                  } text-sm font-medium transition-all`}>
+                  {allowListener ? 'Có' : 'Không'}
+                </span>
+              </Switch>
+            </div>
+          )}
+
+          <div className="flex flex-col w-full">
+            <label className="text-xs text-gray-600 mb-1">Trạng thái</label>
+            <Switch
+              checked={isComplete}
+              onChange={setIsComplete}
+              className={`${isComplete ? 'bg-blue-600' : 'bg-gray-300'
+                } relative inline-flex h-10 w-full items-center rounded-lg border border-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+            >
+              <span className="sr-only">Hội nghị đã kết thúc</span>
+              <span
+                className={`${isComplete ? 'translate-x-[calc(100%-2rem)]' : 'translate-x-1'
+                  } inline-block h-8 w-8 transform rounded-md bg-white shadow-lg transition-transform`}
+              />
+              <span className={`${isComplete ? 'text-white ml-3' : 'text-gray-700 ml-12'
+                } text-sm font-medium transition-all`}>
+                {isComplete ? 'Đã kết thúc' : 'Đang diễn ra'}
+              </span>
+            </Switch>
+          </div>
+
+          {/* {bannerFilter === "research" && (
             <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-gray-300">
               <input
                 type="checkbox"
@@ -309,6 +359,19 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
               </label>
             </div>
           )}
+
+          <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-gray-300">
+            <input
+              type="checkbox"
+              id="isComplete"
+              checked={isComplete}
+              onChange={(e) => setIsComplete(e.target.checked)}
+              className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+            />
+            <label htmlFor="isComplete" className="text-sm text-gray-700 cursor-pointer">
+              Hội nghị đã kết thúc
+            </label>
+          </div> */}
         </div>
 
         <div className="flex justify-end mt-4">

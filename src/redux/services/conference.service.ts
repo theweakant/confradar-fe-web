@@ -59,6 +59,7 @@ export const conferenceApi = createApi({
         endDate?: string;
         rankingCategoryId?: string;
         allowListener?: boolean;
+        isComplete?: boolean
       }
     >({
       query: ({
@@ -70,10 +71,11 @@ export const conferenceApi = createApi({
         endDate,
         rankingCategoryId,
         allowListener,
+        isComplete,
       }) => ({
         url: endpoint.CONFERENCE.LIST_WITH_PRICES,
         method: "GET",
-        params: { page, pageSize, searchKeyword, cityId, startDate, endDate, rankingCategoryId, allowListener, },
+        params: { page, pageSize, searchKeyword, cityId, startDate, endDate, rankingCategoryId, allowListener, isComplete },
       }),
       providesTags: (result) =>
         result?.data?.items

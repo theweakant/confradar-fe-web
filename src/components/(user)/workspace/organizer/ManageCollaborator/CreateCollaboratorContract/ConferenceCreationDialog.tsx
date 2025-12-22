@@ -40,7 +40,7 @@ const ConferenceCreationDialog: React.FC<ConferenceCreationDialogProps> = ({ isO
 
     const handleSubmit = async () => {
         if (!conferenceName.trim() || !collaboratorId) {
-            toast.error('Vui lòng nhập tên hội nghị và chọn tài khoản đối tác');
+            toast.error('Vui lòng nhập tên hội thảo và chọn tài khoản đối tác');
             return;
         }
 
@@ -49,28 +49,28 @@ const ConferenceCreationDialog: React.FC<ConferenceCreationDialogProps> = ({ isO
                 name: conferenceName.trim(),
                 collabId: collaboratorId
             }).unwrap();
-            toast.success('Tạo hội nghị thành công');
+            toast.success('Tạo hội thảo thành công');
             setConferenceName('');
             onSuccess();
         } catch (error) {
-            toast.error('Có lỗi xảy ra khi tạo hội nghị');
+            toast.error('Có lỗi xảy ra khi tạo hội thảo');
             console.error('Error creating conference:', error);
         }
     };
 
     // const handleSubmit = async () => {
     //   if (!conferenceName.trim()) {
-    //     toast.error('Vui lòng nhập tên hội nghị');
+    //     toast.error('Vui lòng nhập tên hội thảo');
     //     return;
     //   }
 
     //   try {
     //     await createSkeleton({ name: conferenceName.trim() }).unwrap();
-    //     toast.success('Tạo hội nghị thành công');
+    //     toast.success('Tạo hội thảo thành công');
     //     setConferenceName('');
     //     onSuccess();
     //   } catch (error) {
-    //     toast.error('Có lỗi xảy ra khi tạo hội nghị');
+    //     toast.error('Có lỗi xảy ra khi tạo hội thảo');
     //     console.error('Error creating conference:', error);
     //   }
     // };
@@ -103,17 +103,17 @@ const ConferenceCreationDialog: React.FC<ConferenceCreationDialogProps> = ({ isO
                         >
                             <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                                 <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900 mb-4">
-                                    Tạo hội nghị mới
+                                    Tạo hội thảo mới
                                 </Dialog.Title>
 
                                 <div className="space-y-4">
                                     <div>
-                                        <Label htmlFor="conferenceName">Tên hội nghị</Label>
+                                        <Label htmlFor="conferenceName">Tên hội thảo</Label>
                                         <Input
                                             id="conferenceName"
                                             value={conferenceName}
                                             onChange={(e) => setConferenceName(e.target.value)}
-                                            placeholder="Nhập tên hội nghị"
+                                            placeholder="Nhập tên hội thảo"
                                             className="mt-1"
                                         />
                                     </div>
@@ -124,7 +124,7 @@ const ConferenceCreationDialog: React.FC<ConferenceCreationDialogProps> = ({ isO
                                         Hủy
                                     </Button>
                                     <Button onClick={handleSubmit} disabled={isLoading || !conferenceName.trim()}>
-                                        {isLoading ? 'Đang tạo...' : 'Tạo hội nghị'}
+                                        {isLoading ? 'Đang tạo...' : 'Tạo hội thảo'}
                                     </Button>
                                 </div>
                             </Dialog.Panel>
