@@ -61,13 +61,14 @@ export const useAuth = () => {
       const role = getRolesFromToken(accessToken);
       const email = decoded?.email || credentials.email;
       const userId = decoded?.sub || "";
+      const active = decoded?.active || false;
 
       // let role: string | null = null;
 
       // const customerRole = getCustomerRole(accessToken);
       // role = customerRole || (rawRole.length > 0 ? rawRole[0] : null);
 
-      const userInfo = { userId, email, role };
+      const userInfo = { userId, email, role, active };
 
       dispatch(setCredentials({ user: userInfo, accessToken, refreshToken }));
 
