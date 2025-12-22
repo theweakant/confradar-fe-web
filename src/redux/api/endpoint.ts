@@ -388,6 +388,8 @@ export const endpoint = {
     SUBMITTED_PAPERS: '/statistics/submitted-papers',
     ASSIGN_REVIEWERS: '/statistics/assign-reviewers',
     PRESENT_SESSION: '/statistics/present-session',
+    TRANSACTION_HISTORY: '/statistics/transaction-history',
+
   },
 
   REVIEWER: {
@@ -423,6 +425,9 @@ export const endpoint = {
     TOTAL_UNRESOLVE_REPORTS: "/auditlog/total-unresolve-reports",
     INTERNAL_EVENT_COUNT: "/auditlog/internal-event-count",
     EXTERNAL_EVENT_COUNT: "/auditlog/external-event-count",
+
+    LIST_GENERAL_FAQ: '/auditlog/list-general-faq',
+
   },
 
   ORCID: {

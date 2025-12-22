@@ -7,8 +7,6 @@ import {
   ListPaper,
   FullPaperReview,
   PendingCameraReady,
-  AssignedPaper,
-  PaperDetailForReviewer,
   SubmitFullPaperReviewRequest,
   SubmitPaperRevisionReviewRequest, //REVISION
   ListRevisionPaperReview, //REVISION

@@ -1,4 +1,3 @@
-// components/pages/ConferenceDetailPage/Tab/RefundRequestTab.tsx
 "use client";
 
 import {
@@ -31,8 +30,8 @@ interface RefundRequestTabProps {
   conferenceType: "technical" | "research" | null;
   isCollaborator?: boolean;
   isTicketSelling?: boolean;
-  currentUserId?: string;       // 👈 thêm: ID người dùng đang đăng nhập
-  conferenceOwnerId?: string;   // 👈 thêm: ID người tạo hội thảo
+  currentUserId?: string;       
+  conferenceOwnerId?: string;   
 }
 
 export function RefundRequestTab({
@@ -82,7 +81,6 @@ export function RefundRequestTab({
   };
 
   const renderTicketActions = (req: RefundRequest) => {
-    // ✅ Chỉ chủ sở hữu hội thảo mới được hủy vé
     const isOwner = currentUserId && conferenceOwnerId && currentUserId === conferenceOwnerId;
     const canCancel = isOwner && !req.ticket.isRefunded && conferenceType;
 

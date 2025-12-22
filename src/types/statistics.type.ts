@@ -1,4 +1,11 @@
 // types/statistics.type.ts
+
+export interface GeneralFaq {
+  generalFaqid: string;
+  name: string;
+  description: string;
+}
+
 export interface GroupedTicketPhase {
   phaseName: string;
   applyPercent: number;
@@ -173,3 +180,26 @@ export interface Session {
 }
 
 export type PresentSessionResponse = Session[];
+
+
+export interface Transaction {
+  transactionId: string;
+  transactionCode: string | null;
+  amount: number;
+  time: string; 
+  type: string; 
+  status: string; 
+  ticketType: string;
+  paymentMethod: string; 
+}
+
+export interface UserTransactionHistory {
+  userId: string;
+  fullName: string;
+  email: string;
+  transactions: Transaction[];
+}
+
+export interface TransactionHistoryResponse {
+  userHistories: UserTransactionHistory[];
+}

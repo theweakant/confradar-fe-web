@@ -1,10 +1,8 @@
 "use client";
 
-import { DollarSign, ShieldCheck } from "lucide-react";
-import { formatDate } from "@/helper/format";
+import { ShieldCheck } from "lucide-react";
 import type {
   CommonConference,
-  RefundPolicyResponse,
   ConferencePolicyResponse,
 } from "@/types/conference.type";
 
@@ -19,7 +17,6 @@ export function RefundPolicyTab({ conference }: RefundPolicyTabProps) {
         Chính sách & Quy định
       </h2>
 
-      {/* Conference Policies */}
       <div>
         <h3 className="text-lg font-semibold text-blue-700 mb-4 flex items-center gap-2">
           <ShieldCheck className="w-5 h-5 text-blue-600" />

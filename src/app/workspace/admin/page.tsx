@@ -1,4 +1,4 @@
-import AdminDashboard from "@/components/(user)/workspace/admin/AdminDashboard/AdminDashboard";
+import AdminDashboard from "@/components/molecules/Dashboard/AdminDashboard";
 
 export default function AdminPage() {
   return <AdminDashboard />;

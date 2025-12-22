@@ -53,7 +53,6 @@ export function useStepNavigation() {
   // 🔥 FIXED: Remove restrictive navigation logic
   const handleGoToStep = useCallback(
     (step: number) => {
-      console.log('🚀 handleGoToStep called:', { step, currentStep, mode });
       
       // ✅ EDIT mode: Luôn cho phép navigation tự do
       if (mode === "edit") {
@@ -65,7 +64,6 @@ export function useStepNavigation() {
       // Không cần check completedSteps nữa vì logic đã được handle ở TechConferenceStepForm
       dispatch(goToStep(step));
       
-      console.log('✅ Navigation allowed to step:', step);
     },
     [dispatch, mode, currentStep] // 🔥 Removed completedSteps dependency
   );

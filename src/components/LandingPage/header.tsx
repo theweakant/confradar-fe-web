@@ -42,22 +42,22 @@ export default function Header() {
               Discovery
             </Link>
             <Link
-              href="#speakers"
+              href="/about-us"
               className="text-white hover:text-orange-600 transition-colors text-sm font-medium uppercase tracking-wide"
             >
               Về chúng tôi
             </Link>
             <Link
-              href="#networking"
+              href="/policy"
               className="text-white hover:text-orange-600 transition-colors text-sm font-medium uppercase tracking-wide"
             >
               Chính sách
             </Link>
             <Link
-              href="#contact"
+              href="/faq"
               className="text-white hover:text-orange-600 transition-colors text-sm font-medium uppercase tracking-wide"
             >
-              Liên hệ
+              FAQ
             </Link>
           </nav>
 
@@ -83,18 +83,6 @@ export default function Header() {
               </Link>
             )}
           </div>
-          {/* <div className="hidden md:flex items-center">
-            <Link href="/auth/login">
-              <Button
-                variant="outline"
-                className="border-white text-white hover:bg-white hover:text-black uppercase tracking-wide bg-transparent"
-              >
-                Đăng nhập
-              </Button>
-            </Link>
-          </div> */}
-
-          {/* Mobile menu button */}
           <button
             className="md:hidden text-white"
             aria-label="Open menu"
@@ -107,8 +95,6 @@ export default function Header() {
             )}
           </button>
         </div>
-
-        {/* Mobile Navigation */}
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-white/10">
             <nav className="flex flex-col space-y-4">

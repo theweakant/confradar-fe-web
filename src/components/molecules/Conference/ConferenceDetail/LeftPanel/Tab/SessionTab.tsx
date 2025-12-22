@@ -1,4 +1,3 @@
-// components/pages/ConferenceDetailPage/Tab/SessionTab.tsx
 "use client";
 
 import {
@@ -9,7 +8,6 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
-// Removed formatTimeDate import - using custom formatTime instead
 
 import type {
   CommonConference,
@@ -41,11 +39,9 @@ export function SessionTab({ conference, conferenceType, conferenceId }: Session
     setExpandedSessions(newExpanded);
   };
 
-  // Format time - handles both "HH:MM:SS" (research) and "YYYY-MM-DDTHH:MM:SS" (technical)
   const formatTime = (timeString: string | null | undefined): string => {
     if (!timeString) return "--:--";
     
-    // Check if it's ISO datetime format (technical conferences)
     if (timeString.includes('T')) {
       const date = new Date(timeString);
       return date.toLocaleTimeString('vi-VN', { 
@@ -88,7 +84,6 @@ export function SessionTab({ conference, conferenceType, conferenceId }: Session
                     </h3>
                     
                     <div className="flex flex-wrap gap-4 mt-2 text-sm text-gray-600">
-                      {/* Time */}
                       {(session.startTime || session.endTime) && (
                         <div className="flex items-center gap-1.5">
                           <Clock className="w-4 h-4 text-gray-400" />
@@ -98,7 +93,6 @@ export function SessionTab({ conference, conferenceType, conferenceId }: Session
                         </div>
                       )}
                       
-                      {/* Date - for research conferences (date field) or technical (sessionDate field) */}
                       {(session.date || session.sessionDate) && (
                         <div className="flex items-center gap-1.5">
                           <Calendar className="w-4 h-4 text-gray-400" />
@@ -108,7 +102,6 @@ export function SessionTab({ conference, conferenceType, conferenceId }: Session
                         </div>
                       )}
                       
-                      {/* Room */}
                       <div className="flex items-center gap-1.5">
                         <MapPin className="w-4 h-4 text-gray-400" />
                         <span>{session.room?.displayName || session.room?.number || "Chưa có phòng"}</span>
@@ -125,7 +118,6 @@ export function SessionTab({ conference, conferenceType, conferenceId }: Session
 
                 {isExpanded && (
                   <div className="border-t border-gray-200 p-4 bg-gray-50 space-y-4">
-                    {/* Description */}
                     {session.description && (
                       <div>
                         <h4 className="text-sm font-semibold text-gray-900 mb-2">Mô tả</h4>
@@ -133,7 +125,6 @@ export function SessionTab({ conference, conferenceType, conferenceId }: Session
                       </div>
                     )}
 
-                    {/* Room Info */}
                     {session.room && (
                       <div>
                         <h4 className="text-sm font-semibold text-gray-900 mb-2">
@@ -147,7 +138,6 @@ export function SessionTab({ conference, conferenceType, conferenceId }: Session
                       </div>
                     )}
 
-                    {/* Room ID only (when room object is null) */}
                     {!session.room && session.roomId && (
                       <div>
                         <h4 className="text-sm font-semibold text-gray-900 mb-2">
@@ -159,7 +149,6 @@ export function SessionTab({ conference, conferenceType, conferenceId }: Session
                       </div>
                     )}
 
-                    {/* Session Media */}
                     {session.sessionMedia && session.sessionMedia.length > 0 && (
                       <div>
                         <h4 className="text-sm font-semibold text-gray-900 mb-2">
@@ -203,7 +192,6 @@ export function SessionTab({ conference, conferenceType, conferenceId }: Session
   );
 }
 
-// --- Reusable Helper Component ---
 interface InfoFieldProps {
   label: string;
   value: string | number | boolean | null | undefined;

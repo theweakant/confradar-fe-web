@@ -179,7 +179,7 @@ const ExternalReviewerDashboard: React.FC = () => {
 
   const totalAssigned = assignedData?.data?.totalPaperAssignPaper ?? 0;
   const totalReviewed = reviewedData?.data?.totalPaperReviewed ?? 0;
-  const totalPending = pendingData?.data?.totalPaperPending ?? 0;
+  const totalPending = pendingData?.data?.totalPendingReview ?? 0;
   const papers = assignedData?.data?.paperDetails || [];
 
   const totalContracts = contractCountData?.data?.contractCount ?? 0;

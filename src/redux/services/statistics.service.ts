@@ -9,6 +9,7 @@ import {
   ReviewerAssignment,
   PresentSessionResponse,
   TicketHolderPagination,
+  TransactionHistoryResponse,
 } from '@/types/statistics.type';
 
 export const statisticsApi = createApi({
@@ -59,6 +60,12 @@ export const statisticsApi = createApi({
         params: { confId },
       }),
     }),
+    getTransactionHistory: builder.query<ApiResponse<TransactionHistoryResponse>, string>({
+      query: (confId) => ({
+        url: endpoint.STATISTICS.TRANSACTION_HISTORY,
+        params: { confId },
+      }),
+    }),
   }),
 });
 
@@ -69,4 +76,5 @@ export const {
   useGetSubmittedPapersQuery,
   useGetAssignReviewersQuery,
   useGetPresentSessionQuery,
+  useGetTransactionHistoryQuery
 } = statisticsApi;

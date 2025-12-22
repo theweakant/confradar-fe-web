@@ -1,4 +1,3 @@
-// components/pages/ConferenceDetailPointPage/Tab/ResearchTimelineTab.tsx
 "use client";
 
 import {
@@ -29,7 +28,7 @@ import {
   ResearchPhase,
   Phase,
 } from "@/types/conference.type";
-import { formatCurrency, formatDate as formatHelperDate } from "@/helper/format";
+import { formatDate as formatHelperDate } from "@/helper/format";
 import {
   useCreateNextPhaseMutation,
   useAddPricePhaseForNextResearchPhaseMutation,
