@@ -24,6 +24,7 @@ export function ProgressTimelineSection({
     Ready: 50,
     Completed: 100,
     Canceled: 0,
+    Disabled: 0,
   };
 
   const progressPercentage = statusToPercent[statusName] ?? 0;
@@ -44,6 +45,7 @@ export function ProgressTimelineSection({
     Ready: "text-purple-700",
     Completed: "text-green-700",
     Canceled: "text-red-700",
+    Disabled: "text-gray-500",
   };
 
   const calculateDaysUntilStart = (now: Date) => {
@@ -78,6 +80,7 @@ export function ProgressTimelineSection({
     Ready: "Đã sẵn sàng",
     Completed: "Đã hoàn thành",
     Canceled: "Đã bị hủy",
+    Disabled: "Đã vô hiệu hóa",
   };
 
   let progressDescription = baseStatusDescriptions[statusName] || "Không xác định";
@@ -238,6 +241,8 @@ export function ProgressTimelineSection({
                   ? "bg-green-100 text-green-700"
                   : statusName === "Canceled"
                   ? "bg-red-100 text-red-700"
+                  : statusName === "Disabled" 
+                  ? "bg-gray-100 text-gray-500"
                   : "bg-gray-100 text-gray-700"
               }`}
             >

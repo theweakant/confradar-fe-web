@@ -231,66 +231,11 @@ export default function ConferenceDetailPage() {
     isOrganizer &&
     conference.isInternalHosted === false;
 
-  const disableButton = isTechConfOfCollaborator &&
-    conference.conferenceStatusId === "7f2dcc1a-a107-4ed4-827e-eb994cbb648d" ? (
-    <Button
-      variant="outline"
-      size="sm"
-      className="gap-1.5 border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
-      onClick={() => setOpenDisableModal(true)}
-    >
-      <Ban className="w-4 h-4" />
-      Vô hiệu hóa
-    </Button>
-  ) : null;
-
-  const enableButton = isTechConfOfCollaborator &&
-    conference.conferenceStatusId &&
-    getStatusName(conference.conferenceStatusId) === "Disabled" ? (
-    <Button
-      variant="outline"
-      size="sm"
-      className="gap-1.5 border-emerald-500 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
-      onClick={() => setOpenEnableModal(true)}
-    >
-      <RotateCcw className="w-4 h-4" />
-      Khôi phục
-    </Button>
-  ) : null;
-
-  // const extraActions = (
-  //   <>
-  //     {disableButton}
-  //     {enableButton}
-  //   </>
-  // );
-
-  const extraActions = (
+const extraActions = (
   <>
-    {/* {isResearchAndCompleted && (
-      <Button
-        variant="outline"
-        size="sm"
-        disabled={isPublishing} 
-        className="gap-1.5 border-orange-300 bg-orange-50 text-orange-700 hover:bg-orange-100 hover:text-orange-800"
-        onClick={handlePublishPapers}
-      >
-        {isPublishing ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Đang xuất bản...
-          </>
-        ) : (
-          <>
-            <ArrowUp className="w-4 h-4" />
-            Xuất bản 
-          </>
-        )}
-      </Button>
-    )} */}
-
     {isTechConfOfCollaborator &&
-      conference.conferenceStatusId === "7f2dcc1a-a107-4ed4-827e-eb994cbb648d" && (
+      conference.conferenceStatusId &&
+      getStatusName(conference.conferenceStatusId) === "Ready" && (
         <Button
           variant="outline"
           size="sm"
