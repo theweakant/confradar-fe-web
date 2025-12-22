@@ -1,4 +1,11 @@
 // types/statistics.type.ts
+
+export interface GeneralFaq {
+  generalFaqid: string;
+  name: string;
+  description: string;
+}
+
 export interface GroupedTicketPhase {
   phaseName: string;
   applyPercent: number;

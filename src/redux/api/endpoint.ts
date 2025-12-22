@@ -425,6 +425,9 @@ export const endpoint = {
     TOTAL_UNRESOLVE_REPORTS: "/auditlog/total-unresolve-reports",
     INTERNAL_EVENT_COUNT: "/auditlog/internal-event-count",
     EXTERNAL_EVENT_COUNT: "/auditlog/external-event-count",
+
+    LIST_GENERAL_FAQ: '/auditlog/list-general-faq',
+
   },
 
   ORCID: {

@@ -10,6 +10,7 @@ import {
   ExternalEventCount,
 } from "@/types/auditlog.type";
 import { endpoint } from "../api/endpoint";
+import { GeneralFaq } from "@/types/statistics.type";
 
 export const auditLogApi = createApi({
   reducerPath: "auditLogApi",
@@ -112,6 +113,11 @@ export const auditLogApi = createApi({
       }),
       providesTags: [{ type: "AuditLog", id: "EXTERNAL_EVENT" }],
     }),
+    getGeneralFaqs: builder.query<ApiResponse<GeneralFaq[]>, void>({
+      query: () => ({
+        url: endpoint.AUDIT_LOG.LIST_GENERAL_FAQ,
+      }),
+    }),
   }),
 });
 
@@ -133,4 +139,5 @@ useGetTotalUnresolveReportsQuery,
   useLazyGetInternalEventCountQuery,
   useGetExternalEventCountQuery,
   useLazyGetExternalEventCountQuery,
+  useGetGeneralFaqsQuery
 } = auditLogApi;
