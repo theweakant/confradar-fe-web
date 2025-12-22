@@ -143,7 +143,7 @@ export const OwnContractDetailDialog: React.FC<OwnContractDetailDialogProps> = (
                                             <div className="pl-7 space-y-3">
                                                 <div>
                                                     <label className="text-sm font-medium text-gray-500">
-                                                        Mức lương
+                                                        Tiền công
                                                     </label>
                                                     <p className="text-lg font-bold text-green-600">
                                                         {formatCurrency(contract.wage)}

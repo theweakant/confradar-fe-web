@@ -42,7 +42,7 @@ const ConferenceTitleCard: React.FC<ConferenceTitleCardProps> = ({
     ];
 
     const academicCard = "bg-gradient-to-br from-slate-50 to-blue-50 border-2 border-slate-200";
-    const academicTitle = "text-slate-800 font-serif";
+    const academicTitle = "text-slate-800";
     const academicAccent = "text-blue-700";
 
     // Tech style cho technical
@@ -117,79 +117,17 @@ const ConferenceTitleCard: React.FC<ConferenceTitleCardProps> = ({
 
                 </div>
             </div>
-            {/* <div className="flex items-start gap-3 mb-4">
-                <h1 className={`text-2xl md:text-3xl font-bold flex-1 ${titleClasses}`}>
-                    {conference.conferenceName}
-                </h1>
-
-                {conference.statusName && (
-                    <span
-                        className={`
-            px-3 py-1.5 rounded-full text-sm font-semibold tracking-wide shadow-sm border
-            ${conference.statusName === "Ready" ? "bg-blue-100 text-blue-700 border-blue-300" : ""}
-            ${conference.statusName === "OnHold" ? "bg-amber-100 text-amber-700 border-amber-300" : ""}
-            ${conference.statusName === "Completed" ? "bg-emerald-100 text-emerald-700 border-emerald-300" : ""}
-            ${conference.statusName === "Cancel" ? "bg-red-100 text-red-600 border-red-300" : ""}
-        `}
-                    >
-                        {conference.statusName === "Ready" && "Sẵn sàng cho đăng ký tham dự"}
-                        {conference.statusName === "OnHold" && "Tạm hoãn"}
-                        {conference.statusName === "Completed" && "Đã kết thúc"}
-                        {conference.statusName === "Cancel" && "Đã hủy"}
-                    </span>
-                )}
-
-                {accessToken && (
-                    <button
-                        onClick={onFavoriteToggle}
-                        disabled={isTogglingFavorite}
-                        className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                        title={isFavorite ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
-                    >
-                        <Star
-                            className={`w-6 h-6 transition-colors ${isFavorite ? "fill-yellow-400 text-yellow-400" : "text-gray-600"
-                                } ${isTogglingFavorite ? "animate-pulse" : ""}`}
-                        />
-                    </button>
-                )}
-
-                <span
-                    className={`px-4 py-2 rounded-full text-md font-semibold whitespace-nowrap 
-        ${isResearch
-                            ? "bg-blue-100 text-blue-700 border-2 border-blue-300 shadow-sm"
-                            : "bg-red-100 text-red-600 border-2 border-red-300 shadow-sm"
-                        }`
-                    }
-                >
-                    {conference.isResearchConference ? "Hội nghị nghiên cứu" : "Hội thảo công nghệ"}
-                </span>
-            </div> */}
 
             <div
                 className={`my-2 md:mt-2 flex items-start gap-2 max-w-2xl
         ${isResearch ? "text-slate-700" : "text-gray-700"}`}
             >
-                {/* <span
-                    className={`mt-1 w-2 h-2 rounded-full 
-            ${isResearch ? "bg-blue-500" : "bg-red-500"}`}
-                ></span> */}
-
                 <p className="text-sm md:text-base leading-relaxed font-medium opacity-90">
                     {isResearch
                         ? "Một hội nghị nghiên cứu nơi công bố bài báo, thảo luận học thuật và kết nối cộng đồng khoa học đa lĩnh vực."
                         : "Hội thảo công nghệ giúp bạn khám phá các chủ đề chuyên sâu, gặp gỡ những chuyên gia hàng đầu và cập nhật thông tin mới nhất."}
                 </p>
             </div>
-
-            {/* <p
-                className={`mt-2 text-sm md:text-base leading-relaxed ${isResearch ? "text-slate-700 italic" : "text-gray-700"
-                    }`}
-            >
-                {isResearch
-                    ? "Không gian học thuật dành cho công bố bài báo, phản biện khoa học và kết nối các nhà nghiên cứu trong nhiều lĩnh vực."
-                    : "Sự kiện công nghệ đa chiều với các session chuyên sâu, speaker danh tiếng và nhiều lựa chọn giá vé linh hoạt."
-                }
-            </p> */}
 
             {/* Info Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">

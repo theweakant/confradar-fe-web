@@ -189,7 +189,7 @@ const ExternalReviewerDashboard: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedPaper, setSelectedPaper] = useState<PaperDetail | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedContract, setSelectedContract] = useState<OwnContractDetailResponse|null>(null);
+  const [selectedContract, setSelectedContract] = useState<OwnContractDetailResponse | null>(null);
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
 
   const handleSort = () => {
@@ -269,7 +269,7 @@ const ExternalReviewerDashboard: React.FC = () => {
             color="bg-emerald-500"
           />
           <StatCard
-            title="Tổng lương"
+            title="Tổng tiền công"
             value={wageTotalLoading ? '...' : formatCurrency(totalWage)}
             icon={<Wallet className="text-white" size={20} />}
             color="bg-orange-100"
@@ -332,9 +332,8 @@ const ExternalReviewerDashboard: React.FC = () => {
                           <h3 className="font-semibold text-gray-900 text-sm line-clamp-2">
                             {contract.conferenceName}
                           </h3>
-                          <span className={`mt-1 px-2 py-0.5 rounded text-[10px] font-medium ${
-                            contract.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
-                          }`}>
+                          <span className={`mt-1 px-2 py-0.5 rounded text-[10px] font-medium ${contract.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+                            }`}>
                             {contract.isActive ? 'Đang hoạt động' : 'Đã hết hạn'}
                           </span>
                         </div>
@@ -348,7 +347,7 @@ const ExternalReviewerDashboard: React.FC = () => {
                             )}
                           </div>
                           <div className="flex items-center text-[10px] text-orange-600 font-semibold">
-                            <span>Lương:&nbsp;</span>
+                            <span>Tiền công:&nbsp;</span>
                             <span>{formatCurrency(contract.wage)}</span>
                           </div>
                         </div>
@@ -535,11 +534,10 @@ const ExternalReviewerDashboard: React.FC = () => {
                 <div>
                   <h4 className="text-sm font-medium text-gray-600 mb-1">Trạng thái</h4>
                   <span
-                    className={`inline-block px-3 py-1 rounded-md text-sm font-medium ${
-                      selectedContract.isActive
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-700'
-                    }`}
+                    className={`inline-block px-3 py-1 rounded-md text-sm font-medium ${selectedContract.isActive
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-gray-100 text-gray-700'
+                      }`}
                   >
                     {selectedContract.isActive ? 'Đang hoạt động' : 'Đã hết hạn'}
                   </span>
@@ -547,17 +545,17 @@ const ExternalReviewerDashboard: React.FC = () => {
                 <div>
                   <h4 className="text-sm font-medium text-gray-600 mb-1">Ngày ký</h4>
                   <p className="text-orange-700 font-semibold">
-                    {formatDate(selectedContract.signDay)}                  
+                    {formatDate(selectedContract.signDay)}
                   </p>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-gray-600 mb-1">Ngày hết hạn</h4>
                   <p className="text-orange-700 font-semibold">
-                    {formatDate(selectedContract.expireDay)}                  
+                    {formatDate(selectedContract.expireDay)}
                   </p>
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-gray-600 mb-1">Lương</h4>
+                  <h4 className="text-sm font-medium text-gray-600 mb-1">Tiền công</h4>
                   <p className="text-green-700 font-bold text-lg">
                     {formatCurrency(selectedContract.wage)}
                   </p>
@@ -579,8 +577,8 @@ const ExternalReviewerDashboard: React.FC = () => {
 
               <div className="flex gap-3 mt-6">
                 <button
-                onClick={() => handleDownloadContract(selectedContract.contractUrl)}                  
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center justify-center gap-2"
+                  onClick={() => handleDownloadContract(selectedContract.contractUrl)}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center justify-center gap-2"
                 >
                   <Download size={18} />
                   Tải hợp đồng

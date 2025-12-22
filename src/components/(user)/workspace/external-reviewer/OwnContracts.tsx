@@ -207,8 +207,8 @@ export default function OwnContracts() {
                         >
                             <option value="date-desc">Ngày ký: Mới nhất</option>
                             <option value="date-asc">Ngày ký: Cũ nhất</option>
-                            <option value="wage-desc">Lương: Cao đến thấp</option>
-                            <option value="wage-asc">Lương: Thấp đến cao</option>
+                            <option value="wage-desc">Tiền công: Cao đến thấp</option>
+                            <option value="wage-asc">Tiền công: Thấp đến cao</option>
                             <option value="name-asc">Tên: A-Z</option>
                             <option value="name-desc">Tên: Z-A</option>
                         </select>
