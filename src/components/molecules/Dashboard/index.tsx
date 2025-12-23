@@ -265,14 +265,15 @@ const TopConferences: React.FC<TopConferencesProps> = ({ conferences }) => {
         ) : (
           conferences.map((conf) => (
             <div key={conf.id} className="flex items-center gap-2 p-2 rounded-2xl hover:bg-gray-50 transition-colors">
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0">
+              {/* <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0">
                 <Presentation size={24} className="text-gray-600" />
-              </div>
+              </div> */}
               <div className="flex-1 min-w-0">
                 <h4 className="font-medium text-sm text-gray-900 truncate mb-1">{conf.name}</h4>
                 <p className="text-xs text-gray-500 flex items-center gap-1">
                   <Users size={12} />
-                  {conf.registrations} đăng ký ({conf.occupancyRate.toFixed(1)}%)
+                  {conf.registrations} đăng ký ({(conf.occupancyRate * 100)}%)
+
                 </p>
               </div>
             </div>
