@@ -202,13 +202,13 @@ export default function StatisticsDashboard() {
                         <div className="text-xs mt-1 opacity-80">Đã hoàn tiền</div>
                     </div>
 
-                    <div className="relative bg-yellow-100 text-yellow-900 rounded-xl p-6 flex-1 min-w-[200px] shadow-sm hover:shadow-md transition-shadow">
+                    {/* <div className="relative bg-yellow-100 text-yellow-900 rounded-xl p-6 flex-1 min-w-[200px] shadow-sm hover:shadow-md transition-shadow">
                         <div className="absolute top-5 right-5">
                             <Clock className="w-5 h-5 opacity-70" />
                         </div>
                         <div className="text-3xl font-bold">{totalPending}</div>
                         <div className="text-xs mt-1 opacity-80">Đang xử lý</div>
-                    </div>
+                    </div> */}
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -333,7 +333,7 @@ export default function StatisticsDashboard() {
                     <div className="p-6 border-b border-gray-200">
                         <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                             <TrendingUp className="w-5 h-5 text-indigo-500" />
-                            Chi tiết theo loại vé
+                            Chi tiết theo loại chi phí
                         </h3>
                     </div>
 
@@ -341,7 +341,7 @@ export default function StatisticsDashboard() {
                         <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                                 <tr>
-                                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase">Loại vé</th>
+                                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase">Loại chi phí</th>
                                     <th className="text-left px-6 py-3 text-xs font-semibold text-gray-600 uppercase">Giai đoạn</th>
                                     <th className="text-center px-6 py-3 text-xs font-semibold text-gray-600 uppercase">Đã bán</th>
                                     <th className="text-right px-6 py-3 text-xs font-semibold text-gray-600 uppercase">Giá bán</th>
