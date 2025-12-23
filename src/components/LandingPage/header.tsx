@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
@@ -25,8 +26,14 @@ export default function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-lg bg-orange-600 flex items-center justify-center">
-              <span className="text-white font-bold text-lg">N</span>
+            <div className="h-8 w-8 rounded-lg flex items-center justify-center">
+              <Image
+                src="/ConfradarLogo_Light.png"
+                alt="ConfRadar Logo"
+                width={32}
+                height={32}
+                className="object-contain"
+              />
             </div>
             <span className="font-bold text-base text-white uppercase tracking-wide">
               ConfRadar

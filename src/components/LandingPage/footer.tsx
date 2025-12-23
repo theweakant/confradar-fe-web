@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type React from "react";
 import { useState } from "react";
 import { ExternalLink } from "lucide-react";
@@ -13,7 +14,6 @@ export default function Footer() {
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Email đăng ký:", email);
-    // TODO: Thêm logic gọi API lưu email đăng ký
     setEmail("");
   };
 
@@ -25,7 +25,7 @@ export default function Footer() {
         {
           title: "SỰ KIỆN",
           links: [
-            { label: "Hội thảo sắp diễn ra", href: "/events/upcoming" },
+            { label: "Hội thảo sắp diễn ra", href: "/customer/discovery" },
             { label: "Sự kiện nổi bật", href: "/events/past" },
             { label: "Lịch hội thảo", href: "/events/calendar" },
           ],
@@ -39,9 +39,9 @@ export default function Footer() {
         {
           title: "DIỄN GIẢ",
           links: [
-            { label: "Chuyên gia hàng đầu", href: "/speakers/experts" },
-            { label: "Danh sách diễn giả", href: "/speakers/lineup" },
-            { label: "Đăng ký trở thành diễn giả", href: "/speakers/apply" },
+            { label: "Về chúng tôi", href: "/about-us" },
+            // { label: "Danh sách diễn giả", href: "/speakers/lineup" },
+            // { label: "Đăng ký trở thành diễn giả", href: "/speakers/apply" },
           ],
         },
       ],
@@ -67,9 +67,8 @@ export default function Footer() {
         {
           title: "HỖ TRỢ",
           links: [
-            { label: "Trung tâm hỗ trợ", href: "/support" },
-            { label: "Hợp tác & Đối tác", href: "/partnership" },
-            { label: "Báo chí & Truyền thông", href: "/press" },
+            { label: "Trung tâm hỗ trợ", href: "/faq" },
+            { label: "Chính sách", href: "/policy" },
           ],
         },
       ],
@@ -79,11 +78,9 @@ export default function Footer() {
   return (
     <footer className="bg-black text-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {/* Top Section - Link Columns */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 mb-16 pb-16 border-b border-white/10">
           {footerLinks.map((column) => (
             <div key={column.platform}>
-              {/* Platform Header */}
               <Link
                 href={column.href}
                 target="_blank"
@@ -95,7 +92,6 @@ export default function Footer() {
                 <ExternalLink className="w-5 h-5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </Link>
 
-              {/* Link Sections */}
               {column.sections.map((section, idx) => (
                 <div key={idx} className="space-y-4">
                   <h3 className="text-xs font-semibold text-white/60 tracking-wider mb-3">
@@ -119,14 +115,17 @@ export default function Footer() {
           ))}
         </div>
 
-        {/* Bottom Section - Brand & Newsletter */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
-          {/* Left - Brand */}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              {/* Orange C Logo */}
-              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-2xl">C</span>
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center">
+                <Image
+                  src="/ConfradarLogo_Light.png"
+                  alt="ConfRadar Logo"
+                  width={48}
+                  height={48}
+                  className="object-contain"
+                />
               </div>
               <h2 className="text-2xl font-bold">ConfRadar</h2>
             </div>
@@ -138,7 +137,6 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Right - Newsletter */}
           {/* <div>
             <h2 className="text-2xl font-bold mb-6">Đăng ký nhận bản tin</h2>
             <form onSubmit={handleSubscribe} className="flex gap-3">
@@ -161,9 +159,8 @@ export default function Footer() {
           </div> */}
         </div>
 
-        {/* Bottom Bar */}
         <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-white/40">
-          <p>© 2025 ConfRadar | Bản quyền thuộc về nhóm phát triển</p>
+          <p>© 2025 ConfRadar | Mentor: Trần Thị Như Quỳnh</p>
           <div className="flex gap-6">
             <Link
               href="/privacy"
