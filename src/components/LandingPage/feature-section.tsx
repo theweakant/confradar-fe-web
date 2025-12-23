@@ -21,7 +21,7 @@ export default function HomePage() {
       {/* Marquee Section */}
       <section className="bg-black py-12 md:py-16">
         <Marquee
-          text={["TECH CONFERENCES", "RESEARCH CONFERENCES", "WORKSHOPS"]}
+          text={["CÔNG NGHỆ", "NGHIÊN CỨU", "WORKSHOPS"]}
           speed={60}
           separator=" • "
           className="bg-black"

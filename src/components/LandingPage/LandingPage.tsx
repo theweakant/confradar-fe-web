@@ -20,8 +20,8 @@ export default function LandingPage() {
         <HeroSection />
         <FeaturesSection />
         <WhatWeOffer />
-        <UpcomingConferences />
-        <TrustedByCollaborator />
+        {/* <UpcomingConferences /> */}
+        {/* <TrustedByCollaborator /> */}
         <ExploreConferences />
 
         {/* <AboutUs/>  

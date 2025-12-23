@@ -139,7 +139,7 @@ export default function Footer() {
           </div>
 
           {/* Right - Newsletter */}
-          <div>
+          {/* <div>
             <h2 className="text-2xl font-bold mb-6">Đăng ký nhận bản tin</h2>
             <form onSubmit={handleSubscribe} className="flex gap-3">
               <Input
@@ -158,7 +158,7 @@ export default function Footer() {
                 Đăng ký
               </Button>
             </form>
-          </div>
+          </div> */}
         </div>
 
         {/* Bottom Bar */}
@@ -173,7 +173,7 @@ export default function Footer() {
             </Link>
             <span>|</span>
             <Link
-              href="/terms"
+              href="#terms"
               className="hover:text-orange-500 transition-colors"
             >
               Điều khoản sử dụng
