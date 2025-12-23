@@ -126,10 +126,10 @@ export default function HeroSection() {
                       {featuredConference.address && ` - ${featuredConference.address}`}
                     </p>
 
-                    <p className="text-2xl lg:text-3xl xl:text-4xl font-semibold text-white">
+                    {/* <p className="text-2xl lg:text-3xl xl:text-4xl font-semibold text-white">
                       {featuredConference.description?.split(".")[0] || "Sôi Động"} <br />
                       {featuredConference.description?.split(".")[1] || "Hơn Bao Giờ Hết"}
-                    </p>
+                    </p> */}
 
                     {featuredConference.availableSlot !== undefined && (
                       <p className="text-sm text-[#D1D5DB] mt-4">
